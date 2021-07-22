@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,71 +30,69 @@
 #ifndef STRING_API_HXX
 #define STRING_API_HXX
 
-#include "Compiler.h"
-
 #include <cstring>
 
 #ifdef _UNICODE
 #include "WStringAPI.hxx"
 #endif
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline size_t
 StringLength(const char *p) noexcept
 {
 	return strlen(p);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const char *
 StringFind(const char *haystack, const char *needle) noexcept
 {
 	return strstr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline char *
 StringFind(char *haystack, char needle, size_t size) noexcept
 {
 	return (char *)std::memchr(haystack, needle, size);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const char *
 StringFind(const char *haystack, char needle, size_t size) noexcept
 {
 	return (const char *)std::memchr(haystack, needle, size);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const char *
 StringFind(const char *haystack, char needle) noexcept
 {
 	return std::strchr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline char *
 StringFind(char *haystack, char needle) noexcept
 {
 	return std::strchr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const char *
 StringFindLast(const char *haystack, char needle) noexcept
 {
 	return std::strrchr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline char *
 StringFindLast(char *haystack, char needle) noexcept
 {
 	return std::strrchr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const char *
 StringFindLast(const char *haystack, char needle, size_t size) noexcept
 {
@@ -115,7 +113,7 @@ StringFindLast(const char *haystack, char needle, size_t size) noexcept
 #endif
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const char *
 StringFindAny(const char *haystack, const char *accept) noexcept
 {
@@ -128,14 +126,14 @@ StringToken(char *str, const char *delim) noexcept
 	return strtok(str, delim);
 }
 
-gcc_nonnull_all
+[[gnu::nonnull]]
 static inline void
 UnsafeCopyString(char *dest, const char *src) noexcept
 {
 	strcpy(dest, src);
 }
 
-gcc_returns_nonnull gcc_nonnull_all
+[[gnu::returns_nonnull]] [[gnu::nonnull]]
 static inline char *
 UnsafeCopyStringP(char *dest, const char *src) noexcept
 {
@@ -148,14 +146,14 @@ UnsafeCopyStringP(char *dest, const char *src) noexcept
 #endif
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline int
 StringCompare(const char *a, const char *b) noexcept
 {
 	return strcmp(a, b);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline int
 StringCompare(const char *a, const char *b, size_t n) noexcept
 {
@@ -165,7 +163,7 @@ StringCompare(const char *a, const char *b, size_t n) noexcept
 /**
  * Checks whether #a and #b are equal.
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqual(const char *a, const char *b) noexcept
 {
@@ -175,28 +173,28 @@ StringIsEqual(const char *a, const char *b) noexcept
 /**
  * Checks whether #a and #b are equal.
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqual(const char *a, const char *b, size_t length) noexcept
 {
 	return strncmp(a, b, length) == 0;
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqualIgnoreCase(const char *a, const char *b) noexcept
 {
 	return strcasecmp(a, b) == 0;
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqualIgnoreCase(const char *a, const char *b, size_t size) noexcept
 {
 	return strncasecmp(a, b, size) == 0;
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline int
 StringCollate(const char *a, const char *b) noexcept
 {
@@ -207,7 +205,7 @@ StringCollate(const char *a, const char *b) noexcept
  * Copy the string to a new allocation.  The return value must be
  * freed with free().
  */
-gcc_malloc gcc_returns_nonnull gcc_nonnull_all
+[[gnu::malloc]] [[gnu::returns_nonnull]] [[gnu::nonnull]]
 static inline char *
 DuplicateString(const char *p) noexcept
 {

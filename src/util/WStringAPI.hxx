@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,67 +30,65 @@
 #ifndef WSTRING_API_HXX
 #define WSTRING_API_HXX
 
-#include "Compiler.h"
-
 #include <cwchar>
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline size_t
 StringLength(const wchar_t *p) noexcept
 {
 	return wcslen(p);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const wchar_t *
 StringFind(const wchar_t *haystack, const wchar_t *needle) noexcept
 {
 	return wcsstr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const wchar_t *
 StringFind(const wchar_t *haystack, wchar_t needle, size_t size) noexcept
 {
 	return std::wmemchr(haystack, needle, size);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline wchar_t *
 StringFind(wchar_t *haystack, wchar_t needle, size_t size) noexcept
 {
 	return std::wmemchr(haystack, needle, size);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const wchar_t *
 StringFind(const wchar_t *haystack, wchar_t needle) noexcept
 {
 	return wcschr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline wchar_t *
 StringFind(wchar_t *haystack, wchar_t needle) noexcept
 {
 	return wcschr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const wchar_t *
 StringFindLast(const wchar_t *haystack, wchar_t needle) noexcept
 {
 	return wcsrchr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline wchar_t *
 StringFindLast(wchar_t *haystack, wchar_t needle) noexcept
 {
 	return wcsrchr(haystack, needle);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const wchar_t *
 StringFindLast(const wchar_t *haystack, wchar_t needle, size_t size) noexcept
 {
@@ -105,21 +103,21 @@ StringFindLast(const wchar_t *haystack, wchar_t needle, size_t size) noexcept
 	return nullptr;
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const wchar_t *
 StringFindAny(const wchar_t *haystack, const wchar_t *accept) noexcept
 {
 	return wcspbrk(haystack, accept);
 }
 
-gcc_nonnull_all
+[[gnu::nonnull]]
 static inline void
 UnsafeCopyString(wchar_t *dest, const wchar_t *src) noexcept
 {
 	wcscpy(dest, src);
 }
 
-gcc_returns_nonnull gcc_nonnull_all
+[[gnu::returns_nonnull]] [[gnu::nonnull]]
 static inline wchar_t *
 UnsafeCopyStringP(wchar_t *dest, const wchar_t *src) noexcept
 {
@@ -134,14 +132,14 @@ UnsafeCopyStringP(wchar_t *dest, const wchar_t *src) noexcept
 #endif
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline int
 StringCompare(const wchar_t *a, const wchar_t *b) noexcept
 {
 	return wcscmp(a, b);
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline int
 StringCompare(const wchar_t *a, const wchar_t *b, size_t n) noexcept
 {
@@ -154,7 +152,7 @@ StringCompare(const wchar_t *a, const wchar_t *b, size_t n) noexcept
  * @param str2 String 2
  * @return True if equal, False otherwise
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqual(const wchar_t *str1, const wchar_t *str2) noexcept
 {
@@ -164,14 +162,14 @@ StringIsEqual(const wchar_t *str1, const wchar_t *str2) noexcept
 /**
  * Checks whether #a and #b are equal.
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqual(const wchar_t *a, const wchar_t *b, size_t length) noexcept
 {
 	return wcsncmp(a, b, length) == 0;
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b) noexcept
 {
@@ -182,7 +180,7 @@ StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b) noexcept
 #endif
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b,
 			size_t size) noexcept
@@ -194,14 +192,14 @@ StringIsEqualIgnoreCase(const wchar_t *a, const wchar_t *b,
 #endif
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline int
 StringCollate(const wchar_t *a, const wchar_t *b) noexcept
 {
 	return wcscoll(a, b);
 }
 
-gcc_malloc gcc_returns_nonnull gcc_nonnull_all
+[[gnu::malloc]] [[gnu::returns_nonnull]] [[gnu::nonnull]]
 static inline wchar_t *
 DuplicateString(const wchar_t *p) noexcept
 {
