@@ -125,6 +125,9 @@ public:
 		value = (T)env->NewGlobalRef(value);
 	}
 
+	GlobalRef(const LocalRef<T> &src) noexcept
+		:GlobalRef(src.GetEnv(), src.Get()) {}
+
 	~GlobalRef() noexcept {
 		GetEnv()->DeleteGlobalRef(value);
 	}
