@@ -58,23 +58,21 @@ public:
 		assert(env != nullptr);
 		assert(name != nullptr);
 
-		jclass cls = env->FindClass(name);
+		const Java::Class cls{env, env->FindClass(name)};
 		assert(cls != nullptr);
 
 		Set(env, cls);
-		env->DeleteLocalRef(cls);
 	}
 
 	bool FindOptional(JNIEnv *env, const char *name) noexcept {
 		assert(env != nullptr);
 		assert(name != nullptr);
 
-		jclass cls = env->FindClass(name);
+		const Java::Class cls{env, env->FindClass(name)};
 		if (DiscardException(env))
 			return false;
 
 		Set(env, cls);
-		env->DeleteLocalRef(cls);
 		return true;
 	}
 };
