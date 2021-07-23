@@ -41,19 +41,9 @@ namespace Java {
 /**
  * Wrapper for a local "jobject" reference.
  */
-typedef LocalRef<jobject> LocalObject;
+using LocalObject = LocalRef<jobject>;
 
-class GlobalObject : public GlobalRef<jobject> {
-public:
-	/**
-	 * Constructs an uninitialized object.  The method
-	 * set() must be called before it is destructed.
-	 */
-	GlobalObject() = default;
-
-	GlobalObject(JNIEnv *env, jobject obj) noexcept
-		:GlobalRef<jobject>(env, obj) {}
-};
+using GlobalObject = GlobalRef<jobject>;
 
 /**
  * Utilities for java.net.Object.
