@@ -184,14 +184,22 @@ StringIsEqual(const char *a, const char *b, size_t length) noexcept
 static inline bool
 StringIsEqualIgnoreCase(const char *a, const char *b) noexcept
 {
+#ifdef _MSC_VER
+	return _stricmp(a, b) == 0;
+#else
 	return strcasecmp(a, b) == 0;
+#endif
 }
 
 [[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringIsEqualIgnoreCase(const char *a, const char *b, size_t size) noexcept
 {
+#ifdef _MSC_VER
+	return _strnicmp(a, b, size) == 0;
+#else
 	return strncasecmp(a, b, size) == 0;
+#endif
 }
 
 [[gnu::pure]] [[gnu::nonnull]]
