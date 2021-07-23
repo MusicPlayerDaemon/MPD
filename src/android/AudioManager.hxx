@@ -30,10 +30,6 @@ class AudioManager : public Java::GlobalObject {
 public:
 	AudioManager(JNIEnv *env, jobject obj) noexcept;
 
-	AudioManager(std::nullptr_t) noexcept { maxVolume = 0; }
-
-	~AudioManager() noexcept {}
-
 	int GetMaxVolume() { return maxVolume; }
 	int GetVolume(JNIEnv *env);
 	void SetVolume(JNIEnv *env, int);
