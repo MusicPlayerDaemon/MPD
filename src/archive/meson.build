@@ -25,6 +25,9 @@ archive_glue = static_library(
   'ArchivePlugin.cxx',
   '../input/plugins/ArchiveInputPlugin.cxx',
   include_directories: inc,
+  dependencies: [
+    log_dep,
+  ],
 )
 
 archive_glue_dep = declare_dependency(
