@@ -24,9 +24,13 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothClass;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.IBinder;
@@ -55,6 +59,7 @@ public class Main extends Service implements Runnable {
 	private String mError = null;
 	private final RemoteCallbackList<IMainCallback> mCallbacks = new RemoteCallbackList<IMainCallback>();
 	private final IBinder mBinder = new MainStub(this);
+	private boolean mPauseOnHeadphonesDisconnect = false;
 	private PowerManager.WakeLock mWakelock = null;
 
 	static class MainStub extends IMain.Stub {
@@ -67,6 +72,9 @@ public class Main extends Service implements Runnable {
 		}
 		public void stop() {
 			mService.stop();
+		}
+		public void setPauseOnHeadphonesDisconnect(boolean enabled) {
+			mService.setPauseOnHeadphonesDisconnect(enabled);
 		}
 		public void setWakelockEnabled(boolean enabled) {
 			mService.setWakelockEnabled(enabled);
@@ -191,6 +199,28 @@ public class Main extends Service implements Runnable {
 		if (mThread != null)
 			return;
 
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Intent.ACTION_HEADSET_PLUG);
+		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+		registerReceiver(new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (!mPauseOnHeadphonesDisconnect) {
+					return;
+				}
+
+				if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
+					if (intent.hasExtra("state") && intent.getIntExtra("state", 0) == 0)
+						pause();
+				} else {
+					BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+					if (device.getBluetoothClass().hasService(BluetoothClass.Service.AUDIO))
+						pause();
+				}
+			}
+		}, filter);
+
 		final Intent mainIntent = new Intent(this, Settings.class);
 		mainIntent.setAction("android.intent.action.MAIN");
 		mainIntent.addCategory("android.intent.category.LAUNCHER");
@@ -239,6 +269,21 @@ public class Main extends Service implements Runnable {
 		setWakelockEnabled(false);
 		stopForeground(true);
 		stopSelf();
+	}
+
+	private void pause() {
+		if (mThread != null) {
+			if (mThread.isAlive()) {
+				synchronized (this) {
+					if (mStatus == MAIN_STATUS_STARTED)
+						Bridge.pause();
+				}
+			}
+		}
+	}
+
+	private void setPauseOnHeadphonesDisconnect(boolean enabled) {
+		mPauseOnHeadphonesDisconnect = enabled;
 	}
 
 	private void setWakelockEnabled(boolean enabled) {
@@ -360,6 +405,19 @@ public class Main extends Service implements Runnable {
 				if (mIMain != null) {
 					try {
 						mIMain.stop();
+						return true;
+					} catch (RemoteException e) {
+					}
+				}
+				return false;
+			}
+		}
+
+		public boolean setPauseOnHeadphonesDisconnect(boolean enabled) {
+			synchronized (this) {
+				if (mIMain != null) {
+					try {
+						mIMain.setPauseOnHeadphonesDisconnect(enabled);
 						return true;
 					} catch (RemoteException e) {
 					}

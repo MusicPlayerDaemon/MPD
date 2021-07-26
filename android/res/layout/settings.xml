@@ -23,6 +23,12 @@
         android:layout_height="wrap_content"
         android:text="@string/checkbox_wakelock" />
 
+    <CheckBox
+        android:id="@+id/pause_on_headphones_disconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/checkbox_pause_on_headphones_disconnect" />
+
     <TextView
         android:id="@+id/status"
         android:layout_width="wrap_content"

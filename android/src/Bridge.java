@@ -33,4 +33,5 @@ public class Bridge {
 
 	public static native void run(Context context, LogListener logListener);
 	public static native void shutdown();
+	public static native void pause();
 }

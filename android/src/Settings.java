@@ -59,6 +59,7 @@ public class Settings extends Activity {
 	public static class Preferences {
 		public static final String KEY_RUN_ON_BOOT ="run_on_boot";
 		public static final String KEY_WAKELOCK ="wakelock";
+		public static final String KEY_PAUSE_ON_HEADPHONES_DISCONNECT ="pause_on_headphones_disconnect";
 
 		public static SharedPreferences get(Context context) {
 			return context.getSharedPreferences(TAG, MODE_PRIVATE);
@@ -154,6 +155,9 @@ public class Settings extends Activity {
 					if (Preferences.getBoolean(Settings.this,
 							Preferences.KEY_WAKELOCK, false))
 						mClient.setWakelockEnabled(true);
+					if (Preferences.getBoolean(Settings.this,
+							Preferences.KEY_PAUSE_ON_HEADPHONES_DISCONNECT, false))
+						mClient.setPauseOnHeadphonesDisconnect(true);
 				} else {
 					mClient.stop();
 				}
@@ -176,6 +180,15 @@ public class Settings extends Activity {
 			Preferences.putBoolean(Settings.this, Preferences.KEY_WAKELOCK, isChecked);
 			if (mClient != null && mClient.isRunning())
 				mClient.setWakelockEnabled(isChecked);
+		}
+	};
+
+	private final OnCheckedChangeListener mOnPauseOnHeadphonesDisconnectChangeListener = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			Preferences.putBoolean(Settings.this, Preferences.KEY_PAUSE_ON_HEADPHONES_DISCONNECT, isChecked);
+			if (mClient != null && mClient.isRunning())
+				mClient.setPauseOnHeadphonesDisconnect(isChecked);
 		}
 	};
 
@@ -209,6 +222,11 @@ public class Settings extends Activity {
 		checkbox = (CheckBox) findViewById(R.id.wakelock);
 		checkbox.setOnCheckedChangeListener(mOnWakelockChangeListener);
 		if (Preferences.getBoolean(this, Preferences.KEY_WAKELOCK, false))
+			checkbox.setChecked(true);
+
+		checkbox = (CheckBox) findViewById(R.id.pause_on_headphones_disconnect);
+		checkbox.setOnCheckedChangeListener(mOnPauseOnHeadphonesDisconnectChangeListener);
+		if (Preferences.getBoolean(this, Preferences.KEY_PAUSE_ON_HEADPHONES_DISCONNECT, false))
 			checkbox.setChecked(true);
 
 		super.onCreate(savedInstanceState);
