@@ -602,8 +602,12 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 		FfmpegOpenInput(stream.io, input.GetURI(), nullptr);
 
 	const auto *input_format = format_context->iformat;
-	FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
-		 input_format->name, input_format->long_name);
+	if (input_format->long_name == nullptr)
+		FmtDebug(ffmpeg_domain, "detected input format '{}'",
+			 input_format->name);
+	else
+		FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
+			 input_format->name, input_format->long_name);
 
 	FfmpegDecode(client, &input, *format_context);
 }
@@ -668,8 +672,12 @@ ffmpeg_uri_decode(DecoderClient &client, const char *uri)
 		FfmpegOpenInput(nullptr, uri, nullptr);
 
 	const auto *input_format = format_context->iformat;
-	FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
-		 input_format->name, input_format->long_name);
+	if (input_format->long_name == nullptr)
+		FmtDebug(ffmpeg_domain, "detected input format '{}'",
+			 input_format->name);
+	else
+		FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
+			 input_format->name, input_format->long_name);
 
 	FfmpegDecode(client, nullptr, *format_context);
 }
