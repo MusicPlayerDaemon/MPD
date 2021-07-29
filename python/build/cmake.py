@@ -2,6 +2,15 @@ import subprocess
 
 from build.project import Project
 
+def __cmake_compiler_args(language, compiler):
+    s = compiler.split(' ', 1)
+    result = []
+    if len(s) == 2:
+        result.append(f'-DCMAKE_{language}_COMPILER_LAUNCHER={s[0]}')
+        compiler = s[1]
+    result.append(f'-DCMAKE_{language}_COMPILER={compiler}')
+    return result
+
 def configure(toolchain, src, build, args=()):
     cross_args = []
 
@@ -15,10 +24,10 @@ def configure(toolchain, src, build, args=()):
 
         '-DCMAKE_INSTALL_PREFIX=' + toolchain.install_prefix,
         '-DCMAKE_BUILD_TYPE=release',
-
-        '-DCMAKE_C_COMPILER=' + toolchain.cc,
-        '-DCMAKE_CXX_COMPILER=' + toolchain.cxx,
-
+    ] + \
+    __cmake_compiler_args('C', toolchain.cc) + \
+    __cmake_compiler_args('CXX', toolchain.cxx) + \
+    [
         '-DCMAKE_C_FLAGS=' + toolchain.cflags + ' ' + toolchain.cppflags,
         '-DCMAKE_CXX_FLAGS=' + toolchain.cxxflags + ' ' + toolchain.cppflags,
 
