@@ -41,7 +41,7 @@
 #endif
 
 bool
-BufferedOutputStream::AppendToBuffer(const void *data, size_t size) noexcept
+BufferedOutputStream::AppendToBuffer(const void *data, std::size_t size) noexcept
 {
 	auto r = buffer.Write();
 	if (r.size < size)
@@ -53,7 +53,7 @@ BufferedOutputStream::AppendToBuffer(const void *data, size_t size) noexcept
 }
 
 void
-BufferedOutputStream::Write(const void *data, size_t size)
+BufferedOutputStream::Write(const void *data, std::size_t size)
 {
 	/* try to append to the current buffer */
 	if (AppendToBuffer(data, size))
@@ -88,7 +88,7 @@ BufferedOutputStream::Format(const char *fmt, ...)
 	/* format into the buffer */
 	std::va_list ap;
 	va_start(ap, fmt);
-	size_t size = vsnprintf(r.data, r.size, fmt, ap);
+	std::size_t size = vsnprintf(r.data, r.size, fmt, ap);
 	va_end(ap);
 
 	if (gcc_unlikely(size >= r.size)) {
@@ -127,7 +127,8 @@ BufferedOutputStream::Write(const wchar_t *p)
 }
 
 void
-BufferedOutputStream::WriteWideToUTF8(const wchar_t *src, size_t src_length)
+BufferedOutputStream::WriteWideToUTF8(const wchar_t *src,
+				      std::size_t src_length)
 {
 	if (src_length == 0)
 		return;

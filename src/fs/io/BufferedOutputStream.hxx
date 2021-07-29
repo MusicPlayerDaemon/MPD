@@ -56,7 +56,7 @@ public:
 	explicit BufferedOutputStream(OutputStream &_os) noexcept
 		:os(_os), buffer(32768) {}
 
-	void Write(const void *data, size_t size);
+	void Write(const void *data, std::size_t size);
 
 	void Write(const char &ch) {
 		Write(&ch, sizeof(ch));
@@ -81,10 +81,10 @@ public:
 	void Flush();
 
 private:
-	bool AppendToBuffer(const void *data, size_t size) noexcept;
+	bool AppendToBuffer(const void *data, std::size_t size) noexcept;
 
 #ifdef _UNICODE
-	void WriteWideToUTF8(const wchar_t *p, size_t length);
+	void WriteWideToUTF8(const wchar_t *p, std::size_t length);
 #endif
 };
 
