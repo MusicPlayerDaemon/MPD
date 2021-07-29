@@ -58,8 +58,13 @@ public:
 
 	void Write(const void *data, std::size_t size);
 
+	template<typename T>
+	void WriteT(const T &value) {
+		Write(&value, sizeof(value));
+	}
+
 	void Write(const char &ch) {
-		Write(&ch, sizeof(ch));
+		WriteT(ch);
 	}
 
 	void Write(const char *p);
