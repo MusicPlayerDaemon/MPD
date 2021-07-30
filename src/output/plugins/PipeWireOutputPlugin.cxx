@@ -56,6 +56,7 @@ class PipeWireOutput final : AudioOutput {
 
 	const uint32_t target_id;
 
+	bool disconnected;
 	bool interrupted;
 
 	explicit PipeWireOutput(const ConfigBlock &block);
@@ -71,11 +72,29 @@ public:
 	static constexpr struct pw_stream_events MakeStreamEvents() noexcept {
 		struct pw_stream_events events{};
 		events.version = PW_VERSION_STREAM_EVENTS;
+		events.state_changed = StateChanged;
 		events.process = Process;
 		return events;
 	}
 
 private:
+	void StateChanged(enum pw_stream_state state,
+			  [[maybe_unused]] const char *error) noexcept {
+		const bool was_disconnected = disconnected;
+		disconnected = state == PW_STREAM_STATE_ERROR ||
+			state == PW_STREAM_STATE_UNCONNECTED;
+		if (!was_disconnected && disconnected)
+			pw_thread_loop_signal(thread_loop, false);
+	}
+
+	static void StateChanged(void *data,
+				 [[maybe_unused]] enum pw_stream_state old,
+				 enum pw_stream_state state,
+				 const char *error) noexcept {
+		auto &o = *(PipeWireOutput *)data;
+		o.StateChanged(state, error);
+	}
+
 	void Process() noexcept;
 
 	static void Process(void *data) noexcept {
@@ -186,6 +205,8 @@ ToPipeWireAudioFormat(AudioFormat &audio_format) noexcept
 void
 PipeWireOutput::Open(AudioFormat &audio_format)
 {
+	disconnected = false;
+
 	auto props = pw_properties_new(PW_KEY_MEDIA_TYPE, "Audio",
 				       PW_KEY_MEDIA_CATEGORY, "Playback",
 				       PW_KEY_MEDIA_ROLE, "Music",
@@ -277,6 +298,9 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
 	while (true) {
+		if (disconnected)
+			throw std::runtime_error("Disconnected from PipeWire");
+
 		std::size_t bytes_written =
 			ring_buffer->push((const std::byte *)chunk, size);
 		if (bytes_written > 0)
