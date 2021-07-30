@@ -279,7 +279,7 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 	}
 
 	if (dc.in_audio_format != dc.out_audio_format) {
-		FmtDebug(decoder_domain, "converting to %s",
+		FmtDebug(decoder_domain, "converting to {}",
 			 dc.out_audio_format);
 
 		try {
