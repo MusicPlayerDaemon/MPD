@@ -44,7 +44,7 @@
 class PipeWireOutput final : AudioOutput {
 	const char *const name;
 
-	struct pw_thread_loop *thread_loop;
+	struct pw_thread_loop *thread_loop = nullptr;
 	struct pw_stream *stream;
 
 	std::byte buffer[1024];
@@ -56,7 +56,7 @@ class PipeWireOutput final : AudioOutput {
 
 	const uint32_t target_id;
 
-	volatile bool interrupted;
+	bool interrupted;
 
 	explicit PipeWireOutput(const ConfigBlock &block);
 
@@ -91,7 +91,12 @@ private:
 	void Close() noexcept override;
 
 	void Interrupt() noexcept override {
+		if (thread_loop == nullptr)
+			return;
+
+		const PipeWire::ThreadLoopLock lock(thread_loop);
 		interrupted = true;
+		pw_thread_loop_signal(thread_loop, false);
 	}
 
 	size_t Play(const void *chunk, size_t size) override;
@@ -125,6 +130,7 @@ void
 PipeWireOutput::Disable() noexcept
 {
 	pw_thread_loop_destroy(thread_loop);
+	thread_loop = nullptr;
 }
 
 static constexpr enum spa_audio_format
@@ -261,11 +267,15 @@ PipeWireOutput::Process() noexcept
 	buf->datas[0].chunk->size = nbytes;
 
 	pw_stream_queue_buffer(stream, b);
+
+	pw_thread_loop_signal(thread_loop, false);
 }
 
 size_t
 PipeWireOutput::Play(const void *chunk, size_t size)
 {
+	const PipeWire::ThreadLoopLock lock(thread_loop);
+
 	while (true) {
 		std::size_t bytes_written =
 			ring_buffer->push((const std::byte *)chunk, size);
@@ -275,7 +285,7 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 		if (interrupted)
 			throw AudioOutputInterrupted{};
 
-		usleep(1000); // TODO
+		pw_thread_loop_wait(thread_loop);
 	}
 }
 
