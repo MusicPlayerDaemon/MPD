@@ -58,6 +58,7 @@ class PipeWireOutput final : AudioOutput {
 
 	bool disconnected;
 	bool interrupted;
+	bool drained;
 
 	explicit PipeWireOutput(const ConfigBlock &block);
 
@@ -74,6 +75,7 @@ public:
 		events.version = PW_VERSION_STREAM_EVENTS;
 		events.state_changed = StateChanged;
 		events.process = Process;
+		events.drained = Drained;
 		return events;
 	}
 
@@ -107,6 +109,16 @@ private:
 		o.Process();
 	}
 
+	void Drained() noexcept {
+		drained = true;
+		pw_thread_loop_signal(thread_loop, false);
+	}
+
+	static void Drained(void *data) noexcept {
+		auto &o = *(PipeWireOutput *)data;
+		o.Drained();
+	}
+
 	/* virtual methods from class AudioOutput */
 	void Enable() override;
 	void Disable() noexcept override;
@@ -125,8 +137,8 @@ private:
 
 	size_t Play(const void *chunk, size_t size) override;
 
-	// TODO: void Drain() override;
-	 void Cancel() noexcept override;
+	void Drain() override;
+	void Cancel() noexcept override;
 	// TODO: bool Pause() noexcept override;
 };
 
@@ -211,6 +223,7 @@ void
 PipeWireOutput::Open(AudioFormat &audio_format)
 {
 	disconnected = false;
+	drained = true;
 
 	auto props = pw_properties_new(PW_KEY_MEDIA_TYPE, "Audio",
 				       PW_KEY_MEDIA_CATEGORY, "Playback",
@@ -307,12 +320,25 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 
 		std::size_t bytes_written =
 			ring_buffer->push((const std::byte *)chunk, size);
-		if (bytes_written > 0)
+		if (bytes_written > 0) {
+			drained = false;
 			return bytes_written;
+		}
 
 		if (interrupted)
 			throw AudioOutputInterrupted{};
 
+		pw_thread_loop_wait(thread_loop);
+	}
+}
+
+void
+PipeWireOutput::Drain()
+{
+	const PipeWire::ThreadLoopLock lock(thread_loop);
+
+	while (!drained && !interrupted) {
+		CheckThrowError();
 		pw_thread_loop_wait(thread_loop);
 	}
 }
