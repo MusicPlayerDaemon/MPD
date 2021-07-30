@@ -53,7 +53,7 @@ public:
 			      moved-from instance also owned the Tag
 			      which its LightSong::tag field refers
 			      to */
-			   OwnsTag() ? tag_buffer : src.tag),
+			   src.OwnsTag() ? tag_buffer : src.tag),
 		 tag_buffer(std::move(src.tag_buffer)) {}
 
 	ExportedSong &operator=(ExportedSong &&) = delete;
