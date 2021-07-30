@@ -213,8 +213,72 @@ ToPipeWireAudioFormat(AudioFormat &audio_format) noexcept
 	raw.rate = audio_format.sample_rate;
 	raw.channels = audio_format.channels;
 
-	raw.flags |= SPA_AUDIO_FLAG_UNPOSITIONED; // TODO
-	// TODO raw.position[]
+	/* MPD uses the FLAC channel assignment
+	   (https://xiph.org/flac/format.html) */
+	switch (audio_format.channels) {
+	case 1:
+		raw.position[0] = SPA_AUDIO_CHANNEL_MONO;
+		break;
+
+	case 2:
+		raw.position[0] = SPA_AUDIO_CHANNEL_FL;
+		raw.position[1] = SPA_AUDIO_CHANNEL_FR;
+		break;
+
+	case 3:
+		raw.position[0] = SPA_AUDIO_CHANNEL_FL;
+		raw.position[1] = SPA_AUDIO_CHANNEL_FR;
+		raw.position[2] = SPA_AUDIO_CHANNEL_FC;
+		break;
+
+	case 4:
+		raw.position[0] = SPA_AUDIO_CHANNEL_FL;
+		raw.position[1] = SPA_AUDIO_CHANNEL_FR;
+		raw.position[2] = SPA_AUDIO_CHANNEL_RL;
+		raw.position[3] = SPA_AUDIO_CHANNEL_RR;
+		break;
+
+	case 5:
+		raw.position[0] = SPA_AUDIO_CHANNEL_FL;
+		raw.position[1] = SPA_AUDIO_CHANNEL_FR;
+		raw.position[2] = SPA_AUDIO_CHANNEL_FC;
+		raw.position[3] = SPA_AUDIO_CHANNEL_RL;
+		raw.position[4] = SPA_AUDIO_CHANNEL_RR;
+		break;
+
+	case 6:
+		raw.position[0] = SPA_AUDIO_CHANNEL_FL;
+		raw.position[1] = SPA_AUDIO_CHANNEL_FR;
+		raw.position[2] = SPA_AUDIO_CHANNEL_FC;
+		raw.position[3] = SPA_AUDIO_CHANNEL_LFE;
+		raw.position[4] = SPA_AUDIO_CHANNEL_RL;
+		raw.position[5] = SPA_AUDIO_CHANNEL_RR;
+		break;
+
+	case 7:
+		raw.position[0] = SPA_AUDIO_CHANNEL_FL;
+		raw.position[1] = SPA_AUDIO_CHANNEL_FR;
+		raw.position[2] = SPA_AUDIO_CHANNEL_FC;
+		raw.position[3] = SPA_AUDIO_CHANNEL_LFE;
+		raw.position[4] = SPA_AUDIO_CHANNEL_RC;
+		raw.position[5] = SPA_AUDIO_CHANNEL_SL;
+		raw.position[6] = SPA_AUDIO_CHANNEL_SR;
+		break;
+
+	case 8:
+		raw.position[0] = SPA_AUDIO_CHANNEL_FL;
+		raw.position[1] = SPA_AUDIO_CHANNEL_FR;
+		raw.position[2] = SPA_AUDIO_CHANNEL_FC;
+		raw.position[3] = SPA_AUDIO_CHANNEL_LFE;
+		raw.position[4] = SPA_AUDIO_CHANNEL_RL;
+		raw.position[5] = SPA_AUDIO_CHANNEL_RR;
+		raw.position[6] = SPA_AUDIO_CHANNEL_SL;
+		raw.position[7] = SPA_AUDIO_CHANNEL_SR;
+		break;
+
+	default:
+		raw.flags |= SPA_AUDIO_FLAG_UNPOSITIONED;
+	}
 
 	return raw;
 }
