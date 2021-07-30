@@ -78,6 +78,11 @@ public:
 	}
 
 private:
+	void CheckThrowError() {
+		if (disconnected)
+			throw std::runtime_error("Disconnected from PipeWire");
+	}
+
 	void StateChanged(enum pw_stream_state state,
 			  [[maybe_unused]] const char *error) noexcept {
 		const bool was_disconnected = disconnected;
@@ -298,8 +303,7 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
 	while (true) {
-		if (disconnected)
-			throw std::runtime_error("Disconnected from PipeWire");
+		CheckThrowError();
 
 		std::size_t bytes_written =
 			ring_buffer->push((const std::byte *)chunk, size);
