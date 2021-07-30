@@ -18,7 +18,7 @@
  */
 
 #include "PipeWireOutputPlugin.hxx"
-//#include "lib/pipewire/MainLoop.hxx"
+#include "lib/pipewire/ThreadLoop.hxx"
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
 
@@ -212,6 +212,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	params[0] = spa_format_audio_raw_build(&pod_builder,
 					       SPA_PARAM_EnumFormat, &raw);
 
+	const PipeWire::ThreadLoopLock lock(thread_loop);
 	pw_stream_connect(stream,
 			  PW_DIRECTION_OUTPUT,
 			  target_id,
@@ -224,7 +225,10 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 void
 PipeWireOutput::Close() noexcept
 {
-	pw_stream_destroy(stream);
+	{
+		const PipeWire::ThreadLoopLock lock(thread_loop);
+		pw_stream_destroy(stream);
+	}
 
 	// TODO synchronize with Process()?
 	delete ring_buffer;
