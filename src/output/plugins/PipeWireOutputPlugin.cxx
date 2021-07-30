@@ -230,7 +230,6 @@ PipeWireOutput::Close() noexcept
 		pw_stream_destroy(stream);
 	}
 
-	// TODO synchronize with Process()?
 	delete ring_buffer;
 }
 
