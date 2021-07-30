@@ -21,7 +21,6 @@
 //#include "lib/pipewire/MainLoop.hxx"
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
-#include "thread/Thread.hxx"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -43,8 +42,9 @@
 #include <stdexcept>
 
 class PipeWireOutput final : AudioOutput {
-	Thread thread{BIND_THIS_METHOD(RunThread)};
-	struct pw_main_loop *loop;
+	const char *const name;
+
+	struct pw_thread_loop *thread_loop;
 	struct pw_stream *stream;
 
 	std::byte buffer[1024];
@@ -83,10 +83,6 @@ private:
 		o.Process();
 	}
 
-	void RunThread() noexcept {
-		pw_main_loop_run(loop);
-	}
-
 	/* virtual methods from class AudioOutput */
 	void Enable() override;
 	void Disable() noexcept override;
@@ -110,6 +106,7 @@ static constexpr auto stream_events = PipeWireOutput::MakeStreamEvents();
 inline
 PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE),
+	 name(block.GetBlockValue("name", "pipewire")),
 	 target_id(block.GetBlockValue("target", unsigned(PW_ID_ANY)))
 {
 }
@@ -117,25 +114,17 @@ PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 void
 PipeWireOutput::Enable()
 {
-	loop = pw_main_loop_new(nullptr);
-	if (loop == nullptr)
-		throw std::runtime_error("pw_main_loop_new() failed");
+	thread_loop = pw_thread_loop_new(name, nullptr);
+	if (thread_loop == nullptr)
+		throw std::runtime_error("pw_thread_loop_new() failed");
 
-	try {
-		thread.Start();
-	} catch (...) {
-		pw_main_loop_destroy(loop);
-		throw;
-	}
+	pw_thread_loop_start(thread_loop);
 }
 
 void
 PipeWireOutput::Disable() noexcept
 {
-	pw_main_loop_quit(loop);
-	thread.Join();
-
-	pw_main_loop_destroy(loop);
+	pw_thread_loop_destroy(thread_loop);
 }
 
 static constexpr enum spa_audio_format
@@ -198,7 +187,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 				       PW_KEY_NODE_NAME, "mpd",
 				       nullptr);
 
-	stream = pw_stream_new_simple(pw_main_loop_get_loop(loop),
+	stream = pw_stream_new_simple(pw_thread_loop_get_loop(thread_loop),
 				      "mpd",
 				      props,
 				      &stream_events,
