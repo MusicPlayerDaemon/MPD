@@ -121,7 +121,7 @@ private:
 	size_t Play(const void *chunk, size_t size) override;
 
 	// TODO: void Drain() override;
-	// TODO: void Cancel() noexcept override;
+	 void Cancel() noexcept override;
 	// TODO: bool Pause() noexcept override;
 };
 
@@ -311,6 +311,15 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 
 		pw_thread_loop_wait(thread_loop);
 	}
+}
+
+void
+PipeWireOutput::Cancel() noexcept
+{
+	const PipeWire::ThreadLoopLock lock(thread_loop);
+	interrupted = false;
+
+	// TODO implement
 }
 
 const struct AudioOutputPlugin pipewire_output_plugin = {
