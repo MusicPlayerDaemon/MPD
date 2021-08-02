@@ -3,6 +3,8 @@ ver 0.22.10 (not yet released)
   - support "albumart" for virtual tracks in CUE sheets
 * database
   - simple: fix crash bug
+* input
+  - curl: fix crash bug after stream with Icy metadata was closed by peer
 
 ver 0.22.9 (2021/06/23)
 * database
