@@ -58,6 +58,7 @@ class PipeWireOutput final : AudioOutput {
 
 	bool disconnected;
 	bool interrupted;
+	bool paused;
 	bool drained;
 
 	explicit PipeWireOutput(const ConfigBlock &block);
@@ -139,7 +140,7 @@ private:
 
 	void Drain() override;
 	void Cancel() noexcept override;
-	// TODO: bool Pause() noexcept override;
+	bool Pause() noexcept override;
 };
 
 static constexpr auto stream_events = PipeWireOutput::MakeStreamEvents();
@@ -287,6 +288,7 @@ void
 PipeWireOutput::Open(AudioFormat &audio_format)
 {
 	disconnected = false;
+	paused = false;
 	drained = true;
 
 	auto props = pw_properties_new(PW_KEY_MEDIA_TYPE, "Audio",
@@ -379,6 +381,9 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
+	if (paused)
+		pw_stream_set_active(stream, true);
+
 	while (true) {
 		CheckThrowError();
 
@@ -414,6 +419,18 @@ PipeWireOutput::Cancel() noexcept
 	interrupted = false;
 
 	ring_buffer->reset();
+}
+
+bool
+PipeWireOutput::Pause() noexcept
+{
+	const PipeWire::ThreadLoopLock lock(thread_loop);
+	interrupted = false;
+
+	paused = true;
+	pw_stream_set_active(stream, false);
+
+	return true;
 }
 
 const struct AudioOutputPlugin pipewire_output_plugin = {
