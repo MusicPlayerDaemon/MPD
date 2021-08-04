@@ -413,7 +413,7 @@ PipeWireOutput::Cancel() noexcept
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 	interrupted = false;
 
-	// TODO implement
+	ring_buffer->reset();
 }
 
 const struct AudioOutputPlugin pipewire_output_plugin = {
