@@ -21,6 +21,7 @@
 #include "lib/pipewire/ThreadLoop.hxx"
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
+#include "mixer/plugins/PipeWireMixerPlugin.hxx"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -32,6 +33,7 @@
 
 #include <pipewire/pipewire.h>
 #include <spa/param/audio/format-utils.h>
+#include <spa/param/props.h>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -56,7 +58,18 @@ class PipeWireOutput final : AudioOutput {
 
 	const uint32_t target_id;
 
+	float volume = 1.0;
+
 	bool disconnected;
+
+	/**
+	 * Shall the previously known volume be restored as soon as
+	 * PW_STREAM_STATE_STREAMING is reached?  This needs to be
+	 * done each time after the pw_stream got created, thus this
+	 * flag gets set by Open().
+	 */
+	bool restore_volume;
+
 	bool interrupted;
 	bool paused;
 	bool drained;
@@ -79,6 +92,8 @@ public:
 		events.drained = Drained;
 		return events;
 	}
+
+	void SetVolume(float volume);
 
 private:
 	void CheckThrowError() {
@@ -145,6 +160,20 @@ PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 	 name(block.GetBlockValue("name", "pipewire")),
 	 target_id(block.GetBlockValue("target", unsigned(PW_ID_ANY)))
 {
+}
+
+void
+PipeWireOutput::SetVolume(float _volume)
+{
+	const PipeWire::ThreadLoopLock lock(thread_loop);
+
+	if (stream != nullptr && !restore_volume &&
+	    pw_stream_set_control(stream,
+				  SPA_PROP_volume, 1, &_volume,
+				  0) != 0)
+		throw std::runtime_error("pw_stream_set_control() failed");
+
+	volume = _volume;
 }
 
 void
@@ -282,6 +311,7 @@ void
 PipeWireOutput::Open(AudioFormat &audio_format)
 {
 	disconnected = false;
+	restore_volume = true;
 	paused = false;
 	drained = true;
 
@@ -291,6 +321,8 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 				       PW_KEY_APP_NAME, "Music Player Daemon",
 				       PW_KEY_NODE_NAME, "mpd",
 				       nullptr);
+
+	const PipeWire::ThreadLoopLock lock(thread_loop);
 
 	stream = pw_stream_new_simple(pw_thread_loop_get_loop(thread_loop),
 				      "mpd",
@@ -317,7 +349,6 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	params[0] = spa_format_audio_raw_build(&pod_builder,
 					       SPA_PARAM_EnumFormat, &raw);
 
-	const PipeWire::ThreadLoopLock lock(thread_loop);
 	pw_stream_connect(stream,
 			  PW_DIRECTION_OUTPUT,
 			  target_id,
@@ -333,6 +364,7 @@ PipeWireOutput::Close() noexcept
 	{
 		const PipeWire::ThreadLoopLock lock(thread_loop);
 		pw_stream_destroy(stream);
+		stream = nullptr;
 	}
 
 	delete ring_buffer;
@@ -347,6 +379,15 @@ PipeWireOutput::StateChanged(enum pw_stream_state state,
 		state == PW_STREAM_STATE_UNCONNECTED;
 	if (!was_disconnected && disconnected)
 		pw_thread_loop_signal(thread_loop, false);
+
+	if (state == PW_STREAM_STATE_STREAMING && restore_volume) {
+		/* restore the last known volume after creating a new
+		   pw_stream */
+		restore_volume = false;
+		pw_stream_set_control(stream,
+				      SPA_PROP_volume, 1, &volume,
+				      0);
+	}
 }
 
 inline void
@@ -442,5 +483,11 @@ const struct AudioOutputPlugin pipewire_output_plugin = {
 	"pipewire",
 	nullptr,
 	&PipeWireOutput::Create,
-	nullptr,
+	&pipewire_mixer_plugin,
 };
+
+void
+pipewire_output_set_volume(PipeWireOutput &output, float volume)
+{
+	output.SetVolume(volume);
+}

@@ -22,6 +22,10 @@ if is_darwin
   mixer_plugins_sources += 'OSXMixerPlugin.cxx'
 endif
 
+if pipewire_dep.found()
+  mixer_plugins_sources += 'PipeWireMixerPlugin.cxx'
+endif
+
 if pulse_dep.found()
   mixer_plugins_sources += 'PulseMixerPlugin.cxx'
 endif

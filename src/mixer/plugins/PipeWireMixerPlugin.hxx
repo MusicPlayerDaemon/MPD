@@ -17,14 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PIPEWIRE_OUTPUT_PLUGIN_HXX
-#define MPD_PIPEWIRE_OUTPUT_PLUGIN_HXX
+#ifndef MPD_PIPEWIRE_MIXER_PLUGIN_HXX
+#define MPD_PIPEWIRE_MIXER_PLUGIN_HXX
 
-class PipeWireOutput;
+struct MixerPlugin;
+class PipeWireMixer;
 
-extern const struct AudioOutputPlugin pipewire_output_plugin;
+extern const MixerPlugin pipewire_mixer_plugin;
 
 void
-pipewire_output_set_volume(PipeWireOutput &output, float volume);
+pipewire_mixer_on_change(PipeWireMixer &pm, float new_volume) noexcept;
 
 #endif
