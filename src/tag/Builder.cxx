@@ -36,10 +36,12 @@ TagBuilder::TagBuilder(const Tag &other) noexcept
 {
 	items.reserve(other.num_items);
 
-	const std::lock_guard<Mutex> protect(tag_pool_lock);
-
-	for (unsigned i = 0, n = other.num_items; i != n; ++i)
-		items.push_back(tag_pool_dup_item(other.items[i]));
+	const std::size_t n = other.num_items;
+	if (n > 0) {
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		for (std::size_t i = 0; i != n; ++i)
+			items.push_back(tag_pool_dup_item(other.items[i]));
+	}
 }
 
 TagBuilder::TagBuilder(Tag &&other) noexcept
@@ -65,12 +67,15 @@ TagBuilder::operator=(const TagBuilder &other) noexcept
 	has_playlist = other.has_playlist;
 
 	RemoveAll();
-	items = other.items;
 
-	/* increment the tag pool refcounters */
-	const std::lock_guard<Mutex> protect(tag_pool_lock);
-	for (auto &i : items)
-		i = tag_pool_dup_item(i);
+	if (!other.items.empty()) {
+		items = other.items;
+
+		/* increment the tag pool refcounters */
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		for (auto &i : items)
+			i = tag_pool_dup_item(i);
+	}
 
 	return *this;
 }
@@ -181,11 +186,14 @@ TagBuilder::Complement(const Tag &other) noexcept
 
 	items.reserve(items.size() + other.num_items);
 
-	const std::lock_guard<Mutex> protect(tag_pool_lock);
-	for (unsigned i = 0, n = other.num_items; i != n; ++i) {
-		TagItem *item = other.items[i];
-		if (!present[item->type])
-			items.push_back(tag_pool_dup_item(item));
+	const std::size_t n = other.num_items;
+	if (n > 0) {
+		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		for (std::size_t i = 0; i != n; ++i) {
+			TagItem *item = other.items[i];
+			if (!present[item->type])
+				items.push_back(tag_pool_dup_item(item));
+		}
 	}
 }
 
@@ -245,6 +253,11 @@ TagBuilder::AddEmptyItem(TagType type) noexcept
 void
 TagBuilder::RemoveAll() noexcept
 {
+	if (items.empty())
+		/* don't acquire the tag_pool_lock if we're not going
+		   to call tag_pool_put_item() anyway */
+		return;
+
 	{
 		const std::lock_guard<Mutex> protect(tag_pool_lock);
 		for (auto i : items)
