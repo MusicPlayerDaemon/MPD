@@ -274,6 +274,13 @@ struct PathTraitsUTF8 {
 		return IsSeparator(*p);
 	}
 
+	/**
+	 * Is this any kind of absolute URI? (Unlike IsAbsolute(),
+	 * this includes URIs/URLs with a scheme)
+	 */
+	[[gnu::pure]] [[gnu::nonnull]]
+	static bool IsAbsoluteOrHasScheme(const_pointer p) noexcept;
+
 	gcc_pure gcc_nonnull_all
 	static bool IsSpecialFilename(const_pointer name) noexcept {
 		return (name[0] == '.' && name[1] == 0) ||
