@@ -9,6 +9,7 @@ ver 0.22.10 (not yet released)
 * tags
   - fix crash caused by bug in TagBuilder and a few potential reference leaks
 * output
+  - httpd: fix missing tag after seeking into a new song
   - oss: fix channel order of multi-channel files
 
 ver 0.22.9 (2021/06/23)
