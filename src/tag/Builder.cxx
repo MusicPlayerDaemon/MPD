@@ -78,11 +78,14 @@ TagBuilder::operator=(const TagBuilder &other) noexcept
 TagBuilder &
 TagBuilder::operator=(TagBuilder &&other) noexcept
 {
+	using std::swap;
+
 	duration = other.duration;
 	has_playlist = other.has_playlist;
 
-	RemoveAll();
-	items = std::move(other.items);
+	/* swap the two TagItem lists so we don't need to touch the
+	   tag pool just yet */
+	swap(items, other.items);
 
 	return *this;
 }
