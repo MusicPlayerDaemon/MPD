@@ -30,6 +30,7 @@
 #include "playlist/SongEnumerator.hxx"
 #include "storage/FileInfo.hxx"
 #include "storage/StorageInterface.hxx"
+#include "fs/Traits.hxx"
 #include "util/StringFormat.hxx"
 #include "Log.hxx"
 
@@ -70,7 +71,14 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 
 			auto db_song = std::make_unique<Song>(std::move(*song),
 							      *directory);
-			db_song->target = "../" + db_song->filename;
+			db_song->target =
+				PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename.c_str())
+				? db_song->filename
+				/* prepend "../" to relative paths to
+				   go from the virtual directory
+				   (DEVICE_PLAYLIST) to the containing
+				   directory */
+				: "../" + db_song->filename;
 			db_song->filename = StringFormat<64>("track%04u",
 							     ++track);
 

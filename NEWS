@@ -3,6 +3,7 @@ ver 0.22.10 (not yet released)
   - support "albumart" for virtual tracks in CUE sheets
 * database
   - simple: fix crash bug
+  - simple: fix absolute paths in CUE "as_directory" entries
 * input
   - curl: fix crash bug after stream with Icy metadata was closed by peer
   - tidal: remove defunct unmaintained plugin
