@@ -20,11 +20,13 @@
 #include "OssOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
+#include "pcm/Export.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "system/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/Manual.hxx"
 #include "Log.hxx"
 
 #include <cassert>
@@ -53,15 +55,8 @@
 #undef AFMT_S24_NE
 #endif
 
-#ifdef AFMT_S24_PACKED
-#include "pcm/Export.hxx"
-#include "util/Manual.hxx"
-#endif
-
 class OssOutput final : AudioOutput {
-#ifdef AFMT_S24_PACKED
 	Manual<PcmExport> pcm_export;
-#endif
 
 	FileDescriptor fd = FileDescriptor::Undefined();
 	const char *device;
@@ -78,11 +73,7 @@ class OssOutput final : AudioOutput {
 	 */
 	int oss_format;
 
-#ifdef AFMT_S24_PACKED
 	static constexpr unsigned oss_flags = FLAG_ENABLE_DISABLE;
-#else
-	static constexpr unsigned oss_flags = 0;
-#endif
 
 public:
 	explicit OssOutput(const char *_device=nullptr)
@@ -92,7 +83,6 @@ public:
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
-#ifdef AFMT_S24_PACKED
 	void Enable() override {
 		pcm_export.Construct();
 	}
@@ -100,7 +90,6 @@ public:
 	void Disable() noexcept override {
 		pcm_export.Destruct();
 	}
-#endif
 
 	void Open(AudioFormat &audio_format) override;
 
@@ -428,11 +417,8 @@ sample_format_from_oss(int format) noexcept
 static bool
 oss_probe_sample_format(FileDescriptor fd, SampleFormat sample_format,
 			SampleFormat *sample_format_r,
-			int *oss_format_r
-#ifdef AFMT_S24_PACKED
-			, PcmExport &pcm_export
-#endif
-			)
+			int *oss_format_r,
+			PcmExport &pcm_export)
 {
 	int oss_format = sample_format_to_oss(sample_format);
 	if (oss_format == AFMT_QUERY)
@@ -464,15 +450,15 @@ oss_probe_sample_format(FileDescriptor fd, SampleFormat sample_format,
 	*sample_format_r = sample_format;
 	*oss_format_r = oss_format;
 
-#ifdef AFMT_S24_PACKED
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
+#ifdef AFMT_S24_PACKED
 	params.pack24 = oss_format == AFMT_S24_PACKED;
 	params.reverse_endian = oss_format == AFMT_S24_PACKED &&
 		!IsLittleEndian();
+#endif
 
 	pcm_export.Open(sample_format, 0, params);
-#endif
 
 	return true;
 }
@@ -483,19 +469,13 @@ oss_probe_sample_format(FileDescriptor fd, SampleFormat sample_format,
  */
 static void
 oss_setup_sample_format(FileDescriptor fd, AudioFormat &audio_format,
-			int *oss_format_r
-#ifdef AFMT_S24_PACKED
-			, PcmExport &pcm_export
-#endif
-			)
+			int *oss_format_r,
+			PcmExport &pcm_export)
 {
 	SampleFormat mpd_format;
 	if (oss_probe_sample_format(fd, audio_format.format,
-				    &mpd_format, oss_format_r
-#ifdef AFMT_S24_PACKED
-				    , pcm_export
-#endif
-				    )) {
+				    &mpd_format, oss_format_r,
+				    pcm_export)) {
 		audio_format.format = mpd_format;
 		return;
 	}
@@ -518,11 +498,8 @@ oss_setup_sample_format(FileDescriptor fd, AudioFormat &audio_format,
 			continue;
 
 		if (oss_probe_sample_format(fd, mpd_format,
-					    &mpd_format, oss_format_r
-#ifdef AFMT_S24_PACKED
-					    , pcm_export
-#endif
-					    )) {
+					    &mpd_format, oss_format_r,
+					    pcm_export)) {
 			audio_format.format = mpd_format;
 			return;
 		}
@@ -536,11 +513,7 @@ OssOutput::Setup(AudioFormat &_audio_format)
 {
 	oss_setup_channels(fd, _audio_format);
 	oss_setup_sample_rate(fd, _audio_format);
-	oss_setup_sample_format(fd, _audio_format, &oss_format
-#ifdef AFMT_S24_PACKED
-				, pcm_export
-#endif
-				);
+	oss_setup_sample_format(fd, _audio_format, &oss_format, pcm_export);
 }
 
 /**
@@ -595,9 +568,7 @@ OssOutput::Cancel() noexcept
 		DoClose();
 	}
 
-#ifdef AFMT_S24_PACKED
 	pcm_export->Reset();
-#endif
 }
 
 size_t
@@ -611,23 +582,17 @@ OssOutput::Play(const void *chunk, size_t size)
 	if (!fd.IsDefined())
 		Reopen();
 
-#ifdef AFMT_S24_PACKED
 	const auto e = pcm_export->Export({chunk, size});
 	if (e.empty())
 		return size;
 
 	chunk = e.data;
 	size = e.size;
-#endif
 
 	while (true) {
 		ret = fd.Write(chunk, size);
-		if (ret > 0) {
-#ifdef AFMT_S24_PACKED
-			ret = pcm_export->CalcInputSize(ret);
-#endif
-			return ret;
-		}
+		if (ret > 0)
+			return pcm_export->CalcInputSize(ret);
 
 		if (ret < 0 && errno != EINTR)
 			throw FormatErrno("Write error on %s", device);
