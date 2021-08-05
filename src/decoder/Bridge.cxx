@@ -474,8 +474,8 @@ DecoderBridge::SubmitData(InputStream *is,
 	if (UpdateStreamTag(is)) {
 		if (decoder_tag != nullptr)
 			/* merge with tag from decoder plugin */
-			cmd = DoSendTag(*Tag::Merge(*decoder_tag,
-						    *stream_tag));
+			cmd = DoSendTag(Tag::Merge(*decoder_tag,
+						   *stream_tag));
 		else
 			/* send only the stream tag */
 			cmd = DoSendTag(*stream_tag);
@@ -598,7 +598,7 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag) noexcept
 
 	if (stream_tag != nullptr)
 		/* merge with tag from input stream */
-		cmd = DoSendTag(*Tag::Merge(*stream_tag, *decoder_tag));
+		cmd = DoSendTag(Tag::Merge(*stream_tag, *decoder_tag));
 	else
 		/* send only the decoder tag */
 		cmd = DoSendTag(*decoder_tag);
