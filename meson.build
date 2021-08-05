@@ -234,7 +234,7 @@ if boost_dep.version() == '1.67'
   warning('Your Boost version 1.67 is known to be buggy, and the MPD build will fail. Please upgrade to Boost 1.68 or later.')
 endif
 
-fmt_dep = dependency('fmt')
+fmt_dep = dependency('fmt', fallback: ['fmt', 'fmt_dep'])
 
 log = static_library(
   'log',
