@@ -118,13 +118,17 @@ public:
 		return new Directory(std::string(), nullptr);
 	}
 
+	bool IsPlaylist() const noexcept {
+		return device == DEVICE_PLAYLIST;
+	}
+
 	/**
 	 * Is this really a regular file which is being treated like a
 	 * directory?
 	 */
 	bool IsReallyAFile() const noexcept {
 		return device == DEVICE_INARCHIVE ||
-			device == DEVICE_PLAYLIST ||
+			IsPlaylist() ||
 			device == DEVICE_CONTAINER;
 	}
 
@@ -209,6 +213,9 @@ public:
 	 */
 	gcc_pure
 	LookupResult LookupDirectory(std::string_view uri) noexcept;
+
+	[[gnu::pure]]
+	bool TargetExists(std::string_view target) const noexcept;
 
 	gcc_pure
 	bool IsEmpty() const noexcept {

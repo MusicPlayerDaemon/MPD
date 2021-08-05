@@ -133,6 +133,28 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 	}
 }
 
+void
+UpdateWalk::PurgeDanglingFromPlaylists(Directory &directory) noexcept
+{
+	/* recurse */
+	for (Directory &child : directory.children)
+		PurgeDanglingFromPlaylists(child);
+
+	if (!directory.IsPlaylist())
+		/* this check is only for virtual directories
+		   representing a playlist file */
+		return;
+
+	directory.ForEachSongSafe([&](Song &song){
+		if (!song.target.empty() &&
+		    !PathTraitsUTF8::IsAbsoluteOrHasScheme(song.target.c_str()) &&
+		    !directory.TargetExists(song.target)) {
+			editor.DeleteSong(directory, &song);
+			modified = true;
+		}
+	});
+}
+
 #ifndef _WIN32
 static bool
 update_directory_stat(Storage &storage, Directory &directory) noexcept
@@ -528,6 +550,11 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard) noexcept
 		ExcludeList exclude_list;
 
 		UpdateDirectory(root, exclude_list, info);
+	}
+
+	{
+		const ScopeDatabaseLock protect;
+		PurgeDanglingFromPlaylists(root);
 	}
 
 	return modified;

@@ -85,6 +85,12 @@ private:
 
 	void PurgeDeletedFromDirectory(Directory &directory) noexcept;
 
+	/**
+	 * Remove all virtual songs inside playlists whose "target"
+	 * field points to a non-existing song file.
+	 */
+	void PurgeDanglingFromPlaylists(Directory &directory) noexcept;
+
 	void UpdateSongFile2(Directory &directory,
 			     const char *name, const char *suffix,
 			     const StorageFileInfo &info) noexcept;
