@@ -81,6 +81,22 @@ Tag::Merge(std::unique_ptr<Tag> base, std::unique_ptr<Tag> add) noexcept
 	return MergePtr(*base, *add);
 }
 
+std::unique_ptr<Tag>
+Tag::Merge(const Tag *base, const Tag *add) noexcept
+{
+	if (base == nullptr && add == nullptr)
+		/* no tag */
+		return nullptr;
+
+	if (base == nullptr)
+		return std::make_unique<Tag>(*add);
+
+	if (add == nullptr)
+		return std::make_unique<Tag>(*base);
+
+	return MergePtr(*base, *add);
+}
+
 const char *
 Tag::GetValue(TagType type) const noexcept
 {

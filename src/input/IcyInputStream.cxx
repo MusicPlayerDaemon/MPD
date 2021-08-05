@@ -82,17 +82,7 @@ IcyInputStream::ReadTag() noexcept
 		/* no change */
 		return nullptr;
 
-	if (input_tag == nullptr && icy_tag == nullptr)
-		/* no tag */
-		return nullptr;
-
-	if (input_tag == nullptr)
-		return std::make_unique<Tag>(*icy_tag);
-
-	if (icy_tag == nullptr)
-		return std::make_unique<Tag>(*input_tag);
-
-	return Tag::MergePtr(*input_tag, *icy_tag);
+	return Tag::Merge(input_tag.get(), icy_tag.get());
 }
 
 size_t

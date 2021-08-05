@@ -133,6 +133,15 @@ struct Tag {
 					  std::unique_ptr<Tag> add) noexcept;
 
 	/**
+	 * Merges the data from two tags.  Any of the two may be nullptr.
+	 *
+	 * @return a newly allocated tag (or nullptr if both
+	 * parameters are nullptr)
+	 */
+	static std::unique_ptr<Tag> Merge(const Tag *base,
+					  const Tag *add) noexcept;
+
+	/**
 	 * Returns the first value of the specified tag type, or
 	 * nullptr if none is present in this tag object.
 	 */
