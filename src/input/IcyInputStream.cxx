@@ -104,8 +104,11 @@ IcyInputStream::Read(std::unique_lock<Mutex> &lock,
 
 	while (true) {
 		size_t nbytes = ProxyInputStream::Read(lock, ptr, read_size);
-		if (nbytes == 0)
+		if (nbytes == 0) {
+			assert(IsEOF());
+			offset = override_offset;
 			return 0;
+		}
 
 		size_t result = parser->ParseInPlace(ptr, nbytes);
 		if (result > 0) {

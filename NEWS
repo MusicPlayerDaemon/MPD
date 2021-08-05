@@ -16,6 +16,19 @@ ver 0.23 (not yet released)
   - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
 * new build-time dependency: libfmt
 
+ver 0.22.10 (not yet released)
+* protocol
+  - support "albumart" for virtual tracks in CUE sheets
+* database
+  - simple: fix crash bug
+* input
+  - curl: fix crash bug after stream with Icy metadata was closed by peer
+  - tidal: remove defunct unmaintained plugin
+* tags
+  - fix crash caused by bug in TagBuilder and a few potential reference leaks
+* output
+  - oss: fix channel order of multi-channel files
+
 ver 0.22.9 (2021/06/23)
 * database
   - simple: load all .mpdignore files of all parent directories

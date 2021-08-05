@@ -85,6 +85,22 @@ GetParentPathImpl(typename Traits::const_pointer p) noexcept
 }
 
 template<typename Traits>
+typename Traits::string_view
+GetParentPathImpl(typename Traits::string_view p) noexcept
+{
+	auto sep = Traits::FindLastSeparator(p);
+	if (sep == nullptr)
+		return Traits::CURRENT_DIRECTORY;
+	if (sep == p.data())
+		return p.substr(0, 1);
+#ifdef _WIN32
+	if (Traits::IsDrive(p) && sep == p.data() + 2)
+		return p.substr(0, 3);
+#endif
+	return p.substr(0, sep - p.data());
+}
+
+template<typename Traits>
 typename Traits::const_pointer
 RelativePathImpl(typename Traits::string_view base,
 		 typename Traits::const_pointer other) noexcept
@@ -166,6 +182,12 @@ PathTraitsFS::GetParent(PathTraitsFS::const_pointer p) noexcept
 	return GetParentPathImpl<PathTraitsFS>(p);
 }
 
+PathTraitsFS::string_view
+PathTraitsFS::GetParent(string_view p) noexcept
+{
+	return GetParentPathImpl<PathTraitsFS>(p);
+}
+
 PathTraitsFS::const_pointer
 PathTraitsFS::Relative(string_view base, const_pointer other) noexcept
 {
@@ -206,6 +228,12 @@ PathTraitsUTF8::GetBase(const_pointer p) noexcept
 
 PathTraitsUTF8::string_view
 PathTraitsUTF8::GetParent(const_pointer p) noexcept
+{
+	return GetParentPathImpl<PathTraitsUTF8>(p);
+}
+
+PathTraitsUTF8::string_view
+PathTraitsUTF8::GetParent(string_view p) noexcept
 {
 	return GetParentPathImpl<PathTraitsUTF8>(p);
 }

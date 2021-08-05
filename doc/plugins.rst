@@ -302,37 +302,6 @@ in the form ``qobuz://track/ID``, e.g.:
    * - **format_id N**
      - The `Qobuz format identifier <https://github.com/Qobuz/api-documentation/blob/master/endpoints/track/getFileUrl.md#parameters>`_, i.e. a number which chooses the format and quality to be requested from Qobuz. The default is "5" (320 kbit/s MP3).
 
-tidal
------
-
-Play songs from the commercial streaming service `Tidal
-<http://tidal.com/>`_. It plays URLs in the form ``tidal://track/ID``,
-e.g.:
-
-.. warning::
-
-   This plugin is currently defunct because Tidal has changed the
-   protocol and decided not to share documentation.
-
-.. code-block:: none
-
-    mpc add tidal://track/59727857
-
-.. list-table::
-   :widths: 20 80
-   :header-rows: 1
-
-   * - Setting
-     - Description
-   * - **token TOKEN**
-     - The Tidal application token. Since Tidal is unwilling to assign a token to MPD, this needs to be reverse-engineered from another (approved) Tidal client.
-   * - **username USERNAME**
-     - The Tidal user name.
-   * - **password PASSWORD**
-     - The Tidal password.
-   * - **audioquality Q**
-     - The Tidal "audioquality" parameter. Possible values: HI_RES, LOSSLESS, HIGH, LOW. Default is HIGH.
-
 .. _decoder_plugins:
      
 Decoder plugins

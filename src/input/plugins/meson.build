@@ -63,27 +63,6 @@ if enable_qobuz
   ]
 endif
 
-tidal_feature = get_option('tidal')
-if tidal_feature.disabled()
-  enable_tidal = false
-else
-  enable_tidal = curl_dep.found() and yajl_dep.found()
-  if not enable_tidal and tidal_feature.enabled()
-    error('Tidal requires CURL and libyajl')
-  endif
-endif
-input_features.set('ENABLE_TIDAL', enable_tidal)
-if enable_tidal
-  input_plugins_sources += [
-    'TidalErrorParser.cxx',
-    'TidalLoginRequest.cxx',
-    'TidalSessionManager.cxx',
-    'TidalTrackRequest.cxx',
-    'TidalTagScanner.cxx',
-    'TidalInputPlugin.cxx',
-  ]
-endif
-
 input_plugins = static_library(
   'input_plugins',
   input_plugins_sources,

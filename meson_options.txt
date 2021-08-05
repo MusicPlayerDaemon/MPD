@@ -107,7 +107,6 @@ option('smbclient', type: 'feature', value: 'disabled', description: 'SMB suppor
 
 option('qobuz', type: 'feature', description: 'Qobuz client')
 option('soundcloud', type: 'feature', description: 'SoundCloud client')
-option('tidal', type: 'feature', description: 'Tidal client')
 
 #
 # Archive plugins
