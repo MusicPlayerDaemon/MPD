@@ -252,19 +252,24 @@ oss_try_ioctl_r(FileDescriptor fd, unsigned long request, int *value_r,
 }
 
 /**
- * Invoke an ioctl on the OSS file descriptor.
+ * Invoke an ioctl on the OSS file descriptor, and expect an
+ * unmodified effective value.
  *
  * Throws on error.
  */
 static void
-oss_try_ioctl(FileDescriptor fd, unsigned long request, int value,
+OssIoctlExact(FileDescriptor fd, unsigned long request, int requested_value,
 	      const char *msg)
 {
 	assert(fd.IsDefined());
 	assert(msg != nullptr);
 
-	if (ioctl(fd.Get(), request, &value) < 0)
+	int effective_value = requested_value;
+	if (ioctl(fd.Get(), request, &effective_value) < 0)
 		throw MakeErrno(msg);
+
+	if (effective_value != requested_value)
+		throw std::runtime_error(msg);
 }
 
 /**
@@ -529,11 +534,11 @@ try {
 	if (!fd.Open(device, O_WRONLY))
 		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
-	oss_try_ioctl(fd, SNDCTL_DSP_CHANNELS, audio_format.channels,
+	OssIoctlExact(fd, SNDCTL_DSP_CHANNELS, audio_format.channels,
 		      "Failed to set channel count");
-	oss_try_ioctl(fd, SNDCTL_DSP_SPEED, audio_format.sample_rate,
+	OssIoctlExact(fd, SNDCTL_DSP_SPEED, audio_format.sample_rate,
 		      "Failed to set sample rate");
-	oss_try_ioctl(fd, SNDCTL_DSP_SAMPLESIZE, oss_format,
+	OssIoctlExact(fd, SNDCTL_DSP_SAMPLESIZE, oss_format,
 		      "Failed to set sample format");
 } catch (...) {
 	DoClose();
