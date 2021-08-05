@@ -29,7 +29,7 @@
 #include <windef.h>
 #include <mmsystem.h>
 
-struct WinmmOutput;
+class WinmmOutput;
 
 extern const struct AudioOutputPlugin winmm_output_plugin;
 
