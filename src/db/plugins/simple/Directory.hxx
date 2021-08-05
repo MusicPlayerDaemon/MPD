@@ -206,7 +206,6 @@ public:
 	 * Looks up a directory by its relative URI.
 	 *
 	 * @param uri the relative URI
-	 * @return the Directory, or nullptr if none was found
 	 */
 	gcc_pure
 	LookupResult LookupDirectory(std::string_view uri) noexcept;
