@@ -182,6 +182,14 @@ public:
 	void Open(SampleFormat sample_format, unsigned channels,
 		  Params params) noexcept;
 
+	bool IsDopEnabled() const noexcept {
+#ifdef ENABLE_DSD
+		return dsd_mode != DsdMode::NONE;
+#else
+		return false;
+#endif
+	}
+
 	/**
 	 * Reset the filter's state, e.g. drop/flush buffers.
 	 */
