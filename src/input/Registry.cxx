@@ -20,7 +20,6 @@
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "input/Features.h"
-#include "plugins/TidalInputPlugin.hxx"
 #include "plugins/QobuzInputPlugin.hxx"
 #include "config.h"
 
@@ -55,9 +54,6 @@
 const InputPlugin *const input_plugins[] = {
 #ifdef ENABLE_ALSA
 	&input_plugin_alsa,
-#endif
-#ifdef ENABLE_TIDAL
-	&tidal_input_plugin,
 #endif
 #ifdef ENABLE_QOBUZ
 	&qobuz_input_plugin,
