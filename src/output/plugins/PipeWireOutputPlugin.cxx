@@ -87,13 +87,7 @@ private:
 	}
 
 	void StateChanged(enum pw_stream_state state,
-			  [[maybe_unused]] const char *error) noexcept {
-		const bool was_disconnected = disconnected;
-		disconnected = state == PW_STREAM_STATE_ERROR ||
-			state == PW_STREAM_STATE_UNCONNECTED;
-		if (!was_disconnected && disconnected)
-			pw_thread_loop_signal(thread_loop, false);
-	}
+			  const char *error) noexcept;
 
 	static void StateChanged(void *data,
 				 [[maybe_unused]] enum pw_stream_state old,
@@ -342,6 +336,17 @@ PipeWireOutput::Close() noexcept
 	}
 
 	delete ring_buffer;
+}
+
+inline void
+PipeWireOutput::StateChanged(enum pw_stream_state state,
+			     [[maybe_unused]] const char *error) noexcept
+{
+	const bool was_disconnected = disconnected;
+	disconnected = state == PW_STREAM_STATE_ERROR ||
+		state == PW_STREAM_STATE_UNCONNECTED;
+	if (!was_disconnected && disconnected)
+		pw_thread_loop_signal(thread_loop, false);
 }
 
 inline void
