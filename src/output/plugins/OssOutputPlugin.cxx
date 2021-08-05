@@ -62,16 +62,10 @@ class OssOutput final : AudioOutput {
 	const char *device;
 
 	/**
-	 * The current input audio format.  This is needed to reopen
-	 * the device after cancel().
+	 * The effective audio format settings of the OSS device.
+	 * This is needed by Reopen() after Cancel().
 	 */
-	AudioFormat audio_format;
-
-	/**
-	 * The current OSS audio format.  This is needed to reopen the
-	 * device after cancel().
-	 */
-	int oss_format;
+	int effective_channels, effective_speed, effective_samplesize;
 
 	static constexpr unsigned oss_flags = FLAG_ENABLE_DISABLE;
 
@@ -279,14 +273,17 @@ OssIoctlExact(FileDescriptor fd, unsigned long request, int requested_value,
  * Throws on error.
  */
 static void
-oss_setup_channels(FileDescriptor fd, AudioFormat &audio_format)
+oss_setup_channels(FileDescriptor fd, AudioFormat &audio_format,
+		   int &effective_channels)
 {
 	const char *const msg = "Failed to set channel count";
-	int channels = audio_format.channels;
 
-	if (oss_try_ioctl_r(fd, SNDCTL_DSP_CHANNELS, &channels, msg) &&
-	    audio_valid_channel_count(channels)) {
-		audio_format.channels = channels;
+	effective_channels = audio_format.channels;
+
+	if (oss_try_ioctl_r(fd, SNDCTL_DSP_CHANNELS,
+			    &effective_channels, msg) &&
+	    audio_valid_channel_count(effective_channels)) {
+		audio_format.channels = effective_channels;
 		return;
 	}
 
@@ -295,10 +292,11 @@ oss_setup_channels(FileDescriptor fd, AudioFormat &audio_format)
 			/* don't try that again */
 			continue;
 
-		channels = i;
-		if (oss_try_ioctl_r(fd, SNDCTL_DSP_CHANNELS, &channels, msg) &&
-		    audio_valid_channel_count(channels)) {
-			audio_format.channels = channels;
+		effective_channels = i;
+		if (oss_try_ioctl_r(fd, SNDCTL_DSP_CHANNELS,
+				    &effective_channels, msg) &&
+		    audio_valid_channel_count(effective_channels)) {
+			audio_format.channels = effective_channels;
 			return;
 		}
 	}
@@ -313,26 +311,27 @@ oss_setup_channels(FileDescriptor fd, AudioFormat &audio_format)
  * Throws on error.
  */
 static void
-oss_setup_sample_rate(FileDescriptor fd, AudioFormat &audio_format)
+oss_setup_sample_rate(FileDescriptor fd, AudioFormat &audio_format,
+		      int &effective_speed)
 {
 	const char *const msg = "Failed to set sample rate";
-	int sample_rate = audio_format.sample_rate;
 
-	if (oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &sample_rate, msg) &&
-	    audio_valid_sample_rate(sample_rate)) {
-		audio_format.sample_rate = sample_rate;
+	effective_speed = audio_format.sample_rate;
+	if (oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &effective_speed, msg) &&
+	    audio_valid_sample_rate(effective_speed)) {
+		audio_format.sample_rate = effective_speed;
 		return;
 	}
 
 	static constexpr int sample_rates[] = { 48000, 44100, 0 };
 	for (unsigned i = 0; sample_rates[i] != 0; ++i) {
-		sample_rate = sample_rates[i];
-		if (sample_rate == (int)audio_format.sample_rate)
+		effective_speed = sample_rates[i];
+		if (effective_speed == (int)audio_format.sample_rate)
 			continue;
 
-		if (oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &sample_rate, msg) &&
-		    audio_valid_sample_rate(sample_rate)) {
-			audio_format.sample_rate = sample_rate;
+		if (oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &effective_speed, msg) &&
+		    audio_valid_sample_rate(effective_speed)) {
+			audio_format.sample_rate = effective_speed;
 			return;
 		}
 	}
@@ -518,9 +517,10 @@ oss_setup_sample_format(FileDescriptor fd, AudioFormat &audio_format,
 inline void
 OssOutput::Setup(AudioFormat &_audio_format)
 {
-	oss_setup_channels(fd, _audio_format);
-	oss_setup_sample_rate(fd, _audio_format);
-	oss_setup_sample_format(fd, _audio_format, &oss_format, pcm_export);
+	oss_setup_channels(fd, _audio_format, effective_channels);
+	oss_setup_sample_rate(fd, _audio_format, effective_speed);
+	oss_setup_sample_format(fd, _audio_format, &effective_samplesize,
+				pcm_export);
 }
 
 /**
@@ -534,11 +534,11 @@ try {
 	if (!fd.Open(device, O_WRONLY))
 		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
-	OssIoctlExact(fd, SNDCTL_DSP_CHANNELS, audio_format.channels,
+	OssIoctlExact(fd, SNDCTL_DSP_CHANNELS, effective_channels,
 		      "Failed to set channel count");
-	OssIoctlExact(fd, SNDCTL_DSP_SPEED, audio_format.sample_rate,
+	OssIoctlExact(fd, SNDCTL_DSP_SPEED, effective_speed,
 		      "Failed to set sample rate");
-	OssIoctlExact(fd, SNDCTL_DSP_SAMPLESIZE, oss_format,
+	OssIoctlExact(fd, SNDCTL_DSP_SAMPLESIZE, effective_samplesize,
 		      "Failed to set sample format");
 } catch (...) {
 	DoClose();
@@ -552,8 +552,6 @@ try {
 		throw FormatErrno("Error opening OSS device \"%s\"", device);
 
 	Setup(_audio_format);
-
-	audio_format = _audio_format;
 } catch (...) {
 	DoClose();
 	throw;
