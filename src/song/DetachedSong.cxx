@@ -61,7 +61,7 @@ DetachedSong::IsInDatabase() const noexcept
 	   GetRealURI() is never relative */
 
 	const char *_uri = GetURI();
-	return !uri_has_scheme(_uri) && !PathTraitsUTF8::IsAbsolute(_uri);
+	return !PathTraitsUTF8::IsAbsoluteOrHasScheme(_uri);
 }
 
 SignedSongTime

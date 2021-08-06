@@ -17,18 +17,23 @@ ver 0.23 (not yet released)
   - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
 * new build-time dependency: libfmt
 
-ver 0.22.10 (not yet released)
+ver 0.22.10 (2021/08/06)
 * protocol
   - support "albumart" for virtual tracks in CUE sheets
 * database
   - simple: fix crash bug
+  - simple: fix absolute paths in CUE "as_directory" entries
+  - simple: prune CUE entries from database for non-existent songs
 * input
   - curl: fix crash bug after stream with Icy metadata was closed by peer
   - tidal: remove defunct unmaintained plugin
 * tags
   - fix crash caused by bug in TagBuilder and a few potential reference leaks
 * output
+  - httpd: fix missing tag after seeking into a new song
   - oss: fix channel order of multi-channel files
+* mixer
+  - alsa: fix yet more rounding errors
 
 ver 0.22.9 (2021/06/23)
 * database

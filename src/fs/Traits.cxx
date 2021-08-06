@@ -19,6 +19,7 @@
 
 #include "Traits.hxx"
 #include "util/StringCompare.hxx"
+#include "util/UriExtract.hxx"
 
 #include <string.h>
 
@@ -218,6 +219,12 @@ PathTraitsUTF8::string
 PathTraitsUTF8::Build(string_view a, string_view b) noexcept
 {
 	return BuildPathImpl<PathTraitsUTF8>(a, b);
+}
+
+bool
+PathTraitsUTF8::IsAbsoluteOrHasScheme(const_pointer p) noexcept
+{
+	return IsAbsolute(p) || uri_has_scheme(p);
 }
 
 PathTraitsUTF8::const_pointer

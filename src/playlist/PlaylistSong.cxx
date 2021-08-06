@@ -95,8 +95,8 @@ playlist_check_translate_song(DetachedSong &song, std::string_view base_uri,
 	}
 #endif
 
-	if (base_uri.data() != nullptr && !uri_has_scheme(uri) &&
-	    !PathTraitsUTF8::IsAbsolute(uri))
+	if (base_uri.data() != nullptr &&
+	    !PathTraitsUTF8::IsAbsoluteOrHasScheme(uri))
 		song.SetURI(PathTraitsUTF8::Build(base_uri, uri));
 
 	return playlist_check_load_song(song, loader);

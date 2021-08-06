@@ -109,6 +109,23 @@ Directory::FindChild(std::string_view name) const noexcept
 	return nullptr;
 }
 
+bool
+Directory::TargetExists(std::string_view _target) const noexcept
+{
+	StringView target{_target};
+
+	if (target.SkipPrefix("../")) {
+		if (parent == nullptr)
+			return false;
+
+		return parent->TargetExists(target);
+	}
+
+	/* sorry for the const_cast ... */
+	const auto lr = const_cast<Directory *>(this)->LookupDirectory(target);
+	return lr.directory->FindSong(lr.rest) != nullptr;
+}
+
 void
 Directory::PruneEmpty() noexcept
 {

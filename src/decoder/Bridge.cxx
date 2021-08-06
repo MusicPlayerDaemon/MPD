@@ -582,10 +582,6 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag) noexcept
 
 	decoder_tag = std::make_unique<Tag>(std::move(tag));
 
-	/* check for a new stream tag */
-
-	UpdateStreamTag(is);
-
 	/* check if we're seeking */
 
 	if (PrepareInitialSeek())
@@ -593,6 +589,10 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag) noexcept
 		   until seeking is finished; skip the rest of the
 		   function here */
 		return DecoderCommand::SEEK;
+
+	/* check for a new stream tag */
+
+	UpdateStreamTag(is);
 
 	/* send tag to music pipe */
 

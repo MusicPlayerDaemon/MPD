@@ -91,8 +91,9 @@ class AndroidNdkToolchain:
 
         self.arch = arch
         self.install_prefix = install_prefix
+        self.toolchain_arch = abi_info['toolchain_arch']
 
-        toolchain_path = os.path.join(ndk_path, 'toolchains', abi_info['toolchain_arch'] + '-' + gcc_version, 'prebuilt', build_arch)
+        toolchain_path = os.path.join(ndk_path, 'toolchains', self.toolchain_arch + '-' + gcc_version, 'prebuilt', build_arch)
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
         llvm_triple = abi_info['llvm_triple'] + android_api_level
 

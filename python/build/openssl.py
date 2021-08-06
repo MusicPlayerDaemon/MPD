@@ -17,6 +17,12 @@ class OpenSSLProject(MakeProject):
             'build_libs',
         ]
 
+    def get_make_install_args(self, toolchain):
+        # OpenSSL's Makefile runs "ranlib" during installation
+        return MakeProject.get_make_install_args(self, toolchain) + [
+            'RANLIB=' + toolchain.ranlib,
+        ]
+
     def build(self, toolchain):
         src = self.unpack(toolchain, out_of_tree=False)
 
@@ -42,6 +48,7 @@ class OpenSSLProject(MakeProject):
         }
 
         openssl_arch = openssl_archs[toolchain.arch]
+        cross_compile_prefix = toolchain.toolchain_arch + '-'
 
         subprocess.check_call(['./Configure',
                                'no-shared',
@@ -50,6 +57,7 @@ class OpenSSLProject(MakeProject):
                                'no-tests',
                                'no-asm', # "asm" causes build failures on Windows
                                openssl_arch,
+                               '--cross-compile-prefix=' + cross_compile_prefix,
                                '--prefix=' + toolchain.install_prefix],
                               cwd=src, env=toolchain.env)
         MakeProject.build(self, toolchain, src)
