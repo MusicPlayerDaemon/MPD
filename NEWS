@@ -13,6 +13,8 @@ ver 0.22.10 (not yet released)
 * output
   - httpd: fix missing tag after seeking into a new song
   - oss: fix channel order of multi-channel files
+* mixer
+  - alsa: fix yet more rounding errors
 
 ver 0.22.9 (2021/06/23)
 * database
