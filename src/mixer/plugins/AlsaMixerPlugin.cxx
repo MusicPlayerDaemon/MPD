@@ -97,6 +97,11 @@ public:
 	void SetVolume(unsigned volume) override;
 
 private:
+	[[gnu::const]]
+	static unsigned NormalizedToPercent(double normalized) noexcept {
+		return lround(100 * normalized);
+	}
+
 	[[gnu::pure]]
 	double GetNormalizedVolume() const noexcept {
 		return get_normalized_playback_volume(elem,
@@ -280,7 +285,7 @@ AlsaMixer::GetVolume()
 		throw FormatRuntimeError("snd_mixer_handle_events() failed: %s",
 					 snd_strerror(err));
 
-	return lround(100 * GetNormalizedVolume());
+	return NormalizedToPercent(GetNormalizedVolume());
 }
 
 void
@@ -289,7 +294,7 @@ AlsaMixer::SetVolume(unsigned volume)
 	assert(handle != nullptr);
 
 	double cur = GetNormalizedVolume();
-	int delta = volume - lround(100.*cur);
+	int delta = volume - NormalizedToPercent(cur);
 	int err = set_normalized_playback_volume(elem, cur + 0.01*delta, delta);
 	if (err < 0)
 		throw FormatRuntimeError("failed to set ALSA volume: %s",
