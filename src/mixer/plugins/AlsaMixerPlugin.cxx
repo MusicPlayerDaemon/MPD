@@ -112,6 +112,10 @@ private:
 	unsigned GetPercentVolume() const noexcept {
 		return NormalizedToPercent(GetNormalizedVolume());
 	}
+
+	static int ElemCallback(snd_mixer_elem_t *elem,
+				unsigned mask) noexcept;
+
 };
 
 static constexpr Domain alsa_mixer_domain("alsa_mixer");
@@ -155,8 +159,8 @@ AlsaMixerMonitor::DispatchSockets() noexcept
  *
  */
 
-static int
-alsa_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned mask)
+int
+AlsaMixer::ElemCallback(snd_mixer_elem_t *elem, unsigned mask) noexcept
 {
 	AlsaMixer &mixer = *(AlsaMixer *)
 		snd_mixer_elem_get_callback_private(elem);
@@ -244,7 +248,7 @@ AlsaMixer::Setup()
 		throw FormatRuntimeError("no such mixer control: %s", control);
 
 	snd_mixer_elem_set_callback_private(elem, this);
-	snd_mixer_elem_set_callback(elem, alsa_mixer_elem_callback);
+	snd_mixer_elem_set_callback(elem, ElemCallback);
 
 	monitor = new AlsaMixerMonitor(event_loop, handle);
 }
