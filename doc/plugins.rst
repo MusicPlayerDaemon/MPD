@@ -1169,7 +1169,7 @@ This plugin requires building with ``libavfilter`` (FFmpeg).
    * - **graph "..."**
      - Specifies the ``libavfilter`` graph; read the `FFmpeg
        documentation
-       <https://libav.org/documentation/libavfilter.html#Filtergraph-syntax-1>`_
+       <https://ffmpeg.org/ffmpeg-filters.html#Filtergraph-syntax-1>`_
        for details
 
 
