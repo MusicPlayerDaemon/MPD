@@ -166,11 +166,8 @@ AlsaMixer::ElemCallback(snd_mixer_elem_t *elem, unsigned mask) noexcept
 		snd_mixer_elem_get_callback_private(elem);
 
 	if (mask & SND_CTL_EVENT_MASK_VALUE) {
-		try {
-			int volume = mixer.GetVolume();
-			mixer.listener.OnMixerVolumeChanged(mixer, volume);
-		} catch (...) {
-		}
+		int volume = mixer.GetPercentVolume();
+		mixer.listener.OnMixerVolumeChanged(mixer, volume);
 	}
 
 	return 0;
