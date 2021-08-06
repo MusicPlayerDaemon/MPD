@@ -107,6 +107,11 @@ private:
 		return get_normalized_playback_volume(elem,
 						      SND_MIXER_SCHN_FRONT_LEFT);
 	}
+
+	[[gnu::pure]]
+	unsigned GetPercentVolume() const noexcept {
+		return NormalizedToPercent(GetNormalizedVolume());
+	}
 };
 
 static constexpr Domain alsa_mixer_domain("alsa_mixer");
@@ -285,7 +290,7 @@ AlsaMixer::GetVolume()
 		throw FormatRuntimeError("snd_mixer_handle_events() failed: %s",
 					 snd_strerror(err));
 
-	return NormalizedToPercent(GetNormalizedVolume());
+	return GetPercentVolume();
 }
 
 void
