@@ -95,6 +95,13 @@ public:
 	void Close() noexcept override;
 	int GetVolume() override;
 	void SetVolume(unsigned volume) override;
+
+private:
+	[[gnu::pure]]
+	double GetNormalizedVolume() const noexcept {
+		return get_normalized_playback_volume(elem,
+						      SND_MIXER_SCHN_FRONT_LEFT);
+	}
 };
 
 static constexpr Domain alsa_mixer_domain("alsa_mixer");
@@ -273,7 +280,7 @@ AlsaMixer::GetVolume()
 		throw FormatRuntimeError("snd_mixer_handle_events() failed: %s",
 					 snd_strerror(err));
 
-	return lround(100 * get_normalized_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT));
+	return lround(100 * GetNormalizedVolume());
 }
 
 void
@@ -281,7 +288,7 @@ AlsaMixer::SetVolume(unsigned volume)
 {
 	assert(handle != nullptr);
 
-	double cur = get_normalized_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT);
+	double cur = GetNormalizedVolume();
 	int delta = volume - lround(100.*cur);
 	int err = set_normalized_playback_volume(elem, cur + 0.01*delta, delta);
 	if (err < 0)
