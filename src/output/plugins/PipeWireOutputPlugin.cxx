@@ -22,6 +22,11 @@
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
 #include "mixer/plugins/PipeWireMixerPlugin.hxx"
+#include "pcm/Silence.hxx"
+#include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
+#include "util/WritableBuffer.hxx"
+#include "Log.hxx"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -43,6 +48,8 @@
 
 #include <stdexcept>
 
+static constexpr Domain pipewire_output_domain("pipewire_output");
+
 class PipeWireOutput final : AudioOutput {
 	const char *const name;
 
@@ -60,6 +67,11 @@ class PipeWireOutput final : AudioOutput {
 
 	float volume = 1.0;
 
+	/**
+	 * The active sample format, needed for PcmSilence().
+	 */
+	SampleFormat sample_format;
+
 	bool disconnected;
 
 	/**
@@ -72,6 +84,14 @@ class PipeWireOutput final : AudioOutput {
 
 	bool interrupted;
 	bool paused;
+
+	/**
+	 * Has Drain() been called?  This causes Process() to invoke
+	 * pw_stream_flush() to drain PipeWire as soon as the
+	 * #ring_buffer has been drained.
+	 */
+	bool drain_requested;
+
 	bool drained;
 
 	explicit PipeWireOutput(const ConfigBlock &block);
@@ -313,6 +333,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	disconnected = false;
 	restore_volume = true;
 	paused = false;
+	drain_requested = false;
 	drained = true;
 
 	auto props = pw_properties_new(PW_KEY_MEDIA_TYPE, "Audio",
@@ -335,6 +356,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	auto raw = ToPipeWireAudioFormat(audio_format);
 
 	frame_size = audio_format.GetFrameSize();
+	sample_format = audio_format.format;
 	interrupted = false;
 
 	/* allocate a ring buffer of 1 second */
@@ -409,8 +431,15 @@ PipeWireOutput::Process() noexcept
 
 	size_t nbytes = ring_buffer->pop(dest, max_size);
 	if (nbytes == 0) {
-		pw_stream_flush(stream, true);
-		return;
+		if (drain_requested) {
+			pw_stream_flush(stream, true);
+			return;
+		}
+
+		/* buffer underrun: generate some silence */
+		PcmSilence({dest, max_size}, sample_format);
+
+		LogWarning(pipewire_output_domain, "Decoder is too slow; playing silence to avoid xrun");
 	}
 
 	buf->datas[0].chunk->offset = 0;
@@ -453,6 +482,9 @@ void
 PipeWireOutput::Drain()
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
+
+	drain_requested = true;
+	AtScopeExit(this) { drain_requested = false; };
 
 	while (!drained && !interrupted) {
 		CheckThrowError();
