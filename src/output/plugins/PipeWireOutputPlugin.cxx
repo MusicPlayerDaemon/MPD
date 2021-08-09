@@ -427,8 +427,10 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
-	if (paused)
+	if (paused) {
+		paused = false;
 		pw_stream_set_active(stream, true);
+	}
 
 	while (true) {
 		CheckThrowError();
