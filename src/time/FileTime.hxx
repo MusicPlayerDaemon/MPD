@@ -35,13 +35,13 @@
 #include <chrono>
 #include <cstdint>
 
-constexpr uint64_t
+constexpr uint_least64_t
 ConstructUint64(DWORD lo, DWORD hi) noexcept
 {
-	return uint64_t(lo) | (uint64_t(hi) << 32);
+	return uint_least64_t(lo) | (uint_least64_t(hi) << 32);
 }
 
-constexpr uint64_t
+constexpr uint_least64_t
 ToUint64(FILETIME ft) noexcept
 {
 	return ConstructUint64(ft.dwLowDateTime, ft.dwHighDateTime);
