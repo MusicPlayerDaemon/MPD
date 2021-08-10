@@ -575,8 +575,8 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 #endif
 	if (require_export) {
 		PcmExport::Params params;
-		params.dsd_mode = PcmExport::DsdMode::NONE;
 #ifdef ENABLE_DSD
+		params.dsd_mode = PcmExport::DsdMode::NONE;
 		if (audio_format.format == SampleFormat::DSD) {
 			params.dsd_mode = PcmExport::DsdMode::DOP;
 		}
