@@ -53,6 +53,24 @@ ToInt64(FILETIME ft) noexcept
 	return ToUint64(ft);
 }
 
+/* "A file time is a 64-bit value that represents the number of
+   100-nanosecond intervals"
+   https://docs.microsoft.com/en-us/windows/win32/sysinfo/file-times */
+using FileTimeResolution = std::ratio<1, 10000000>;
+
+using FileTimeDuration = std::chrono::duration<int_least64_t,
+					       FileTimeResolution>;
+
+/**
+ * Calculate a std::chrono::duration specifying the duration of the
+ * FILETIME since its epoch (1601-01-01T00:00).
+ */
+constexpr auto
+FileTimeToChronoDuration(FILETIME ft) noexcept
+{
+	return FileTimeDuration(ToInt64(ft));
+}
+
 constexpr time_t
 FileTimeToTimeT(FILETIME ft) noexcept
 {
@@ -69,7 +87,8 @@ FileTimeToChrono(FILETIME ft) noexcept
 constexpr std::chrono::seconds
 DeltaFileTimeS(FILETIME a, FILETIME b) noexcept
 {
-	return std::chrono::seconds((ToInt64(a) - ToInt64(b)) / 10000000);
+	return std::chrono::duration_cast<std::chrono::seconds>
+		(FileTimeToChronoDuration(a) - FileTimeToChronoDuration(b));
 }
 
 #endif
