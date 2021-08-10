@@ -3,6 +3,10 @@ test_time_sources = [
   'TestISO8601.cxx',
 ]
 
+if is_windows
+  test_time_sources += 'TestFileTime.cxx'
+endif
+
 test(
   'TestTime',
   executable(
