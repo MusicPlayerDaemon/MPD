@@ -53,6 +53,21 @@ ToInt64(FILETIME ft) noexcept
 	return ToUint64(ft);
 }
 
+constexpr FILETIME
+ToFileTime(uint_least64_t t) noexcept
+{
+	FILETIME ft{};
+	ft.dwLowDateTime = DWORD(t);
+	ft.dwHighDateTime = DWORD(t >> 32);
+	return ft;
+}
+
+constexpr FILETIME
+ToFileTime(int_least64_t t) noexcept
+{
+	return ToFileTime(uint_least64_t(t));
+}
+
 /* "A file time is a 64-bit value that represents the number of
    100-nanosecond intervals"
    https://docs.microsoft.com/en-us/windows/win32/sysinfo/file-times */
@@ -102,6 +117,40 @@ FileTimeToChrono(FILETIME ft) noexcept
 		(windows_duration);
 
 	return unix_epoch + sys_duration;
+}
+
+constexpr FILETIME
+ToFileTime(FileTimeDuration d) noexcept
+{
+	return ToFileTime(d.count());
+}
+
+constexpr FILETIME
+UnixEpochDurationToFileTime(FileTimeDuration d) noexcept
+{
+	/**
+	 * The number of days between the Windows FILETIME epoch
+	 * (1601-01-01T00:00) and the Unix epoch (1970-01-01T00:00).
+	 */
+	constexpr int_least64_t windows_unix_days = 134774;
+	constexpr int_least64_t windows_unix_hours = windows_unix_days * 24;
+
+	constexpr FileTimeDuration windows_unix_delta{std::chrono::hours{windows_unix_hours}};
+
+	return ToFileTime(d + windows_unix_delta);
+}
+
+inline FILETIME
+ChronoToFileTime(std::chrono::system_clock::time_point tp) noexcept
+{
+	/* this is guaranteed to be 0 in C++20 */
+	const auto unix_epoch = std::chrono::system_clock::from_time_t(0);
+
+	const auto since_unix_epoch = tp - unix_epoch;
+	const auto ft_since_unix_epoch =
+		std::chrono::duration_cast<FileTimeDuration>(since_unix_epoch);
+
+	return UnixEpochDurationToFileTime(ft_since_unix_epoch);
 }
 
 constexpr std::chrono::seconds
