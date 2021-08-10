@@ -438,6 +438,7 @@ PipeWireOutput::Process() noexcept
 
 		/* buffer underrun: generate some silence */
 		PcmSilence({dest, max_size}, sample_format);
+		nbytes = max_size;
 
 		LogWarning(pipewire_output_domain, "Decoder is too slow; playing silence to avoid xrun");
 	}
