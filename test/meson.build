@@ -271,6 +271,7 @@ if enable_database
     '../src/LocateUri.cxx',
     include_directories: inc,
     dependencies: [
+      log_dep,
       tag_dep,
       storage_glue_dep,
       gtest_dep,
@@ -288,6 +289,7 @@ executable(
   '../src/TagSave.cxx',
   include_directories: inc,
   dependencies: [
+    log_dep,
     input_glue_dep,
     archive_glue_dep,
   ],
@@ -401,6 +403,7 @@ executable(
   'DumpDecoderClient.cxx',
   include_directories: inc,
   dependencies: [
+    log_dep,
     decoder_glue_dep,
     input_glue_dep,
     archive_glue_dep,
@@ -510,6 +513,7 @@ executable(
   'run_convert.cxx',
   include_directories: inc,
   dependencies: [
+    log_dep,
     pcm_dep,
     config_dep,
   ],
