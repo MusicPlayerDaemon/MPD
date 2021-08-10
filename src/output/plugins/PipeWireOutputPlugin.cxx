@@ -462,11 +462,6 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
-	if (paused) {
-		paused = false;
-		pw_stream_set_active(stream, true);
-	}
-
 	while (true) {
 		CheckThrowError();
 
@@ -475,6 +470,14 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 		if (bytes_written > 0) {
 			drained = false;
 			return bytes_written;
+		}
+
+		if (paused) {
+			/* now that the ring_buffer is full, there is
+			   enough data for Process(), so let's resume
+			   the stream now */
+			paused = false;
+			pw_stream_set_active(stream, true);
 		}
 
 		if (interrupted)
