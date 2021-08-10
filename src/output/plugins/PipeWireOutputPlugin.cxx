@@ -25,6 +25,7 @@
 #include "pcm/Silence.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 #include "util/WritableBuffer.hxx"
 #include "Log.hxx"
 
@@ -53,6 +54,8 @@ static constexpr Domain pipewire_output_domain("pipewire_output");
 class PipeWireOutput final : AudioOutput {
 	const char *const name;
 
+	const char *const target;
+
 	struct pw_thread_loop *thread_loop = nullptr;
 	struct pw_stream *stream;
 
@@ -67,7 +70,7 @@ class PipeWireOutput final : AudioOutput {
 	using RingBuffer = boost::lockfree::spsc_queue<std::byte>;
 	RingBuffer *ring_buffer;
 
-	const uint32_t target_id;
+	uint32_t target_id = PW_ID_ANY;
 
 	float volume = 1.0;
 
@@ -182,8 +185,19 @@ inline
 PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE),
 	 name(block.GetBlockValue("name", "pipewire")),
-	 target_id(block.GetBlockValue("target", unsigned(PW_ID_ANY)))
+	 target(block.GetBlockValue("target", nullptr))
 {
+	if (target != nullptr) {
+		if (StringIsEmpty(target))
+			throw std::runtime_error("target must not be empty");
+
+		char *endptr;
+		const auto _target_id = strtoul(target, &endptr, 10);
+		if (endptr > target && *endptr == 0)
+			/* numeric value means target_id, not target
+			   name */
+			target_id = (uint32_t)_target_id;
+	}
 }
 
 void
@@ -352,6 +366,8 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 				       PW_KEY_APP_NAME, "Music Player Daemon",
 				       PW_KEY_NODE_NAME, "mpd",
 				       nullptr);
+	if (target != nullptr && target_id == PW_ID_ANY)
+		pw_properties_setf(props, PW_KEY_NODE_TARGET, "%s", target);
 
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 

@@ -1080,8 +1080,10 @@ Connect to a `PipeWire <https://pipewire.org/>`_ server.  Requires
 
    * - Setting
      - Description
-   * - **target ID**
-     - Link to the given target id.
+   * - **target NAME**
+     - Link to the given target.  If not specified, let the PipeWire
+       manager select a target.  To get a list of available targets,
+       type ``pw-cli dump short Node``
 
 .. _pulse_plugin:
 
