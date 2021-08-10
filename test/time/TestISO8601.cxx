@@ -89,6 +89,11 @@ static constexpr struct {
 
 TEST(ISO8601, Parse)
 {
+#ifdef _WIN32
+	// TODO: re-enable when ParseISO8601() has been implemented on Windows
+	GTEST_SKIP();
+#endif
+
 	for (const auto &i : parse_tests) {
 		const auto result = ParseISO8601(i.s);
 		EXPECT_EQ(std::chrono::system_clock::to_time_t(result.first), i.t);
