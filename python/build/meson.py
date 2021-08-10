@@ -1,4 +1,5 @@
 import os.path, subprocess, sys
+import platform
 
 from build.project import Project
 
@@ -43,8 +44,11 @@ strip = '{toolchain.strip}'
 pkgconfig = '{toolchain.pkg_config}'
 """)
 
-        if toolchain.is_windows:
+        if toolchain.is_windows and platform.system() != 'Windows':
             f.write(f"windres = '{toolchain.windres}'\n")
+
+            # Run unit tests with WINE when cross-building for Windows
+            print("exe_wrapper = 'wine'", file=f)
 
         f.write(f"""
 [properties]
