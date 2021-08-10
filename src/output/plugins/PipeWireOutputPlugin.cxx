@@ -61,7 +61,11 @@ class PipeWireOutput final : AudioOutput {
 
 	std::size_t frame_size;
 
-	boost::lockfree::spsc_queue<std::byte> *ring_buffer;
+	/**
+	 * This buffer passes PCM data from Play() to Process().
+	 */
+	using RingBuffer = boost::lockfree::spsc_queue<std::byte>;
+	RingBuffer *ring_buffer;
 
 	const uint32_t target_id;
 
@@ -360,8 +364,9 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	interrupted = false;
 
 	/* allocate a ring buffer of 1 second */
-	ring_buffer = new boost::lockfree::spsc_queue<std::byte>(frame_size *
-								 audio_format.sample_rate);
+	const std::size_t ring_buffer_size =
+		frame_size * audio_format.sample_rate;
+	ring_buffer = new RingBuffer(ring_buffer_size);
 
 	const struct spa_pod *params[1];
 
