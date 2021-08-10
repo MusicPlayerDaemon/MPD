@@ -336,7 +336,13 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 {
 	disconnected = false;
 	restore_volume = true;
-	paused = false;
+
+	/* we're paused (inactive) now because of the flag
+	   PW_STREAM_FLAG_INACTIVE; this way, we can fill the
+	   ring_buffer before activating the stream, to avoid
+	   underruns */
+	paused = true;
+
 	drain_requested = false;
 	drained = true;
 
@@ -380,6 +386,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 			  PW_DIRECTION_OUTPUT,
 			  target_id,
 			  (enum pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT |
+						 PW_STREAM_FLAG_INACTIVE |
 						 PW_STREAM_FLAG_MAP_BUFFERS |
 						 PW_STREAM_FLAG_RT_PROCESS),
 			  params, 1);
