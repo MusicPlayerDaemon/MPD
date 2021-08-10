@@ -71,17 +71,37 @@ FileTimeToChronoDuration(FILETIME ft) noexcept
 	return FileTimeDuration(ToInt64(ft));
 }
 
-constexpr time_t
-FileTimeToTimeT(FILETIME ft) noexcept
+/**
+ * Calculate a std::chrono::duration specifying the duration between
+ * the unix epoch and the given FILETIME.
+ */
+constexpr auto
+FileTimeToUnixEpochDuration(FILETIME ft) noexcept
 {
-	return (ToInt64(ft) - 116444736000000000) / 10000000;
+	/**
+	 * The number of days between the Windows FILETIME epoch
+	 * (1601-01-01T00:00) and the Unix epoch (1970-01-01T00:00).
+	 */
+	constexpr int_least64_t windows_unix_days = 134774;
+	constexpr int_least64_t windows_unix_hours = windows_unix_days * 24;
+
+	constexpr FileTimeDuration windows_unix_delta{std::chrono::hours{windows_unix_hours}};
+
+	return FileTimeToChronoDuration(ft) - windows_unix_delta;
 }
 
 inline std::chrono::system_clock::time_point
 FileTimeToChrono(FILETIME ft) noexcept
 {
-	// TODO: eliminate the time_t roundtrip, preserve sub-second resolution
-	return std::chrono::system_clock::from_time_t(FileTimeToTimeT(ft));
+	/* this is guaranteed to be 0 in C++20 */
+	const auto unix_epoch = std::chrono::system_clock::from_time_t(0);
+
+	const auto windows_duration = FileTimeToUnixEpochDuration(ft);
+	const auto sys_duration =
+		std::chrono::duration_cast<std::chrono::system_clock::duration>
+		(windows_duration);
+
+	return unix_epoch + sys_duration;
 }
 
 constexpr std::chrono::seconds
