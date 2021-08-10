@@ -55,10 +55,15 @@ c_link_args = {repr(toolchain.ldflags.split() + toolchain.libs.split())}
 
 cpp_args = {repr((toolchain.cppflags + ' ' + toolchain.cxxflags).split())}
 cpp_link_args = {repr(toolchain.ldflags.split() + toolchain.libs.split())}
+""")
 
+        if 'android' in toolchain.arch:
+            f.write("""
 # Keep Meson from executing Android-x86 test binariees
 needs_exe_wrapper = true
+""")
 
+        f.write(f"""
 [host_machine]
 system = '{system}'
 cpu_family = '{cpu_family}'
