@@ -47,10 +47,16 @@ ToUint64(FILETIME ft) noexcept
 	return ConstructUint64(ft.dwLowDateTime, ft.dwHighDateTime);
 }
 
+constexpr int_least64_t
+ToInt64(FILETIME ft) noexcept
+{
+	return ToUint64(ft);
+}
+
 constexpr time_t
 FileTimeToTimeT(FILETIME ft) noexcept
 {
-	return (ToUint64(ft) - 116444736000000000) / 10000000;
+	return (ToInt64(ft) - 116444736000000000) / 10000000;
 }
 
 inline std::chrono::system_clock::time_point
@@ -63,7 +69,7 @@ FileTimeToChrono(FILETIME ft) noexcept
 constexpr std::chrono::seconds
 DeltaFileTimeS(FILETIME a, FILETIME b) noexcept
 {
-	return std::chrono::seconds((ToUint64(a) - ToUint64(b)) / 10000000);
+	return std::chrono::seconds((ToInt64(a) - ToInt64(b)) / 10000000);
 }
 
 #endif
