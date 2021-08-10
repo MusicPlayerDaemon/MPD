@@ -54,6 +54,7 @@ static constexpr Domain pipewire_output_domain("pipewire_output");
 class PipeWireOutput final : AudioOutput {
 	const char *const name;
 
+	const char *const remote;
 	const char *const target;
 
 	struct pw_thread_loop *thread_loop = nullptr;
@@ -185,6 +186,7 @@ inline
 PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE),
 	 name(block.GetBlockValue("name", "pipewire")),
+	 remote(block.GetBlockValue("remote", nullptr)),
 	 target(block.GetBlockValue("target", nullptr))
 {
 	if (target != nullptr) {
@@ -366,6 +368,10 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 				       PW_KEY_APP_NAME, "Music Player Daemon",
 				       PW_KEY_NODE_NAME, "mpd",
 				       nullptr);
+
+	if (remote != nullptr && target_id == PW_ID_ANY)
+		pw_properties_setf(props, PW_KEY_REMOTE_NAME, "%s", remote);
+
 	if (target != nullptr && target_id == PW_ID_ANY)
 		pw_properties_setf(props, PW_KEY_NODE_TARGET, "%s", target);
 
