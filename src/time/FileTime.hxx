@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +29,8 @@
 
 #ifndef FILE_TIME_HXX
 #define FILE_TIME_HXX
+
+#include "SystemClock.hxx"
 
 #include <fileapi.h>
 
@@ -108,15 +110,7 @@ FileTimeToUnixEpochDuration(FILETIME ft) noexcept
 inline std::chrono::system_clock::time_point
 FileTimeToChrono(FILETIME ft) noexcept
 {
-	/* this is guaranteed to be 0 in C++20 */
-	const auto unix_epoch = std::chrono::system_clock::from_time_t(0);
-
-	const auto windows_duration = FileTimeToUnixEpochDuration(ft);
-	const auto sys_duration =
-		std::chrono::duration_cast<std::chrono::system_clock::duration>
-		(windows_duration);
-
-	return unix_epoch + sys_duration;
+	return TimePointAfterUnixEpoch(FileTimeToUnixEpochDuration(ft));
 }
 
 constexpr FILETIME
@@ -143,10 +137,7 @@ UnixEpochDurationToFileTime(FileTimeDuration d) noexcept
 inline FILETIME
 ChronoToFileTime(std::chrono::system_clock::time_point tp) noexcept
 {
-	/* this is guaranteed to be 0 in C++20 */
-	const auto unix_epoch = std::chrono::system_clock::from_time_t(0);
-
-	const auto since_unix_epoch = tp - unix_epoch;
+	const auto since_unix_epoch = DurationSinceUnixEpoch(tp);
 	const auto ft_since_unix_epoch =
 		std::chrono::duration_cast<FileTimeDuration>(since_unix_epoch);
 
