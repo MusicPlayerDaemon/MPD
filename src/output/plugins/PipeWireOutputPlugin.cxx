@@ -363,9 +363,9 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	sample_format = audio_format.format;
 	interrupted = false;
 
-	/* allocate a ring buffer of 1 second */
+	/* allocate a ring buffer of 0.5 seconds */
 	const std::size_t ring_buffer_size =
-		frame_size * audio_format.sample_rate;
+		frame_size * (audio_format.sample_rate / 2);
 	ring_buffer = new RingBuffer(ring_buffer_size);
 
 	const struct spa_pod *params[1];
