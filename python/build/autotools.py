@@ -52,7 +52,18 @@ class AutotoolsProject(MakeProject):
             '--enable-silent-rules',
         ] + self.configure_args
 
-        subprocess.check_call(configure, cwd=build, env=toolchain.env)
+        try:
+            subprocess.check_call(configure, cwd=build, env=toolchain.env)
+        except subprocess.CalledProcessError:
+            # dump config.log after a failed configure run
+            try:
+                with open(os.path.join(build, 'config.log')) as f:
+                    sys.stdout.write(f.read())
+            except:
+                pass
+            # re-raise the exception
+            raise
+
         return build
 
     def _build(self, toolchain):
