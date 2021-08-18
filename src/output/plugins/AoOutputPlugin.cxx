@@ -57,11 +57,10 @@ class AoOutput final : AudioOutput, SafeSingleton<AoInit> {
 
 	explicit AoOutput(const ConfigBlock &block);
 	~AoOutput() override;
-
+public:
 	AoOutput(const AoOutput &) = delete;
 	AoOutput &operator=(const AoOutput &) = delete;
 
-public:
 	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new AoOutput(block);
 	}
