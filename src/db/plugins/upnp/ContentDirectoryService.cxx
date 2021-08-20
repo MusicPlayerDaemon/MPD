@@ -258,12 +258,8 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpSendAction() failed: %s",
 					 UpnpGetErrorMessage(code));
-	const char *p = "";
-	for (const auto &entry : responseData) {
-		if (entry.first == "Result") {
-			p = entry.second.c_str();
-		}
-	}
+	auto it = std::find_if(responseData.begin(), responseData.end(), [](auto&& entry){ return entry.first == "Result"; });
+	const char *p = it != responseData.end() ? it->second.c_str() : "";
 	UPnPDirContent dirbuf;
 	dirbuf.Parse(p);
 	return dirbuf;
