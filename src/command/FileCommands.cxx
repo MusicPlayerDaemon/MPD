@@ -49,6 +49,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <array>
 
 gcc_pure
 static bool

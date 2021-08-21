@@ -28,6 +28,7 @@
 
 #include <cassert>
 #include <iterator>
+#include <array>
 
 using namespace Sqlite;
 
