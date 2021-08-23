@@ -1,6 +1,8 @@
 ver 0.22.11 (not yet released)
 * protocol
   - fix "albumart" crash
+* Android
+  - build with NDK r23
 
 ver 0.22.10 (2021/08/06)
 * protocol

@@ -176,7 +176,7 @@ Compiling for Android
 You need:
 
 * Android SDK
-* `Android NDK r22 <https://developer.android.com/ndk/downloads>`_
+* `Android NDK r23 <https://developer.android.com/ndk/downloads>`_
 * `Meson 0.49.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * cmake
