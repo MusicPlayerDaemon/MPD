@@ -121,7 +121,7 @@ std::unique_ptr<Filter>
 convert_filter_new(const AudioFormat in_audio_format,
 		   const AudioFormat out_audio_format)
 {
-	std::unique_ptr<ConvertFilter> filter(new ConvertFilter(in_audio_format));
+	auto filter = std::make_unique<ConvertFilter>(in_audio_format);
 	filter->Set(out_audio_format);
 	return filter;
 }

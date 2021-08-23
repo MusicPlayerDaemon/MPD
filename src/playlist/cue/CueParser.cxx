@@ -63,7 +63,7 @@ cue_next_token(StringView &src) noexcept
 	return cue_next_word(src);
 }
 
-static const StringView
+static StringView
 cue_next_value(StringView &src) noexcept
 {
 	src.StripLeft();

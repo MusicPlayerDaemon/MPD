@@ -37,7 +37,7 @@ InterleaveFrame(const AVFrame &frame, FfmpegBuffer &buffer)
 {
 	assert(frame.nb_samples > 0);
 
-	const AVSampleFormat format = AVSampleFormat(frame.format);
+	const auto format = AVSampleFormat(frame.format);
 	const unsigned channels = frame.channels;
 	const std::size_t n_frames = frame.nb_samples;
 

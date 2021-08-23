@@ -367,11 +367,7 @@ SnapcastOutput::IsDrained() const noexcept
 	if (!chunks.empty())
 		return false;
 
-	for (const auto &client : clients)
-		if (!client.IsDrained())
-			return false;
-
-	return true;
+	return std::all_of(clients.begin(), clients.end(), [](auto&& c){ return c.IsDrained(); });
 }
 
 void

@@ -158,7 +158,7 @@ TagBuilder::Commit() noexcept
 std::unique_ptr<Tag>
 TagBuilder::CommitNew() noexcept
 {
-	std::unique_ptr<Tag> tag(new Tag());
+	auto tag = std::make_unique<Tag>();
 	Commit(*tag);
 	return tag;
 }
