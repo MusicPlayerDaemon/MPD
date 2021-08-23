@@ -1,6 +1,8 @@
 ver 0.22.11 (not yet released)
 * protocol
   - fix "albumart" crash
+* filter
+  - ffmpeg: pass "channel_layout" instead of "channels" to buffersrc
 * Android
   - build with NDK r23
 

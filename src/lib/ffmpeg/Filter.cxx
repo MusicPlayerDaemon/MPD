@@ -18,9 +18,12 @@
  */
 
 #include "Filter.hxx"
+#include "ChannelLayout.hxx"
 #include "SampleFormat.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "util/RuntimeError.hxx"
+
+#include <cinttypes>
 
 #include <stdio.h>
 
@@ -57,10 +60,10 @@ FilterContext::MakeAudioBufferSource(AudioFormat &audio_format,
 
 	char abuffer_args[256];
 	sprintf(abuffer_args,
-		"sample_rate=%u:sample_fmt=%s:channels=%u:time_base=1/%u",
+		"sample_rate=%u:sample_fmt=%s:channel_layout=0x%" PRIx64 ":time_base=1/%u",
 		audio_format.sample_rate,
 		av_get_sample_fmt_name(src_format),
-		audio_format.channels,
+		ToFfmpegChannelLayout(audio_format.channels),
 		audio_format.sample_rate);
 
 	return {RequireFilterByName("abuffer"), "abuffer", abuffer_args, nullptr, graph_ctx};
