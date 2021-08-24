@@ -138,6 +138,9 @@ public:
 		return std::make_pair(std::move(inputs), std::move(outputs));
 	}
 
+	void ParseSingleInOut(const char *filters, AVFilterContext &in,
+			      AVFilterContext &out);
+
 	std::pair<FilterInOut, FilterInOut> Parse(const char *filters) {
 		AVFilterInOut *inputs, *outputs;
 		int err = avfilter_graph_parse2(graph, filters,

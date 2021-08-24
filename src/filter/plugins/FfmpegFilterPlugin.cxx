@@ -47,17 +47,7 @@ PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 
 	auto &buffer_sink = Ffmpeg::MakeAudioBufferSink(*graph);
 
-	Ffmpeg::FilterInOut io_sink("out", buffer_sink);
-	Ffmpeg::FilterInOut io_src("in", buffer_src);
-	auto io = graph.Parse(graph_string, std::move(io_sink),
-			      std::move(io_src));
-
-	if (io.first.get() != nullptr)
-		throw std::runtime_error("FFmpeg filter has an open input");
-
-	if (io.second.get() != nullptr)
-		throw std::runtime_error("FFmpeg filter has an open output");
-
+	graph.ParseSingleInOut(graph_string, buffer_sink, buffer_src);
 	graph.CheckAndConfigure();
 
 	const auto out_audio_format =

@@ -100,4 +100,17 @@ MakeAudioBufferSink(AVFilterGraph &graph_ctx)
 			    graph_ctx);
 }
 
+void
+FilterGraph::ParseSingleInOut(const char *filters, AVFilterContext &in,
+			      AVFilterContext &out)
+{
+	auto [inputs, outputs] = Parse(filters, {"out", in}, {"in", out});
+
+	if (inputs.get() != nullptr)
+		throw std::runtime_error("FFmpeg filter has an open input");
+
+	if (outputs.get() != nullptr)
+		throw std::runtime_error("FFmpeg filter has an open output");
+}
+
 } // namespace Ffmpeg
