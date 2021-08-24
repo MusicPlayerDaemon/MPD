@@ -101,10 +101,10 @@ public:
 	FilterContext(FilterContext &&src) noexcept
 		:context(std::exchange(src.context, nullptr)) {}
 
-	~FilterContext() noexcept {
-		if (context != nullptr)
-			avfilter_free(context);
-	}
+	/* note: we don't need a destructor calling avfilter_free()
+	   here because the AVFilterGraph owns and frees all the
+	   AVFilterContext instances */
+	// TODO: do we really need this wrapper class anymore?
 
 	FilterContext &operator=(FilterContext &&src) noexcept {
 		using std::swap;
