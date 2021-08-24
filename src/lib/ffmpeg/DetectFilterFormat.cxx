@@ -62,8 +62,14 @@ DetectFilterOutputFormat(const AudioFormat &in_audio_format,
 	frame.Unref();
 
 	err = av_buffersink_get_frame(&buffer_sink, frame.get());
-	if (err < 0)
+	if (err < 0) {
+		if (err == AVERROR(EAGAIN))
+			/* one sample was not enough input data for
+			   the given filter graph */
+			return AudioFormat::Undefined();
+
 		throw MakeFfmpegError(err, "av_buffersink_get_frame() failed");
+	}
 
 	const SampleFormat sample_format = FromFfmpegSampleFormat(AVSampleFormat(frame->format));
 	if (sample_format == SampleFormat::UNDEFINED)

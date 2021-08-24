@@ -54,6 +54,9 @@ PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 		Ffmpeg::DetectFilterOutputFormat(in_audio_format, buffer_src,
 						 buffer_sink);
 
+	if (!out_audio_format.IsDefined())
+		throw std::runtime_error("Unable to determine FFmpeg filter output format");
+
 	return std::make_unique<FfmpegFilter>(in_audio_format,
 					      out_audio_format,
 					      std::move(graph),
