@@ -77,63 +77,21 @@ public:
 	}
 };
 
-class FilterContext {
-	AVFilterContext *context = nullptr;
+/**
+ * Create an "abuffer" filter.
+ *
+ * @param the input audio format; may be modified by the
+ * function to ask the caller to do format conversion
+ */
+AVFilterContext &
+MakeAudioBufferSource(AudioFormat &audio_format,
+		      AVFilterGraph &graph_ctx);
 
-public:
-	FilterContext() = default;
-
-	FilterContext(const AVFilter &filt,
-		      const char *name, const char *args, void *opaque,
-		      AVFilterGraph &graph_ctx) {
-		int err = avfilter_graph_create_filter(&context, &filt,
-						       name, args, opaque,
-						       &graph_ctx);
-		if (err < 0)
-			throw MakeFfmpegError(err, "avfilter_graph_create_filter() failed");
-	}
-
-	FilterContext(const AVFilter &filt,
-		      const char *name,
-		      AVFilterGraph &graph_ctx)
-		:FilterContext(filt, name, nullptr, nullptr, graph_ctx) {}
-
-	FilterContext(FilterContext &&src) noexcept
-		:context(std::exchange(src.context, nullptr)) {}
-
-	/* note: we don't need a destructor calling avfilter_free()
-	   here because the AVFilterGraph owns and frees all the
-	   AVFilterContext instances */
-	// TODO: do we really need this wrapper class anymore?
-
-	FilterContext &operator=(FilterContext &&src) noexcept {
-		using std::swap;
-		swap(context, src.context);
-		return *this;
-	}
-
-	/**
-	 * Create an "abuffer" filter.
-	 *
-	 * @param the input audio format; may be modified by the
-	 * function to ask the caller to do format conversion
-	 */
-	static FilterContext MakeAudioBufferSource(AudioFormat &audio_format,
-						   AVFilterGraph &graph_ctx);
-
-	/**
-	 * Create an "abuffersink" filter.
-	 */
-	static FilterContext MakeAudioBufferSink(AVFilterGraph &graph_ctx);
-
-	auto &operator*() noexcept {
-		return *context;
-	}
-
-	auto *get() noexcept {
-		return context;
-	}
-};
+/**
+ * Create an "abuffersink" filter.
+ */
+AVFilterContext &
+MakeAudioBufferSink(AVFilterGraph &graph_ctx);
 
 class FilterGraph {
 	AVFilterGraph *graph = nullptr;

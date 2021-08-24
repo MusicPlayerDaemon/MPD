@@ -39,9 +39,32 @@ RequireFilterByName(const char *name)
 	return *filter;
 }
 
-FilterContext
-FilterContext::MakeAudioBufferSource(AudioFormat &audio_format,
-				     AVFilterGraph &graph_ctx)
+static AVFilterContext &
+CreateFilter(const AVFilter &filt,
+	     const char *name, const char *args, void *opaque,
+	     AVFilterGraph &graph_ctx)
+{
+	AVFilterContext *context = nullptr;
+	int err = avfilter_graph_create_filter(&context, &filt,
+					       name, args, opaque,
+					       &graph_ctx);
+	if (err < 0)
+		throw MakeFfmpegError(err, "avfilter_graph_create_filter() failed");
+
+	return *context;
+}
+
+static AVFilterContext &
+CreateFilter(const AVFilter &filt,
+	     const char *name,
+	     AVFilterGraph &graph_ctx)
+{
+	return CreateFilter(filt, name, nullptr, nullptr, graph_ctx);
+}
+
+AVFilterContext &
+MakeAudioBufferSource(AudioFormat &audio_format,
+		      AVFilterGraph &graph_ctx)
 {
 	AVSampleFormat src_format = ToFfmpegSampleFormat(audio_format.format);
 	if (src_format == AV_SAMPLE_FMT_NONE) {
@@ -66,13 +89,15 @@ FilterContext::MakeAudioBufferSource(AudioFormat &audio_format,
 		ToFfmpegChannelLayout(audio_format.channels),
 		audio_format.sample_rate);
 
-	return {RequireFilterByName("abuffer"), "abuffer", abuffer_args, nullptr, graph_ctx};
+	return CreateFilter(RequireFilterByName("abuffer"), "abuffer",
+			    abuffer_args, nullptr, graph_ctx);
 }
 
-FilterContext
-FilterContext::MakeAudioBufferSink(AVFilterGraph &graph_ctx)
+AVFilterContext &
+MakeAudioBufferSink(AVFilterGraph &graph_ctx)
 {
-	return {RequireFilterByName("abuffersink"), "abuffersink", graph_ctx};
+	return CreateFilter(RequireFilterByName("abuffersink"), "abuffersink",
+			    graph_ctx);
 }
 
 } // namespace Ffmpeg

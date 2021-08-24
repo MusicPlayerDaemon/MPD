@@ -42,14 +42,13 @@ PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 {
 	Ffmpeg::FilterGraph graph;
 
-	auto buffer_src =
-		Ffmpeg::FilterContext::MakeAudioBufferSource(in_audio_format,
-							     *graph);
+	auto &buffer_src =
+		Ffmpeg::MakeAudioBufferSource(in_audio_format, *graph);
 
-	auto buffer_sink = Ffmpeg::FilterContext::MakeAudioBufferSink(*graph);
+	auto &buffer_sink = Ffmpeg::MakeAudioBufferSink(*graph);
 
-	Ffmpeg::FilterInOut io_sink("out", *buffer_sink);
-	Ffmpeg::FilterInOut io_src("in", *buffer_src);
+	Ffmpeg::FilterInOut io_sink("out", buffer_sink);
+	Ffmpeg::FilterInOut io_src("in", buffer_src);
 	auto io = graph.Parse(graph_string, std::move(io_sink),
 			      std::move(io_src));
 
@@ -62,14 +61,14 @@ PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 	graph.CheckAndConfigure();
 
 	const auto out_audio_format =
-		Ffmpeg::DetectFilterOutputFormat(in_audio_format, *buffer_src,
-						 *buffer_sink);
+		Ffmpeg::DetectFilterOutputFormat(in_audio_format, buffer_src,
+						 buffer_sink);
 
 	return std::make_unique<FfmpegFilter>(in_audio_format,
 					      out_audio_format,
 					      std::move(graph),
-					      std::move(buffer_src),
-					      std::move(buffer_sink));
+					      buffer_src,
+					      buffer_sink);
 }
 
 static std::unique_ptr<PreparedFilter>

@@ -30,7 +30,7 @@
  */
 class FfmpegFilter final : public Filter {
 	Ffmpeg::FilterGraph graph;
-	Ffmpeg::FilterContext buffer_src, buffer_sink;
+	AVFilterContext &buffer_src, &buffer_sink;
 	Ffmpeg::Frame frame;
 
 	FfmpegBuffer interleave_buffer;
@@ -51,8 +51,8 @@ public:
 	FfmpegFilter(const AudioFormat &in_audio_format,
 		     const AudioFormat &_out_audio_format,
 		     Ffmpeg::FilterGraph &&_graph,
-		     Ffmpeg::FilterContext &&_buffer_src,
-		     Ffmpeg::FilterContext &&_buffer_sink) noexcept;
+		     AVFilterContext &_buffer_src,
+		     AVFilterContext &_buffer_sink) noexcept;
 
 	/* virtual methods from class Filter */
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
