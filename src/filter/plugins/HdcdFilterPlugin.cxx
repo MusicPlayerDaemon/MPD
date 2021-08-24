@@ -42,24 +42,13 @@ OpenHdcdFilter(AudioFormat &in_audio_format)
 {
 	Ffmpeg::FilterGraph graph;
 
-	auto buffer_src =
-		Ffmpeg::FilterContext::MakeAudioBufferSource(in_audio_format,
-							     *graph);
+	auto &buffer_src =
+		Ffmpeg::MakeAudioBufferSource(in_audio_format,
+					      *graph);
 
-	auto buffer_sink = Ffmpeg::FilterContext::MakeAudioBufferSink(*graph);
+	auto &buffer_sink = Ffmpeg::MakeAudioBufferSink(*graph);
 
-	Ffmpeg::FilterInOut io_sink("out", *buffer_sink);
-	Ffmpeg::FilterInOut io_src("in", *buffer_src);
-
-	auto io = graph.Parse(hdcd_graph, std::move(io_sink),
-			      std::move(io_src));
-
-	if (io.first.get() != nullptr)
-		throw std::runtime_error("FFmpeg filter has an open input");
-
-	if (io.second.get() != nullptr)
-		throw std::runtime_error("FFmpeg filter has an open output");
-
+	graph.ParseSingleInOut(hdcd_graph, buffer_sink, buffer_src);
 	graph.CheckAndConfigure();
 
 	auto out_audio_format = in_audio_format;
@@ -69,8 +58,8 @@ OpenHdcdFilter(AudioFormat &in_audio_format)
 	return std::make_unique<FfmpegFilter>(in_audio_format,
 					      out_audio_format,
 					      std::move(graph),
-					      std::move(buffer_src),
-					      std::move(buffer_sink));
+					      buffer_src,
+					      buffer_sink);
 }
 
 class PreparedHdcdFilter final : public PreparedFilter {

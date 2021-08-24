@@ -17,27 +17,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ANDROID_ENVIRONMENT_HXX
-#define MPD_ANDROID_ENVIRONMENT_HXX
+#ifndef MPD_FFMPEG_CHANNEL_LAYOUT_HXX
+#define MPD_FFMPEG_CHANNEL_LAYOUT_HXX
 
-#include "util/Compiler.h"
+extern "C" {
+#include <libavutil/channel_layout.h>
+}
 
-#include <jni.h>
+/**
+ * Convert a MPD channel count to a libavutil channel_layout bit mask.
+ */
+static constexpr uint64_t
+ToFfmpegChannelLayout(unsigned channels) noexcept
+{
+	switch (channels) {
+	case 1:
+		return AV_CH_LAYOUT_MONO;
 
-class AllocatedPath;
+	case 2:
+		return AV_CH_LAYOUT_STEREO;
 
-namespace Environment {
-	void Initialise(JNIEnv *env) noexcept;
-	void Deinitialise(JNIEnv *env) noexcept;
+	case 3:
+		return AV_CH_LAYOUT_SURROUND;
 
-	/**
-	 * Determine the mount point of the external SD card.
-	 */
-	[[gnu::pure]]
-	AllocatedPath getExternalStorageDirectory() noexcept;
+	case 4:
+		// TODO is this AV_CH_LAYOUT_2_2?
+		return AV_CH_LAYOUT_QUAD;
 
-	[[gnu::pure]]
-	AllocatedPath getExternalStoragePublicDirectory(const char *type) noexcept;
+	case 5:
+		// TODO is this AV_CH_LAYOUT_5POINT0_BACK?
+		return AV_CH_LAYOUT_5POINT0;
+
+	case 6:
+		return AV_CH_LAYOUT_5POINT1;
+
+	case 7:
+		return AV_CH_LAYOUT_6POINT1;
+
+	case 8:
+		return AV_CH_LAYOUT_7POINT1;
+
+	default:
+		/* unreachable */
+		return 0;
+	}
 }
 
 #endif

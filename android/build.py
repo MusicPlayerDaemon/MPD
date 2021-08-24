@@ -24,15 +24,13 @@ android_abis = {
     'armeabi-v7a': {
         'arch': 'arm-linux-androideabi',
         'ndk_arch': 'arm',
-        'toolchain_arch': 'arm-linux-androideabi',
         'llvm_triple': 'armv7-linux-androideabi',
-        'cflags': '-fpic -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp',
+        'cflags': '-fpic -mfpu=neon -mfloat-abi=softfp',
     },
 
     'arm64-v8a': {
         'arch': 'aarch64-linux-android',
         'ndk_arch': 'arm64',
-        'toolchain_arch': 'aarch64-linux-android',
         'llvm_triple': 'aarch64-linux-android',
         'cflags': '-fpic',
     },
@@ -40,7 +38,6 @@ android_abis = {
     'x86': {
         'arch': 'i686-linux-android',
         'ndk_arch': 'x86',
-        'toolchain_arch': 'x86',
         'llvm_triple': 'i686-linux-android',
         'cflags': '-fPIC -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32',
     },
@@ -48,7 +45,6 @@ android_abis = {
     'x86_64': {
         'arch': 'x86_64-linux-android',
         'ndk_arch': 'x86_64',
-        'toolchain_arch': 'x86_64',
         'llvm_triple': 'x86_64-linux-android',
         'cflags': '-fPIC -m64',
     },
@@ -84,37 +80,28 @@ class AndroidNdkToolchain:
         ndk_arch = abi_info['ndk_arch']
         android_api_level = '21'
 
-        # select the NDK compiler
-        gcc_version = '4.9'
-
         install_prefix = os.path.join(arch_path, 'root')
 
         self.arch = arch
         self.install_prefix = install_prefix
-        self.toolchain_arch = abi_info['toolchain_arch']
 
-        toolchain_path = os.path.join(ndk_path, 'toolchains', self.toolchain_arch + '-' + gcc_version, 'prebuilt', build_arch)
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
         llvm_triple = abi_info['llvm_triple'] + android_api_level
 
         common_flags = '-Os -g'
         common_flags += ' ' + abi_info['cflags']
 
-        toolchain_bin = os.path.join(toolchain_path, 'bin')
         llvm_bin = os.path.join(llvm_path, 'bin')
         self.cc = os.path.join(llvm_bin, 'clang')
         self.cxx = os.path.join(llvm_bin, 'clang++')
-        common_flags += ' -target ' + llvm_triple + ' -gcc-toolchain ' + toolchain_path
+        common_flags += ' -target ' + llvm_triple
 
         common_flags += ' -fvisibility=hidden -fdata-sections -ffunction-sections'
 
-        # required flags from https://android.googlesource.com/platform/ndk/+/ndk-release-r20/docs/BuildSystemMaintainers.md#additional-required-arguments
-        common_flags += ' -fno-addrsig'
-
-        self.ar = os.path.join(toolchain_bin, arch + '-ar')
-        self.ranlib = os.path.join(toolchain_bin, arch + '-ranlib')
-        self.nm = os.path.join(toolchain_bin, arch + '-nm')
-        self.strip = os.path.join(toolchain_bin, arch + '-strip')
+        self.ar = os.path.join(llvm_bin, 'llvm-ar')
+        self.ranlib = os.path.join(llvm_bin, 'llvm-ranlib')
+        self.nm = os.path.join(llvm_bin, 'llvm-nm')
+        self.strip = os.path.join(llvm_bin, 'llvm-strip')
 
         self.cflags = common_flags
         self.cxxflags = common_flags

@@ -27,6 +27,25 @@
 #include "AudioManager.hxx"
 
 AllocatedPath
+Context::GetExternalFilesDir(JNIEnv *env, const char *_type) noexcept
+{
+	assert(_type != nullptr);
+
+	Java::Class cls{env, env->GetObjectClass(Get())};
+	jmethodID method = env->GetMethodID(cls, "getExternalFilesDir",
+					    "(Ljava/lang/String;)Ljava/io/File;");
+	assert(method);
+
+	Java::String type{env, _type};
+
+	jobject file = env->CallObjectMethod(Get(), method, type.Get());
+	if (Java::DiscardException(env) || file == nullptr)
+		return nullptr;
+
+	return Java::File::ToAbsolutePath(env, file);
+}
+
+AllocatedPath
 Context::GetCacheDir(JNIEnv *env) const noexcept
 {
 	assert(env != nullptr);

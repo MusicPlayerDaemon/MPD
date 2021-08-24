@@ -17,6 +17,17 @@ ver 0.23 (not yet released)
   - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
 * new build-time dependency: libfmt
 
+ver 0.22.11 (2021/08/24)
+* protocol
+  - fix "albumart" crash
+* filter
+  - ffmpeg: pass "channel_layout" instead of "channels" to buffersrc
+  - ffmpeg: fix "av_buffersink_get_frame() failed: Resource temporarily unavailable"
+  - ffmpeg: support double-precision samples (by converting to single precision)
+* Android
+  - build with NDK r23
+  - playlist_directory defaults to "/sdcard/Android/data/org.musicpd/files/playlists"
+
 ver 0.22.10 (2021/08/06)
 * protocol
   - support "albumart" for virtual tracks in CUE sheets

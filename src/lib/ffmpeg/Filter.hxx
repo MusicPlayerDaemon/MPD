@@ -77,63 +77,38 @@ public:
 	}
 };
 
-class FilterContext {
-	AVFilterContext *context = nullptr;
+/**
+ * Create an "abuffer" filter.
+ *
+ * @param the input audio format; may be modified by the
+ * function to ask the caller to do format conversion
+ */
+AVFilterContext &
+MakeAudioBufferSource(AudioFormat &audio_format,
+		      AVFilterGraph &graph_ctx);
 
-public:
-	FilterContext() = default;
+/**
+ * Create an "abuffersink" filter.
+ */
+AVFilterContext &
+MakeAudioBufferSink(AVFilterGraph &graph_ctx);
 
-	FilterContext(const AVFilter &filt,
-		      const char *name, const char *args, void *opaque,
-		      AVFilterGraph &graph_ctx) {
-		int err = avfilter_graph_create_filter(&context, &filt,
-						       name, args, opaque,
-						       &graph_ctx);
-		if (err < 0)
-			throw MakeFfmpegError(err, "avfilter_graph_create_filter() failed");
-	}
+/**
+ * Create an "aformat" filter.
+ *
+ * @param the output audio format; may be modified by the function if
+ * the given format is not supported by libavfilter
+ */
+AVFilterContext &
+MakeAformat(AudioFormat &audio_format,
+	    AVFilterGraph &graph_ctx);
 
-	FilterContext(const AVFilter &filt,
-		      const char *name,
-		      AVFilterGraph &graph_ctx)
-		:FilterContext(filt, name, nullptr, nullptr, graph_ctx) {}
-
-	FilterContext(FilterContext &&src) noexcept
-		:context(std::exchange(src.context, nullptr)) {}
-
-	~FilterContext() noexcept {
-		if (context != nullptr)
-			avfilter_free(context);
-	}
-
-	FilterContext &operator=(FilterContext &&src) noexcept {
-		using std::swap;
-		swap(context, src.context);
-		return *this;
-	}
-
-	/**
-	 * Create an "abuffer" filter.
-	 *
-	 * @param the input audio format; may be modified by the
-	 * function to ask the caller to do format conversion
-	 */
-	static FilterContext MakeAudioBufferSource(AudioFormat &audio_format,
-						   AVFilterGraph &graph_ctx);
-
-	/**
-	 * Create an "abuffersink" filter.
-	 */
-	static FilterContext MakeAudioBufferSink(AVFilterGraph &graph_ctx);
-
-	auto &operator*() noexcept {
-		return *context;
-	}
-
-	auto *get() noexcept {
-		return context;
-	}
-};
+/**
+ * Create an "aformat" filter which automatically converts the output
+ * to a format supported by MPD.
+ */
+AVFilterContext &
+MakeAutoAformat(AVFilterGraph &graph_ctx);
 
 class FilterGraph {
 	AVFilterGraph *graph = nullptr;
@@ -179,6 +154,9 @@ public:
 
 		return std::make_pair(std::move(inputs), std::move(outputs));
 	}
+
+	void ParseSingleInOut(const char *filters, AVFilterContext &in,
+			      AVFilterContext &out);
 
 	std::pair<FilterInOut, FilterInOut> Parse(const char *filters) {
 		AVFilterInOut *inputs, *outputs;

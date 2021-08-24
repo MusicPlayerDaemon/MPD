@@ -32,12 +32,12 @@ extern "C" {
 FfmpegFilter::FfmpegFilter(const AudioFormat &in_audio_format,
 			   const AudioFormat &_out_audio_format,
 			   Ffmpeg::FilterGraph &&_graph,
-			   Ffmpeg::FilterContext &&_buffer_src,
-			   Ffmpeg::FilterContext &&_buffer_sink) noexcept
+			   AVFilterContext &_buffer_src,
+			   AVFilterContext &_buffer_sink) noexcept
 	:Filter(_out_audio_format),
 	 graph(std::move(_graph)),
-	 buffer_src(std::move(_buffer_src)),
-	 buffer_sink(std::move(_buffer_sink)),
+	 buffer_src(_buffer_src),
+	 buffer_sink(_buffer_sink),
 	 in_format(Ffmpeg::ToFfmpegSampleFormat(in_audio_format.format)),
 	 in_sample_rate(in_audio_format.sample_rate),
 	 in_channels(in_audio_format.channels),
@@ -61,7 +61,7 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 
 	memcpy(frame.GetData(0), src.data, src.size);
 
-	int err = av_buffersrc_add_frame(buffer_src.get(), frame.get());
+	int err = av_buffersrc_add_frame(&buffer_src, frame.get());
 	if (err < 0)
 		throw MakeFfmpegError(err, "av_buffersrc_write_frame() failed");
 
@@ -69,7 +69,7 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 
 	frame.Unref();
 
-	err = av_buffersink_get_frame(buffer_sink.get(), frame.get());
+	err = av_buffersink_get_frame(&buffer_sink, frame.get());
 	if (err < 0) {
 		if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
 			return nullptr;

@@ -158,7 +158,17 @@ glue_daemonize_init(const struct options *options,
 static void
 glue_mapper_init(const ConfigData &config)
 {
-	mapper_init(config.GetPath(ConfigOption::PLAYLIST_DIR));
+	auto playlist_directory = config.GetPath(ConfigOption::PLAYLIST_DIR);
+
+#ifdef ANDROID
+	/* if there is no explicit configuration, store playlists in
+	   "/sdcard/Android/data/org.musicpd/files/playlists" */
+	if (playlist_directory.IsNull())
+		playlist_directory = context->GetExternalFilesDir(Java::GetEnv(),
+								  "playlists");
+#endif
+
+	mapper_init(std::move(playlist_directory));
 }
 
 #ifdef ENABLE_DATABASE

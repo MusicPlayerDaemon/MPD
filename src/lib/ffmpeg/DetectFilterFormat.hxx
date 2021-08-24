@@ -35,6 +35,9 @@ namespace Ffmpeg {
  * between.
  *
  * This function can throw if the FFmpeg filter fails.
+ *
+ * @return the output format or AudioFormat::Undefined() if it was not
+ * possible to determine the format
  */
 AudioFormat
 DetectFilterOutputFormat(const AudioFormat &in_audio_format,

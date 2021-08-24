@@ -251,6 +251,9 @@ try {
 
 	AtScopeExit(db, song) { db->ReturnSong(song); };
 
+	if (song->real_uri == nullptr)
+		return directory_uri;
+
 	const char *real_uri = song->real_uri;
 
 	/* this is a simplification which is just enough for CUE
