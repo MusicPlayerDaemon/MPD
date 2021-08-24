@@ -31,6 +31,10 @@ public:
 		:Java::GlobalObject(env, obj) {}
 
 	[[gnu::pure]]
+	AllocatedPath GetExternalFilesDir(JNIEnv *env,
+					  const char *type) noexcept;
+
+	[[gnu::pure]]
 	AllocatedPath GetCacheDir(JNIEnv *env) const noexcept;
 
 	[[gnu::pure]]
