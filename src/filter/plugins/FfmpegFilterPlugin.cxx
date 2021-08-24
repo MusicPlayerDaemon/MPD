@@ -37,6 +37,40 @@ public:
 	std::unique_ptr<Filter> Open(AudioFormat &af) override;
 };
 
+/**
+ * Fallback for PreparedFfmpegFilter::Open() just in case the filter's
+ * native output format could not be determined.
+ *
+ * TODO: improve the MPD filter API to allow returning the output
+ * format later, and eliminate this kludge
+ */
+static auto
+OpenWithAformat(const char *graph_string, AudioFormat &in_audio_format)
+{
+	Ffmpeg::FilterGraph graph;
+
+	auto &buffer_src =
+		Ffmpeg::MakeAudioBufferSource(in_audio_format, *graph);
+
+	auto &buffer_sink = Ffmpeg::MakeAudioBufferSink(*graph);
+
+	AudioFormat out_audio_format = in_audio_format;
+	auto &aformat = Ffmpeg::MakeAformat(out_audio_format, *graph);
+
+	int error = avfilter_link(&aformat, 0, &buffer_sink, 0);
+	if (error < 0)
+		throw MakeFfmpegError(error, "avfilter_link() failed");
+
+	graph.ParseSingleInOut(graph_string, aformat, buffer_src);
+	graph.CheckAndConfigure();
+
+	return std::make_unique<FfmpegFilter>(in_audio_format,
+					      out_audio_format,
+					      std::move(graph),
+					      buffer_src,
+					      buffer_sink);
+}
+
 std::unique_ptr<Filter>
 PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 {
@@ -55,7 +89,12 @@ PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 						 buffer_sink);
 
 	if (!out_audio_format.IsDefined())
-		throw std::runtime_error("Unable to determine FFmpeg filter output format");
+		/* the filter's native output format could not be
+		   determined yet, but we need to know it now; as a
+		   workaround for this MPD API deficiency, try again
+		   with an "aformat" filter which forces a specific
+		   output format */
+		return OpenWithAformat(graph_string, in_audio_format);
 
 	return std::make_unique<FfmpegFilter>(in_audio_format,
 					      out_audio_format,

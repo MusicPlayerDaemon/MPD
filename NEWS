@@ -3,6 +3,7 @@ ver 0.22.11 (not yet released)
   - fix "albumart" crash
 * filter
   - ffmpeg: pass "channel_layout" instead of "channels" to buffersrc
+  - ffmpeg: fix "av_buffersink_get_frame() failed: Resource temporarily unavailable"
 * Android
   - build with NDK r23
 
