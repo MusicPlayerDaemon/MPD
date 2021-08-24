@@ -4,6 +4,7 @@ ver 0.22.11 (not yet released)
 * filter
   - ffmpeg: pass "channel_layout" instead of "channels" to buffersrc
   - ffmpeg: fix "av_buffersink_get_frame() failed: Resource temporarily unavailable"
+  - ffmpeg: support double-precision samples (by converting to single precision)
 * Android
   - build with NDK r23
 

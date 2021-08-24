@@ -103,6 +103,13 @@ AVFilterContext &
 MakeAformat(AudioFormat &audio_format,
 	    AVFilterGraph &graph_ctx);
 
+/**
+ * Create an "aformat" filter which automatically converts the output
+ * to a format supported by MPD.
+ */
+AVFilterContext &
+MakeAutoAformat(AVFilterGraph &graph_ctx);
+
 class FilterGraph {
 	AVFilterGraph *graph = nullptr;
 

@@ -130,6 +130,14 @@ MakeAformat(AudioFormat &audio_format,
 			    args, nullptr, graph_ctx);
 }
 
+AVFilterContext &
+MakeAutoAformat(AVFilterGraph &graph_ctx)
+{
+	return CreateFilter(RequireFilterByName("aformat"), "aformat",
+			    "sample_fmts=flt|s32|s16",
+			    nullptr, graph_ctx);
+}
+
 void
 FilterGraph::ParseSingleInOut(const char *filters, AVFilterContext &in,
 			      AVFilterContext &out)

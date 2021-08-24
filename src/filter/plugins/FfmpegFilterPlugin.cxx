@@ -81,7 +81,16 @@ PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 
 	auto &buffer_sink = Ffmpeg::MakeAudioBufferSink(*graph);
 
-	graph.ParseSingleInOut(graph_string, buffer_sink, buffer_src);
+	/* if the filter's output format is not supported by MPD, this
+	   "aformat" filter is inserted at the end and takes care for
+	   the required conversion */
+	auto &aformat = Ffmpeg::MakeAutoAformat(*graph);
+
+	int error = avfilter_link(&aformat, 0, &buffer_sink, 0);
+	if (error < 0)
+		throw MakeFfmpegError(error, "avfilter_link() failed");
+
+	graph.ParseSingleInOut(graph_string, aformat, buffer_src);
 	graph.CheckAndConfigure();
 
 	const auto out_audio_format =
