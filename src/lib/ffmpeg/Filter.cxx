@@ -100,6 +100,36 @@ MakeAudioBufferSink(AVFilterGraph &graph_ctx)
 			    graph_ctx);
 }
 
+AVFilterContext &
+MakeAformat(AudioFormat &audio_format,
+	    AVFilterGraph &graph_ctx)
+{
+	AVSampleFormat dest_format = ToFfmpegSampleFormat(audio_format.format);
+	if (dest_format == AV_SAMPLE_FMT_NONE) {
+		switch (audio_format.format) {
+		case SampleFormat::S24_P32:
+			audio_format.format = SampleFormat::S32;
+			dest_format = AV_SAMPLE_FMT_S32;
+			break;
+
+		default:
+			audio_format.format = SampleFormat::S16;
+			dest_format = AV_SAMPLE_FMT_S16;
+			break;
+		}
+	}
+
+	char args[256];
+	sprintf(args,
+		"sample_rates=%u:sample_fmts=%s:channel_layouts=0x%" PRIx64,
+		audio_format.sample_rate,
+		av_get_sample_fmt_name(dest_format),
+		ToFfmpegChannelLayout(audio_format.channels));
+
+	return CreateFilter(RequireFilterByName("aformat"), "aformat",
+			    args, nullptr, graph_ctx);
+}
+
 void
 FilterGraph::ParseSingleInOut(const char *filters, AVFilterContext &in,
 			      AVFilterContext &out)

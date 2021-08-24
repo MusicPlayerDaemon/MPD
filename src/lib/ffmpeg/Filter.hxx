@@ -93,6 +93,16 @@ MakeAudioBufferSource(AudioFormat &audio_format,
 AVFilterContext &
 MakeAudioBufferSink(AVFilterGraph &graph_ctx);
 
+/**
+ * Create an "aformat" filter.
+ *
+ * @param the output audio format; may be modified by the function if
+ * the given format is not supported by libavfilter
+ */
+AVFilterContext &
+MakeAformat(AudioFormat &audio_format,
+	    AVFilterGraph &graph_ctx);
+
 class FilterGraph {
 	AVFilterGraph *graph = nullptr;
 
