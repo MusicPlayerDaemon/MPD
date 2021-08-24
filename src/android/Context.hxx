@@ -30,10 +30,10 @@ public:
 	Context(JNIEnv *env, jobject obj) noexcept
 		:Java::GlobalObject(env, obj) {}
 
-	gcc_pure
+	[[gnu::pure]]
 	AllocatedPath GetCacheDir(JNIEnv *env) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	AudioManager *GetAudioManager(JNIEnv *env) noexcept;
 };
 

@@ -33,10 +33,10 @@ namespace Environment {
 	/**
 	 * Determine the mount point of the external SD card.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	AllocatedPath getExternalStorageDirectory() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	AllocatedPath getExternalStoragePublicDirectory(const char *type) noexcept;
 }
 
