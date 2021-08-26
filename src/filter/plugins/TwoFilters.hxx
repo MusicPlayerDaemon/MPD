@@ -21,8 +21,10 @@
 #define MPD_TWO_FILTERS_HXX
 
 #include "filter/Filter.hxx"
+#include "filter/Prepared.hxx"
 
 #include <memory>
+#include <string>
 
 /**
  * A #Filter implementation which chains two other filters.
@@ -44,6 +46,23 @@ public:
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 	ConstBuffer<void> Flush() override;
+};
+
+/**
+ * Like #TwoFilters, but implements the #PreparedFilter interface.
+ */
+class PreparedTwoFilters final : public PreparedFilter {
+	std::unique_ptr<PreparedFilter> first, second;
+	std::string second_name;
+
+public:
+	template<typename F, typename S, typename N>
+	PreparedTwoFilters(F &&_first, S &&_second, N &&_second_name) noexcept
+		:first(std::forward<F>(_first)),
+		 second(std::forward<S>(_second)),
+		 second_name(std::forward<N>(_second_name)) {}
+
+	std::unique_ptr<Filter> Open(AudioFormat &audio_format) override;
 };
 
 #endif
