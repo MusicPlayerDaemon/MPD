@@ -65,4 +65,23 @@ public:
 	std::unique_ptr<Filter> Open(AudioFormat &audio_format) override;
 };
 
+/**
+ * Create a #PreparedTwoFilters instance, but only if both parameters
+ * are not nullptr.
+ */
+template<typename F, typename S, typename N>
+static std::unique_ptr<PreparedFilter>
+ChainFilters(F &&first, S &&second, N &&second_name) noexcept
+{
+	if (!second)
+		return std::forward<F>(first);
+
+	if (!first)
+		return std::forward<S>(second);
+
+	return std::make_unique<PreparedTwoFilters>(std::forward<F>(first),
+						    std::forward<S>(second),
+						    std::forward<N>(second_name));
+}
+
 #endif
