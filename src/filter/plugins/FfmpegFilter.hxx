@@ -54,6 +54,7 @@ public:
 
 	/* virtual methods from class Filter */
 	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
+	std::span<const std::byte> ReadMore() override;
 	std::span<const std::byte> Flush() override;
 
 private:

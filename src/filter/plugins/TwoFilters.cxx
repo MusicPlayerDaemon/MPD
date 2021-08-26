@@ -21,13 +21,47 @@ TwoFilters::FilterPCM(std::span<const std::byte> src)
 }
 
 std::span<const std::byte>
-TwoFilters::Flush()
+TwoFilters::ReadMore()
 {
-	if (auto result = first->Flush(); !result.empty())
-		/* Flush() output from the first Filter must be
-		   filtered by the second Filter */
+	assert(first);
+	assert(second);
+
+	/* first read all remaining data from the second filter */
+	if (auto result = second->ReadMore(); !result.empty())
+		return result;
+
+	/* now read more data from the first filter and process it
+           with the second filter */
+	if (auto result = first->ReadMore(); !result.empty())
+		/* output from the first Filter must be filtered by
+		   the second Filter */
 		return second->FilterPCM(result);
 
+	/* both filters have been queried and there's no more data */
+	return {};
+}
+
+std::span<const std::byte>
+TwoFilters::Flush()
+{
+	assert(second);
+
+	/* first read all remaining data from the second filter */
+	if (auto result = second->ReadMore(); !result.empty())
+		return result;
+
+	/* now flush the first filter and process it with the second
+           filter */
+	if (first) {
+		if (auto result = first->Flush(); !result.empty())
+			/* output from the first Filter must be
+			   filtered by the second Filter */
+			return second->FilterPCM(result);
+
+		first.reset();
+	}
+
+	/* finally flush the second filter */
 	return second->Flush();
 }
 

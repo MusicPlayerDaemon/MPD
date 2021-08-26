@@ -68,6 +68,10 @@ public:
 		return filter->FilterPCM(src);
 	}
 
+	std::span<const std::byte> ReadMore() override {
+		return filter->ReadMore();
+	}
+
 	std::span<const std::byte> Flush() override {
 		return filter->Flush();
 	}

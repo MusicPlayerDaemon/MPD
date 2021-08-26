@@ -122,8 +122,9 @@ try {
 		if (nbytes == 0)
 			break;
 
-		auto dest = filter->FilterPCM(std::span{buffer}.first(nbytes));
-		output_fd.FullWrite(dest);
+		for (auto dest = filter->FilterPCM(std::span{buffer}.first(nbytes));
+		     !dest.empty(); dest = filter->ReadMore())
+			output_fd.FullWrite(dest);
 	}
 
 	while (true) {

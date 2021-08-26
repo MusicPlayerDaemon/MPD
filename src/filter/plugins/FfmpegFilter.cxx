@@ -85,6 +85,12 @@ FfmpegFilter::FilterPCM(std::span<const std::byte> src)
 }
 
 std::span<const std::byte>
+FfmpegFilter::ReadMore()
+{
+	return ReadOutput();
+}
+
+std::span<const std::byte>
 FfmpegFilter::Flush()
 {
 	if (!flushed) {

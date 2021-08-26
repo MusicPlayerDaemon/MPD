@@ -42,10 +42,27 @@ public:
 	 *
 	 * @param src the input buffer
 	 * @return the output buffer (will be invalidated by deleting
-	 * this object or any call to Reset(), FilterPCM() or
-	 * Flush()); may be empty if no output is currently available
+	 * this object or any call to Reset(), FilterPCM(), ReadMore()
+	 * or Flush()); may be empty if no output is currently
+	 * available
 	 */
 	virtual std::span<const std::byte> FilterPCM(std::span<const std::byte> src) = 0;
+
+	/**
+	 * Read more result data from the filter.  After each
+	 * FilterPCM() call, this should be called repeatedly until it
+	 * returns an empty span.
+	 *
+	 * Throws on error.
+	 *
+	 * @return the output buffer (will be invalidated by deleting
+	 * this object or any call to Reset(), FilterPCM(), ReadMore()
+	 * or Flush()); may be empty if no output is currently
+	 * available
+	 */
+	virtual std::span<const std::byte> ReadMore() {
+		return {};
+	}
 
 	/**
 	 * Flush pending data and return it.  This should be called

@@ -138,6 +138,8 @@ AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 			*replay_gain_serial_p = chunk.replay_gain_serial;
 		}
 
+		/* note: the ReplayGainFilter doesn't have a
+		   ReadMore() method */
 		data = current_replay_gain_filter->FilterPCM(data);
 	}
 
@@ -231,10 +233,18 @@ AudioOutputSource::Fill(Mutex &mutex)
 void
 AudioOutputSource::ConsumeData(size_t nbytes) noexcept
 {
+	assert(filter);
+
 	pending_data = pending_data.subspan(nbytes);
 
-	if (pending_data.empty())
-		DropCurrentChunk();
+	if (pending_data.empty()) {
+		/* give the filter a chance to return more data in
+		   another buffer */
+		pending_data = filter->ReadMore();
+
+		if (pending_data.empty())
+			DropCurrentChunk();
+	}
 }
 
 std::span<const std::byte>
