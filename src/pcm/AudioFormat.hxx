@@ -63,14 +63,14 @@ struct AudioFormat {
 	 */
 	uint8_t channels;
 
-	AudioFormat() = default;
+	AudioFormat() noexcept = default;
 
 	constexpr AudioFormat(uint32_t _sample_rate,
-			      SampleFormat _format, uint8_t _channels)
+			      SampleFormat _format, uint8_t _channels) noexcept
 		:sample_rate(_sample_rate),
 		 format(_format), channels(_channels) {}
 
-	static constexpr AudioFormat Undefined() {
+	static constexpr AudioFormat Undefined() noexcept {
 		return AudioFormat(0, SampleFormat::UNDEFINED,0);
 	}
 
@@ -78,7 +78,7 @@ struct AudioFormat {
 	 * Clears the object, i.e. sets all attributes to an undefined
 	 * (invalid) value.
 	 */
-	void Clear() {
+	void Clear() noexcept {
 		sample_rate = 0;
 		format = SampleFormat::UNDEFINED;
 		channels = 0;
@@ -87,7 +87,7 @@ struct AudioFormat {
 	/**
 	 * Checks whether the object has a defined value.
 	 */
-	constexpr bool IsDefined() const {
+	constexpr bool IsDefined() const noexcept {
 		return sample_rate != 0;
 	}
 
@@ -96,7 +96,7 @@ struct AudioFormat {
 	 * defined.  This is more complete than IsDefined(), but
 	 * slower.
 	 */
-	constexpr bool IsFullyDefined() const {
+	constexpr bool IsFullyDefined() const noexcept {
 		return sample_rate != 0 && format != SampleFormat::UNDEFINED &&
 			channels != 0;
 	}
@@ -104,21 +104,21 @@ struct AudioFormat {
 	/**
 	 * Checks whether the object has at least one defined value.
 	 */
-	constexpr bool IsMaskDefined() const {
+	constexpr bool IsMaskDefined() const noexcept {
 		return sample_rate != 0 || format != SampleFormat::UNDEFINED ||
 			channels != 0;
 	}
 
-	bool IsValid() const;
-	bool IsMaskValid() const;
+	bool IsValid() const noexcept;
+	bool IsMaskValid() const noexcept;
 
-	constexpr bool operator==(const AudioFormat other) const {
+	constexpr bool operator==(const AudioFormat other) const noexcept {
 		return sample_rate == other.sample_rate &&
 			format == other.format &&
 			channels == other.channels;
 	}
 
-	constexpr bool operator!=(const AudioFormat other) const {
+	constexpr bool operator!=(const AudioFormat other) const noexcept {
 		return !(*this == other);
 	}
 
@@ -139,12 +139,12 @@ struct AudioFormat {
 	/**
 	 * Returns the size of each (mono) sample in bytes.
 	 */
-	unsigned GetSampleSize() const;
+	unsigned GetSampleSize() const noexcept;
 
 	/**
 	 * Returns the size of each full frame in bytes.
 	 */
-	unsigned GetFrameSize() const;
+	unsigned GetFrameSize() const noexcept;
 
 	template<typename D>
 	constexpr auto TimeToFrames(D t) const noexcept {
@@ -186,7 +186,7 @@ audio_valid_sample_rate(unsigned sample_rate) noexcept
  * This function performs some basic validity checks.
  */
 inline bool
-AudioFormat::IsValid() const
+AudioFormat::IsValid() const noexcept
 {
 	return audio_valid_sample_rate(sample_rate) &&
 		audio_valid_sample_format(format) &&
@@ -198,7 +198,7 @@ AudioFormat::IsValid() const
  * MPD.  This function performs some basic validity checks.
  */
 inline bool
-AudioFormat::IsMaskValid() const
+AudioFormat::IsMaskValid() const noexcept
 {
 	return (sample_rate == 0 ||
 		audio_valid_sample_rate(sample_rate)) &&
@@ -208,13 +208,13 @@ AudioFormat::IsMaskValid() const
 }
 
 inline unsigned
-AudioFormat::GetSampleSize() const
+AudioFormat::GetSampleSize() const noexcept
 {
 	return sample_format_size(format);
 }
 
 inline unsigned
-AudioFormat::GetFrameSize() const
+AudioFormat::GetFrameSize() const noexcept
 {
 	return GetSampleSize() * channels;
 }
