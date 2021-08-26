@@ -116,7 +116,7 @@ sample_format_size(SampleFormat format) noexcept
  * @param format a #SampleFormat enum value
  * @return the string
  */
-gcc_pure gcc_returns_nonnull
+[[gnu::pure]] [[gnu::returns_nonnull]]
 const char *
 sample_format_to_string(SampleFormat format) noexcept;
 

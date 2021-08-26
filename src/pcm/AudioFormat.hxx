@@ -22,7 +22,6 @@
 
 #include "pcm/SampleFormat.hxx" // IWYU pragma: export
 #include "pcm/ChannelDefs.hxx" // IWYU pragma: export
-#include "util/Compiler.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -124,14 +123,14 @@ struct AudioFormat {
 
 	void ApplyMask(AudioFormat mask) noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	AudioFormat WithMask(AudioFormat mask) const noexcept {
 		AudioFormat result = *this;
 		result.ApplyMask(mask);
 		return result;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool MatchMask(AudioFormat mask) const noexcept {
 		return WithMask(mask) == *this;
 	}
@@ -226,7 +225,7 @@ AudioFormat::GetFrameSize() const noexcept
  * @param af the #AudioFormat object
  * @return the string buffer
  */
-gcc_const
+[[gnu::const]]
 StringBuffer<24>
 ToString(AudioFormat af) noexcept;
 
