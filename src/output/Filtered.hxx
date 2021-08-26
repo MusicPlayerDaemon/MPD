@@ -90,8 +90,8 @@ public:
 	AudioFormat out_audio_format;
 
 	/**
-	 * The filter object of this audio output.  This is an
-	 * instance of chain_filter_plugin.
+	 * The filter object of this audio output.  This is a chain of
+	 * #PreparedTwoFilter instances.
 	 */
 	std::unique_ptr<PreparedFilter> prepared_filter;
 

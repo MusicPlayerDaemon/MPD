@@ -20,6 +20,8 @@
 #ifndef MPD_FILTER_LOAD_CHAIN_HXX
 #define MPD_FILTER_LOAD_CHAIN_HXX
 
+#include <memory>
+
 class FilterFactory;
 class PreparedFilter;
 
@@ -35,7 +37,7 @@ class PreparedFilter;
  * @param spec the filter chain specification
  */
 void
-filter_chain_parse(PreparedFilter &chain,
+filter_chain_parse(std::unique_ptr<PreparedFilter> &chain,
 		   FilterFactory &factory,
 		   const char *spec);
 

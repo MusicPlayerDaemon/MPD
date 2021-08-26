@@ -32,7 +32,7 @@
 #include "filter/plugins/AutoConvertFilterPlugin.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
-#include "filter/plugins/ChainFilterPlugin.hxx"
+#include "filter/plugins/TwoFilters.hxx"
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "filter/plugins/NormalizeFilterPlugin.hxx"
 #include "util/RuntimeError.hxx"
@@ -109,7 +109,7 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 			const ConfigBlock &block,
 			const MixerType mixer_type,
 			const MixerPlugin *plugin,
-			PreparedFilter &filter_chain,
+			std::unique_ptr<PreparedFilter> &filter_chain,
 			MixerListener &listener)
 {
 	Mixer *mixer;
@@ -137,8 +137,9 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 				  ConfigBlock());
 		assert(mixer != nullptr);
 
-		filter_chain_append(filter_chain, "software_mixer",
-				    ao.volume_filter.Set(volume_filter_prepare()));
+		filter_chain = ChainFilters(std::move(filter_chain),
+					    ao.volume_filter.Set(volume_filter_prepare()),
+					    "software_mixer");
 		return mixer;
 	}
 
@@ -169,21 +170,17 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 
 	log_name = StringFormat<256>("\"%s\" (%s)", name, plugin_name);
 
-	/* set up the filter chain */
-
-	prepared_filter = filter_chain_new();
-	assert(prepared_filter != nullptr);
-
 	/* create the normalization filter (if configured) */
 
 	if (defaults.normalize) {
-		filter_chain_append(*prepared_filter, "normalize",
-				    autoconvert_filter_new(normalize_filter_prepare()));
+		prepared_filter = ChainFilters(std::move(prepared_filter),
+					       autoconvert_filter_new(normalize_filter_prepare()),
+					       "normalize");
 	}
 
 	try {
 		if (filter_factory != nullptr)
-			filter_chain_parse(*prepared_filter, *filter_factory,
+			filter_chain_parse(prepared_filter, *filter_factory,
 					   block.GetBlockValue(AUDIO_FILTERS, ""));
 	} catch (...) {
 		/* It's not really fatal - Part of the filter chain
@@ -236,7 +233,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 		mixer = audio_output_load_mixer(event_loop, *this, block,
 						mixer_type,
 						mixer_plugin,
-						*prepared_filter,
+						prepared_filter,
 						mixer_listener);
 	} catch (...) {
 		FmtError(output_domain,
@@ -260,8 +257,9 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 
 	/* the "convert" filter must be the last one in the chain */
 
-	filter_chain_append(*prepared_filter, "convert",
-			    convert_filter.Set(convert_filter_prepare()));
+	prepared_filter = ChainFilters(std::move(prepared_filter),
+				       convert_filter.Set(convert_filter_prepare()),
+				       "convert");
 }
 
 std::unique_ptr<FilteredAudioOutput>
