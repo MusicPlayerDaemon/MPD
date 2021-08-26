@@ -192,7 +192,7 @@ protected:
 			if (tag_type == TAG_TITLE)
 				object.name = TitleToPathSegment(std::move(value));
 
-			value.clear();
+			value = {};
 			tag_type = TAG_NUM_OF_ITEM_TYPES;
 			return;
 		}
