@@ -66,7 +66,7 @@ public:
 		return *pipe;
 	}
 
-	bool IsInitial() {
+	bool IsInitial() const {
 		return chunk == nullptr;
 	}
 

@@ -49,7 +49,7 @@ public:
 		int index;
 		const char *value;
 
-		constexpr operator bool() noexcept {
+		constexpr operator bool() const noexcept {
 			return index >= 0;
 		}
 	};

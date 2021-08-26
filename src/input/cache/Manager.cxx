@@ -75,7 +75,7 @@ InputCacheManager::Flush() noexcept
 }
 
 bool
-InputCacheManager::IsEligible(const InputStream &input) noexcept
+InputCacheManager::IsEligible(const InputStream &input) const noexcept
 {
 	assert(input.IsReady());
 

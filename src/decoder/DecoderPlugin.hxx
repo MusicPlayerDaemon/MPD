@@ -143,34 +143,34 @@ struct DecoderPlugin {
 		 scan_stream(_scan_stream) {}
 
 	constexpr auto WithInit(bool (*_init)(const ConfigBlock &block),
-				void (*_finish)() noexcept = nullptr) noexcept {
+				void (*_finish)() noexcept = nullptr) const noexcept {
 		auto copy = *this;
 		copy.init = _init;
 		copy.finish = _finish;
 		return copy;
 	}
 
-	constexpr auto WithContainer(std::forward_list<DetachedSong> (*_container_scan)(Path path_fs)) noexcept {
+	constexpr auto WithContainer(std::forward_list<DetachedSong> (*_container_scan)(Path path_fs)) const noexcept {
 		auto copy = *this;
 		copy.container_scan = _container_scan;
 		return copy;
 	}
 
 	constexpr auto WithProtocols(std::set<std::string> (*_protocols)() noexcept,
-				     void (*_uri_decode)(DecoderClient &client, const char *uri)) noexcept {
+				     void (*_uri_decode)(DecoderClient &client, const char *uri)) const noexcept {
 		auto copy = *this;
 		copy.protocols = _protocols;
 		copy.uri_decode = _uri_decode;
 		return copy;
 	}
 
-	constexpr auto WithSuffixes(const char *const*_suffixes) noexcept {
+	constexpr auto WithSuffixes(const char *const*_suffixes) const noexcept {
 		auto copy = *this;
 		copy.suffixes = _suffixes;
 		return copy;
 	}
 
-	constexpr auto WithMimeTypes(const char *const*_mime_types) noexcept {
+	constexpr auto WithMimeTypes(const char *const*_mime_types) const noexcept {
 		auto copy = *this;
 		copy.mime_types = _mime_types;
 		return copy;

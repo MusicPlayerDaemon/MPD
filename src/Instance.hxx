@@ -194,7 +194,7 @@ struct Instance final
 #endif
 
 #ifdef ENABLE_SQLITE
-	bool HasStickerDatabase() noexcept {
+	bool HasStickerDatabase() const noexcept {
 		return sticker_database != nullptr;
 	}
 #endif

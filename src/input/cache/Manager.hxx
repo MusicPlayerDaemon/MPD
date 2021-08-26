@@ -98,7 +98,7 @@ private:
 	 * Check whether the given #InputStream can be stored in this
 	 * cache.
 	 */
-	bool IsEligible(const InputStream &input) noexcept;
+	bool IsEligible(const InputStream &input) const noexcept;
 
 	void Remove(InputCacheItem &item) noexcept;
 	void Delete(InputCacheItem *item) noexcept;

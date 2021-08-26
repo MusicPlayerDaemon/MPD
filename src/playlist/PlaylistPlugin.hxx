@@ -85,32 +85,32 @@ struct PlaylistPlugin {
 		:name(_name), open_stream(_open_stream) {}
 
 	constexpr auto WithInit(bool (*_init)(const ConfigBlock &block),
-				void (*_finish)() noexcept = nullptr) noexcept {
+				void (*_finish)() noexcept = nullptr) const noexcept {
 		auto copy = *this;
 		copy.init = _init;
 		copy.finish = _finish;
 		return copy;
 	}
 
-	constexpr auto WithSchemes(const char *const*_schemes) noexcept {
+	constexpr auto WithSchemes(const char *const*_schemes) const noexcept {
 		auto copy = *this;
 		copy.schemes = _schemes;
 		return copy;
 	}
 
-	constexpr auto WithSuffixes(const char *const*_suffixes) noexcept {
+	constexpr auto WithSuffixes(const char *const*_suffixes) const noexcept {
 		auto copy = *this;
 		copy.suffixes = _suffixes;
 		return copy;
 	}
 
-	constexpr auto WithMimeTypes(const char *const*_mime_types) noexcept {
+	constexpr auto WithMimeTypes(const char *const*_mime_types) const noexcept {
 		auto copy = *this;
 		copy.mime_types = _mime_types;
 		return copy;
 	}
 
-	constexpr auto WithAsFolder(bool value=true) noexcept {
+	constexpr auto WithAsFolder(bool value=true) const noexcept {
 		auto copy = *this;
 		copy.as_folder = value;
 		return copy;
