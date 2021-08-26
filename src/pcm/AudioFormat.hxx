@@ -26,7 +26,7 @@
 #include <cstddef>
 #include <cstdint>
 
-template<size_t CAPACITY> class StringBuffer;
+template<std::size_t CAPACITY> class StringBuffer;
 
 /**
  * This structure describes the format of a raw PCM stream.
@@ -152,8 +152,8 @@ struct AudioFormat {
 	}
 
 	template<typename D>
-	constexpr size_t TimeToSize(D t) const noexcept {
-		return size_t(size_t(TimeToFrames(t)) * GetFrameSize());
+	constexpr std::size_t TimeToSize(D t) const noexcept {
+		return std::size_t(std::size_t(TimeToFrames(t)) * GetFrameSize());
 	}
 
 	template<typename D>
