@@ -44,7 +44,7 @@ RemoteTagCache::Lookup(const std::string &uri) noexcept
 	KeyMap::insert_commit_data hint;
 	auto [tag, value] = map.insert_check(uri, Item::Hash(), Item::Equal(), hint);
 	if (value) {
-		auto item = new Item(*this, uri);
+		auto item = std::make_unique<Item>(*this, uri);
 		map.insert_commit(*item, hint);
 		waiting_list.push_back(*item);
 		lock.unlock();

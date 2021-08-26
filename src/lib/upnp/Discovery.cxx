@@ -177,12 +177,12 @@ UPnPDeviceDirectory::OnAlive(const UpnpDiscovery *disco) noexcept
 	if (isMSDevice(UpnpDiscovery_get_DeviceType_cstr(disco)) ||
 	    isCDService(UpnpDiscovery_get_ServiceType_cstr(disco))) {
 		try {
-			auto *downloader = new Downloader(*this, *disco);
+			auto downloader = std::make_unique<Downloader>(*this, *disco);
 
 			try {
 				downloader->Start();
 			} catch (...) {
-				BlockingCall(GetEventLoop(), [downloader](){
+				BlockingCall(GetEventLoop(), [&downloader](){
 						downloader->Destroy();
 					});
 

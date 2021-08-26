@@ -103,7 +103,7 @@ SnapcastOutput::Unbind() noexcept
 inline void
 SnapcastOutput::AddClient(UniqueSocketDescriptor fd) noexcept
 {
-	auto *client = new SnapcastClient(*this, std::move(fd));
+	auto client = std::make_unique<SnapcastClient>(*this, std::move(fd));
 	clients.push_front(*client);
 }
 

@@ -89,7 +89,7 @@ HttpdOutput::Unbind() noexcept
 inline void
 HttpdOutput::AddClient(UniqueSocketDescriptor fd) noexcept
 {
-	auto *client = new HttpdClient(*this, std::move(fd), GetEventLoop(),
+	auto client = std::make_unique<HttpdClient>(*this, std::move(fd), GetEventLoop(),
 				       !encoder->ImplementsTag());
 	clients.push_front(*client);
 

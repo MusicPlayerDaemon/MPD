@@ -81,7 +81,7 @@ class AlsaMixer final : public Mixer {
 	snd_mixer_t *handle;
 	snd_mixer_elem_t *elem;
 
-	AlsaMixerMonitor *monitor;
+	std::unique_ptr<AlsaMixerMonitor> monitor;
 
 	/**
 	 * These fields are our workaround for rounding errors when
@@ -282,7 +282,7 @@ AlsaMixer::Setup()
 	snd_mixer_elem_set_callback_private(elem, this);
 	snd_mixer_elem_set_callback(elem, ElemCallback);
 
-	monitor = new AlsaMixerMonitor(event_loop, handle);
+	monitor = std::make_unique<AlsaMixerMonitor>(event_loop, handle);
 }
 
 void
@@ -310,7 +310,7 @@ AlsaMixer::Close() noexcept
 {
 	assert(handle != nullptr);
 
-	delete monitor;
+	monitor.reset();
 
 	snd_mixer_elem_set_callback(elem, nullptr);
 	snd_mixer_close(handle);

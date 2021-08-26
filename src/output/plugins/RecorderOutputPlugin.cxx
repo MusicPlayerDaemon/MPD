@@ -66,7 +66,7 @@ class RecorderOutput final : AudioOutput {
 	/**
 	 * The destination file.
 	 */
-	FileOutputStream *file;
+	std::unique_ptr<FileOutputStream> file;
 
 	explicit RecorderOutput(const ConfigBlock &block);
 
@@ -139,7 +139,7 @@ RecorderOutput::Open(AudioFormat &audio_format)
 	if (!HasDynamicPath()) {
 		assert(!path.IsNull());
 
-		file = new FileOutputStream(path);
+		file = std::make_unique<FileOutputStream>(path);
 	} else {
 		/* don't open the file just yet; wait until we have
 		   a tag that we can use to build the path */
@@ -153,7 +153,6 @@ RecorderOutput::Open(AudioFormat &audio_format)
 	try {
 		encoder = prepared_encoder->Open(audio_format);
 	} catch (...) {
-		delete file;
 		throw;
 	}
 
@@ -196,11 +195,10 @@ RecorderOutput::Commit()
 	try {
 		file->Commit();
 	} catch (...) {
-		delete file;
 		throw;
 	}
 
-	delete file;
+	file.reset();
 }
 
 void
@@ -251,14 +249,13 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 	assert(path.IsNull());
 	assert(file == nullptr);
 
-	auto *new_file = new FileOutputStream(new_path);
+	auto new_file = std::make_unique<FileOutputStream>(new_path);
 
 	AudioFormat new_audio_format = effective_audio_format;
 
 	try {
 		encoder = prepared_encoder->Open(new_audio_format);
 	} catch (...) {
-		delete new_file;
 		throw;
 	}
 
@@ -270,12 +267,11 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 		EncoderToOutputStream(*new_file, *encoder);
 	} catch (...) {
 		delete encoder;
-		delete new_file;
 		throw;
 	}
 
 	path = std::move(new_path);
-	file = new_file;
+	file = std::move(new_file);
 
 	FmtDebug(recorder_domain, "Recording to \"{}\"", path);
 }
