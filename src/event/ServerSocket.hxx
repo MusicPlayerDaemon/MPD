@@ -42,7 +42,7 @@ class ServerSocket {
 
 public:
 	ServerSocket(EventLoop &_loop) noexcept;
-	~ServerSocket() noexcept;
+	virtual ~ServerSocket() noexcept;
 
 	EventLoop &GetEventLoop() const noexcept {
 		return loop;

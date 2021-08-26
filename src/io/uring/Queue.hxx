@@ -53,7 +53,7 @@ class Queue {
 
 public:
 	Queue(unsigned entries, unsigned flags);
-	~Queue() noexcept;
+	virtual ~Queue() noexcept;
 
 	FileDescriptor GetFileDescriptor() const noexcept {
 		return ring.GetFileDescriptor();

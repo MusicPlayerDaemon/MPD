@@ -151,7 +151,7 @@ public:
 	/**
 	 * Must be run from EventLoop's thread.
 	 */
-	~NfsConnection() noexcept;
+	virtual ~NfsConnection() noexcept;
 
 	auto &GetEventLoop() const noexcept {
 		return socket_event.GetEventLoop();

@@ -45,7 +45,7 @@ class Operation {
 	CancellableOperation *cancellable = nullptr;
 
 public:
-	~Operation() noexcept {
+	virtual ~Operation() noexcept {
 		CancelUring();
 	}
 
