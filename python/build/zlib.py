@@ -7,7 +7,7 @@ class ZlibProject(Project):
                  **kwargs):
         Project.__init__(self, url, md5, installed, **kwargs)
 
-    def build(self, toolchain):
+    def _build(self, toolchain):
         src = self.unpack(toolchain, out_of_tree=False)
 
         subprocess.check_call(['/usr/bin/make', '--quiet',

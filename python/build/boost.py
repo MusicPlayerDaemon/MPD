@@ -12,7 +12,7 @@ class BoostProject(Project):
                          name='boost', version=version,
                          **kwargs)
 
-    def build(self, toolchain):
+    def _build(self, toolchain):
         src = self.unpack(toolchain)
 
         # install the headers manually; don't build any library

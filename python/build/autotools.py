@@ -55,7 +55,7 @@ class AutotoolsProject(MakeProject):
         subprocess.check_call(configure, cwd=build, env=toolchain.env)
         return build
 
-    def build(self, toolchain):
+    def _build(self, toolchain):
         build = self.configure(toolchain)
         if self.subdirs is not None:
             for subdir in self.subdirs:

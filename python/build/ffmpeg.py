@@ -10,7 +10,7 @@ class FfmpegProject(Project):
         self.configure_args = configure_args
         self.cppflags = cppflags
 
-    def build(self, toolchain):
+    def _build(self, toolchain):
         src = self.unpack(toolchain)
         build = self.make_build_path(toolchain)
 

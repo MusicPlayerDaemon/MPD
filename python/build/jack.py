@@ -26,7 +26,7 @@ class JackProject(Project):
                          base='jack2-' + self.version,
                          **kwargs)
 
-    def build(self, toolchain):
+    def _build(self, toolchain):
         src = self.unpack(toolchain)
 
         includes = ['jack.h', 'ringbuffer.h', 'systemdeps.h', 'transport.h', 'types.h', 'weakmacros.h']

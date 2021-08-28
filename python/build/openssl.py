@@ -23,7 +23,7 @@ class OpenSSLProject(MakeProject):
             'RANLIB=' + toolchain.ranlib,
         ]
 
-    def build(self, toolchain):
+    def _build(self, toolchain):
         src = self.unpack(toolchain, out_of_tree=False)
 
         # OpenSSL has a weird target architecture scheme with lots of
