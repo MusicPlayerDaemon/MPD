@@ -22,7 +22,7 @@ class MakeProject(Project):
         subprocess.check_call(['/usr/bin/make'] + args,
                               cwd=wd, env=toolchain.env)
 
-    def build(self, toolchain, wd, install=True):
+    def build_make(self, toolchain, wd, install=True):
         self.make(toolchain, wd, self.get_make_args(toolchain))
         if install:
             self.make(toolchain, wd, self.get_make_install_args(toolchain))
