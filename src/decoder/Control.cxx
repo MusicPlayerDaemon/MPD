@@ -170,5 +170,5 @@ void
 DecoderControl::CycleMixRamp() noexcept
 {
 	previous_mix_ramp = std::move(mix_ramp);
-	mix_ramp.Clear();
+	mix_ramp = {};
 }
