@@ -58,6 +58,14 @@ struct WritableBuffer<void> {
 	constexpr WritableBuffer(pointer _data, size_type _size) noexcept
 		:data(_data), size(_size) {}
 
+	constexpr static WritableBuffer<void> FromVoid(WritableBuffer<void> other) noexcept {
+		return other;
+	}
+
+	constexpr WritableBuffer<void> ToVoid() const noexcept {
+		return *this;
+	}
+
 	constexpr operator ConstBuffer<void>() const noexcept {
 		return {data, size};
 	}
