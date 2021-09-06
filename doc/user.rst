@@ -111,6 +111,19 @@ The following command shows a list of compile-time options:
 
  meson configure output/release
 
+NB: Check the sysconfdir setting to determine where mpd will look for mpd.conf; if you expect mpd to look for /etc/mpd.conf the sysconfdir must be '/etc' (i.e., not 'etc' which will result in mpd looking for /usr/local/etc/mpd.conf):
+ 
+.. code-block:: none
+ 
+ meson configure output/release |grep sysconfdir
+
+If this is not /etc (or another path you wish to specify):
+
+.. code-block:: none
+
+ $ meson configure output/release -Dsysconfdir='/etc' ; meson configure output/release |grep syscon
+  sysconfdir              /etc                                               Sysconf data directory
+
 When everything is ready and configured, compile:
 
 .. code-block:: none
