@@ -346,7 +346,7 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 			inject_event.Schedule();
 
 		const ConstBuffer payload{buffer, nbytes};
-		chunks.emplace(std::make_shared<SnapcastChunk>(now, AllocatedArray{payload}));
+		chunks.push(std::make_shared<SnapcastChunk>(now, AllocatedArray{payload}));
 	}
 
 	return size;

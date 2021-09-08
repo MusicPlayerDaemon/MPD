@@ -193,11 +193,11 @@ UdisksNeighborExplorer::Insert(UDisks2::Object &&o) noexcept
 
 	{
 		const std::lock_guard<Mutex> protect(mutex);
-		auto i = by_uri.emplace(std::make_pair(o.GetUri(), info));
+		auto i = by_uri.emplace(o.GetUri(), info);
 		if (!i.second)
 			i.first->second = info;
 
-		by_path.emplace(std::make_pair(o.path, i.first));
+		by_path.emplace(o.path, i.first);
 		// TODO: do we need to remove a conflicting path?
 	}
 
