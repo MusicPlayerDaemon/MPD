@@ -109,8 +109,7 @@ static std::map<int, WatchDirectory *> inotify_directories;
 static void
 tree_add_watch_directory(WatchDirectory *directory)
 {
-	inotify_directories.insert(std::make_pair(directory->descriptor,
-						  directory));
+	inotify_directories.emplace(directory->descriptor, directory);
 }
 
 static void

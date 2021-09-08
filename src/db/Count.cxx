@@ -78,7 +78,7 @@ static void
 CollectGroupCounts(TagCountMap &map, const Tag &tag,
 		   const char *value) noexcept
 {
-	auto &s = map.insert(std::make_pair(value, SearchStats())).first->second;
+	auto &s = map.emplace(value, SearchStats()).first->second;
 	++s.n_songs;
 	if (!tag.duration.IsNegative())
 		s.total_duration += tag.duration;

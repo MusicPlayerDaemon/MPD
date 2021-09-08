@@ -160,7 +160,7 @@ FindHybridDsdData(DecoderClient &client, InputStream &input)
 			if (!found_version || !audio_format.IsValid())
 				throw UnsupportedFile();
 
-			return std::make_pair(audio_format, remaining);
+			return {audio_format, remaining};
 		}
 
 		/* skip this chunk payload */

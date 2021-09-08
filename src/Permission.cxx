@@ -98,8 +98,7 @@ initPermissions(const ConfigData &config)
 			std::string password(value, separator);
 
 			unsigned permission = parsePermissions(separator + 1);
-			permission_passwords.insert(std::make_pair(std::move(password),
-								   permission));
+			permission_passwords.emplace(std::move(password), permission);
 		});
 	}
 

@@ -152,7 +152,7 @@ public:
 		if (err < 0)
 			throw MakeFfmpegError(err, "avfilter_graph_parse_ptr() failed");
 
-		return std::make_pair(std::move(inputs), std::move(outputs));
+		return {std::move(inputs), std::move(outputs)};
 	}
 
 	void ParseSingleInOut(const char *filters, AVFilterContext &in,
@@ -165,7 +165,7 @@ public:
 		if (err < 0)
 			throw MakeFfmpegError(err, "avfilter_graph_parse2() failed");
 
-		return std::make_pair(FilterInOut{inputs}, FilterInOut{outputs});
+		return {FilterInOut{inputs}, FilterInOut{outputs}};
 	}
 
 	void CheckAndConfigure() {

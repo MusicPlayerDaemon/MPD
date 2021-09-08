@@ -68,7 +68,7 @@ ParseTimeZoneOffsetRaw(const char *&s)
 	unsigned long value = std::strtoul(s, &endptr, 10);
 	if (endptr == s + 4) {
 		s = endptr;
-		return std::make_pair(value / 100, value % 100);
+		return {value / 100, value % 100};
 	} else if (endptr == s + 2) {
 		s = endptr;
 
@@ -82,7 +82,7 @@ ParseTimeZoneOffsetRaw(const char *&s)
 			s = endptr;
 		}
 
-		return std::make_pair(hours, minutes);
+		return {hours, minutes};
 	} else
 		throw std::invalid_argument("Failed to parse time zone offset");
 }
@@ -234,6 +234,6 @@ ParseISO8601(const char *s)
 	if (*s != 0)
 		throw std::invalid_argument("Garbage at end of time stamp");
 
-	return std::make_pair(tp, precision);
+	return {tp, precision};
 #endif /* !_WIN32 */
 }

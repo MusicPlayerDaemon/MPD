@@ -450,10 +450,9 @@ AlsaOutput::GetAttributes() const noexcept
 	const std::lock_guard<Mutex> lock(attributes_mutex);
 
 	return {
-		std::make_pair("allowed_formats",
-			       Alsa::ToString(allowed_formats)),
+		{"allowed_formats", Alsa::ToString(allowed_formats)},
 #ifdef ENABLE_DSD
-		std::make_pair("dop", dop_setting ? "1" : "0"),
+		{"dop", dop_setting ? "1" : "0"},
 #endif
 	};
 }

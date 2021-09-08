@@ -317,7 +317,7 @@ faad_get_file_time(InputStream &is)
 		}
 	}
 
-	return std::make_pair(recognized, duration);
+	return {recognized, duration};
 }
 
 static void
