@@ -295,13 +295,13 @@ handle_list(Client &client, Request args, Response &r)
 			return CommandResult::ERROR;
 		}
 
-		tag_types.emplace_back(group);
+		tag_types.push_back(group);
 
 		args.pop_back();
 		args.pop_back();
 	}
 
-	tag_types.emplace_back(tagType);
+	tag_types.push_back(tagType);
 
 	if (!args.empty()) {
 		filter = std::make_unique<SongFilter>();

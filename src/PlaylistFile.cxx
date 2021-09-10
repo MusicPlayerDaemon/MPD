@@ -239,7 +239,7 @@ try {
 				continue;
 		}
 
-		contents.emplace_back(std::move(uri_utf8));
+		contents.push_back(std::move(uri_utf8));
 		if (contents.size() >= playlist_max_length)
 			break;
 	}

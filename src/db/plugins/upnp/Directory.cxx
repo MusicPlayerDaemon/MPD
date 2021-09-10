@@ -200,7 +200,7 @@ protected:
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
 		    object.Check()) {
 			tag.Commit(object.tag);
-			directory.objects.emplace_back(std::move(object));
+			directory.objects.push_back(std::move(object));
 		}
 
 		state = NONE;

@@ -104,18 +104,18 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 			throw FormatRuntimeError("output devices with identical "
 						 "names: %s", output->GetName());
 
-		outputs.emplace_back(std::move(output));
+		outputs.push_back(std::move(output));
 	}
 
 	if (outputs.empty()) {
 		/* auto-detect device */
 		const ConfigBlock empty;
-		outputs.emplace_back(LoadOutputControl(event_loop,
-						       rt_event_loop,
-						       replay_gain_config,
-						       mixer_listener,
-						       client, empty, defaults,
-						       nullptr));
+		outputs.push_back(LoadOutputControl(event_loop,
+						    rt_event_loop,
+						    replay_gain_config,
+						    mixer_listener,
+						    client, empty, defaults,
+						    nullptr));
 	}
 }
 

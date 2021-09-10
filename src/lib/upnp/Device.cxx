@@ -83,7 +83,7 @@ protected:
 			trimstring(*value);
 			value = nullptr;
 		} else if (!strcmp(name, "service")) {
-			m_device.services.emplace_back(std::move(m_tservice));
+			m_device.services.push_back(std::move(m_tservice));
 			m_tservice = {};
 		}
 	}

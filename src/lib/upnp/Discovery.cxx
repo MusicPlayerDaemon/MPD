@@ -148,7 +148,7 @@ UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 		}
 	}
 
-	directories.emplace_back(std::move(d));
+	directories.push_back(std::move(d));
 
 	if (listener != nullptr)
 		AnnounceFoundUPnP(*listener, directories.back().device);
