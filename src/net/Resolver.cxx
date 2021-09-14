@@ -44,7 +44,6 @@
 #include <net/if.h>
 #endif
 
-#include <cerrno>
 #include <cstring>
 
 #include <stdio.h>
