@@ -1,35 +1,62 @@
+import os
 import subprocess
 
 from build.project import Project
 
-def __cmake_compiler_args(language, compiler):
+def __write_cmake_compiler(f, language, compiler):
     s = compiler.split(' ', 1)
-    result = []
     if len(s) == 2:
-        result.append(f'-DCMAKE_{language}_COMPILER_LAUNCHER={s[0]}')
+        print(f'set(CMAKE_{language}_COMPILER_LAUNCHER {s[0]})', file=f)
         compiler = s[1]
-    result.append(f'-DCMAKE_{language}_COMPILER={compiler}')
-    return result
+    print(f'set(CMAKE_{language}_COMPILER {compiler})', file=f)
+
+def __write_cmake_toolchain_file(f, toolchain):
+    if '-darwin' in toolchain.actual_arch:
+        cmake_system_name = 'Darwin'
+    elif toolchain.is_windows:
+        cmake_system_name = 'Windows'
+    else:
+        cmake_system_name = 'Linux'
+
+    f.write(f"""
+set(CMAKE_SYSTEM_NAME {cmake_system_name})
+set(CMAKE_SYSTEM_PROCESSOR {toolchain.actual_arch.split('-', 1)[0]})
+
+set(CMAKE_C_COMPILER_TARGET {toolchain.actual_arch})
+set(CMAKE_CXX_COMPILER_TARGET {toolchain.actual_arch})
+
+set(CMAKE_C_FLAGS "{toolchain.cflags} {toolchain.cppflags}")
+set(CMAKE_CXX_FLAGS "{toolchain.cxxflags} {toolchain.cppflags}")
+""")
+    __write_cmake_compiler(f, 'C', toolchain.cc)
+    __write_cmake_compiler(f, 'CXX', toolchain.cxx)
 
 def configure(toolchain, src, build, args=()):
     cross_args = []
 
     if toolchain.is_windows:
-        cross_args.append('-DCMAKE_SYSTEM_NAME=Windows')
         cross_args.append('-DCMAKE_RC_COMPILER=' + toolchain.windres)
+
+    # Several targets need a sysroot to prevent pkg-config from
+    # looking for libraries on the build host (TODO: fix this
+    # properly); but we must not do that on Android because the NDK
+    # has a sysroot already
+    if '-android' not in toolchain.actual_arch and '-darwin' not in toolchain.actual_arch:
+        cross_args.append('-DCMAKE_SYSROOT=' + toolchain.install_prefix)
+
+    os.makedirs(build, exist_ok=True)
+    cmake_toolchain_file = os.path.join(build, 'cmake_toolchain_file')
+    with open(cmake_toolchain_file, 'w') as f:
+        __write_cmake_toolchain_file(f, toolchain)
 
     configure = [
         'cmake',
         src,
 
+        '-DCMAKE_TOOLCHAIN_FILE=' + cmake_toolchain_file,
+
         '-DCMAKE_INSTALL_PREFIX=' + toolchain.install_prefix,
         '-DCMAKE_BUILD_TYPE=release',
-    ] + \
-    __cmake_compiler_args('C', toolchain.cc) + \
-    __cmake_compiler_args('CXX', toolchain.cxx) + \
-    [
-        '-DCMAKE_C_FLAGS=' + toolchain.cflags + ' ' + toolchain.cppflags,
-        '-DCMAKE_CXX_FLAGS=' + toolchain.cxxflags + ' ' + toolchain.cppflags,
 
         '-GNinja',
     ] + cross_args + args

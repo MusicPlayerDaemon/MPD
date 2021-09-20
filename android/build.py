@@ -83,6 +83,7 @@ class AndroidNdkToolchain:
         install_prefix = os.path.join(arch_path, 'root')
 
         self.arch = arch
+        self.actual_arch = arch
         self.install_prefix = install_prefix
 
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)

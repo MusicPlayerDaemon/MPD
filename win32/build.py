@@ -38,6 +38,7 @@ class CrossGccToolchain:
     def __init__(self, toolchain_path, arch,
                  tarball_path, src_path, build_path, install_prefix):
         self.arch = arch
+        self.actual_arch = arch
         self.tarball_path = tarball_path
         self.src_path = src_path
         self.build_path = build_path
