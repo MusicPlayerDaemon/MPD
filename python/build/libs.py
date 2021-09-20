@@ -17,27 +17,25 @@ libmpdclient = MesonProject(
     'lib/libmpdclient.a',
 )
 
-libogg = AutotoolsProject(
+libogg = CmakeProject(
     'http://downloads.xiph.org/releases/ogg/libogg-1.3.4.tar.xz',
     'c163bc12bc300c401b6aa35907ac682671ea376f13ae0969a220f7ddf71893fe',
     'lib/libogg.a',
     [
-        '--disable-shared', '--enable-static',
+        '-DBUILD_SHARED_LIBS=OFF',
+        '-DINSTALL_DOCS=OFF',
+        '-DINSTALL_CMAKE_PACKAGE_MODULE=OFF',
     ],
 )
 
-libvorbis = AutotoolsProject(
+libvorbis = CmakeProject(
     'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz',
     'b33cc4934322bcbf6efcbacf49e3ca01aadbea4114ec9589d1b1e9d20f72954b',
     'lib/libvorbis.a',
     [
-        '--disable-shared', '--enable-static',
+        '-DBUILD_SHARED_LIBS=OFF',
+        '-DINSTALL_CMAKE_PACKAGE_MODULE=OFF',
     ],
-
-    edits={
-        # this option is not understood by clang
-        'configure': lambda data: data.replace('-mno-ieee-fp', ' '),
-    }
 )
 
 opus = AutotoolsProject(
