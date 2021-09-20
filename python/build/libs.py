@@ -391,35 +391,38 @@ openssl = OpenSSLProject(
     'include/openssl/ossl_typ.h',
 )
 
-curl = AutotoolsProject(
+curl = CmakeProject(
     'https://curl.se/download/curl-7.78.0.tar.xz',
     'be42766d5664a739c3974ee3dfbbcbe978a4ccb1fe628bb1d9b59ac79e445fb5',
     'lib/libcurl.a',
     [
-        '--disable-shared', '--enable-static',
-        '--disable-debug',
-        '--enable-http',
-        '--enable-ipv6',
-        '--disable-ftp', '--disable-file',
-        '--disable-ldap', '--disable-ldaps',
-        '--disable-rtsp', '--disable-proxy', '--disable-dict', '--disable-telnet',
-        '--disable-tftp', '--disable-pop3', '--disable-imap', '--disable-smtp',
-        '--disable-smb',
-        '--disable-gopher',
-        '--disable-manual',
-        '--disable-threaded-resolver', '--disable-verbose', '--disable-sspi',
-        '--disable-crypto-auth', '--disable-ntlm-wb', '--disable-tls-srp', '--disable-cookies',
-        '--disable-doh',
-        '--disable-mime',
-        '--disable-netrc',
-        '--disable-progress-meter',
-        '--disable-alt-svc',
-        '--without-gnutls', '--without-nss', '--without-libssh2',
-
-        # native Windows SSL/TLS support, option ignored on non-Windows builds
-        '--with-schannel',
+        '-DBUILD_CURL_EXE=OFF',
+        '-DBUILD_SHARED_LIBS=OFF',
+        '-DCURL_DISABLE_VERBOSE_STRINGS=ON',
+        '-DCURL_DISABLE_LDAP=ON',
+        '-DCURL_DISABLE_TELNET=ON',
+        '-DCURL_DISABLE_DICT=ON',
+        '-DCURL_DISABLE_FILE=ON',
+        '-DCURL_DISABLE_FTP=ON',
+        '-DCURL_DISABLE_TFTP=ON',
+        '-DCURL_DISABLE_LDAPS=ON',
+        '-DCURL_DISABLE_RTSP=ON',
+        '-DCURL_DISABLE_PROXY=ON',
+        '-DCURL_DISABLE_POP3=ON',
+        '-DCURL_DISABLE_IMAP=ON',
+        '-DCURL_DISABLE_SMTP=ON',
+        '-DCURL_DISABLE_GOPHER=ON',
+        '-DCURL_DISABLE_COOKIES=ON',
+        '-DCURL_DISABLE_CRYPTO_AUTH=ON',
+        '-DCURL_DISABLE_ALTSVC=ON',
+        '-DCMAKE_USE_LIBSSH2=OFF',
+        '-DCURL_WINDOWS_SSPI=OFF',
+        '-DCURL_DISABLE_NTLM=ON',
+        '-DBUILD_TESTING=OFF',
     ],
-
+    windows_configure_args=[
+        '-DCMAKE_USE_SCHANNEL=ON',
+    ],
     patches='src/lib/curl/patches',
 )
 

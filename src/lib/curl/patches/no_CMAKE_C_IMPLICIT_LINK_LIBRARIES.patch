@@ -1,0 +1,11 @@
+--- curl-7.75.0.orig/CMakeLists.txt	2021-02-02 09:26:24.000000000 +0100
++++ curl-7.75.0/CMakeLists.txt	2021-03-25 20:17:25.445684029 +0100
+@@ -1453,7 +1453,7 @@
+ set(LDFLAGS                 "${CMAKE_SHARED_LINKER_FLAGS}")
+ set(LIBCURL_LIBS            "")
+ set(libdir                  "${CMAKE_INSTALL_PREFIX}/lib")
+-foreach(_lib ${CMAKE_C_IMPLICIT_LINK_LIBRARIES} ${CURL_LIBS})
++foreach(_lib ${CURL_LIBS})
+   if(TARGET "${_lib}")
+     set(_libname "${_lib}")
+     get_target_property(_libtype "${_libname}" TYPE)
