@@ -96,7 +96,6 @@ from build.libs import *
 thirdparty_libs = [
     libmpdclient,
     libogg,
-    libvorbis,
     opus,
     flac,
     zlib,

@@ -28,16 +28,6 @@ libogg = CmakeProject(
     ],
 )
 
-libvorbis = CmakeProject(
-    'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz',
-    'b33cc4934322bcbf6efcbacf49e3ca01aadbea4114ec9589d1b1e9d20f72954b',
-    'lib/libvorbis.a',
-    [
-        '-DBUILD_SHARED_LIBS=OFF',
-        '-DINSTALL_CMAKE_PACKAGE_MODULE=OFF',
-    ],
-)
-
 opus = AutotoolsProject(
     'https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz',
     '65b58e1e25b2a114157014736a3d9dfeaad8d41be1c8179866f144a2fb44ff9d',

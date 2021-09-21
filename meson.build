@@ -15,11 +15,13 @@ project(
     'fmt:default_library=static',
     'gtest:default_library=static',
     'sqlite3:default_library=static',
+    'vorbis:default_library=static',
 
     # Not interested in compiler warnings from subprojects.
     'fmt:warning_level=0',
     'gtest:warning_level=0',
     'sqlite3:warning_level=0',
+    'vorbis:warning_level=0',
   ],
   license: 'GPLv2+',
 )
