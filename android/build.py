@@ -151,7 +151,6 @@ thirdparty_libs = [
     libmpdclient,
     libogg,
     opus,
-    flac,
     libid3tag,
     libmodplug,
     wildmidi,
