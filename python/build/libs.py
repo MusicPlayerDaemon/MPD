@@ -416,19 +416,6 @@ curl = CmakeProject(
     patches='src/lib/curl/patches',
 )
 
-libexpat = CmakeProject(
-    'https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.bz2',
-    'f1063084dc4302a427dabcca499c8312b3a32a29b7d2506653ecc8f950a9a237',
-    'lib/libexpat.a',
-    [
-        '-DEXPAT_BUILD_TOOLS=OFF',
-        '-DEXPAT_BUILD_EXAMPLES=OFF',
-        '-DEXPAT_BUILD_TESTS=OFF',
-        '-DEXPAT_SHARED_LIBS=OFF',
-        '-DEXPAT_BUILD_DOCS=OFF',
-    ],
-)
-
 libnfs = AutotoolsProject(
     'https://github.com/sahlberg/libnfs/archive/libnfs-4.0.0.tar.gz',
     '6ee77e9fe220e2d3e3b1f53cfea04fb319828cc7dbb97dd9df09e46e901d797d',

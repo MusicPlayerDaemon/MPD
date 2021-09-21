@@ -106,7 +106,6 @@ thirdparty_libs = [
     gme,
     ffmpeg,
     curl,
-    libexpat,
     libnfs,
     jack,
     boost,

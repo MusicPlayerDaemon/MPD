@@ -1,4 +1,6 @@
-expat_dep = dependency('expat', required: get_option('expat'))
+expat_dep = dependency('expat',
+                       fallback: ['expat', 'expat_dep'],
+                       required: get_option('expat'))
 conf.set('ENABLE_EXPAT', expat_dep.found())
 if not expat_dep.found()
   subdir_done()

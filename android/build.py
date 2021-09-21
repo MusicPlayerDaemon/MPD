@@ -162,7 +162,6 @@ thirdparty_libs = [
     ffmpeg,
     openssl,
     curl,
-    libexpat,
     libnfs,
     boost,
 ]
