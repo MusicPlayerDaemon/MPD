@@ -4,6 +4,13 @@ if not curl_dep.found()
   subdir_done()
 endif
 
+if is_windows
+  # Our Windows build generates a static libcurl build, but libcurl's
+  # CMakeLists.txt omits the -DCURL_STATICLIB compiler option
+  curl_dep = declare_dependency(compile_args: '-DCURL_STATICLIB',
+                                dependencies: curl_dep)
+endif
+
 curl = static_library(
   'curl',
   'Delegate.cxx',
