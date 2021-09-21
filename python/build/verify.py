@@ -31,6 +31,8 @@ def guess_digest_algorithm(digest):
         return hashlib.sha1
     elif l == 64:
         return hashlib.sha256
+    elif l == 128:
+        return hashlib.sha512
     else:
         return None
 
