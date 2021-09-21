@@ -84,11 +84,6 @@ def configure(toolchain, src, build, args=()):
 
         '--prefix', toolchain.install_prefix,
 
-        # this is necessary because Meson uses Debian's build machine
-        # MultiArch path (e.g. "lib/x86_64-linux-gnu") for cross
-        # builds, which is obviously wrong
-        '--libdir', 'lib',
-
         '--buildtype', 'plain',
 
         '--default-library=static',
