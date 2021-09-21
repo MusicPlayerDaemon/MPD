@@ -18,4 +18,7 @@ expat = static_library(
 
 expat_dep = declare_dependency(
   link_with: expat,
+  dependencies: [
+    expat_dep,
+  ]
 )
