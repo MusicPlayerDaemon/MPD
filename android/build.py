@@ -140,10 +140,7 @@ class AndroidNdkToolchain:
         # default one on the build host
         import shutil
         bin_dir = os.path.join(install_prefix, 'bin')
-        try:
-            os.makedirs(bin_dir)
-        except:
-            pass
+        os.makedirs(bin_dir, exist_ok=True)
         self.pkg_config = shutil.copy(os.path.join(mpd_path, 'build', 'pkg-config.sh'),
                                       os.path.join(bin_dir, 'pkg-config'))
         self.env['PKG_CONFIG'] = self.pkg_config
