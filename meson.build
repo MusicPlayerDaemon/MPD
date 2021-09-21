@@ -10,9 +10,11 @@ project(
     'build.cpp_std=c++17',
     'warning_level=3',
 
-    # This is only here to build subprojects as static libraries; MPD
-    # itself doesn't ship any libraries.
-    'default_library=static',
+    # If we build those libraries as Meson subproject, they shall be
+    # linked statically into the MPD executable.
+    'fmt:default_library=static',
+    'gtest:default_library=static',
+    'sqlite3:default_library=static',
   ],
   license: 'GPLv2+',
 )
