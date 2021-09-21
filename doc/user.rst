@@ -56,7 +56,7 @@ and unpack it (or `clone the git repository
 In any case, you need:
 
 * a C++17 compiler (e.g. GCC 8 or clang 7)
-* `Meson 0.49.0 <http://mesonbuild.com/>`__ and `Ninja
+* `Meson 0.56.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * Boost 1.58
 * pkg-config 
@@ -158,7 +158,7 @@ This section is about the latter.
 You need:
 
 * `mingw-w64 <http://mingw-w64.org/doku.php>`__
-* `Meson 0.49.0 <http://mesonbuild.com/>`__ and `Ninja
+* `Meson 0.56.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * cmake
 * pkg-config
@@ -191,7 +191,7 @@ You need:
 
 * Android SDK
 * `Android NDK r23 <https://developer.android.com/ndk/downloads>`_
-* `Meson 0.49.0 <http://mesonbuild.com/>`__ and `Ninja
+* `Meson 0.56.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * cmake
 * pkg-config
