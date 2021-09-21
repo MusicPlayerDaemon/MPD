@@ -54,6 +54,7 @@ pkgconfig = '{toolchain.pkg_config}'
 [properties]
 root = '{toolchain.install_prefix}'
 
+[built-in options]
 c_args = {repr((toolchain.cppflags + ' ' + toolchain.cflags).split())}
 c_link_args = {repr(toolchain.ldflags.split() + toolchain.libs.split())}
 
