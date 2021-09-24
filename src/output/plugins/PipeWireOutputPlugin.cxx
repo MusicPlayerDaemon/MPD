@@ -179,6 +179,7 @@ private:
 		pw_thread_loop_signal(thread_loop, false);
 	}
 
+	std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
 
 	void Drain() override;
@@ -491,6 +492,19 @@ PipeWireOutput::Process() noexcept
 	pw_stream_queue_buffer(stream, b);
 
 	pw_thread_loop_signal(thread_loop, false);
+}
+
+std::chrono::steady_clock::duration
+PipeWireOutput::Delay() const noexcept
+{
+	const PipeWire::ThreadLoopLock lock(thread_loop);
+
+	auto result = std::chrono::steady_clock::duration::zero();
+	if (paused)
+		/* idle while paused */
+		result = std::chrono::seconds(1);
+
+	return result;
 }
 
 size_t
