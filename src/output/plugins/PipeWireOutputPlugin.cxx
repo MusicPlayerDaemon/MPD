@@ -94,6 +94,12 @@ class PipeWireOutput final : AudioOutput {
 	bool paused;
 
 	/**
+	 * Is the PipeWire stream active, i.e. has
+	 * pw_stream_set_active() been called successfully?
+	 */
+	bool active;
+
+	/**
 	 * Has Drain() been called?  This causes Process() to invoke
 	 * pw_stream_flush() to drain PipeWire as soon as the
 	 * #ring_buffer has been drained.
@@ -353,11 +359,11 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	disconnected = false;
 	restore_volume = true;
 
-	/* we're paused (inactive) now because of the flag
-	   PW_STREAM_FLAG_INACTIVE; this way, we can fill the
-	   ring_buffer before activating the stream, to avoid
-	   underruns */
-	paused = true;
+	paused = false;
+
+	/* stay inactive (PW_STREAM_FLAG_INACTIVE) until the ring
+	   buffer has been filled */
+	active = false;
 
 	drain_requested = false;
 	drained = true;
@@ -492,6 +498,8 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
+	paused = false;
+
 	while (true) {
 		CheckThrowError();
 
@@ -502,11 +510,11 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 			return bytes_written;
 		}
 
-		if (paused) {
+		if (!active) {
 			/* now that the ring_buffer is full, there is
 			   enough data for Process(), so let's resume
 			   the stream now */
-			paused = false;
+			active = true;
 			pw_stream_set_active(stream, true);
 		}
 
@@ -547,7 +555,11 @@ PipeWireOutput::Pause() noexcept
 	interrupted = false;
 
 	paused = true;
-	pw_stream_set_active(stream, false);
+
+	if (active) {
+		active = false;
+		pw_stream_set_active(stream, false);
+	}
 
 	return true;
 }
