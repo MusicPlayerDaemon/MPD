@@ -167,6 +167,29 @@ public:
 
 	IntrusiveList &operator=(IntrusiveList &&) = delete;
 
+	friend void swap(IntrusiveList &a, IntrusiveList &b) noexcept {
+		using std::swap;
+
+		if (a.empty()) {
+			if (b.empty())
+				return;
+
+			a.head = b.head;
+			a.head.next->prev = &a.head;
+			a.head.prev->next = &a.head;
+
+			b.head = {&b.head, &b.head};
+		} else {
+			swap(a.head, b.head);
+
+			a.head.next->prev = &a.head;
+			a.head.prev->next = &a.head;
+
+			b.head.next->prev = &b.head;
+			b.head.prev->next = &b.head;
+		}
+	}
+
 	constexpr bool empty() const noexcept {
 		return head.next == &head;
 	}
