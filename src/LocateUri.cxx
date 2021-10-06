@@ -69,7 +69,7 @@ LocateAbsoluteUri(UriPluginKind kind, const char *uri
 	case UriPluginKind::INPUT:
 	case UriPluginKind::STORAGE: // TODO: separate check for storage plugins
 		if (!uri_supported_scheme(uri))
-			throw std::runtime_error("Unsupported URI scheme");
+			throw std::invalid_argument("Unsupported URI scheme");
 		break;
 
 	case UriPluginKind::PLAYLIST:
@@ -105,7 +105,7 @@ LocateUri(UriPluginKind kind,
 	const char *path_utf8 = StringAfterPrefixCaseASCII(uri, "file://");
 	if (path_utf8 != nullptr) {
 		if (!PathTraitsUTF8::IsAbsolute(path_utf8))
-			throw std::runtime_error("Malformed file:// URI");
+			throw std::invalid_argument("Malformed file:// URI");
 
 		return LocateFileUri(path_utf8, client
 #ifdef ENABLE_DATABASE
