@@ -58,13 +58,25 @@ GetStoragePluginByName(const char *name) noexcept
 	return nullptr;
 }
 
+const StoragePlugin *
+GetStoragePluginByUri(const char *uri) noexcept
+{
+	for (auto i = storage_plugins; *i != nullptr; ++i) {
+		const StoragePlugin &plugin = **i;
+		if (plugin.SupportsUri(uri))
+			return *i;
+	}
+
+	return nullptr;
+}
+
 std::unique_ptr<Storage>
 CreateStorageURI(EventLoop &event_loop, const char *uri)
 {
 	for (auto i = storage_plugins; *i != nullptr; ++i) {
 		const StoragePlugin &plugin = **i;
 
-		if (plugin.create_uri == nullptr)
+		if (plugin.create_uri == nullptr || !plugin.SupportsUri(uri))
 			continue;
 
 		auto storage = plugin.create_uri(event_loop, uri);

@@ -173,4 +173,5 @@ CreateLocalStorage(Path base_fs)
 constexpr StoragePlugin local_storage_plugin = {
 	"local",
 	nullptr,
+	nullptr,
 };

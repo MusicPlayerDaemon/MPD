@@ -377,7 +377,10 @@ CreateUdisksStorageURI(EventLoop &event_loop, const char *base_uri)
 					       std::move(inside_path));
 }
 
+static constexpr const char *udisks_prefixes[] = { "udisks://", nullptr };
+
 const StoragePlugin udisks_storage_plugin = {
 	"udisks",
+	udisks_prefixes,
 	CreateUdisksStorageURI,
 };

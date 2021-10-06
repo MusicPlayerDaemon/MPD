@@ -570,14 +570,15 @@ CurlStorage::OpenDirectory(std::string_view uri_utf8)
 static std::unique_ptr<Storage>
 CreateCurlStorageURI(EventLoop &event_loop, const char *uri)
 {
-	if (!StringStartsWithCaseASCII(uri, "http://") &&
-	    !StringStartsWithCaseASCII(uri, "https://"))
-		return nullptr;
-
 	return std::make_unique<CurlStorage>(event_loop, uri);
 }
 
+static constexpr const char *curl_prefixes[] = {
+	"http://", "https://", nullptr
+};
+
 const StoragePlugin curl_storage_plugin = {
 	"curl",
+	curl_prefixes,
 	CreateCurlStorageURI,
 };

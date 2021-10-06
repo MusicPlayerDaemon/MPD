@@ -1,6 +1,7 @@
 storage_api = static_library(
   'storage_api',
   'StorageInterface.cxx',
+  'StoragePlugin.cxx',
   include_directories: inc,
 )
 

@@ -425,7 +425,10 @@ CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 					    server.c_str(), mount);
 }
 
+static constexpr const char *nfs_prefixes[] = { "nfs://", nullptr };
+
 const StoragePlugin nfs_storage_plugin = {
 	"nfs",
+	nfs_prefixes,
 	CreateNfsStorageURI,
 };
