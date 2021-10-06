@@ -126,7 +126,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 
 static bool
 openmpt_scan_stream(InputStream &is, TagHandler &handler) noexcept
-{
+try {
 	const auto buffer = mod_loadfile(&openmpt_domain, nullptr, is);
 	if (buffer.IsNull()) {
 		LogWarning(openmpt_domain, "could not load stream");
@@ -145,6 +145,13 @@ openmpt_scan_stream(InputStream &is, TagHandler &handler) noexcept
 	handler.OnTag(TAG_PERFORMER, mod.get_metadata("tracker").c_str());
 
 	return true;
+} catch (...) {
+	/* libopenmpt usually throws openmpt::exception, but "may
+	   additionally throw any exception thrown by the standard
+	   library which are all derived from std::exception", we
+	   let's just catch all here */
+	LogError(std::current_exception(), "libopenmpt failed");
+	return false;
 }
 
 static const char *const mod_suffixes[] = {
