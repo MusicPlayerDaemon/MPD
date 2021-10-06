@@ -22,6 +22,7 @@
 #include "client/Client.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
+#include "storage/Registry.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriExtract.hxx"
 
@@ -67,9 +68,13 @@ LocateAbsoluteUri(UriPluginKind kind, const char *uri
 {
 	switch (kind) {
 	case UriPluginKind::INPUT:
-	case UriPluginKind::STORAGE: // TODO: separate check for storage plugins
 		if (!uri_supported_scheme(uri))
 			throw std::invalid_argument("Unsupported URI scheme");
+		break;
+
+	case UriPluginKind::STORAGE:
+		/* plugin support will be checked after the
+		   Storage::MapToRelativeUTF8() call */
 		break;
 
 	case UriPluginKind::PLAYLIST:
@@ -88,6 +93,10 @@ LocateAbsoluteUri(UriPluginKind kind, const char *uri
 			return LocatedUri(LocatedUri::Type::RELATIVE,
 					  suffix.data());
 	}
+
+	if (kind == UriPluginKind::STORAGE &&
+	    GetStoragePluginByUri(uri) == nullptr)
+		throw std::invalid_argument("Unsupported URI scheme");
 #endif
 
 	return LocatedUri(LocatedUri::Type::ABSOLUTE, uri);
