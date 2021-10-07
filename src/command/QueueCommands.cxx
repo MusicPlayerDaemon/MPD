@@ -43,6 +43,17 @@
 
 #include <limits>
 
+static unsigned
+RequireCurrentPosition(const playlist &p)
+{
+	int position = p.GetCurrentPosition();
+	if (position < 0)
+		throw ProtocolError(ACK_ERROR_PLAYER_SYNC,
+				    "No current song");
+
+	return position;
+}
+
 static void
 AddUri(Client &client, const LocatedUri &uri)
 {
@@ -123,13 +134,9 @@ handle_addid(Client &client, Request args, Response &r)
 		if (*s == '+') {
 			/* after the current song */
 
-			const int current =
-				partition.playlist.GetCurrentPosition();
-			if (current < 0)
-				throw ProtocolError(ACK_ERROR_PLAYER_SYNC,
-						    "No current song");
-
-			assert(unsigned(current) < queue_length);
+			const unsigned current =
+				RequireCurrentPosition(partition.playlist);
+			assert(current < queue_length);
 
 			to = current + 1 +
 				ParseCommandArgUnsigned(s + 1,
@@ -137,13 +144,9 @@ handle_addid(Client &client, Request args, Response &r)
 		} else if (*s == '-') {
 			/* before the current song */
 
-			const int current =
-				partition.playlist.GetCurrentPosition();
-			if (current < 0)
-				throw ProtocolError(ACK_ERROR_PLAYER_SYNC,
-						    "No current song");
-
-			assert(unsigned(current) < queue_length);
+			const unsigned current =
+				RequireCurrentPosition(partition.playlist);
+			assert(current < queue_length);
 
 			to = current - ParseCommandArgUnsigned(s + 1, current);
 		} else
