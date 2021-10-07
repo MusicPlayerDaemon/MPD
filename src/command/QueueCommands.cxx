@@ -115,7 +115,6 @@ handle_addid(Client &client, Request args, Response &r)
 	auto &partition = client.GetPartition();
 	const SongLoader loader(client);
 	unsigned added_id = partition.AppendURI(loader, uri);
-	partition.instance.LookupRemoteTag(uri);
 
 	if (args.size == 2) {
 		unsigned to = args.ParseUnsigned(1);
@@ -128,6 +127,8 @@ handle_addid(Client &client, Request args, Response &r)
 			throw;
 		}
 	}
+
+	partition.instance.LookupRemoteTag(uri);
 
 	r.Fmt(FMT_STRING("Id: {}\n"), added_id);
 	return CommandResult::OK;
