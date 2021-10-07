@@ -4,6 +4,7 @@ ver 0.23 (not yet released)
   - show the audio format in "playlistinfo"
   - support "listfiles" with arbitrary storage plugins
   - support relative positions in "addid"
+  - fix relative positions in "move" and "moveid"
 * database
   - proxy: require MPD 0.20 or later
   - proxy: require libmpdclient 2.11 or later

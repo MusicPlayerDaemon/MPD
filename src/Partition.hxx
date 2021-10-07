@@ -147,12 +147,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.Shuffle(pc, range);
 	}
 
-	void MoveRange(RangeArg range, int to) {
+	void MoveRange(RangeArg range, unsigned to) {
 		playlist.MoveRange(pc, range, to);
-	}
-
-	void MoveId(unsigned id, int to) {
-		playlist.MoveId(pc, id, to);
 	}
 
 	void SwapPositions(unsigned song1, unsigned song2) {

@@ -363,8 +363,62 @@ handle_prioid(Client &client, Request args, [[maybe_unused]] Response &r)
 	return CommandResult::OK;
 }
 
+static unsigned
+ParseMoveDestination(const char *s, const RangeArg range,
+		     const playlist &p)
+{
+	assert(!range.IsEmpty());
+	assert(!range.IsOpenEnded());
+
+	const unsigned queue_length = p.queue.GetLength();
+
+	if (*s == '+') {
+		/* after the current song */
+
+		unsigned current = RequireCurrentPosition(p);
+		assert(current < queue_length);
+		if (range.Contains(current))
+			/* no-op */
+			return range.start;
+
+		if (current >= range.end)
+			current -= range.Count();
+
+		return current + 1 +
+			ParseCommandArgUnsigned(s + 1,
+						queue_length - current - range.Count());
+	} else if (*s == '-') {
+		/* before the current song */
+
+		unsigned current = RequireCurrentPosition(p);
+		assert(current < queue_length);
+		if (range.Contains(current))
+			/* no-op */
+			return range.start;
+
+		if (current >= range.end)
+			current -= range.Count();
+
+		return current -
+			ParseCommandArgUnsigned(s + 1,
+						queue_length - current - range.Count());
+	} else
+		/* absolute position */
+		return ParseCommandArgUnsigned(s,
+					       queue_length - range.Count());
+}
+
+static CommandResult
+handle_move(Partition &partition, RangeArg range, const char *to)
+{
+	partition.MoveRange(range,
+			    ParseMoveDestination(to, range,
+						 partition.playlist));
+	return CommandResult::OK;
+}
+
 CommandResult
-handle_move(Client &client, Request args, [[maybe_unused]] Response &r)
+handle_move(Client &client, Request args, Response &r)
 {
 	RangeArg range = args.ParseRange(0);
 	if (range.IsOpenEnded()) {
@@ -372,18 +426,22 @@ handle_move(Client &client, Request args, [[maybe_unused]] Response &r)
 		return CommandResult::ERROR;
 	}
 
-	int to = args.ParseInt(1);
-	client.GetPartition().MoveRange(range, to);
-	return CommandResult::OK;
+	return handle_move(client.GetPartition(), range, args[1]);
 }
 
 CommandResult
 handle_moveid(Client &client, Request args, [[maybe_unused]] Response &r)
 {
-	unsigned id = args.ParseUnsigned(0);
-	int to = args.ParseInt(1);
-	client.GetPartition().MoveId(id, to);
-	return CommandResult::OK;
+	auto &partition = client.GetPartition();
+	const auto &queue = partition.playlist.queue;
+
+	const int position = queue.IdToPosition(args.ParseUnsigned(0));
+	if (position < 0) {
+		r.Error(ACK_ERROR_NO_EXIST, "No such song");
+		return CommandResult::ERROR;
+	}
+
+	return handle_move(partition, RangeArg::Single(position), args[1]);
 }
 
 CommandResult

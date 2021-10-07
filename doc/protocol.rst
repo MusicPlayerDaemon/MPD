@@ -739,14 +739,22 @@ Whenever possible, ids should be used.
     at ``START:END`` [#since_0_15]_ to ``TO``
     in the playlist.
 
+    If ``TO`` starts with ``+`` or ``-``, then it is relative to the
+    current song; e.g. ``+0`` moves to right after the current song
+    and ``-0`` moves to right before the current song (i.e. zero songs
+    between the current song and the moved range).
+
 .. _command_moveid:
 
 :command:`moveid {FROM} {TO}`
     Moves the song with ``FROM`` (songid) to
     ``TO`` (playlist index) in the
-    playlist.  If ``TO`` is negative, it
-    is relative to the current song in the playlist (if
-    there is one).
+    playlist.
+
+    If ``TO`` starts with ``+`` or ``-``, then it is relative to the
+    current song; e.g. ``+0`` moves to right after the current song
+    and ``-0`` moves to right before the current song (i.e. zero songs
+    between the current song and the moved song).
 
 .. _command_playlist:
 

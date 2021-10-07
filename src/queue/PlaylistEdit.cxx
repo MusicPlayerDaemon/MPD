@@ -315,67 +315,37 @@ playlist::StaleSong(PlayerControl &pc, const char *uri) noexcept
 }
 
 void
-playlist::MoveRange(PlayerControl &pc, RangeArg range, int to)
+playlist::MoveRange(PlayerControl &pc, RangeArg range, unsigned to)
 {
 	if (!queue.IsValidPosition(range.start) ||
 	    !queue.IsValidPosition(range.end - 1))
 		throw PlaylistError::BadRange();
 
-	if ((to >= 0 && to + range.Count() - 1 >= GetLength()) ||
-	    (to < 0 && unsigned(std::abs(to)) > GetLength()))
+	if (to + range.Count() - 1 >= GetLength())
 		throw PlaylistError::BadRange();
 
-	if ((int)range.start == to)
+	if (range.start == to)
 		/* nothing happens */
 		return;
 
 	const DetachedSong *const queued_song = GetQueuedSong();
-
-	/*
-	 * (to < 0) => move to offset from current song
-	 * (-playlist.length == to) => move to position BEFORE current song
-	 */
-	const int currentSong = GetCurrentPosition();
-	if (to < 0) {
-		if (currentSong < 0)
-			/* can't move relative to current song,
-			   because there is no current song */
-			throw PlaylistError::BadRange();
-
-		if (range.Contains(currentSong))
-			/* no-op, can't be moved to offset of itself */
-			return;
-		to = (currentSong + std::abs(to)) % GetLength();
-		if (range.start < (unsigned)to)
-			to -= range.Count();
-	}
 
 	queue.MoveRange(range.start, range.end, to);
 
 	if (!queue.random && current >= 0) {
 		/* update current */
 		if (range.Contains(current))
-			current += unsigned(to) - range.start;
+			current += to - range.start;
 		else if (unsigned(current) >= range.end &&
-			 unsigned(current) <= unsigned(to))
+			 unsigned(current) <= to)
 			current -= range.Count();
-		else if (unsigned(current) >= unsigned(to) &&
+		else if (unsigned(current) >= to &&
 			 unsigned(current) < range.start)
 			current += range.Count();
 	}
 
 	UpdateQueuedSong(pc, queued_song);
 	OnModified();
-}
-
-void
-playlist::MoveId(PlayerControl &pc, unsigned id1, int to)
-{
-	int song = queue.IdToPosition(id1);
-	if (song < 0)
-		throw PlaylistError::NoSuchSong();
-
-	MoveRange(pc, RangeArg::Single(song), to);
 }
 
 void

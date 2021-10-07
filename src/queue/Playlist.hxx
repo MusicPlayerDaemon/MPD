@@ -258,9 +258,7 @@ public:
 
 	void Shuffle(PlayerControl &pc, RangeArg range);
 
-	void MoveRange(PlayerControl &pc, RangeArg range, int to);
-
-	void MoveId(PlayerControl &pc, unsigned id, int to);
+	void MoveRange(PlayerControl &pc, RangeArg range, unsigned to);
 
 	void SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2);
 
