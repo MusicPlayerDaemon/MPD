@@ -87,6 +87,7 @@ TEST(UriRelative, ApplyRelative)
 		{ "../foo", "http://localhost/", "" },
 		{ "../foo", "http://localhost", "" },
 		{ ".", "http://localhost", "http://localhost/" },
+		{ "./foo", "http://localhost", "http://localhost/foo" },
 	};
 
 	for (const auto &i : tests) {
