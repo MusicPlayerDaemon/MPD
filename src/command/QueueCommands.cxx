@@ -127,9 +127,9 @@ handle_addid(Client &client, Request args, Response &r)
 
 	int to = -1;
 
-	if (args.size > 1) {
-		const auto queue_length = partition.playlist.queue.GetLength();
+	const auto queue_length = partition.playlist.queue.GetLength();
 
+	if (args.size > 1) {
 		const char *const s = args[1];
 		if (*s == '+') {
 			/* after the current song */
@@ -155,11 +155,13 @@ handle_addid(Client &client, Request args, Response &r)
 	}
 
 	const SongLoader loader(client);
-	unsigned added_id = partition.AppendURI(loader, uri);
+	const unsigned added_position = queue_length;
+	const unsigned added_id = partition.AppendURI(loader, uri);
 
 	if (to >= 0) {
 		try {
-			partition.MoveId(added_id, to);
+			partition.MoveRange(RangeArg::Single(added_position),
+					    to);
 		} catch (...) {
 			/* rollback */
 			partition.DeleteId(added_id);
