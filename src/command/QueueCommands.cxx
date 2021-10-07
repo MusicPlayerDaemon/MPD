@@ -113,12 +113,17 @@ handle_addid(Client &client, Request args, Response &r)
 	const char *const uri = args.front();
 
 	auto &partition = client.GetPartition();
+
+	int to = -1;
+	if (args.size > 1) {
+		const auto queue_length = partition.playlist.queue.GetLength();
+		to = args.ParseUnsigned(1, queue_length);
+	}
+
 	const SongLoader loader(client);
 	unsigned added_id = partition.AppendURI(loader, uri);
 
-	if (args.size == 2) {
-		unsigned to = args.ParseUnsigned(1);
-
+	if (to >= 0) {
 		try {
 			partition.MoveId(added_id, to);
 		} catch (...) {
