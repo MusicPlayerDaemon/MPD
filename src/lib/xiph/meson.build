@@ -1,6 +1,4 @@
-libflac_dep = dependency('flac', version: '>= 1.2',
-                         fallback: ['flac', 'flac_dep'],
-                         required: get_option('flac'))
+libflac_dep = dependency('flac', version: '>= 1.2', required: get_option('flac'))
 libopus_dep = dependency('opus', required: get_option('opus'))
 
 if get_option('tremor').enabled()

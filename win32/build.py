@@ -94,6 +94,7 @@ thirdparty_libs = [
     libmpdclient,
     libogg,
     opus,
+    flac,
     zlib,
     libid3tag,
     liblame,

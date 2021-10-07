@@ -42,6 +42,18 @@ opus = AutotoolsProject(
     cppflags='-DOPUS_EXPORT=',
 )
 
+flac = AutotoolsProject(
+    'http://downloads.xiph.org/releases/flac/flac-1.3.3.tar.xz',
+    '213e82bd716c9de6db2f98bcadbc4c24c7e2efe8c75939a1a84e28539c4e1748',
+    'lib/libFLAC.a',
+    [
+        '--disable-shared', '--enable-static',
+        '--disable-xmms-plugin', '--disable-cpplibs',
+        '--disable-doxygen-docs',
+    ],
+    subdirs=['include', 'src/libFLAC'],
+)
+
 zlib = ZlibProject(
     'http://zlib.net/zlib-1.2.11.tar.xz',
     '4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066',
