@@ -115,9 +115,40 @@ handle_addid(Client &client, Request args, Response &r)
 	auto &partition = client.GetPartition();
 
 	int to = -1;
+
 	if (args.size > 1) {
 		const auto queue_length = partition.playlist.queue.GetLength();
-		to = args.ParseUnsigned(1, queue_length);
+
+		const char *const s = args[1];
+		if (*s == '+' || *s == '-') {
+			/* relative to the current song */
+
+			const int current =
+				partition.playlist.GetCurrentPosition();
+			if (current < 0)
+				throw ProtocolError(ACK_ERROR_PLAYER_SYNC,
+						    "No current song");
+
+			to = args.ParseInt(1, -current - 1,
+					   queue_length - current);
+			if (to == 0)
+				throw ProtocolError(ACK_ERROR_ARG,
+						    "Zero is not a legal relative position");
+
+			/* special case for negative offsets: the
+			   offset "-1" shall insert the new song right
+			   before the current song (just like "+1"
+			   inserts right after the current song);
+			   computationally, that would be a zero
+			   offset, but that's not intuitive, so we
+			   need to add one here */
+			if (to < 0)
+				++to;
+
+			to += current;
+		} else
+			/* absolute position */
+			to = args.ParseUnsigned(1, queue_length);
 	}
 
 	const SongLoader loader(client);

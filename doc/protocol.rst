@@ -709,6 +709,12 @@ Whenever possible, ids should be used.
      Id: 999
      OK
 
+    If the second parameter is given, then the song is inserted at the
+    specified position.  If the parameter starts with ``+`` or ``-``,
+    then it is relative to the current song; e.g. ``+1`` inserts right
+    after the current song and ``-1`` inserts right before the current
+    song.  (``±0`` is not a legal value.)
+
 .. _command_clear:
 
 :command:`clear`
