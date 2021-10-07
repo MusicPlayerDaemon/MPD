@@ -173,7 +173,7 @@ uri_apply_relative(const std::string &relative_uri,
 		if (StringStartsWith(relative_path, "../"))
 			return {};
 		if (!StringIsEqual(relative_path, "."))
-			result += relative_uri;
+			result += relative_path;
 		return result;
 	}
 
