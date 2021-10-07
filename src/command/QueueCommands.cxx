@@ -378,8 +378,7 @@ ParseMoveDestination(const char *s, const RangeArg range,
 		unsigned current = RequireCurrentPosition(p);
 		assert(current < queue_length);
 		if (range.Contains(current))
-			/* no-op */
-			return range.start;
+			throw ProtocolError(ACK_ERROR_ARG, "Cannot move current song relative to itself");
 
 		if (current >= range.end)
 			current -= range.Count();
@@ -393,8 +392,7 @@ ParseMoveDestination(const char *s, const RangeArg range,
 		unsigned current = RequireCurrentPosition(p);
 		assert(current < queue_length);
 		if (range.Contains(current))
-			/* no-op */
-			return range.start;
+			throw ProtocolError(ACK_ERROR_ARG, "Cannot move current song relative to itself");
 
 		if (current >= range.end)
 			current -= range.Count();
