@@ -24,7 +24,7 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "fs/Path.hxx"
-#include "util/Alloc.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/Math.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
@@ -36,6 +36,8 @@
 #include <cstdlib>
 #include <iterator>
 #include <memory>
+
+using std::string_view_literals::operator""sv;
 
 #define ERRORLEN 80
 
@@ -506,22 +508,12 @@ static WavpackStreamReader mpd_is_reader = {
 #endif
 
 static InputStreamPtr
-wavpack_open_wvc(DecoderClient &client, const char *uri)
+wavpack_open_wvc(DecoderClient &client, std::string_view uri)
 {
-	/*
-	 * As we use dc->utf8url, this function will be bad for
-	 * single files. utf8url is not absolute file path :/
-	 */
-	if (uri == nullptr)
-		return nullptr;
-
-	char *wvc_url = xstrcatdup(uri, "c");
-	AtScopeExit(wvc_url) {
-		free(wvc_url);
-	};
+	const AllocatedString wvc_url{uri, "c"sv};
 
 	try {
-		return client.OpenUri(wvc_url);
+		return client.OpenUri(wvc_url.c_str());
 	} catch (...) {
 		return nullptr;
 	}
