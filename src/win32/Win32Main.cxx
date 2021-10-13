@@ -20,7 +20,7 @@
 #include "Main.hxx"
 #include "util/Compiler.h"
 #include "Instance.hxx"
-#include "system/FatalError.hxx"
+#include "system/Error.hxx"
 #include "Log.hxx"
 
 #include <cstdlib>
@@ -83,7 +83,7 @@ try {
 					     service_dispatcher, nullptr);
 
 	if (service_handle == 0)
-		FatalSystemError("RegisterServiceCtrlHandlerEx() failed");
+		throw MakeLastError("RegisterServiceCtrlHandlerEx() failed");
 
 	service_notify_status(SERVICE_START_PENDING);
 	mpd_main(service_argc, service_argv);
@@ -137,7 +137,7 @@ int win32_main(int argc, char *argv[])
 		return mpd_main(argc, argv);
 	}
 
-	FatalSystemError("StartServiceCtrlDispatcher() failed", error_code);
+	throw MakeLastError(error_code, "StartServiceCtrlDispatcher() failed");
 }
 
 void win32_app_started()
