@@ -236,11 +236,6 @@ TagBuilder::AddItem(TagType type, StringView value) noexcept
 void
 TagBuilder::AddItem(TagType type, const char *value) noexcept
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(value != nullptr);
-#endif
-
 	AddItem(type, StringView(value));
 }
 

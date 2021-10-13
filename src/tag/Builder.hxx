@@ -22,7 +22,6 @@
 
 #include "Type.h"
 #include "Chrono.hxx"
-#include "util/Compiler.h"
 
 #include <vector>
 #include <memory>
@@ -83,7 +82,7 @@ public:
 	/**
 	 * Returns true if the object contains any information.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsDefined() const noexcept {
 		return !duration.IsNegative() || has_playlist || !empty();
 	}
@@ -125,7 +124,7 @@ public:
 	 * Checks whether the tag contains one or more items with
 	 * the specified type.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasType(TagType type) const noexcept;
 
 	/**
@@ -147,7 +146,6 @@ public:
 	 * @param value the value of the tag item (not null-terminated)
 	 * @param length the length of #value
 	 */
-	gcc_nonnull_all
 	void AddItem(TagType type, StringView value) noexcept;
 
 	/**
@@ -156,7 +154,7 @@ public:
 	 * @param type the type of the new tag item
 	 * @param value the value of the tag item (null-terminated)
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	void AddItem(TagType type, const char *value) noexcept;
 
 	/**
@@ -177,7 +175,6 @@ public:
 	void RemoveType(TagType type) noexcept;
 
 private:
-	gcc_nonnull_all
 	void AddItemInternal(TagType type, StringView value) noexcept;
 };
 
