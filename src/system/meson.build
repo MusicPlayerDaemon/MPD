@@ -1,5 +1,4 @@
 system_sources = [
-  'FatalError.cxx',
   'EventPipe.cxx',
   'Clock.cxx',
 ]
