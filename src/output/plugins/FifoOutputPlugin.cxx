@@ -194,9 +194,9 @@ FifoOutput::Cancel() noexcept
 	} while (bytes > 0 && errno != EINTR);
 
 	if (bytes < 0 && errno != EAGAIN) {
-		FormatErrno(fifo_output_domain,
-			    "Flush of FIFO \"%s\" failed",
-			    path_utf8.c_str());
+		FmtError(fifo_output_domain,
+			 "Flush of FIFO \"{}\" failed: %s",
+			 path_utf8, strerror(errno));
 	}
 }
 

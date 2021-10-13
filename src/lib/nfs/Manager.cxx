@@ -18,16 +18,21 @@
  */
 
 #include "Manager.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "event/Loop.hxx"
-#include "Log.hxx"
 #include "util/DeleteDisposer.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <string.h>
+
+static constexpr Domain nfs_domain("nfs");
 
 void
 NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e) noexcept
 {
-	FormatError(e, "NFS error on %s:%s", GetServer(), GetExportName());
+	FmtError(nfs_domain, "NFS error on '{}:{}': {}",
+		 GetServer(), GetExportName(), e);
 
 	/* defer deletion so the caller
 	   (i.e. NfsConnection::OnSocketReady()) can still use this

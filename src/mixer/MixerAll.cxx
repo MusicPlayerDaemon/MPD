@@ -21,10 +21,14 @@
 #include "MixerControl.hxx"
 #include "MixerInternal.hxx"
 #include "MixerList.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "pcm/Volume.hxx"
+#include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <cassert>
+
+static constexpr Domain mixer_domain("mixer");
 
 gcc_pure
 static int
@@ -40,9 +44,9 @@ output_mixer_get_volume(const AudioOutputControl &ao) noexcept
 	try {
 		return mixer_get_volume(mixer);
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "Failed to read mixer for '%s'",
-			    ao.GetName());
+		FmtError(mixer_domain,
+			 "Failed to read mixer for '{}': {}",
+			 ao.GetName(), std::current_exception());
 		return -1;
 	}
 }
@@ -83,9 +87,9 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume) noexcept
 		mixer_set_volume(mixer, volume);
 		return true;
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "Failed to set mixer for '%s'",
-			    ao.GetName());
+		FmtError(mixer_domain,
+			 "Failed to set mixer for '{}': {}",
+			 ao.GetName(), std::current_exception());
 		return false;
 	}
 }

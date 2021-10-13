@@ -21,7 +21,11 @@
 #include "thread/Name.hxx"
 #include "thread/Slack.hxx"
 #include "thread/Util.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
+#include "util/Domain.hxx"
 #include "Log.hxx"
+
+static constexpr Domain event_domain("event");
 
 void
 EventThread::Start()
@@ -57,8 +61,9 @@ EventThread::Run() noexcept
 		try {
 			SetThreadRealtime();
 		} catch (...) {
-			Log(LogLevel::INFO, std::current_exception(),
-			    "RTIOThread could not get realtime scheduling, continuing anyway");
+			FmtInfo(event_domain,
+				"RTIOThread could not get realtime scheduling, continuing anyway: %s",
+				std::current_exception());
 		}
 	}
 

@@ -19,9 +19,13 @@
 
 #include "RemoteTagCache.hxx"
 #include "RemoteTagCacheHandler.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "input/ScanTags.hxx"
 #include "util/DeleteDisposer.hxx"
+#include "util/Domain.hxx"
 #include "Log.hxx"
+
+static constexpr Domain remote_tag_cache_domain("remote_tag_cache");
 
 RemoteTagCache::RemoteTagCache(EventLoop &event_loop,
 			       RemoteTagCacheHandler &_handler) noexcept
@@ -60,9 +64,9 @@ RemoteTagCache::Lookup(const std::string &uri) noexcept
 
 			item->scanner->Start();
 		} catch (...) {
-			FormatError(std::current_exception(),
-				    "Failed to scan tags of '%s'",
-				    uri.c_str());
+			FmtError(remote_tag_cache_domain,
+				 "Failed to scan tags of '{}': {}",
+				 uri, std::current_exception());
 
 			item->scanner.reset();
 
@@ -128,7 +132,8 @@ RemoteTagCache::Item::OnRemoteTag(Tag &&_tag) noexcept
 void
 RemoteTagCache::Item::OnRemoteTagError(std::exception_ptr e) noexcept
 {
-	FormatError(e, "Failed to scan tags of '%s'", uri.c_str());
+	FmtError(remote_tag_cache_domain,
+		 "Failed to scan tags of '{}': {}", uri, e);
 
 	scanner.reset();
 

@@ -44,7 +44,7 @@
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
-#include "LogV.hxx"
+#include "Log.hxx"
 
 extern "C" {
 #include <libavcodec/avcodec.h>

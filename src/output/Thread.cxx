@@ -434,8 +434,9 @@ AudioOutputControl::Task() noexcept
 	try {
 		SetThreadRealtime();
 	} catch (...) {
-		Log(LogLevel::INFO, std::current_exception(),
-		    "OutputThread could not get realtime scheduling, continuing anyway");
+		FmtInfo(output_domain,
+			"OutputThread could not get realtime scheduling, continuing anyway: %s",
+			std::current_exception());
 	}
 
 	SetThreadTimerSlack(std::chrono::microseconds(100));

@@ -25,13 +25,16 @@
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "config/Net.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketUtil.hxx"
 #include "system/Error.hxx"
-#include "util/RuntimeError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/XDG.hxx"
+#include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <sys/stat.h>
 
@@ -40,6 +43,10 @@
 #endif
 
 #define DEFAULT_PORT	6600
+
+#if defined(USE_XDG) && defined(HAVE_UN)
+static constexpr Domain listen_domain("listen");
+#endif
 
 int listen_port;
 
@@ -98,9 +105,9 @@ ListenXdgRuntimeDir(ClientListener &listener) noexcept
 		listener.AddFD(std::move(fd), std::move(address));
 		return true;
 	} catch (...) {
-		FormatError(std::current_exception(),
-			    "Failed to listen on '%s' (not fatal)",
-			    socket_path.c_str());
+		FmtError(listen_domain,
+			 "Failed to listen on '{}' (not fatal): {}",
+			 socket_path, std::current_exception());
 		return false;
 	}
 #else

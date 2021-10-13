@@ -24,7 +24,12 @@
 #include "../InputStream.hxx"
 #include "fs/LookupFile.hxx"
 #include "fs/Path.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "util/Domain.hxx"
 #include "Log.hxx"
+
+static constexpr Domain input_domain("input");
 
 InputStreamPtr
 OpenArchiveInputStream(Path path, Mutex &mutex)
@@ -38,8 +43,9 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 			return nullptr;
 		}
 	} catch (...) {
-		LogFormat(LogLevel::DEBUG, std::current_exception(),
-			  "not an archive, lookup %s failed", path.c_str());
+		FmtDebug(input_domain,
+			 "not an archive, lookup '{}' failed: {}",
+			 path, std::current_exception());
 		return nullptr;
 	}
 

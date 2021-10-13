@@ -186,9 +186,9 @@ oss_output_test_default_device() noexcept
 		if (fd.Open(default_devices[i], O_WRONLY, 0))
 			return true;
 
-		FormatErrno(oss_output_domain,
-			    "Error opening OSS device \"%s\"",
-			    default_devices[i]);
+		FmtError(oss_output_domain,
+			 "Error opening OSS device \"{}\": {}",
+			 default_devices[i], strerror(errno));
 	}
 
 	return false;
@@ -233,8 +233,8 @@ oss_open_default(
 				   "{}: permission denied", dev);
 			break;
 		case OSS_STAT_OTHER:
-			FormatErrno(oss_output_domain, err[i],
-				    "Error accessing %s", dev);
+			FmtError(oss_output_domain, "Error accessing {}: {}",
+				 dev, strerror(err[i]));
 		}
 	}
 

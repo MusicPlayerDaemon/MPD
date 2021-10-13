@@ -22,6 +22,7 @@
 #include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/dbus/Glue.hxx"
 #include "lib/dbus/AsyncRequest.hxx"
 #include "lib/dbus/Message.hxx"
@@ -35,11 +36,14 @@
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "util/Domain.hxx"
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
+
+static constexpr Domain udisks_domain("udisks");
 
 class UdisksStorage final : public Storage {
 	const std::string base_uri;
@@ -87,9 +91,9 @@ public:
 		try {
 			UnmountWait();
 		} catch (...) {
-			FormatError(std::current_exception(),
-				    "Failed to unmount '%s'",
-				    base_uri.c_str());
+			FmtError(udisks_domain,
+				 "Failed to unmount '{}': {}",
+				 base_uri, std::current_exception());
 		}
 	}
 

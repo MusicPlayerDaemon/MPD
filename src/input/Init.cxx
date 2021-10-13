@@ -25,6 +25,7 @@
 #include "config/Block.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
+#include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <cassert>
@@ -34,6 +35,8 @@
 #ifdef HAVE_URING
 #include "plugins/UringInputPlugin.hxx"
 #endif
+
+static constexpr Domain input_domain("input");
 
 void
 input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
@@ -67,14 +70,14 @@ input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 				plugin->init(event_loop, *block);
 			input_plugins_enabled[i] = true;
 		} catch (const PluginUnconfigured &e) {
-			LogFormat(LogLevel::DEBUG, e,
-				  "Input plugin '%s' is not configured",
-				  plugin->name);
+			FmtDebug(input_domain,
+				 "Input plugin '{}' is not configured: %s",
+				 plugin->name, e.what());
 			continue;
 		} catch (const PluginUnavailable &e) {
-			FormatError(e,
-				    "Input plugin '%s' is unavailable",
-				    plugin->name);
+			FmtDebug(input_domain,
+				 "Input plugin '{}' is unavailable: %s",
+				 plugin->name, e.what());
 			continue;
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Failed to initialize input plugin '%s'",
