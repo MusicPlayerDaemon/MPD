@@ -23,7 +23,6 @@
 #include "Type.h" // IWYU pragma: export
 #include "Item.hxx" // IWYU pragma: export
 #include "Chrono.hxx"
-#include "util/Compiler.h"
 #include "util/DereferenceIterator.hxx"
 
 #include <memory>
@@ -145,14 +144,14 @@ struct Tag {
 	 * Returns the first value of the specified tag type, or
 	 * nullptr if none is present in this tag object.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetValue(TagType type) const noexcept;
 
 	/**
 	 * Checks whether the tag contains one or more items with
 	 * the specified type.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasType(TagType type) const noexcept;
 
 	/**
@@ -161,7 +160,7 @@ struct Tag {
 	 * (e.g. #TAG_ALBUM_ARTIST falls back to #TAG_ARTIST).  If
 	 * there is no such value, returns an empty string.
 	 */
-	gcc_pure gcc_returns_nonnull
+	[[gnu::pure]] [[gnu::returns_nonnull]]
 	const char *GetSortValue(TagType type) const noexcept;
 
 	using const_iterator = DereferenceIterator<TagItem *const*,
