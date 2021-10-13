@@ -68,20 +68,20 @@ class RemoteTagCache final {
 		struct Hash : std::hash<std::string> {
 			using std::hash<std::string>::operator();
 
-			gcc_pure
+			[[gnu::pure]]
 			std::size_t operator()(const Item &item) const noexcept {
 				return std::hash<std::string>::operator()(item.uri);
 			}
 		};
 
 		struct Equal {
-			gcc_pure
+			[[gnu::pure]]
 			bool operator()(const Item &a,
 					const Item &b) const noexcept {
 				return a.uri == b.uri;
 			}
 
-			gcc_pure
+			[[gnu::pure]]
 			bool operator()(const std::string &a,
 					const Item &b) const noexcept {
 				return a == b.uri;
