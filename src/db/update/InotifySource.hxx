@@ -20,13 +20,13 @@
 #ifndef MPD_INOTIFY_SOURCE_HXX
 #define MPD_INOTIFY_SOURCE_HXX
 
-#include "event/SocketEvent.hxx"
+#include "event/PipeEvent.hxx"
 
 typedef void (*mpd_inotify_callback_t)(int wd, unsigned mask,
 				       const char *name, void *ctx);
 
 class InotifySource final {
-	SocketEvent socket_event;
+	PipeEvent socket_event;
 
 	mpd_inotify_callback_t callback;
 	void *callback_ctx;

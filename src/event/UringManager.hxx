@@ -19,21 +19,21 @@
 
 #pragma once
 
-#include "SocketEvent.hxx"
+#include "PipeEvent.hxx"
 #include "IdleEvent.hxx"
 #include "io/uring/Queue.hxx"
 
 namespace Uring {
 
 class Manager final : public Queue {
-	SocketEvent event;
+	PipeEvent event;
 	IdleEvent idle_event;
 
 public:
 	explicit Manager(EventLoop &event_loop)
 		:Queue(1024, 0),
 		 event(event_loop, BIND_THIS_METHOD(OnSocketReady),
-		       SocketDescriptor::FromFileDescriptor(GetFileDescriptor())),
+		       GetFileDescriptor()),
 		 idle_event(event_loop, BIND_THIS_METHOD(OnIdle))
 	{
 		event.ScheduleRead();
