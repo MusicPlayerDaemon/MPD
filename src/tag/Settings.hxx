@@ -22,18 +22,17 @@
 
 #include "Mask.hxx"
 #include "Type.h"
-#include "util/Compiler.h"
 
 extern TagMask global_tag_mask;
 
-gcc_const
+[[gnu::const]]
 static inline bool
 IsTagEnabled(TagType tag) noexcept
 {
 	return global_tag_mask.Test(tag);
 }
 
-gcc_const
+[[gnu::const]]
 static inline bool
 IsTagEnabled(unsigned tag) noexcept
 {
