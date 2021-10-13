@@ -18,6 +18,7 @@
  */
 
 #include "Id3Scan.hxx"
+#include "Id3String.hxx"
 #include "Id3Load.hxx"
 #include "Handler.hxx"
 #include "Table.hxx"
@@ -63,18 +64,18 @@
 #endif
 
 gcc_pure
-static id3_utf8_t *
+static Id3String
 tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
 {
 	id3_field *field = id3_frame_field(frame, i);
 	if (field == nullptr)
-		return nullptr;
+		return {};
 
 	const id3_ucs4_t *ucs4 = id3_field_getstring(field);
 	if (ucs4 == nullptr)
-		return nullptr;
+		return {};
 
-	return id3_ucs4_utf8duplicate(ucs4);
+	return Id3String::FromUCS4(ucs4);
 }
 
 /* This will try to convert a string to utf-8,
@@ -82,13 +83,11 @@ tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
 static id3_utf8_t *
 import_id3_string(const id3_ucs4_t *ucs4)
 {
-	id3_utf8_t *utf8 = id3_ucs4_utf8duplicate(ucs4);
-	if (gcc_unlikely(utf8 == nullptr))
+	auto utf8 = Id3String::FromUCS4(ucs4);
+	if (!utf8)
 		return nullptr;
 
-	AtScopeExit(utf8) { free(utf8); };
-
-	return (id3_utf8_t *)xstrdup(Strip((char *)utf8));
+	return (id3_utf8_t *)xstrdup(Strip(utf8.c_str()));
 }
 
 /**
@@ -226,24 +225,20 @@ tag_id3_import_musicbrainz(const struct id3_tag *id3_tag,
 		if (frame == nullptr)
 			break;
 
-		id3_utf8_t *name = tag_id3_getstring(frame, 1);
-		if (name == nullptr)
+		const auto name = tag_id3_getstring(frame, 1);
+		if (!name)
 			continue;
 
-		AtScopeExit(name) { free(name); };
-
-		id3_utf8_t *value = tag_id3_getstring(frame, 2);
-		if (value == nullptr)
+		const auto value = tag_id3_getstring(frame, 2);
+		if (!value)
 			continue;
 
-		AtScopeExit(value) { free(value); };
+		handler.OnPair(name.c_str(), value.c_str());
 
-		handler.OnPair((const char *)name, (const char *)value);
-
-		TagType type = tag_id3_parse_txxx_name((const char*)name);
+		TagType type = tag_id3_parse_txxx_name(name.c_str());
 
 		if (type != TAG_NUM_OF_ITEM_TYPES)
-			handler.OnTag(type, (const char*)value);
+			handler.OnTag(type, value.c_str());
 	}
 }
 
