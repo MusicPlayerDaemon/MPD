@@ -26,17 +26,18 @@
 #include "config/Block.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Builder.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Alloc.hxx"
 #include "util/Domain.hxx"
-#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <string>
 
 #include <string.h>
 #include <stdlib.h>
+
+using std::string_view_literals::operator""sv;
 
 static struct {
 	std::string apikey;
@@ -64,56 +65,57 @@ soundcloud_init(const ConfigBlock &block)
  * @param uri uri of a soundcloud page (or just the path)
  * @return Constructed URL. Must be freed with free().
  */
-static char *
-soundcloud_resolve(const char* uri)
+static AllocatedString
+soundcloud_resolve(StringView uri) noexcept
 {
-	char *u, *ru;
-
-	if (StringStartsWithCaseASCII(uri, "https://")) {
-		u = xstrdup(uri);
-	} else if (StringStartsWith(uri, "soundcloud.com")) {
-		u = xstrcatdup("https://", uri);
-	} else {
-		/* assume it's just a path on soundcloud.com */
-		u = xstrcatdup("https://soundcloud.com/", uri);
+	if (uri.StartsWithIgnoreCase("https://")) {
+		return AllocatedString{uri};
+	} else if (uri.StartsWith("soundcloud.com")) {
+		return AllocatedString{"https://"sv, uri};
 	}
 
-	ru = xstrcatdup("https://api.soundcloud.com/resolve.json?url=",
-			u, "&client_id=",
-			soundcloud_config.apikey.c_str());
-	free(u);
 
-	return ru;
+	/* assume it's just a path on soundcloud.com */
+	AllocatedString u{"https://soundcloud.com/"sv, uri};
+
+	return AllocatedString{
+		"https://api.soundcloud.com/resolve.json?url="sv,
+		u, "&client_id="sv,
+		soundcloud_config.apikey,
+	};
 }
 
-static char *
-TranslateSoundCloudUri(const char *uri) noexcept
+static AllocatedString
+TranslateSoundCloudUri(StringView uri) noexcept
 {
-	if (strncmp(uri, "track/", 6) == 0) {
-		const char *rest = uri + 6;
-		return xstrcatdup("https://api.soundcloud.com/tracks/",
-				  rest, ".json?client_id=",
-				  soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "playlist/", 9) == 0) {
-		const char *rest = uri + 9;
-		return xstrcatdup("https://api.soundcloud.com/playlists/",
-				  rest, ".json?client_id=",
-				  soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "user/", 5) == 0) {
-		const char *rest = uri + 5;
-		return xstrcatdup("https://api.soundcloud.com/users/",
-				  rest, "/tracks.json?client_id=",
-				  soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "search/", 7) == 0) {
-		const char *rest = uri + 7;
-		return xstrcatdup("https://api.soundcloud.com/tracks.json?q=",
-				  rest, "&client_id=",
-				  soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "url/", 4) == 0) {
-		const char *rest = uri + 4;
+	if (uri.SkipPrefix("track/"sv)) {
+		return AllocatedString{
+			"https://api.soundcloud.com/tracks/"sv,
+			uri, ".json?client_id="sv,
+			soundcloud_config.apikey,
+		};
+	} else if (uri.SkipPrefix("playlist/"sv)) {
+		return AllocatedString{
+			"https://api.soundcloud.com/playlists/"sv,
+			uri, ".json?client_id="sv,
+			soundcloud_config.apikey,
+		};
+	} else if (uri.SkipPrefix("user/"sv)) {
+		return AllocatedString{
+			"https://api.soundcloud.com/users/"sv,
+			uri, "/tracks.json?client_id="sv,
+			soundcloud_config.apikey,
+		};
+	} else if (uri.SkipPrefix("search/"sv)) {
+		return AllocatedString{
+			"https://api.soundcloud.com/tracks.json?q="sv,
+			uri, "&client_id="sv,
+			soundcloud_config.apikey,
+		};
+	} else if (uri.SkipPrefix("url/"sv)) {
 		/* Translate to soundcloud resolver call. libcurl will automatically
 		   follow the redirect to the right resource. */
-		return soundcloud_resolve(rest);
+		return soundcloud_resolve(uri);
 	} else
 		return nullptr;
 }
@@ -272,9 +274,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex)
 	assert(StringEqualsCaseASCII(uri, "soundcloud://", 13));
 	uri += 13;
 
-	char *u = TranslateSoundCloudUri(uri);
-	AtScopeExit(u) { free(u); };
-
+	auto u = TranslateSoundCloudUri(uri);
 	if (u == nullptr) {
 		LogWarning(soundcloud_domain, "unknown soundcloud URI");
 		return nullptr;
@@ -282,7 +282,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex)
 
 	SoundCloudJsonData data;
 	Yajl::Handle handle(&parse_callbacks, nullptr, &data);
-	soundcloud_parse_json(u, handle, mutex);
+	soundcloud_parse_json(u.c_str(), handle, mutex);
 
 	data.songs.reverse();
 	return std::make_unique<MemorySongEnumerator>(std::move(data.songs));
