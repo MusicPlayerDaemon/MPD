@@ -523,13 +523,18 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	if (raw_config.GetBool(ConfigOption::AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
 		if (instance.storage != nullptr &&
-		    instance.update != nullptr)
-			instance.inotify_update =
-				mpd_inotify_init(instance.event_loop,
-						 *instance.storage,
-						 *instance.update,
-						 raw_config.GetUnsigned(ConfigOption::AUTO_UPDATE_DEPTH,
-									INT_MAX));
+		    instance.update != nullptr) {
+			try {
+				instance.inotify_update =
+					mpd_inotify_init(instance.event_loop,
+							 *instance.storage,
+							 *instance.update,
+							 raw_config.GetUnsigned(ConfigOption::AUTO_UPDATE_DEPTH,
+										INT_MAX));
+			} catch (...) {
+				LogError(std::current_exception());
+			}
+		}
 #else
 		LogWarning(config_domain,
 			   "inotify: auto_update was disabled. enable during compilation phase");
