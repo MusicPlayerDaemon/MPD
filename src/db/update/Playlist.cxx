@@ -94,6 +94,9 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 				directory->AddSong(std::move(db_song));
 			}
 		}
+
+		if (directory->IsEmpty())
+			editor.LockDeleteDirectory(directory);
 	} catch (...) {
 		FmtError(update_domain,
 			 "Failed to scan playlist '{}': {}",
