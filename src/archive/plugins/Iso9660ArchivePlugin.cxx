@@ -29,6 +29,7 @@
 #include "fs/Path.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
+#include "util/UTF8.hxx"
 #include "util/WritableBuffer.hxx"
 
 #include <cdio/iso9660.h>
@@ -100,6 +101,10 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 		    PathTraitsUTF8::IsSpecialFilename(filename))
 			/* skip empty names (libcdio bug?) */
 			/* skip special names like "." and ".." */
+			continue;
+
+		if (!ValidateUTF8(filename))
+			/* ignore file names which are not valid UTF-8 */
 			continue;
 
 		size_t filename_length = strlen(filename);

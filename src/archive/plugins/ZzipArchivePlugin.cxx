@@ -29,6 +29,7 @@
 #include "fs/Path.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/UTF8.hxx"
 
 #include <zzip/zzip.h>
 
@@ -84,7 +85,7 @@ ZzipArchiveFile::Visit(ArchiveVisitor &visitor)
 	ZZIP_DIRENT dirent;
 	while (zzip_dir_read(dir->dir, &dirent))
 		//add only files
-		if (dirent.st_size > 0)
+		if (dirent.st_size > 0 && ValidateUTF8(dirent.d_name))
 			visitor.VisitArchiveEntry(dirent.d_name);
 }
 
