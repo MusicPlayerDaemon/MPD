@@ -69,7 +69,7 @@ InotifyQueue::OnDelay() noexcept
 	}
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 path_in(const char *path, const char *possible_parent) noexcept
 {

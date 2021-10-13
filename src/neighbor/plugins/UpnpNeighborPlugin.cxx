@@ -40,12 +40,12 @@ class UpnpNeighborExplorer final
 		Server(const Server &) = delete;
 		Server &operator=(const Server &) = delete;
 
-		gcc_pure
+		[[gnu::pure]]
 		bool operator==(const Server &other) const noexcept {
 			return name == other.name;
 		}
 
-		[[nodiscard]] gcc_pure
+		[[nodiscard]] [[gnu::pure]]
 		NeighborInfo Export() const noexcept {
 			return { "smb://" + name + "/", comment };
 		}

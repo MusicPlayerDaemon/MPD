@@ -99,7 +99,7 @@ static constexpr char ContentDirectorySType[] = "urn:schemas-upnp-org:service:Co
 
 // We don't include a version in comparisons, as we are satisfied with
 // version 1
-gcc_pure
+[[gnu::pure]]
 static bool
 isCDService(const char *st) noexcept
 {
@@ -110,7 +110,7 @@ isCDService(const char *st) noexcept
 // The type of device we're asking for in search
 static constexpr char MediaServerDType[] = "urn:schemas-upnp-org:device:MediaServer:1";
 
-gcc_pure
+[[gnu::pure]]
 static bool
 isMSDevice(const char *st) noexcept
 {

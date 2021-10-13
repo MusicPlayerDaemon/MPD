@@ -27,8 +27,7 @@
 
 #include <system_error>
 
-gcc_const
-static enum ack
+static constexpr enum ack
 ToAck(PlaylistResult result) noexcept
 {
 	switch (result) {
@@ -63,8 +62,8 @@ ToAck(PlaylistResult result) noexcept
 }
 
 #ifdef ENABLE_DATABASE
-gcc_const
-static enum ack
+
+static constexpr enum ack
 ToAck(DatabaseErrorCode code) noexcept
 {
 	switch (code) {
@@ -78,9 +77,10 @@ ToAck(DatabaseErrorCode code) noexcept
 
 	return ACK_ERROR_UNKNOWN;
 }
+
 #endif
 
-gcc_pure
+[[gnu::pure]]
 static enum ack
 ToAck(const std::exception_ptr& ep) noexcept
 {
