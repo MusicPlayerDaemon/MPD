@@ -21,7 +21,6 @@
 #define MPD_TAG_TABLE_HXX
 
 #include "Type.h"
-#include "util/Compiler.h"
 
 struct StringView;
 
@@ -36,11 +35,11 @@ struct tag_table {
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
-gcc_pure
+[[gnu::pure]]
 TagType
 tag_table_lookup(const tag_table *table, const char *name) noexcept;
 
-gcc_pure
+[[gnu::pure]]
 TagType
 tag_table_lookup(const tag_table *table, StringView name) noexcept;
 
@@ -49,11 +48,11 @@ tag_table_lookup(const tag_table *table, StringView name) noexcept;
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
-gcc_pure
+[[gnu::pure]]
 TagType
 tag_table_lookup_i(const tag_table *table, const char *name) noexcept;
 
-gcc_pure
+[[gnu::pure]]
 TagType
 tag_table_lookup_i(const tag_table *table, StringView name) noexcept;
 
@@ -62,7 +61,7 @@ tag_table_lookup_i(const tag_table *table, StringView name) noexcept;
  * string representation.  Returns nullptr if the specified type was
  * not found in the table.
  */
-gcc_pure
+[[gnu::pure]]
 const char *
 tag_table_lookup(const tag_table *table, TagType type) noexcept;
 
