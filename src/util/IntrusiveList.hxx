@@ -338,7 +338,7 @@ public:
 	}
 
 	static constexpr iterator iterator_to(const T &t) noexcept {
-		return {&t};
+		return {&ToNode(t)};
 	}
 
 	iterator erase(iterator i) noexcept {
