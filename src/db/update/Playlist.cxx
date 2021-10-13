@@ -72,8 +72,9 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 
 			auto db_song = std::make_unique<Song>(std::move(*song),
 							      *directory);
-			db_song->target =
-				PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename.c_str())
+			const bool is_absolute =
+				PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename.c_str());
+			db_song->target = is_absolute
 				? db_song->filename
 				/* prepend "../" to relative paths to
 				   go from the virtual directory
@@ -85,6 +86,11 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 
 			{
 				const ScopeDatabaseLock protect;
+
+				if (!is_absolute &&
+				    !directory->TargetExists(db_song->target))
+					continue;
+
 				directory->AddSong(std::move(db_song));
 			}
 		}
