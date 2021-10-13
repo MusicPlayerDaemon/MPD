@@ -52,7 +52,7 @@ IsUnsafeChar(char ch)
 		(unsigned char)ch < 0x20;
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 HasUnsafeChar(const char *s) noexcept
 {
@@ -78,7 +78,7 @@ SanitizeString(const char *s, char *buffer, size_t buffer_size) noexcept
 	return buffer;
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static const char *
 TagGetter(const void *object, const char *name) noexcept
 {
