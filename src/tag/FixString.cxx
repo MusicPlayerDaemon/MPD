@@ -29,7 +29,7 @@
 
 #include <stdlib.h>
 
-gcc_pure
+[[gnu::pure]]
 static const char *
 FindInvalidUTF8(const char *p, const char *const end) noexcept
 {
@@ -116,7 +116,7 @@ clear_non_printable(StringView src)
 	return { dest, src.size };
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsSafe(StringView s) noexcept
 {

@@ -20,12 +20,9 @@
 #ifndef MPD_TAG_STRING_HXX
 #define MPD_TAG_STRING_HXX
 
-#include "util/Compiler.h"
-
 struct StringView;
 template<typename T> struct WritableBuffer;
 
-gcc_nonnull_all
 WritableBuffer<char>
 FixTagString(StringView p);
 
