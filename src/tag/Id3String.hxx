@@ -49,10 +49,6 @@ public:
 		return p != nullptr;
 	}
 
-	char *c_str() noexcept {
-		return (char *)p;
-	}
-
 	const char *c_str() const noexcept {
 		return (const char *)p;
 	}

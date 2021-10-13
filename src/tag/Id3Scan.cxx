@@ -25,9 +25,6 @@
 #include "Builder.hxx"
 #include "Tag.hxx"
 #include "Id3MusicBrainz.hxx"
-#include "util/Alloc.hxx"
-#include "util/ScopeExit.hxx"
-#include "util/StringStrip.hxx"
 #include "util/StringView.hxx"
 
 #include <id3tag.h>
@@ -78,31 +75,20 @@ tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
 	return Id3String::FromUCS4(ucs4);
 }
 
-/* This will try to convert a string to utf-8,
- */
-static id3_utf8_t *
-import_id3_string(const id3_ucs4_t *ucs4)
-{
-	auto utf8 = Id3String::FromUCS4(ucs4);
-	if (!utf8)
-		return nullptr;
-
-	return (id3_utf8_t *)xstrdup(Strip(utf8.c_str()));
-}
-
 static void
 InvokeOnTag(TagHandler &handler, TagType type, const id3_ucs4_t *ucs4) noexcept
 {
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 	assert(ucs4 != nullptr);
 
-	id3_utf8_t *utf8 = import_id3_string(ucs4);
-	if (utf8 == nullptr)
+	const auto utf8 = Id3String::FromUCS4(ucs4);
+	if (!utf8)
 		return;
 
-	AtScopeExit(utf8) { free(utf8); };
+	StringView s{utf8.c_str()};
+	s.Strip();
 
-	handler.OnTag(type, (const char *)utf8);
+	handler.OnTag(type, s);
 }
 
 /**
