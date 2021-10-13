@@ -22,7 +22,7 @@
 #include "Pool.hxx"
 #include "FixString.hxx"
 #include "Tag.hxx"
-#include "util/WritableBuffer.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/StringView.hxx"
 
 #include <algorithm>
@@ -217,11 +217,9 @@ TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
 
 	auto f = FixTagString(value);
 	if (!f.IsNull())
-		value = { f.data, f.size };
+		value = { f.data(), f.size() };
 
 	AddItemUnchecked(type, value);
-
-	free(f.data);
 }
 
 void

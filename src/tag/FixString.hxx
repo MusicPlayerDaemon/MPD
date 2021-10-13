@@ -21,9 +21,9 @@
 #define MPD_TAG_STRING_HXX
 
 struct StringView;
-template<typename T> struct WritableBuffer;
+template<typename T> class AllocatedArray;
 
-WritableBuffer<char>
+AllocatedArray<char>
 FixTagString(StringView p);
 
 #endif

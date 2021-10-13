@@ -18,7 +18,7 @@
  */
 
 #include "FixString.hxx"
-#include "util/Alloc.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/CharUtil.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/StringView.hxx"
@@ -55,15 +55,15 @@ FindInvalidUTF8(const char *p, const char *const end) noexcept
 /**
  * Replace invalid sequences with the question mark.
  */
-static WritableBuffer<char>
+static AllocatedArray<char>
 patch_utf8(StringView src, const char *_invalid)
 {
 	/* duplicate the string, and replace invalid bytes in that
 	   buffer */
-	char *dest = (char *)xmemdup(src.data, src.size);
-	char *const end = dest + src.size;
+	AllocatedArray<char> dest{src};
+	char *const end = dest.data() + src.size;
 
-	char *invalid = dest + (_invalid - src.data);
+	char *invalid = dest.data() + (_invalid - src.data);
 	do {
 		*invalid = '?';
 
@@ -71,10 +71,10 @@ patch_utf8(StringView src, const char *_invalid)
 		invalid = const_cast<char *>(__invalid);
 	} while (invalid != nullptr);
 
-	return { dest, src.size };
+	return dest;
 }
 
-static WritableBuffer<char>
+static AllocatedArray<char>
 fix_utf8(StringView p)
 {
 	/* check if the string is already valid UTF-8 */
@@ -100,20 +100,20 @@ find_non_printable(StringView p)
  * Clears all non-printable characters, convert them to space.
  * Returns nullptr if nothing needs to be cleared.
  */
-static WritableBuffer<char>
+static AllocatedArray<char>
 clear_non_printable(StringView src)
 {
 	const char *first = find_non_printable(src);
 	if (first == nullptr)
 		return nullptr;
 
-	char *dest = (char *)xmemdup(src.data, src.size);
+	AllocatedArray<char> dest{src};
 
 	for (size_t i = first - src.data; i < src.size; ++i)
 		if (IsNonPrintableASCII(dest[i]))
 			dest[i] = ' ';
 
-	return { dest, src.size };
+	return dest;
 }
 
 [[gnu::pure]]
@@ -126,7 +126,7 @@ IsSafe(StringView s) noexcept
 			   });
 }
 
-WritableBuffer<char>
+AllocatedArray<char>
 FixTagString(StringView p)
 {
 	if (IsSafe(p))
@@ -134,14 +134,12 @@ FixTagString(StringView p)
 		return nullptr;
 
 	auto utf8 = fix_utf8(p);
-	if (!utf8.IsNull())
-		p = {utf8.data, utf8.size};
+	if (utf8 != nullptr)
+		p = {utf8.data(), utf8.size()};
 
-	WritableBuffer<char> cleared = clear_non_printable(p);
-	if (cleared.IsNull())
-		cleared = utf8;
-	else
-		free(utf8.data);
+	auto cleared = clear_non_printable(p);
+	if (cleared == nullptr)
+		cleared = std::move(utf8);
 
 	return cleared;
 }
