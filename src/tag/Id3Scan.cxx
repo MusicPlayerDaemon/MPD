@@ -90,6 +90,21 @@ import_id3_string(const id3_ucs4_t *ucs4)
 	return (id3_utf8_t *)xstrdup(Strip(utf8.c_str()));
 }
 
+static void
+InvokeOnTag(TagHandler &handler, TagType type, const id3_ucs4_t *ucs4) noexcept
+{
+	assert(type < TAG_NUM_OF_ITEM_TYPES);
+	assert(ucs4 != nullptr);
+
+	id3_utf8_t *utf8 = import_id3_string(ucs4);
+	if (utf8 == nullptr)
+		return;
+
+	AtScopeExit(utf8) { free(utf8); };
+
+	handler.OnTag(type, (const char *)utf8);
+}
+
 /**
  * Import a "Text information frame" (ID3v2.4.0 section 4.2).  It
  * contains 2 fields:
@@ -127,13 +142,7 @@ tag_id3_import_text_frame(const struct id3_frame *frame,
 		if (type == TAG_GENRE)
 			ucs4 = id3_genre_name(ucs4);
 
-		id3_utf8_t *utf8 = import_id3_string(ucs4);
-		if (utf8 == nullptr)
-			continue;
-
-		AtScopeExit(utf8) { free(utf8); };
-
-		handler.OnTag(type, (const char *)utf8);
+		InvokeOnTag(handler, type, ucs4);
 	}
 }
 
@@ -177,13 +186,7 @@ tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
 	if (ucs4 == nullptr)
 		return;
 
-	id3_utf8_t *utf8 = import_id3_string(ucs4);
-	if (utf8 == nullptr)
-		return;
-
-	AtScopeExit(utf8) { free(utf8); };
-
-	handler.OnTag(type, (const char *)utf8);
+	InvokeOnTag(handler, type, ucs4);
 }
 
 /**
