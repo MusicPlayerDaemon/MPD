@@ -33,7 +33,6 @@
 #include "storage/FileInfo.hxx"
 #include "input/InputStream.hxx"
 #include "input/Error.hxx"
-#include "util/Alloc.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UriExtract.hxx"
 #include "Log.hxx"
