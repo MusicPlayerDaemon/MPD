@@ -521,7 +521,7 @@ wavpack_open_wvc(DecoderClient &client, const char *uri)
 	};
 
 	try {
-		return client.OpenUri(uri);
+		return client.OpenUri(wvc_url);
 	} catch (...) {
 		return nullptr;
 	}

@@ -12,6 +12,7 @@ ver 0.23 (not yet released)
   - upnp: support libnpupnp instead of libupnp
 * decoder
   - openmpt: new plugin
+  - wavpack: fix WVC file support
 * output
   - oss: support DSD over PCM
   - pipewire: new plugin
