@@ -22,11 +22,12 @@
 #include "Database.hxx"
 #include "song/LightSong.hxx"
 #include "db/Interface.hxx"
-#include "util/Alloc.hxx"
-#include "util/ScopeExit.hxx"
+#include "util/AllocatedString.hxx"
 
 #include <string.h>
 #include <stdlib.h>
+
+using std::string_view_literals::operator""sv;
 
 std::string
 sticker_song_get_value(StickerDatabase &db,
@@ -116,17 +117,15 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 	data.func = func;
 	data.user_data = user_data;
 
-	char *allocated;
+	AllocatedString allocated;
 	data.base_uri = base_uri;
-	if (*data.base_uri != 0)
+	if (*data.base_uri != 0) {
 		/* append slash to base_uri */
-		data.base_uri = allocated =
-			xstrcatdup(data.base_uri, "/");
-	else
+		allocated = AllocatedString{std::string_view{data.base_uri}, "/"sv};
+		data.base_uri = allocated.c_str();
+	} else {
 		/* searching in root directory - no trailing slash */
-		allocated = nullptr;
-
-	AtScopeExit(allocated) { free(allocated); };
+	}
 
 	data.base_uri_length = strlen(data.base_uri);
 
