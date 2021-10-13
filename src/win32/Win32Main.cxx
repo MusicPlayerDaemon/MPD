@@ -21,6 +21,7 @@
 #include "util/Compiler.h"
 #include "Instance.hxx"
 #include "system/FatalError.hxx"
+#include "Log.hxx"
 
 #include <cstdlib>
 #include <atomic>
@@ -76,7 +77,7 @@ service_dispatcher([[maybe_unused]] DWORD control, [[maybe_unused]] DWORD event_
 
 static void WINAPI
 service_main([[maybe_unused]] DWORD argc, [[maybe_unused]] LPTSTR argv[])
-{
+try {
 	service_handle =
 		RegisterServiceCtrlHandlerEx(service_name,
 					     service_dispatcher, nullptr);
@@ -87,6 +88,8 @@ service_main([[maybe_unused]] DWORD argc, [[maybe_unused]] LPTSTR argv[])
 	service_notify_status(SERVICE_START_PENDING);
 	mpd_main(service_argc, service_argv);
 	service_notify_status(SERVICE_STOPPED);
+} catch (...) {
+	LogError(std::current_exception());
 }
 
 static BOOL WINAPI

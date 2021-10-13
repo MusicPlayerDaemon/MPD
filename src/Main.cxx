@@ -644,27 +644,26 @@ MainOrThrow(int argc, char *argv[])
 	MainConfigured(options, raw_config);
 }
 
-int mpd_main(int argc, char *argv[]) noexcept
+int
+mpd_main(int argc, char *argv[])
 {
-	AtScopeExit() { log_deinit(); };
-
-	try {
-		MainOrThrow(argc, argv);
-		return EXIT_SUCCESS;
-	} catch (...) {
-		LogError(std::current_exception());
-		return EXIT_FAILURE;
-	}
+	MainOrThrow(argc, argv);
+	return EXIT_SUCCESS;
 }
 
 int
 main(int argc, char *argv[]) noexcept
-{
+try {
+	AtScopeExit() { log_deinit(); };
+
 #ifdef _WIN32
 	return win32_main(argc, argv);
 #else
 	return mpd_main(argc, argv);
 #endif
+} catch (...) {
+	LogError(std::current_exception());
+	return EXIT_FAILURE;
 }
 
 #endif

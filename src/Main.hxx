@@ -40,7 +40,7 @@ extern Instance *global_instance;
  * after doing some initialization.
  */
 int
-mpd_main(int argc, char *argv[]) noexcept;
+mpd_main(int argc, char *argv[]);
 
 #endif
 
