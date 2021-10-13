@@ -37,6 +37,10 @@
 #include "db/update/Service.hxx"
 #include "storage/StorageInterface.hxx"
 
+#ifdef ENABLE_INOTIFY
+#include "db/update/InotifyUpdate.hxx"
+#endif
+
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 #include "neighbor/Glue.hxx"
 #endif

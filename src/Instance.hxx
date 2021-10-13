@@ -43,6 +43,9 @@ class NeighborGlue;
 #include "db/Ptr.hxx"
 class Storage;
 class UpdateService;
+#ifdef ENABLE_INOTIFY
+class InotifyUpdate;
+#endif
 #endif
 
 #include <memory>
@@ -120,6 +123,10 @@ struct Instance final
 	Storage *storage = nullptr;
 
 	UpdateService *update = nullptr;
+
+#ifdef ENABLE_INOTIFY
+	std::unique_ptr<InotifyUpdate> inotify_update;
+#endif
 #endif
 
 #ifdef ENABLE_CURL

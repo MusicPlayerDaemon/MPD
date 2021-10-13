@@ -344,7 +344,7 @@ Instance::BeginShutdownUpdate() noexcept
 {
 #ifdef ENABLE_DATABASE
 #ifdef ENABLE_INOTIFY
-	mpd_inotify_finish();
+	inotify_update.reset();
 #endif
 
 	if (update != nullptr)
@@ -524,11 +524,12 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 #ifdef ENABLE_INOTIFY
 		if (instance.storage != nullptr &&
 		    instance.update != nullptr)
-			mpd_inotify_init(instance.event_loop,
-					 *instance.storage,
-					 *instance.update,
-					 raw_config.GetUnsigned(ConfigOption::AUTO_UPDATE_DEPTH,
-								INT_MAX));
+			instance.inotify_update =
+				mpd_inotify_init(instance.event_loop,
+						 *instance.storage,
+						 *instance.update,
+						 raw_config.GetUnsigned(ConfigOption::AUTO_UPDATE_DEPTH,
+									INT_MAX));
 #else
 		LogWarning(config_domain,
 			   "inotify: auto_update was disabled. enable during compilation phase");
