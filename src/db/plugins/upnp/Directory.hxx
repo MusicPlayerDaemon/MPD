@@ -21,7 +21,6 @@
 #define MPD_UPNP_DIRECTORY_HXX
 
 #include "Object.hxx"
-#include "util/Compiler.h"
 
 #include <string>
 #include <vector>
@@ -39,7 +38,7 @@ public:
 
 	~UPnPDirContent();
 
-	gcc_pure
+	[[gnu::pure]]
 	UPnPDirObject *FindObject(std::string_view name) noexcept {
 		for (auto &o : objects)
 			if (o.name == name)

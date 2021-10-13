@@ -22,14 +22,12 @@
 
 #ifdef _WIN32
 
-#include "util/Compiler.h"
-
 #include <chrono>
 
 /**
  * Returns the uptime of the current process in seconds.
  */
-gcc_pure
+[[gnu::pure]]
 std::chrono::seconds
 GetProcessUptimeS();
 

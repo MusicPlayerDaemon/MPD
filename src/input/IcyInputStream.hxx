@@ -21,7 +21,6 @@
 #define MPD_ICY_INPUT_STREAM_HXX
 
 #include "ProxyInputStream.hxx"
-#include "util/Compiler.h"
 
 #include <memory>
 
@@ -63,7 +62,7 @@ public:
 	IcyInputStream(const IcyInputStream &) = delete;
 	IcyInputStream &operator=(const IcyInputStream &) = delete;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEnabled() const noexcept;
 
 	/* virtual methods from InputStream */

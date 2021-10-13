@@ -20,8 +20,6 @@
 #ifndef MPD_INPUT_REGISTRY_HXX
 #define MPD_INPUT_REGISTRY_HXX
 
-#include "util/Compiler.h"
-
 /**
  * NULL terminated list of all input plugins which were enabled at
  * compile time.
@@ -40,7 +38,7 @@ extern bool input_plugins_enabled[];
 	input_plugins_for_each(plugin) \
 		if (input_plugins_enabled[input_plugin_iterator - input_plugins])
 
-gcc_pure
+[[gnu::pure]]
 bool
 HasRemoteTagScanner(const char *uri) noexcept;
 

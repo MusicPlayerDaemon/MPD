@@ -30,8 +30,6 @@
 #ifndef READER_HXX
 #define READER_HXX
 
-#include "util/Compiler.h"
-
 #include <cstddef>
 
 /**
@@ -52,7 +50,7 @@ public:
 	 * @return the number of bytes read into the given buffer or 0
 	 * on end-of-stream
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	virtual size_t Read(void *data, size_t size) = 0;
 };
 

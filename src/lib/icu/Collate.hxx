@@ -20,8 +20,6 @@
 #ifndef MPD_ICU_COLLATE_HXX
 #define MPD_ICU_COLLATE_HXX
 
-#include "util/Compiler.h"
-
 #include <string_view>
 
 /**
@@ -33,7 +31,7 @@ IcuCollateInit();
 void
 IcuCollateFinish() noexcept;
 
-gcc_pure
+[[gnu::pure]]
 int
 IcuCollate(std::string_view a, std::string_view b) noexcept;
 

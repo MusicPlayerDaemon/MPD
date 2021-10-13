@@ -21,7 +21,6 @@
 #define PCM_BUFFER_HXX
 
 #include "util/ReusableArray.hxx"
-#include "util/Compiler.h"
 
 #include <cstdint>
 
@@ -47,11 +46,11 @@ public:
 	 * to signal "error".  An empty destination buffer is not
 	 * always an error.
 	 */
-	gcc_malloc gcc_returns_nonnull
+	[[gnu::malloc]] [[gnu::returns_nonnull]]
 	void *Get(size_t size) noexcept;
 
 	template<typename T>
-	gcc_malloc gcc_returns_nonnull
+	[[gnu::malloc]] [[gnu::returns_nonnull]]
 	T *GetT(size_t n) noexcept {
 		return (T *)Get(n * sizeof(T));
 	}

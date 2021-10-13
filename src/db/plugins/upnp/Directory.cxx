@@ -33,7 +33,7 @@
 /* this destructor exists here just so it won't get inlined */
 UPnPDirContent::~UPnPDirContent() = default;
 
-gcc_pure
+[[gnu::pure]]
 static UPnPDirObject::ItemClass
 ParseItemClass(StringView name) noexcept
 {
@@ -45,7 +45,7 @@ ParseItemClass(StringView name) noexcept
 		return UPnPDirObject::ItemClass::UNKNOWN;
 }
 
-gcc_pure
+[[gnu::pure]]
 static SignedSongTime
 ParseDuration(const char *duration) noexcept
 {
@@ -73,7 +73,7 @@ ParseDuration(const char *duration) noexcept
  * elements. There is a very slight risk of collision in doing
  * this. Twonky returns directory names (titles) like 'Artist/Album'.
  */
-gcc_pure
+[[gnu::pure]]
 static std::string &&
 TitleToPathSegment(std::string &&s) noexcept
 {

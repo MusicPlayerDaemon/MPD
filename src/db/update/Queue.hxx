@@ -20,8 +20,6 @@
 #ifndef MPD_UPDATE_QUEUE_HXX
 #define MPD_UPDATE_QUEUE_HXX
 
-#include "util/Compiler.h"
-
 #include <string>
 #include <string_view>
 #include <list>
@@ -61,7 +59,6 @@ class UpdateQueue {
 	std::list<UpdateQueueItem> update_queue;
 
 public:
-	gcc_nonnull_all
 	bool Push(SimpleDatabase &db, Storage &storage,
 		  std::string_view path, bool discard, unsigned id) noexcept;
 
@@ -71,10 +68,8 @@ public:
 		update_queue.clear();
 	}
 
-	gcc_nonnull_all
 	void Erase(SimpleDatabase &db) noexcept;
 
-	gcc_nonnull_all
 	void Erase(Storage &storage) noexcept;
 };
 

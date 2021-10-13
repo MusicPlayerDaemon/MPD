@@ -21,7 +21,6 @@
 #define MPD_AND_SONG_FILTER_HXX
 
 #include "ISongFilter.hxx"
-#include "util/Compiler.h"
 
 #include <list>
 
@@ -44,7 +43,7 @@ public:
 		items.emplace_back(std::forward<I>(_item));
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
 		return items.empty();
 	}

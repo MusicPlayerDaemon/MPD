@@ -24,7 +24,6 @@
 #include "Queue.hxx"
 #include "event/InjectEvent.hxx"
 #include "thread/Thread.hxx"
-#include "util/Compiler.h"
 
 #include <memory>
 #include <string_view>
@@ -90,7 +89,6 @@ public:
 	 * the whole music directory is updated
 	 * @return the job id
 	 */
-	gcc_nonnull_all
 	unsigned Enqueue(std::string_view path, bool discard);
 
 	/**

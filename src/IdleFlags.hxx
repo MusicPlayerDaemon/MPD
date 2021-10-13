@@ -25,8 +25,6 @@
 #ifndef MPD_IDLE_FLAGS_HXX
 #define MPD_IDLE_FLAGS_HXX
 
-#include "util/Compiler.h"
-
 /** song database has been updated*/
 static constexpr unsigned IDLE_DATABASE = 0x1;
 
@@ -73,7 +71,7 @@ static constexpr unsigned IDLE_PARTITION = 0x2000;
 /**
  * Get idle names
  */
-gcc_const
+[[gnu::const]]
 const char*const*
 idle_get_names() noexcept;
 
@@ -81,7 +79,7 @@ idle_get_names() noexcept;
  * Parse an idle name and return its mask.  Returns 0 if the given
  * name is unknown.
  */
-gcc_nonnull_all gcc_pure
+[[gnu::nonnull]] [[gnu::pure]]
 unsigned
 idle_parse_name(const char *name) noexcept;
 

@@ -20,15 +20,13 @@
 #ifndef MPD_VOLUME_HXX
 #define MPD_VOLUME_HXX
 
-#include "util/Compiler.h"
-
 class MultipleOutputs;
 class BufferedOutputStream;
 
 void
 InvalidateHardwareVolume() noexcept;
 
-gcc_pure
+[[gnu::pure]]
 int
 volume_level_get(const MultipleOutputs &outputs) noexcept;
 
@@ -47,7 +45,7 @@ save_sw_volume_state(BufferedOutputStream &os);
  * determine whether the state has changed and the state file should
  * be saved.
  */
-gcc_pure
+[[gnu::pure]]
 unsigned
 sw_volume_state_get_hash() noexcept;
 

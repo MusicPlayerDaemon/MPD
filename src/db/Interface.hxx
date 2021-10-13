@@ -22,7 +22,6 @@
 
 #include "Visitor.hxx"
 #include "tag/Type.h"
-#include "util/Compiler.h"
 
 #include <chrono>
 #include <string>
@@ -136,7 +135,7 @@ public:
 	 * Returns the time stamp of the last database update.
 	 * Returns a negative value if that is not not known/available.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual std::chrono::system_clock::time_point GetUpdateStamp() const noexcept = 0;
 };
 

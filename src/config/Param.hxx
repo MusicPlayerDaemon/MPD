@@ -35,7 +35,7 @@ struct ConfigParam {
 		:line(_line) {}
 
 	template<typename V>
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	explicit ConfigParam(V &&_value, int _line=-1) noexcept
 		:value(std::forward<V>(_value)), line(_line) {}
 

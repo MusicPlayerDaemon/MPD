@@ -20,8 +20,6 @@
 #ifndef MPD_NFS_CANCELLABLE_HXX
 #define MPD_NFS_CANCELLABLE_HXX
 
-#include "util/Compiler.h"
-
 #include <boost/intrusive/list.hpp>
 
 #include <algorithm>
@@ -89,35 +87,35 @@ private:
 		}
 	};
 
-	gcc_pure
+	[[gnu::pure]]
 	iterator Find(reference p) noexcept {
 		return std::find_if(list.begin(), list.end(), MatchPointer(p));
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const_iterator Find(const_reference p) const noexcept {
 		return std::find_if(list.begin(), list.end(), MatchPointer(p));
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	iterator Find(CT &c) noexcept {
 		return list.iterator_to(c);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const_iterator Find(const CT &c) const noexcept {
 		return list.iterator_to(c);
 	}
 
 public:
 #ifndef NDEBUG
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
 		return std::all_of(list.begin(), list.end(), [](const auto &c) { return c.IsCancelled(); });
 	}
 #endif
 
-	gcc_pure
+	[[gnu::pure]]
 	bool Contains(const_reference p) const noexcept {
 		return Find(p) != list.end();
 	}

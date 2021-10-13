@@ -22,7 +22,6 @@
 
 #include "Chrono.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/Compiler.h"
 
 #include <string>
 #include <chrono>
@@ -101,7 +100,7 @@ struct LightSong {
 		 start_time(src.start_time), end_time(src.end_time),
 		 audio_format(src.audio_format) {}
 
-	gcc_pure
+	[[gnu::pure]]
 	std::string GetURI() const noexcept {
 		if (directory == nullptr)
 			return std::string(uri);
@@ -112,7 +111,7 @@ struct LightSong {
 		return result;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	SignedSongTime GetDuration() const noexcept;
 };
 

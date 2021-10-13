@@ -24,7 +24,6 @@
 #ifndef MPD_MAPPER_HXX
 #define MPD_MAPPER_HXX
 
-#include "util/Compiler.h"
 #include "config.h"
 
 #include <string>
@@ -44,7 +43,7 @@ mapper_init(AllocatedPath &&playlist_dir);
  * is basically done by converting the URI to the file system charset
  * and prepending the music directory.
  */
-gcc_pure
+[[gnu::pure]]
 AllocatedPath
 map_uri_fs(const char *uri) noexcept;
 
@@ -56,7 +55,7 @@ map_uri_fs(const char *uri) noexcept;
  * @return the relative path in UTF-8, or an empty string if mapping
  * failed
  */
-gcc_pure
+[[gnu::pure]]
 std::string
 map_fs_to_utf8(Path path_fs) noexcept;
 
@@ -65,7 +64,7 @@ map_fs_to_utf8(Path path_fs) noexcept;
 /**
  * Returns the playlist directory.
  */
-gcc_const
+[[gnu::const]]
 const AllocatedPath &
 map_spl_path() noexcept;
 
@@ -75,7 +74,7 @@ map_spl_path() noexcept;
  *
  * @return the path in file system encoding, or nullptr if mapping failed
  */
-gcc_pure
+[[gnu::pure]]
 AllocatedPath
 map_spl_utf8_to_fs(const char *name) noexcept;
 

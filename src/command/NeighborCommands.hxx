@@ -21,14 +21,13 @@
 #define MPD_NEIGHBOR_COMMANDS_HXX
 
 #include "CommandResult.hxx"
-#include "util/Compiler.h"
 
 struct Instance;
 class Client;
 class Request;
 class Response;
 
-gcc_pure
+[[gnu::pure]]
 bool
 neighbor_commands_available(const Instance &instance) noexcept;
 

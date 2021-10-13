@@ -37,7 +37,7 @@ GetUserMusicDir() noexcept;
 /**
  * Obtains cache directory for the current user.
  */
-gcc_pure
+[[gnu::pure]]
 AllocatedPath
 GetUserCacheDir() noexcept;
 

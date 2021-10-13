@@ -22,7 +22,6 @@
 
 #include "Config.hxx"
 #include "Editor.hxx"
-#include "util/Compiler.h"
 #include "config.h"
 
 #include <atomic>
@@ -76,7 +75,7 @@ public:
 	bool Walk(Directory &root, const char *path, bool discard) noexcept;
 
 private:
-	gcc_pure
+	[[gnu::pure]]
 	bool SkipSymlink(const Directory *directory,
 			 std::string_view utf8_name) const noexcept;
 

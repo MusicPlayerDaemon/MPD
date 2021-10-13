@@ -20,7 +20,6 @@
 #ifndef MPD_FFMPEG_IO_CONTEXT_HXX
 #define MPD_FFMPEG_IO_CONTEXT_HXX
 
-#include "util/Compiler.h"
 #include "Error.hxx"
 
 extern "C" {
@@ -65,12 +64,12 @@ public:
 		return io_context;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	auto GetSize() const noexcept {
 		return avio_size(io_context);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEOF() const noexcept {
 		return avio_feof(io_context) != 0;
 	}

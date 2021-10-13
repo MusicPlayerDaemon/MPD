@@ -31,7 +31,6 @@
 #define CDIO_PARANOIA_HXX
 
 #include "util/ConstBuffer.hxx"
-#include "util/Compiler.h"
 
 #include <cdio/version.h>
 #include <cdio/paranoia/paranoia.h>
@@ -88,7 +87,7 @@ public:
 		return std::pair(first, last);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsAudioTrack(track_t i) const noexcept {
 		return cdio_cddap_track_audiop(drv, i);
 	}
@@ -101,7 +100,7 @@ public:
 		return std::pair(first, last);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	unsigned GetTrackCount() const noexcept {
 		return cdio_cddap_tracks(drv);
 	}

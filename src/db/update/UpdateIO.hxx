@@ -20,8 +20,6 @@
 #ifndef MPD_UPDATE_IO_HXX
 #define MPD_UPDATE_IO_HXX
 
-#include "util/Compiler.h"
-
 #include <string_view>
 
 struct Directory;
@@ -43,11 +41,11 @@ GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info) noexcept;
 bool
 GetInfo(StorageDirectoryReader &reader, StorageFileInfo &info) noexcept;
 
-gcc_pure
+[[gnu::pure]]
 bool
 DirectoryExists(Storage &storage, const Directory &directory) noexcept;
 
-gcc_pure
+[[gnu::pure]]
 bool
 directory_child_is_regular(Storage &storage, const Directory &directory,
 			   std::string_view name_utf8) noexcept;
@@ -55,7 +53,7 @@ directory_child_is_regular(Storage &storage, const Directory &directory,
 /**
  * Checks if the given permissions on the mapped file are given.
  */
-gcc_pure
+[[gnu::pure]]
 bool
 directory_child_access(Storage &storage, const Directory &directory,
 		       std::string_view name, int mode) noexcept;

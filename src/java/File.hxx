@@ -48,10 +48,10 @@ class File : public LocalObject {
 public:
 	using LocalObject::LocalObject;
 
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	static void Initialise(JNIEnv *env) noexcept;
 
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	static jstring GetAbsolutePath(JNIEnv *env, jobject file) noexcept {
 		return (jstring)env->CallObjectMethod(file,
 						      getAbsolutePath_method);
@@ -69,7 +69,7 @@ public:
 	 * Invoke File.getAbsolutePath() and release the
 	 * specified File reference.
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]] [[gnu::nonnull]]
 	static AllocatedPath ToAbsolutePath(JNIEnv *env,
 					    jobject file) noexcept;
 };

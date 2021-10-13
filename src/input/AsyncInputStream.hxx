@@ -123,7 +123,7 @@ protected:
 	/**
 	 * Determine how many bytes can be added to the buffer.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t GetBufferSpace() const noexcept {
 		return buffer.GetSpace();
 	}

@@ -20,8 +20,6 @@
 #ifndef MPD_STORAGE_CONFIG_HXX
 #define MPD_STORAGE_CONFIG_HXX
 
-#include "util/Compiler.h"
-
 #include <memory>
 
 struct ConfigData;
@@ -40,7 +38,7 @@ CreateConfiguredStorage(const ConfigData &config, EventLoop &event_loop);
 /**
  * Returns true if there is configuration for a #Storage instance.
  */
-gcc_const
+[[gnu::const]]
 bool
 IsStorageConfigured(const ConfigData &config) noexcept;
 

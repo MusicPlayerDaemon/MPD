@@ -20,8 +20,6 @@
 #ifndef MPD_I_SONG_FILTER_HXX
 #define MPD_I_SONG_FILTER_HXX
 
-#include "util/Compiler.h"
-
 #include <memory>
 #include <string>
 
@@ -41,7 +39,7 @@ public:
 	 */
 	virtual std::string ToExpression() const noexcept = 0;
 
-	gcc_pure
+	[[gnu::pure]]
 	virtual bool Match(const LightSong &song) const noexcept = 0;
 };
 

@@ -72,7 +72,7 @@ public:
 	 * @param src the input buffer
 	 * @return the destination buffer
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	ConstBuffer<void> Convert(ConstBuffer<void> src) noexcept;
 };
 

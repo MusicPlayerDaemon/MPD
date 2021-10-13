@@ -24,7 +24,6 @@
 #include "event/SocketEvent.hxx"
 #include "event/CoarseTimerEvent.hxx"
 #include "event/DeferEvent.hxx"
-#include "util/Compiler.h"
 
 #include <string>
 #include <list>
@@ -139,7 +138,7 @@ class NfsConnection {
 	bool mount_finished;
 
 public:
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	NfsConnection(EventLoop &_loop,
 		      const char *_server, const char *_export_name) noexcept
 		:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
@@ -157,12 +156,12 @@ public:
 		return socket_event.GetEventLoop();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetServer() const noexcept {
 		return server.c_str();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetExportName() const noexcept {
 		return export_name.c_str();
 	}

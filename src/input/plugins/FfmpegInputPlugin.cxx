@@ -55,7 +55,7 @@ public:
 		  offset_type offset) override;
 };
 
-gcc_const
+[[gnu::const]]
 static inline bool
 input_ffmpeg_supported() noexcept
 {

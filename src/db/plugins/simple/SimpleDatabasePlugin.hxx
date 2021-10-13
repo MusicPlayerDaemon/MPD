@@ -25,7 +25,6 @@
 #include "db/Ptr.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Manual.hxx"
-#include "util/Compiler.h"
 #include "config.h"
 
 #include <cassert>
@@ -78,7 +77,7 @@ public:
 				  DatabaseListener &listener,
 				  const ConfigBlock &block);
 
-	gcc_pure
+	[[gnu::pure]]
 	Directory &GetRoot() noexcept {
 		assert(root != NULL);
 
@@ -98,7 +97,7 @@ public:
 	 * @param db the #Database to be mounted; must be "open"; on
 	 * success, this object gains ownership of the given #Database
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	void Mount(const char *uri, DatabasePtr db);
 
 	/**
@@ -106,10 +105,10 @@ public:
 	 *
 	 * @return false if the mounted database needs to be updated
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	bool Mount(const char *local_uri, const char *storage_uri);
 
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	bool Unmount(const char *uri) noexcept;
 
 	/* virtual methods from class Database */

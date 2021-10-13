@@ -30,7 +30,6 @@
 #ifndef BUFFERED_READER_HXX
 #define BUFFERED_READER_HXX
 
-#include "util/Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <cstddef>
@@ -64,7 +63,7 @@ public:
 
 	bool Fill(bool need_more);
 
-	gcc_pure
+	[[gnu::pure]]
 	WritableBuffer<void> Read() const noexcept {
 		return buffer.Read().ToVoid();
 	}

@@ -20,8 +20,6 @@
 #ifndef MPD_MIX_RAMP_INFO_HXX
 #define MPD_MIX_RAMP_INFO_HXX
 
-#include "util/Compiler.h"
-
 #include <string>
 
 class MixRampInfo {
@@ -35,17 +33,17 @@ public:
 		end.clear();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsDefined() const noexcept {
 		return !start.empty() || !end.empty();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetStart() const noexcept {
 		return start.empty() ? nullptr : start.c_str();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetEnd() const noexcept {
 		return end.empty() ? nullptr : end.c_str();
 	}

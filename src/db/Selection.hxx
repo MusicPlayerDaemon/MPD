@@ -22,7 +22,6 @@
 
 #include "protocol/RangeArg.hxx"
 #include "tag/Type.h"
-#include "util/Compiler.h"
 
 #include <string>
 
@@ -60,16 +59,16 @@ struct DatabaseSelection {
 	DatabaseSelection(const char *_uri, bool _recursive,
 			  const SongFilter *_filter=nullptr) noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEmpty() const noexcept;
 
 	/**
 	 * Does this selection contain constraints other than "base"?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasOtherThanBase() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool Match(const LightSong &song) const noexcept;
 };
 

@@ -33,8 +33,6 @@
 #ifndef ODBUS_ERROR_HXX
 #define ODBUS_ERROR_HXX
 
-#include "util/Compiler.h"
-
 #include <dbus/dbus.h>
 
 namespace ODBus {
@@ -54,7 +52,7 @@ public:
 	Error(const Error &) = delete;
 	Error &operator=(const Error &) = delete;
 
-	gcc_pure
+	[[gnu::pure]]
 	operator bool() const noexcept {
 		return dbus_error_is_set(&error);
 	}

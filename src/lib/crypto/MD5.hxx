@@ -31,7 +31,6 @@
 #define MD5_HXX
 
 #include "util/StringBuffer.hxx"
-#include "util/Compiler.h"
 
 #include <array>
 #include <cstdint>
@@ -41,11 +40,11 @@ template<typename T> struct ConstBuffer;
 void
 GlobalInitMD5() noexcept;
 
-gcc_pure
+[[gnu::pure]]
 std::array<uint8_t, 16>
 MD5(ConstBuffer<void> input) noexcept;
 
-gcc_pure
+[[gnu::pure]]
 StringBuffer<33>
 MD5Hex(ConstBuffer<void> input) noexcept;
 

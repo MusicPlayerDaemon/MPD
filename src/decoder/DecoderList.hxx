@@ -20,8 +20,6 @@
 #ifndef MPD_DECODER_LIST_HXX
 #define MPD_DECODER_LIST_HXX
 
-#include "util/Compiler.h"
-
 #include <string_view>
 
 struct ConfigData;
@@ -32,7 +30,7 @@ extern bool decoder_plugins_enabled[];
 
 /* interface for using plugins */
 
-gcc_pure
+[[gnu::pure]]
 const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name) noexcept;
 
@@ -98,7 +96,7 @@ decoder_plugins_for_each_enabled(F f)
  * Is there at least once #DecoderPlugin that supports the specified
  * file name suffix?
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]]
 bool
 decoder_plugins_supports_suffix(std::string_view suffix) noexcept;
 

@@ -76,7 +76,7 @@ IcuCollateFinish() noexcept
 
 #endif
 
-gcc_pure
+[[gnu::pure]]
 int
 IcuCollate(std::string_view a, std::string_view b) noexcept
 {

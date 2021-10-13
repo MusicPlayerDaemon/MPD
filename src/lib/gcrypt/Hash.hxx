@@ -31,7 +31,6 @@
 #define GCRYPT_HASH_HXX
 
 #include "util/ConstBuffer.hxx"
-#include "util/Compiler.h"
 
 #include <gcrypt.h>
 
@@ -40,7 +39,7 @@
 namespace Gcrypt {
 
 template<int algo, size_t size>
-gcc_pure
+[[gnu::pure]]
 auto
 Hash(ConstBuffer<void> input) noexcept
 {

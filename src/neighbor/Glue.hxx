@@ -20,7 +20,6 @@
 #ifndef MPD_NEIGHBOR_ALL_HXX
 #define MPD_NEIGHBOR_ALL_HXX
 
-#include "util/Compiler.h"
 #include "thread/Mutex.hxx"
 
 #include <forward_list>
@@ -74,7 +73,7 @@ public:
 	 * Get the combined list of all neighbors from all active
 	 * plugins.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	List GetList() const noexcept;
 };
 

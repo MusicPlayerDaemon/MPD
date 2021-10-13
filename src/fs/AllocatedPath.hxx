@@ -20,7 +20,6 @@
 #ifndef MPD_FS_ALLOCATED_PATH_HXX
 #define MPD_FS_ALLOCATED_PATH_HXX
 
-#include "util/Compiler.h"
 #include "Traits.hxx"
 #include "Path.hxx"
 
@@ -81,7 +80,7 @@ public:
 
 	~AllocatedPath() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	operator Path() const noexcept {
 		return Path::FromFS(c_str());
 	}
@@ -89,40 +88,40 @@ public:
 	/**
 	 * Join two path components with the path separator.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath Build(string_view a, string_view b) noexcept {
 		return AllocatedPath(Traits::Build(a, b));
 	}
 
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	static AllocatedPath Build(Path a, string_view b) noexcept {
 		return Build(a.c_str(), b);
 	}
 
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	static AllocatedPath Build(Path a, Path b) noexcept {
 		return Build(a, b.c_str());
 	}
 
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	static AllocatedPath Build(string_view a,
 				   const AllocatedPath &b) noexcept {
 		return Build(a, b.value);
 	}
 
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	static AllocatedPath Build(const AllocatedPath &a,
 				   string_view b) noexcept {
 		return Build(a.value, b);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath Build(const AllocatedPath &a,
 				   const AllocatedPath &b) noexcept {
 		return Build(a.value, b.value);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath Apply(Path base, Path path) noexcept {
 		return Traits::Apply(base.c_str(), path.c_str());
 	}
@@ -131,17 +130,17 @@ public:
 	 * Convert a C string that is already in the filesystem
 	 * character set to a #Path instance.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath FromFS(const_pointer fs) noexcept {
 		return AllocatedPath(fs);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath FromFS(string_view fs) noexcept {
 		return AllocatedPath(fs);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath FromFS(const_pointer _begin,
 				    const_pointer _end) noexcept {
 		return AllocatedPath(_begin, _end);
@@ -151,13 +150,13 @@ public:
 	 * Convert a C++ string that is already in the filesystem
 	 * character set to a #Path instance.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath FromFS(string &&fs) noexcept {
 		return AllocatedPath(std::move(fs));
 	}
 
 #ifdef ANDROID
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath FromUTF8(std::string &&utf8) noexcept {
 		/* on Android, the filesystem charset is hard-coded to
 		   UTF-8 */
@@ -173,7 +172,7 @@ public:
 	 * Convert a UTF-8 C string to an #AllocatedPath instance.
 	 * Returns return a "nulled" instance on error.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	static AllocatedPath FromUTF8(std::string_view path_utf8) noexcept;
 
 	static AllocatedPath FromUTF8(const char *path_utf8) noexcept {
@@ -199,12 +198,12 @@ public:
 		return *this;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool operator==(const AllocatedPath &other) const noexcept {
 		return value == other.value;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool operator!=(const AllocatedPath &other) const noexcept {
 		return value != other.value;
 	}
@@ -238,7 +237,7 @@ public:
 	 * @return the length of this string in number of "value_type"
 	 * elements (which may not be the number of characters).
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t length() const noexcept {
 		return value.length();
 	}
@@ -248,7 +247,7 @@ public:
 	 * pointer is invalidated whenever the value of life of this
 	 * instance ends.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const_pointer c_str() const noexcept {
 		return value.c_str();
 	}
@@ -257,7 +256,7 @@ public:
 	 * Returns a pointer to the raw value, not necessarily
 	 * null-terminated.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const_pointer data() const noexcept {
 		return value.data();
 	}
@@ -267,7 +266,7 @@ public:
 	 * Returns empty string on error or if this instance is "nulled"
 	 * (#IsNull returns true).
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	std::string ToUTF8() const noexcept {
 		return ((Path)*this).ToUTF8();
 	}
@@ -280,7 +279,7 @@ public:
 	 * Gets directory name of this path.
 	 * Returns a "nulled" instance on error.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	AllocatedPath GetDirectoryName() const noexcept {
 		return ((Path)*this).GetDirectoryName();
 	}
@@ -291,12 +290,12 @@ public:
 	 * empty string if the given path equals this object or
 	 * nullptr on mismatch.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const_pointer Relative(Path other_fs) const noexcept {
 		return Traits::Relative(c_str(), other_fs.c_str());
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const_pointer GetSuffix() const noexcept {
 		return ((Path)*this).GetSuffix();
 	}
@@ -306,7 +305,7 @@ public:
 	 */
 	void ChopSeparators() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsAbsolute() const noexcept {
 		return Traits::IsAbsolute(c_str());
 	}

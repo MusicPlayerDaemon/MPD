@@ -21,7 +21,6 @@
 #define _UPNPDIR_HXX_INCLUDED_
 
 #include "Compat.hxx"
-#include "util/Compiler.h"
 
 #include <string>
 #include <forward_list>
@@ -112,7 +111,7 @@ public:
 	 */
 	std::forward_list<std::string> getSearchCapabilities(UpnpClient_Handle handle) const;
 
-	gcc_pure
+	[[gnu::pure]]
 	std::string GetURI() const noexcept {
 		return "upnp://" + m_deviceId + "/" + m_serviceType;
 	}

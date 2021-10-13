@@ -25,7 +25,6 @@
 #ifndef MPD_EXCLUDE_H
 #define MPD_EXCLUDE_H
 
-#include "util/Compiler.h"
 #include "fs/Glob.hxx"
 #include "input/Ptr.hxx"
 #include "config.h"
@@ -50,7 +49,7 @@ public:
 	ExcludeList(const ExcludeList &_parent) noexcept
 		:parent(&_parent) {}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
 #ifdef HAVE_CLASS_GLOB
 		return ((parent == nullptr) || parent->IsEmpty()) && patterns.empty();

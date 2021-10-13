@@ -326,7 +326,7 @@ public:
 	 */
 	std::unique_ptr<DetachedSong> LockReadTaggedSong() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	PlayerStatus LockGetStatus() noexcept;
 
 	PlayerState GetState() const noexcept {
@@ -338,7 +338,7 @@ public:
 		bool has_next_song;
 	};
 
-	gcc_pure
+	[[gnu::pure]]
 	SyncInfo LockGetSyncInfo() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return {state, next_song != nullptr};

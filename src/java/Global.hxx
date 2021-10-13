@@ -30,8 +30,6 @@
 #ifndef JAVA_GLOBAL_HXX
 #define JAVA_GLOBAL_HXX
 
-#include "util/Compiler.h"
-
 #include <jni.h>
 
 namespace Java {
@@ -47,8 +45,9 @@ DetachCurrentThread() noexcept
 		jvm->DetachCurrentThread();
 }
 
-static inline gcc_pure
-JNIEnv *GetEnv() noexcept
+[[gnu::pure]]
+static inline JNIEnv *
+GetEnv() noexcept
 {
 	JNIEnv *env;
 	jvm->AttachCurrentThread(&env, nullptr);

@@ -30,8 +30,6 @@
 #ifndef THREAD_ID_HXX
 #define THREAD_ID_HXX
 
-#include "util/Compiler.h"
-
 #ifdef _WIN32
 #include <processthreadsapi.h>
 #else
@@ -70,7 +68,7 @@ public:
 #endif
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsNull() const noexcept {
 		return *this == Null();
 	}
@@ -78,7 +76,7 @@ public:
 	/**
 	 * Return the current thread's id .
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	static const ThreadId GetCurrent() noexcept {
 #ifdef _WIN32
 		return ::GetCurrentThreadId();
@@ -87,7 +85,7 @@ public:
 #endif
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool operator==(const ThreadId &other) const noexcept {
 		/* note: not using pthread_equal() because that
 		   function "is undefined if either thread ID is not

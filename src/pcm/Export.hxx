@@ -159,13 +159,13 @@ public:
 		 * DSD_U32, four input bytes (= 4 * 8 bits) are combined to
 		 * one output word (32 bits), dividing the sample rate by 4.
 		 */
-		gcc_pure
+		[[gnu::pure]]
 		unsigned CalcOutputSampleRate(unsigned input_sample_rate) const noexcept;
 
 		/**
 		 * The inverse of CalcOutputSampleRate().
 		 */
-		gcc_pure
+		[[gnu::pure]]
 		unsigned CalcInputSampleRate(unsigned output_sample_rate) const noexcept;
 	};
 
@@ -198,7 +198,7 @@ public:
 	/**
 	 * Calculate the size of one input frame.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t GetInputFrameSize() const noexcept {
 		return channels * sample_format_size(src_sample_format);
 	}
@@ -206,19 +206,19 @@ public:
 	/**
 	 * Calculate the size of one output frame.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t GetOutputFrameSize() const noexcept;
 
 	/**
 	 * @return the size of one input block in bytes
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t GetInputBlockSize() const noexcept;
 
 	/**
 	 * @return the size of one output block in bytes
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t GetOutputBlockSize() const noexcept;
 
 	/**
@@ -243,7 +243,7 @@ public:
 	 * destination buffer to the according number of bytes from the
 	 * pcm_export() source buffer.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t CalcInputSize(size_t dest_size) const noexcept;
 };
 

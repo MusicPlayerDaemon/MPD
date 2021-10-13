@@ -20,7 +20,6 @@
 #ifndef MPD_ICU_COMPARE_HXX
 #define MPD_ICU_COMPARE_HXX
 
-#include "util/Compiler.h"
 #include "util/AllocatedString.hxx"
 
 #include <string_view>
@@ -63,15 +62,15 @@ public:
 	IcuCompare(IcuCompare &&) = default;
 	IcuCompare &operator=(IcuCompare &&) = default;
 
-	gcc_pure
+	[[gnu::pure]]
 	operator bool() const noexcept {
 		return needle != nullptr;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool operator==(const char *haystack) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsIn(const char *haystack) const noexcept;
 };
 

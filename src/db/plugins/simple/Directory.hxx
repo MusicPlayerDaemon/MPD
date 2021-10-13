@@ -21,7 +21,6 @@
 #define MPD_DIRECTORY_HXX
 
 #include "Ptr.hxx"
-#include "util/Compiler.h"
 #include "db/Visitor.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/Ptr.hxx"
@@ -113,7 +112,7 @@ public:
 	/**
 	 * Create a new root #Directory object.
 	 */
-	gcc_malloc gcc_returns_nonnull
+	[[gnu::malloc]] [[gnu::returns_nonnull]]
 	static Directory *NewRoot() noexcept {
 		return new Directory(std::string(), nullptr);
 	}
@@ -141,7 +140,7 @@ public:
 	 * (e.g. #DEVICE_PLAYLIST) and whether the underlying plugin
 	 * is available.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsPluginAvailable() const noexcept;
 
 	/**
@@ -164,10 +163,10 @@ public:
 	/**
 	 * Caller must lock the #db_mutex.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const Directory *FindChild(std::string_view name) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	Directory *FindChild(std::string_view name) noexcept {
 		const Directory *cthis = this;
 		return const_cast<Directory *>(cthis->FindChild(name));
@@ -211,20 +210,20 @@ public:
 	 *
 	 * @param uri the relative URI
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	LookupResult LookupDirectory(std::string_view uri) noexcept;
 
 	[[gnu::pure]]
 	bool TargetExists(std::string_view target) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
 		return children.empty() &&
 			songs.empty() &&
 			playlists.empty();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetPath() const noexcept {
 		return path.c_str();
 	}
@@ -232,13 +231,13 @@ public:
 	/**
 	 * Returns the base name of the directory.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetName() const noexcept;
 
 	/**
 	 * Is this the root directory of the music database?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsRoot() const noexcept {
 		return parent == nullptr;
 	}
@@ -266,10 +265,10 @@ public:
 	 *
 	 * Caller must lock the #db_mutex.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const Song *FindSong(std::string_view name_utf8) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	Song *FindSong(std::string_view name_utf8) noexcept {
 		const Directory *cthis = this;
 		return const_cast<Song *>(cthis->FindSong(name_utf8));
@@ -307,7 +306,7 @@ public:
 		  const VisitDirectory& visit_directory, const VisitSong& visit_song,
 		  const VisitPlaylist& visit_playlist) const;
 
-	gcc_pure
+	[[gnu::pure]]
 	LightDirectory Export() const noexcept;
 };
 

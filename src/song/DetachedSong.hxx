@@ -23,7 +23,6 @@
 #include "tag/Tag.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "Chrono.hxx"
-#include "util/Compiler.h"
 
 #include <chrono>
 #include <string>
@@ -108,7 +107,6 @@ public:
 	 */
 	explicit DetachedSong(const LightSong &other) noexcept;
 
-	gcc_noinline
 	~DetachedSong() noexcept = default;
 
 	/* these are declared because the user-defined destructor
@@ -117,10 +115,10 @@ public:
 	DetachedSong(DetachedSong &&) = default;
 	DetachedSong &operator=(DetachedSong &&) = default;
 
-	gcc_pure
+	[[gnu::pure]]
 	explicit operator LightSong() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetURI() const noexcept {
 		return uri.c_str();
 	}
@@ -134,7 +132,7 @@ public:
 	 * Does this object have a "real" URI different from the
 	 * displayed URI?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasRealURI() const noexcept {
 		return !real_uri.empty();
 	}
@@ -143,7 +141,7 @@ public:
 	 * Returns "real" URI (#real_uri) and falls back to just
 	 * GetURI().
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetRealURI() const noexcept {
 		return (HasRealURI() ? real_uri : uri).c_str();
 	}
@@ -157,35 +155,35 @@ public:
 	 * Returns true if both objects refer to the same physical
 	 * song.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsSame(const DetachedSong &other) const noexcept {
 		return uri == other.uri &&
 			start_time == other.start_time &&
 			end_time == other.end_time;
 	}
 
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]] [[gnu::nonnull]]
 	bool IsURI(const char *other_uri) const noexcept {
 		return uri == other_uri;
 	}
 
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]] [[gnu::nonnull]]
 	bool IsRealURI(const char *other_uri) const noexcept {
 		return (HasRealURI() ? real_uri : uri) == other_uri;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsRemote() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsFile() const noexcept {
 		return !IsRemote();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsAbsoluteFile() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsInDatabase() const noexcept;
 
 	const Tag &GetTag() const noexcept {
@@ -240,7 +238,7 @@ public:
 		end_time = _value;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	SignedSongTime GetDuration() const noexcept;
 
 	const AudioFormat &GetAudioFormat() const noexcept {

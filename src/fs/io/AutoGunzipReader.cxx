@@ -25,7 +25,7 @@ AutoGunzipReader::AutoGunzipReader(Reader &_next) noexcept
 
 AutoGunzipReader::~AutoGunzipReader() noexcept = default;
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsGzip(const uint8_t data[4]) noexcept
 {

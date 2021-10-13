@@ -22,7 +22,6 @@
 
 #include "StorageInterface.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <memory>
 #include <string>
@@ -51,12 +50,12 @@ class CompositeStorage final : public Storage {
 
 		std::map<std::string, Directory, std::less<>> children;
 
-		gcc_pure
+		[[gnu::pure]]
 		bool IsEmpty() const noexcept {
 			return storage == nullptr && children.empty();
 		}
 
-		gcc_pure
+		[[gnu::pure]]
 		const Directory *Find(std::string_view uri) const noexcept;
 
 		Directory &Make(std::string_view uri);
@@ -64,7 +63,7 @@ class CompositeStorage final : public Storage {
 		bool Unmount() noexcept;
 		bool Unmount(std::string_view uri) noexcept;
 
-		gcc_pure
+		[[gnu::pure]]
 		bool MapToRelativeUTF8(std::string &buffer,
 				       std::string_view uri) const noexcept;
 	};
@@ -97,14 +96,14 @@ public:
 	 * allowed to unmount the given mount point while the return
 	 * value is being used.
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	Storage *GetMount(std::string_view uri) noexcept;
 
 	/**
          * Is the given URI a mount point, i.e. is something already
          * mounted on this path?
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]] [[gnu::nonnull]]
 	bool IsMountPoint(const char *uri) noexcept {
 		return GetMount(uri) != nullptr;
 	}
@@ -124,7 +123,7 @@ public:
 	/**
 	 * Is a storage with the given URI already mounted?
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]] [[gnu::nonnull]]
 	bool IsMounted(const char *storage_uri) const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return IsMounted(root, storage_uri);
@@ -164,7 +163,7 @@ private:
 		}
 	}
 
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]] [[gnu::nonnull]]
 	static bool IsMounted(const Directory &directory,
 			      const char *storage_uri) noexcept {
 		if (directory.storage) {
@@ -188,7 +187,7 @@ private:
 	 * remaining unused part of the URI (may be empty if all of
 	 * the URI was used).
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	FindResult FindStorage(std::string_view uri) const noexcept;
 
 	const char *MapToRelativeUTF8(const Directory &directory,

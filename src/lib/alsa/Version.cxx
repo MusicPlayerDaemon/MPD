@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 
-gcc_pure
+[[gnu::pure]]
 static uint_least32_t
 ParseAlsaVersion(const char *p) noexcept
 {

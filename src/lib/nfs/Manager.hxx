@@ -21,7 +21,6 @@
 #define MPD_NFS_MANAGER_HXX
 
 #include "Connection.hxx"
-#include "util/Compiler.h"
 #include "event/IdleEvent.hxx"
 
 #include <boost/intrusive/set.hpp>
@@ -56,15 +55,15 @@ class NfsManager final {
 	};
 
 	struct Compare {
-		gcc_pure
+		[[gnu::pure]]
 		bool operator()(const LookupKey a,
 				const ManagedConnection &b) const noexcept;
 
-		gcc_pure
+		[[gnu::pure]]
 		bool operator()(const ManagedConnection &a,
 				const LookupKey b) const noexcept;
 
-		gcc_pure
+		[[gnu::pure]]
 		bool operator()(const ManagedConnection &a,
 				const ManagedConnection &b) const noexcept;
 	};
@@ -102,7 +101,7 @@ public:
 		return idle_event.GetEventLoop();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	NfsConnection &GetConnection(const char *server,
 				     const char *export_name) noexcept;
 

@@ -20,8 +20,6 @@
 #ifndef MPD_CONFIG_BLOCK_HXX
 #define MPD_CONFIG_BLOCK_HXX
 
-#include "util/Compiler.h"
-
 #include <string>
 #include <vector>
 
@@ -39,7 +37,7 @@ struct BlockParam {
 	mutable bool used = false;
 
 	template<typename N, typename V>
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	BlockParam(N &&_name, V &&_value, int _line=-1) noexcept
 		:name(std::forward<N>(_name)), value(std::forward<V>(_value)),
 		 line(_line) {}
@@ -99,7 +97,7 @@ struct ConfigBlock {
 		return line < 0;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
 		return block_params.empty();
 	}
@@ -109,17 +107,17 @@ struct ConfigBlock {
 	}
 
 	template<typename N, typename V>
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	void AddBlockParam(N &&_name, V &&_value, int _line=-1) noexcept {
 		block_params.emplace_back(std::forward<N>(_name),
 					  std::forward<V>(_value),
 					  _line);
 	}
 
-	gcc_nonnull_all gcc_pure
+	[[gnu::nonnull]] [[gnu::pure]]
 	const BlockParam *GetBlockParam(const char *_name) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetBlockValue(const char *name,
 				  const char *default_value=nullptr) const noexcept;
 

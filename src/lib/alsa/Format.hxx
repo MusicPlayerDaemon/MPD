@@ -43,7 +43,7 @@
  * enum.  Returns SND_PCM_FORMAT_UNKNOWN if there is no according ALSA
  * PCM format.
  */
-gcc_const
+[[gnu::const]]
 inline snd_pcm_format_t
 ToAlsaPcmFormat(SampleFormat sample_format) noexcept
 {
@@ -82,7 +82,7 @@ ToAlsaPcmFormat(SampleFormat sample_format) noexcept
  * Determine the byte-swapped PCM format.  Returns
  * SND_PCM_FORMAT_UNKNOWN if the format cannot be byte-swapped.
  */
-gcc_const
+[[gnu::const]]
 inline snd_pcm_format_t
 ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt) noexcept
 {
@@ -123,8 +123,7 @@ ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt) noexcept
  * Check if there is a "packed" version of the give PCM format.
  * Returns SND_PCM_FORMAT_UNKNOWN if not.
  */
-gcc_const
-inline snd_pcm_format_t
+constexpr snd_pcm_format_t
 PackAlsaPcmFormat(snd_pcm_format_t fmt) noexcept
 {
 	switch (fmt) {

@@ -20,8 +20,6 @@
 #ifndef MPD_EXPAT_HXX
 #define MPD_EXPAT_HXX
 
-#include "util/Compiler.h"
-
 #include <expat.h>
 
 #include <stdexcept>
@@ -80,11 +78,11 @@ public:
 
 	void Parse(InputStream &is);
 
-	gcc_pure
+	[[gnu::pure]]
 	static const char *GetAttribute(const XML_Char **atts,
 					const char *name) noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	static const char *GetAttributeCase(const XML_Char **atts,
 					    const char *name) noexcept;
 };
@@ -117,13 +115,13 @@ public:
 		parser.CompleteParse();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	static const char *GetAttribute(const XML_Char **atts,
 					const char *name) noexcept {
 		return ExpatParser::GetAttribute(atts, name);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	static const char *GetAttributeCase(const XML_Char **atts,
 					    const char *name) noexcept {
 		return ExpatParser::GetAttributeCase(atts, name);

@@ -20,8 +20,6 @@
 #ifndef MPD_NFS_BASE_HXX
 #define MPD_NFS_BASE_HXX
 
-#include "util/Compiler.h"
-
 /**
  * Set the "base" NFS server and export name.  This will be the
  * default export that will be mounted if a file within this export is
@@ -38,7 +36,7 @@ nfs_set_base(const char *server, const char *export_name) noexcept;
  * "path" after the export_name is returned; otherwise, nullptr is
  * returned.
  */
-gcc_pure
+[[gnu::pure]]
 const char *
 nfs_check_base(const char *server, const char *path) noexcept;
 

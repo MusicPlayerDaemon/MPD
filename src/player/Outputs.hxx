@@ -22,7 +22,6 @@
 
 #include "MusicChunkPtr.hxx"
 #include "Chrono.hxx"
-#include "util/Compiler.h"
 
 struct AudioFormat;
 struct MusicChunk;
@@ -107,7 +106,7 @@ public:
 	 * chunk.  A negative value is returned when no chunk has been
 	 * finished yet.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual SignedSongTime GetElapsedTime() const noexcept = 0;
 };
 

@@ -30,8 +30,6 @@
 #ifndef URI_UTIL_HXX
 #define URI_UTIL_HXX
 
-#include "Compiler.h"
-
 #include <string>
 
 /**
@@ -42,7 +40,7 @@
  * - no double slashes
  * - no path component begins with a dot
  */
-gcc_pure
+[[gnu::pure]]
 bool
 uri_safe_local(const char *uri) noexcept;
 
@@ -52,7 +50,7 @@ uri_safe_local(const char *uri) noexcept;
  * an empty string if nothing needs to be removed, or if the URI is
  * not recognized.
  */
-gcc_pure
+[[gnu::pure]]
 std::string
 uri_remove_auth(const char *uri) noexcept;
 
@@ -60,7 +58,7 @@ uri_remove_auth(const char *uri) noexcept;
  * Remove dot segments in the URI.  For example, uri_squash_dot_segments
  * ("foo/bar/.././")=="foo/".
  */
-gcc_pure
+[[gnu::pure]]
 std::string
 uri_squash_dot_segments(const char *uri) noexcept;
 

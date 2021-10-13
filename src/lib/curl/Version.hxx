@@ -30,9 +30,7 @@
 #ifndef CURL_VERSION_HXX
 #define CURL_VERSION_HXX
 
-#include "util/Compiler.h"
-
-gcc_const
+[[gnu::const]]
 bool
 IsCurlOlderThan(unsigned version_num) noexcept;
 

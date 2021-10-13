@@ -20,8 +20,6 @@
 #ifndef MPD_BIT_REVERSE_HXX
 #define MPD_BIT_REVERSE_HXX
 
-#include "Compiler.h"
-
 #include <cstdint>
 
 /**
@@ -43,7 +41,7 @@ struct BitReverseTable {
 
 extern const BitReverseTable bit_reverse_table;
 
-gcc_const
+[[gnu::const]]
 static inline uint8_t
 bit_reverse(uint8_t x) noexcept
 {

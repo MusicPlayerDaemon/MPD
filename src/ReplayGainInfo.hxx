@@ -20,7 +20,6 @@
 #ifndef MPD_REPLAY_GAIN_INFO_HXX
 #define MPD_REPLAY_GAIN_INFO_HXX
 
-#include "util/Compiler.h"
 #include "ReplayGainMode.hxx"
 
 struct ReplayGainConfig;
@@ -42,7 +41,7 @@ struct ReplayGainTuple {
 		return {-200.0f, 0.0f};
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	float CalculateScale(const ReplayGainConfig &config) const noexcept;
 };
 

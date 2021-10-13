@@ -229,7 +229,7 @@ public:
 			state == DecoderState::ERROR;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool LockIsIdle() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return IsIdle();
@@ -239,7 +239,7 @@ public:
 		return state == DecoderState::START;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool LockIsStarting() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return IsStarting();
@@ -251,7 +251,7 @@ public:
 		return state == DecoderState::ERROR;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool LockHasFailed() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return HasFailed();
@@ -307,15 +307,15 @@ public:
 	 *
 	 * Caller must lock the object.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsCurrentSong(const DetachedSong &_song) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsUnseekableCurrentSong(const DetachedSong &_song) const noexcept {
 		return !seekable && IsCurrentSong(_song);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsSeekableCurrentSong(const DetachedSong &_song) const noexcept {
 		return seekable && IsCurrentSong(_song);
 	}

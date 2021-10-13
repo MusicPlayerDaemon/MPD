@@ -22,7 +22,6 @@
 
 #include "input/Ptr.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <string_view>
 
@@ -65,7 +64,7 @@ public:
  * Shall this playlists supported by this plugin be represented as
  * directories in the database?
  */
-gcc_const
+[[gnu::const]]
 bool
 GetPlaylistPluginAsFolder(const PlaylistPlugin &plugin) noexcept;
 
@@ -88,7 +87,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, std::string_view suffix);
 std::unique_ptr<SongEnumerator>
 playlist_list_open_stream(InputStreamPtr &&is, const char *uri);
 
-gcc_pure
+[[gnu::pure]]
 const PlaylistPlugin *
 FindPlaylistPluginBySuffix(std::string_view suffix) noexcept;
 
@@ -96,7 +95,7 @@ FindPlaylistPluginBySuffix(std::string_view suffix) noexcept;
  * Determines if there is a playlist plugin which can handle the
  * specified file name suffix.
  */
-gcc_pure
+[[gnu::pure]]
 inline bool
 playlist_suffix_supported(std::string_view suffix) noexcept
 {

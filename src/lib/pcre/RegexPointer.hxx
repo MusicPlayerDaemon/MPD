@@ -59,7 +59,7 @@ public:
 		return re != nullptr;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool Match(StringView s) const noexcept {
 		/* we don't need the data written to ovector, but PCRE can
 		   omit internal allocations if we pass a buffer to

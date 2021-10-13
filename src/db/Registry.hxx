@@ -20,8 +20,6 @@
 #ifndef MPD_DATABASE_REGISTRY_HXX
 #define MPD_DATABASE_REGISTRY_HXX
 
-#include "util/Compiler.h"
-
 struct DatabasePlugin;
 
 /**
@@ -30,7 +28,7 @@ struct DatabasePlugin;
  */
 extern const DatabasePlugin *const database_plugins[];
 
-gcc_pure
+[[gnu::pure]]
 const DatabasePlugin *
 GetDatabasePluginByName(const char *name) noexcept;
 

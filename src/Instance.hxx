@@ -24,7 +24,6 @@
 #include "event/Loop.hxx"
 #include "event/Thread.hxx"
 #include "event/MaskMonitor.hxx"
-#include "util/Compiler.h"
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 #include "lib/systemd/Watchdog.hxx"
@@ -168,7 +167,7 @@ struct Instance final
 	 * Find a #Partition with the given name.  Returns nullptr if
 	 * no such partition was found.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	Partition *FindPartition(const char *name) noexcept;
 
 	void DeletePartition(Partition &partition) noexcept;

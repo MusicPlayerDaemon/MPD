@@ -20,8 +20,6 @@
 #ifndef MPD_CLIENT_MESSAGE_HXX
 #define MPD_CLIENT_MESSAGE_HXX
 
-#include "util/Compiler.h"
-
 #include <string>
 
 #ifdef _WIN32
@@ -51,7 +49,7 @@ public:
 	}
 };
 
-gcc_pure
+[[gnu::pure]]
 bool
 client_message_valid_channel_name(const char *name) noexcept;
 

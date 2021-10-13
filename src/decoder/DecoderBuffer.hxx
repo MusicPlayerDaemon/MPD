@@ -20,7 +20,6 @@
 #ifndef MPD_DECODER_BUFFER_HXX
 #define MPD_DECODER_BUFFER_HXX
 
-#include "util/Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 
@@ -74,7 +73,7 @@ public:
 	/**
 	 * How many bytes are stored in the buffer?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t GetAvailable() const noexcept {
 		return buffer.GetAvailable();
 	}

@@ -22,7 +22,6 @@
 
 #include "MusicChunkPtr.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #ifndef NDEBUG
 #include "pcm/AudioFormat.hxx"
@@ -59,7 +58,7 @@ public:
 	 * Checks if the audio format if the chunk is equal to the specified
 	 * audio_format.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool CheckFormat(AudioFormat other) const noexcept {
 		return !audio_format.IsDefined() ||
 			audio_format == other;
@@ -68,7 +67,7 @@ public:
 	/**
 	 * Checks if the specified chunk is enqueued in the music pipe.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool Contains(const MusicChunk *chunk) const noexcept;
 #endif
 
@@ -76,7 +75,7 @@ public:
 	 * Returns the first #MusicChunk from the pipe.  Returns
 	 * nullptr if the pipe is empty.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const MusicChunk *Peek() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return head.get();
@@ -100,13 +99,13 @@ public:
 	/**
 	 * Returns the number of chunks currently in this pipe.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	unsigned GetSize() const noexcept {
 		const std::lock_guard<Mutex> protect(mutex);
 		return size;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
 		return GetSize() == 0;
 	}

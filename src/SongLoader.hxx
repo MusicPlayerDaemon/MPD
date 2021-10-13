@@ -20,7 +20,6 @@
 #ifndef MPD_SONG_LOADER_HXX
 #define MPD_SONG_LOADER_HXX
 
-#include "util/Compiler.h"
 #include "config.h"
 
 #include <cstddef>
@@ -72,14 +71,14 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	DetachedSong LoadSong(const char *uri_utf8) const;
 
 private:
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	DetachedSong LoadFromDatabase(const char *uri) const;
 
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	DetachedSong LoadFile(const char *path_utf8, Path path_fs) const;
 };
 

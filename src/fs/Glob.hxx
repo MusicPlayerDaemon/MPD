@@ -30,8 +30,6 @@
 #endif
 
 #ifdef HAVE_CLASS_GLOB
-#include "util/Compiler.h"
-
 #include <string>
 
 /**
@@ -48,7 +46,7 @@ public:
 	Glob(Glob &&other) noexcept = default;
 	Glob &operator=(Glob &&other) noexcept = default;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool Check(const char *name_fs) const noexcept;
 };
 

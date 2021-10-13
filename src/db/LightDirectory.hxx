@@ -20,11 +20,8 @@
 #ifndef MPD_LIGHT_DIRECTORY_HXX
 #define MPD_LIGHT_DIRECTORY_HXX
 
-#include "util/Compiler.h"
-
+#include <chrono>
 #include <string>
-
-#include <time.h>
 
 struct Tag;
 
@@ -53,7 +50,7 @@ struct LightDirectory {
 		return *uri == 0;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetPath() const noexcept {
 		return uri;
 	}

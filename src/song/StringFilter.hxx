@@ -21,7 +21,6 @@
 #define MPD_STRING_FILTER_HXX
 
 #include "lib/icu/Compare.hxx"
-#include "util/Compiler.h"
 #include "config.h"
 
 #ifdef HAVE_PCRE
@@ -102,13 +101,13 @@ public:
 			   : (negated ? "!=" : "=="));
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool Match(const char *s) const noexcept;
 
 	/**
 	 * Like Match(), but ignore the "negated" flag.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool MatchWithoutNegation(const char *s) const noexcept;
 };
 

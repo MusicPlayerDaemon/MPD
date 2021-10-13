@@ -20,13 +20,12 @@
 #ifndef MPD_FS_CHARSET_HXX
 #define MPD_FS_CHARSET_HXX
 
-#include "util/Compiler.h"
 #include "Traits.hxx"
 
 /**
  * Gets file system character set name.
  */
-gcc_const
+[[gnu::const]]
 const char *
 GetFSCharset() noexcept;
 

@@ -46,7 +46,7 @@ IsValidSchemeChar(char ch)
 		ch == '+' || ch == '.' || ch == '-';
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsValidScheme(std::string_view p) noexcept
 {
@@ -64,7 +64,7 @@ IsValidScheme(std::string_view p) noexcept
  * Return the URI part after the scheme specification (and after the
  * double slash).
  */
-gcc_pure
+[[gnu::pure]]
 static std::string_view
 uri_after_scheme(std::string_view uri) noexcept
 {
@@ -120,7 +120,7 @@ uri_get_path(std::string_view uri) noexcept
 	return uri;
 }
 
-gcc_pure
+[[gnu::pure]]
 static StringView
 UriWithoutQueryString(StringView uri) noexcept
 {

@@ -32,7 +32,6 @@
 
 #include "ConstBuffer.hxx"
 #include "StringBuffer.hxx"
-#include "Compiler.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -53,7 +52,7 @@ HexFormat(char *dest, ConstBuffer<uint8_t> src) noexcept;
  * required size.
  */
 template<size_t size>
-gcc_pure
+[[gnu::pure]]
 auto
 HexFormatBuffer(const uint8_t *src) noexcept
 {

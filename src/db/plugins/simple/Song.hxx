@@ -24,7 +24,6 @@
 #include "Chrono.hxx"
 #include "tag/Tag.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/Compiler.h"
 #include "config.h"
 
 #include <boost/intrusive/list.hpp>
@@ -108,14 +107,14 @@ struct Song {
 
 	Song(DetachedSong &&other, Directory &_parent) noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetFilenameSuffix() const noexcept;
 
 	/**
 	 * Checks whether the decoder plugin for this song is
 	 * available.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsPluginAvailable() const noexcept;
 
 	/**
@@ -149,10 +148,10 @@ struct Song {
 	 * Returns the URI of the song in UTF-8 encoding, including its
 	 * location within the music directory.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	std::string GetURI() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	ExportedSong Export() const noexcept;
 };
 

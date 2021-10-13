@@ -20,8 +20,6 @@
 #ifndef MPD_FFMPEG_BUFFER_HXX
 #define MPD_FFMPEG_BUFFER_HXX
 
-#include "util/Compiler.h"
-
 extern "C" {
 #include <libavutil/mem.h>
 }
@@ -42,7 +40,7 @@ public:
 	FfmpegBuffer(const FfmpegBuffer &) = delete;
 	FfmpegBuffer &operator=(const FfmpegBuffer &) = delete;
 
-	gcc_malloc
+	[[gnu::malloc]]
 	void *Get(size_t min_size) noexcept {
 		av_fast_malloc(&data, &size, min_size);
 		return data;

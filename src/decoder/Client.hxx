@@ -23,7 +23,6 @@
 #include "Command.hxx"
 #include "Chrono.hxx"
 #include "input/Ptr.hxx"
-#include "util/Compiler.h"
 
 #include <cstdint>
 
@@ -57,7 +56,7 @@ public:
 	 * @return the current command, or DecoderCommand::NONE if there is no
 	 * command pending
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual DecoderCommand GetCommand() noexcept = 0;
 
 	/**
@@ -72,7 +71,7 @@ public:
 	 *
 	 * @return the destination position for the seek
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual SongTime GetSeekTime() noexcept = 0;
 
 	/**
@@ -80,7 +79,7 @@ public:
 	 *
 	 * @return the destination position for the seek in frames
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual uint64_t GetSeekFrame() noexcept = 0;
 
 	/**

@@ -23,7 +23,6 @@
 #include "Offset.hxx"
 #include "Ptr.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 #include <memory>
@@ -123,14 +122,12 @@ public:
 	 * notifications
 	 * @return an #InputStream object on success
 	 */
-	gcc_nonnull(1)
 	static InputStreamPtr Open(const char *uri, Mutex &mutex);
 
 	/**
 	 * Just like Open(), but waits for the stream to become ready.
 	 * It is a wrapper for Open(), WaitReady() and Check().
 	 */
-	gcc_nonnull(1)
 	static InputStreamPtr OpenReady(const char *uri, Mutex &mutex);
 
 	/**
@@ -184,14 +181,14 @@ public:
 		return ready;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool HasMimeType() const noexcept {
 		assert(ready);
 
 		return !mime.empty();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetMimeType() const noexcept {
 		assert(ready);
 
@@ -202,7 +199,7 @@ public:
 		mime.clear();
 	}
 
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	void SetMimeType(const char *_mime) noexcept {
 		assert(!ready);
 
@@ -215,14 +212,14 @@ public:
 		mime = std::move(_mime);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool KnownSize() const noexcept {
 		assert(ready);
 
 		return size != UNKNOWN_SIZE;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	offset_type GetSize() const noexcept {
 		assert(ready);
 		assert(KnownSize());
@@ -236,14 +233,14 @@ public:
 		offset += delta;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	offset_type GetOffset() const noexcept {
 		assert(ready);
 
 		return offset;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	offset_type GetRest() const noexcept {
 		assert(ready);
 		assert(KnownSize());
@@ -251,7 +248,7 @@ public:
 		return size - offset;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsSeekable() const noexcept {
 		assert(ready);
 
@@ -261,7 +258,7 @@ public:
 	/**
 	 * Determines whether seeking is cheap.  This is true for local files.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool CheapSeeking() const noexcept;
 
 	/**
@@ -313,14 +310,14 @@ public:
 	 *
 	 * The caller must lock the mutex.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual bool IsEOF() const noexcept = 0;
 
 	/**
 	 * Wrapper for IsEOF() which locks and unlocks the mutex; the
 	 * caller must not be holding it already.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool LockIsEOF() const noexcept;
 
 	/**
@@ -346,7 +343,7 @@ public:
 	 *
 	 * The caller must lock the mutex.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual bool IsAvailable() const noexcept;
 
 	/**
@@ -363,7 +360,7 @@ public:
 	 * @param size the maximum number of bytes to read
 	 * @return the number of bytes read
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	virtual size_t Read(std::unique_lock<Mutex> &lock,
 			    void *ptr, size_t size) = 0;
 
@@ -373,7 +370,7 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	size_t LockRead(void *ptr, size_t size);
 
 	/**
@@ -387,7 +384,7 @@ public:
 	 * @param size the number of bytes to read
 	 * @return true if the whole data was read, false otherwise.
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	void ReadFull(std::unique_lock<Mutex> &lock, void *ptr, size_t size);
 
 	/**
@@ -396,7 +393,7 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	gcc_nonnull_all
+	[[gnu::nonnull]]
 	void LockReadFull(void *ptr, size_t size);
 
 protected:

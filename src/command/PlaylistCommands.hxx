@@ -21,13 +21,12 @@
 #define MPD_PLAYLIST_COMMANDS_HXX
 
 #include "CommandResult.hxx"
-#include "util/Compiler.h"
 
 class Client;
 class Request;
 class Response;
 
-gcc_const
+[[gnu::const]]
 bool
 playlist_commands_available() noexcept;
 

@@ -22,7 +22,6 @@
 
 #include "Ptr.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 #include <set>
@@ -83,7 +82,7 @@ struct InputPlugin {
 	std::unique_ptr<RemoteTagScanner> (*scan_tags)(const char *uri,
 						       RemoteTagHandler &handler) = nullptr;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool SupportsUri(const char *uri) const noexcept;
 
 	template<typename F>
@@ -103,7 +102,7 @@ struct InputPlugin {
 	}
 };
 
-gcc_pure
+[[gnu::pure]]
 bool
 protocol_is_whitelisted(const char *proto) noexcept;
 

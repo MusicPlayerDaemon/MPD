@@ -27,7 +27,6 @@
 #define MPD_DB_LOCK_HXX
 
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 
@@ -42,7 +41,7 @@ extern ThreadId db_mutex_holder;
 /**
  * Does the current thread hold the database lock?
  */
-gcc_pure
+[[gnu::pure]]
 static inline bool
 holding_db_lock() noexcept
 {

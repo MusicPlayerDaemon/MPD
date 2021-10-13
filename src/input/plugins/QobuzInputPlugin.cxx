@@ -166,7 +166,7 @@ FinishQobuzInput() noexcept
 	delete qobuz_client;
 }
 
-gcc_pure
+[[gnu::pure]]
 static const char *
 ExtractQobuzTrackId(const char *uri)
 {

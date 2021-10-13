@@ -105,7 +105,7 @@ struct MusicChunkInfo {
 	 * Checks if the audio format if the chunk is equal to the
 	 * specified audio_format.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool CheckFormat(AudioFormat audio_format) const noexcept;
 #endif
 };

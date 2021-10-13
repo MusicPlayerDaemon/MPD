@@ -21,7 +21,6 @@
 #define MPD_FFMPEG_TIME_HXX
 
 #include "Chrono.hxx"
-#include "util/Compiler.h"
 
 extern "C" {
 #include <libavutil/avutil.h>
@@ -41,7 +40,7 @@ static constexpr AVRational AV_TIME_BASE_Q{1, AV_TIME_BASE};
 /**
  * Convert a FFmpeg time stamp to a floating point value (in seconds).
  */
-gcc_const
+[[gnu::const]]
 static inline FloatDuration
 FfmpegTimeToDouble(int64_t t, const AVRational time_base) noexcept
 {
@@ -64,7 +63,7 @@ RatioToAVRational()
 /**
  * Convert a FFmpeg time stamp to a #SongTime.
  */
-gcc_const
+[[gnu::const]]
 static inline SongTime
 FromFfmpegTime(int64_t t, const AVRational time_base) noexcept
 {
@@ -77,7 +76,7 @@ FromFfmpegTime(int64_t t, const AVRational time_base) noexcept
 /**
  * Convert a FFmpeg time stamp to a #SignedSongTime.
  */
-gcc_const
+[[gnu::const]]
 static inline SignedSongTime
 FromFfmpegTimeChecked(int64_t t, const AVRational time_base) noexcept
 {
@@ -89,7 +88,7 @@ FromFfmpegTimeChecked(int64_t t, const AVRational time_base) noexcept
 /**
  * Convert a #SongTime to a FFmpeg time stamp with the given base.
  */
-gcc_const
+[[gnu::const]]
 static inline int64_t
 ToFfmpegTime(SongTime t, const AVRational time_base) noexcept
 {
@@ -104,7 +103,7 @@ ToFfmpegTime(SongTime t, const AVRational time_base) noexcept
 constexpr int64_t
 FfmpegTimestampFallback(int64_t t, int64_t fallback)
 {
-	return gcc_likely(t != int64_t(AV_NOPTS_VALUE))
+	return t != int64_t(AV_NOPTS_VALUE)
 		? t
 		: fallback;
 }

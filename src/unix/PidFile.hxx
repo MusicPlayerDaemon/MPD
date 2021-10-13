@@ -87,7 +87,7 @@ public:
 	}
 };
 
-gcc_pure
+[[gnu::pure]]
 static inline pid_t
 ReadPidFile(Path path) noexcept
 {

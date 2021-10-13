@@ -20,7 +20,6 @@
 #ifndef MPD_ICU_CONVERTER_HXX
 #define MPD_ICU_CONVERTER_HXX
 
-#include "util/Compiler.h"
 #include "config.h"
 
 #ifdef HAVE_ICU
@@ -84,7 +83,6 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	gcc_nonnull_all
 	AllocatedString ToUTF8(std::string_view s) const;
 
 	/**
@@ -92,7 +90,6 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	gcc_nonnull_all
 	AllocatedString FromUTF8(std::string_view s) const;
 };
 

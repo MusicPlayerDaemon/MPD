@@ -31,7 +31,6 @@
 #define GCRYPT_MD5_HXX
 
 #include "util/StringBuffer.hxx"
-#include "util/Compiler.h"
 
 #include <array>
 #include <cstdint>
@@ -40,7 +39,7 @@ template<typename T> struct ConstBuffer;
 
 namespace Gcrypt {
 
-gcc_pure
+[[gnu::pure]]
 std::array<uint8_t, 16>
 MD5(ConstBuffer<void> input) noexcept;
 

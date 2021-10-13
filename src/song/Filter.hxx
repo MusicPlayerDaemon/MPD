@@ -21,7 +21,6 @@
 #define MPD_SONG_FILTER_HXX
 
 #include "AndSongFilter.hxx"
-#include "util/Compiler.h"
 
 #include <cstdint>
 #include <string>
@@ -42,7 +41,6 @@ class SongFilter {
 public:
 	SongFilter() = default;
 
-	gcc_nonnull(3)
 	SongFilter(TagType tag, const char *value, bool fold_case=false);
 
 	~SongFilter();
@@ -59,7 +57,6 @@ public:
 private:
 	static ISongFilterPtr ParseExpression(const char *&s, bool fold_case=false);
 
-	gcc_nonnull(2,3)
 	void Parse(const char *tag, const char *value, bool fold_case=false);
 
 public:
@@ -70,14 +67,14 @@ public:
 
 	void Optimize() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool Match(const LightSong &song) const noexcept;
 
 	const auto &GetItems() const noexcept {
 		return and_filter.GetItems();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
 		return and_filter.IsEmpty();
 	}
@@ -85,20 +82,20 @@ public:
 	/**
 	 * Is there at least one item with "fold case" enabled?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasFoldCase() const noexcept;
 
 	/**
 	 * Does this filter contain constraints other than "base"?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasOtherThanBase() const noexcept;
 
 	/**
 	 * Returns the "base" specification (if there is one) or
 	 * nullptr.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetBase() const noexcept;
 
 	/**

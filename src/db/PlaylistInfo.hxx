@@ -20,8 +20,6 @@
 #ifndef MPD_PLAYLIST_INFO_HXX
 #define MPD_PLAYLIST_INFO_HXX
 
-#include "util/Compiler.h"
-
 #include <string>
 #include <string_view>
 #include <chrono>
@@ -49,7 +47,7 @@ struct PlaylistInfo {
 		constexpr CompareName(std::string_view _name) noexcept
 			:name(_name) {}
 
-		gcc_pure
+		[[gnu::pure]]
 		bool operator()(const PlaylistInfo &pi) const noexcept {
 			return pi.name == name;
 		}

@@ -20,8 +20,6 @@
 #ifndef MPD_NEIGHBOR_REGISTRY_HXX
 #define MPD_NEIGHBOR_REGISTRY_HXX
 
-#include "util/Compiler.h"
-
 struct NeighborPlugin;
 
 /**
@@ -30,7 +28,7 @@ struct NeighborPlugin;
  */
 extern const NeighborPlugin *const neighbor_plugins[];
 
-gcc_pure
+[[gnu::pure]]
 const NeighborPlugin *
 GetNeighborPluginByName(const char *name) noexcept;
 

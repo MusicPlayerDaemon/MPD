@@ -20,8 +20,6 @@
 #ifndef MPD_SINGLE_MODE_HXX
 #define MPD_SINGLE_MODE_HXX
 
-#include "util/Compiler.h"
-
 #include <cstdint>
 
 enum class SingleMode : uint8_t {
@@ -33,7 +31,7 @@ enum class SingleMode : uint8_t {
 /**
  * Return the string representation of a #SingleMode.
  */
-gcc_pure
+[[gnu::pure]]
 const char *
 SingleToString(SingleMode mode) noexcept;
 

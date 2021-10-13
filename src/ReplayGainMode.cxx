@@ -18,6 +18,7 @@
  */
 
 #include "ReplayGainMode.hxx"
+#include "util/Compiler.h"
 
 #include <cassert>
 #include <stdexcept>

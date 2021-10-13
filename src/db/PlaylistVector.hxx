@@ -21,7 +21,6 @@
 #define MPD_PLAYLIST_VECTOR_HXX
 
 #include "db/PlaylistInfo.hxx"
-#include "util/Compiler.h"
 
 #include <list>
 #include <string_view>
@@ -31,7 +30,7 @@ protected:
 	/**
 	 * Caller must lock the #db_mutex.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	iterator find(std::string_view name) noexcept;
 
 public:

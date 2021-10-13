@@ -26,7 +26,6 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "system/PeriodClock.hxx"
-#include "util/Compiler.h"
 
 #include <cstdint>
 #include <exception>
@@ -266,20 +265,20 @@ public:
 	 */
 	void Configure(const ConfigBlock &block);
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetName() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetPluginName() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetLogName() const noexcept;
 
 	AudioOutputClient &GetClient() noexcept {
 		return client;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	Mixer *GetMixer() const noexcept;
 
 	bool IsDummy() const noexcept {
@@ -451,10 +450,10 @@ public:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsChunkConsumed(const MusicChunk &chunk) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool LockIsChunkConsumed(const MusicChunk &chunk) const noexcept;
 
 	/**

@@ -37,7 +37,7 @@ class PcmDither;
  * @param src the source PCM buffer
  * @return the destination buffer
  */
-gcc_pure
+[[gnu::pure]]
 ConstBuffer<int16_t>
 pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
 		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
@@ -49,7 +49,7 @@ pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
  * @param src the source PCM buffer
  * @return the destination buffer
  */
-gcc_pure
+[[gnu::pure]]
 ConstBuffer<int32_t>
 pcm_convert_to_24(PcmBuffer &buffer,
 		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
@@ -61,7 +61,7 @@ pcm_convert_to_24(PcmBuffer &buffer,
  * @param src the source PCM buffer
  * @return the destination buffer
  */
-gcc_pure
+[[gnu::pure]]
 ConstBuffer<int32_t>
 pcm_convert_to_32(PcmBuffer &buffer,
 		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
@@ -73,7 +73,7 @@ pcm_convert_to_32(PcmBuffer &buffer,
  * @param src the source PCM buffer
  * @return the destination buffer
  */
-gcc_pure
+[[gnu::pure]]
 ConstBuffer<float>
 pcm_convert_to_float(PcmBuffer &buffer,
 		     SampleFormat src_format, ConstBuffer<void> src) noexcept;

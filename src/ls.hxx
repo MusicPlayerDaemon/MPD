@@ -20,8 +20,6 @@
 #ifndef MPD_LS_HXX
 #define MPD_LS_HXX
 
-#include "util/Compiler.h"
-
 #include <stdio.h>
 
 class Response;
@@ -31,7 +29,7 @@ class Response;
  * It is not allowed to pass an URI without a scheme, check with
  * uri_has_scheme() first.
  */
-gcc_pure
+[[gnu::pure]]
 bool
 uri_supported_scheme(const char *url) noexcept;
 

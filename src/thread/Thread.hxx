@@ -21,7 +21,6 @@
 #define MPD_THREAD_HXX
 
 #include "util/BindMethod.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 
@@ -78,7 +77,7 @@ public:
 	/**
 	 * Check if this thread is the current thread.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsInside() const noexcept {
 #ifdef _WIN32
 		return GetCurrentThreadId() == id;

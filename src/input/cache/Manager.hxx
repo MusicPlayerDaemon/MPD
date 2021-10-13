@@ -21,7 +21,6 @@
 #define MPD_INPUT_CACHE_MANAGER_HXX
 
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <boost/intrusive/set.hpp>
 #include <boost/intrusive/list.hpp>
@@ -43,15 +42,15 @@ class InputCacheManager {
 	size_t total_size = 0;
 
 	struct ItemCompare {
-		gcc_pure
+		[[gnu::pure]]
 		bool operator()(const InputCacheItem &a,
 				const char *b) const noexcept;
 
-		gcc_pure
+		[[gnu::pure]]
 		bool operator()(const char *a,
 				const InputCacheItem &b) const noexcept;
 
-		gcc_pure
+		[[gnu::pure]]
 		bool operator()(const InputCacheItem &a,
 				const InputCacheItem &b) const noexcept;
 	};
@@ -74,7 +73,7 @@ public:
 
 	void Flush() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	bool Contains(const char *uri) noexcept;
 
 	/**

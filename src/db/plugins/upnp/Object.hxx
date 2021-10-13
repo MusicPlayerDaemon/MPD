@@ -21,7 +21,6 @@
 #define MPD_UPNP_OBJECT_HXX
 
 #include "tag/Tag.hxx"
-#include "util/Compiler.h"
 
 #include <string>
 
@@ -89,12 +88,12 @@ public:
 		tag.Clear();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsRoot() const noexcept {
 		return type == Type::CONTAINER && id == "0";
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool Check() const noexcept {
 		return !id.empty() &&
 			/* root nodes don't need a parent id and a

@@ -20,8 +20,6 @@
 #ifndef INPUT_ERROR_HXX
 #define INPUT_ERROR_HXX
 
-#include "util/Compiler.h"
-
 #include <exception>
 
 /**
@@ -29,7 +27,7 @@
  * exist?  This function attempts to recognize exceptions thrown by
  * various input plugins.
  */
-gcc_pure
+[[gnu::pure]]
 bool
 IsFileNotFound(std::exception_ptr e) noexcept;
 

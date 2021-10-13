@@ -20,8 +20,6 @@
 #ifndef MPD_FLAC_METADATA_CHAIN_HXX
 #define MPD_FLAC_METADATA_CHAIN_HXX
 
-#include "util/Compiler.h"
-
 #include <FLAC/metadata.h>
 
 class InputStream;
@@ -67,12 +65,12 @@ public:
 
 	bool ReadOgg(InputStream &is) noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	FLAC__Metadata_ChainStatus GetStatus() const noexcept {
 		return ::FLAC__metadata_chain_status(chain);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetStatusString() const noexcept {
 		return FLAC__Metadata_ChainStatusString[GetStatus()];
 	}

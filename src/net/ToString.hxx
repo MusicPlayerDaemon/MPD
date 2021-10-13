@@ -30,8 +30,6 @@
 #ifndef NET_TO_STRING_HXX
 #define NET_TO_STRING_HXX
 
-#include "util/Compiler.h"
-
 #include <string>
 
 class SocketAddress;
@@ -40,7 +38,7 @@ class SocketAddress;
  * Converts the specified socket address into a string in the form
  * "IP:PORT".
  */
-gcc_pure
+[[gnu::pure]]
 std::string
 ToString(SocketAddress address) noexcept;
 

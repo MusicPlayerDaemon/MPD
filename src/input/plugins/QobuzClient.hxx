@@ -77,7 +77,7 @@ public:
 		return format_id;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	CurlGlobal &GetCurl() noexcept;
 
 	void AddLoginHandler(QobuzSessionHandler &h) noexcept;

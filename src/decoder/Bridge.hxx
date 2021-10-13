@@ -132,7 +132,7 @@ public:
 	 *
 	 * Caller must lock the #DecoderControl object.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool CheckCancelRead() const noexcept;
 
 	/**

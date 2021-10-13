@@ -120,7 +120,7 @@ public:
 	/**
 	 * Apply the volume level.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	ConstBuffer<void> Apply(ConstBuffer<void> src) noexcept;
 };
 

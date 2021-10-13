@@ -20,8 +20,6 @@
 #ifndef MPD_STORAGE_INTERFACE_HXX
 #define MPD_STORAGE_INTERFACE_HXX
 
-#include "util/Compiler.h"
-
 #include <memory>
 #include <string>
 #include <string_view>
@@ -62,7 +60,7 @@ public:
 	/**
 	 * Map the given relative URI to an absolute URI.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual std::string MapUTF8(std::string_view uri_utf8) const noexcept = 0;
 
 	/**
@@ -70,10 +68,10 @@ public:
 	 * nullptr on error or if this storage does not
 	 * support local files.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual AllocatedPath MapFS(std::string_view uri_utf8) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	AllocatedPath MapChildFS(std::string_view uri_utf8,
 				 std::string_view child_utf8) const noexcept;
 
@@ -82,7 +80,7 @@ public:
 	 * then it returns a relative URI (pointing inside the given
 	 * string); if not, returns nullptr.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	virtual std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept = 0;
 };
 

@@ -20,8 +20,6 @@
 #ifndef MPD_ALSA_VERSION_HXX
 #define MPD_ALSA_VERSION_HXX
 
-#include "util/Compiler.h"
-
 #include <cstdint>
 
 static constexpr uint_least32_t
@@ -35,7 +33,7 @@ MakeAlsaVersion(uint_least32_t major, uint_least32_t minor,
  * Wrapper for snd_asoundlib_version() which translates the resulting
  * string to an integer constructed with MakeAlsaVersion().
  */
-gcc_const
+[[gnu::const]]
 uint_least32_t
 GetRuntimeAlsaVersion() noexcept;
 

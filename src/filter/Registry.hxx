@@ -26,11 +26,9 @@
 #ifndef MPD_FILTER_REGISTRY_HXX
 #define MPD_FILTER_REGISTRY_HXX
 
-#include "util/Compiler.h"
-
 struct FilterPlugin;
 
-gcc_pure
+[[gnu::pure]]
 const FilterPlugin *
 filter_plugin_by_name(const char *name) noexcept;
 

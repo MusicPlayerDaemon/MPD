@@ -46,7 +46,7 @@ struct ConfigData {
 
 	void AddParam(ConfigOption option, ConfigParam &&param) noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	const ConfigParam *GetParam(ConfigOption option) const noexcept {
 		const auto &list = GetParamList(option);
 		return list.empty() ? nullptr : &list.front();
@@ -60,7 +60,7 @@ struct ConfigData {
 			: f(nullptr);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetString(ConfigOption option,
 			      const char *default_value=nullptr) const noexcept;
 
@@ -100,7 +100,7 @@ struct ConfigData {
 	ConfigBlock &AddBlock(ConfigBlockOption option,
 			      ConfigBlock &&block) noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	const ConfigBlock *GetBlock(ConfigBlockOption option) const noexcept {
 		const auto &list = GetBlockList(option);
 		return list.empty() ? nullptr : &list.front();
@@ -115,7 +115,7 @@ struct ConfigData {
 	 * @param key the attribute name
 	 * @param value the expected attribute value
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const ConfigBlock *FindBlock(ConfigBlockOption option,
 				     const char *key, const char *value) const;
 

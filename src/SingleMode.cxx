@@ -18,6 +18,7 @@
  */
 
 #include "SingleMode.hxx"
+#include "util/Compiler.h"
 
 #include <cassert>
 #include <stdexcept>

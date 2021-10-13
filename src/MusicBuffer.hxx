@@ -63,7 +63,7 @@ public:
 	 * is the same value which was passed to the constructor
 	 * music_buffer_new().
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	unsigned GetSize() const noexcept {
 		return buffer.GetCapacity();
 	}

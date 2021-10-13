@@ -20,8 +20,6 @@
 #ifndef MPD_DECODER_PLUGIN_HXX
 #define MPD_DECODER_PLUGIN_HXX
 
-#include "util/Compiler.h"
-
 #include <forward_list>  // IWYU pragma: export
 #include <set>
 #include <string>
@@ -246,19 +244,19 @@ struct DecoderPlugin {
 		return container_scan(path, tnum);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool SupportsUri(const char *uri) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified file name suffix?
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	bool SupportsSuffix(std::string_view suffix) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified MIME type?
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	bool SupportsMimeType(std::string_view mime_type) const noexcept;
 
 	bool SupportsContainerSuffix(std::string_view suffix) const noexcept {

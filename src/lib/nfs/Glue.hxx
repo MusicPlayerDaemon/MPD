@@ -20,8 +20,6 @@
 #ifndef MPD_NFS_GLUE_HXX
 #define MPD_NFS_GLUE_HXX
 
-#include "util/Compiler.h"
-
 class EventLoop;
 class NfsConnection;
 
@@ -34,11 +32,11 @@ nfs_finish() noexcept;
 /**
  * Return the EventLoop that was passed to nfs_init().
  */
-gcc_const
+[[gnu::const]]
 EventLoop &
 nfs_get_event_loop() noexcept;
 
-gcc_pure
+[[gnu::pure]]
 NfsConnection &
 nfs_get_connection(const char *server, const char *export_name) noexcept;
 

@@ -20,7 +20,6 @@
 #ifndef MPD_FS_PATH_HXX
 #define MPD_FS_PATH_HXX
 
-#include "util/Compiler.h"
 #include "Traits.hxx"
 
 #include <cassert>
@@ -88,7 +87,7 @@ public:
 	 * @return the length of this string in number of "value_type"
 	 * elements (which may not be the number of characters).
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	size_t length() const noexcept {
 		assert(!IsNull());
 
@@ -117,7 +116,7 @@ public:
 	 * usually rejected by MPD because its protocol cannot
 	 * transfer newline characters).
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasNewline() const noexcept {
 		return Traits::Find(c_str(), '\n') != nullptr;
 	}
@@ -127,7 +126,7 @@ public:
 	 * Returns empty string on error or if this instance is "nulled"
 	 * (#IsNull returns true).
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	std::string ToUTF8() const noexcept;
 
 	/**
@@ -139,7 +138,7 @@ public:
 	 * Determine the "base" file name.
 	 * The return value points inside this object.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	Path GetBase() const noexcept {
 		return FromFS(Traits::GetBase(c_str()));
 	}
@@ -148,7 +147,7 @@ public:
 	 * Gets directory name of this path.
 	 * Returns a "nulled" instance on error.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	AllocatedPath GetDirectoryName() const noexcept;
 
 	/**
@@ -157,17 +156,17 @@ public:
 	 * empty string if the given path equals this object or
 	 * nullptr on mismatch.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const_pointer Relative(Path other_fs) const noexcept {
 		return Traits::Relative(c_str(), other_fs.c_str());
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsAbsolute() const noexcept {
 		return Traits::IsAbsolute(c_str());
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const_pointer GetSuffix() const noexcept;
 };
 

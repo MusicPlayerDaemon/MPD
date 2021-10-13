@@ -21,7 +21,6 @@
 #define MPD_CROSSFADE_HXX
 
 #include "Chrono.hxx"
-#include "util/Compiler.h"
 
 struct AudioFormat;
 class SignedSongTime;
@@ -61,7 +60,7 @@ struct CrossFadeSettings {
 	 * @return the number of chunks for crossfading, or 0 if cross fading
 	 * should be disabled for this song change
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	unsigned Calculate(SignedSongTime total_time,
 			   float replay_gain_db, float replay_gain_prev_db,
 			   const char *mixramp_start,

@@ -22,7 +22,6 @@
 
 #include "StateFileConfig.hxx"
 #include "event/FarTimerEvent.hxx"
-#include "util/Compiler.h"
 #include "config.h"
 
 #include <string>
@@ -76,7 +75,7 @@ private:
 	 * Check if MPD's state was modified since the last
 	 * RememberVersions() call.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsModified() const noexcept;
 
 	/* callback for #timer_event */
