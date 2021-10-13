@@ -21,7 +21,6 @@
 #define MPD_TAG_PARSE_NAME_HXX
 
 #include "Type.h"
-#include "util/Compiler.h"
 
 struct StringView;
 
@@ -29,11 +28,11 @@ struct StringView;
  * Parse the string, and convert it into a #TagType.  Returns
  * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
  */
-gcc_pure
+[[gnu::pure]]
 TagType
 tag_name_parse(const char *name) noexcept;
 
-gcc_pure
+[[gnu::pure]]
 TagType
 tag_name_parse(StringView name) noexcept;
 
@@ -43,11 +42,11 @@ tag_name_parse(StringView name) noexcept;
  *
  * Case does not matter.
  */
-gcc_pure
+[[gnu::pure]]
 TagType
 tag_name_parse_i(const char *name) noexcept;
 
-gcc_pure
+[[gnu::pure]]
 TagType
 tag_name_parse_i(StringView name) noexcept;
 
