@@ -86,6 +86,38 @@ soundcloud_resolve(const char* uri)
 	return ru;
 }
 
+static char *
+TranslateSoundCloudUri(const char *uri) noexcept
+{
+	if (strncmp(uri, "track/", 6) == 0) {
+		const char *rest = uri + 6;
+		return xstrcatdup("https://api.soundcloud.com/tracks/",
+				  rest, ".json?client_id=",
+				  soundcloud_config.apikey.c_str());
+	} else if (strncmp(uri, "playlist/", 9) == 0) {
+		const char *rest = uri + 9;
+		return xstrcatdup("https://api.soundcloud.com/playlists/",
+				  rest, ".json?client_id=",
+				  soundcloud_config.apikey.c_str());
+	} else if (strncmp(uri, "user/", 5) == 0) {
+		const char *rest = uri + 5;
+		return xstrcatdup("https://api.soundcloud.com/users/",
+				  rest, "/tracks.json?client_id=",
+				  soundcloud_config.apikey.c_str());
+	} else if (strncmp(uri, "search/", 7) == 0) {
+		const char *rest = uri + 7;
+		return xstrcatdup("https://api.soundcloud.com/tracks.json?q=",
+				  rest, "&client_id=",
+				  soundcloud_config.apikey.c_str());
+	} else if (strncmp(uri, "url/", 4) == 0) {
+		const char *rest = uri + 4;
+		/* Translate to soundcloud resolver call. libcurl will automatically
+		   follow the redirect to the right resource. */
+		return soundcloud_resolve(rest);
+	} else
+		return nullptr;
+}
+
 /* YAJL parser for track data from both /tracks/ and /playlists/ JSON */
 
 static const char *const key_str[] = {
@@ -240,34 +272,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex)
 	assert(StringEqualsCaseASCII(uri, "soundcloud://", 13));
 	uri += 13;
 
-	char *u = nullptr;
-	if (strncmp(uri, "track/", 6) == 0) {
-		const char *rest = uri + 6;
-		u = xstrcatdup("https://api.soundcloud.com/tracks/",
-			       rest, ".json?client_id=",
-			       soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "playlist/", 9) == 0) {
-		const char *rest = uri + 9;
-		u = xstrcatdup("https://api.soundcloud.com/playlists/",
-			       rest, ".json?client_id=",
-			       soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "user/", 5) == 0) {
-		const char *rest = uri + 5;
-		u = xstrcatdup("https://api.soundcloud.com/users/",
-			       rest, "/tracks.json?client_id=",
-			       soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "search/", 7) == 0) {
-		const char *rest = uri + 7;
-		u = xstrcatdup("https://api.soundcloud.com/tracks.json?q=",
-			       rest, "&client_id=",
-			       soundcloud_config.apikey.c_str());
-	} else if (strncmp(uri, "url/", 4) == 0) {
-		const char *rest = uri + 4;
-		/* Translate to soundcloud resolver call. libcurl will automatically
-		   follow the redirect to the right resource. */
-		u = soundcloud_resolve(rest);
-	}
-
+	char *u = TranslateSoundCloudUri(uri);
 	AtScopeExit(u) { free(u); };
 
 	if (u == nullptr) {
