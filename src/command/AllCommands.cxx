@@ -135,7 +135,7 @@ static constexpr struct command commands[] = {
 	{ "listplaylist", PERMISSION_READ, 1, 1, handle_listplaylist },
 	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handle_listplaylistinfo },
 	{ "listplaylists", PERMISSION_READ, 0, 0, handle_listplaylists },
-	{ "load", PERMISSION_ADD, 1, 2, handle_load },
+	{ "load", PERMISSION_ADD, 1, 3, handle_load },
 	{ "lsinfo", PERMISSION_READ, 0, 1, handle_lsinfo },
 	{ "mixrampdb", PERMISSION_PLAYER, 1, 1, handle_mixrampdb },
 	{ "mixrampdelay", PERMISSION_PLAYER, 1, 1, handle_mixrampdelay },

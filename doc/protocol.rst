@@ -917,10 +917,15 @@ remote playlists (absolute URI with a supported scheme).
 
 .. _command_load:
 
-:command:`load {NAME} [START:END]`
+:command:`load {NAME} [START:END] [POSITION]`
     Loads the playlist into the current queue.  Playlist
     plugins are supported.  A range may be specified to load
     only a part of the playlist.
+
+    The ``POSITION`` parameter specifies where the songs will be
+    inserted into the queue.  (This requires specifying the range as
+    well; the special value `0:` can be used if the whole playlist
+    shall be loaded at a certain queue position.)
 
 .. _command_playlistadd:
 

@@ -79,10 +79,15 @@ handle_load(Client &client, Request args, [[maybe_unused]] Response &r)
 					   );
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
 
-	const ScopeBulkEdit bulk_edit(client.GetPartition());
+	auto &partition = client.GetPartition();
+	const ScopeBulkEdit bulk_edit(partition);
 
 	auto &playlist = client.GetPlaylist();
 	const unsigned old_size = playlist.GetLength();
+
+	const unsigned position = args.size > 2
+		? args.ParseUnsigned(2, old_size)
+		: old_size;
 
 	const SongLoader loader(client);
 	playlist_open_into_queue(uri,
@@ -95,6 +100,16 @@ handle_load(Client &client, Request args, [[maybe_unused]] Response &r)
 	const unsigned new_size = playlist.GetLength();
 	for (unsigned i = old_size; i < new_size; ++i)
 		instance.LookupRemoteTag(playlist.queue.Get(i).GetRealURI());
+
+	if (position < old_size) {
+		const RangeArg move_range{old_size, new_size};
+
+		try {
+			partition.MoveRange(move_range, position);
+		} catch (...) {
+			/* ignore - shall we handle it? */
+		}
+	}
 
 	return CommandResult::OK;
 }
