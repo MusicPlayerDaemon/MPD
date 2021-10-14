@@ -29,22 +29,15 @@ struct CrossFadeSettings {
 	/**
 	 * The configured cross fade duration [s].
 	 */
-	FloatDuration duration;
+	FloatDuration duration{0};
 
-	float mixramp_db;
+	float mixramp_db{0};
 
 	/**
 	 * The configured MixRapm delay [s].  A non-positive value
 	 * disables MixRamp.
 	 */
-	FloatDuration mixramp_delay;
-
-	CrossFadeSettings()
-		:duration(0),
-		 mixramp_db(0),
-		 mixramp_delay(-1)
-	{}
-
+	FloatDuration mixramp_delay{-1};
 
 	/**
 	 * Calculate how many music pipe chunks should be used for crossfading.
