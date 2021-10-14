@@ -22,6 +22,9 @@
 #include "config/Param.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
+#include "net/AddressInfo.hxx"
+#include "net/Resolver.hxx"
+#include "net/ToString.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
@@ -55,6 +58,10 @@ static unsigned permission_default;
 static unsigned local_permissions;
 #endif
 
+#ifdef HAVE_TCP
+static std::map<std::string, unsigned> host_passwords;
+#endif
+
 static unsigned
 ParsePermission(StringView s)
 {
@@ -66,10 +73,9 @@ ParsePermission(StringView s)
 				 int(s.size), s.data);
 }
 
-static unsigned parsePermissions(const char *string)
+static unsigned
+parsePermissions(std::string_view string)
 {
-	assert(string != nullptr);
-
 	unsigned permission = 0;
 
 	for (const auto i : IterableSplitString(string, PERMISSION_SEPARATOR))
@@ -120,7 +126,39 @@ initPermissions(const ConfigData &config)
 			: permission_default;
 	});
 #endif
+
+#ifdef HAVE_TCP
+	for (const auto &param : config.GetParamList(ConfigOption::HOST_PERMISSIONS)) {
+		permission_default = 0;
+
+		param.With([](StringView value){
+			auto [host_sv, permissions_s] = value.Split(' ');
+			unsigned permissions = parsePermissions(permissions_s);
+
+			const std::string host_s{host_sv};
+
+			for (const auto &i : Resolve(host_s.c_str(), 0,
+						     AI_PASSIVE, SOCK_STREAM))
+				host_passwords.emplace(HostToString(i),
+						       permissions);
+		});
+	}
+#endif
 }
+
+#ifdef HAVE_TCP
+
+int
+GetPermissionsFromAddress(SocketAddress address) noexcept
+{
+	if (auto i = host_passwords.find(HostToString(address));
+	    i != host_passwords.end())
+		return i->second;
+
+	return -1;
+}
+
+#endif
 
 int
 getPermissionFromPassword(const char *password, unsigned *permission) noexcept

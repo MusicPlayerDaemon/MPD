@@ -25,6 +25,7 @@ ver 0.23 (not yet released)
 * tags
   - new tags "ComposerSort", "Ensemble", "Movement", "MovementNumber", and "Location"
 * split permission "player" from "control"
+* add option "host_permissions"
 * new build-time dependency: libfmt
 
 ver 0.22.11 (2021/08/24)

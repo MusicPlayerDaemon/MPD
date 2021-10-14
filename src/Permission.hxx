@@ -23,6 +23,7 @@
 #include "config.h"
 
 struct ConfigData;
+class SocketAddress;
 
 static constexpr unsigned PERMISSION_NONE = 0;
 static constexpr unsigned PERMISSION_READ = 1;
@@ -43,6 +44,12 @@ getDefaultPermissions() noexcept;
 [[gnu::const]]
 unsigned
 GetLocalPermissions() noexcept;
+#endif
+
+#ifdef HAVE_TCP
+[[gnu::pure]]
+int
+GetPermissionsFromAddress(SocketAddress address) noexcept;
 #endif
 
 void

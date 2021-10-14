@@ -44,6 +44,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "zeroconf_name" },
 	{ "zeroconf_enabled" },
 	{ "password", true },
+	{ "host_permissions", true },
 	{ "local_permissions" },
 	{ "default_permissions" },
 	{ "audio_output_format" },

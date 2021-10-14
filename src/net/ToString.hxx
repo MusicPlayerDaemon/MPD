@@ -42,4 +42,12 @@ class SocketAddress;
 std::string
 ToString(SocketAddress address) noexcept;
 
+/**
+ * Generates the string representation of a #SocketAddress into the
+ * specified buffer, without the port number.
+ */
+[[gnu::pure]]
+std::string
+HostToString(SocketAddress address) noexcept;
+
 #endif

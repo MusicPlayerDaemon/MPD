@@ -32,8 +32,12 @@ GetPermissions(SocketAddress address, int uid) noexcept
 #ifdef HAVE_UN
 	if (address.GetFamily() == AF_LOCAL)
 		return GetLocalPermissions();
-#else
-	(void)address;
+#endif
+
+#ifdef HAVE_TCP
+	if (int permissions = GetPermissionsFromAddress(address);
+	    permissions >= 0)
+		return permissions;
 #endif
 
 	return getDefaultPermissions();

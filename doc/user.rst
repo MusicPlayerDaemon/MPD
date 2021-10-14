@@ -650,6 +650,9 @@ By default, all clients are unauthenticated and have a full set of permissions. 
 
 :code:`local_permissions` may be used to assign other permissions to clients connecting on a local socket.
 
+:code:`host_permissions` may be used to assign permissions to clients
+with a certain IP address.
+
 :code:`password` allows the client to send a password to gain other permissions. This option may be specified multiple times with different passwords.
 
 Note that the :code:`password` option is not secure: passwords are sent in clear-text over the connection, and the client cannot verify the server's identity.
@@ -659,6 +662,8 @@ Example:
 .. code-block:: none
 
     default_permissions "read"
+    host_permissions "192.168.0.100 read,add,control,admin"
+    host_permissions "2003:1234:4567::1 read,add,control,admin"
     password "the_password@read,add,control"
     password "the_admin_password@read,add,control,admin"
 

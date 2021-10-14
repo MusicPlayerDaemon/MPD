@@ -116,3 +116,32 @@ ToString(SocketAddress address) noexcept
 	result.append(serv);
 	return result;
 }
+
+std::string
+HostToString(SocketAddress address) noexcept
+{
+	if (address.IsNull())
+		return "null";
+
+#ifdef HAVE_UN
+	if (address.GetFamily() == AF_LOCAL)
+		/* return path of local socket */
+		return LocalAddressToString(address.CastTo<struct sockaddr_un>(),
+					    address.GetSize());
+#endif
+
+#if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
+	IPv4Address ipv4_buffer;
+	if (address.IsV4Mapped())
+		address = ipv4_buffer = address.UnmapV4();
+#endif
+
+	char host[NI_MAXHOST], serv[NI_MAXSERV];
+	int ret = getnameinfo(address.GetAddress(), address.GetSize(),
+			      host, sizeof(host), serv, sizeof(serv),
+			      NI_NUMERICHOST|NI_NUMERICSERV);
+	if (ret != 0)
+		return "unknown";
+
+	return host;
+}
