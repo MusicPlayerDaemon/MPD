@@ -88,6 +88,9 @@ private:
 	/**
 	 * Remove all virtual songs inside playlists whose "target"
 	 * field points to a non-existing song file.
+	 *
+	 * It also looks up all target songs and sets their
+	 * "in_playlist" field.
 	 */
 	void PurgeDanglingFromPlaylists(Directory &directory) noexcept;
 

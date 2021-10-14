@@ -101,6 +101,12 @@ struct Song {
 	 */
 	AudioFormat audio_format = AudioFormat::Undefined();
 
+	/**
+	 * Is this song referenced by at least one playlist file that
+	 * is part of the database?
+	 */
+	bool in_playlist = false;
+
 	template<typename F>
 	Song(F &&_filename, Directory &_parent) noexcept
 		:parent(_parent), filename(std::forward<F>(_filename)) {}

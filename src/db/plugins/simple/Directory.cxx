@@ -109,21 +109,21 @@ Directory::FindChild(std::string_view name) const noexcept
 	return nullptr;
 }
 
-bool
-Directory::TargetExists(std::string_view _target) const noexcept
+Song *
+Directory::LookupTargetSong(std::string_view _target) noexcept
 {
 	StringView target{_target};
 
 	if (target.SkipPrefix("../")) {
 		if (parent == nullptr)
-			return false;
+			return nullptr;
 
-		return parent->TargetExists(target);
+		return parent->LookupTargetSong(target);
 	}
 
 	/* sorry for the const_cast ... */
-	const auto lr = const_cast<Directory *>(this)->LookupDirectory(target);
-	return lr.directory->FindSong(lr.rest) != nullptr;
+	const auto lr = LookupDirectory(target);
+	return lr.directory->FindSong(lr.rest);
 }
 
 void
@@ -229,6 +229,7 @@ Directory::Sort() noexcept
 
 void
 Directory::Walk(bool recursive, const SongFilter *filter,
+		bool hide_playlist_targets,
 		const VisitDirectory& visit_directory, const VisitSong& visit_song,
 		const VisitPlaylist& visit_playlist) const
 {
@@ -247,7 +248,10 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 	}
 
 	if (visit_song) {
-		for (auto &song : songs){
+		for (auto &song : songs) {
+			if (hide_playlist_targets && song.in_playlist)
+				continue;
+
 			const auto song2 = song.Export();
 			if (filter == nullptr || filter->Match(song2))
 				visit_song(song2);
@@ -265,6 +269,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 
 		if (recursive)
 			child.Walk(recursive, filter,
+				   hide_playlist_targets,
 				   visit_directory, visit_song,
 				   visit_playlist);
 	}

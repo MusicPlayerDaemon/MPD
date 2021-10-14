@@ -60,6 +60,7 @@ inline SimpleDatabase::SimpleDatabase(const ConfigBlock &block)
 #ifdef ENABLE_ZLIB
 	 compress(block.GetBlockValue("compress", true)),
 #endif
+	 hide_playlist_targets(block.GetBlockValue("hide_playlist_targets", true)),
 	 cache_path(block.GetPath("cache_directory"))
 {
 	if (path.IsNull())
@@ -306,6 +307,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 			visit_directory(r.directory->Export());
 
 		r.directory->Walk(selection.recursive, selection.filter,
+				  hide_playlist_targets,
 				  visit_directory, visit_song,
 				  visit_playlist);
 		helper.Commit();

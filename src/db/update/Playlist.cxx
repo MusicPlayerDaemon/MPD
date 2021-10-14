@@ -141,10 +141,18 @@ UpdateWalk::PurgeDanglingFromPlaylists(Directory &directory) noexcept
 
 	directory.ForEachSongSafe([&](Song &song){
 		if (!song.target.empty() &&
-		    !PathTraitsUTF8::IsAbsoluteOrHasScheme(song.target.c_str()) &&
-		    !directory.TargetExists(song.target)) {
-			editor.DeleteSong(directory, &song);
-			modified = true;
+		    !PathTraitsUTF8::IsAbsoluteOrHasScheme(song.target.c_str())) {
+			Song *target = directory.LookupTargetSong(song.target.c_str());
+			if (target == nullptr) {
+				/* the target does not exist: remove
+				   the virtual song */
+				editor.DeleteSong(directory, &song);
+				modified = true;
+			} else {
+				/* the target exists: mark it (for
+				   option "hide_playlist_targets") */
+				target->in_playlist = true;
+			}
 		}
 	});
 }

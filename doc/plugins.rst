@@ -23,6 +23,13 @@ The default plugin. Stores a copy of the database in memory. A file is used for 
      - The path of the cache directory for additional storages mounted at runtime. This setting is necessary for the **mount** protocol command.
    * - **compress yes|no**
      - Compress the database file using gzip? Enabled by default (if built with zlib).
+   * - **hide_playlist_targets yes|no**
+     - Hide songs which are referenced by playlists?  Thas is,
+       playlist files which are represented in the database as virtual
+       directories (playlist plugin setting ``as_directory``).  This
+       option is enabled by default and avoids duplicate songs; one
+       copy for the original file, and another copy in the virtual
+       directory of a CUE file referring to it.
 
 proxy
 -----

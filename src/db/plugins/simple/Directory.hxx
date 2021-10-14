@@ -214,7 +214,7 @@ public:
 	LookupResult LookupDirectory(std::string_view uri) noexcept;
 
 	[[gnu::pure]]
-	bool TargetExists(std::string_view target) const noexcept;
+	Song *LookupTargetSong(std::string_view target) noexcept;
 
 	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
@@ -303,6 +303,7 @@ public:
 	 * Caller must lock #db_mutex.
 	 */
 	void Walk(bool recursive, const SongFilter *match,
+		  bool hide_playlist_targets,
 		  const VisitDirectory& visit_directory, const VisitSong& visit_song,
 		  const VisitPlaylist& visit_playlist) const;
 

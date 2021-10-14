@@ -44,6 +44,8 @@ class SimpleDatabase : public Database {
 	bool compress;
 #endif
 
+	bool hide_playlist_targets;
+
 	/**
 	 * The path where cache files for Mount() are located.
 	 */
