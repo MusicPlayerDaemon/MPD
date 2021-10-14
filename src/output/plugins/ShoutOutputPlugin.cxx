@@ -36,10 +36,39 @@
 
 #include <stdio.h>
 
+class ShoutConfig {
+	const char *const host;
+	const char *const mount;
+	const char *const user, *const passwd;
+	const char *const name;
+	const char *const genre, *const description;
+	const char *const url;
+	const char *const quality, *const bitrate;
+
+	const unsigned port;
+
+	const unsigned format;
+	const unsigned protocol;
+
+#ifdef SHOUT_TLS
+	const int tls;
+#endif
+
+	const bool is_public;
+
+public:
+	ShoutConfig(const ConfigBlock &block, const char *mime_type);
+
+	void Setup(shout_t *connection) const;
+};
+
 struct ShoutOutput final : AudioOutput {
 	shout_t *shout_conn;
 
 	std::unique_ptr<PreparedEncoder> prepared_encoder;
+
+	const ShoutConfig config;
+
 	Encoder *encoder;
 
 	uint8_t buffer[32768];
@@ -52,6 +81,9 @@ struct ShoutOutput final : AudioOutput {
 
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
+
+	void Enable() override;
+	void Disable() noexcept override;
 
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
@@ -91,118 +123,96 @@ ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 			     StringFormat<11>("%u", audio_format.sample_rate));
 }
 
-ShoutOutput::ShoutOutput(const ConfigBlock &block)
-	:AudioOutput(FLAG_PAUSE|FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT),
-	 shout_conn(shout_new()),
-	 prepared_encoder(CreateConfiguredEncoder(block, true))
+#ifdef SHOUT_TLS
+
+static int
+ParseShoutTls(const char *value)
 {
-	const char *host = require_block_string(block, "host");
-	const char *mount = require_block_string(block, "mount");
-	unsigned port = block.GetBlockValue("port", 0U);
-	if (port == 0)
-		throw std::runtime_error("shout port must be configured");
+	if (value == nullptr)
+		return SHOUT_TLS_DISABLED;
 
-	const char *passwd = require_block_string(block, "password");
-	const char *name = require_block_string(block, "name");
-
-	bool is_public = block.GetBlockValue("public", false);
-
-	const char *user = block.GetBlockValue("user", "source");
-
-	const char *const mime_type = prepared_encoder->GetMimeType();
-
-	unsigned shout_format;
-	if (StringIsEqual(mime_type, "audio/mpeg"))
-		shout_format = SHOUT_FORMAT_MP3;
+	if (StringIsEqual(value, "disabled"))
+		return SHOUT_TLS_DISABLED;
+	else if (StringIsEqual(value, "auto"))
+		return SHOUT_TLS_AUTO;
+	else if (StringIsEqual(value, "auto_no_plain"))
+		return SHOUT_TLS_AUTO_NO_PLAIN;
+	else if (StringIsEqual(value, "rfc2818"))
+		return SHOUT_TLS_RFC2818;
+	else if (StringIsEqual(value, "rfc2817"))
+		return SHOUT_TLS_RFC2817;
 	else
-		shout_format = SHOUT_FORMAT_OGG;
+		throw FormatRuntimeError("invalid shout TLS option \"%s\"",
+					 value);
+}
 
-	unsigned protocol;
-	const char *value = block.GetBlockValue("protocol");
-	if (value != nullptr) {
-		if (StringIsEqual(value, "shoutcast") &&
-		    !StringIsEqual(mime_type, "audio/mpeg"))
+#endif
+
+static unsigned
+ParseShoutFormat(const char *mime_type)
+{
+	if (StringIsEqual(mime_type, "audio/mpeg"))
+		return SHOUT_FORMAT_MP3;
+	else
+		return SHOUT_FORMAT_OGG;
+}
+
+static unsigned
+ParseShoutProtocol(const char *value, const char *mime_type)
+{
+	if (value == nullptr)
+		return SHOUT_PROTOCOL_HTTP;
+
+	if (StringIsEqual(value, "shoutcast")) {
+		if (!StringIsEqual(mime_type, "audio/mpeg"))
 			throw FormatRuntimeError("you cannot stream \"%s\" to shoutcast, use mp3",
 						 mime_type);
-		else if (StringIsEqual(value, "shoutcast"))
-			protocol = SHOUT_PROTOCOL_ICY;
-		else if (StringIsEqual(value, "icecast1"))
-			protocol = SHOUT_PROTOCOL_XAUDIOCAST;
-		else if (StringIsEqual(value, "icecast2"))
-			protocol = SHOUT_PROTOCOL_HTTP;
-		else
-			throw FormatRuntimeError("shout protocol \"%s\" is not \"shoutcast\" or "
-						 "\"icecast1\"or \"icecast2\"",
-						 value);
-	} else {
-		protocol = SHOUT_PROTOCOL_HTTP;
-	}
+		return SHOUT_PROTOCOL_ICY;
+	} else if (StringIsEqual(value, "icecast1"))
+		return SHOUT_PROTOCOL_XAUDIOCAST;
+	else if (StringIsEqual(value, "icecast2"))
+		return SHOUT_PROTOCOL_HTTP;
+	else
+		throw FormatRuntimeError("shout protocol \"%s\" is not \"shoutcast\" or "
+					 "\"icecast1\"or \"icecast2\"",
+					 value);
+}
 
+inline
+ShoutConfig::ShoutConfig(const ConfigBlock &block, const char *mime_type)
+	:host(require_block_string(block, "host")),
+	 mount(require_block_string(block, "mount")),
+	 user(block.GetBlockValue("user", "source")),
+	 passwd(require_block_string(block, "password")),
+	 name(require_block_string(block, "name")),
+	 genre(block.GetBlockValue("genre")),
+	 description(block.GetBlockValue("description")),
+	 url(block.GetBlockValue("url")),
+	 quality(block.GetBlockValue("quality")),
+	 bitrate(block.GetBlockValue("bitrate")),
+	 port(block.GetBlockValue("port", 0U)),
+	 format(ParseShoutFormat(mime_type)),
+	 protocol(ParseShoutProtocol(block.GetBlockValue("protocol"),
+				     mime_type)),
 #ifdef SHOUT_TLS
-	unsigned tls;
-	value = block.GetBlockValue("tls");
-	if (value != nullptr) {
-		if (StringIsEqual(value, "disabled"))
-			tls = SHOUT_TLS_DISABLED;
-		else if (StringIsEqual(value, "auto"))
-			tls = SHOUT_TLS_AUTO;
-		else if (StringIsEqual(value, "auto_no_plain"))
-			tls = SHOUT_TLS_AUTO_NO_PLAIN;
-		else if (StringIsEqual(value, "rfc2818"))
-			tls = SHOUT_TLS_RFC2818;
-		else if (StringIsEqual(value, "rfc2817"))
-			tls = SHOUT_TLS_RFC2817;
-		else
-			throw FormatRuntimeError("invalid shout TLS option \"%s\"", value);
-	} else {
-		tls = SHOUT_TLS_DISABLED;
-	}
+	 tls(ParseShoutTls(block.GetBlockValue("tls"))),
 #endif
+	 is_public(block.GetBlockValue("public", false))
+{
+	if (port == 0)
+		throw std::runtime_error("shout port must be configured");
+}
 
-	if (shout_set_host(shout_conn, host) != SHOUTERR_SUCCESS ||
-	    shout_set_port(shout_conn, port) != SHOUTERR_SUCCESS ||
-	    shout_set_password(shout_conn, passwd) != SHOUTERR_SUCCESS ||
-	    shout_set_mount(shout_conn, mount) != SHOUTERR_SUCCESS ||
-	    shout_set_name(shout_conn, name) != SHOUTERR_SUCCESS ||
-	    shout_set_user(shout_conn, user) != SHOUTERR_SUCCESS ||
-	    shout_set_public(shout_conn, is_public) != SHOUTERR_SUCCESS ||
-	    shout_set_format(shout_conn, shout_format)
-	    != SHOUTERR_SUCCESS ||
-	    shout_set_protocol(shout_conn, protocol) != SHOUTERR_SUCCESS ||
-#ifdef SHOUT_TLS
-	    shout_set_tls(shout_conn, tls) != SHOUTERR_SUCCESS ||
-#endif
-	    shout_set_agent(shout_conn, "MPD") != SHOUTERR_SUCCESS)
-		throw std::runtime_error(shout_get_error(shout_conn));
-
-	/* optional paramters */
-
-	value = block.GetBlockValue("genre");
-	if (value != nullptr && shout_set_genre(shout_conn, value))
-		throw std::runtime_error(shout_get_error(shout_conn));
-
-	value = block.GetBlockValue("description");
-	if (value != nullptr && shout_set_description(shout_conn, value))
-		throw std::runtime_error(shout_get_error(shout_conn));
-
-	value = block.GetBlockValue("url");
-	if (value != nullptr && shout_set_url(shout_conn, value))
-		throw std::runtime_error(shout_get_error(shout_conn));
-
-	value = block.GetBlockValue("quality");
-	if (value != nullptr)
-		shout_set_audio_info(shout_conn, SHOUT_AI_QUALITY, value);
-
-	value = block.GetBlockValue("bitrate");
-	if (value != nullptr)
-		shout_set_audio_info(shout_conn, SHOUT_AI_BITRATE, value);
+ShoutOutput::ShoutOutput(const ConfigBlock &block)
+	:AudioOutput(FLAG_PAUSE|FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT|
+		     FLAG_ENABLE_DISABLE),
+	 prepared_encoder(CreateConfiguredEncoder(block, true)),
+	 config(block, prepared_encoder->GetMimeType())
+{
 }
 
 ShoutOutput::~ShoutOutput()
 {
-	if (shout_conn != nullptr)
-		shout_free(shout_conn);
-
 	shout_init_count--;
 	if (shout_init_count == 0)
 		shout_shutdown();
@@ -217,6 +227,64 @@ ShoutOutput::Create(EventLoop &, const ConfigBlock &block)
 	shout_init_count++;
 
 	return new ShoutOutput(block);
+}
+
+inline void
+ShoutConfig::Setup(shout_t *connection) const
+{
+	if (shout_set_host(connection, host) != SHOUTERR_SUCCESS ||
+	    shout_set_port(connection, port) != SHOUTERR_SUCCESS ||
+	    shout_set_password(connection, passwd) != SHOUTERR_SUCCESS ||
+	    shout_set_mount(connection, mount) != SHOUTERR_SUCCESS ||
+	    shout_set_name(connection, name) != SHOUTERR_SUCCESS ||
+	    shout_set_user(connection, user) != SHOUTERR_SUCCESS ||
+	    shout_set_public(connection, is_public) != SHOUTERR_SUCCESS ||
+	    shout_set_format(connection, format) != SHOUTERR_SUCCESS ||
+	    shout_set_protocol(connection, protocol) != SHOUTERR_SUCCESS ||
+#ifdef SHOUT_TLS
+	    shout_set_tls(connection, tls) != SHOUTERR_SUCCESS ||
+#endif
+	    shout_set_agent(connection, "MPD") != SHOUTERR_SUCCESS)
+		throw std::runtime_error(shout_get_error(connection));
+
+	/* optional paramters */
+
+	if (genre != nullptr && shout_set_genre(connection, genre))
+		throw std::runtime_error(shout_get_error(connection));
+
+	if (description != nullptr &&
+	    shout_set_description(connection, description))
+		throw std::runtime_error(shout_get_error(connection));
+
+	if (url != nullptr && shout_set_url(connection, url))
+		throw std::runtime_error(shout_get_error(connection));
+
+	if (quality != nullptr)
+		shout_set_audio_info(connection, SHOUT_AI_QUALITY, quality);
+
+	if (bitrate != nullptr)
+		shout_set_audio_info(connection, SHOUT_AI_BITRATE, bitrate);
+}
+
+void
+ShoutOutput::Enable()
+{
+	shout_conn = shout_new();
+	if (shout_conn == nullptr)
+		throw std::bad_alloc{};
+
+	try {
+		config.Setup(shout_conn);
+	} catch (...) {
+		shout_free(shout_conn);
+		throw;
+	}
+}
+
+void
+ShoutOutput::Disable() noexcept
+{
+	shout_free(shout_conn);
 }
 
 static void
