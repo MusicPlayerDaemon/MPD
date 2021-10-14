@@ -1191,15 +1191,18 @@ The music database
 
 .. _command_search:
 
-:command:`search {FILTER} [sort {TYPE}] [window {START:END}]`
+:command:`search {FILTER} [sort {TYPE}] [window {START:END}] [position POS]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`).  Parameters
     have the same meaning as for :ref:`find <command_find>`,
     except that search is not case sensitive.
 
+    The ``position`` parameter specifies where the songs will be
+    inserted.
+
 .. _command_searchadd:
 
-:command:`searchadd {FILTER} [sort {TYPE}] [window {START:END}]`
+:command:`searchadd {FILTER} [sort {TYPE}] [window {START:END}] [position POS]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`) and add them to
     the queue.

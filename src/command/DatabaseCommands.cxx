@@ -19,6 +19,7 @@
 
 #include "DatabaseCommands.hxx"
 #include "Request.hxx"
+#include "Partition.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "db/DatabasePrint.hxx"
@@ -68,6 +69,21 @@ ParseSortTag(const char *s)
 		throw ProtocolError(ACK_ERROR_ARG, "Unknown sort tag");
 
 	return tag;
+}
+
+static unsigned
+ParseQueuePosition(Request &args, unsigned queue_length)
+{
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "position")) {
+		unsigned position = args.ParseUnsigned(args.size - 1,
+						       queue_length);
+		args.pop_back();
+		args.pop_back();
+		return position;
+	}
+
+	/* append to the end of the queue by default */
+	return queue_length;
 }
 
 /**
@@ -142,11 +158,27 @@ handle_search(Client &client, Request args, Response &r)
 static CommandResult
 handle_match_add(Client &client, Request args, bool fold_case)
 {
+	auto &partition = client.GetPartition();
+	const auto queue_length = partition.playlist.queue.GetLength();
+	const unsigned position = ParseQueuePosition(args, queue_length);
+
 	SongFilter filter;
 	const auto selection = ParseDatabaseSelection(args, fold_case, filter);
 
-	auto &partition = client.GetPartition();
 	AddFromDatabase(partition, selection);
+
+	if (position < queue_length) {
+		const auto new_queue_length =
+			partition.playlist.queue.GetLength();
+		const RangeArg range{queue_length, new_queue_length};
+
+		try {
+			partition.MoveRange(range, position);
+		} catch (...) {
+			/* ignore - shall we handle it? */
+		}
+	}
+
 	return CommandResult::OK;
 }
 
