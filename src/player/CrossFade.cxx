@@ -96,8 +96,8 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 {
 	unsigned int chunks = 0;
 
-	if (total_time.IsNegative() ||
-	    duration <= FloatDuration::zero() ||
+	if (!IsEnabled() ||
+	    total_time.IsNegative() ||
 	    duration >= std::chrono::duration_cast<FloatDuration>(total_time) ||
 	    /* we can't crossfade when the audio formats are different */
 	    af != old_format)
