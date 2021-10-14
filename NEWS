@@ -1,4 +1,4 @@
-ver 0.23 (not yet released)
+ver 0.23 (2021/10/14)
 * protocol
   - new command "getvol"
   - show the audio format in "playlistinfo"
