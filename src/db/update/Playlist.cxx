@@ -61,11 +61,6 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 
 		{
 			const ScopeDatabaseLock protect;
-
-			if (!is_absolute &&
-			    !directory.TargetExists(db_song->target))
-				continue;
-
 			directory.AddSong(std::move(db_song));
 		}
 	}
