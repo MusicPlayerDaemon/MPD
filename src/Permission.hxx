@@ -31,13 +31,16 @@ static constexpr unsigned PERMISSION_CONTROL = 4;
 static constexpr unsigned PERMISSION_ADMIN = 8;
 static constexpr unsigned PERMISSION_PLAYER = 16;
 
+[[gnu::pure]]
 int
 getPermissionFromPassword(const char *password, unsigned *permission) noexcept;
 
+[[gnu::const]]
 unsigned
 getDefaultPermissions() noexcept;
 
 #ifdef HAVE_UN
+[[gnu::const]]
 unsigned
 GetLocalPermissions() noexcept;
 #endif
