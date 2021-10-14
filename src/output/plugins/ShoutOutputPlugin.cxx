@@ -36,15 +36,11 @@
 
 #include <stdio.h>
 
-static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
-
 struct ShoutOutput final : AudioOutput {
 	shout_t *shout_conn;
 
 	std::unique_ptr<PreparedEncoder> prepared_encoder;
 	Encoder *encoder;
-
-	int timeout = DEFAULT_CONN_TIMEOUT;
 
 	uint8_t buffer[32768];
 
@@ -180,7 +176,6 @@ ShoutOutput::ShoutOutput(const ConfigBlock &block)
 		throw std::runtime_error(shout_get_error(shout_conn));
 
 	/* optional paramters */
-	timeout = block.GetBlockValue("timeout", DEFAULT_CONN_TIMEOUT);
 
 	value = block.GetBlockValue("genre");
 	if (value != nullptr && shout_set_genre(shout_conn, value))

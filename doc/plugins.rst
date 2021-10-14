@@ -1143,8 +1143,6 @@ You must set a format.
      - Sets the host name of the `ShoutCast <http://www.shoutcast.com/>`_ / `IceCast <http://icecast.org/>`_ server.
    * - **port PORTNUMBER**
      - Connect to this port number on the specified host.
-   * - **timeout SECONDS**
-     - Set the timeout for the shout connection in seconds. Defaults to 2 seconds.
    * - **protocol icecast2|icecast1|shoutcast**
      - Specifies the protocol that wil be used to connect to the server. The default is "icecast2".
    * - **tls disabled|auto|auto_no_plain|rfc2818|rfc2817**
