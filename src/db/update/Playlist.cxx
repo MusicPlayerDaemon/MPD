@@ -126,3 +126,25 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 
 	return true;
 }
+
+void
+UpdateWalk::PurgeDanglingFromPlaylists(Directory &directory) noexcept
+{
+	/* recurse */
+	for (Directory &child : directory.children)
+		PurgeDanglingFromPlaylists(child);
+
+	if (!directory.IsPlaylist())
+		/* this check is only for virtual directories
+		   representing a playlist file */
+		return;
+
+	directory.ForEachSongSafe([&](Song &song){
+		if (!song.target.empty() &&
+		    !PathTraitsUTF8::IsAbsoluteOrHasScheme(song.target.c_str()) &&
+		    !directory.TargetExists(song.target)) {
+			editor.DeleteSong(directory, &song);
+			modified = true;
+		}
+	});
+}
