@@ -1059,11 +1059,11 @@ The music database
 
 .. _command_findadd:
 
-:command:`findadd {FILTER} [sort {TYPE}] [window {START:END}]`
+:command:`findadd {FILTER} [sort {TYPE}] [window {START:END}] [position POS]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`) and add them to
     the queue.  Parameters have the same meaning as for
-    :ref:`find <command_find>`.
+    :ref:`find <command_find>` and :ref:`searchadd <command_searchadd>`.
 
 .. _command_list:
 
@@ -1196,14 +1196,11 @@ The music database
 
 .. _command_search:
 
-:command:`search {FILTER} [sort {TYPE}] [window {START:END}] [position POS]`
+:command:`search {FILTER} [sort {TYPE}] [window {START:END}]
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`).  Parameters
     have the same meaning as for :ref:`find <command_find>`,
     except that search is not case sensitive.
-
-    The ``position`` parameter specifies where the songs will be
-    inserted.
 
 .. _command_searchadd:
 
@@ -1213,6 +1210,9 @@ The music database
     the queue.
 
     Parameters have the same meaning as for :ref:`search <command_search>`.
+
+    The ``position`` parameter specifies where the songs will be
+    inserted.
 
 .. _command_searchaddpl:
 
