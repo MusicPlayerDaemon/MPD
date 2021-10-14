@@ -30,6 +30,13 @@
 
 static constexpr Domain cross_fade_domain("cross_fade");
 
+inline bool
+CrossFadeSettings::CanCrossFadeSong(SignedSongTime total_time) const noexcept
+{
+	return !total_time.IsNegative() &&
+		duration >= std::chrono::duration_cast<FloatDuration>(total_time);
+}
+
 gcc_pure
 static FloatDuration
 mixramp_interpolate(const char *ramp_list, float required_db) noexcept
@@ -97,8 +104,7 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 	unsigned int chunks = 0;
 
 	if (!IsEnabled() ||
-	    total_time.IsNegative() ||
-	    duration >= std::chrono::duration_cast<FloatDuration>(total_time) ||
+	    !CanCrossFadeSong(total_time) ||
 	    /* we can't crossfade when the audio formats are different */
 	    af != old_format)
 		return 0;

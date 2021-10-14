@@ -64,6 +64,13 @@ struct CrossFadeSettings {
 			   const char *mixramp_prev_end,
 			   AudioFormat af, AudioFormat old_format,
 			   unsigned max_chunks) const noexcept;
+
+private:
+	/**
+	 * Can the described song be cross-faded?
+	 */
+	[[gnu::pure]]
+	bool CanCrossFadeSong(SignedSongTime total_time) const noexcept;
 };
 
 #endif
