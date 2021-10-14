@@ -639,6 +639,9 @@ By default, all clients are unauthenticated and have a full set of permissions. 
      - Allows reading of the database, displaying the current playlist, and current status of :program:`MPD`.
    * - **add**
      - Allows adding songs and loading playlists.
+   * - **player**
+     - Allows any player and queue manipulation (start/pause/stop
+       playback etc.).
    * - **control**
      - Allows all other player and playlist manipulations.
    * - **admin**

@@ -41,6 +41,7 @@ static constexpr struct {
 } permission_names[] = {
 	{ "read", PERMISSION_READ },
 	{ "add", PERMISSION_ADD },
+	{ "player", PERMISSION_PLAYER },
 	{ "control", PERMISSION_CONTROL },
 	{ "admin", PERMISSION_ADMIN },
 	{ nullptr, 0 },
@@ -74,6 +75,11 @@ static unsigned parsePermissions(const char *string)
 	for (const auto i : IterableSplitString(string, PERMISSION_SEPARATOR))
 		if (!i.empty())
 			permission |= ParsePermission(i);
+
+	/* for backwards compatiblity with MPD 0.22 and older,
+	   "control" implies "play" */
+	if (permission & PERMISSION_CONTROL)
+		permission |= PERMISSION_PLAYER;
 
 	return permission;
 }
