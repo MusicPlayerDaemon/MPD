@@ -29,13 +29,13 @@
 #include "util/IterableSplitString.hxx"
 
 Song::Song(DetachedSong &&other, Directory &_parent) noexcept
-	:tag(std::move(other.WritableTag())),
-	 parent(_parent),
+	:parent(_parent),
+	 filename(other.GetURI()),
+	 tag(std::move(other.WritableTag())),
 	 mtime(other.GetLastModified()),
 	 start_time(other.GetStartTime()),
 	 end_time(other.GetEndTime()),
-	 audio_format(other.GetAudioFormat()),
-	 filename(other.GetURI())
+	 audio_format(other.GetAudioFormat())
 {
 }
 
