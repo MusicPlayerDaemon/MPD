@@ -31,6 +31,7 @@ struct StorageFileInfo;
 struct Directory;
 struct ArchivePlugin;
 struct PlaylistPlugin;
+class SongEnumerator;
 class ArchiveFile;
 class Storage;
 class ExcludeList;
@@ -124,6 +125,9 @@ private:
 		return false;
 	}
 #endif
+
+	void UpdatePlaylistFile(Directory &directory,
+				SongEnumerator &contents) noexcept;
 
 	void UpdatePlaylistFile(Directory &parent, std::string_view name,
 				const StorageFileInfo &info,

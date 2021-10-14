@@ -35,7 +35,43 @@
 #include "util/StringFormat.hxx"
 #include "Log.hxx"
 
-void
+inline void
+UpdateWalk::UpdatePlaylistFile(Directory &directory,
+			       SongEnumerator &contents) noexcept
+{
+	unsigned track = 0;
+
+	while (true) {
+		auto song = contents.NextSong();
+		if (!song)
+			break;
+
+		auto db_song = std::make_unique<Song>(std::move(*song),
+						      directory);
+		const bool is_absolute =
+			PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename.c_str());
+		db_song->target = is_absolute
+			? db_song->filename
+			/* prepend "../" to relative paths to go from
+			   the virtual directory (DEVICE_PLAYLIST) to
+			   the containing directory */
+			: "../" + db_song->filename;
+		db_song->filename = StringFormat<64>("track%04u",
+						     ++track);
+
+		{
+			const ScopeDatabaseLock protect;
+
+			if (!is_absolute &&
+			    !directory.TargetExists(db_song->target))
+				continue;
+
+			directory.AddSong(std::move(db_song));
+		}
+	}
+}
+
+inline void
 UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 			       const StorageFileInfo &info,
 			       const PlaylistPlugin &plugin) noexcept
@@ -63,37 +99,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 			return;
 		}
 
-		unsigned track = 0;
-
-		while (true) {
-			auto song = e->NextSong();
-			if (!song)
-				break;
-
-			auto db_song = std::make_unique<Song>(std::move(*song),
-							      *directory);
-			const bool is_absolute =
-				PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename.c_str());
-			db_song->target = is_absolute
-				? db_song->filename
-				/* prepend "../" to relative paths to
-				   go from the virtual directory
-				   (DEVICE_PLAYLIST) to the containing
-				   directory */
-				: "../" + db_song->filename;
-			db_song->filename = StringFormat<64>("track%04u",
-							     ++track);
-
-			{
-				const ScopeDatabaseLock protect;
-
-				if (!is_absolute &&
-				    !directory->TargetExists(db_song->target))
-					continue;
-
-				directory->AddSong(std::move(db_song));
-			}
-		}
+		UpdatePlaylistFile(*directory, *e);
 
 		if (directory->IsEmpty())
 			editor.LockDeleteDirectory(directory);
