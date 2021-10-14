@@ -16,6 +16,8 @@ ver 0.23 (not yet released)
 * decoder
   - openmpt: new plugin
   - wavpack: fix WVC file support
+* player
+  - do not cross-fade songs shorter than 20 seconds
 * output
   - oss: support DSD over PCM
   - pipewire: new plugin

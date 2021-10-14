@@ -34,6 +34,7 @@ inline bool
 CrossFadeSettings::CanCrossFadeSong(SignedSongTime total_time) const noexcept
 {
 	return !total_time.IsNegative() &&
+		duration >= MIN_TOTAL_TIME &&
 		duration >= std::chrono::duration_cast<FloatDuration>(total_time);
 }
 
@@ -94,7 +95,8 @@ mixramp_interpolate(const char *ramp_list, float required_db) noexcept
 }
 
 unsigned
-CrossFadeSettings::Calculate(SignedSongTime total_time,
+CrossFadeSettings::Calculate(SignedSongTime current_total_time,
+			     SignedSongTime next_total_time,
 			     float replay_gain_db, float replay_gain_prev_db,
 			     const char *mixramp_start, const char *mixramp_prev_end,
 			     const AudioFormat af,
@@ -104,7 +106,8 @@ CrossFadeSettings::Calculate(SignedSongTime total_time,
 	unsigned int chunks = 0;
 
 	if (!IsEnabled() ||
-	    !CanCrossFadeSong(total_time) ||
+	    !CanCrossFadeSong(current_total_time) ||
+	    !CanCrossFadeSong(next_total_time) ||
 	    /* we can't crossfade when the audio formats are different */
 	    af != old_format)
 		return 0;

@@ -27,6 +27,11 @@ class SignedSongTime;
 
 struct CrossFadeSettings {
 	/**
+	 * Songs shorter than this will never cross-fade.
+	 */
+	static constexpr SignedSongTime MIN_TOTAL_TIME{std::chrono::seconds{20}};
+
+	/**
 	 * The configured cross fade duration [s].
 	 */
 	FloatDuration duration{0};
@@ -46,7 +51,8 @@ struct CrossFadeSettings {
 	/**
 	 * Calculate how many music pipe chunks should be used for crossfading.
 	 *
-	 * @param total_time total_time the duration of the new song
+	 * @param current_total_time the duration of the current song
+	 * @param next_total_time the duration of the new song
 	 * @param replay_gain_db the ReplayGain adjustment used for this song
 	 * @param replay_gain_prev_db the ReplayGain adjustment used on the last song
 	 * @param mixramp_start the next songs mixramp_start tag
@@ -58,7 +64,8 @@ struct CrossFadeSettings {
 	 * should be disabled for this song change
 	 */
 	[[gnu::pure]]
-	unsigned Calculate(SignedSongTime total_time,
+	unsigned Calculate(SignedSongTime current_total_time,
+			   SignedSongTime next_total_time,
 			   float replay_gain_db, float replay_gain_prev_db,
 			   const char *mixramp_start,
 			   const char *mixramp_prev_end,
