@@ -94,6 +94,7 @@ void
 initPermissions(const ConfigData &config)
 {
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
+		PERMISSION_PLAYER |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
 	for (const auto &param : config.GetParamList(ConfigOption::PASSWORD)) {
