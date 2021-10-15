@@ -33,6 +33,8 @@
 
 #include <libsmbclient.h>
 
+#include <cerrno>
+#include <cstring>
 #include <utility>
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {
@@ -165,8 +167,8 @@ ReadServers(SmbclientContext &ctx, const char *uri,
 		ReadServers(ctx, handle, list);
 		ctx.CloseDirectory(handle);
 	} else
-		FormatErrno(smbclient_domain, "smbc_opendir('%s') failed",
-			    uri);
+		FmtError(smbclient_domain, "smbc_opendir('{}') failed: {}",
+			 uri, strerror(errno));
 }
 
 [[gnu::pure]]
