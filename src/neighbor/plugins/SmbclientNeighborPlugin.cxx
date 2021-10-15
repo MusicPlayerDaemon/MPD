@@ -45,12 +45,12 @@ class SmbclientNeighborExplorer final : public NeighborExplorer {
 
 		Server(const Server &) = delete;
 
-		gcc_pure
+		[[gnu::pure]]
 		bool operator==(const Server &other) const noexcept {
 			return name == other.name;
 		}
 
-		[[nodiscard]] gcc_pure
+		[[nodiscard]] [[gnu::pure]]
 		NeighborInfo Export() const noexcept {
 			return { "smb://" + name + "/", comment };
 		}
@@ -169,7 +169,7 @@ ReadServers(SmbclientContext &ctx, const char *uri,
 			    uri);
 }
 
-gcc_pure
+[[gnu::pure]]
 static NeighborExplorer::List
 DetectServers(SmbclientContext &ctx) noexcept
 {
@@ -178,7 +178,7 @@ DetectServers(SmbclientContext &ctx) noexcept
 	return list;
 }
 
-gcc_pure
+[[gnu::pure]]
 static NeighborExplorer::List::iterator
 FindBeforeServerByURI(NeighborExplorer::List::iterator prev,
 		      NeighborExplorer::List::iterator end,
