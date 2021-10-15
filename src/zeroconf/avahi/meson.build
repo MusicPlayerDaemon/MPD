@@ -13,6 +13,7 @@ avahi = static_library(
   'Publisher.cxx',
   include_directories: inc,
   dependencies: [
+    log_dep,
     libavahi_client,
   ],
 )

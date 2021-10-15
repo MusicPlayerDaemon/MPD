@@ -44,6 +44,7 @@ storage_plugins = static_library(
   storage_plugins_sources,
   include_directories: inc,
   dependencies: [
+    log_dep,
     curl_dep,
     dbus_dep,
     expat_dep,

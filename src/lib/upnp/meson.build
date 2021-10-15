@@ -51,6 +51,7 @@ upnp = static_library(
   'Util.cxx',
   include_directories: inc,
   dependencies: [
+    log_dep,
     upnp_dep,
     curl_dep,
     expat_dep,

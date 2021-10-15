@@ -127,6 +127,7 @@ if enable_inotify
     '../src/db/update/InotifySource.cxx',
     include_directories: inc,
     dependencies: [
+      log_dep,
       event_dep,
       util_dep,
     ],

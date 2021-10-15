@@ -5,6 +5,7 @@ playlist_plugins_sources = [
 ]
 
 playlist_plugins_deps = [
+  log_dep,
   expat_dep,
   flac_dep,
 ]

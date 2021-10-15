@@ -25,6 +25,7 @@ neighbor_plugins = static_library(
   neighbor_plugins_sources,
   include_directories: inc,
   dependencies: [
+    log_dep,
     dbus_dep,
     smbclient_dep,
     upnp_dep,
