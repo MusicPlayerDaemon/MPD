@@ -23,6 +23,7 @@
 #include "Chrono.hxx"
 #include "util/NumberParser.hxx"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 static inline ProtocolError
