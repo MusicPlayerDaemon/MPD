@@ -161,15 +161,14 @@ GetPermissionsFromAddress(SocketAddress address) noexcept
 
 #endif
 
-int
-getPermissionFromPassword(const char *password, unsigned *permission) noexcept
+std::optional<unsigned>
+GetPermissionFromPassword(const char *password) noexcept
 {
 	auto i = permission_passwords.find(password);
 	if (i == permission_passwords.end())
-		return -1;
+		return std::nullopt;
 
-	*permission = i->second;
-	return 0;
+	return i->second;
 }
 
 unsigned

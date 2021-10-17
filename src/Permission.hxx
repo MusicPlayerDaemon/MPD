@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <optional>
+
 struct ConfigData;
 class SocketAddress;
 
@@ -32,9 +34,13 @@ static constexpr unsigned PERMISSION_CONTROL = 4;
 static constexpr unsigned PERMISSION_ADMIN = 8;
 static constexpr unsigned PERMISSION_PLAYER = 16;
 
+/**
+ * @return the permissions for the given password or std::nullopt if
+ * the password is not accepted
+ */
 [[gnu::pure]]
-int
-getPermissionFromPassword(const char *password, unsigned *permission) noexcept;
+std::optional<unsigned>
+GetPermissionFromPassword(const char *password) noexcept;
 
 [[gnu::const]]
 unsigned

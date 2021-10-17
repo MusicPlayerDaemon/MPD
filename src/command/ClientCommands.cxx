@@ -58,13 +58,13 @@ handle_binary_limit(Client &client, Request args,
 CommandResult
 handle_password(Client &client, Request args, Response &r)
 {
-	unsigned permission = 0;
-	if (getPermissionFromPassword(args.front(), &permission) < 0) {
+	const auto permission = GetPermissionFromPassword(args.front());
+	if (!permission) {
 		r.Error(ACK_ERROR_PASSWORD, "incorrect password");
 		return CommandResult::ERROR;
 	}
 
-	client.SetPermission(permission);
+	client.SetPermission(*permission);
 
 	return CommandResult::OK;
 }
