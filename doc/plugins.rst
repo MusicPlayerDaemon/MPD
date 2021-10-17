@@ -1193,6 +1193,8 @@ allows MPD to act as a `Snapcast
 <https://github.com/badaix/snapcast>`__ server.  Snapcast clients
 connect to it and receive audio data from MPD.
 
+You must set a format.
+
 .. list-table::
    :widths: 20 80
    :header-rows: 1
