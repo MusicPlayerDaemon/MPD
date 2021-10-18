@@ -45,7 +45,7 @@ struct SnapcastTimestamp {
 
 		if (a_usec < b_usec) {
 			--result_sec;
-			result_usec += 1'000'0000;
+			result_usec += 1'000'000;
 		}
 
 		return {result_sec, result_usec};
