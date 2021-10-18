@@ -383,6 +383,13 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	if (target != nullptr && target_id == PW_ID_ANY)
 		pw_properties_setf(props, PW_KEY_NODE_TARGET, "%s", target);
 
+#ifdef PW_KEY_NODE_RATE
+	/* ask PipeWire to change the graph sample rate to ours
+	   (requires PipeWire 0.3.32) */
+	pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u",
+			   audio_format.sample_rate);
+#endif
+
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
 	stream = pw_stream_new_simple(pw_thread_loop_get_loop(thread_loop),

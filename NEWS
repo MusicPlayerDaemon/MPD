@@ -1,5 +1,6 @@
 ver 0.23.1 (not yet released)
 * output
+  - pipewire: attempt to change the graph sample rate
   - snapcast: fix time stamp bug which caused "Failed to get chunk"
 * fix libfmt linker problems
 * fix broken password authentication
