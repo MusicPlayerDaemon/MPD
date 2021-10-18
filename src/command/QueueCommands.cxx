@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "QueueCommands.hxx"
+#include "PositionArg.hxx"
 #include "Request.hxx"
 #include "protocol/RangeArg.hxx"
 #include "db/DatabaseQueue.hxx"
@@ -42,17 +43,6 @@
 #include <fmt/format.h>
 
 #include <limits>
-
-static unsigned
-RequireCurrentPosition(const playlist &p)
-{
-	int position = p.GetCurrentPosition();
-	if (position < 0)
-		throw ProtocolError(ACK_ERROR_PLAYER_SYNC,
-				    "No current song");
-
-	return position;
-}
 
 static void
 AddUri(Client &client, const LocatedUri &uri)
@@ -129,30 +119,8 @@ handle_addid(Client &client, Request args, Response &r)
 
 	const auto queue_length = partition.playlist.queue.GetLength();
 
-	if (args.size > 1) {
-		const char *const s = args[1];
-		if (*s == '+') {
-			/* after the current song */
-
-			const unsigned current =
-				RequireCurrentPosition(partition.playlist);
-			assert(current < queue_length);
-
-			to = current + 1 +
-				ParseCommandArgUnsigned(s + 1,
-							queue_length - current - 1);
-		} else if (*s == '-') {
-			/* before the current song */
-
-			const unsigned current =
-				RequireCurrentPosition(partition.playlist);
-			assert(current < queue_length);
-
-			to = current - ParseCommandArgUnsigned(s + 1, current);
-		} else
-			/* absolute position */
-			to = args.ParseUnsigned(1, queue_length);
-	}
+	if (args.size > 1)
+		to = ParseInsertPosition(args[1], partition.playlist);
 
 	const SongLoader loader(client);
 	const unsigned added_position = queue_length;
@@ -361,49 +329,6 @@ handle_prioid(Client &client, Request args, [[maybe_unused]] Response &r)
 	}
 
 	return CommandResult::OK;
-}
-
-static unsigned
-ParseMoveDestination(const char *s, const RangeArg range,
-		     const playlist &p)
-{
-	assert(!range.IsEmpty());
-	assert(!range.IsOpenEnded());
-
-	const unsigned queue_length = p.queue.GetLength();
-
-	if (*s == '+') {
-		/* after the current song */
-
-		unsigned current = RequireCurrentPosition(p);
-		assert(current < queue_length);
-		if (range.Contains(current))
-			throw ProtocolError(ACK_ERROR_ARG, "Cannot move current song relative to itself");
-
-		if (current >= range.end)
-			current -= range.Count();
-
-		return current + 1 +
-			ParseCommandArgUnsigned(s + 1,
-						queue_length - current - range.Count());
-	} else if (*s == '-') {
-		/* before the current song */
-
-		unsigned current = RequireCurrentPosition(p);
-		assert(current < queue_length);
-		if (range.Contains(current))
-			throw ProtocolError(ACK_ERROR_ARG, "Cannot move current song relative to itself");
-
-		if (current >= range.end)
-			current -= range.Count();
-
-		return current -
-			ParseCommandArgUnsigned(s + 1,
-						queue_length - current - range.Count());
-	} else
-		/* absolute position */
-		return ParseCommandArgUnsigned(s,
-					       queue_length - range.Count());
 }
 
 static CommandResult
