@@ -923,8 +923,9 @@ remote playlists (absolute URI with a supported scheme).
     only a part of the playlist.
 
     The ``POSITION`` parameter specifies where the songs will be
-    inserted into the queue.  (This requires specifying the range as
-    well; the special value `0:` can be used if the whole playlist
+    inserted into the queue; it can be relative as described in
+    :ref:`addid <command_addid>`.  (This requires specifying the range
+    as well; the special value `0:` can be used if the whole playlist
     shall be loaded at a certain queue position.)
 
 .. _command_playlistadd:

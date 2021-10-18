@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PlaylistCommands.hxx"
+#include "PositionArg.hxx"
 #include "Request.hxx"
 #include "Instance.hxx"
 #include "db/Selection.hxx"
@@ -86,7 +87,7 @@ handle_load(Client &client, Request args, [[maybe_unused]] Response &r)
 	const unsigned old_size = playlist.GetLength();
 
 	const unsigned position = args.size > 2
-		? args.ParseUnsigned(2, old_size)
+		? ParseInsertPosition(args[2], partition.playlist)
 		: old_size;
 
 	const SongLoader loader(client);
