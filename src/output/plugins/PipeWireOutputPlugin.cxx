@@ -41,6 +41,9 @@
 #include <spa/param/audio/format-utils.h>
 #include <spa/param/props.h>
 
+#include <cmath>
+#include <iostream>
+
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
@@ -74,6 +77,9 @@ class PipeWireOutput final : AudioOutput {
 	uint32_t target_id = PW_ID_ANY;
 
 	float volume = 1.0;
+
+	PipeWireMixer *mixer = nullptr;
+	int channels;
 
 	/**
 	 * The active sample format, needed for PcmSilence().
@@ -124,10 +130,20 @@ public:
 		events.state_changed = StateChanged;
 		events.process = Process;
 		events.drained = Drained;
+		events.control_info = ControlInfo;
+		events.param_changed = ParamChanged;
 		return events;
 	}
 
 	void SetVolume(float volume);
+
+	void SetMixer(PipeWireMixer &_mixer);
+
+	void ClearMixer([[maybe_unused]] PipeWireMixer &old_mixer) {
+		assert(mixer == &old_mixer);
+
+		mixer = nullptr;
+	}
 
 private:
 	void CheckThrowError() {
@@ -161,6 +177,46 @@ private:
 	static void Drained(void *data) noexcept {
 		auto &o = *(PipeWireOutput *)data;
 		o.Drained();
+	}
+
+	void ControlInfo(const struct pw_stream_control *control) {
+		float sum = 0;
+		unsigned c;
+		for (c = 0; c < control->n_values; c++)
+			sum += control->values[c];
+
+		sum /= control->n_values;
+
+		if (mixer != nullptr)
+			pipewire_mixer_on_change(*mixer, std::cbrt(sum));
+
+		pw_thread_loop_signal(thread_loop, false);
+	}
+
+	static void ControlInfo(void *data,
+				[[maybe_unused]] uint32_t id,
+				const struct pw_stream_control *control) noexcept {
+		auto &o = *(PipeWireOutput *)data;
+		if (StringIsEqual(control->name, "Channel Volumes"))
+			o.ControlInfo(control);
+	}
+
+	void ParamChanged() {
+		if (restore_volume) {
+			SetVolume(volume);
+			restore_volume = false;
+		}
+	}
+
+	static void ParamChanged(void *data,
+				uint32_t id,
+				const struct spa_pod *param)
+	{
+		if (id != SPA_PARAM_Format || param == NULL)
+			return;
+
+		auto &o = *(PipeWireOutput *)data;
+		o.ParamChanged();
 	}
 
 	/* virtual methods from class AudioOutput */
@@ -214,11 +270,20 @@ PipeWireOutput::SetVolume(float _volume)
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
-	if (stream != nullptr && !restore_volume &&
-	    pw_stream_set_control(stream,
-				  SPA_PROP_volume, 1, &_volume,
+	float newvol = _volume*_volume*_volume;
+
+	if (stream != nullptr && !restore_volume) {
+		float vol[SPA_AUDIO_MAX_CHANNELS];
+		int i;
+
+		for (i = 0; i < channels; i++) {
+			vol[i] = newvol;
+		}
+		if (pw_stream_set_control(stream,
+				  SPA_PROP_channelVolumes, channels, vol,
 				  0) != 0)
-		throw std::runtime_error("pw_stream_set_control() failed");
+			throw std::runtime_error("pw_stream_set_control() failed");
+	}
 
 	volume = _volume;
 }
@@ -404,6 +469,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 
 	frame_size = audio_format.GetFrameSize();
 	sample_format = audio_format.format;
+	channels = audio_format.channels;
 	interrupted = false;
 
 	/* allocate a ring buffer of 0.5 seconds */
@@ -451,14 +517,6 @@ PipeWireOutput::StateChanged(enum pw_stream_state state,
 	if (!was_disconnected && disconnected)
 		pw_thread_loop_signal(thread_loop, false);
 
-	if (state == PW_STREAM_STATE_STREAMING && restore_volume) {
-		/* restore the last known volume after creating a new
-		   pw_stream */
-		restore_volume = false;
-		pw_stream_set_control(stream,
-				      SPA_PROP_volume, 1, &volume,
-				      0);
-	}
 }
 
 inline void
@@ -583,6 +641,28 @@ PipeWireOutput::Pause() noexcept
 	}
 
 	return true;
+}
+
+inline void
+PipeWireOutput::SetMixer(PipeWireMixer &_mixer)
+{
+	assert(mixer == nullptr);
+
+	mixer = &_mixer;
+
+	// TODO: Check if context and stream is ready and trigger a volume update...
+}
+
+void
+pipewire_output_set_mixer(PipeWireOutput &po, PipeWireMixer &pm)
+{
+	po.SetMixer(pm);
+}
+
+void
+pipewire_output_clear_mixer(PipeWireOutput &po, PipeWireMixer &pm)
+{
+	po.ClearMixer(pm);
 }
 
 const struct AudioOutputPlugin pipewire_output_plugin = {

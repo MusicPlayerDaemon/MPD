@@ -37,6 +37,8 @@ public:
 	{
 	}
 
+	~PipeWireMixer() override;
+
 	PipeWireMixer(const PipeWireMixer &) = delete;
 	PipeWireMixer &operator=(const PipeWireMixer &) = delete;
 
@@ -82,7 +84,14 @@ pipewire_mixer_init([[maybe_unused]] EventLoop &event_loop, AudioOutput &ao,
 		    const ConfigBlock &)
 {
 	auto &po = (PipeWireOutput &)ao;
-	return new PipeWireMixer(po, listener);
+	auto *pm = new PipeWireMixer(po, listener);
+	pipewire_output_set_mixer(po, *pm);
+	return pm;
+}
+
+PipeWireMixer::~PipeWireMixer()
+{
+	pipewire_output_clear_mixer(output, *this);
 }
 
 const MixerPlugin pipewire_mixer_plugin = {

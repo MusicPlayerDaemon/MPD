@@ -21,8 +21,15 @@
 #define MPD_PIPEWIRE_OUTPUT_PLUGIN_HXX
 
 class PipeWireOutput;
+class PipeWireMixer;
 
 extern const struct AudioOutputPlugin pipewire_output_plugin;
+
+void
+pipewire_output_set_mixer(PipeWireOutput &po, PipeWireMixer &pm);
+
+void
+pipewire_output_clear_mixer(PipeWireOutput &po, PipeWireMixer &pm);
 
 void
 pipewire_output_set_volume(PipeWireOutput &output, float volume);
