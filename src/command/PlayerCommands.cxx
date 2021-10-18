@@ -171,7 +171,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 
 	if (player_status.state != PlayerState::STOP) {
 		r.Fmt(FMT_STRING(COMMAND_STATUS_TIME ": {}:{}\n"
-				 "elapsed: {:1.3}\n"
+				 "elapsed: {:1.3f}\n"
 				 COMMAND_STATUS_BITRATE ": {}\n"),
 		      player_status.elapsed_time.RoundS(),
 		      player_status.total_time.IsNegative()
@@ -181,7 +181,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 		      player_status.bit_rate);
 
 		if (!player_status.total_time.IsNegative())
-			r.Fmt(FMT_STRING("duration: {:1.3}\n"),
+			r.Fmt(FMT_STRING("duration: {:1.3f}\n"),
 				 player_status.total_time.ToDoubleS());
 
 		if (player_status.audio_format.IsDefined())

@@ -100,7 +100,7 @@ song_print_info(Response &r, const LightSong &song, bool base) noexcept
 	const auto duration = song.GetDuration();
 	if (!duration.IsNegative())
 		r.Fmt(FMT_STRING("Time: {}\n"
-				 "duration: {:1.3}\n"),
+				 "duration: {:1.3f}\n"),
 		      duration.RoundS(),
 		      duration.ToDoubleS());
 }
@@ -123,7 +123,7 @@ song_print_info(Response &r, const DetachedSong &song, bool base) noexcept
 	const auto duration = song.GetDuration();
 	if (!duration.IsNegative())
 		r.Fmt(FMT_STRING("Time: {}\n"
-				 "duration: {:1.3}\n"),
+				 "duration: {:1.3f}\n"),
 		      duration.RoundS(),
 		      duration.ToDoubleS());
 }

@@ -228,22 +228,22 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 	FmtDebug(soxr_domain, "soxr engine '{}'", soxr_engine(soxr));
 	if (soxr_use_custom_recipe)
 		FmtDebug(soxr_domain,
-			 "soxr precision={:0.0}, phase_response={:0.2}, "
-			 "passband_end={:0.2}, stopband_begin={:0.2} scale={:0.2}",
+			 "soxr precision={:0.0f}, phase_response={:0.2f}, "
+			 "passband_end={:0.2f}, stopband_begin={:0.2f} scale={:0.2f}",
 			 soxr_quality.precision, soxr_quality.phase_response,
 			 soxr_quality.passband_end, soxr_quality.stopband_begin,
 			 soxr_io_custom_recipe.scale);
 	else
 		FmtDebug(soxr_domain,
-			 "soxr precision={:0.0}, phase_response={:0.2}, "
-			 "passband_end={:0.2}, stopband_begin={:0.2}",
+			 "soxr precision={:0.0f}, phase_response={:0.2f}, "
+			 "passband_end={:0.2f}, stopband_begin={:0.2f}",
 			 soxr_quality.precision, soxr_quality.phase_response,
 			 soxr_quality.passband_end, soxr_quality.stopband_begin);
 
 	channels = af.channels;
 
 	ratio = float(new_sample_rate) / float(af.sample_rate);
-	FmtDebug(soxr_domain, "samplerate conversion ratio to {:.2}", ratio);
+	FmtDebug(soxr_domain, "samplerate conversion ratio to {:0.2f}", ratio);
 
 	/* libsoxr works with floating point samples */
 	af.format = SampleFormat::FLOAT;

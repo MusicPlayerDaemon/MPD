@@ -60,7 +60,7 @@ tag_print(Response &r, const Tag &tag) noexcept
 {
 	if (!tag.duration.IsNegative())
 		r.Fmt(FMT_STRING("Time: {}\n"
-				 "duration: {:1.3}\n"),
+				 "duration: {:1.3f}\n"),
 		      tag.duration.RoundS(),
 		      tag.duration.ToDoubleS());
 
