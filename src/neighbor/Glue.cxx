@@ -82,7 +82,6 @@ NeighborGlue::Open()
 
 			std::throw_with_nested(FormatRuntimeError("Failed to open neighblor plugin '%s'",
 								  i->name.c_str()));
-			throw;
 		}
 	}
 }
