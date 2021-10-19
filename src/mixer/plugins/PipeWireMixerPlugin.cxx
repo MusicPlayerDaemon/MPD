@@ -37,7 +37,7 @@ public:
 	{
 	}
 
-	~PipeWireMixer() override;
+	~PipeWireMixer() noexcept override;
 
 	PipeWireMixer(const PipeWireMixer &) = delete;
 	PipeWireMixer &operator=(const PipeWireMixer &) = delete;
@@ -89,7 +89,7 @@ pipewire_mixer_init([[maybe_unused]] EventLoop &event_loop, AudioOutput &ao,
 	return pm;
 }
 
-PipeWireMixer::~PipeWireMixer()
+PipeWireMixer::~PipeWireMixer() noexcept
 {
 	pipewire_output_clear_mixer(output, *this);
 }

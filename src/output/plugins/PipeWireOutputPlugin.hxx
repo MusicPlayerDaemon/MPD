@@ -26,10 +26,10 @@ class PipeWireMixer;
 extern const struct AudioOutputPlugin pipewire_output_plugin;
 
 void
-pipewire_output_set_mixer(PipeWireOutput &po, PipeWireMixer &pm);
+pipewire_output_set_mixer(PipeWireOutput &po, PipeWireMixer &pm) noexcept;
 
 void
-pipewire_output_clear_mixer(PipeWireOutput &po, PipeWireMixer &pm);
+pipewire_output_clear_mixer(PipeWireOutput &po, PipeWireMixer &pm) noexcept;
 
 void
 pipewire_output_set_volume(PipeWireOutput &output, float volume);

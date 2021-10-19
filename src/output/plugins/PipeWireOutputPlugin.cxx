@@ -136,9 +136,9 @@ public:
 
 	void SetVolume(float volume);
 
-	void SetMixer(PipeWireMixer &_mixer);
+	void SetMixer(PipeWireMixer &_mixer) noexcept;
 
-	void ClearMixer([[maybe_unused]] PipeWireMixer &old_mixer) {
+	void ClearMixer([[maybe_unused]] PipeWireMixer &old_mixer) noexcept {
 		assert(mixer == &old_mixer);
 
 		mixer = nullptr;
@@ -178,7 +178,7 @@ private:
 		o.Drained();
 	}
 
-	void ControlInfo(const struct pw_stream_control *control) {
+	void ControlInfo(const struct pw_stream_control *control) noexcept {
 		float sum = 0;
 		unsigned c;
 		for (c = 0; c < control->n_values; c++)
@@ -200,7 +200,7 @@ private:
 			o.ControlInfo(control);
 	}
 
-	void ParamChanged() {
+	void ParamChanged() noexcept {
 		if (restore_volume) {
 			SetVolume(volume);
 			restore_volume = false;
@@ -208,8 +208,8 @@ private:
 	}
 
 	static void ParamChanged(void *data,
-				uint32_t id,
-				const struct spa_pod *param)
+				 uint32_t id,
+				 const struct spa_pod *param) noexcept
 	{
 		if (id != SPA_PARAM_Format || param == NULL)
 			return;
@@ -643,7 +643,7 @@ PipeWireOutput::Pause() noexcept
 }
 
 inline void
-PipeWireOutput::SetMixer(PipeWireMixer &_mixer)
+PipeWireOutput::SetMixer(PipeWireMixer &_mixer) noexcept
 {
 	assert(mixer == nullptr);
 
@@ -653,13 +653,13 @@ PipeWireOutput::SetMixer(PipeWireMixer &_mixer)
 }
 
 void
-pipewire_output_set_mixer(PipeWireOutput &po, PipeWireMixer &pm)
+pipewire_output_set_mixer(PipeWireOutput &po, PipeWireMixer &pm) noexcept
 {
 	po.SetMixer(pm);
 }
 
 void
-pipewire_output_clear_mixer(PipeWireOutput &po, PipeWireMixer &pm)
+pipewire_output_clear_mixer(PipeWireOutput &po, PipeWireMixer &pm) noexcept
 {
 	po.ClearMixer(pm);
 }
