@@ -62,7 +62,7 @@ EventThread::Run() noexcept
 			SetThreadRealtime();
 		} catch (...) {
 			FmtInfo(event_domain,
-				"RTIOThread could not get realtime scheduling, continuing anyway: %s",
+				"RTIOThread could not get realtime scheduling, continuing anyway: {}",
 				std::current_exception());
 		}
 	}

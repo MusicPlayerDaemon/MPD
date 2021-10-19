@@ -195,7 +195,7 @@ FifoOutput::Cancel() noexcept
 
 	if (bytes < 0 && errno != EAGAIN) {
 		FmtError(fifo_output_domain,
-			 "Flush of FIFO \"{}\" failed: %s",
+			 "Flush of FIFO \"{}\" failed: {}",
 			 path_utf8, strerror(errno));
 	}
 }
