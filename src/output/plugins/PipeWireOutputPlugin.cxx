@@ -682,7 +682,7 @@ void PipeWireOutput::SendTag(const Tag &tag) noexcept {
 
 	auto rc = pw_stream_update_properties(stream, &dict);
 	if (rc < 0)
-		LogWarning(pipewire_output_domain, "PipeWire: Error updating properties!\n");
+		LogWarning(pipewire_output_domain, "Error updating properties");
 }
 
 void
