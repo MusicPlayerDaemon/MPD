@@ -33,12 +33,9 @@ NeighborGlue::~NeighborGlue() noexcept = default;
 
 static std::unique_ptr<NeighborExplorer>
 CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
+		       const char *plugin_name,
 		       const ConfigBlock &block)
 {
-	const char *plugin_name = block.GetBlockValue("plugin");
-	if (plugin_name == nullptr)
-		throw std::runtime_error("Missing \"plugin\" configuration");
-
 	const NeighborPlugin *plugin = GetNeighborPluginByName(plugin_name);
 	if (plugin == nullptr)
 		throw FormatRuntimeError("No such neighbor plugin: %s",
@@ -55,8 +52,14 @@ NeighborGlue::Init(const ConfigData &config,
 		block.SetUsed();
 
 		try {
-			explorers.emplace_front(CreateNeighborExplorer(loop,
+			const char *plugin_name = block.GetBlockValue("plugin");
+			if (plugin_name == nullptr)
+				throw std::runtime_error("Missing \"plugin\" configuration");
+
+			explorers.emplace_front(plugin_name,
+						CreateNeighborExplorer(loop,
 								       listener,
+								       plugin_name,
 								       block));
 		} catch (...) {
 			std::throw_with_nested(FormatRuntimeError("Line %i: ",
@@ -76,6 +79,9 @@ NeighborGlue::Open()
 			/* roll back */
 			for (auto k = explorers.begin(); k != i; ++k)
 				k->explorer->Close();
+
+			std::throw_with_nested(FormatRuntimeError("Failed to open neighblor plugin '%s'",
+								  i->name.c_str()));
 			throw;
 		}
 	}

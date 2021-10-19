@@ -24,6 +24,7 @@
 
 #include <forward_list>
 #include <memory>
+#include <string>
 
 struct ConfigData;
 class EventLoop;
@@ -36,11 +37,13 @@ struct NeighborInfo;
  */
 class NeighborGlue {
 	struct Explorer {
+		const std::string name;
 		std::unique_ptr<NeighborExplorer> explorer;
 
-		template<typename E>
-		Explorer(E &&_explorer) noexcept
-			:explorer(std::forward<E>(_explorer)) {}
+		template<typename N, typename E>
+		Explorer(N &&_name, E &&_explorer) noexcept
+			:name(std::forward<N>(_name)),
+			 explorer(std::forward<E>(_explorer)) {}
 
 		Explorer(const Explorer &) = delete;
 	};
