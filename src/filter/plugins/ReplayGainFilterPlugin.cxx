@@ -27,6 +27,7 @@
 #include "pcm/Volume.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Domain.hxx"
+#include "Idle.hxx"
 #include "Log.hxx"
 
 #include <cassert>
@@ -169,6 +170,10 @@ ReplayGainFilter::Update()
 
 		try {
 			mixer_set_volume(mixer, _volume);
+
+			/* TODO: emit this idle event only for the
+			   current partition */
+			idle_add(IDLE_MIXER);
 		} catch (...) {
 			LogError(std::current_exception(),
 				 "Failed to update hardware mixer");

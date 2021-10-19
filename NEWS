@@ -3,6 +3,7 @@ ver 0.23.1 (not yet released)
   - use decimal notation instead of scientific notation
   - "load" supports relative positions
 * output
+  - emit "mixer" idle event when replay gain changes volume
   - pipewire: emit "mixer" idle events on external volume change
   - pipewire: attempt to change the graph sample rate
   - snapcast: fix time stamp bug which caused "Failed to get chunk"
