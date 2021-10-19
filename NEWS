@@ -1,4 +1,4 @@
-ver 0.23.1 (not yet released)
+ver 0.23.1 (2021/10/19)
 * protocol
   - use decimal notation instead of scientific notation
   - "load" supports relative positions
