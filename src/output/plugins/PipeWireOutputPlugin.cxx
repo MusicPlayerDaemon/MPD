@@ -42,7 +42,6 @@
 #include <spa/param/props.h>
 
 #include <cmath>
-#include <iostream>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
