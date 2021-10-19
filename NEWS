@@ -1,6 +1,7 @@
 ver 0.23.2 (not yet released)
 * neighbor
   - mention failed plugin name in error message
+* fix crash with libfmt versions older than 7
 
 ver 0.23.1 (2021/10/19)
 * protocol
