@@ -28,6 +28,7 @@
 #include "util/StringCompare.hxx"
 #include "util/WritableBuffer.hxx"
 #include "Log.hxx"
+#include "tag/Format.hxx"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -240,6 +241,8 @@ private:
 	void Drain() override;
 	void Cancel() noexcept override;
 	bool Pause() noexcept override;
+
+	void SendTag(const Tag &tag) noexcept override;
 };
 
 static constexpr auto stream_events = PipeWireOutput::MakeStreamEvents();
@@ -650,6 +653,36 @@ PipeWireOutput::SetMixer(PipeWireMixer &_mixer) noexcept
 	mixer = &_mixer;
 
 	// TODO: Check if context and stream is ready and trigger a volume update...
+}
+
+void PipeWireOutput::SendTag(const Tag &tag) noexcept {
+
+	CheckThrowError();
+
+	struct spa_dict_item items[3];
+	uint32_t n_items=0;
+
+	const char *artist, *title;
+
+	const char *medianame = FormatTag(tag, "%artist% - %title%");
+	items[n_items++] = SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_NAME, medianame);
+
+	artist = tag.GetValue(TAG_ARTIST);
+	title = tag.GetValue(TAG_TITLE);
+
+	if (artist != nullptr) {
+		items[n_items++] = SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_ARTIST, artist);
+	}
+
+	if (title != nullptr) {
+		items[n_items++] = SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_TITLE, title);
+	}
+
+	struct spa_dict dict = SPA_DICT_INIT(items, n_items);
+
+	auto rc = pw_stream_update_properties(stream, &dict);
+	if (rc < 0)
+		LogWarning(pipewire_output_domain, "PipeWire: Error updating properties!\n");
 }
 
 void
