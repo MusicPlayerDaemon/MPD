@@ -279,7 +279,7 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 			return false;
 		} catch (...) {
 			FmtError(output_domain,
-				 "Failed to play on {}",
+				 "Failed to play on {}: {}",
 				 GetLogName(), std::current_exception());
 			InternalCloseError(std::current_exception());
 			return false;
