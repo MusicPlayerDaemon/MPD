@@ -242,7 +242,7 @@ private:
 	void Cancel() noexcept override;
 	bool Pause() noexcept override;
 
-	void SendTag(const Tag &tag) noexcept override;
+	void SendTag(const Tag &tag) override;
 };
 
 static constexpr auto stream_events = PipeWireOutput::MakeStreamEvents();
@@ -656,7 +656,7 @@ PipeWireOutput::SetMixer(PipeWireMixer &_mixer) noexcept
 }
 
 void
-PipeWireOutput::SendTag(const Tag &tag) noexcept
+PipeWireOutput::SendTag(const Tag &tag)
 {
 	CheckThrowError();
 
