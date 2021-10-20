@@ -18,6 +18,7 @@
  */
 
 #include "PipeWireOutputPlugin.hxx"
+#include "lib/pipewire/Error.hxx"
 #include "lib/pipewire/ThreadLoop.hxx"
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
@@ -488,14 +489,17 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	params[0] = spa_format_audio_raw_build(&pod_builder,
 					       SPA_PARAM_EnumFormat, &raw);
 
-	pw_stream_connect(stream,
-			  PW_DIRECTION_OUTPUT,
-			  target_id,
-			  (enum pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT |
-						 PW_STREAM_FLAG_INACTIVE |
-						 PW_STREAM_FLAG_MAP_BUFFERS |
-						 PW_STREAM_FLAG_RT_PROCESS),
-			  params, 1);
+	int error =
+		pw_stream_connect(stream,
+				  PW_DIRECTION_OUTPUT,
+				  target_id,
+				  (enum pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT |
+							 PW_STREAM_FLAG_INACTIVE |
+							 PW_STREAM_FLAG_MAP_BUFFERS |
+							 PW_STREAM_FLAG_RT_PROCESS),
+				  params, 1);
+	if (error < 0)
+		throw PipeWire::MakeError(error, "Failed to connect stream");
 }
 
 void

@@ -12,3 +12,17 @@ pipewire_dep = declare_dependency(
   # disable it at the command line
   compile_args: ['-Wno-pedantic'],
 )
+
+pipewire = static_library(
+  'pipewire',
+  'Error.cxx',
+  include_directories: inc,
+  dependencies: [
+    pipewire_dep,
+  ],
+)
+
+pipewire_dep = declare_dependency(
+  link_with: pipewire,
+  dependencies: pipewire_dep,
+)
