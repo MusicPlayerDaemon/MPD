@@ -23,6 +23,7 @@
 #include "../Error.hxx"
 #include "mixer/plugins/PipeWireMixerPlugin.hxx"
 #include "pcm/Silence.hxx"
+#include "system/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
@@ -295,7 +296,7 @@ PipeWireOutput::Enable()
 {
 	thread_loop = pw_thread_loop_new(name, nullptr);
 	if (thread_loop == nullptr)
-		throw std::runtime_error("pw_thread_loop_new() failed");
+		throw MakeErrno("pw_thread_loop_new() failed");
 
 	pw_thread_loop_start(thread_loop);
 }
@@ -465,7 +466,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 				      &stream_events,
 				      this);
 	if (stream == nullptr)
-		throw std::runtime_error("pw_stream_new_simple() failed");
+		throw MakeErrno("pw_stream_new_simple() failed");
 
 	auto raw = ToPipeWireAudioFormat(audio_format);
 
