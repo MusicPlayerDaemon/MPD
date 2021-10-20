@@ -1,4 +1,6 @@
 ver 0.23.2 (not yet released)
+* input
+  - nfs: fix playback bug
 * output
   - pipewire: send artist and title to PipeWire
 * neighbor

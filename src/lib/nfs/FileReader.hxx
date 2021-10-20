@@ -22,7 +22,7 @@
 
 #include "Lease.hxx"
 #include "Callback.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "util/Compiler.h"
 
 #include <cstddef>
@@ -63,7 +63,10 @@ class NfsFileReader : NfsLease, NfsCallback {
 
 	nfsfh *fh;
 
-	DeferEvent defer_open;
+	/**
+	 * To inject the Open() call into the I/O thread.
+	 */
+	InjectEvent defer_open;
 
 public:
 	NfsFileReader() noexcept;
@@ -150,7 +153,7 @@ private:
 	void OnNfsCallback(unsigned status, void *data) noexcept final;
 	void OnNfsError(std::exception_ptr &&e) noexcept final;
 
-	/* DeferEvent callback */
+	/* InjectEvent callback */
 	void OnDeferredOpen() noexcept;
 };
 
