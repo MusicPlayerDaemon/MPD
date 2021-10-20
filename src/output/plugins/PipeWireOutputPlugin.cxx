@@ -53,6 +53,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <stdexcept>
+#include <string>
 
 static constexpr Domain pipewire_output_domain("pipewire_output");
 
@@ -64,6 +65,8 @@ class PipeWireOutput final : AudioOutput {
 
 	struct pw_thread_loop *thread_loop = nullptr;
 	struct pw_stream *stream;
+
+	std::string error_message;
 
 	std::byte buffer[1024];
 	struct spa_pod_builder pod_builder;
@@ -149,8 +152,12 @@ public:
 
 private:
 	void CheckThrowError() {
-		if (disconnected)
-			throw std::runtime_error("Disconnected from PipeWire");
+		if (disconnected) {
+			if (error_message.empty())
+				throw std::runtime_error("Disconnected from PipeWire");
+			else
+				throw std::runtime_error(error_message);
+		}
 	}
 
 	void StateChanged(enum pw_stream_state state,
@@ -426,6 +433,7 @@ ToPipeWireAudioFormat(AudioFormat &audio_format) noexcept
 void
 PipeWireOutput::Open(AudioFormat &audio_format)
 {
+	error_message.clear();
 	disconnected = false;
 	restore_volume = true;
 
@@ -521,8 +529,12 @@ PipeWireOutput::StateChanged(enum pw_stream_state state,
 	const bool was_disconnected = disconnected;
 	disconnected = state == PW_STREAM_STATE_ERROR ||
 		state == PW_STREAM_STATE_UNCONNECTED;
-	if (!was_disconnected && disconnected)
+	if (!was_disconnected && disconnected) {
+		if (error != nullptr)
+			error_message = error;
+
 		pw_thread_loop_signal(thread_loop, false);
+	}
 
 }
 
