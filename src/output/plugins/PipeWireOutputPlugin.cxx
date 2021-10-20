@@ -31,6 +31,7 @@
 #include "util/WritableBuffer.hxx"
 #include "Log.hxx"
 #include "tag/Format.hxx"
+#include "config.h" // for ENABLE_DSD
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -90,6 +91,10 @@ class PipeWireOutput final : AudioOutput {
 	 * The active sample format, needed for PcmSilence().
 	 */
 	SampleFormat sample_format;
+
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	const bool enable_dsd;
+#endif
 
 	bool disconnected;
 
@@ -262,6 +267,9 @@ PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 	 name(block.GetBlockValue("name", "pipewire")),
 	 remote(block.GetBlockValue("remote", nullptr)),
 	 target(block.GetBlockValue("target", nullptr))
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	, enable_dsd(block.GetBlockValue("dsd", false))
+#endif
 {
 	if (target != nullptr) {
 		if (StringIsEmpty(target))
@@ -477,6 +485,13 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	if (stream == nullptr)
 		throw MakeErrno("pw_stream_new_simple() failed");
 
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	/* this needs to be determined before ToPipeWireAudioFormat()
+	   switches DSD to S16 */
+	const bool use_dsd = enable_dsd &&
+		audio_format.format == SampleFormat::DSD;
+#endif
+
 	auto raw = ToPipeWireAudioFormat(audio_format);
 
 	frame_size = audio_format.GetFrameSize();
@@ -494,8 +509,28 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	pod_builder = {};
 	pod_builder.data = buffer;
 	pod_builder.size = sizeof(buffer);
-	params[0] = spa_format_audio_raw_build(&pod_builder,
-					       SPA_PARAM_EnumFormat, &raw);
+
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	struct spa_audio_info_dsd dsd;
+	if (use_dsd) {
+		dsd = {};
+
+		/* copy all relevant settings from the
+		   ToPipeWireAudioFormat() return value */
+		dsd.flags = raw.flags;
+		dsd.rate = raw.rate;
+		dsd.channels = raw.channels;
+		if ((dsd.flags & SPA_AUDIO_FLAG_UNPOSITIONED) == 0)
+			std::copy_n(raw.position, dsd.channels, dsd.position);
+
+		params[0] = spa_format_audio_dsd_build(&pod_builder,
+						       SPA_PARAM_EnumFormat,
+						       &dsd);
+	} else
+#endif
+		params[0] = spa_format_audio_raw_build(&pod_builder,
+						       SPA_PARAM_EnumFormat,
+						       &raw);
 
 	int error =
 		pw_stream_connect(stream,

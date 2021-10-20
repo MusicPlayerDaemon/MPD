@@ -1094,6 +1094,8 @@ Connect to a `PipeWire <https://pipewire.org/>`_ server.  Requires
    * - **remote NAME**
      - The name of the remote to connect to.  The default is
        ``pipewire-0``.
+   * - **dsd yes|no**
+     - Enable DSD playback.  This requires PipeWire 0.38.
 
 .. _pulse_plugin:
 

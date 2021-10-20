@@ -3,6 +3,7 @@ ver 0.23.2 (not yet released)
   - nfs: fix playback bug
 * output
   - pipewire: send artist and title to PipeWire
+  - pipewire: DSD support
 * neighbor
   - mention failed plugin name in error message
 * fix crash with libfmt versions older than 7
