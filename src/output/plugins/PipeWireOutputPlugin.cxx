@@ -666,7 +666,9 @@ PipeWireOutput::SendTag(const Tag &tag)
 
 	const char *artist, *title;
 
-	const char *medianame = FormatTag(tag, "%artist% - %title%");
+	char *medianame = FormatTag(tag, "%artist% - %title%");
+	AtScopeExit(medianame) { free(medianame); };
+
 	items[n_items++] = SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_NAME, medianame);
 
 	artist = tag.GetValue(TAG_ARTIST);
