@@ -655,8 +655,9 @@ PipeWireOutput::SetMixer(PipeWireMixer &_mixer) noexcept
 	// TODO: Check if context and stream is ready and trigger a volume update...
 }
 
-void PipeWireOutput::SendTag(const Tag &tag) noexcept {
-
+void
+PipeWireOutput::SendTag(const Tag &tag) noexcept
+{
 	CheckThrowError();
 
 	struct spa_dict_item items[3];
