@@ -70,7 +70,7 @@ class PipeWireOutput final : AudioOutput {
 
 	std::string error_message;
 
-	std::byte buffer[1024];
+	std::byte pod_buffer[1024];
 	struct spa_pod_builder pod_builder;
 
 	std::size_t frame_size;
@@ -505,8 +505,8 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	const struct spa_pod *params[1];
 
 	pod_builder = {};
-	pod_builder.data = buffer;
-	pod_builder.size = sizeof(buffer);
+	pod_builder.data = pod_buffer;
+	pod_builder.size = sizeof(pod_buffer);
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
 	struct spa_audio_info_dsd dsd;
