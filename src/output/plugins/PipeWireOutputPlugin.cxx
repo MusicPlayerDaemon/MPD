@@ -85,7 +85,7 @@ class PipeWireOutput final : AudioOutput {
 	float volume = 1.0;
 
 	PipeWireMixer *mixer = nullptr;
-	int channels;
+	unsigned channels;
 
 	/**
 	 * The active sample format, needed for PcmSilence().
@@ -293,11 +293,10 @@ PipeWireOutput::SetVolume(float _volume)
 
 	if (stream != nullptr && !restore_volume) {
 		float vol[SPA_AUDIO_MAX_CHANNELS];
-		int i;
 
-		for (i = 0; i < channels; i++) {
+		for (unsigned i = 0; i < channels; i++)
 			vol[i] = newvol;
-		}
+
 		if (pw_stream_set_control(stream,
 				  SPA_PROP_channelVolumes, channels, vol,
 				  0) != 0)
