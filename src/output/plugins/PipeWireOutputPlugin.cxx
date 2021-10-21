@@ -580,12 +580,14 @@ PipeWireOutput::Process() noexcept
 		return;
 	}
 
-	auto *buf = b->buffer;
-	std::byte *dest = (std::byte *)buf->datas[0].data;
+	auto &buffer = *b->buffer;
+	auto &d = buffer.datas[0];
+
+	std::byte *dest = (std::byte *)d.data;
 	if (dest == nullptr)
 		return;
 
-	const std::size_t max_frames = buf->datas[0].maxsize / frame_size;
+	const std::size_t max_frames = d.maxsize / frame_size;
 	const std::size_t max_size = max_frames * frame_size;
 
 	size_t nbytes = ring_buffer->pop(dest, max_size);
@@ -602,9 +604,10 @@ PipeWireOutput::Process() noexcept
 		LogWarning(pipewire_output_domain, "Decoder is too slow; playing silence to avoid xrun");
 	}
 
-	buf->datas[0].chunk->offset = 0;
-	buf->datas[0].chunk->stride = frame_size;
-	buf->datas[0].chunk->size = nbytes;
+	auto &chunk = *d.chunk;
+	chunk.offset = 0;
+	chunk.stride = frame_size;
+	chunk.size = nbytes;
 
 	pw_stream_queue_buffer(stream, b);
 
