@@ -25,6 +25,7 @@
 #include "mixer/plugins/PipeWireMixerPlugin.hxx"
 #include "pcm/Silence.hxx"
 #include "system/Error.hxx"
+#include "util/BitReverse.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
@@ -94,7 +95,28 @@ class PipeWireOutput final : AudioOutput {
 	SampleFormat sample_format;
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	/**
+	 * Is the "dsd" setting enabled, i.e. is DSD playback allowed?
+	 */
 	const bool enable_dsd;
+
+	/**
+	 * Are we currently playing in native DSD mode?
+	 */
+	bool use_dsd;
+
+	/**
+	 * Reverse the 8 bits in each DSD byte?  This is necessary if
+	 * PipeWire wants LSB (because MPD uses MSB internally).
+	 */
+	bool dsd_reverse_bits;
+
+	/**
+	 * Pack this many bytes of each frame together.  MPD uses 1
+	 * internally, and if PipeWire wants more than one
+	 * (e.g. because it uses DSD_U32), we need to reorder bytes.
+	 */
+	uint_least8_t dsd_interleave;
 #endif
 
 	bool disconnected;
@@ -215,6 +237,11 @@ private:
 		if (StringIsEqual(control->name, "Channel Volumes"))
 			o.ControlInfo(control);
 	}
+
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	void DsdFormatChanged(const struct spa_audio_info_dsd &dsd) noexcept;
+	void DsdFormatChanged(const struct spa_pod &param) noexcept;
+#endif
 
 	void ParamChanged(uint32_t id, const struct spa_pod *param) noexcept;
 
@@ -481,8 +508,10 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
 	/* this needs to be determined before ToPipeWireAudioFormat()
 	   switches DSD to S16 */
-	const bool use_dsd = enable_dsd &&
+	use_dsd = enable_dsd &&
 		audio_format.format == SampleFormat::DSD;
+	dsd_reverse_bits = false;
+	dsd_interleave = 0;
 #endif
 
 	auto raw = ToPipeWireAudioFormat(audio_format);
@@ -574,6 +603,33 @@ PipeWireOutput::StateChanged(enum pw_stream_state state,
 
 }
 
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+
+inline void
+PipeWireOutput::DsdFormatChanged(const struct spa_audio_info_dsd &dsd) noexcept
+{
+	/* MPD uses MSB internally, which means if PipeWire asks LSB
+	   from us, we need to reverse the bits in each DSD byte */
+	dsd_reverse_bits = dsd.bitorder == SPA_PARAM_BITORDER_lsb;
+
+	dsd_interleave = dsd.interleave;
+}
+
+inline void
+PipeWireOutput::DsdFormatChanged(const struct spa_pod &param) noexcept
+{
+	uint32_t media_type, media_subtype;
+	struct spa_audio_info_dsd dsd;
+
+	if (spa_format_parse(&param, &media_type, &media_subtype) >= 0 &&
+	    media_type == SPA_MEDIA_TYPE_audio &&
+	    media_subtype == SPA_MEDIA_SUBTYPE_dsd &&
+	    spa_format_audio_dsd_parse(&param, &dsd) >= 0)
+		DsdFormatChanged(dsd);
+}
+
+#endif
+
 inline void
 PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 			     [[maybe_unused]] const struct spa_pod *param) noexcept
@@ -582,7 +638,74 @@ PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 		SetVolume(volume);
 		restore_volume = false;
 	}
+
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	if (use_dsd && id == SPA_PARAM_Format && param != nullptr)
+		DsdFormatChanged(*param);
+#endif
 }
+
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+
+static void
+Interleave(std::byte *data, std::byte *end,
+	   std::size_t channels, std::size_t interleave) noexcept
+{
+	assert(channels > 1);
+	assert(channels <= MAX_CHANNELS);
+
+	constexpr std::size_t MAX_INTERLEAVE = 8;
+	assert(interleave > 1);
+	assert(interleave <= MAX_INTERLEAVE);
+
+	std::array<std::byte, MAX_CHANNELS * MAX_INTERLEAVE> buffer;
+	std::size_t buffer_size = channels * interleave;
+
+	while (data < end) {
+		std::copy_n(data, buffer_size, buffer.data());
+
+		const std::byte *src0 = buffer.data();
+		for (std::size_t channel = 0; channel < channels;
+		     ++channel, ++src0) {
+			const std::byte *src = src0;
+			for (std::size_t i = 0; i < interleave;
+			     ++i, src += channels)
+				*data++ = *src;
+		}
+	}
+}
+
+static void
+BitReverse(uint8_t *data, std::size_t n) noexcept
+{
+	while (n-- > 0)
+		*data = bit_reverse(*data);
+}
+
+static void
+BitReverse(std::byte *data, std::size_t n) noexcept
+{
+	BitReverse((uint8_t *)data, n);
+}
+
+static void
+PostProcessDsd(std::byte *data, struct spa_chunk &chunk, unsigned channels,
+	       bool reverse_bits, unsigned interleave) noexcept
+{
+	assert(chunk.size % channels == 0);
+
+	if (interleave > 1 && channels > 1) {
+		assert(chunk.size % (channels * interleave) == 0);
+
+		Interleave(data, data + chunk.size, channels, interleave);
+		chunk.stride *= interleave;
+	}
+
+	if (reverse_bits)
+		BitReverse(data, chunk.size);
+}
+
+#endif
 
 inline void
 PipeWireOutput::Process() noexcept
@@ -600,10 +723,25 @@ PipeWireOutput::Process() noexcept
 	if (dest == nullptr)
 		return;
 
-	const std::size_t max_frames = d.maxsize / frame_size;
-	const std::size_t max_size = max_frames * frame_size;
+	std::size_t max_frames = d.maxsize / frame_size;
 
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	if (use_dsd && dsd_interleave > 1) {
+		/* make sure we don't get partial interleave frames */
+		std::size_t interleave_size = frame_size * dsd_interleave;
+		std::size_t available_bytes = ring_buffer->read_available();
+		std::size_t available_interleaves =
+			available_bytes / interleave_size;
+		std::size_t available_frames =
+			available_interleaves * dsd_interleave;
+		if (max_frames > available_frames)
+			max_frames = available_frames;
+	}
+#endif
+
+	const std::size_t max_size = max_frames * frame_size;
 	size_t nbytes = ring_buffer->pop(dest, max_size);
+	assert(nbytes % frame_size == 0);
 	if (nbytes == 0) {
 		if (drain_requested) {
 			pw_stream_flush(stream, true);
@@ -621,6 +759,12 @@ PipeWireOutput::Process() noexcept
 	chunk.offset = 0;
 	chunk.stride = frame_size;
 	chunk.size = nbytes;
+
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	if (use_dsd)
+		PostProcessDsd(dest, chunk, channels,
+			       dsd_reverse_bits, dsd_interleave);
+#endif
 
 	pw_stream_queue_buffer(stream, b);
 
