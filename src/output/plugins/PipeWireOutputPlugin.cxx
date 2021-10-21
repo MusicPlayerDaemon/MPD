@@ -53,6 +53,7 @@
 
 #include <boost/lockfree/spsc_queue.hpp>
 
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 
@@ -293,9 +294,7 @@ PipeWireOutput::SetVolume(float _volume)
 
 	if (stream != nullptr && !restore_volume) {
 		float vol[MAX_CHANNELS];
-
-		for (unsigned i = 0; i < channels; i++)
-			vol[i] = newvol;
+		std::fill_n(vol, channels, newvol);
 
 		if (pw_stream_set_control(stream,
 				  SPA_PROP_channelVolumes, channels, vol,
