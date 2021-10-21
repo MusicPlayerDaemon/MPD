@@ -292,7 +292,7 @@ PipeWireOutput::SetVolume(float _volume)
 	float newvol = _volume*_volume*_volume;
 
 	if (stream != nullptr && !restore_volume) {
-		float vol[SPA_AUDIO_MAX_CHANNELS];
+		float vol[MAX_CHANNELS];
 
 		for (unsigned i = 0; i < channels; i++)
 			vol[i] = newvol;
