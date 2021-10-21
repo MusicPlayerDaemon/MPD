@@ -216,12 +216,7 @@ private:
 			o.ControlInfo(control);
 	}
 
-	void ParamChanged() noexcept {
-		if (restore_volume) {
-			SetVolume(volume);
-			restore_volume = false;
-		}
-	}
+	void ParamChanged(uint32_t id, const struct spa_pod *param) noexcept;
 
 	static void ParamChanged(void *data,
 				 uint32_t id,
@@ -231,7 +226,7 @@ private:
 			return;
 
 		auto &o = *(PipeWireOutput *)data;
-		o.ParamChanged();
+		o.ParamChanged(id, param);
 	}
 
 	/* virtual methods from class AudioOutput */
@@ -569,6 +564,16 @@ PipeWireOutput::StateChanged(enum pw_stream_state state,
 		pw_thread_loop_signal(thread_loop, false);
 	}
 
+}
+
+inline void
+PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
+			     [[maybe_unused]] const struct spa_pod *param) noexcept
+{
+	if (restore_volume) {
+		SetVolume(volume);
+		restore_volume = false;
+	}
 }
 
 inline void
