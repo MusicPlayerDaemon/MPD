@@ -487,6 +487,14 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 
 	auto raw = ToPipeWireAudioFormat(audio_format);
 
+#if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
+	if (use_dsd)
+		/* restore the DSD format which was overwritten by
+		   ToPipeWireAudioFormat(), because DSD is a special
+		   case in PipeWire */
+		audio_format.format = SampleFormat::DSD;
+#endif
+
 	frame_size = audio_format.GetFrameSize();
 	sample_format = audio_format.format;
 	channels = audio_format.channels;
