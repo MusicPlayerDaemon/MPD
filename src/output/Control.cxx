@@ -46,10 +46,10 @@ AudioOutputControl::AudioOutputControl(AudioOutputControl &&src,
 	:output(src.Steal()),
 	 name(output->GetName()),
 	 client(_client),
-	 thread(BIND_THIS_METHOD(Task))
+	 thread(BIND_THIS_METHOD(Task)),
+	 tags(src.tags),
+	 always_on(src.always_on)
 {
-     tags = src.tags;
-     always_on = src.always_on;
 }
 
 AudioOutputControl::~AudioOutputControl() noexcept
