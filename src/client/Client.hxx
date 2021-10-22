@@ -150,7 +150,9 @@ public:
 	/**
 	 * Write a null-terminated string.
 	 */
-	bool Write(const char *data) noexcept;
+	bool Write(std::string_view s) noexcept {
+		return Write(s.data(), s.size());
+	}
 
 	/**
 	 * returns the uid of the client process, or a negative value
