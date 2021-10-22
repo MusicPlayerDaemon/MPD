@@ -1,4 +1,6 @@
 ver 0.23.2 (not yet released)
+* protocol
+  - fix "albumart" timeout bug
 * input
   - nfs: fix playback bug
 * output

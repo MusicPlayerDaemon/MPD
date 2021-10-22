@@ -42,5 +42,6 @@ LastInputStream::OnCloseTimer() noexcept
 {
 	assert(is);
 
+	uri.clear();
 	is.reset();
 }
