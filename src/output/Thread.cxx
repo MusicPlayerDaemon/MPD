@@ -74,13 +74,7 @@ AudioOutputControl::InternalOpen2(const AudioFormat in_audio_format)
 		try {
 			output->ConfigureConvertFilter();
 		} catch (...) {
-			open = false;
-
-			{
-				const ScopeUnlock unlock(mutex);
-				output->CloseOutput(false);
-			}
-
+			InternalCloseOutput(false);
 			throw;
 		}
 	}
