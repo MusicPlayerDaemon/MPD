@@ -181,7 +181,8 @@ public:
 	void Disable() noexcept;
 
 	/**
-	 * Invoke OutputPlugin::close().
+	 * Close everything: the output (via CloseOutput()) and the
+	 * software mixer (via CloseSoftwareMixer()).
 	 *
 	 * Caller must not lock the mutex.
 	 */
@@ -200,7 +201,7 @@ public:
 	void OpenOutputAndConvert(AudioFormat audio_format);
 
 	/**
-	 * Close the output plugin.
+	 * Invoke AudioOutput::Close(), but nothing else.
 	 *
 	 * Mutex must not be locked.
 	 */
