@@ -80,9 +80,8 @@ LoadOutputControl(EventLoop &event_loop, EventLoop &rt_event_loop,
 				 replay_gain_config,
 				 mixer_listener,
 				 block, defaults, filter_factory);
-	auto control = std::make_unique<AudioOutputControl>(std::move(output), client);
-	control->Configure(block);
-	return control;
+	return std::make_unique<AudioOutputControl>(std::move(output),
+						    client, block);
 }
 
 void

@@ -33,11 +33,15 @@
 static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
 
 AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
-				       AudioOutputClient &_client) noexcept
+				       AudioOutputClient &_client,
+				       const ConfigBlock &block)
 	:output(std::move(_output)),
 	 name(output->GetName()),
 	 client(_client),
-	 thread(BIND_THIS_METHOD(Task))
+	 thread(BIND_THIS_METHOD(Task)),
+	 tags(block.GetBlockValue("tags", true)),
+	 always_on(block.GetBlockValue("always_on", false)),
+	 enabled(block.GetBlockValue("enabled", true))
 {
 }
 
@@ -55,14 +59,6 @@ AudioOutputControl::AudioOutputControl(AudioOutputControl &&src,
 AudioOutputControl::~AudioOutputControl() noexcept
 {
 	StopThread();
-}
-
-void
-AudioOutputControl::Configure(const ConfigBlock &block)
-{
-	tags = block.GetBlockValue("tags", true);
-	always_on = block.GetBlockValue("always_on", false);
-	enabled = block.GetBlockValue("enabled", true);
 }
 
 std::unique_ptr<FilteredAudioOutput>

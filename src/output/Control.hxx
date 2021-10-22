@@ -249,8 +249,12 @@ public:
 	 */
 	mutable Mutex mutex;
 
+	/**
+	 * Throws on error.
+	 */
 	AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
-			   AudioOutputClient &_client) noexcept;
+			   AudioOutputClient &_client,
+			   const ConfigBlock &block);
 
 	/**
 	 * Move the contents of an existing instance, and convert that
@@ -263,11 +267,6 @@ public:
 
 	AudioOutputControl(const AudioOutputControl &) = delete;
 	AudioOutputControl &operator=(const AudioOutputControl &) = delete;
-
-	/**
-	 * Throws on error.
-	 */
-	void Configure(const ConfigBlock &block);
 
 	[[gnu::pure]]
 	const char *GetName() const noexcept;
