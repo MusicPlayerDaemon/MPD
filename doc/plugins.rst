@@ -836,6 +836,11 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
      - If set to no, then libasound will not attempt to convert between different sample formats (16 bit, 24 bit, floating point, ...).
    * - **dop yes|no**
      - If set to yes, then DSD over PCM according to the `DoP standard <http://dsd-guide.com/dop-open-standard>`_ is enabled. This wraps DSD samples in fake 24 bit PCM, and is understood by some DSD capable products, but may be harmful to other hardware. Therefore, the default is no and you can enable the option at your own risk.
+   * - **stop_dsd_silence yes|no**
+     - If enabled, silence is played before manually stopping playback
+       ("stop" or "pause") in DSD mode (native DSD or DoP).  This is a
+       workaround for some DACs which emit noise when stopping DSD
+       playback.
    * - **allowed_formats F1 F2 ...**
      - Specifies a list of allowed audio formats, separated by a space. All items may contain asterisks as a wild card, and may be followed by "=dop" to enable DoP (DSD over PCM) for this particular format. The first matching format is used, and if none matches, MPD chooses the best fallback of this list.
        

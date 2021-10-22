@@ -84,6 +84,23 @@ class AlsaOutput final
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
 	bool dop_setting;
+
+	/**
+	 * Are we currently playing DSD?  (Native DSD or DoP)
+	 */
+	bool use_dsd;
+
+	/**
+	 * Play some silence before closing the output in DSD mode?
+	 * This is a workaround for some DACs which emit noise when
+	 * stopping DSD playback.
+	 */
+	const bool stop_dsd_silence;
+
+	/**
+	 * Are we currently draining with #stop_dsd_silence?
+	 */
+	bool in_stop_dsd_silence;
 #endif
 
 	/** libasound's buffer_time setting (in microseconds) */
@@ -355,6 +372,9 @@ private:
 		error = std::current_exception();
 		active = false;
 		waiting = false;
+#ifdef ENABLE_DSD
+		in_stop_dsd_silence = false;
+#endif
 		cond.notify_one();
 	}
 
@@ -411,6 +431,7 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 	 dop_setting(block.GetBlockValue("dop", false) ||
 		     /* legacy name from MPD 0.18 and older: */
 		     block.GetBlockValue("dsd_usb", false)),
+	 stop_dsd_silence(block.GetBlockValue("stop_dsd_silence", false)),
 #endif
 	 buffer_time(block.GetPositiveValue("buffer_time",
 					    MPD_ALSA_BUFFER_TIME_US)),
@@ -711,6 +732,9 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	snd_pcm_nonblock(pcm, 1);
 
 #ifdef ENABLE_DSD
+	use_dsd = audio_format.format == SampleFormat::DSD;
+	in_stop_dsd_silence = false;
+
 	if (params.dsd_mode == PcmExport::DsdMode::DOP)
 		LogDebug(alsa_output_domain, "DoP (DSD over PCM) enabled");
 #endif
@@ -844,6 +868,18 @@ AlsaOutput::WriteFromPeriodBuffer() noexcept
 inline bool
 AlsaOutput::DrainInternal()
 {
+#ifdef ENABLE_DSD
+	if (in_stop_dsd_silence) {
+		/* "stop_dsd_silence" is in progress: clear internal
+		   buffers and instead, fill the period buffer with
+		   silence */
+		in_stop_dsd_silence = false;
+		ring_buffer->reset();
+		period_buffer.Clear();
+		period_buffer.FillWithSilence(silence, out_frame_size);
+	}
+#endif
+
 	/* drain ring_buffer */
 	CopyRingToPeriodBuffer();
 
@@ -973,6 +1009,17 @@ AlsaOutput::Cancel() noexcept
 
 		return;
 	}
+
+#ifdef ENABLE_DSD
+	if (stop_dsd_silence && use_dsd) {
+		/* play some DSD silence instead of snd_pcm_drop() */
+		std::unique_lock<Mutex> lock(mutex);
+		in_stop_dsd_silence = true;
+		drain = true;
+		cond.wait(lock, [this]{ return !drain || !active; });
+		return;
+	}
+#endif
 
 	BlockingCall(GetEventLoop(), [this](){
 			CancelInternal();
