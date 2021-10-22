@@ -34,8 +34,8 @@ inline bool
 CrossFadeSettings::CanCrossFadeSong(SignedSongTime total_time) const noexcept
 {
 	return !total_time.IsNegative() &&
-		duration >= MIN_TOTAL_TIME &&
-		duration >= std::chrono::duration_cast<FloatDuration>(total_time);
+		total_time >= MIN_TOTAL_TIME &&
+		duration < std::chrono::duration_cast<FloatDuration>(total_time);
 }
 
 gcc_pure
