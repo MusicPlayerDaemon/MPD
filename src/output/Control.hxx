@@ -151,13 +151,13 @@ class AudioOutputControl {
 	 * default is true, but it may be configured to false to
 	 * suppress sending tags to the output.
 	 */
-	bool tags;
+	const bool tags;
 
 	/**
 	 * Shall this output always play something (i.e. silence),
 	 * even when playback is stopped?
 	 */
-	bool always_on;
+	const bool always_on;
 
 	/**
 	 * Has the user enabled this device?
