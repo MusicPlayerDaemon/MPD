@@ -154,6 +154,10 @@ public:
 		return Write(s.data(), s.size());
 	}
 
+	bool WriteOK() noexcept {
+		return Write("OK\n");
+	}
+
 	/**
 	 * returns the uid of the client process, or a negative value
 	 * if the uid is unknown

@@ -21,7 +21,6 @@
 #include "Client.hxx"
 #include "Response.hxx"
 #include "command/CommandError.hxx"
-#include "protocol/Result.hxx"
 
 ThreadBackgroundCommand::ThreadBackgroundCommand(Client &_client) noexcept
 	:thread(BIND_THIS_METHOD(_Run)),
@@ -57,7 +56,7 @@ ThreadBackgroundCommand::DeferredFinish() noexcept
 		PrintError(response, error);
 	} else {
 		SendResponse(response);
-		command_success(client);
+		client.WriteOK();
 	}
 
 	/* delete this object */

@@ -20,7 +20,6 @@
 #include "Client.hxx"
 #include "Config.hxx"
 #include "Domain.hxx"
-#include "protocol/Result.hxx"
 #include "command/AllCommands.hxx"
 #include "Log.hxx"
 #include "util/StringAPI.hxx"
@@ -72,7 +71,7 @@ Client::ProcessLine(char *line) noexcept
 		if (idle_waiting) {
 			/* send empty idle response and leave idle mode */
 			idle_waiting = false;
-			command_success(*this);
+			WriteOK();
 		}
 
 		/* do nothing if the client wasn't idling: the client
@@ -108,7 +107,7 @@ Client::ProcessLine(char *line) noexcept
 				 "list returned {}", id, unsigned(ret));
 
 			if (ret == CommandResult::OK)
-				command_success(*this);
+				WriteOK();
 
 			return ret;
 		} else {
@@ -144,7 +143,7 @@ Client::ProcessLine(char *line) noexcept
 				return CommandResult::CLOSE;
 
 			if (ret == CommandResult::OK)
-				command_success(*this);
+				WriteOK();
 
 			return ret;
 		}

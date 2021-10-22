@@ -265,7 +265,6 @@ sources = [
   version_cxx,
   'src/Main.cxx',
   'src/protocol/ArgParser.cxx',
-  'src/protocol/Result.cxx',
   'src/command/CommandError.cxx',
   'src/command/PositionArg.cxx',
   'src/command/AllCommands.cxx',
