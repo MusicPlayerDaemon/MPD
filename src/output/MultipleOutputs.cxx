@@ -130,19 +130,6 @@ MultipleOutputs::FindByName(const char *name) noexcept
 }
 
 void
-MultipleOutputs::Add(std::unique_ptr<FilteredAudioOutput> output,
-		     bool enable) noexcept
-{
-	// TODO: this operation needs to be protected with a mutex
-	outputs.push_back(std::make_unique<AudioOutputControl>(std::move(output),
-								  client));
-
-	outputs.back()->LockSetEnabled(enable);
-
-	client.ApplyEnabled();
-}
-
-void
 MultipleOutputs::AddMoveFrom(AudioOutputControl &&src,
 			     bool enable) noexcept
 {
