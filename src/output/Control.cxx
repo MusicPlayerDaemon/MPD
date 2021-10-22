@@ -41,15 +41,15 @@ AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _out
 {
 }
 
-AudioOutputControl::AudioOutputControl(AudioOutputControl *_output,
+AudioOutputControl::AudioOutputControl(AudioOutputControl &&src,
 				       AudioOutputClient &_client) noexcept
-	:output(_output->Steal()),
+	:output(src.Steal()),
 	 name(output->GetName()),
 	 client(_client),
 	 thread(BIND_THIS_METHOD(Task))
 {
-     tags =_output->tags;
-	 always_on=_output->always_on;
+     tags = src.tags;
+     always_on = src.always_on;
 }
 
 AudioOutputControl::~AudioOutputControl() noexcept

@@ -186,7 +186,8 @@ handle_moveoutput(Client &client, Request request, Response &response)
 						      was_enabled);
 		else
 			/* copy the AudioOutputControl and add it to the output list */
-			dest_partition.outputs.AddCopy(output,was_enabled);
+			dest_partition.outputs.AddMoveFrom(std::move(*output),
+							   was_enabled);
 
 		instance.EmitIdle(IDLE_OUTPUT);
 		return CommandResult::OK;

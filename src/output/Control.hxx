@@ -252,7 +252,11 @@ public:
 	AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
 			   AudioOutputClient &_client) noexcept;
 
-	AudioOutputControl(AudioOutputControl *_outputControl,
+	/**
+	 * Move the contents of an existing instance, and convert that
+	 * existing instance to a "dummy" output.
+	 */
+	AudioOutputControl(AudioOutputControl &&src,
 			   AudioOutputClient &_client) noexcept;
 
 	~AudioOutputControl() noexcept;

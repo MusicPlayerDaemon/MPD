@@ -143,11 +143,12 @@ MultipleOutputs::Add(std::unique_ptr<FilteredAudioOutput> output,
 }
 
 void
-MultipleOutputs::AddCopy(AudioOutputControl *outputControl,
-		     bool enable) noexcept
+MultipleOutputs::AddMoveFrom(AudioOutputControl &&src,
+			     bool enable) noexcept
 {
 	// TODO: this operation needs to be protected with a mutex
-	outputs.push_back(std::make_unique<AudioOutputControl>(outputControl, client));
+	outputs.push_back(std::make_unique<AudioOutputControl>(std::move(src),
+							       client));
 
 	outputs.back()->LockSetEnabled(enable);
 
