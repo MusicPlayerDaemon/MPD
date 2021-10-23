@@ -85,7 +85,7 @@ handle_not_commands(Client &client, Request request, Response &response);
  * This array must be sorted!
  */
 static constexpr struct command commands[] = {
-	{ "add", PERMISSION_ADD, 1, 1, handle_add },
+	{ "add", PERMISSION_ADD, 1, 2, handle_add },
 	{ "addid", PERMISSION_ADD, 1, 2, handle_addid },
 	{ "addtagid", PERMISSION_ADD, 3, 3, handle_addtagid },
 	{ "albumart", PERMISSION_READ, 2, 2, handle_album_art },

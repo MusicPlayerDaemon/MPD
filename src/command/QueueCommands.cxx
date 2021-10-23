@@ -79,6 +79,11 @@ handle_add(Client &client, Request args, [[maybe_unused]] Response &r)
 		   here */
 		uri = "";
 
+	const auto old_size = partition.playlist.GetLength();
+	const unsigned position = args.size > 1
+		? ParseInsertPosition(args[1], partition.playlist)
+		: old_size;
+
 	const auto located_uri = LocateUri(UriPluginKind::INPUT, uri,
 					   &client
 #ifdef ENABLE_DATABASE
@@ -89,23 +94,34 @@ handle_add(Client &client, Request args, [[maybe_unused]] Response &r)
 	case LocatedUri::Type::ABSOLUTE:
 		AddUri(client, located_uri);
 		client.GetInstance().LookupRemoteTag(located_uri.canonical_uri);
-		return CommandResult::OK;
+		break;
 
 	case LocatedUri::Type::PATH:
 		AddUri(client, located_uri);
-		return CommandResult::OK;
+		break;
 
 	case LocatedUri::Type::RELATIVE:
 #ifdef ENABLE_DATABASE
 		AddDatabaseSelection(partition, located_uri.canonical_uri);
-		return CommandResult::OK;
+		break;
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
 #endif
 	}
 
-	gcc_unreachable();
+	if (position < old_size) {
+		const unsigned new_size = partition.playlist.GetLength();
+		const RangeArg move_range{old_size, new_size};
+
+		try {
+			partition.MoveRange(move_range, position);
+		} catch (...) {
+			/* ignore - shall we handle it? */
+		}
+	}
+
+	return CommandResult::OK;
 }
 
 CommandResult

@@ -689,10 +689,13 @@ Whenever possible, ids should be used.
 
 .. _command_add:
 
-:command:`add {URI}`
+:command:`add {URI} [POSITION]`
     Adds the file ``URI`` to the playlist
     (directories add recursively). ``URI``
     can also be a single file.
+
+    The position parameter is the same as in :ref:`addid
+    <command_addid>`.
 
     Clients that are connected via local socket may add arbitrary
     local files (URI is an absolute path).  Example::

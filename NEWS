@@ -1,4 +1,6 @@
 ver 0.23.3 (not yet released)
+* protocol
+  - add optional position parameter to "add"
 * output
   - alsa: add option "stop_dsd_silence" to work around DSD DAC noise
 * macOS: fix libfmt related build failure
