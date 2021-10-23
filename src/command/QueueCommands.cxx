@@ -52,27 +52,21 @@ AddUri(Client &client, const LocatedUri &uri)
 				      SongLoader(client).LoadSong(uri));
 }
 
-static CommandResult
-AddDatabaseSelection(Partition &partition, const char *uri,
-		     [[maybe_unused]] Response &r)
-{
 #ifdef ENABLE_DATABASE
+
+static void
+AddDatabaseSelection(Partition &partition, const char *uri)
+{
 	const ScopeBulkEdit bulk_edit(partition);
 
 	const DatabaseSelection selection(uri, true);
 	AddFromDatabase(partition, selection);
-	return CommandResult::OK;
-#else
-	(void)partition;
-	(void)uri;
-
-	r.Error(ACK_ERROR_NO_EXIST, "No database");
-	return CommandResult::ERROR;
-#endif
 }
 
+#endif
+
 CommandResult
-handle_add(Client &client, Request args, Response &r)
+handle_add(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	auto &partition = client.GetPartition();
 
@@ -102,9 +96,13 @@ handle_add(Client &client, Request args, Response &r)
 		return CommandResult::OK;
 
 	case LocatedUri::Type::RELATIVE:
-		return AddDatabaseSelection(partition,
-					    located_uri.canonical_uri,
-					    r);
+#ifdef ENABLE_DATABASE
+		AddDatabaseSelection(partition, located_uri.canonical_uri);
+		return CommandResult::OK;
+#else
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
 	}
 
 	gcc_unreachable();
