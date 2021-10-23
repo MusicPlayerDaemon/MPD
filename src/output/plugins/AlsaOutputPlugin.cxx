@@ -93,7 +93,7 @@ class AlsaOutput final
 	const unsigned period_time;
 
 	/** the mode flags passed to snd_pcm_open */
-	int mode = 0;
+	const int mode;
 
 	std::forward_list<Alsa::AllowedFormat> allowed_formats;
 
@@ -408,21 +408,11 @@ private:
 
 static constexpr Domain alsa_output_domain("alsa_output");
 
-AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
-	:AudioOutput(FLAG_ENABLE_DISABLE),
-	 MultiSocketMonitor(_loop),
-	 defer_invalidate_sockets(_loop, BIND_THIS_METHOD(InvalidateSockets)),
-	 silence_timer(_loop, BIND_THIS_METHOD(OnSilenceTimer)),
-	 device(block.GetBlockValue("device", "")),
-#ifdef ENABLE_DSD
-	 dop_setting(block.GetBlockValue("dop", false) ||
-		     /* legacy name from MPD 0.18 and older: */
-		     block.GetBlockValue("dsd_usb", false)),
-#endif
-	 buffer_time(block.GetPositiveValue("buffer_time",
-					    MPD_ALSA_BUFFER_TIME_US)),
-	 period_time(block.GetPositiveValue("period_time", 0U))
+static int
+GetAlsaOpenMode(const ConfigBlock &block)
 {
+	int mode = 0;
+
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!block.GetBlockValue("auto_resample", true))
 		mode |= SND_PCM_NO_AUTO_RESAMPLE;
@@ -438,6 +428,25 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 		mode |= SND_PCM_NO_AUTO_FORMAT;
 #endif
 
+	return mode;
+}
+
+AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
+	:AudioOutput(FLAG_ENABLE_DISABLE),
+	 MultiSocketMonitor(_loop),
+	 defer_invalidate_sockets(_loop, BIND_THIS_METHOD(InvalidateSockets)),
+	 silence_timer(_loop, BIND_THIS_METHOD(OnSilenceTimer)),
+	 device(block.GetBlockValue("device", "")),
+#ifdef ENABLE_DSD
+	 dop_setting(block.GetBlockValue("dop", false) ||
+		     /* legacy name from MPD 0.18 and older: */
+		     block.GetBlockValue("dsd_usb", false)),
+#endif
+	 buffer_time(block.GetPositiveValue("buffer_time",
+					    MPD_ALSA_BUFFER_TIME_US)),
+	 period_time(block.GetPositiveValue("period_time", 0U)),
+	 mode(GetAlsaOpenMode(block))
+{
 	const char *allowed_formats_string =
 		block.GetBlockValue("allowed_formats", nullptr);
 	if (allowed_formats_string != nullptr)
