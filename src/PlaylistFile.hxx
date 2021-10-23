@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_FILE_HXX
 #define MPD_PLAYLIST_FILE_HXX
 
+#include "fs/AllocatedPath.hxx"
+
 #include <vector>
 #include <string>
 
@@ -27,11 +29,36 @@ struct ConfigData;
 class DetachedSong;
 class SongLoader;
 class PlaylistVector;
-class AllocatedPath;
 
 typedef std::vector<std::string> PlaylistFileContents;
 
 extern bool playlist_saveAbsolutePaths;
+
+class PlaylistFileEditor {
+	const AllocatedPath path;
+
+	PlaylistFileContents contents;
+
+public:
+	enum class LoadMode {
+		NO,
+		YES,
+		TRY,
+	};
+
+	/**
+	 * Throws on error.
+	 */
+	explicit PlaylistFileEditor(const char *name_utf8, LoadMode load_mode);
+
+	void MoveIndex(unsigned src, unsigned dest);
+	void RemoveIndex(unsigned i);
+
+	void Save();
+
+private:
+	void Load();
+};
 
 /**
  * Perform some global initialization, e.g. load configuration values.
@@ -54,9 +81,6 @@ spl_map_to_fs(const char *name_utf8);
  */
 PlaylistVector
 ListPlaylistFiles();
-
-PlaylistFileContents
-LoadPlaylistFile(const char *utf8path);
 
 void
 spl_move_index(const char *utf8path, unsigned src, unsigned dest);
