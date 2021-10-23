@@ -30,12 +30,7 @@ namespace Alsa {
 AllowedFormat::AllowedFormat(StringView s)
 {
 #ifdef ENABLE_DSD
-	const StringView dop_tail("=dop");
-	if (s.EndsWith(dop_tail)) {
-		dop = true;
-		s.size -= dop_tail.size;
-	} else
-		dop = false;
+	dop = s.RemoveSuffix("=dop");
 #endif
 
 	char buffer[64];
