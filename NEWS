@@ -1,4 +1,5 @@
 ver 0.23.3 (not yet released)
+* macOS: fix libfmt related build failure
 
 ver 0.23.2 (2021/10/22)
 * protocol

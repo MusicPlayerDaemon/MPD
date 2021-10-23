@@ -25,7 +25,6 @@ if zeroconf_option == 'bonjour'
   endif
 
   bonjour_deps = [
-    log_dep,
   ]
 
   if not is_darwin
@@ -41,6 +40,7 @@ if zeroconf_option == 'bonjour'
     include_directories: inc,
     dependencies: [
       event_dep,
+      log_dep,
     ],
   )
 
