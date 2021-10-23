@@ -471,7 +471,7 @@ AlsaOutput::SetAttribute(std::string &&name, std::string &&value)
 {
 	if (name == "allowed_formats") {
 		const std::lock_guard<Mutex> lock(attributes_mutex);
-		allowed_formats = Alsa::AllowedFormat::ParseList({value.data(), value.length()});
+		allowed_formats = Alsa::AllowedFormat::ParseList(value);
 #ifdef ENABLE_DSD
 	} else if (name == "dop") {
 		const std::lock_guard<Mutex> lock(attributes_mutex);

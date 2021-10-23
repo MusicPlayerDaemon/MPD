@@ -54,7 +54,7 @@ AllowedFormat::AllowedFormat(StringView s)
 }
 
 std::forward_list<AllowedFormat>
-AllowedFormat::ParseList(StringView s)
+AllowedFormat::ParseList(std::string_view s)
 {
 	std::forward_list<AllowedFormat> list;
 	auto tail = list.before_begin();

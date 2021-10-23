@@ -52,7 +52,7 @@ struct AllowedFormat {
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	static std::forward_list<AllowedFormat> ParseList(StringView s);
+	static std::forward_list<AllowedFormat> ParseList(std::string_view s);
 };
 
 std::string
