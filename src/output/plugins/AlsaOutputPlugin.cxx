@@ -344,39 +344,9 @@ private:
 	/**
 	 * @return false if no data was moved
 	 */
-	bool CopyRingToPeriodBuffer() noexcept {
-		if (period_buffer.IsFull())
-			return false;
+	bool CopyRingToPeriodBuffer() noexcept;
 
-		size_t nbytes = ring_buffer->pop(period_buffer.GetTail(),
-						 period_buffer.GetSpaceBytes());
-		if (nbytes == 0)
-			return false;
-
-		period_buffer.AppendBytes(nbytes);
-
-		const std::lock_guard<Mutex> lock(mutex);
-		/* notify the OutputThread that there is now
-		   room in ring_buffer */
-		cond.notify_one();
-
-		return true;
-	}
-
-	snd_pcm_sframes_t WriteFromPeriodBuffer() noexcept {
-		assert(period_buffer.IsFull());
-		assert(period_buffer.GetFrames(out_frame_size) > 0);
-
-		auto frames_written = snd_pcm_writei(pcm, period_buffer.GetHead(),
-						     period_buffer.GetFrames(out_frame_size));
-		if (frames_written > 0) {
-			written = true;
-			period_buffer.ConsumeFrames(frames_written,
-						    out_frame_size);
-		}
-
-		return frames_written;
-	}
+	snd_pcm_sframes_t WriteFromPeriodBuffer() noexcept;
 
 	void LockCaughtError() noexcept {
 		period_buffer.Clear();
@@ -831,6 +801,44 @@ AlsaOutput::Recover(int err) noexcept
 	}
 
 	return err;
+}
+
+bool
+AlsaOutput::CopyRingToPeriodBuffer() noexcept
+{
+	if (period_buffer.IsFull())
+		return false;
+
+	size_t nbytes = ring_buffer->pop(period_buffer.GetTail(),
+					 period_buffer.GetSpaceBytes());
+	if (nbytes == 0)
+		return false;
+
+	period_buffer.AppendBytes(nbytes);
+
+	const std::lock_guard<Mutex> lock(mutex);
+	/* notify the OutputThread that there is now
+	   room in ring_buffer */
+	cond.notify_one();
+
+	return true;
+}
+
+snd_pcm_sframes_t
+AlsaOutput::WriteFromPeriodBuffer() noexcept
+{
+	assert(period_buffer.IsFull());
+	assert(period_buffer.GetFrames(out_frame_size) > 0);
+
+	auto frames_written = snd_pcm_writei(pcm, period_buffer.GetHead(),
+					     period_buffer.GetFrames(out_frame_size));
+	if (frames_written > 0) {
+		written = true;
+		period_buffer.ConsumeFrames(frames_written,
+					    out_frame_size);
+	}
+
+	return frames_written;
 }
 
 inline bool
