@@ -53,18 +53,17 @@ AddUri(Client &client, const LocatedUri &uri)
 }
 
 static CommandResult
-AddDatabaseSelection(Client &client, const char *uri,
+AddDatabaseSelection(Partition &partition, const char *uri,
 		     [[maybe_unused]] Response &r)
 {
 #ifdef ENABLE_DATABASE
-	auto &partition = client.GetPartition();
 	const ScopeBulkEdit bulk_edit(partition);
 
 	const DatabaseSelection selection(uri, true);
 	AddFromDatabase(partition, selection);
 	return CommandResult::OK;
 #else
-	(void)client;
+	(void)partition;
 	(void)uri;
 
 	r.Error(ACK_ERROR_NO_EXIST, "No database");
@@ -75,6 +74,8 @@ AddDatabaseSelection(Client &client, const char *uri,
 CommandResult
 handle_add(Client &client, Request args, Response &r)
 {
+	auto &partition = client.GetPartition();
+
 	const char *uri = args.front();
 	if (StringIsEqual(uri, "/"))
 		/* this URI is malformed, but some clients are buggy
@@ -101,7 +102,8 @@ handle_add(Client &client, Request args, Response &r)
 		return CommandResult::OK;
 
 	case LocatedUri::Type::RELATIVE:
-		return AddDatabaseSelection(client, located_uri.canonical_uri,
+		return AddDatabaseSelection(partition,
+					    located_uri.canonical_uri,
 					    r);
 	}
 
