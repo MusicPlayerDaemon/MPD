@@ -5,6 +5,7 @@ ver 0.23.3 (not yet released)
 * output
   - alsa: add option "stop_dsd_silence" to work around DSD DAC noise
 * macOS: fix libfmt related build failure
+* systemd: add "RuntimeDirectory" directive
 
 ver 0.23.2 (2021/10/22)
 * protocol
