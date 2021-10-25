@@ -551,7 +551,7 @@ Playback options
 
 .. _command_getvol:
 
-:command:`getvol`
+:command:`getvol` [#since_0_23]_
 
     Read the volume.  The result is a ``volume:`` line like in
     :ref:`status <command_status>`.  If there is no mixer, MPD will
@@ -714,10 +714,10 @@ Whenever possible, ids should be used.
 
     If the second parameter is given, then the song is inserted at the
     specified position.  If the parameter starts with ``+`` or ``-``,
-    then it is relative to the current song; e.g. ``+0`` inserts right
-    after the current song and ``-0`` inserts right before the current
-    song (i.e. zero songs between the current song and the newly added
-    song).
+    then it is relative to the current song [#since_0_23]_; e.g. ``+0``
+    inserts right after the current song and ``-0`` inserts right
+    before the current song (i.e. zero songs between the current song
+    and the newly added song).
 
 .. _command_clear:
 
@@ -929,7 +929,7 @@ remote playlists (absolute URI with a supported scheme).
     inserted into the queue; it can be relative as described in
     :ref:`addid <command_addid>`.  (This requires specifying the range
     as well; the special value `0:` can be used if the whole playlist
-    shall be loaded at a certain queue position.)
+    shall be loaded at a certain queue position.)  [#since_0_23_1]
 
 .. _command_playlistadd:
 
@@ -1216,7 +1216,7 @@ The music database
     Parameters have the same meaning as for :ref:`search <command_search>`.
 
     The ``position`` parameter specifies where the songs will be
-    inserted.
+    inserted. [#since_0_23]_
 
 .. _command_searchaddpl:
 
@@ -1647,3 +1647,5 @@ client-to-client messages are local to the current partition.
 .. [#since_0_20] Since :program:`MPD` 0.20
 .. [#since_0_21] Since :program:`MPD` 0.21
 .. [#since_0_22_4] Since :program:`MPD` 0.22.4
+.. [#since_0_23] Since :program:`MPD` 0.23
+.. [#since_0_23_1] Since :program:`MPD` 0.23.1
