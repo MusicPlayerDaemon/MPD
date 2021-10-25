@@ -177,7 +177,9 @@ handle_playlistdelete([[maybe_unused]] Client &client,
 	const char *const name = args[0];
 	unsigned from = args.ParseUnsigned(1);
 
-	spl_remove_index(name, from);
+	PlaylistFileEditor editor(name, PlaylistFileEditor::LoadMode::YES);
+	editor.RemoveIndex(from);
+	editor.Save();
 	return CommandResult::OK;
 }
 
@@ -189,7 +191,14 @@ handle_playlistmove([[maybe_unused]] Client &client,
 	unsigned from = args.ParseUnsigned(1);
 	unsigned to = args.ParseUnsigned(2);
 
-	spl_move_index(name, from, to);
+	if (from == to)
+		/* this doesn't check whether the playlist exists, but
+		   what the hell.. */
+		return CommandResult::OK;
+
+	PlaylistFileEditor editor(name, PlaylistFileEditor::LoadMode::YES);
+	editor.MoveIndex(from, to);
+	editor.Save();
 	return CommandResult::OK;
 }
 

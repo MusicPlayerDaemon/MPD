@@ -90,16 +90,10 @@ PlaylistVector
 ListPlaylistFiles();
 
 void
-spl_move_index(const char *utf8path, unsigned src, unsigned dest);
-
-void
 spl_clear(const char *utf8path);
 
 void
 spl_delete(const char *name_utf8);
-
-void
-spl_remove_index(const char *utf8path, unsigned pos);
 
 void
 spl_append_song(const char *utf8path, const DetachedSong &song);

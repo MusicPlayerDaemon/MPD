@@ -322,19 +322,6 @@ PlaylistFileEditor::Save()
 }
 
 void
-spl_move_index(const char *utf8path, unsigned src, unsigned dest)
-{
-	if (src == dest)
-		/* this doesn't check whether the playlist exists, but
-		   what the hell.. */
-		return;
-
-	PlaylistFileEditor editor(utf8path, PlaylistFileEditor::LoadMode::YES);
-	editor.MoveIndex(src, dest);
-	editor.Save();
-}
-
-void
 spl_clear(const char *utf8path)
 {
 	const auto path_fs = spl_map_to_fs(utf8path);
@@ -370,14 +357,6 @@ spl_delete(const char *name_utf8)
 	}
 
 	idle_add(IDLE_STORED_PLAYLIST);
-}
-
-void
-spl_remove_index(const char *utf8path, unsigned pos)
-{
-	PlaylistFileEditor editor(utf8path, PlaylistFileEditor::LoadMode::YES);
-	editor.RemoveIndex(pos);
-	editor.Save();
 }
 
 void
