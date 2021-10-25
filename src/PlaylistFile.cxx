@@ -26,6 +26,7 @@
 #include "song/DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "Mapper.hxx"
+#include "protocol/RangeArg.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
@@ -312,6 +313,16 @@ PlaylistFileEditor::RemoveIndex(unsigned i)
 		throw PlaylistError(PlaylistResult::BAD_RANGE, "Bad range");
 
 	contents.erase(std::next(contents.begin(), i));
+}
+
+void
+PlaylistFileEditor::RemoveRange(RangeArg range)
+{
+	if (!range.CheckClip(size()))
+		throw PlaylistError::BadRange();
+
+	contents.erase(std::next(contents.begin(), range.start),
+		       std::next(contents.begin(), range.end));
 }
 
 void

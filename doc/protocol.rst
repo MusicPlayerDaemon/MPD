@@ -929,7 +929,7 @@ remote playlists (absolute URI with a supported scheme).
     inserted into the queue; it can be relative as described in
     :ref:`addid <command_addid>`.  (This requires specifying the range
     as well; the special value `0:` can be used if the whole playlist
-    shall be loaded at a certain queue position.)  [#since_0_23_1]
+    shall be loaded at a certain queue position.)  [#since_0_23_1]_
 
 .. _command_playlistadd:
 
@@ -952,6 +952,8 @@ remote playlists (absolute URI with a supported scheme).
 :command:`playlistdelete {NAME} {SONGPOS}`
     Deletes ``SONGPOS`` from the
     playlist `NAME.m3u`.
+
+    The second parameter can be a range. [#since_0_23_3]_
 
 .. _command_playlistmove:
 

@@ -175,10 +175,10 @@ handle_playlistdelete([[maybe_unused]] Client &client,
 		      Request args, [[maybe_unused]] Response &r)
 {
 	const char *const name = args[0];
-	unsigned from = args.ParseUnsigned(1);
+	const auto range = args.ParseRange(1);
 
 	PlaylistFileEditor editor(name, PlaylistFileEditor::LoadMode::YES);
-	editor.RemoveIndex(from);
+	editor.RemoveRange(range);
 	editor.Save();
 	return CommandResult::OK;
 }

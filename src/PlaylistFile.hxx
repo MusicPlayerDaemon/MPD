@@ -26,6 +26,7 @@
 #include <string>
 
 struct ConfigData;
+struct RangeArg;
 class DetachedSong;
 class SongLoader;
 class PlaylistVector;
@@ -60,6 +61,7 @@ public:
 
 	void MoveIndex(unsigned src, unsigned dest);
 	void RemoveIndex(unsigned i);
+	void RemoveRange(RangeArg range);
 
 	void Save();
 
