@@ -51,6 +51,13 @@ public:
 	 */
 	explicit PlaylistFileEditor(const char *name_utf8, LoadMode load_mode);
 
+	auto size() const noexcept {
+		return contents.size();
+	}
+
+	void Insert(std::size_t i, const char *uri);
+	void Insert(std::size_t i, const DetachedSong &song);
+
 	void MoveIndex(unsigned src, unsigned dest);
 	void RemoveIndex(unsigned i);
 

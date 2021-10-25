@@ -22,8 +22,10 @@
 #include "PositionArg.hxx"
 #include "Request.hxx"
 #include "Instance.hxx"
+#include "db/Interface.hxx"
 #include "db/Selection.hxx"
 #include "db/DatabasePlaylist.hxx"
+#include "db/DatabaseSong.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistError.hxx"
@@ -201,11 +203,55 @@ handle_playlistclear([[maybe_unused]] Client &client,
 	return CommandResult::OK;
 }
 
+static CommandResult
+handle_playlistadd_position(Client &client, const char *playlist_name,
+			    const char *uri, unsigned position,
+			    Response &r)
+{
+	PlaylistFileEditor editor{
+		playlist_name,
+		PlaylistFileEditor::LoadMode::TRY,
+	};
+
+	if (position > editor.size()) {
+		r.Error(ACK_ERROR_ARG, "Bad position");
+		return CommandResult::ERROR;
+	}
+
+	if (uri_has_scheme(uri)) {
+		editor.Insert(position, uri);
+	} else {
+#ifdef ENABLE_DATABASE
+		const auto &db = client.GetDatabaseOrThrow();
+		const auto *storage = client.GetStorage();
+		const DatabaseSelection selection(uri, true, nullptr);
+
+		db.Visit(selection, [&editor, &position, storage](const auto &song){
+			editor.Insert(position,
+				      DatabaseDetachSong(storage, song));
+			++position;
+		});
+#else
+		(void)client;
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
+	}
+
+	editor.Save();
+
+	return CommandResult::OK;
+}
+
 CommandResult
 handle_playlistadd(Client &client, Request args, [[maybe_unused]] Response &r)
 {
 	const char *const playlist = args[0];
 	const char *const uri = args[1];
+
+	if (args.size >= 3)
+		return handle_playlistadd_position(client, playlist, uri,
+						   args.ParseUnsigned(2), r);
 
 	if (uri_has_scheme(uri)) {
 		const SongLoader loader(client);

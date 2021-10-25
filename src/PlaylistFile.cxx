@@ -269,6 +269,29 @@ PlaylistFileEditor::PlaylistFileEditor(const char *name_utf8,
 }
 
 void
+PlaylistFileEditor::Insert(std::size_t i, const char *uri)
+{
+	if (i > size())
+		throw PlaylistError(PlaylistResult::BAD_RANGE, "Bad position");
+
+	if (size() >= playlist_max_length)
+		throw PlaylistError(PlaylistResult::TOO_LARGE,
+				    "Stored playlist is too large");
+
+	contents.emplace(std::next(contents.begin(), i), uri);
+}
+
+void
+PlaylistFileEditor::Insert(std::size_t i, const DetachedSong &song)
+{
+	const char *uri = playlist_saveAbsolutePaths
+		? song.GetRealURI()
+		: song.GetURI();
+
+	Insert(i, uri);
+}
+
+void
 PlaylistFileEditor::MoveIndex(unsigned src, unsigned dest)
 {
 	if (src >= contents.size() || dest >= contents.size())

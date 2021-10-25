@@ -157,7 +157,7 @@ static constexpr struct command commands[] = {
 	{ "play", PERMISSION_PLAYER, 0, 1, handle_play },
 	{ "playid", PERMISSION_PLAYER, 0, 1, handle_playid },
 	{ "playlist", PERMISSION_READ, 0, 0, handle_playlist },
-	{ "playlistadd", PERMISSION_CONTROL, 2, 2, handle_playlistadd },
+	{ "playlistadd", PERMISSION_CONTROL, 2, 3, handle_playlistadd },
 	{ "playlistclear", PERMISSION_CONTROL, 1, 1, handle_playlistclear },
 	{ "playlistdelete", PERMISSION_CONTROL, 2, 2, handle_playlistdelete },
 	{ "playlistfind", PERMISSION_READ, 1, -1, handle_playlistfind },

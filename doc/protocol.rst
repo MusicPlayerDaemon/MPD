@@ -695,7 +695,7 @@ Whenever possible, ids should be used.
     can also be a single file.
 
     The position parameter is the same as in :ref:`addid
-    <command_addid>`.
+    <command_addid>`. [#since_0_23_3]_
 
     Clients that are connected via local socket may add arbitrary
     local files (URI is an absolute path).  Example::
@@ -933,11 +933,14 @@ remote playlists (absolute URI with a supported scheme).
 
 .. _command_playlistadd:
 
-:command:`playlistadd {NAME} {URI}`
+:command:`playlistadd {NAME} {URI} [POSITION]`
     Adds ``URI`` to the playlist
     `NAME.m3u`.
     `NAME.m3u` will be created if it does
     not exist.
+
+    The ``POSITION`` parameter specifies where the songs will be
+    inserted into the playlist. [#since_0_23_3]_
 
 .. _command_playlistclear:
 
@@ -1649,3 +1652,4 @@ client-to-client messages are local to the current partition.
 .. [#since_0_22_4] Since :program:`MPD` 0.22.4
 .. [#since_0_23] Since :program:`MPD` 0.23
 .. [#since_0_23_1] Since :program:`MPD` 0.23.1
+.. [#since_0_23_3] Since :program:`MPD` 0.23.3
