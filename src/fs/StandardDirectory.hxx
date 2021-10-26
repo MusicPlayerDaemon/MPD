@@ -25,19 +25,21 @@
 /**
  * Obtains configuration directory for the current user.
  */
+[[gnu::const]]
 AllocatedPath
 GetUserConfigDir() noexcept;
 
 /**
  * Obtains music directory for the current user.
  */
+[[gnu::const]]
 AllocatedPath
 GetUserMusicDir() noexcept;
 
 /**
  * Obtains cache directory for the current user.
  */
-[[gnu::pure]]
+[[gnu::const]]
 AllocatedPath
 GetUserCacheDir() noexcept;
 
@@ -46,6 +48,7 @@ GetUserCacheDir() noexcept;
 /**
  * Obtains system configuration directory.
  */
+[[gnu::const]]
 AllocatedPath
 GetSystemConfigDir() noexcept;
 
@@ -54,6 +57,7 @@ GetSystemConfigDir() noexcept;
  * Application base directory is a directory that contains 'bin' folder
  * for current executable.
  */
+[[gnu::const]]
 AllocatedPath
 GetAppBaseDir() noexcept;
 
@@ -62,12 +66,14 @@ GetAppBaseDir() noexcept;
 /**
  * Obtains home directory for the current user.
  */
+[[gnu::const]]
 AllocatedPath
 GetHomeDir() noexcept;
 
 /**
  * Obtains home directory for the specified user.
  */
+[[gnu::pure]]
 AllocatedPath
 GetHomeDir(const char *user_name) noexcept;
 
