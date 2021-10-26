@@ -292,6 +292,20 @@ GetUserRuntimeDir() noexcept
 #endif
 }
 
+AllocatedPath
+GetAppRuntimeDir() noexcept
+{
+#ifdef USE_XDG
+	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
+		auto dir = user_dir / Path::FromFS("mpd");
+		mkdir(dir.c_str(), 0700);
+		return dir;
+	}
+#endif
+
+	return nullptr;
+}
+
 #ifdef _WIN32
 
 AllocatedPath

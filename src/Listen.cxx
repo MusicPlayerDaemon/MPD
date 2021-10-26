@@ -86,12 +86,9 @@ ListenXdgRuntimeDir(ClientListener &listener) noexcept
 		   use $XDG_RUNTIME_DIR */
 		return false;
 
-	const auto xdg_runtime_dir = GetUserRuntimeDir();
-	if (xdg_runtime_dir.IsNull())
+	const auto mpd_runtime_dir = GetAppRuntimeDir();
+	if (mpd_runtime_dir.IsNull())
 		return false;
-
-	const auto mpd_runtime_dir = xdg_runtime_dir / Path::FromFS("mpd");
-	mkdir(mpd_runtime_dir.c_str(), 0700);
 
 	const auto socket_path = mpd_runtime_dir / Path::FromFS("socket");
 	unlink(socket_path.c_str());

@@ -50,6 +50,13 @@ GetUserCacheDir() noexcept;
 AllocatedPath
 GetUserRuntimeDir() noexcept;
 
+/**
+ * Obtains the runtime directory for this application.
+ */
+[[gnu::const]]
+AllocatedPath
+GetAppRuntimeDir() noexcept;
+
 #ifdef _WIN32
 
 /**
