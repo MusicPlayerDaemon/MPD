@@ -24,6 +24,7 @@
 #include "StandardDirectory.hxx"
 #include "FileSystem.hxx"
 #include "XDG.hxx"
+#include "util/StringView.hxx"
 #include "config.h"
 
 #include <array>
@@ -295,6 +296,14 @@ GetUserRuntimeDir() noexcept
 AllocatedPath
 GetAppRuntimeDir() noexcept
 {
+#ifdef __linux__
+	/* systemd specific; see systemd.exec(5) */
+	if (const char *runtime_directory = getenv("RUNTIME_DIRECTORY"))
+		if (auto dir = StringView{runtime_directory}.Split(':').first;
+		    !dir.empty())
+			return AllocatedPath::FromFS(dir);
+#endif
+
 #ifdef USE_XDG
 	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
 		auto dir = user_dir / Path::FromFS("mpd");
