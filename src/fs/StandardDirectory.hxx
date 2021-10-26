@@ -43,6 +43,13 @@ GetUserMusicDir() noexcept;
 AllocatedPath
 GetUserCacheDir() noexcept;
 
+/**
+ * Obtains the runtime directory for the current user.
+ */
+[[gnu::const]]
+AllocatedPath
+GetUserRuntimeDir() noexcept;
+
 #ifdef _WIN32
 
 /**

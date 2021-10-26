@@ -32,6 +32,7 @@
 #include "net/SocketUtil.hxx"
 #include "system/Error.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/StandardDirectory.hxx"
 #include "fs/XDG.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
@@ -85,7 +86,7 @@ ListenXdgRuntimeDir(ClientListener &listener) noexcept
 		   use $XDG_RUNTIME_DIR */
 		return false;
 
-	Path xdg_runtime_dir = Path::FromFS(getenv("XDG_RUNTIME_DIR"));
+	const auto xdg_runtime_dir = GetUserRuntimeDir();
 	if (xdg_runtime_dir.IsNull())
 		return false;
 

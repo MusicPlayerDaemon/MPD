@@ -282,6 +282,16 @@ GetUserCacheDir() noexcept
 #endif
 }
 
+AllocatedPath
+GetUserRuntimeDir() noexcept
+{
+#ifdef USE_XDG
+	return SafePathFromFS(getenv("XDG_RUNTIME_DIR"));
+#else
+	return nullptr;
+#endif
+}
+
 #ifdef _WIN32
 
 AllocatedPath
