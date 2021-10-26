@@ -1205,7 +1205,7 @@ The music database
 
 .. _command_search:
 
-:command:`search {FILTER} [sort {TYPE}] [window {START:END}]
+:command:`search {FILTER} [sort {TYPE}] [window {START:END}]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`).  Parameters
     have the same meaning as for :ref:`find <command_find>`,
