@@ -23,10 +23,9 @@
 #include "fs/Traits.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringView.hxx"
 
 #include <cassert>
-
-#include <string.h>
 
 #ifndef _WIN32
 #include <pwd.h>
@@ -96,30 +95,18 @@ ParsePath(const char *path)
 		if (*path == '\0')
 			return GetConfiguredHome();
 
-		AllocatedPath home = nullptr;
-
 		if (*path == '/') {
-			home = GetConfiguredHome();
-
 			++path;
+
+			return GetConfiguredHome() /
+				AllocatedPath::FromUTF8Throw(path);
 		} else {
-			const char *slash = std::strchr(path, '/');
-			const char *end = slash == nullptr
-					? path + strlen(path)
-					: slash;
-			const std::string user(path, end);
-			home = GetHome(user.c_str());
+			const auto [user, rest] =
+				StringView{path}.Split('/');
 
-			if (slash == nullptr)
-				return home;
-
-			path = slash + 1;
+			return GetHome(std::string{user}.c_str())
+				/ AllocatedPath::FromUTF8Throw(rest);
 		}
-
-		if (home.IsNull())
-			return nullptr;
-
-		return home / AllocatedPath::FromUTF8Throw(path);
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FormatRuntimeError("not an absolute path: %s", path);
 	} else {
