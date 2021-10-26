@@ -30,7 +30,6 @@
 #include "util/StringView.hxx"
 
 #include <cassert>
-#include <cstring>
 #include <map>
 #include <string>
 #include <utility>
@@ -100,18 +99,15 @@ initPermissions(const ConfigData &config)
 	for (const auto &param : config.GetParamList(ConfigOption::PASSWORD)) {
 		permission_default = 0;
 
-		param.With([](const char *value){
-			const char *separator = std::strchr(value,
-						       PERMISSION_PASSWORD_CHAR);
-
-			if (separator == nullptr)
+		param.With([](const StringView value){
+			const auto [password, permissions] =
+				value.Split(PERMISSION_PASSWORD_CHAR);
+			if (permissions == nullptr)
 				throw FormatRuntimeError("\"%c\" not found in password string",
 							 PERMISSION_PASSWORD_CHAR);
 
-			std::string password(value, separator);
-
-			unsigned permission = parsePermissions(separator + 1);
-			permission_passwords.emplace(std::move(password), permission);
+			permission_passwords.emplace(password,
+						     parsePermissions(permissions));
 		});
 	}
 
