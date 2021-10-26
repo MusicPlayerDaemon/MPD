@@ -228,13 +228,12 @@ GetUserConfigDir() noexcept
 	return GetStandardDir(CSIDL_LOCAL_APPDATA);
 #elif defined(USE_XDG)
 	// Check for $XDG_CONFIG_HOME
-	auto config_home = getenv("XDG_CONFIG_HOME");
-	if (IsValidPathString(config_home) && IsValidDir(config_home))
+	if (const auto config_home = getenv("XDG_CONFIG_HOME");
+	    IsValidPathString(config_home) && IsValidDir(config_home))
 		return AllocatedPath::FromFS(config_home);
 
 	// Check for $HOME/.config
-	auto home = GetHomeDir();
-	if (!home.IsNull()) {
+	if (const auto home = GetHomeDir(); !home.IsNull()) {
 		auto fallback = home / Path::FromFS(".config");
 		if (IsValidDir(fallback.c_str()))
 			return fallback;
@@ -265,17 +264,15 @@ GetUserCacheDir() noexcept
 {
 #ifdef USE_XDG
 	// Check for $XDG_CACHE_HOME
-	auto cache_home = getenv("XDG_CACHE_HOME");
-	if (IsValidPathString(cache_home) && IsValidDir(cache_home))
+	if (const auto cache_home = getenv("XDG_CACHE_HOME");
+	    IsValidPathString(cache_home) && IsValidDir(cache_home))
 		return AllocatedPath::FromFS(cache_home);
 
 	// Check for $HOME/.cache
-	auto home = GetHomeDir();
-	if (!home.IsNull()) {
-		auto fallback = home / Path::FromFS(".cache");
-		if (IsValidDir(fallback.c_str()))
+	if (const auto home = GetHomeDir(); !home.IsNull())
+		if (auto fallback = home / Path::FromFS(".cache");
+		    IsValidDir(fallback.c_str()))
 			return fallback;
-	}
 
 	return nullptr;
 #elif defined(ANDROID)
@@ -317,11 +314,11 @@ AllocatedPath
 GetHomeDir() noexcept
 {
 #ifndef ANDROID
-	auto home = getenv("HOME");
-	if (IsValidPathString(home) && IsValidDir(home))
+	if (const auto home = getenv("HOME");
+	    IsValidPathString(home) && IsValidDir(home))
 		return AllocatedPath::FromFS(home);
-	PasswdEntry pw;
-	if (pw.ReadByUid(getuid()))
+
+	if (PasswdEntry pw; pw.ReadByUid(getuid()))
 		return SafePathFromFS(pw->pw_dir);
 #endif
 	return nullptr;
@@ -334,8 +331,8 @@ GetHomeDir(const char *user_name) noexcept
 	(void)user_name;
 #else
 	assert(user_name != nullptr);
-	PasswdEntry pw;
-	if (pw.ReadByName(user_name))
+
+	if (PasswdEntry pw; pw.ReadByName(user_name))
 		return SafePathFromFS(pw->pw_dir);
 #endif
 	return nullptr;
