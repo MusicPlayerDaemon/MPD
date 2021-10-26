@@ -21,7 +21,6 @@
 #include "../OutputAPI.hxx"
 #include "thread/SafeSingleton.hxx"
 #include "system/Error.hxx"
-#include "util/DivideString.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
