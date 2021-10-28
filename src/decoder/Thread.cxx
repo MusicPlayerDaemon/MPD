@@ -395,9 +395,11 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
 static bool
 decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 {
-	const auto suffix = uri_get_suffix(uri_utf8);
-	if (suffix.empty())
+	const char *_suffix = PathTraitsUTF8::GetFilenameSuffix(uri_utf8);
+	if (_suffix == nullptr)
 		return false;
+
+	const std::string_view suffix{_suffix};
 
 	InputStreamPtr input_stream;
 

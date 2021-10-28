@@ -224,9 +224,11 @@ GetChromaprintCommand::DecodeFile(std::string_view suffix, InputStream &is,
 inline void
 GetChromaprintCommand::DecodeFile()
 {
-	const auto suffix = uri_get_suffix(uri);
-	if (suffix.empty())
+	const char *_suffix = PathTraitsUTF8::GetFilenameSuffix(uri.c_str());
+	if (_suffix == nullptr)
 		return;
+
+	const std::string_view suffix{_suffix};
 
 	InputStreamPtr input_stream;
 
