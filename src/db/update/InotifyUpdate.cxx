@@ -282,7 +282,7 @@ InotifyUpdate::InotifyCallback(int wd, unsigned mask,
 	    (mask & IN_ISDIR) != 0) {
 		/* a sub directory was changed: register those in
 		   inotify */
-		const Path root_path = root->name;
+		const auto root_path = root->name;
 
 		const auto path_fs = uri_fs.IsNull()
 			? root_path
