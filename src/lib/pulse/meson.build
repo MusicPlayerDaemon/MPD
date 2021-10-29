@@ -1,4 +1,4 @@
-pulse_dep = dependency('libpulse', version: '>= 0.9.16', required: get_option('pulse'))
+pulse_dep = dependency('libpulse', version: '>= 0.9.16', static : true, required: get_option('pulse'))
 conf.set('ENABLE_PULSE', pulse_dep.found())
 if not pulse_dep.found()
   subdir_done()
