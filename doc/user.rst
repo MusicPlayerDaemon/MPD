@@ -173,6 +173,7 @@ tarball and change into the directory.  Then, instead of
  mkdir -p output/win64
  cd output/win64
  ../../win32/build.py --64 \
+   --buildtype=debugoptimized -Db_ndebug=true \
    -Dwrap_mode=forcefallback
 
 This downloads various library sources, and then configures and builds
@@ -212,6 +213,7 @@ tarball and change into the directory.  Then, instead of
  mkdir -p output/android
  cd output/android
  ../../android/build.py SDK_PATH NDK_PATH ABI \
+   --buildtype=debugoptimized -Db_ndebug=true \
    -Dwrap_mode=forcefallback \
    -Dandroid_debug_keystore=$HOME/.android/debug.keystore
  ninja android/apk/mpd-debug.apk
