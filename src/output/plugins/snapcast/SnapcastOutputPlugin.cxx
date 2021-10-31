@@ -342,6 +342,8 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 		if (nbytes == 0)
 			break;
 
+		unflushed_input = 0;
+
 		const std::lock_guard<Mutex> protect(mutex);
 		if (chunks.empty())
 			inject_event.Schedule();
