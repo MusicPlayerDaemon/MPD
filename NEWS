@@ -1,3 +1,5 @@
+ver 0.23.4 (not yet released)
+
 ver 0.23.3 (2021/10/31)
 * protocol
   - add optional position parameter to "add" and "playlistadd"
