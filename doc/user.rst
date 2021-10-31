@@ -205,8 +205,8 @@ tarball and change into the directory.  Then, instead of
 
  mkdir -p output/android
  cd output/android
- ../../android/build.py SDK_PATH NDK_PATH ABI
- meson configure -Dandroid_debug_keystore=$HOME/.android/debug.keystore
+ ../../android/build.py SDK_PATH NDK_PATH ABI \
+   -Dandroid_debug_keystore=$HOME/.android/debug.keystore
  ninja android/apk/mpd-debug.apk
 
 :envvar:`SDK_PATH` is the absolute path where you installed the
