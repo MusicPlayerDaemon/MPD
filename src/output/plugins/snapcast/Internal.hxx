@@ -51,6 +51,12 @@ class SnapcastOutput final : AudioOutput, ServerSocket {
 	 */
 	bool open;
 
+	/**
+	 * Is the output current paused?  This is set by Pause() and
+	 * is cleared by the next Play() call.  It is used in Delay().
+	 */
+	bool pause;
+
 	InjectEvent inject_event;
 
 #ifdef HAVE_ZEROCONF

@@ -161,6 +161,7 @@ SnapcastOutput::Open(AudioFormat &audio_format)
 	timer = new Timer(audio_format);
 
 	open = true;
+	pause = false;
 }
 
 void
@@ -213,7 +214,7 @@ SnapcastOutput::RemoveClient(SnapcastClient &client) noexcept
 std::chrono::steady_clock::duration
 SnapcastOutput::Delay() const noexcept
 {
-	if (!LockHasClients() /*&& pause*/) {
+	if (!LockHasClients() && pause) {
 		/* if there's no client and this output is paused,
 		   then Pause() will not do anything, it will not fill
 		   the buffer and it will not update the timer;
@@ -307,7 +308,7 @@ SnapcastOutput::SendTag(const Tag &tag)
 size_t
 SnapcastOutput::Play(const void *chunk, size_t size)
 {
-	//pause = false;
+	pause = false;
 
 	const auto now = std::chrono::steady_clock::now();
 
@@ -355,8 +356,7 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 bool
 SnapcastOutput::Pause()
 {
-	// TODO: implement
-	//pause = true;
+	pause = true;
 
 	return true;
 }
