@@ -1,4 +1,4 @@
-ver 0.23.3 (not yet released)
+ver 0.23.3 (2021/10/31)
 * protocol
   - add optional position parameter to "add" and "playlistadd"
   - allow range in "playlistdelete"
