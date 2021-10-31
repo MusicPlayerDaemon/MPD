@@ -172,7 +172,8 @@ tarball and change into the directory.  Then, instead of
 
  mkdir -p output/win64
  cd output/win64
- ../../win32/build.py --64
+ ../../win32/build.py --64 \
+   -Dwrap_mode=forcefallback
 
 This downloads various library sources, and then configures and builds
 :program:`MPD` (for x64; to build a 32 bit binary, pass
@@ -181,6 +182,11 @@ contains all the libraries already and you do not need carry DLLs
 around. It is large, but easy to use. If you wish to have a small
 mpd.exe with DLLs, you need to compile manually, without the
 :file:`build.py` script.
+
+The option ``-Dwrap_mode=forcefallback`` tells Meson to download and
+cross-compile several libraries used by MPD instead of looking for
+them on your computer.
+
 
 Compiling for Android
 ---------------------
@@ -206,6 +212,7 @@ tarball and change into the directory.  Then, instead of
  mkdir -p output/android
  cd output/android
  ../../android/build.py SDK_PATH NDK_PATH ABI \
+   -Dwrap_mode=forcefallback \
    -Dandroid_debug_keystore=$HOME/.android/debug.keystore
  ninja android/apk/mpd-debug.apk
 
