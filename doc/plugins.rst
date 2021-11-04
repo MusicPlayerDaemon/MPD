@@ -841,6 +841,11 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
        ("stop" or "pause") in DSD mode (native DSD or DoP).  This is a
        workaround for some DACs which emit noise when stopping DSD
        playback.
+   * - **thesycon_dsd_workaround yes|no**
+     - If enabled, enables a workaround for a bug in Thesycon USB
+       audio receivers.  On these devices, playing DSD512 or PCM
+       causes all subsequent attempts to play other DSD rates to fail,
+       which can be fixed by briefly playing PCM at 44.1 kHz.
    * - **allowed_formats F1 F2 ...**
      - Specifies a list of allowed audio formats, separated by a space. All items may contain asterisks as a wild card, and may be followed by "=dop" to enable DoP (DSD over PCM) for this particular format. The first matching format is used, and if none matches, MPD chooses the best fallback of this list.
        

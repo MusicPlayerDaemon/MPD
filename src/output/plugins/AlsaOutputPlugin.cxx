@@ -43,6 +43,10 @@
 #include "event/Call.hxx"
 #include "Log.hxx"
 
+#ifdef ENABLE_DSD
+#include "util/AllocatedArray.hxx"
+#endif
+
 #include <alsa/asoundlib.h>
 
 #include <boost/lockfree/spsc_queue.hpp>
@@ -102,6 +106,16 @@ class AlsaOutput final
 	 * Are we currently draining with #stop_dsd_silence?
 	 */
 	bool in_stop_dsd_silence;
+
+	/**
+	 * Enable the DSD sync workaround for Thesycon USB audio
+	 * receivers?  On this device, playing DSD512 or PCM causes
+	 * all subsequent attempts to play other DSD rates to fail,
+	 * which can be fixed by briefly playing PCM at 44.1 kHz.
+	 */
+	const bool thesycon_dsd_workaround;
+
+	bool need_thesycon_dsd_workaround = thesycon_dsd_workaround;
 #endif
 
 	/** libasound's buffer_time setting (in microseconds) */
@@ -433,6 +447,8 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 		     /* legacy name from MPD 0.18 and older: */
 		     block.GetBlockValue("dsd_usb", false)),
 	 stop_dsd_silence(block.GetBlockValue("stop_dsd_silence", false)),
+	 thesycon_dsd_workaround(block.GetBlockValue("thesycon_dsd_workaround",
+						     false)),
 #endif
 	 buffer_time(block.GetPositiveValue("buffer_time",
 					    MPD_ALSA_BUFFER_TIME_US)),
@@ -675,6 +691,97 @@ BestMatch(const std::forward_list<Alsa::AllowedFormat> &haystack,
 	return haystack.front();
 }
 
+#ifdef ENABLE_DSD
+
+static void
+Play_44_1_Silence(snd_pcm_t *pcm)
+{
+	snd_pcm_hw_params_t *hw;
+	snd_pcm_hw_params_alloca(&hw);
+
+	int err;
+
+	err = snd_pcm_hw_params_any(pcm, hw);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_any() failed");
+
+	err = snd_pcm_hw_params_set_access(pcm, hw,
+					   SND_PCM_ACCESS_RW_INTERLEAVED);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_access() failed");
+
+	err = snd_pcm_hw_params_set_format(pcm, hw, SND_PCM_FORMAT_S16);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_format() failed");
+
+	unsigned channels = 1;
+	err = snd_pcm_hw_params_set_channels_near(pcm, hw, &channels);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_channels_near() failed");
+
+	constexpr snd_pcm_uframes_t rate = 44100;
+	err = snd_pcm_hw_params_set_rate(pcm, hw, rate, 0);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_rate() failed");
+
+	snd_pcm_uframes_t buffer_size = 1;
+	err = snd_pcm_hw_params_set_buffer_size_near(pcm, hw, &buffer_size);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_buffer_size_near() failed");
+
+	snd_pcm_uframes_t period_size = 1;
+	int dir = 0;
+	err = snd_pcm_hw_params_set_period_size_near(pcm, hw, &period_size,
+						     &dir);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_period_size_near() failed");
+
+	err = snd_pcm_hw_params(pcm, hw);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_hw_params() failed");
+
+	snd_pcm_sw_params_t *sw;
+	snd_pcm_sw_params_alloca(&sw);
+
+	err = snd_pcm_sw_params_current(pcm, sw);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_sw_params_current() failed");
+
+	err = snd_pcm_sw_params_set_start_threshold(pcm, sw, period_size);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_sw_params_set_start_threshold() failed");
+
+	err = snd_pcm_sw_params(pcm, sw);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_sw_params() failed");
+
+	err = snd_pcm_prepare(pcm);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_prepare() failed");
+
+	AllocatedArray<int16_t> buffer{channels * period_size};
+	std::fill(buffer.begin(), buffer.end(), 0);
+
+	/* play at least 250ms of silence */
+	for (snd_pcm_uframes_t remaining_frames = rate / 4;;) {
+		auto n = snd_pcm_writei(pcm, buffer.data(),
+					period_size);
+		if (n < 0)
+			throw Alsa::MakeError(err, "snd_pcm_writei() failed");
+
+		if (snd_pcm_uframes_t(n) >= remaining_frames)
+			break;
+
+		remaining_frames -= snd_pcm_uframes_t(n);
+	}
+
+	err = snd_pcm_drain(pcm);
+	if (err < 0)
+		throw Alsa::MakeError(err, "snd_pcm_drain() failed");
+}
+
+#endif
+
 void
 AlsaOutput::Open(AudioFormat &audio_format)
 {
@@ -709,6 +816,22 @@ AlsaOutput::Open(AudioFormat &audio_format)
 		 snd_pcm_name(pcm),
 		 snd_pcm_type_name(snd_pcm_type(pcm)));
 
+#ifdef ENABLE_DSD
+	if (need_thesycon_dsd_workaround &&
+	    audio_format.format == SampleFormat::DSD &&
+	    audio_format.sample_rate <= 256 * 44100 / 8) {
+		LogDebug(alsa_output_domain, "Playing some 44.1 kHz silence");
+
+		try {
+			Play_44_1_Silence(pcm);
+		} catch (...) {
+			LogError(std::current_exception());
+		}
+
+		need_thesycon_dsd_workaround = false;
+	}
+#endif
+
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 
@@ -732,6 +855,11 @@ AlsaOutput::Open(AudioFormat &audio_format)
 #ifdef ENABLE_DSD
 	use_dsd = audio_format.format == SampleFormat::DSD;
 	in_stop_dsd_silence = false;
+
+	if (thesycon_dsd_workaround &&
+	    (!use_dsd ||
+	     audio_format.sample_rate > 256 * 44100 / 8))
+		need_thesycon_dsd_workaround = true;
 
 	if (params.dsd_mode == PcmExport::DsdMode::DOP)
 		LogDebug(alsa_output_domain, "DoP (DSD over PCM) enabled");
