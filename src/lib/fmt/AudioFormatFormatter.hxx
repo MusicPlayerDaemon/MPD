@@ -36,6 +36,16 @@
 #include <fmt/format.h>
 
 template<>
+struct fmt::formatter<SampleFormat> : formatter<string_view>
+{
+	template<typename FormatContext>
+	auto format(const SampleFormat format, FormatContext &ctx) {
+		return formatter<string_view>::format(sample_format_to_string(format),
+						      ctx);
+	}
+};
+
+template<>
 struct fmt::formatter<AudioFormat> : formatter<string_view>
 {
 	template<typename FormatContext>
