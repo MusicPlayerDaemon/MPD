@@ -26,6 +26,7 @@
 
 #include "AlsaInputPlugin.hxx"
 #include "lib/alsa/NonBlock.hxx"
+#include "lib/alsa/Error.hxx"
 #include "lib/alsa/Format.hxx"
 #include "../InputPlugin.hxx"
 #include "../AsyncInputStream.hxx"
@@ -332,28 +333,23 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 	snd_pcm_hw_params_alloca(&hw_params);
 
 	if ((err = snd_pcm_hw_params_any(capture_handle, hw_params)) < 0)
-		throw FormatRuntimeError("Cannot initialize hardware parameter structure (%s)",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_any() failed");
 
 	if ((err = snd_pcm_hw_params_set_access(capture_handle, hw_params,
 	                                       SND_PCM_ACCESS_RW_INTERLEAVED)) < 0)
-		throw FormatRuntimeError("Cannot set access type (%s)",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_access() failed");
 
 	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params,
 	                               	ToAlsaPcmFormat(audio_format.format))) < 0)
-		throw FormatRuntimeError("Cannot set sample format (%s)",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "Cannot set sample format");
 
 	if ((err = snd_pcm_hw_params_set_channels(capture_handle,
 	                                    hw_params, audio_format.channels)) < 0)
-		throw FormatRuntimeError("Cannot set channels (%s)",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "Cannot set channels");
 
 	if ((err = snd_pcm_hw_params_set_rate(capture_handle,
 	                              hw_params, audio_format.sample_rate, 0)) < 0)
-		throw FormatRuntimeError("Cannot set sample rate (%s)",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "Cannot set sample rate");
 
 	snd_pcm_uframes_t buffer_size_min, buffer_size_max;
 	snd_pcm_hw_params_get_buffer_size_min(hw_params, &buffer_size_min);
@@ -388,26 +384,22 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 		int direction = -1;
 		if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle,
 		                             hw_params, &period_size, &direction)) < 0)
-			throw FormatRuntimeError("Cannot set period size (%s)",
-						 snd_strerror(err));
+			throw Alsa::MakeError(err, "Cannot set period size");
 	}
 
 	if ((err = snd_pcm_hw_params(capture_handle, hw_params)) < 0)
-		throw FormatRuntimeError("Cannot set parameters (%s)",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params() failed");
 
 	snd_pcm_uframes_t alsa_buffer_size;
 	err = snd_pcm_hw_params_get_buffer_size(hw_params, &alsa_buffer_size);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_buffer_size() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_get_buffer_size() failed");
 
 	snd_pcm_uframes_t alsa_period_size;
 	err = snd_pcm_hw_params_get_period_size(hw_params, &alsa_period_size,
 						nullptr);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_get_period_size() failed");
 
 	FmtDebug(alsa_input_domain, "buffer_size={} period_size={}",
 		 alsa_buffer_size, alsa_period_size);
@@ -418,8 +410,7 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 	snd_pcm_sw_params_current(capture_handle, sw_params);
 
 	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0)
-		throw FormatRuntimeError("unable to install sw params (%s)",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "snd_pcm_sw_params() failed");
 }
 
 inline void
@@ -430,8 +421,9 @@ AlsaInputStream::OpenDevice(const SourceSpec &spec)
 	if ((err = snd_pcm_open(&capture_handle, spec.GetDeviceName(),
 				SND_PCM_STREAM_CAPTURE,
 				SND_PCM_NONBLOCK | global_config.mode)) < 0)
-		throw FormatRuntimeError("Failed to open device: %s (%s)",
-					 spec.GetDeviceName(), snd_strerror(err));
+		throw Alsa::MakeError(err,
+				      fmt::format("Failed to open device {}",
+						  spec.GetDeviceName()).c_str());
 
 	try {
 		ConfigureCapture(spec.GetAudioFormat());

@@ -18,6 +18,7 @@
  */
 
 #include "NonBlock.hxx"
+#include "Error.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -29,8 +30,7 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 		if (count == 0)
 			throw std::runtime_error("snd_pcm_poll_descriptors_count() failed");
 		else
-			throw FormatRuntimeError("snd_pcm_poll_descriptors_count() failed: %s",
-						 snd_strerror(-count));
+			throw Alsa::MakeError(count, "snd_pcm_poll_descriptors_count() failed");
 	}
 
 	struct pollfd *pfds = pfd_buffer.Get(count);
@@ -40,8 +40,7 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 		if (count == 0)
 			throw std::runtime_error("snd_pcm_poll_descriptors() failed");
 		else
-			throw FormatRuntimeError("snd_pcm_poll_descriptors() failed: %s",
-						 snd_strerror(-count));
+			throw Alsa::MakeError(count, "snd_pcm_poll_descriptors() failed");
 	}
 
 	m.ReplaceSocketList(pfds, count);
@@ -71,8 +70,7 @@ AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
 	unsigned short dummy;
 	int err = snd_pcm_poll_descriptors_revents(pcm, pfds, i - pfds, &dummy);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_poll_descriptors_revents() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_poll_descriptors_revents() failed");
 }
 
 Event::Duration

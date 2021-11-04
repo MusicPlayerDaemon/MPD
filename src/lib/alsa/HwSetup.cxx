@@ -18,6 +18,7 @@
  */
 
 #include "HwSetup.hxx"
+#include "Error.hxx"
 #include "Format.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
@@ -185,29 +186,27 @@ SetupHw(snd_pcm_t *pcm,
 	/* configure HW params */
 	err = snd_pcm_hw_params_any(pcm, hwparams);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_any() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_any() failed");
 
 	err = snd_pcm_hw_params_set_access(pcm, hwparams,
 					   SND_PCM_ACCESS_RW_INTERLEAVED);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_set_access() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_access() failed");
 
 	err = SetupSampleFormat(pcm, hwparams,
 				audio_format.format, params);
 	if (err < 0)
-		throw FormatRuntimeError("Failed to configure format %s: %s",
-					 sample_format_to_string(audio_format.format),
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err,
+				      fmt::format("Failed to configure format {}",
+						  audio_format.format).c_str());
 
 	unsigned int channels = audio_format.channels;
 	err = snd_pcm_hw_params_set_channels_near(pcm, hwparams,
 						  &channels);
 	if (err < 0)
-		throw FormatRuntimeError("Failed to configure %i channels: %s",
-					 (int)audio_format.channels,
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err,
+				      fmt::format("Failed to configure {} channels",
+						  audio_format.channels).c_str());
 
 	audio_format.channels = (int8_t)channels;
 
@@ -218,9 +217,9 @@ SetupHw(snd_pcm_t *pcm,
 	err = snd_pcm_hw_params_set_rate_near(pcm, hwparams,
 					      &output_sample_rate, nullptr);
 	if (err < 0)
-		throw FormatRuntimeError("Failed to configure sample rate %u Hz: %s",
-					 requested_sample_rate,
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err,
+				      fmt::format("Failed to configure sample rate {} Hz",
+						  requested_sample_rate).c_str());
 
 	if (output_sample_rate == 0)
 		throw FormatRuntimeError("Failed to configure sample rate %u Hz",
@@ -253,8 +252,7 @@ SetupHw(snd_pcm_t *pcm,
 		err = snd_pcm_hw_params_set_buffer_time_near(pcm, hwparams,
 							     &buffer_time, nullptr);
 		if (err < 0)
-			throw FormatRuntimeError("snd_pcm_hw_params_set_buffer_time_near() failed: %s",
-						 snd_strerror(-err));
+			throw Alsa::MakeError(err, "snd_pcm_hw_params_set_buffer_time_near() failed");
 	} else {
 		err = snd_pcm_hw_params_get_buffer_time(hwparams, &buffer_time,
 							nullptr);
@@ -275,32 +273,27 @@ SetupHw(snd_pcm_t *pcm,
 		err = snd_pcm_hw_params_set_period_time_near(pcm, hwparams,
 							     &period_time, nullptr);
 		if (err < 0)
-			throw FormatRuntimeError("snd_pcm_hw_params_set_period_time_near() failed: %s",
-						 snd_strerror(-err));
+			throw Alsa::MakeError(err, "snd_pcm_hw_params_set_period_time_near() failed");
 	}
 
 	err = snd_pcm_hw_params(pcm, hwparams);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params() failed");
 
 	HwResult result;
 
 	err = snd_pcm_hw_params_get_format(hwparams, &result.format);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_format() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_get_format() failed");
 
 	err = snd_pcm_hw_params_get_buffer_size(hwparams, &result.buffer_size);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_buffer_size() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_get_buffer_size() failed");
 
 	err = snd_pcm_hw_params_get_period_size(hwparams, &result.period_size,
 						nullptr);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_hw_params_get_period_size() failed");
 
 	return result;
 }

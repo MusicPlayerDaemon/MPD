@@ -20,6 +20,7 @@
 #include "config.h"
 #include "AlsaOutputPlugin.hxx"
 #include "lib/alsa/AllowedFormat.hxx"
+#include "lib/alsa/Error.hxx"
 #include "lib/alsa/HwSetup.hxx"
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/PeriodBuffer.hxx"
@@ -519,24 +520,20 @@ AlsaSetupSw(snd_pcm_t *pcm, snd_pcm_uframes_t start_threshold,
 
 	int err = snd_pcm_sw_params_current(pcm, swparams);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_sw_params_current() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_sw_params_current() failed");
 
 	err = snd_pcm_sw_params_set_start_threshold(pcm, swparams,
 						    start_threshold);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_sw_params_set_start_threshold() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_sw_params_set_start_threshold() failed");
 
 	err = snd_pcm_sw_params_set_avail_min(pcm, swparams, avail_min);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_sw_params_set_avail_min() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_sw_params_set_avail_min() failed");
 
 	err = snd_pcm_sw_params(pcm, swparams);
 	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_sw_params() failed: %s",
-					 snd_strerror(-err));
+		throw Alsa::MakeError(err, "snd_pcm_sw_params() failed");
 }
 
 inline void
@@ -704,8 +701,9 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	int err = snd_pcm_open(&pcm, GetDevice(),
 			       SND_PCM_STREAM_PLAYBACK, mode);
 	if (err < 0)
-		throw FormatRuntimeError("Failed to open ALSA device \"%s\": %s",
-					 GetDevice(), snd_strerror(err));
+		throw Alsa::MakeError(err,
+				      fmt::format("Failed to open ALSA device \"{}\"",
+						  GetDevice()).c_str());
 
 	FmtDebug(alsa_output_domain, "opened {} type={}",
 		 snd_pcm_name(pcm),
@@ -897,8 +895,8 @@ AlsaOutput::DrainInternal()
 				if (frames_written == -EAGAIN)
 					return false;
 
-				throw FormatRuntimeError("snd_pcm_writei() failed: %s",
-							 snd_strerror(-frames_written));
+				throw Alsa::MakeError(frames_written,
+						      "snd_pcm_writei() failed");
 			}
 
 			/* need to call CopyRingToPeriodBuffer() and
@@ -947,8 +945,7 @@ AlsaOutput::DrainInternal()
 	else if (result == -EAGAIN)
 		return false;
 	else
-		throw FormatRuntimeError("snd_pcm_drain() failed: %s",
-					 snd_strerror(-result));
+		throw Alsa::MakeError(result, "snd_pcm_drain() failed");
 }
 
 void
@@ -1147,8 +1144,7 @@ try {
 
 		int err = snd_pcm_prepare(pcm);
 		if (err < 0)
-			throw FormatRuntimeError("snd_pcm_prepare() failed: %s",
-						 snd_strerror(-err));
+			throw Alsa::MakeError(err, "snd_pcm_prepare() failed");
 	}
 
 	{
@@ -1236,8 +1232,8 @@ try {
 			return;
 
 		if (Recover(frames_written) < 0)
-			throw FormatRuntimeError("snd_pcm_writei() failed: %s",
-						 snd_strerror(-frames_written));
+			throw Alsa::MakeError(frames_written,
+					      "snd_pcm_writei() failed");
 
 		/* recovered; try again in the next DispatchSockets()
 		   call */

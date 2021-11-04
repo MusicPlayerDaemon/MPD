@@ -14,6 +14,7 @@ conf.set('ENABLE_ALSA', true)
 alsa = static_library(
   'alsa',
   'Version.cxx',
+  'Error.cxx',
   'AllowedFormat.cxx',
   'HwSetup.cxx',
   'NonBlock.cxx',

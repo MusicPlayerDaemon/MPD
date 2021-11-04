@@ -18,6 +18,7 @@
  */
 
 #include "lib/alsa/NonBlock.hxx"
+#include "lib/alsa/Error.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/OutputAPI.hxx"
@@ -264,16 +265,15 @@ AlsaMixer::Setup()
 	int err;
 
 	if ((err = snd_mixer_attach(handle, device)) < 0)
-		throw FormatRuntimeError("failed to attach to %s: %s",
-					 device, snd_strerror(err));
+		throw Alsa::MakeError(err,
+				      fmt::format("failed to attach to {}",
+						  device).c_str());
 
 	if ((err = snd_mixer_selem_register(handle, nullptr, nullptr)) < 0)
-		throw FormatRuntimeError("snd_mixer_selem_register() failed: %s",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "snd_mixer_selem_register() failed");
 
 	if ((err = snd_mixer_load(handle)) < 0)
-		throw FormatRuntimeError("snd_mixer_load() failed: %s\n",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "snd_mixer_load() failed");
 
 	elem = alsa_mixer_lookup_elem(handle, control, index);
 	if (elem == nullptr)
@@ -294,8 +294,7 @@ AlsaMixer::Open()
 
 	err = snd_mixer_open(&handle, 0);
 	if (err < 0)
-		throw FormatRuntimeError("snd_mixer_open() failed: %s",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "snd_mixer_open() failed");
 
 	try {
 		Setup();
@@ -325,8 +324,7 @@ AlsaMixer::GetVolume()
 
 	err = snd_mixer_handle_events(handle);
 	if (err < 0)
-		throw FormatRuntimeError("snd_mixer_handle_events() failed: %s",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "snd_mixer_handle_events() failed");
 
 	int volume = GetPercentVolume();
 	if (resulting_volume >= 0 && volume == resulting_volume)
@@ -343,8 +341,7 @@ AlsaMixer::SetVolume(unsigned volume)
 
 	int err = set_normalized_playback_volume(elem, 0.01*volume, 1);
 	if (err < 0)
-		throw FormatRuntimeError("failed to set ALSA volume: %s",
-					 snd_strerror(err));
+		throw Alsa::MakeError(err, "failed to set ALSA volume");
 
 	desired_volume = volume;
 	resulting_volume = GetPercentVolume();
