@@ -117,6 +117,7 @@ libopenmpt = AutotoolsProject(
     'lib/libopenmpt.a',
     [
         '--disable-shared', '--enable-static',
+        '--disable-openmpt123',
         '--without-mpg123', '--without-ogg', '--without-vorbis', '--without-vorbisfile',
         '--without-portaudio', '--without-portaudiocpp', '--without-sndfile',
     ],
