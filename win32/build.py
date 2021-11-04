@@ -99,6 +99,7 @@ thirdparty_libs = [
     libid3tag,
     liblame,
     libmodplug,
+    libopenmpt,
     wildmidi,
     gme,
     ffmpeg,

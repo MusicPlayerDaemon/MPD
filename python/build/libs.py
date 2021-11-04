@@ -116,8 +116,11 @@ libopenmpt = AutotoolsProject(
     '892aea7a599b5d21842bebf463b5aafdad5711be7008dd84401920c6234820af',
     'lib/libopenmpt.a',
     [
-        '--disable-shared', '--enable-static'
+        '--disable-shared', '--enable-static',
+        '--without-mpg123', '--without-ogg', '--without-vorbis', '--without-vorbisfile',
+        '--without-portaudio', '--without-portaudiocpp', '--without-sndfile',
     ],
+    base='libopenmpt-0.5.12+release.autotools',
 )
 
 wildmidi = CmakeProject(
