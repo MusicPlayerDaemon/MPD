@@ -20,6 +20,7 @@
 #include "HwSetup.hxx"
 #include "Error.hxx"
 #include "Format.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
