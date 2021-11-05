@@ -334,7 +334,7 @@ bool ConfigLoader::TryFile(const AllocatedPath &base_path, Path path)
 }
 
 void
-ParseCommandLine(int argc, char **argv, struct options &options,
+ParseCommandLine(int argc, char **argv, CommandLineOptions &options,
 		 ConfigData &config)
 {
 	bool use_config_file = true;

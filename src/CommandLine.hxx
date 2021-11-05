@@ -22,7 +22,7 @@
 
 struct ConfigData;
 
-struct options {
+struct CommandLineOptions {
 	bool kill = false;
 	bool daemon = true;
 
@@ -35,7 +35,7 @@ struct options {
 };
 
 void
-ParseCommandLine(int argc, char **argv, struct options &options,
+ParseCommandLine(int argc, char **argv, CommandLineOptions &options,
 		 ConfigData &config);
 
 #endif

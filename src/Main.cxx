@@ -142,7 +142,7 @@ struct Config {
 #ifdef ENABLE_DAEMON
 
 static void
-glue_daemonize_init(const struct options &options,
+glue_daemonize_init(const CommandLineOptions &options,
 		    const ConfigData &config)
 {
 	daemonize_init(config.GetString(ConfigOption::USER),
@@ -361,7 +361,8 @@ Instance::BeginShutdownPartitions() noexcept
 }
 
 static inline void
-MainConfigured(const struct options &options, const ConfigData &raw_config)
+MainConfigured(const CommandLineOptions &options,
+	       const ConfigData &raw_config)
 {
 #ifdef ENABLE_DAEMON
 	daemonize_close_stdin();
@@ -582,7 +583,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 static void
 AndroidMain()
 {
-	struct options options;
+	CommandLineOptions options;
 	ConfigData raw_config;
 
 	const auto sdcard = Environment::getExternalStorageDirectory();
@@ -642,7 +643,7 @@ Java_org_musicpd_Bridge_pause(JNIEnv *, jclass)
 static inline void
 MainOrThrow(int argc, char *argv[])
 {
-	struct options options;
+	CommandLineOptions options;
 	ConfigData raw_config;
 
 	ParseCommandLine(argc, argv, options, raw_config);
