@@ -142,14 +142,14 @@ struct Config {
 #ifdef ENABLE_DAEMON
 
 static void
-glue_daemonize_init(const struct options *options,
+glue_daemonize_init(const struct options &options,
 		    const ConfigData &config)
 {
 	daemonize_init(config.GetString(ConfigOption::USER),
 		       config.GetString(ConfigOption::GROUP),
 		       config.GetPath(ConfigOption::PID_FILE));
 
-	if (options->kill)
+	if (options.kill)
 		daemonize_kill();
 }
 
@@ -384,7 +384,7 @@ MainConfigured(const struct options &options, const ConfigData &raw_config)
 	const Config config(raw_config);
 
 #ifdef ENABLE_DAEMON
-	glue_daemonize_init(&options, raw_config);
+	glue_daemonize_init(options, raw_config);
 #endif
 
 	TagLoadConfig(raw_config);
