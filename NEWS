@@ -1,7 +1,7 @@
 ver 0.23.4 (not yet released)
 * output
   - alsa: add option "thesycon_dsd_workaround" to work around device bug
-* fix crash or debug builds if startup fails
+* fix crash on debug builds if startup fails
 * ignore the "pid_file" setting if started as systemd service
 * Windows
   - enable the "openmpt" decoder plugin
