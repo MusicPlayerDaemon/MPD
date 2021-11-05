@@ -25,6 +25,11 @@ struct ConfigData;
 struct options {
 	bool kill = false;
 	bool daemon = true;
+
+#ifdef __linux__
+	bool systemd = false;
+#endif
+
 	bool log_stderr = false;
 	bool verbose = false;
 };

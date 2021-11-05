@@ -5,7 +5,7 @@ After=network.target sound.target
 
 [Service]
 Type=notify
-ExecStart=@prefix@/bin/mpd --no-daemon
+ExecStart=@prefix@/bin/mpd --systemd
 
 # Create /run/mpd (if MPD is launched without the socket unit and is
 # configured to bind listener sockets there).

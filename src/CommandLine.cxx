@@ -86,6 +86,9 @@ enum Option {
 	OPTION_KILL,
 	OPTION_NO_CONFIG,
 	OPTION_NO_DAEMON,
+#ifdef __linux__
+	OPTION_SYSTEMD,
+#endif
 	OPTION_STDOUT,
 	OPTION_STDERR,
 	OPTION_VERBOSE,
@@ -98,6 +101,9 @@ static constexpr OptionDef option_defs[] = {
 	{"kill", "kill the currently running mpd session"},
 	{"no-config", "don't read from config"},
 	{"no-daemon", "don't detach from console"},
+#ifdef __linux__
+	{"systemd", "systemd service mode"},
+#endif
 	{"stdout", nullptr}, // hidden, compatibility with old versions
 	{"stderr", "print messages to stderr"},
 	{"verbose", 'v', "verbose logging"},
@@ -348,6 +354,13 @@ ParseCommandLine(int argc, char **argv, struct options &options,
 		case OPTION_NO_DAEMON:
 			options.daemon = false;
 			break;
+
+#ifdef __linux__
+		case OPTION_SYSTEMD:
+			options.daemon = false;
+			options.systemd = true;
+			break;
+#endif
 
 		case OPTION_STDOUT:
 		case OPTION_STDERR:
