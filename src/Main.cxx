@@ -145,9 +145,19 @@ static void
 glue_daemonize_init(const CommandLineOptions &options,
 		    const ConfigData &config)
 {
+	auto pid_file = config.GetPath(ConfigOption::PID_FILE);
+
+#ifdef __linux__
+	if (options.systemd && pid_file != nullptr) {
+		pid_file = nullptr;
+		fprintf(stderr,
+			"Ignoring the 'pid_file' setting in systemd mode\n");
+	}
+#endif
+
 	daemonize_init(config.GetString(ConfigOption::USER),
 		       config.GetString(ConfigOption::GROUP),
-		       config.GetPath(ConfigOption::PID_FILE));
+		       std::move(pid_file));
 
 	if (options.kill)
 		daemonize_kill();
