@@ -26,22 +26,25 @@
 # files over an accepted protocol.
 #
 #db_file			"~/.mpd/database"
-#
+
 # These settings are the locations for the daemon log files for the daemon.
-# These logs are great for troubleshooting, depending on your log_level
-# settings.
 #
 # The special value "syslog" makes MPD use the local syslog daemon. This
 # setting defaults to logging to syslog.
 #
-#log_file			"~/.mpd/log"
+# If you use systemd, do not configure a log_file.  With systemd, MPD
+# defaults to the systemd journal, which is fine.
 #
+#log_file			"~/.mpd/log"
+
 # This setting sets the location of the file which stores the process ID
 # for use of mpd --kill and some init scripts. This setting is disabled by
 # default and the pid file will not be stored.
 #
-#pid_file			"~/.mpd/pid"
+# If you use systemd, do not configure a pid_file.
 #
+#pid_file			"~/.mpd/pid"
+
 # This setting sets the location of the file which contains information about
 # most variables to get MPD back into the same general shape it was in before
 # it was brought down. This setting is disabled by default and the server
