@@ -21,7 +21,7 @@
 #define MPD_UPNP_INIT_HXX
 
 void
-UpnpGlobalInit();
+UpnpGlobalInit(const char* iface);
 
 void
 UpnpGlobalFinish() noexcept;

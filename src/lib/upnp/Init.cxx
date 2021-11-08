@@ -33,12 +33,13 @@ static Mutex upnp_init_mutex;
 static unsigned upnp_ref;
 
 static void
-DoInit()
+DoInit(const char* iface)
 {
+
 #ifdef UPNP_ENABLE_IPV6
-	auto code = UpnpInit2(nullptr, 0);
+	auto code = UpnpInit2(iface, 0);
 #else
-	auto code = UpnpInit(nullptr, 0);
+	auto code = UpnpInit(iface, 0);
 #endif
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpInit() failed: %s",
@@ -53,12 +54,12 @@ DoInit()
 }
 
 void
-UpnpGlobalInit()
+UpnpGlobalInit(const char* iface)
 {
 	const std::lock_guard<Mutex> protect(upnp_init_mutex);
 
 	if (upnp_ref == 0)
-		DoInit();
+		DoInit(iface);
 
 	++upnp_ref;
 }

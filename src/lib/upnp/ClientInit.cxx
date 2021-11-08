@@ -57,9 +57,9 @@ DoInit()
 }
 
 UpnpClient_Handle
-UpnpClientGlobalInit()
+UpnpClientGlobalInit(const char* iface)
 {
-	UpnpGlobalInit();
+	UpnpGlobalInit(iface);
 
 	try {
 		const std::lock_guard<Mutex> protect(upnp_client_init_mutex);

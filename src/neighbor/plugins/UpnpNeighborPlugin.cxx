@@ -74,7 +74,7 @@ private:
 void
 UpnpNeighborExplorer::Open()
 {
-	auto handle = UpnpClientGlobalInit();
+	auto handle = UpnpClientGlobalInit(nullptr);
 
 	discovery = new UPnPDeviceDirectory(event_loop, handle, this);
 

@@ -23,7 +23,7 @@
 #include "Compat.hxx"
 
 UpnpClient_Handle
-UpnpClientGlobalInit();
+UpnpClientGlobalInit(const char* iface);
 
 void
 UpnpClientGlobalFinish() noexcept;
