@@ -39,6 +39,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/RecursiveMap.hxx"
 #include "util/SplitString.hxx"
+#include "config/Block.hxx"
 
 #include <cassert>
 #include <string>
@@ -76,10 +77,13 @@ class UpnpDatabase : public Database {
 	UpnpClient_Handle handle;
 	UPnPDeviceDirectory *discovery;
 
+	const char* interface;
+
 public:
-	explicit UpnpDatabase(EventLoop &_event_loop) noexcept
+	explicit UpnpDatabase(EventLoop &_event_loop, const ConfigBlock &block) noexcept
 		:Database(upnp_db_plugin),
-		 event_loop(_event_loop) {}
+		 event_loop(_event_loop),
+		 interface(block.GetBlockValue("interface", nullptr)) {}
 
 	static DatabasePtr Create(EventLoop &main_event_loop,
 				  EventLoop &io_event_loop,
@@ -147,15 +151,15 @@ private:
 DatabasePtr
 UpnpDatabase::Create(EventLoop &, EventLoop &io_event_loop,
 		     [[maybe_unused]] DatabaseListener &listener,
-		     const ConfigBlock &) noexcept
+		     const ConfigBlock &block) noexcept
 {
-	return std::make_unique<UpnpDatabase>(io_event_loop);
+	return std::make_unique<UpnpDatabase>(io_event_loop, block);;
 }
 
 void
 UpnpDatabase::Open()
 {
-	handle = UpnpClientGlobalInit(nullptr);
+	handle = UpnpClientGlobalInit(interface);
 
 	discovery = new UPnPDeviceDirectory(event_loop, handle);
 	try {

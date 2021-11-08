@@ -61,6 +61,15 @@ upnp
 
 Provides access to UPnP media servers.
 
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **interface**
+     - Interface used to discover media servers. Decided by upnp if left unconfigured.
+
 Storage plugins
 ===============
 
