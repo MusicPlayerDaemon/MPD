@@ -1225,7 +1225,7 @@ The music database
 
 .. _command_searchaddpl:
 
-:command:`searchaddpl {NAME} {FILTER} [sort {TYPE}] [window {START:END}]`
+:command:`searchaddpl {NAME} {FILTER} [sort {TYPE}] [window {START:END}] [position POS]`
     Search the database for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`) and add them to
     the playlist named ``NAME``.
@@ -1233,6 +1233,9 @@ The music database
     If a playlist by that name doesn't exist it is created.
 
     Parameters have the same meaning as for :ref:`search <command_search>`.
+
+    The ``position`` parameter specifies where the songs will be
+    inserted. [#since_0_23_4]_
 
 .. _command_update:
 
@@ -1655,3 +1658,4 @@ client-to-client messages are local to the current partition.
 .. [#since_0_23] Since :program:`MPD` 0.23
 .. [#since_0_23_1] Since :program:`MPD` 0.23.1
 .. [#since_0_23_3] Since :program:`MPD` 0.23.3
+.. [#since_0_23_4] Since :program:`MPD` 0.23.4

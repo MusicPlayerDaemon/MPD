@@ -22,6 +22,7 @@
 #include "PlaylistFile.hxx"
 #include "Interface.hxx"
 #include "song/DetachedSong.hxx"
+#include "protocol/Ack.hxx"
 
 #include <functional>
 
@@ -60,4 +61,23 @@ SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
 	});
 
 	return n;
+}
+
+void
+SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
+			 const DatabaseSelection &selection,
+			 const char *playlist_name,
+			 unsigned position)
+{
+	PlaylistFileEditor editor{
+		playlist_name,
+		PlaylistFileEditor::LoadMode::TRY,
+	};
+
+	if (position > editor.size())
+		throw ProtocolError{ACK_ERROR_ARG, "Bad position"};
+
+	if (SearchInsertIntoPlaylist(db, storage, selection,
+				     editor, position) > 0)
+		editor.Save();
 }

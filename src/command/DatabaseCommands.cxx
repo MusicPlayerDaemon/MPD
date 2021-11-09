@@ -199,13 +199,20 @@ handle_searchaddpl(Client &client, Request args, Response &)
 {
 	const char *playlist = args.shift();
 
+	const unsigned position = ParseQueuePosition(args, UINT_MAX);
+
 	SongFilter filter;
 	const auto selection = ParseDatabaseSelection(args, true, filter);
 
 	const Database &db = client.GetDatabaseOrThrow();
 
-	search_add_to_playlist(db, client.GetStorage(),
-			       playlist, selection);
+	if (position == UINT_MAX)
+		search_add_to_playlist(db, client.GetStorage(),
+				       playlist, selection);
+	else
+		SearchInsertIntoPlaylist(db, client.GetStorage(), selection,
+					 playlist, position);
+
 	return CommandResult::OK;
 }
 

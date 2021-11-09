@@ -1,4 +1,6 @@
 ver 0.23.4 (not yet released)
+* protocol
+  - add optional position parameter to "searchaddpl"
 * decoder
   - ffmpeg: support libavcodec 59
 * output

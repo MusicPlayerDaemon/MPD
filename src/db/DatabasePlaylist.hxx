@@ -42,4 +42,10 @@ SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
 			 PlaylistFileEditor &playlist,
 			 unsigned position);
 
+void
+SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
+			 const DatabaseSelection &selection,
+			 const char *playlist_name,
+			 unsigned position);
+
 #endif
