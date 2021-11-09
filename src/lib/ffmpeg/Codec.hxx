@@ -36,7 +36,7 @@ class CodecContext {
 public:
 	CodecContext() = default;
 
-	explicit CodecContext(AVCodec &codec)
+	explicit CodecContext(const AVCodec &codec)
 		:codec_context(avcodec_alloc_context3(&codec))
 	{
 		if (codec_context == nullptr)

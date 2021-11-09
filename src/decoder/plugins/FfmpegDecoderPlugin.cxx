@@ -502,7 +502,7 @@ FfmpegDecode(DecoderClient &client, InputStream *input,
 		FmtDebug(ffmpeg_domain, "codec '{}'",
 			 codec_descriptor->name);
 
-	AVCodec *codec = avcodec_find_decoder(codec_params.codec_id);
+	const AVCodec *codec = avcodec_find_decoder(codec_params.codec_id);
 
 	if (!codec) {
 		LogError(ffmpeg_domain, "Unsupported audio codec");

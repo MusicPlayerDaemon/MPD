@@ -1,4 +1,6 @@
 ver 0.23.4 (not yet released)
+* decoder
+  - ffmpeg: support libavcodec 59
 * output
   - alsa: add option "thesycon_dsd_workaround" to work around device bug
 * fix crash on debug builds if startup fails
