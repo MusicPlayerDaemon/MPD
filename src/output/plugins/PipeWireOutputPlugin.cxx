@@ -55,6 +55,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <algorithm>
+#include <array>
 #include <stdexcept>
 #include <string>
 
