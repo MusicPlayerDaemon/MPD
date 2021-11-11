@@ -33,7 +33,10 @@ search_add_to_playlist(const Database &db, const Storage *storage,
 		       const char *playlist_path_utf8,
 		       const DatabaseSelection &selection);
 
-void
+/**
+ * @return the number of songs added
+ */
+unsigned
 SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
 			 const DatabaseSelection &selection,
 			 PlaylistFileEditor &playlist,

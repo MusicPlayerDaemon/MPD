@@ -233,10 +233,12 @@ handle_playlistadd_position(Client &client, const char *playlist_name,
 #ifdef ENABLE_DATABASE
 		const DatabaseSelection selection(uri, true, nullptr);
 
-		SearchInsertIntoPlaylist(client.GetDatabaseOrThrow(),
-					 client.GetStorage(),
-					 selection,
-					 editor, position);
+		if (SearchInsertIntoPlaylist(client.GetDatabaseOrThrow(),
+					     client.GetStorage(),
+					     selection,
+					     editor, position) == 0)
+			/* no song was found, don't need to save */
+			return CommandResult::OK;
 #else
 		(void)client;
 		r.Error(ACK_ERROR_NO_EXIST, "No database");

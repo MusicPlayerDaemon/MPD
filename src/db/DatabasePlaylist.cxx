@@ -42,7 +42,7 @@ search_add_to_playlist(const Database &db, const Storage *storage,
 	db.Visit(selection, f);
 }
 
-void
+unsigned
 SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
 			 const DatabaseSelection &selection,
 			 PlaylistFileEditor &playlist,
@@ -50,9 +50,14 @@ SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
 {
 	assert(position <= playlist.size());
 
-	db.Visit(selection, [&playlist, &position, storage](const auto &song){
-		playlist.Insert(position,
+	unsigned n = 0;
+
+	db.Visit(selection, [&playlist, &position, &n, storage](const auto &song){
+		playlist.Insert(position + n,
 				DatabaseDetachSong(storage, song));
 		++position;
+		++n;
 	});
+
+	return n;
 }
