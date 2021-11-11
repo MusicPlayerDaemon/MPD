@@ -291,7 +291,7 @@ osx_output_set_channel_map(OSXOutput *oo)
 	OSStatus status;
 
 	const UInt32 num_channels = AudioUnitGetChannelsPerFrame(oo->au);
-	std::unique_ptr<SInt32[]> channel_map(new SInt32[num_channels]);
+	auto channel_map = std::make_unique<SInt32[]>(num_channels);
 	osx_output_parse_channel_map(oo->device_name,
 				     oo->channel_map,
 				     channel_map.get(),

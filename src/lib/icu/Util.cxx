@@ -54,7 +54,7 @@ UCharToUTF8(std::basic_string_view<UChar> src)
 	/* worst-case estimate */
 	size_t dest_capacity = 4 * src.size();
 
-	std::unique_ptr<char[]> dest(new char[dest_capacity + 1]);
+	auto dest = std::make_unique<char[]>(dest_capacity + 1);
 
 	UErrorCode error_code = U_ZERO_ERROR;
 	int32_t dest_length;

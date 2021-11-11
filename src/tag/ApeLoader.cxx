@@ -66,7 +66,7 @@ try {
 	remaining -= sizeof(footer);
 	assert(remaining > 10);
 
-	std::unique_ptr<char[]> buffer(new char[remaining]);
+	auto buffer = std::make_unique<char[]>(remaining);
 	is.ReadFull(lock, buffer.get(), remaining);
 
 	/* read tags */
