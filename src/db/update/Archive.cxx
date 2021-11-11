@@ -33,7 +33,6 @@
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
-#include <string>
 #include <exception>
 
 #include <string.h>

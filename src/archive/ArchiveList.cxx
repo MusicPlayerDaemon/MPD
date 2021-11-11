@@ -26,7 +26,6 @@
 #include "plugins/ZzipArchivePlugin.hxx"
 
 #include <cassert>
-#include <iterator>
 
 #include <string.h>
 

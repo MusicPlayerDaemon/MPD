@@ -23,7 +23,6 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <cassert>
 #include <memory>
