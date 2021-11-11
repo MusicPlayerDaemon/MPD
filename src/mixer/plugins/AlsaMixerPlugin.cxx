@@ -128,13 +128,13 @@ private:
 	}
 
 	[[gnu::pure]]
-	double GetNormalizedVolume() const noexcept {
+	[[nodiscard]] double GetNormalizedVolume() const noexcept {
 		return get_normalized_playback_volume(elem,
 						      SND_MIXER_SCHN_FRONT_LEFT);
 	}
 
 	[[gnu::pure]]
-	unsigned GetPercentVolume() const noexcept {
+	[[nodiscard]] unsigned GetPercentVolume() const noexcept {
 		return NormalizedToPercent(GetNormalizedVolume());
 	}
 

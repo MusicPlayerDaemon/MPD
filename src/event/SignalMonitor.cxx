@@ -62,7 +62,7 @@ public:
 #endif
 	}
 
-	auto &GetEventLoop() const noexcept {
+	[[nodiscard]] auto &GetEventLoop() const noexcept {
 		return event.GetEventLoop();
 	}
 

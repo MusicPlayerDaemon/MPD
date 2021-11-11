@@ -273,7 +273,7 @@ private:
 		pw_thread_loop_signal(thread_loop, false);
 	}
 
-	std::chrono::steady_clock::duration Delay() const noexcept override;
+	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
 
 	void Drain() override;
