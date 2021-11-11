@@ -41,3 +41,18 @@ search_add_to_playlist(const Database &db, const Storage *storage,
 	const auto f = [=](auto && arg1) { return AddSong(storage, playlist_path_utf8, arg1); };
 	db.Visit(selection, f);
 }
+
+void
+SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
+			 const DatabaseSelection &selection,
+			 PlaylistFileEditor &playlist,
+			 unsigned position)
+{
+	assert(position <= playlist.size());
+
+	db.Visit(selection, [&playlist, &position, storage](const auto &song){
+		playlist.Insert(position,
+				DatabaseDetachSong(storage, song));
+		++position;
+	});
+}
