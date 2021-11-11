@@ -31,7 +31,7 @@ MakeArgError(const char *msg, const char *value) noexcept
 {
 	char buffer[256];
 	snprintf(buffer, sizeof(buffer), "%s: %s", msg, value);
-	return ProtocolError(ACK_ERROR_ARG, buffer);
+	return {ACK_ERROR_ARG, buffer};
 }
 
 uint32_t

@@ -31,7 +31,7 @@ AllocatedPath::FromUTF8(std::string_view path_utf8) noexcept
 	return FromFS(path_utf8);
 #else
 	try {
-		return AllocatedPath(::PathFromUTF8(path_utf8));
+		return {::PathFromUTF8(path_utf8)};
 	} catch (...) {
 		return nullptr;
 	}
@@ -44,7 +44,7 @@ AllocatedPath::FromUTF8Throw(std::string_view path_utf8)
 #ifdef FS_CHARSET_ALWAYS_UTF8
 	return FromFS(path_utf8);
 #else
-	return AllocatedPath(::PathFromUTF8(path_utf8));
+	return {::PathFromUTF8(path_utf8)};
 #endif
 }
 

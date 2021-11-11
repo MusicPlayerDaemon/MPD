@@ -30,7 +30,7 @@ MusicChunkPtr
 MusicBuffer::Allocate() noexcept
 {
 	const std::scoped_lock<Mutex> protect(mutex);
-	return MusicChunkPtr(buffer.Allocate(), MusicChunkDeleter(*this));
+	return {buffer.Allocate(), MusicChunkDeleter(*this)};
 }
 
 void

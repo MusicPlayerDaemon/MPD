@@ -206,15 +206,13 @@ ParseStringFilter(const char *&s, bool fold_case)
 	if (auto after_contains = StringAfterPrefixIgnoreCase(s, "contains ")) {
 		s = StripLeft(after_contains);
 		auto value = ExpectQuoted(s);
-		return StringFilter(std::move(value),
-				    fold_case, true, false);
+		return {std::move(value), fold_case, true, false};
 	}
 
 	if (auto after_not_contains = StringAfterPrefixIgnoreCase(s, "!contains ")) {
 		s = StripLeft(after_not_contains);
 		auto value = ExpectQuoted(s);
-		return StringFilter(std::move(value),
-				    fold_case, true, true);
+		return {std::move(value), fold_case, true, true};
 	}
 
 	bool negated = false;
@@ -240,8 +238,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 	s = StripLeft(s + 2);
 	auto value = ExpectQuoted(s);
 
-	return StringFilter(std::move(value),
-			    fold_case, false, negated);
+	return {std::move(value), fold_case, false, negated};
 }
 
 ISongFilterPtr
