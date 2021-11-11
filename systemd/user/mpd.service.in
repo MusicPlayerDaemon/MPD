@@ -7,10 +7,6 @@ After=network.target sound.target
 Type=notify
 ExecStart=@prefix@/bin/mpd --systemd
 
-# Create /run/user/$UID/mpd (if MPD is launched without the socket
-# unit and is configured to bind listener sockets there).
-RuntimeDirectory=mpd
-
 # Enable this setting to ask systemd to watch over MPD, see
 # systemd.service(5).  This is disabled by default because it causes
 # periodic wakeups which are unnecessary if MPD is not playing.
