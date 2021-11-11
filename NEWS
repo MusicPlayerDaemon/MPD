@@ -1,3 +1,5 @@
+ver 0.23.5 (not yet released)
+
 ver 0.23.4 (2021/11/11)
 * protocol
   - add optional position parameter to "searchaddpl"
