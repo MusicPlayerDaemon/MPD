@@ -137,7 +137,7 @@ SidplayGlobal::SidplayGlobal(const ConfigBlock &block)
 	const auto kernal_path = block.GetPath("kernal");
 	if (!kernal_path.IsNull())
 	{
-		kernal.reset(new uint8_t[rom_size]);
+		kernal = std::make_unique<uint8_t[]>(rom_size);
 		loadRom(kernal_path, kernal.get());
 	}
 
@@ -145,7 +145,7 @@ SidplayGlobal::SidplayGlobal(const ConfigBlock &block)
 	const auto basic_path = block.GetPath("basic");
 	if (!basic_path.IsNull())
 	{
-		basic.reset(new uint8_t[rom_size]);
+		basic = std::make_unique<uint8_t[]>(rom_size);
 		loadRom(basic_path, basic.get());
 	}
 #endif

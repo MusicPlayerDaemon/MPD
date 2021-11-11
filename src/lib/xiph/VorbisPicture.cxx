@@ -36,8 +36,7 @@ ScanVorbisPicture(StringView value, TagHandler &handler) noexcept
 		return;
 
 	size_t debase64_size = CalculateBase64OutputSize(value.size);
-	std::unique_ptr<uint8_t[]> debase64_buffer;
-	debase64_buffer.reset(new uint8_t[debase64_size]);
+	auto debase64_buffer = std::make_unique<uint8_t[]>(debase64_size);
 
 	try {
 		debase64_size =
