@@ -30,9 +30,10 @@
 #include "AddressInfo.hxx"
 #include "Features.hxx"
 
+#include <array>
 #include <cassert>
 
-static constexpr int address_family_ranking[] = {
+static constexpr auto address_family_ranking = std::array {
 #ifdef HAVE_UN
 	AF_LOCAL,
 #endif
