@@ -303,7 +303,7 @@ CompositeStorage::MapUTF8(std::string_view uri) const noexcept
 
 	auto f = FindStorage(uri);
 	if (f.directory->storage == nullptr)
-		return std::string();
+		return {};
 
 	return f.directory->storage->MapUTF8(f.uri);
 }

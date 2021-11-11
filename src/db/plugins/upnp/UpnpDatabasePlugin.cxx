@@ -250,11 +250,11 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 {
 	const SongFilter *filter = selection.filter;
 	if (selection.filter == nullptr)
-		return UPnPDirContent();
+		return {};
 
 	const auto searchcaps = server.getSearchCapabilities(handle);
 	if (searchcaps.empty())
-		return UPnPDirContent();
+		return {};
 
 	std::string cond;
 	for (const auto &item : filter->GetItems()) {

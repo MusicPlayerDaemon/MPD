@@ -26,7 +26,7 @@ Path::ToUTF8() const noexcept
 	try {
 		return ToUTF8Throw();
 	} catch (...) {
-		return std::string();
+		return {};
 	}
 }
 

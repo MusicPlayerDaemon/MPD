@@ -85,15 +85,15 @@ map_fs_to_utf8(Path path_fs) noexcept
 {
 	if (path_fs.IsAbsolute()) {
 		if (global_instance->storage == nullptr)
-			return std::string();
+			return {};
 
 		const auto music_dir_fs = global_instance->storage->MapFS("");
 		if (music_dir_fs.IsNull())
-			return std::string();
+			return {};
 
 		auto relative = music_dir_fs.Relative(path_fs);
 		if (relative == nullptr || StringIsEmpty(relative))
-			return std::string();
+			return {};
 
 		path_fs = Path::FromFS(relative);
 	}

@@ -44,7 +44,7 @@ try {
 #ifdef HAVE_ICU
 	const auto u = UCharFromUTF8(src);
 	if (u.IsNull())
-		return AllocatedString(src);
+		return {src};
 
 	AllocatedArray<UChar> folded(u.size() * 2U);
 
@@ -54,7 +54,7 @@ try {
 					     U_FOLD_CASE_DEFAULT,
 					     &error_code);
 	if (folded_length == 0 || error_code != U_ZERO_ERROR)
-		return AllocatedString(src);
+		return {src};
 
 	folded.SetSize(folded_length);
 	return UCharToUTF8({folded.begin(), folded.size()});
@@ -63,7 +63,7 @@ try {
 #error not implemented
 #endif
 } catch (...) {
-	return AllocatedString(src);
+	return {src};
 }
 
 #endif /* HAVE_ICU_CASE_FOLD */

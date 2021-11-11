@@ -87,7 +87,7 @@ extm3u_parse_tag(const char *line)
 	duration = strtol(line, &endptr, 10);
 	if (endptr[0] != ',')
 		/* malformed line */
-		return Tag();
+		return {};
 
 	if (duration < 0)
 		/* 0 means unknown duration */
@@ -97,7 +97,7 @@ extm3u_parse_tag(const char *line)
 	if (*name == 0 && duration == 0)
 		/* no information available; don't allocate a tag
 		   object */
-		return Tag();
+		return {};
 
 	TagBuilder tag;
 	tag.SetDuration(SignedSongTime::FromS(unsigned(duration)));

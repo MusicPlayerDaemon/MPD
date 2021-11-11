@@ -75,5 +75,5 @@ DetachedSong::GetDuration() const noexcept
 		b = SongTime(tag.duration);
 	}
 
-	return SignedSongTime(b - a);
+	return {b - a};
 }

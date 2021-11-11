@@ -94,7 +94,7 @@ uri_remove_auth(const char *uri) noexcept
 	const char *auth = SkipUriScheme(uri);
 	if (auth == nullptr)
 		/* unrecognized URI */
-		return std::string();
+		return {};
 
 	const char *slash = std::strchr(auth, '/');
 	if (slash == nullptr)
@@ -103,7 +103,7 @@ uri_remove_auth(const char *uri) noexcept
 	const char *at = (const char *)std::memchr(auth, '@', slash - auth);
 	if (at == nullptr)
 		/* no auth info present, do nothing */
-		return std::string();
+		return {};
 
 	/* duplicate the full URI and then delete the auth
 	   information */

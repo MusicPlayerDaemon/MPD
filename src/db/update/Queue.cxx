@@ -34,7 +34,7 @@ UpdateQueueItem
 UpdateQueue::Pop() noexcept
 {
 	if (update_queue.empty())
-		return UpdateQueueItem();
+		return {};
 
 	auto i = std::move(update_queue.front());
 	update_queue.pop_front();

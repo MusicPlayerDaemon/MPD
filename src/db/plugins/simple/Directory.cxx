@@ -278,5 +278,5 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 LightDirectory
 Directory::Export() const noexcept
 {
-	return LightDirectory(GetPath(), mtime);
+	return {GetPath(), mtime};
 }

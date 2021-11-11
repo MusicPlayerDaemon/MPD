@@ -466,9 +466,9 @@ real_song_duration(const DetachedSong &song,
 	const SongTime end_time = song.GetEndTime();
 
 	if (end_time.IsPositive() && end_time < SongTime(decoder_duration))
-		return SignedSongTime(end_time - start_time);
+		return {end_time - start_time};
 
-	return SignedSongTime(SongTime(decoder_duration) - start_time);
+	return {SongTime(decoder_duration) - start_time};
 }
 
 bool

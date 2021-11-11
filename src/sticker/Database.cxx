@@ -128,7 +128,7 @@ StickerDatabase::LoadValue(const char *type, const char *uri, const char *name)
 	assert(name != nullptr);
 
 	if (StringIsEmpty(name))
-		return std::string();
+		return {};
 
 	BindAll(s, type, uri, name);
 
