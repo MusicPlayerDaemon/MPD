@@ -53,7 +53,7 @@ SnapcastClient::Close() noexcept
 void
 SnapcastClient::LockClose() noexcept
 {
-	const std::lock_guard<Mutex> protect(output.mutex);
+	const std::scoped_lock<Mutex> protect(output.mutex);
 	Close();
 }
 
@@ -70,7 +70,7 @@ SnapcastClient::Push(SnapcastChunkPtr chunk) noexcept
 SnapcastChunkPtr
 SnapcastClient::LockPopQueue() noexcept
 {
-	const std::lock_guard<Mutex> protect(output.mutex);
+	const std::scoped_lock<Mutex> protect(output.mutex);
 	if (chunks.empty())
 		return nullptr;
 

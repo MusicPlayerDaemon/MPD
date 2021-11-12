@@ -41,14 +41,14 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 	 expires(std::chrono::seconds(UpnpDiscovery_get_Expires(&disco))),
 	 request(*parent.curl, url.c_str(), *this)
 {
-	const std::lock_guard<Mutex> protect(parent.mutex);
+	const std::scoped_lock<Mutex> protect(parent.mutex);
 	parent.downloaders.push_back(*this);
 }
 
 void
 UPnPDeviceDirectory::Downloader::Destroy() noexcept
 {
-	const std::lock_guard<Mutex> protect(parent.mutex);
+	const std::scoped_lock<Mutex> protect(parent.mutex);
 	unlink();
 	delete this;
 }
@@ -139,7 +139,7 @@ AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
 inline void
 UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	for (auto &i : directories) {
 		if (i.id == d.id) {
@@ -157,7 +157,7 @@ UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 inline void
 UPnPDeviceDirectory::LockRemove(const std::string &id)
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	for (auto i = directories.begin(), end = directories.end();
 	     i != end; ++i) {
@@ -265,10 +265,10 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 
 UPnPDeviceDirectory::~UPnPDeviceDirectory() noexcept
 {
-	BlockingCall(GetEventLoop(), [this](){
-			const std::lock_guard<Mutex> protect(mutex);
-			downloaders.clear_and_dispose(DeleteDisposer());
-		});
+	BlockingCall(GetEventLoop(), [this]() {
+		const std::scoped_lock<Mutex> protect(mutex);
+		downloaders.clear_and_dispose(DeleteDisposer());
+	});
 }
 
 inline EventLoop &
@@ -308,7 +308,7 @@ UPnPDeviceDirectory::Search()
 std::vector<ContentDirectoryService>
 UPnPDeviceDirectory::GetDirectories()
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	ExpireDevices();
 
@@ -327,7 +327,7 @@ UPnPDeviceDirectory::GetDirectories()
 ContentDirectoryService
 UPnPDeviceDirectory::GetServer(std::string_view friendly_name)
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	ExpireDevices();
 

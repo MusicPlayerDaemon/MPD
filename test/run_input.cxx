@@ -223,14 +223,14 @@ public:
 
 	/* virtual methods from RemoteTagHandler */
 	void OnRemoteTag(Tag &&_tag) noexcept override {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		tag = std::move(_tag);
 		done = true;
 		cond.notify_all();
 	}
 
 	void OnRemoteTagError(std::exception_ptr e) noexcept override {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		error = std::move(e);
 		done = true;
 		cond.notify_all();

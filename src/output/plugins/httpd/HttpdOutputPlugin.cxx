@@ -104,7 +104,7 @@ HttpdOutput::OnDeferredBroadcast() noexcept
 	/* this method runs in the IOThread; it broadcasts pages from
 	   our own queue to all clients */
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	while (!pages.empty()) {
 		PagePtr page = std::move(pages.front());
@@ -126,7 +126,7 @@ HttpdOutput::OnAccept(UniqueSocketDescriptor fd,
 	/* the listener socket has become readable - a client has
 	   connected */
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	/* can we allow additional client */
 	if (open && (clients_max == 0 || clients.size() < clients_max))
@@ -186,7 +186,7 @@ HttpdOutput::Open(AudioFormat &audio_format)
 	assert(!open);
 	assert(clients.empty());
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	OpenEncoder(audio_format);
 
@@ -208,7 +208,7 @@ HttpdOutput::Close() noexcept
 	BlockingCall(GetEventLoop(), [this](){
 			defer_broadcast.Cancel();
 
-			const std::lock_guard<Mutex> protect(mutex);
+			const std::scoped_lock<Mutex> protect(mutex);
 			open = false;
 			clients.clear_and_dispose(DeleteDisposer());
 		});
@@ -261,7 +261,7 @@ HttpdOutput::BroadcastPage(PagePtr page) noexcept
 	assert(page != nullptr);
 
 	{
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		pages.emplace(std::move(page));
 	}
 
@@ -281,7 +281,7 @@ HttpdOutput::BroadcastFromEncoder()
 
 	PagePtr page;
 	while ((page = ReadPage()) != nullptr) {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		pages.emplace(std::move(page));
 		empty = false;
 	}
@@ -373,7 +373,7 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		metadata = icy_server_metadata_page(tag, &types[0]);
 		if (metadata != nullptr) {
-			const std::lock_guard<Mutex> protect(mutex);
+			const std::scoped_lock<Mutex> protect(mutex);
 			for (auto &client : clients)
 				client.PushMetaData(metadata);
 		}
@@ -383,7 +383,7 @@ HttpdOutput::SendTag(const Tag &tag)
 inline void
 HttpdOutput::CancelAllClients() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	while (!pages.empty()) {
 		PagePtr page = std::move(pages.front());

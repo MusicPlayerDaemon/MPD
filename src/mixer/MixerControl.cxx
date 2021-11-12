@@ -52,7 +52,7 @@ mixer_open(Mixer *mixer)
 {
 	assert(mixer != nullptr);
 
-	const std::lock_guard<Mutex> protect(mixer->mutex);
+	const std::scoped_lock<Mutex> protect(mixer->mutex);
 
 	if (mixer->open)
 		return;
@@ -82,7 +82,7 @@ mixer_close(Mixer *mixer)
 {
 	assert(mixer != nullptr);
 
-	const std::lock_guard<Mutex> protect(mixer->mutex);
+	const std::scoped_lock<Mutex> protect(mixer->mutex);
 
 	if (mixer->open)
 		mixer_close_internal(mixer);
@@ -119,7 +119,7 @@ mixer_get_volume(Mixer *mixer)
 	if (mixer->plugin.global && !mixer->failed)
 		mixer_open(mixer);
 
-	const std::lock_guard<Mutex> protect(mixer->mutex);
+	const std::scoped_lock<Mutex> protect(mixer->mutex);
 
 	if (mixer->open) {
 		try {
@@ -143,7 +143,7 @@ mixer_set_volume(Mixer *mixer, unsigned volume)
 	if (mixer->plugin.global && !mixer->failed)
 		mixer_open(mixer);
 
-	const std::lock_guard<Mutex> protect(mixer->mutex);
+	const std::scoped_lock<Mutex> protect(mixer->mutex);
 
 	if (mixer->open)
 		mixer->SetVolume(volume);

@@ -63,7 +63,7 @@ public:
 	using BufferingInputStream::size;
 
 	bool IsInUse() const noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		return !leases.empty();
 	}
 

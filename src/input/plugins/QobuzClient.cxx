@@ -87,7 +87,7 @@ QobuzClient::StartLogin()
 void
 QobuzClient::AddLoginHandler(QobuzSessionHandler &h) noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 	assert(!h.is_linked());
 
 	const bool was_empty = handlers.empty();
@@ -114,7 +114,7 @@ QobuzClient::AddLoginHandler(QobuzSessionHandler &h) noexcept
 QobuzSession
 QobuzClient::GetSession() const
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	if (error)
 		std::rethrow_exception(error);
@@ -129,7 +129,7 @@ void
 QobuzClient::OnQobuzLoginSuccess(QobuzSession &&_session) noexcept
 {
 	{
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		session = std::move(_session);
 		login_request.reset();
 	}
@@ -141,7 +141,7 @@ void
 QobuzClient::OnQobuzLoginError(std::exception_ptr _error) noexcept
 {
 	{
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		error = std::move(_error);
 		login_request.reset();
 	}
@@ -152,7 +152,7 @@ QobuzClient::OnQobuzLoginError(std::exception_ptr _error) noexcept
 void
 QobuzClient::InvokeHandlers() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 	while (!handlers.empty()) {
 		auto &h = handlers.front();
 		handlers.pop_front();

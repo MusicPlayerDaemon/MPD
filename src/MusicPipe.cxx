@@ -27,7 +27,7 @@
 bool
 MusicPipe::Contains(const MusicChunk *chunk) const noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	for (const MusicChunk *i = head.get(); i != nullptr; i = i->next.get())
 		if (i == chunk)
@@ -41,7 +41,7 @@ MusicPipe::Contains(const MusicChunk *chunk) const noexcept
 MusicChunkPtr
 MusicPipe::Shift() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	auto chunk = std::move(head);
 	if (chunk != nullptr) {
@@ -81,7 +81,7 @@ MusicPipe::Push(MusicChunkPtr chunk) noexcept
 	assert(!chunk->IsEmpty());
 	assert(chunk->length == 0 || chunk->audio_format.IsValid());
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	assert(size > 0 || !audio_format.IsDefined());
 	assert(!audio_format.IsDefined() ||

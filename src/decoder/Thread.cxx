@@ -262,7 +262,7 @@ static void
 MaybeLoadReplayGain(DecoderBridge &bridge, InputStream &is)
 {
 	{
-		const std::lock_guard<Mutex> protect(bridge.dc.mutex);
+		const std::scoped_lock<Mutex> protect(bridge.dc.mutex);
 		if (bridge.dc.replay_gain_mode == ReplayGainMode::OFF)
 			/* ReplayGain is disabled */
 			return;
@@ -337,7 +337,7 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, std::string_view suffix,
 	DecoderControl &dc = bridge.dc;
 
 	if (plugin.file_decode != nullptr) {
-		const std::lock_guard<Mutex> protect(dc.mutex);
+		const std::scoped_lock<Mutex> protect(dc.mutex);
 		return decoder_file_decode(plugin, bridge, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
 		std::unique_lock<Mutex> lock(dc.mutex);
@@ -365,7 +365,7 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
 	bridge.Reset();
 
 	DecoderControl &dc = bridge.dc;
-	const std::lock_guard<Mutex> protect(dc.mutex);
+	const std::scoped_lock<Mutex> protect(dc.mutex);
 	return decoder_file_decode(plugin, bridge, path_fs);
 }
 

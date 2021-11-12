@@ -311,13 +311,13 @@ private:
 
 	gcc_pure
 	bool LockIsActive() const noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		return active;
 	}
 
 	gcc_pure
 	bool LockIsActiveAndNotWaiting() const noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		return active && !waiting;
 	}
 
@@ -383,7 +383,7 @@ private:
 	void LockCaughtError() noexcept {
 		period_buffer.Clear();
 
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		error = std::current_exception();
 		active = false;
 		waiting = false;
@@ -398,7 +398,7 @@ private:
 	 */
 	void OnSilenceTimer() noexcept {
 		{
-			const std::lock_guard<Mutex> lock(mutex);
+			const std::scoped_lock<Mutex> lock(mutex);
 			assert(active);
 			waiting = false;
 		}
@@ -464,7 +464,7 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 std::map<std::string, std::string>
 AlsaOutput::GetAttributes() const noexcept
 {
-	const std::lock_guard<Mutex> lock(attributes_mutex);
+	const std::scoped_lock<Mutex> lock(attributes_mutex);
 
 	return {
 		{"allowed_formats", Alsa::ToString(allowed_formats)},
@@ -478,11 +478,11 @@ void
 AlsaOutput::SetAttribute(std::string &&name, std::string &&value)
 {
 	if (name == "allowed_formats") {
-		const std::lock_guard<Mutex> lock(attributes_mutex);
+		const std::scoped_lock<Mutex> lock(attributes_mutex);
 		allowed_formats = Alsa::AllowedFormat::ParseList(value);
 #ifdef ENABLE_DSD
 	} else if (name == "dop") {
-		const std::lock_guard<Mutex> lock(attributes_mutex);
+		const std::scoped_lock<Mutex> lock(attributes_mutex);
 		if (value == "0")
 			dop_setting = false;
 		else if (value == "1")
@@ -790,7 +790,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 #endif
 
 	{
-		const std::lock_guard<Mutex> lock(attributes_mutex);
+		const std::scoped_lock<Mutex> lock(attributes_mutex);
 #ifdef ENABLE_DSD
 		dop = dop_setting;
 #endif
@@ -966,7 +966,7 @@ AlsaOutput::CopyRingToPeriodBuffer() noexcept
 
 	period_buffer.AppendBytes(nbytes);
 
-	const std::lock_guard<Mutex> lock(mutex);
+	const std::scoped_lock<Mutex> lock(mutex);
 	/* notify the OutputThread that there is now
 	   room in ring_buffer */
 	cond.notify_one();
@@ -1276,7 +1276,7 @@ try {
 	}
 
 	{
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 
 		assert(active);
 
@@ -1316,7 +1316,7 @@ try {
 			   smaller than the ALSA-PCM buffer */
 
 			{
-				const std::lock_guard<Mutex> lock(mutex);
+				const std::scoped_lock<Mutex> lock(mutex);
 				waiting = true;
 				cond.notify_one();
 			}

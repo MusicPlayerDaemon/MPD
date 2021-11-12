@@ -84,7 +84,7 @@ private:
 void
 QobuzInputStream::OnQobuzSession() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	try {
 		const auto session = qobuz_client->GetSession();
@@ -103,7 +103,7 @@ QobuzInputStream::OnQobuzSession() noexcept
 void
 QobuzInputStream::OnQobuzTrackSuccess(std::string url) noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 	track_request.reset();
 
 	try {
@@ -117,7 +117,7 @@ QobuzInputStream::OnQobuzTrackSuccess(std::string url) noexcept
 void
 QobuzInputStream::OnQobuzTrackError(std::exception_ptr e) noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 	track_request.reset();
 
 	Failed(e);

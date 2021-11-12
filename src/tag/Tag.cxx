@@ -30,7 +30,7 @@ Tag::Clear() noexcept
 	has_playlist = false;
 
 	{
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (unsigned i = 0; i < num_items; ++i)
 			tag_pool_put_item(items[i]);
 	}
@@ -47,7 +47,7 @@ Tag::Tag(const Tag &other) noexcept
 	if (num_items > 0) {
 		items = new TagItem *[num_items];
 
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (unsigned i = 0; i < num_items; i++)
 			items[i] = tag_pool_dup_item(other.items[i]);
 	}

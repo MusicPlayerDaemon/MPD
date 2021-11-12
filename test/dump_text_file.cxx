@@ -68,7 +68,7 @@ dump_input_stream(InputStreamPtr &&is)
 		dump_text_file(tis);
 	}
 
-	const std::lock_guard<Mutex> protect(is->mutex);
+	const std::scoped_lock<Mutex> protect(is->mutex);
 
 	is->Check();
 	return 0;
