@@ -19,12 +19,10 @@
 
 #include "LazyRandomEngine.hxx"
 
-void
-LazyRandomEngine::AutoCreate()
-{
-	if (engine != nullptr)
+void LazyRandomEngine::AutoCreate() {
+	if (engine)
 		return;
 
 	std::random_device rd;
-	engine = new std::mt19937(rd());
+	engine.emplace(rd());
 }
