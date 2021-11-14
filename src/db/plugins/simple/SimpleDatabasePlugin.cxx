@@ -316,7 +316,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 
 	if (r.rest.find('/') == std::string_view::npos) {
 		if (visit_song) {
-			Song *song = r.directory->FindSong(r.rest);
+			const Song *song = r.directory->FindSong(r.rest);
 			if (song != nullptr) {
 				const auto song2 = song->Export();
 				if (selection.Match(song2))

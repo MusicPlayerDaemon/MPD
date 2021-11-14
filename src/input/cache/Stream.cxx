@@ -24,7 +24,7 @@ CacheInputStream::CacheInputStream(InputCacheLease _lease,
 	:InputStream(_lease->GetUri(), _mutex),
 	 InputCacheLease(std::move(_lease))
 {
-	auto &i = GetCacheItem();
+	const auto &i = GetCacheItem();
 	size = i.size();
 	seekable = true;
 	SetReady();

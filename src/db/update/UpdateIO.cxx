@@ -84,7 +84,7 @@ try {
 }
 
 bool
-directory_child_access(Storage &storage, const Directory &directory,
+directory_child_access(const Storage &storage, const Directory &directory,
 		       std::string_view name, int mode) noexcept
 {
 #ifdef _WIN32
