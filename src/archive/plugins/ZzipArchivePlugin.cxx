@@ -35,7 +35,7 @@
 
 #include <utility>
 
-#include <inttypes.h> /* for PRIoffset (PRIu64) */
+#include <cinttypes> /* for PRIoffset (PRIu64) */
 
 struct ZzipDir {
 	ZZIP_DIR *const dir;
