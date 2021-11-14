@@ -37,6 +37,7 @@
 #endif
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <csignal>
 
@@ -90,12 +91,12 @@ private:
 /* this should be enough - is it? */
 static constexpr unsigned MAX_SIGNAL = 64;
 
-static SignalHandler signal_handlers[MAX_SIGNAL];
+static std::array<SignalHandler, MAX_SIGNAL> signal_handlers;
 
 #ifdef USE_SIGNALFD
 static sigset_t signal_mask;
 #else
-static std::atomic_bool signal_pending[MAX_SIGNAL];
+static std::array<std::atomic_bool, MAX_SIGNAL> signal_pending;
 #endif
 
 static Manual<SignalMonitor> monitor;
@@ -153,7 +154,7 @@ void
 SignalMonitorFinish() noexcept
 {
 #ifdef USE_SIGNALFD
-	std::fill_n(signal_handlers, MAX_SIGNAL, nullptr);
+	signal_handlers = {};
 #else
 	struct sigaction sa;
 	sa.sa_flags = 0;
@@ -167,7 +168,7 @@ SignalMonitorFinish() noexcept
 		}
 	}
 
-	std::fill_n(signal_pending, MAX_SIGNAL, false);
+	std::fill(signal_pending.begin(), signal_pending.end(), false);
 #endif
 
 	monitor.Destruct();

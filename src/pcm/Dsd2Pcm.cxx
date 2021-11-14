@@ -172,7 +172,7 @@ void
 Dsd2Pcm::Reset() noexcept
 {
 	/* my favorite silence pattern */
-	std::fill_n(fifo, std::size(fifo), 0x69);
+	fifo.fill(0x69);
 
 	fifopos = 0;
 	/* 0x69 = 01101001
@@ -186,7 +186,7 @@ inline void
 Dsd2Pcm::ApplySample(size_t ffp, uint8_t src) noexcept
 {
 	fifo[ffp] = src;
-	uint8_t *p = fifo + ((ffp-CTABLES) & FIFOMASK);
+	uint8_t *p = fifo.data() + ((ffp-CTABLES) & FIFOMASK);
 	*p = bit_reverse(*p);
 }
 
