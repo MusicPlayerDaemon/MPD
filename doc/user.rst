@@ -64,13 +64,13 @@ In any case, you need:
 Each plugin usually needs a codec library, which you also need to
 install. Check the :doc:`plugins` for details about required libraries
 
-For example, the following installs a fairly complete list of build dependencies on Debian Buster:
+For example, the following installs a fairly complete list of build dependencies on Debian Bullseye:
 
 .. code-block:: none
 
     apt install meson g++ \
       libfmt-dev \
-      libpcre3-dev \
+      libpcre2-dev \
       libmad0-dev libmpg123-dev libid3tag0-dev \
       libflac-dev libvorbis-dev libopus-dev libogg-dev \
       libadplug-dev libaudiofile-dev libsndfile1-dev libfaad-dev \
