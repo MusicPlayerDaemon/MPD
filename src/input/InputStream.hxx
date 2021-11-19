@@ -27,6 +27,7 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include <utility>
 
 struct Tag;
 class InputStreamHandler;

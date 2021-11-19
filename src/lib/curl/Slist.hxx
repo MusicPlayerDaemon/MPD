@@ -32,8 +32,8 @@
 
 #include <curl/curl.h>
 
-#include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 /**
  * OO wrapper for "struct curl_slist *".

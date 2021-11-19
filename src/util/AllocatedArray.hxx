@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <utility>
 
 /**
  * An array allocated on the heap with a length determined at runtime.

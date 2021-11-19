@@ -32,7 +32,7 @@
 
 #include <yajl/yajl_parse.h>
 
-#include <algorithm>
+#include <utility>
 
 namespace Yajl {
 
