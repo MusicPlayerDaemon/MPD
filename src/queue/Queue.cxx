@@ -20,6 +20,8 @@
 #include "Queue.hxx"
 #include "song/DetachedSong.hxx"
 
+#include <algorithm>
+
 Queue::Queue(unsigned _max_length) noexcept
 	:max_length(_max_length),
 	 items(new Item[max_length]),

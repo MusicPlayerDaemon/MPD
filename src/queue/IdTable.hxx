@@ -22,7 +22,6 @@
 
 #include "util/Compiler.h"
 
-#include <algorithm>
 #include <cassert>
 
 /**
