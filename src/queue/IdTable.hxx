@@ -29,7 +29,7 @@
  * A table that maps id numbers to position numbers.
  */
 class IdTable {
-	unsigned size;
+	const unsigned size;
 
 	unsigned next;
 
