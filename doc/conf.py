@@ -107,6 +107,7 @@ html_theme = 'classic'
 # documentation.
 #
 # html_theme_options = {}
+html_theme_options = {"sidebarwidth": "300px"}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
