@@ -80,7 +80,7 @@ Response::VFmtError(enum ack code,
 	Fmt(FMT_STRING("ACK [{}@{}] {{{}}} "),
 	    (int)code, list_index, command);
 
-	VFmt(format_str, std::move(args));
+	VFmt(format_str, args);
 
 	Write("\n");
 }

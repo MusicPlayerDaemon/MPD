@@ -244,7 +244,7 @@ AsyncInputStream::AppendToBuffer(const void *data, size_t append_size) noexcept
 void
 AsyncInputStream::DeferredResume() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	try {
 		Resume();
@@ -257,7 +257,7 @@ AsyncInputStream::DeferredResume() noexcept
 void
 AsyncInputStream::DeferredSeek() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 	if (seek_state != SeekState::SCHEDULED)
 		return;
 

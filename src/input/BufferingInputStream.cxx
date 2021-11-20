@@ -37,7 +37,7 @@ BufferingInputStream::BufferingInputStream(InputStreamPtr _input)
 BufferingInputStream::~BufferingInputStream() noexcept
 {
 	{
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		stop = true;
 		wake_cond.notify_one();
 	}

@@ -238,7 +238,7 @@ CurlInputStream::OnHeaders(unsigned status,
 				      StringFormat<40>("got HTTP status %u",
 						       status).c_str());
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	if (IsSeekPending()) {
 		/* don't update metadata while seeking */
@@ -301,7 +301,7 @@ CurlInputStream::OnData(ConstBuffer<void> data)
 {
 	assert(data.size > 0);
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	if (IsSeekPending())
 		SeekDone();
@@ -317,7 +317,7 @@ CurlInputStream::OnData(ConstBuffer<void> data)
 void
 CurlInputStream::OnEnd()
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 	InvokeOnAvailable();
 
 	AsyncInputStream::SetClosed();
@@ -326,7 +326,7 @@ CurlInputStream::OnEnd()
 void
 CurlInputStream::OnError(std::exception_ptr e) noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 	postponed_exception = std::move(e);
 
 	if (IsSeekPending())

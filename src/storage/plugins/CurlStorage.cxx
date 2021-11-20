@@ -131,7 +131,7 @@ protected:
 	}
 
 	void LockSetDone() {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		SetDone();
 	}
 
@@ -149,7 +149,7 @@ private:
 
 	/* virtual methods from CurlResponseHandler */
 	void OnError(std::exception_ptr e) noexcept final {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		postponed_error = std::move(e);
 		SetDone();
 	}

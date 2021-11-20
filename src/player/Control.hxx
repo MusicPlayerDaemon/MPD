@@ -248,7 +248,7 @@ public:
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
 	void LockCheckRethrowError() const {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		CheckRethrowError();
 	}
 
@@ -317,7 +317,7 @@ public:
 	}
 
 	void LockSetReplayGainMode(ReplayGainMode _mode) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		replay_gain_mode = _mode;
 	}
 
@@ -340,7 +340,7 @@ public:
 
 	[[gnu::pure]]
 	SyncInfo LockGetSyncInfo() const noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		return {state, next_song != nullptr};
 	}
 
@@ -362,7 +362,7 @@ private:
 	 * this function.
 	 */
 	void LockSignal() noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		Signal();
 	}
 
@@ -415,7 +415,7 @@ private:
 	}
 
 	void LockCommandFinished() noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		CommandFinished();
 	}
 
@@ -510,7 +510,7 @@ private:
 	}
 
 	void LockSetOutputError(std::exception_ptr &&_error) noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		SetOutputError(std::move(_error));
 	}
 

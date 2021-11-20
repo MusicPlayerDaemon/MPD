@@ -48,7 +48,7 @@ public:
 
 	~SmbclientContext() noexcept {
 		if (ctx != nullptr) {
-			const std::lock_guard<Mutex> protect(global_mutex);
+			const std::scoped_lock<Mutex> protect(global_mutex);
 			smbc_free_context(ctx, 1);
 		}
 	}

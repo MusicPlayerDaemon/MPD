@@ -38,7 +38,7 @@ TagBuilder::TagBuilder(const Tag &other) noexcept
 
 	const std::size_t n = other.num_items;
 	if (n > 0) {
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (std::size_t i = 0; i != n; ++i)
 			items.push_back(tag_pool_dup_item(other.items[i]));
 	}
@@ -72,7 +72,7 @@ TagBuilder::operator=(const TagBuilder &other) noexcept
 		items = other.items;
 
 		/* increment the tag pool refcounters */
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (auto &i : items)
 			i = tag_pool_dup_item(i);
 	}
@@ -188,7 +188,7 @@ TagBuilder::Complement(const Tag &other) noexcept
 
 	const std::size_t n = other.num_items;
 	if (n > 0) {
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (std::size_t i = 0; i != n; ++i) {
 			TagItem *item = other.items[i];
 			if (!present[item->type])
@@ -203,7 +203,7 @@ TagBuilder::AddItemUnchecked(TagType type, StringView value) noexcept
 	TagItem *i;
 
 	{
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		i = tag_pool_get_item(type, value);
 	}
 
@@ -252,7 +252,7 @@ TagBuilder::RemoveAll() noexcept
 		return;
 
 	{
-		const std::lock_guard<Mutex> protect(tag_pool_lock);
+		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (auto i : items)
 			tag_pool_put_item(i);
 	}

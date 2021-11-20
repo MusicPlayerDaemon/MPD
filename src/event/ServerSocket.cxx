@@ -91,7 +91,7 @@ public:
 	}
 #endif
 
-	bool IsDefined() const noexcept {
+	[[nodiscard]] bool IsDefined() const noexcept {
 		return event.IsDefined();
 	}
 

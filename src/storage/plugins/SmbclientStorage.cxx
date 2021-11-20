@@ -102,7 +102,7 @@ GetInfo(SmbclientContext &ctx, Mutex &mutex, const char *path)
 	struct stat st;
 
 	{
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		if (ctx.Stat(path, st) != 0)
 			throw MakeErrno("Failed to access file");
 	}
@@ -137,7 +137,7 @@ SmbclientStorage::OpenDirectory(std::string_view uri_utf8)
 	SMBCFILE *handle;
 
 	{
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		handle = ctx.OpenDirectory(mapped.c_str());
 	}
 
@@ -158,14 +158,14 @@ SkipNameFS(PathTraitsFS::const_pointer name) noexcept
 
 SmbclientDirectoryReader::~SmbclientDirectoryReader()
 {
-	const std::lock_guard<Mutex> lock(storage.mutex);
+	const std::scoped_lock<Mutex> lock(storage.mutex);
 	storage.ctx.CloseDirectory(handle);
 }
 
 const char *
 SmbclientDirectoryReader::Read() noexcept
 {
-	const std::lock_guard<Mutex> protect(storage.mutex);
+	const std::scoped_lock<Mutex> protect(storage.mutex);
 
 	while (auto e = storage.ctx.ReadDirectory(handle)) {
 		name = e->name;

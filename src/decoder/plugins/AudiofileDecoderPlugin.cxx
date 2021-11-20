@@ -83,8 +83,8 @@ audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length) noexcept
 static AFfileoffset
 audiofile_file_length(AFvirtualfile *vfile) noexcept
 {
-	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
-	InputStream &is = afis.is;
+	const AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
+	const InputStream &is = afis.is;
 
 	return is.GetSize();
 }
@@ -92,8 +92,8 @@ audiofile_file_length(AFvirtualfile *vfile) noexcept
 static AFfileoffset
 audiofile_file_tell(AFvirtualfile *vfile) noexcept
 {
-	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
-	InputStream &is = afis.is;
+	const AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
+	const InputStream &is = afis.is;
 
 	return is.GetOffset();
 }

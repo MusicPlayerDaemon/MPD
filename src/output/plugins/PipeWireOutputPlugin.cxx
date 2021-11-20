@@ -153,7 +153,7 @@ class PipeWireOutput final : AudioOutput {
 public:
 	static AudioOutput *Create(EventLoop &,
 				   const ConfigBlock &block) {
-		pw_init(0, nullptr);
+		pw_init(nullptr, nullptr);
 
 		return new PipeWireOutput(block);
 	}
@@ -250,7 +250,7 @@ private:
 				 uint32_t id,
 				 const struct spa_pod *param) noexcept
 	{
-		if (id != SPA_PARAM_Format || param == NULL)
+		if (id != SPA_PARAM_Format || param == nullptr)
 			return;
 
 		auto &o = *(PipeWireOutput *)data;
@@ -273,7 +273,7 @@ private:
 		pw_thread_loop_signal(thread_loop, false);
 	}
 
-	std::chrono::steady_clock::duration Delay() const noexcept override;
+	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
 	size_t Play(const void *chunk, size_t size) override;
 
 	void Drain() override;

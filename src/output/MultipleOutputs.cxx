@@ -229,7 +229,7 @@ MultipleOutputs::Open(const AudioFormat audio_format)
 	std::exception_ptr first_error;
 
 	for (const auto &ao : outputs) {
-		const std::lock_guard<Mutex> lock(ao->mutex);
+		const std::scoped_lock<Mutex> lock(ao->mutex);
 
 		if (ao->IsEnabled())
 			enabled = true;

@@ -231,7 +231,7 @@ public:
 
 	[[gnu::pure]]
 	bool LockIsIdle() const noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		return IsIdle();
 	}
 
@@ -241,7 +241,7 @@ public:
 
 	[[gnu::pure]]
 	bool LockIsStarting() const noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		return IsStarting();
 	}
 
@@ -253,7 +253,7 @@ public:
 
 	[[gnu::pure]]
 	bool LockHasFailed() const noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		return HasFailed();
 	}
 
@@ -284,7 +284,7 @@ public:
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
 	void LockCheckRethrowError() const {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		CheckRethrowError();
 	}
 
@@ -360,7 +360,7 @@ private:
 	}
 
 	void LockAsynchronousCommand(DecoderCommand cmd) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		command = cmd;
 		Signal();
 	}

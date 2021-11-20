@@ -83,7 +83,7 @@ public:
 	void AddLoginHandler(QobuzSessionHandler &h) noexcept;
 
 	void RemoveLoginHandler(QobuzSessionHandler &h) noexcept {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		if (h.is_linked())
 			h.unlink();
 	}

@@ -114,7 +114,7 @@ SnapcastOutput::OnAccept(UniqueSocketDescriptor fd,
 	/* the listener socket has become readable - a client has
 	   connected */
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	/* can we allow additional client */
 	if (open)
@@ -152,7 +152,7 @@ SnapcastOutput::Open(AudioFormat &audio_format)
 	assert(!open);
 	assert(clients.empty());
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	OpenEncoder(audio_format);
 
@@ -174,7 +174,7 @@ SnapcastOutput::Close() noexcept
 	BlockingCall(GetEventLoop(), [this](){
 		inject_event.Cancel();
 
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		open = false;
 		clients.clear_and_dispose(DeleteDisposer{});
 	});
@@ -188,7 +188,7 @@ SnapcastOutput::Close() noexcept
 void
 SnapcastOutput::OnInject() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	while (!chunks.empty()) {
 		const auto chunk = std::move(chunks.front());
@@ -296,7 +296,7 @@ SnapcastOutput::SendTag(const Tag &tag)
 
 	const ConstBuffer payload(json.data(), json.size());
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 	// TODO: enqueue StreamTags, don't send directly
 	for (auto &client : clients)
 		client.SendStreamTags(payload.ToVoid());
@@ -344,7 +344,7 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 
 		unflushed_input = 0;
 
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		if (chunks.empty())
 			inject_event.Schedule();
 
@@ -382,7 +382,7 @@ SnapcastOutput::Drain()
 void
 SnapcastOutput::Cancel() noexcept
 {
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	ClearQueue(chunks);
 

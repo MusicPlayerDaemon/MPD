@@ -68,7 +68,7 @@ private:
 			exception = std::current_exception();
 		}
 
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		done = true;
 		cond.notify_one();
 	}

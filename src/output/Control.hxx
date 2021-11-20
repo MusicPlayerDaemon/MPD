@@ -405,7 +405,7 @@ public:
 	void EnableDisableAsync();
 
 	void LockEnableDisableAsync() {
-		const std::lock_guard<Mutex> protect(mutex);
+		const std::scoped_lock<Mutex> protect(mutex);
 		EnableDisableAsync();
 	}
 
@@ -480,7 +480,7 @@ public:
 	 * Locking wrapper for ClearTailChunk().
 	 */
 	void LockClearTailChunk(const MusicChunk &chunk) noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		ClearTailChunk(chunk);
 	}
 

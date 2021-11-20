@@ -121,7 +121,7 @@ private:
 	void Disconnect() noexcept;
 
 	void Shutdown(const char *reason) noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		error = std::make_exception_ptr(FormatRuntimeError("JACK connection shutdown: %s",
 								   reason));
 	}
@@ -185,7 +185,7 @@ public:
 
 private:
 	bool LockWasShutdown() const noexcept {
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		return !!error;
 	}
 };
@@ -700,7 +700,7 @@ JackOutput::Play(const void *chunk, size_t size)
 
 	while (true) {
 		{
-			const std::lock_guard<Mutex> lock(mutex);
+			const std::scoped_lock<Mutex> lock(mutex);
 			if (error)
 				std::rethrow_exception(error);
 
@@ -730,7 +730,7 @@ inline bool
 JackOutput::Pause()
 {
 	{
-		const std::lock_guard<Mutex> lock(mutex);
+		const std::scoped_lock<Mutex> lock(mutex);
 		interrupted = false;
 		if (error)
 			std::rethrow_exception(error);

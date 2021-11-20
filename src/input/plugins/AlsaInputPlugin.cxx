@@ -239,7 +239,7 @@ AlsaInputStream::DispatchSockets() noexcept
 {
 	non_block.DispatchSockets(*this, capture_handle);
 
-	const std::lock_guard<Mutex> protect(mutex);
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	auto w = PrepareWriteBuffer();
 	const snd_pcm_uframes_t w_frames = w.size / frame_size;

@@ -162,7 +162,7 @@ class Iso9660InputStream final : public InputStream {
 		std::array<uint8_t, ISO_BLOCKSIZE> data;
 
 	public:
-		ConstBuffer<uint8_t> Read() const noexcept {
+		[[nodiscard]] ConstBuffer<uint8_t> Read() const noexcept {
 			assert(fill <= data.size());
 			assert(position <= fill);
 
