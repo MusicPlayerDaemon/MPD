@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 Content Management AG
+ * Copyright 2007-2021 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -30,14 +30,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UNIQUE_REGEX_HXX
-#define UNIQUE_REGEX_HXX
+#pragma once
 
 #include "RegexPointer.hxx"
 
 #include <utility>
-
-#include <pcre.h>
 
 class UniqueRegex : public RegexPointer {
 public:
@@ -50,29 +47,22 @@ public:
 
 	UniqueRegex(UniqueRegex &&src) noexcept:RegexPointer(src) {
 		src.re = nullptr;
-		src.extra = nullptr;
 	}
 
 	~UniqueRegex() noexcept {
-		pcre_free(re);
-#ifdef PCRE_CONFIG_JIT
-		pcre_free_study(extra);
-#else
-		pcre_free(extra);
-#endif
+		if (re != nullptr)
+			pcre2_code_free_8(re);
 	}
 
-	UniqueRegex &operator=(UniqueRegex &&src) {
+	UniqueRegex &operator=(UniqueRegex &&src) noexcept {
 		using std::swap;
 		swap<RegexPointer>(*this, src);
 		return *this;
 	}
 
 	/**
-	 * Throws std::runtime_error on error.
+	 * Throws Pcre::Error on error.
 	 */
 	void Compile(const char *pattern, bool anchored, bool capture,
 		     bool caseless);
 };
-
-#endif
