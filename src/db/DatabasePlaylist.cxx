@@ -53,10 +53,9 @@ SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
 
 	unsigned n = 0;
 
-	db.Visit(selection, [&playlist, &position, &n, storage](const auto &song){
+	db.Visit(selection, [&playlist, position, &n, storage](const auto &song){
 		playlist.Insert(position + n,
 				DatabaseDetachSong(storage, song));
-		++position;
 		++n;
 	});
 
