@@ -465,6 +465,11 @@ The following table lists the audio_output options valid for all plugins:
        implement an external mixer, see :ref:`external_mixer`) or no mixer
        (:samp:`none`). By default, the hardware mixer is used for
        devices which support it, and none for the others.
+   * - **replay_gain_handler software|mixer|none**
+     - Specifies how :ref:`replay_gain` is applied.  The default is
+       ``software``, which uses an internal software volume control.
+       ``mixer`` uses the configured (hardware) mixer control.
+       ``none`` disables replay gain on this audio output.
    * - **filters "name,...**"
      - The specified configured filters are instantiated in the given
        order.  Each filter name refers to a ``filter`` block, see
@@ -582,6 +587,40 @@ Sometimes, music needs to be resampled before it can be played; for example, CDs
 
 Check the :ref:`resampler_plugins` reference for a list of resamplers
 and how to configure them.
+
+Volume Normalization Settings
+-----------------------------
+
+.. _replay_gain:
+
+Replay Gain
+^^^^^^^^^^^
+
+The setting ``replaygain`` specifies whether MPD shall adjust the
+volume of songs played using `ReplayGain
+<https://wiki.hydrogenaud.io/index.php?title=Replaygain>`__ tags.
+Setting this to ``album`` will adjust volume using the album's
+ReplayGain tags, while setting it to ``track`` will adjust it using
+the "track" ReplayGain tags.  ``auto`` uses the track ReplayGain tags
+if random play is activated otherwise the album ReplayGain
+tags.
+
+If ReplayGain is enabled, then the setting ``replaygain_preamp`` is
+set to a value (in dB) between ``-15`` and ``15``.  This is the gain
+applied to songs with ReplayGain tags.
+
+ReplayGain is usually implemented with a software volume filter (which
+prevents `Bit-perfect playback`_).  To use a hardware mixer, set
+``replay_gain_handler`` to ``mixer`` in the ``audio_output`` section
+(see :ref:`config_audio_output` for details).
+
+Simple Volume Normalization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MPD implements a very simple volume normalization method which can be
+enabled by setting ``volume_normalization`` to ``yes``.  It supports
+16 bit PCM only.
+
 
 Client Connections
 ------------------
@@ -1076,6 +1115,7 @@ Check list for bit-perfect playback:
 * Disable sound processing inside ALSA by configuring a "hardware"
   device (:samp:`hw:0,0` or similar).
 * Don't use software volume (setting :code:`mixer_type`).
+* Don't use :ref:`replay_gain`.
 * Don't force :program:`MPD` to use a specific audio format (settings
   :code:`format`, :ref:`audio_output_format <audio_output_format>`).
 * Verify that you are really doing bit-perfect playback using :program:`MPD`'s verbose log and :file:`/proc/asound/card*/pcm*p/sub*/hw_params`. Some DACs can also indicate the audio format.

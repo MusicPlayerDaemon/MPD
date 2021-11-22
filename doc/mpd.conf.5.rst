@@ -128,23 +128,6 @@ audio_output
   no audio_output section is specified, then MPD will scan for a usable audio
   output.
 
-replaygain <off or album or track or auto>
-  If specified, mpd will adjust the volume of songs played using ReplayGain
-  tags (see https://wiki.hydrogenaud.io/index.php?title=Replaygain).
-  Setting this to "album" will
-  adjust volume using the album's ReplayGain tags, while setting it to "track"
-  will adjust it using the track ReplayGain tags. "auto" uses the track
-  ReplayGain tags if random play is activated otherwise the album ReplayGain
-  tags. Currently only FLAC, Ogg Vorbis, Musepack, and MP3 (through ID3v2
-  ReplayGain tags, not APEv2) are supported.
-
-replaygain_preamp <-15 to 15>
-  This is the gain (in dB) applied to songs with ReplayGain tags.
-
-volume_normalization <yes or no>
-  If yes, mpd will normalize the volume of songs as they play. The default is
-  no.
-
 filesystem_charset <charset>
   This specifies the character set used for the filesystem. A list of supported
   character sets can be obtained by running "iconv -l". The default is
