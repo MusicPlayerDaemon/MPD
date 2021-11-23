@@ -1,0 +1,87 @@
+---
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - 'android/**'
+      - 'build/**'
+      - 'doc/**'
+      - 'python/**'
+      - 'subprojects/**'
+      - 'systemd/**'
+      - 'win32/**'
+    branches:
+      - master
+      - actions
+  pull_request:
+    paths-ignore:
+      - 'android/**'
+      - 'build/**'
+      - 'doc/**'
+      - 'python/**'
+      - 'subprojects/**'
+      - 'systemd/**'
+      - 'win32/**'
+    branches:
+      - master
+env:
+  CC: 'ccache gcc-10'
+  CXX: 'ccache g++-10'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ matrix.os }}-${{ matrix.type }}
+      - name: Install dependencies
+        run: |
+          sudo apt install -y --no-install-recommends \
+            g++-10 libfmt-dev libboost-dev \
+            libgtest-dev \
+            libpcre2-dev \
+            libsystemd-dev libdbus-1-dev \
+            libicu-dev \
+            libcurl4-gnutls-dev \
+            libpcre2-dev \
+            libavahi-client-dev \
+            libmad0-dev libmpg123-dev libid3tag0-dev \
+            libflac-dev libvorbis-dev libopus-dev libogg-dev \
+            libadplug-dev libaudiofile-dev libsndfile1-dev libfaad-dev \
+            libfluidsynth-dev libgme-dev libmikmod-dev libmodplug-dev \
+            libmpcdec-dev libwavpack-dev libwildmidi-dev \
+            libsidplay2-dev libsidutils-dev libresid-builder-dev \
+            libavcodec-dev libavformat-dev \
+            libmp3lame-dev libtwolame-dev libshine-dev \
+            libsamplerate0-dev libsoxr-dev \
+            libbz2-dev libcdio-paranoia-dev libiso9660-dev libmms-dev \
+            libzzip-dev \
+            libyajl-dev libexpat-dev \
+            libasound2-dev libao-dev libjack-jackd2-dev libopenal-dev \
+            libpulse-dev libshout3-dev \
+            libsndio-dev \
+            libmpdclient-dev \
+            libnfs-dev \
+            libupnp-dev \
+            libsqlite3-dev \
+            libchromaprint-dev \
+            libgcrypt20-dev
+
+      - name: Full Build
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+          directory: output/full
+          setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled
+          meson-version: 0.56.0
+
+      - name: Mini Build
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+          directory: output/mini
+          setup-options: -Dbuildtype=minsize -Dauto_features=disabled -Dtest=true -Ddaemon=false -Dinotify=false -Depoll=false -Deventfd=false -Dsignalfd=false -Dtcp=false -Ddsd=false -Ddatabase=false -Dneighbor=false -Dcue=false -Dfifo=false -Dhttpd=false -Dpipe=false -Drecorder=false -Dsnapcast=false
+          meson-version: 0.56.0
