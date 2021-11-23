@@ -140,8 +140,7 @@ LibsampleratePcmResampler::Resample2(ConstBuffer<float> src)
 		throw FormatRuntimeError("libsamplerate has failed: %s",
 					 src_strerror(result));
 
-	return ConstBuffer<float>(data.data_out,
-				  data.output_frames_gen * channels);
+	return {data.data_out, size_t(data.output_frames_gen * channels)};
 }
 
 ConstBuffer<void>
