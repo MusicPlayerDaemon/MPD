@@ -720,7 +720,7 @@ PipeWireOutput::Process() noexcept
 	auto &buffer = *b->buffer;
 	auto &d = buffer.datas[0];
 
-	std::byte *dest = (std::byte *)d.data;
+	auto dest = (std::byte *)d.data;
 	if (dest == nullptr)
 		return;
 
