@@ -37,6 +37,8 @@ jobs:
         with:
           key: ${{ matrix.os }}-${{ matrix.type }}
 
+      - uses: actions/setup-python@v1
+
       - name: Install dependencies
         run: |
           brew install \
