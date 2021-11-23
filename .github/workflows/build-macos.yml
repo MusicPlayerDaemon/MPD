@@ -40,7 +40,9 @@ jobs:
       - name: Install dependencies
         run: |
           brew install \
+            meson ninja \
             fmt \
+            boost \
             googletest \
             icu4c \
             ffmpeg \
