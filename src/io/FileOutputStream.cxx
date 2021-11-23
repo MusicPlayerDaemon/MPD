@@ -146,16 +146,6 @@ FileOutputStream::Commit()
 	Close();
 }
 
-void
-FileOutputStream::Cancel() noexcept
-{
-	assert(IsDefined());
-
-	Close();
-
-	DeleteFile(GetPath().c_str());
-}
-
 #else
 
 #include <cerrno>
@@ -274,6 +264,8 @@ FileOutputStream::Commit()
 	}
 }
 
+#endif
+
 void
 FileOutputStream::Cancel() noexcept
 {
@@ -288,6 +280,8 @@ FileOutputStream::Cancel() noexcept
 #endif
 #ifdef __linux__
 			unlinkat(directory_fd.Get(), GetPath().c_str(), 0);
+#elif _WIN32
+		DeleteFile(GetPath().c_str());
 #else
 		unlink(GetPath().c_str());
 #endif
@@ -301,4 +295,3 @@ FileOutputStream::Cancel() noexcept
 	}
 }
 
-#endif
