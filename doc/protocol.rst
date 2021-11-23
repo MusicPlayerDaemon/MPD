@@ -1222,6 +1222,8 @@ The music database
 
     The ``position`` parameter specifies where the songs will be
     inserted. [#since_0_23]_
+    It can be relative to the current song as in :ref:`addid
+    <command_addid>`. [#since_0_23_5]_
 
 .. _command_searchaddpl:
 
@@ -1659,3 +1661,4 @@ client-to-client messages are local to the current partition.
 .. [#since_0_23_1] Since :program:`MPD` 0.23.1
 .. [#since_0_23_3] Since :program:`MPD` 0.23.3
 .. [#since_0_23_4] Since :program:`MPD` 0.23.4
+.. [#since_0_23_5] Since :program:`MPD` 0.23.5

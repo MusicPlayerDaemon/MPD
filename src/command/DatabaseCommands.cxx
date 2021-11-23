@@ -18,6 +18,7 @@
  */
 
 #include "DatabaseCommands.hxx"
+#include "PositionArg.hxx"
 #include "Request.hxx"
 #include "Partition.hxx"
 #include "db/DatabaseQueue.hxx"
@@ -84,6 +85,20 @@ ParseQueuePosition(Request &args, unsigned queue_length)
 
 	/* append to the end of the queue by default */
 	return queue_length;
+}
+
+static unsigned
+ParseInsertPosition(Request &args, const playlist &playlist)
+{
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "position")) {
+		unsigned position = ParseInsertPosition(args.back(), playlist);
+		args.pop_back();
+		args.pop_back();
+		return position;
+	}
+
+	/* append to the end of the queue by default */
+	return playlist.queue.GetLength();
 }
 
 /**
@@ -160,7 +175,8 @@ handle_match_add(Client &client, Request args, bool fold_case)
 {
 	auto &partition = client.GetPartition();
 	const auto queue_length = partition.playlist.queue.GetLength();
-	const unsigned position = ParseQueuePosition(args, queue_length);
+	const unsigned position =
+		ParseInsertPosition(args, partition.playlist);
 
 	SongFilter filter;
 	const auto selection = ParseDatabaseSelection(args, fold_case, filter);
