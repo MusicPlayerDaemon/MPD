@@ -51,7 +51,7 @@ private:
 	/** bit mask for FIFO offsets */
 	static constexpr size_t FIFOMASK = FIFOSIZE - 1;
 
-	uint8_t fifo[FIFOSIZE];
+	std::array<uint8_t, FIFOSIZE> fifo;
 	size_t fifopos;
 
 public:
