@@ -31,4 +31,4 @@ ErrorCategory::message(int condition) const
 	return spa_strerror(condition);
 }
 
-} // namespace Avahi
+} // namespace PipeWire

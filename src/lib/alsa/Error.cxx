@@ -41,4 +41,4 @@ ErrorCategory::message(int condition) const
 	return snd_strerror(condition);
 }
 
-} // namespace Avahi
+} // namespace Alsa
