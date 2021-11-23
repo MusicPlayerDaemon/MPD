@@ -48,15 +48,14 @@ LocateFileUri(const char *uri, const Client *client
 			/* this path was relative to the music
 			   directory */
 			// TODO: don't use suffix.data() (ok for now because we know it's null-terminated)
-			return LocatedUri(LocatedUri::Type::RELATIVE,
-					  suffix.data());
+			return {LocatedUri::Type::RELATIVE, suffix.data()};
 	}
 #endif
 
 	if (client != nullptr)
 		client->AllowFile(path);
 
-	return LocatedUri(LocatedUri::Type::PATH, uri, std::move(path));
+	return {LocatedUri::Type::PATH, uri, std::move(path)};
 }
 
 static LocatedUri
@@ -90,8 +89,7 @@ LocateAbsoluteUri(UriPluginKind kind, const char *uri
 		const auto suffix = storage->MapToRelativeUTF8(uri);
 		if (suffix.data() != nullptr)
 			// TODO: don't use suffix.data() (ok for now because we know it's null-terminated)
-			return LocatedUri(LocatedUri::Type::RELATIVE,
-					  suffix.data());
+			return {LocatedUri::Type::RELATIVE, suffix.data()};
 	}
 
 	if (kind == UriPluginKind::STORAGE &&
@@ -99,7 +97,7 @@ LocateAbsoluteUri(UriPluginKind kind, const char *uri
 		throw std::invalid_argument("Unsupported URI scheme");
 #endif
 
-	return LocatedUri(LocatedUri::Type::ABSOLUTE, uri);
+	return {LocatedUri::Type::ABSOLUTE, uri};
 }
 
 LocatedUri
