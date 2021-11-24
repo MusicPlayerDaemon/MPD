@@ -188,10 +188,17 @@ public:
 	}
 
 	/**
+	 * @return the port number in network byte order
+	 */
+	constexpr uint16_t GetPortBE() const noexcept {
+		return address.sin_port;
+	}
+
+	/**
 	 * @return the port number in host byte order
 	 */
 	constexpr uint16_t GetPort() const noexcept {
-		return FromBE16(address.sin_port);
+		return FromBE16(GetPortBE());
 	}
 
 	/**
