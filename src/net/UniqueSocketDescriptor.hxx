@@ -32,7 +32,6 @@
 
 #include "SocketDescriptor.hxx"
 
-#include <algorithm>
 #include <utility>
 
 class StaticSocketAddress;
