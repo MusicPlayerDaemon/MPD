@@ -284,7 +284,7 @@ endif
 # Input
 #
 
-executable(
+run_input = executable(
   'run_input',
   'run_input.cxx',
   '../src/TagSave.cxx',
@@ -340,19 +340,31 @@ if archive_glue_dep.found()
 
   if libiso9660_dep.found()
     if find_program('mkisofs', required: false).found()
-      test('test_archive_iso9660', find_program('test_archive_iso9660.sh'))
+      test(
+        'test_archive_iso9660',
+        find_program('test_archive_iso9660.sh'),
+        depends: run_input,
+      )
     endif
   endif
 
   if libbz2_dep.found()
     if find_program('bzip2', required: false).found()
-      test('test_archive_bzip2', find_program('test_archive_bzip2.sh'))
+      test(
+        'test_archive_bzip2',
+        find_program('test_archive_bzip2.sh'),
+        depends: run_input,
+      )
     endif
   endif
 
   if libzzip_dep.found()
     if find_program('zip', required: false).found()
-      test('test_archive_zzip', find_program('test_archive_zzip.sh'))
+      test(
+        'test_archive_zzip',
+        find_program('test_archive_zzip.sh'),
+        depends: run_input,
+      )
     endif
   endif
 endif
