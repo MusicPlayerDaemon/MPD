@@ -1,6 +1,5 @@
 /*
- * Copyright 2011-2019 Max Kellermann <max.kellermann@gmail.com>
- * http://www.musicpd.org
+ * Copyright 2011-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +29,7 @@
 
 #include "UTF8.hxx"
 #include "CharUtil.hxx"
+#include "Compiler.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -196,7 +196,7 @@ SequenceLengthUTF8(char ch) noexcept
 
 template<std::size_t L>
 struct CheckSequenceUTF8 {
-	gcc_pure
+	[[gnu::pure]]
 	bool operator()(const char *p) const noexcept {
 		return IsContinuation(*p) && CheckSequenceUTF8<L-1>()(p + 1);
 	}
@@ -210,7 +210,7 @@ struct CheckSequenceUTF8<0U> {
 };
 
 template<std::size_t L>
-gcc_pure
+[[gnu::pure]]
 static std::size_t
 InnerSequenceLengthUTF8(const char *p) noexcept
 {
@@ -247,7 +247,7 @@ SequenceLengthUTF8(const char *p) noexcept
 		return 0;
 }
 
-gcc_pure
+[[gnu::pure]]
 static const char *
 FindNonASCIIOrZero(const char *p) noexcept
 {

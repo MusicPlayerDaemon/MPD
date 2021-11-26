@@ -1,6 +1,5 @@
 /*
- * Copyright 2011-2019 Max Kellermann <max.kellermann@gmail.com>
- * http://www.musicpd.org
+ * Copyright 2011-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,14 +30,12 @@
 #ifndef UTF8_HXX
 #define UTF8_HXX
 
-#include "Compiler.h"
-
 #include <cstddef>
 
 /**
  * Is this a valid UTF-8 string?
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 bool
 ValidateUTF8(const char *p) noexcept;
 
@@ -46,7 +43,7 @@ ValidateUTF8(const char *p) noexcept;
  * @return the number of the sequence beginning with the given
  * character, or 0 if the character is not a valid start byte
  */
-gcc_const
+[[gnu::const]]
 std::size_t
 SequenceLengthUTF8(char ch) noexcept;
 
@@ -54,7 +51,7 @@ SequenceLengthUTF8(char ch) noexcept;
  * @return the number of the first sequence in the given string, or 0
  * if the sequence is malformed
  */
-gcc_pure
+[[gnu::pure]]
 std::size_t
 SequenceLengthUTF8(const char *p) noexcept;
 
@@ -65,7 +62,7 @@ SequenceLengthUTF8(const char *p) noexcept;
  * there are no non-ASCII characters; returns nullptr if the destination
  * buffer is too small
  */
-gcc_pure  gcc_nonnull_all
+[[gnu::pure]]  [[gnu::nonnull]]
 const char *
 Latin1ToUTF8(const char *src, char *buffer, std::size_t buffer_size) noexcept;
 
@@ -75,7 +72,7 @@ Latin1ToUTF8(const char *src, char *buffer, std::size_t buffer_size) noexcept;
  *
  * @return a pointer to the buffer plus the added bytes(s)
  */
-gcc_nonnull_all
+[[gnu::nonnull]]
 char *
 UnicodeToUTF8(unsigned ch, char *buffer) noexcept;
 
@@ -83,7 +80,7 @@ UnicodeToUTF8(unsigned ch, char *buffer) noexcept;
  * Returns the number of characters in the string.  This is different
  * from strlen(), which counts the number of bytes.
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 std::size_t
 LengthUTF8(const char *p) noexcept;
 

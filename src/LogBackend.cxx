@@ -19,6 +19,7 @@
 
 #include "LogBackend.hxx"
 #include "Log.hxx"
+#include "util/Compiler.h"
 #include "util/Domain.hxx"
 #include "util/StringStrip.hxx"
 #include "Version.h"
@@ -110,7 +111,7 @@ chomp_length(std::string_view p) noexcept
 
 #ifdef HAVE_SYSLOG
 
-gcc_const
+[[gnu::const]]
 static int
 ToSysLogLevel(LogLevel log_level) noexcept
 {
