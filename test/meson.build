@@ -41,69 +41,87 @@ executable(
   ],
 )
 
-test('TestRewindInputStream', executable(
+test(
   'TestRewindInputStream',
-  'TestRewindInputStream.cxx',
-  include_directories: inc,
-  dependencies: [
-    input_glue_dep,
-    gtest_dep,
-  ],
-))
+  executable(
+    'TestRewindInputStream',
+    'TestRewindInputStream.cxx',
+    include_directories: inc,
+    dependencies: [
+      input_glue_dep,
+      gtest_dep,
+    ],
+  ),
+)
 
-test('test_mixramp', executable(
+test(
   'test_mixramp',
-  'test_mixramp.cxx',
-  include_directories: inc,
-  dependencies: [
-    log_dep,
-    util_dep,
-    gtest_dep,
-  ],
-))
+  executable(
+    'test_mixramp',
+    'test_mixramp.cxx',
+    include_directories: inc,
+    dependencies: [
+      log_dep,
+      util_dep,
+      gtest_dep,
+    ],
+  ),
+)
 
-test('test_protocol', executable(
+test(
   'test_protocol',
-  'test_protocol.cxx',
-  '../src/protocol/ArgParser.cxx',
-  include_directories: inc,
-  dependencies: [
-    gtest_dep,
-  ],
-))
+  executable(
+    'test_protocol',
+    'test_protocol.cxx',
+    '../src/protocol/ArgParser.cxx',
+    include_directories: inc,
+    dependencies: [
+      gtest_dep,
+    ],
+  ),
+)
 
-test('test_queue_priority', executable(
+test(
   'test_queue_priority',
-  'test_queue_priority.cxx',
-  '../src/queue/Queue.cxx',
-  include_directories: inc,
-  dependencies: [
-    util_dep,
-    gtest_dep,
-  ],
-))
+  executable(
+    'test_queue_priority',
+    'test_queue_priority.cxx',
+    '../src/queue/Queue.cxx',
+    include_directories: inc,
+    dependencies: [
+      util_dep,
+      gtest_dep,
+    ],
+  ),
+)
 
-test('TestFs', executable(
+test(
   'TestFs',
-  'TestFs.cxx',
-  'TestLookupFile.cxx',
-  include_directories: inc,
-  dependencies: [
-    fs_dep,
-    gtest_dep,
-  ],
-))
+  executable(
+    'TestFs',
+    'TestFs.cxx',
+    'TestLookupFile.cxx',
+    include_directories: inc,
+    dependencies: [
+      fs_dep,
+      gtest_dep,
+    ],
+  ),
+)
 
-test('TestIcu', executable(
+test(
   'TestIcu',
-  'TestIcu.cxx',
-  include_directories: inc,
-  dependencies: [
-    util_dep,
-    icu_dep,
-    gtest_dep,
-  ],
-))
+  executable(
+    'TestIcu',
+    'TestIcu.cxx',
+    include_directories: inc,
+    dependencies: [
+      util_dep,
+      icu_dep,
+      gtest_dep,
+    ],
+  ),
+)
 
 if zeroconf_dep.found()
   executable(
@@ -264,20 +282,23 @@ if enable_database
     ],
   )
 
-  test('test_translate_song', executable(
+  test(
     'test_translate_song',
-    'test_translate_song.cxx',
-    '../src/playlist/PlaylistSong.cxx',
-    '../src/SongLoader.cxx',
-    '../src/LocateUri.cxx',
-    include_directories: inc,
-    dependencies: [
-      log_dep,
-      tag_dep,
-      storage_glue_dep,
-      gtest_dep,
-    ],
-  ))
+    executable(
+      'test_translate_song',
+      'test_translate_song.cxx',
+      '../src/playlist/PlaylistSong.cxx',
+      '../src/SongLoader.cxx',
+      '../src/LocateUri.cxx',
+      include_directories: inc,
+      dependencies: [
+        log_dep,
+        tag_dep,
+        storage_glue_dep,
+        gtest_dep,
+      ],
+    ),
+  )
 endif
 
 #
@@ -312,16 +333,19 @@ if curl_dep.found()
     ],
   )
 
-  test('test_icy_parser', executable(
+  test(
     'test_icy_parser',
-    'test_icy_parser.cxx',
-    include_directories: inc,
-    dependencies: [
-      icu_dep,
-      tag_dep,
-      gtest_dep,
-    ],
-  ))
+    executable(
+      'test_icy_parser',
+      'test_icy_parser.cxx',
+      include_directories: inc,
+      dependencies: [
+        icu_dep,
+        tag_dep,
+        gtest_dep,
+      ],
+    ),
+  )
 endif
 
 #
@@ -475,23 +499,26 @@ endif
 # Filter
 #
 
-test('test_pcm', executable(
+test(
   'test_pcm',
-  'TestAudioFormat.cxx',
-  'test_pcm_dither.cxx',
-  'test_pcm_pack.cxx',
-  'test_pcm_channels.cxx',
-  'test_pcm_format.cxx',
-  'test_pcm_volume.cxx',
-  'test_pcm_mix.cxx',
-  'test_pcm_interleave.cxx',
-  'test_pcm_export.cxx',
-  include_directories: inc,
-  dependencies: [
-    pcm_dep,
-    gtest_dep,
-  ],
-))
+  executable(
+    'test_pcm',
+    'TestAudioFormat.cxx',
+    'test_pcm_dither.cxx',
+    'test_pcm_pack.cxx',
+    'test_pcm_channels.cxx',
+    'test_pcm_format.cxx',
+    'test_pcm_volume.cxx',
+    'test_pcm_mix.cxx',
+    'test_pcm_interleave.cxx',
+    'test_pcm_export.cxx',
+    include_directories: inc,
+    dependencies: [
+      pcm_dep,
+      gtest_dep,
+    ],
+  ),
+)
 
 executable(
   'run_filter',
