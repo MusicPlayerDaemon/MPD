@@ -24,12 +24,13 @@ on:
       - 'win32/**'
     branches:
       - master
-env:
-  CC: 'ccache gcc-10'
-  CXX: 'ccache g++-10'
+
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
+    env:
+      CC: 'ccache gcc-10'
+      CXX: 'ccache g++-10'
     steps:
       - id: checkout
         uses: actions/checkout@v2
@@ -84,4 +85,48 @@ jobs:
           action: test
           directory: output/mini
           setup-options: -Dbuildtype=minsize -Dauto_features=disabled -Dtest=true -Ddaemon=false -Dinotify=false -Depoll=false -Deventfd=false -Dsignalfd=false -Dtcp=false -Ddsd=false -Ddatabase=false -Dneighbor=false -Dcue=false -Dfifo=false -Dhttpd=false -Dpipe=false -Drecorder=false -Dsnapcast=false
+          meson-version: 0.56.0
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v2
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ matrix.os }}-${{ matrix.type }}
+
+      - uses: actions/setup-python@v1
+
+      - name: Install dependencies
+        run: |
+          brew install \
+            meson ninja \
+            fmt \
+            boost \
+            googletest \
+            icu4c \
+            ffmpeg \
+            libnfs \
+            yajl \
+            libupnp \
+            libid3tag \
+            chromaprint \
+            libsamplerate \
+            libsoxr \
+            flac \
+            opus \
+            libvorbis \
+            faad2 \
+            wavpack \
+            libmpdclient
+
+      - name: Meson Build
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+          directory: output
+          setup-options: -Ddocumentation=disabled -Dtest=true
           meson-version: 0.56.0
