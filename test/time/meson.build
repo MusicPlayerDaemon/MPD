@@ -18,4 +18,5 @@ test(
       gtest_dep,
     ],
   ),
+  protocol: 'gtest',
 )

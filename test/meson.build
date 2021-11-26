@@ -52,6 +52,7 @@ test(
       gtest_dep,
     ],
   ),
+  protocol: 'gtest',
 )
 
 test(
@@ -66,6 +67,7 @@ test(
       gtest_dep,
     ],
   ),
+  protocol: 'gtest',
 )
 
 test(
@@ -79,6 +81,7 @@ test(
       gtest_dep,
     ],
   ),
+  protocol: 'gtest',
 )
 
 test(
@@ -93,6 +96,7 @@ test(
       gtest_dep,
     ],
   ),
+  protocol: 'gtest',
 )
 
 test(
@@ -107,6 +111,7 @@ test(
       gtest_dep,
     ],
   ),
+  protocol: 'gtest',
 )
 
 test(
@@ -121,6 +126,7 @@ test(
       gtest_dep,
     ],
   ),
+  protocol: 'gtest',
 )
 
 if zeroconf_dep.found()
@@ -229,7 +235,8 @@ test(
       song_dep,
       gtest_dep,
     ],
-  )
+  ),
+  protocol: 'gtest',
 )
 
 #
@@ -298,6 +305,7 @@ if enable_database
         gtest_dep,
       ],
     ),
+    protocol: 'gtest',
   )
 endif
 
@@ -345,6 +353,7 @@ if curl_dep.found()
         gtest_dep,
       ],
     ),
+    protocol: 'gtest',
   )
 endif
 
@@ -518,6 +527,7 @@ test(
       gtest_dep,
     ],
   ),
+  protocol: 'gtest',
 )
 
 executable(
