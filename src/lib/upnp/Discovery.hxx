@@ -27,7 +27,7 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Request.hxx"
 #include "thread/Mutex.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <list>
@@ -81,7 +81,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	class Downloader final
 		: public IntrusiveListHook, CurlResponseHandler
 	{
-		DeferEvent defer_start_event;
+		InjectEvent defer_start_event;
 
 		UPnPDeviceDirectory &parent;
 
