@@ -310,7 +310,9 @@ MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag) noexcept
 			found_replay_gain = true;
 		}
 
-		client->SubmitMixRamp(Id3ToMixRampInfo(id3_tag.get()));
+		if (auto mix_ramp = Id3ToMixRampInfo(id3_tag.get());
+		    mix_ramp.IsDefined())
+			client->SubmitMixRamp(std::move(mix_ramp));
 	}
 
 #else /* !ENABLE_ID3TAG */
