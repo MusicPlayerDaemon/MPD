@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_MIXRAMP_HXX
-#define MPD_TAG_MIXRAMP_HXX
+#pragma once
 
 struct StringView;
 class MixRampInfo;
@@ -29,5 +28,3 @@ ParseMixRampTag(MixRampInfo &info,
 
 bool
 ParseMixRampVorbis(MixRampInfo &info, StringView entry) noexcept;
-
-#endif

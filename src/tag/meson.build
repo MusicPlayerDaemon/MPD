@@ -28,7 +28,7 @@ tag_sources = [
   'Format.cxx',
   'VorbisComment.cxx',
   'ReplayGain.cxx',
-  'MixRamp.cxx',
+  'MixRampParser.cxx',
   'Generic.cxx',
   'Id3MusicBrainz.cxx',
   'Id3Picture.cxx',

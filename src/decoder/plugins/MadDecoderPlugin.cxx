@@ -25,7 +25,7 @@
 #include "tag/Id3ReplayGain.hxx"
 #include "tag/Handler.hxx"
 #include "tag/ReplayGain.hxx"
-#include "tag/MixRamp.hxx"
+#include "tag/MixRampParser.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/Clamp.hxx"
 #include "util/StringCompare.hxx"

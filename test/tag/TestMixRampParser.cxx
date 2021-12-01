@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "tag/MixRamp.hxx"
+#include "tag/MixRampParser.cxx"
 #include "util/StringView.hxx"
 #include "MixRampInfo.hxx"
 

@@ -26,7 +26,7 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "tag/ReplayGain.hxx"
-#include "tag/MixRamp.hxx"
+#include "tag/MixRampParser.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/StringView.hxx"
 
