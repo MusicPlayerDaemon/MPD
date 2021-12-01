@@ -55,7 +55,7 @@ ParseMixRampTag(MixRampInfo &info,
 		const char *name;
 		const char *value;
 
-		gcc_pure
+		[[gnu::pure]]
 		StringView operator[](const char *n) const noexcept {
 			return StringEqualsCaseASCII(name, n)
 				? value
@@ -72,7 +72,7 @@ ParseMixRampVorbis(MixRampInfo &info, StringView entry) noexcept
 	struct VorbisCommentEntry {
 		StringView entry;
 
-		gcc_pure
+		[[gnu::pure]]
 		StringView operator[](StringView n) const noexcept {
 			return GetVorbisCommentValue(entry, n);
 		}
