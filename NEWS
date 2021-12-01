@@ -1,3 +1,5 @@
+ver 0.23.6 (not yet released)
+
 ver 0.23.5 (2021/12/01)
 * protocol
   - support relative offsets for "searchadd"
