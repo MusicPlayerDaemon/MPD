@@ -29,15 +29,15 @@ template<typename T>
 static bool
 ParseMixRampTagTemplate(MixRampInfo &info, const T t) noexcept
 {
-	const auto start = t["mixramp_start"];
-	if (!start.IsNull()) {
-		info.SetStart(std::string(start.data, start.size));
+	if (const std::string_view value = t["mixramp_start"];
+	    !value.empty()) {
+		info.SetStart(std::string{value});
 		return true;
 	}
 
-	const auto end = t["mixramp_end"];
-	if (!end.IsNull()) {
-		info.SetEnd(std::string(end.data, end.size));
+	if (const std::string_view value = t["mixramp_end"];
+	    !value.empty()) {
+		info.SetEnd(std::string{value});
 		return true;
 	}
 
