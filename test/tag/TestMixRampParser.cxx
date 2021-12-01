@@ -18,8 +18,8 @@
  */
 
 #include "tag/MixRampParser.cxx"
+#include "tag/MixRampInfo.hxx"
 #include "util/StringView.hxx"
-#include "MixRampInfo.hxx"
 
 #include <gtest/gtest.h>
 

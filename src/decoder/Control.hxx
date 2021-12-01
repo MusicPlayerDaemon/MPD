@@ -22,7 +22,7 @@
 
 #include "Command.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "MixRampInfo.hxx"
+#include "tag/MixRampInfo.hxx"
 #include "input/Handler.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
