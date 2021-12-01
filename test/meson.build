@@ -31,6 +31,7 @@ gtest_dep = declare_dependency(
 subdir('util')
 subdir('net')
 subdir('time')
+subdir('tag')
 
 executable(
   'read_conf',
@@ -49,21 +50,6 @@ test(
     include_directories: inc,
     dependencies: [
       input_glue_dep,
-      gtest_dep,
-    ],
-  ),
-  protocol: 'gtest',
-)
-
-test(
-  'test_mixramp',
-  executable(
-    'test_mixramp',
-    'test_mixramp.cxx',
-    include_directories: inc,
-    dependencies: [
-      log_dep,
-      util_dep,
       gtest_dep,
     ],
   ),
