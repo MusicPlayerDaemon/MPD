@@ -4,6 +4,8 @@ ver 0.23.5 (not yet released)
   - fix "searchaddpl" bug (bogus error "Bad position")
 * database
   - upnp: fix crash bug
+* tags
+  - fix MixRamp support
 * migrate to PCRE2
 * GCC 12 build fixes
 

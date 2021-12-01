@@ -36,7 +36,7 @@ ParseMixRampTagTemplate(MixRampInfo &info, const T t) noexcept
 	}
 
 	const auto end = t["mixramp_end"];
-	if (!start.IsNull()) {
+	if (!end.IsNull()) {
 		info.SetEnd(std::string(end.data, end.size));
 		return true;
 	}
