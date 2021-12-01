@@ -78,7 +78,9 @@ FlacDecoder::OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc)
 	if (flac_parse_replay_gain(rgi, vc))
 		GetClient()->SubmitReplayGain(&rgi);
 
-	GetClient()->SubmitMixRamp(flac_parse_mixramp(vc));
+	if (auto mix_ramp = flac_parse_mixramp(vc);
+	    mix_ramp.IsDefined())
+		GetClient()->SubmitMixRamp(std::move(mix_ramp));
 
 	tag = flac_vorbis_comments_to_tag(&vc);
 }
