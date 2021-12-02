@@ -135,23 +135,6 @@ struct MethodWrapperWithSignature<R(Args...) noexcept(NoExcept)> {
 };
 
 /**
- * Generate a wrapper function.  Helper class for
- * #BindMethodWrapperGenerator.
- *
- * @param T the containing class
- * @param method the method pointer
- * @param R the return type
- * @param Args the method arguments
- */
-template<typename T, bool NoExcept, auto method, typename R, typename... Args>
-struct BindMethodWrapperGenerator2 {
-	static R Invoke(void *_instance, Args... args) noexcept(NoExcept) {
-		auto &t = *(T *)_instance;
-		return (t.*method)(std::forward<Args>(args)...);
-	}
-};
-
-/**
  * Generate a wrapper function.
  *
  * @param T the containing class
@@ -163,8 +146,11 @@ struct BindMethodWrapperGenerator;
 
 template<typename T, bool NoExcept,
 	 auto method, typename R, typename... Args>
-struct BindMethodWrapperGenerator<T, method, R(Args...) noexcept(NoExcept)>
-	: BindMethodWrapperGenerator2<T, NoExcept, method, R, Args...> {
+struct BindMethodWrapperGenerator<T, method, R(Args...) noexcept(NoExcept)> {
+	static R Invoke(void *_instance, Args... args) noexcept(NoExcept) {
+		auto &t = *(T *)_instance;
+		return (t.*method)(std::forward<Args>(args)...);
+	}
 };
 
 template<typename T, typename S,
@@ -199,23 +185,6 @@ struct FunctionTraits<R(Args...) noexcept(NoExcept)> {
 };
 
 /**
- * Generate a wrapper function for a plain function which ignores the
- * instance pointer.  Helper class for
- * #BindFunctionWrapperGenerator.
- *
- * @param F the function pointer type
- * @param function the function pointer
- * @param R the return type
- * @param Args the function arguments
- */
-template<bool NoExcept, typename F, F function, typename R, typename... Args>
-struct BindFunctionWrapperGenerator2 {
-	static R Invoke(void *, Args... args) noexcept(NoExcept) {
-		return function(std::forward<Args>(args)...);
-	}
-};
-
-/**
  * Generate a wrapper function.
  *
  * @param S the plain function signature type
@@ -226,8 +195,10 @@ template<typename S, typename P, P function>
 struct BindFunctionWrapperGenerator;
 
 template<typename P, P function, bool NoExcept, typename R, typename... Args>
-struct BindFunctionWrapperGenerator<R(Args...) noexcept(NoExcept), P, function>
-	: BindFunctionWrapperGenerator2<NoExcept, P, function, R, Args...> {
+struct BindFunctionWrapperGenerator<R(Args...) noexcept(NoExcept), P, function> {
+	static R Invoke(void *, Args... args) noexcept(NoExcept) {
+		return function(std::forward<Args>(args)...);
+	}
 };
 
 template<typename T, typename T::pointer function>
