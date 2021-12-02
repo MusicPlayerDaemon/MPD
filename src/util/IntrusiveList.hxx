@@ -49,6 +49,11 @@ protected:
 	IntrusiveListNode siblings;
 
 public:
+	IntrusiveListHook() noexcept = default;
+
+	IntrusiveListHook(const IntrusiveListHook &) = delete;
+	IntrusiveListHook &operator=(const IntrusiveListHook &) = delete;
+
 	void unlink() noexcept {
 		siblings.next->prev = siblings.prev;
 		siblings.prev->next = siblings.next;
