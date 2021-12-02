@@ -139,12 +139,11 @@ struct MethodWrapperWithSignature<R(Args...) noexcept(NoExcept)> {
  * #BindMethodWrapperGenerator.
  *
  * @param T the containing class
- * @param M the method pointer type
  * @param method the method pointer
  * @param R the return type
  * @param Args the method arguments
  */
-template<typename T, bool NoExcept, typename M, M method, typename R, typename... Args>
+template<typename T, bool NoExcept, auto method, typename R, typename... Args>
 struct BindMethodWrapperGenerator2 {
 	static R Invoke(void *_instance, Args... args) noexcept(NoExcept) {
 		auto &t = *(T *)_instance;
@@ -156,17 +155,16 @@ struct BindMethodWrapperGenerator2 {
  * Generate a wrapper function.
  *
  * @param T the containing class
- * @param M the method pointer type
  * @param method the method pointer
  * @param S the plain function signature type
  */
-template<typename T, typename M, M method, typename S>
+template<typename T, auto method, typename S>
 struct BindMethodWrapperGenerator;
 
 template<typename T, bool NoExcept,
-	 typename M, M method, typename R, typename... Args>
-struct BindMethodWrapperGenerator<T, M, method, R(Args...) noexcept(NoExcept)>
-	: BindMethodWrapperGenerator2<T, NoExcept, M, method, R, Args...> {
+	 auto method, typename R, typename... Args>
+struct BindMethodWrapperGenerator<T, method, R(Args...) noexcept(NoExcept)>
+	: BindMethodWrapperGenerator2<T, NoExcept, method, R, Args...> {
 };
 
 template<typename T, typename S,
@@ -174,7 +172,7 @@ template<typename T, typename S,
 typename MethodWrapperWithSignature<S>::function_pointer
 MakeBindMethodWrapper() noexcept
 {
-	return BindMethodWrapperGenerator<T, typename MethodWithSignature<T, S>::method_pointer, method, S>::Invoke;
+	return BindMethodWrapperGenerator<T, method, S>::Invoke;
 }
 
 /**
