@@ -273,7 +273,7 @@ BindMethod(typename BindMethodDetail::MethodSignatureHelper<decltype(method)>::c
  * Shortcut wrapper for BIND_METHOD() which assumes "*this" is the
  * instance to be bound.
  */
-#define BIND_THIS_METHOD(method) BIND_METHOD(*this, &std::remove_reference<decltype(*this)>::type::method)
+#define BIND_THIS_METHOD(method) BIND_METHOD(*this, &std::remove_reference_t<decltype(*this)>::method)
 
 /**
  * Construct a #BoundMethod instance for a plain function.
