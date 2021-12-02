@@ -119,6 +119,9 @@ struct MethodSignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 	 * signature.
 	 */
 	typedef R plain_signature(Args...) noexcept(NoExcept);
+
+	typedef R (*function_pointer)(void *instance,
+				      Args...) noexcept(NoExcept);
 };
 
 /**
@@ -152,7 +155,7 @@ struct BindMethodWrapperGenerator<R (T::*)(Args...) noexcept(NoExcept), method> 
 };
 
 template<auto method>
-typename MethodWrapperWithSignature<typename MethodSignatureHelper<decltype(method)>::plain_signature>::function_pointer
+typename MethodSignatureHelper<decltype(method)>::function_pointer
 MakeBindMethodWrapper() noexcept
 {
 	return BindMethodWrapperGenerator<decltype(method), method>::Invoke;
