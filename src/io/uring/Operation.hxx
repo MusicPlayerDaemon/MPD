@@ -45,9 +45,14 @@ class Operation {
 	CancellableOperation *cancellable = nullptr;
 
 public:
+	Operation() noexcept = default;
+
 	~Operation() noexcept {
 		CancelUring();
 	}
+
+	Operation(const Operation &) = delete;
+	Operation &operator=(const Operation &) = delete;
 
 	/**
 	 * Are we waiting for the operation to complete?
