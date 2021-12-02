@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2016-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BIND_METHOD_HXX
-#define BIND_METHOD_HXX
+#pragma once
 
 #include <type_traits>
 #include <utility>
@@ -247,18 +246,20 @@ MakeBindFunctionWrapper() noexcept
 /**
  * Construct a #BoundMethod instance.
  *
- * @param T the containing class
- * @param S the plain function signature type
  * @param method the method pointer
  * @param instance the instance of #T to be bound
  */
-template<typename T, typename S,
-	 typename BindMethodDetail::MethodWithSignature<T, S>::method_pointer method>
-constexpr BoundMethod<S>
-BindMethod(T &_instance) noexcept
+template<auto method>
+constexpr auto
+BindMethod(typename BindMethodDetail::MethodSignatureHelper<decltype(method)>::class_type &instance) noexcept
 {
-	return BoundMethod<S>(&_instance,
-			      BindMethodDetail::MakeBindMethodWrapper<T, S, method>());
+	using H = BindMethodDetail::MethodSignatureHelper<decltype(method)>;
+	using class_type = typename H::class_type;
+	using plain_signature = typename H::plain_signature;
+	return BoundMethod<plain_signature>{
+		&instance,
+		BindMethodDetail::MakeBindMethodWrapper<class_type, plain_signature, method>(),
+	};
 }
 
 /**
@@ -266,9 +267,7 @@ BindMethod(T &_instance) noexcept
  * constructs a #BoundMethod instance.
  */
 #define BIND_METHOD(instance, method) \
-	BindMethod<typename BindMethodDetail::MethodSignatureHelper<decltype(method)>::class_type, \
-		   typename BindMethodDetail::MethodSignatureHelper<decltype(method)>::plain_signature, \
-		   method>(instance)
+	BindMethod<method>(instance)
 
 /**
  * Shortcut wrapper for BIND_METHOD() which assumes "*this" is the
@@ -296,5 +295,3 @@ BindFunction() noexcept
  */
 #define BIND_FUNCTION(function) \
 	BindFunction<typename BindMethodDetail::FunctionTraits<decltype(function)>, &function>()
-
-#endif
