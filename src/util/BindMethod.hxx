@@ -191,11 +191,11 @@ struct FunctionTraits<R(Args...) noexcept(NoExcept)> {
  * @param P the plain function pointer type
  * @param function the function pointer
  */
-template<typename S, typename P, P function>
+template<typename S, auto function>
 struct BindFunctionWrapperGenerator;
 
-template<typename P, P function, bool NoExcept, typename R, typename... Args>
-struct BindFunctionWrapperGenerator<R(Args...) noexcept(NoExcept), P, function> {
+template<auto function, bool NoExcept, typename R, typename... Args>
+struct BindFunctionWrapperGenerator<R(Args...) noexcept(NoExcept), function> {
 	static R Invoke(void *, Args... args) noexcept(NoExcept) {
 		return function(std::forward<Args>(args)...);
 	}
@@ -206,7 +206,6 @@ typename MethodWrapperWithSignature<typename T::function_type>::function_pointer
 MakeBindFunctionWrapper() noexcept
 {
 	return BindFunctionWrapperGenerator<typename T::function_type,
-					    typename T::pointer,
 					    function>::Invoke;
 }
 
