@@ -45,14 +45,13 @@ ReadOperation::Start(Queue &queue, FileDescriptor fd, off_t offset,
 
 	buffer = std::make_unique<std::byte[]>(size);
 
-	auto *s = queue.GetSubmitEntry();
-	assert(s != nullptr); // TODO: what if the submit queue is full?
+	auto &s = queue.RequireSubmitEntry();
 
 	iov.iov_base = buffer.get();
 	iov.iov_len = size;
 
-	io_uring_prep_readv(s, fd.Get(), &iov, 1, offset);
-	queue.Push(*s, *this);
+	io_uring_prep_readv(&s, fd.Get(), &iov, 1, offset);
+	queue.Push(s, *this);
 }
 
 void

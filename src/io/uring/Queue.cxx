@@ -34,6 +34,8 @@
 #include "CancellableOperation.hxx"
 #include "util/DeleteDisposer.hxx"
 
+#include <stdexcept>
+
 namespace Uring {
 
 Queue::Queue(unsigned entries, unsigned flags)
@@ -44,6 +46,23 @@ Queue::Queue(unsigned entries, unsigned flags)
 Queue::~Queue() noexcept
 {
 	operations.clear_and_dispose(DeleteDisposer{});
+}
+
+struct io_uring_sqe &
+Queue::RequireSubmitEntry()
+{
+	auto *sqe = GetSubmitEntry();
+	if (sqe == nullptr) {
+		/* the submit queue is full; submit it to the kernel
+		   and try again */
+		Submit();
+
+		sqe = GetSubmitEntry();
+		if (sqe == nullptr)
+			throw std::runtime_error{"io_uring_get_sqe() failed"};
+	}
+
+	return *sqe;
 }
 
 void

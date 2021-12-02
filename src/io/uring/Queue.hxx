@@ -63,6 +63,14 @@ public:
 		return ring.GetSubmitEntry();
 	}
 
+	/**
+	 * Like GetSubmitEntry(), but call Submit() if the submit
+	 * queue is full.
+	 *
+	 * May throw exceptions if Submit() fails.
+	 */
+	struct io_uring_sqe &RequireSubmitEntry();
+
 	bool HasPending() const noexcept {
 		return !operations.empty();
 	}
