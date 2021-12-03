@@ -20,7 +20,7 @@
 #ifndef MPD_TEXT_FILE_HXX
 #define MPD_TEXT_FILE_HXX
 
-#include "LineReader.hxx"
+#include "io/LineReader.hxx"
 #include "config.h"
 
 #include <memory>

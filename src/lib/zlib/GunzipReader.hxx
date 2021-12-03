@@ -30,7 +30,7 @@
 #ifndef GUNZIP_READER_HXX
 #define GUNZIP_READER_HXX
 
-#include "Reader.hxx"
+#include "io/Reader.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
 #include <zlib.h>

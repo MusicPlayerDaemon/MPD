@@ -14,26 +14,13 @@ fs_sources = [
   'CheckFile.cxx',
   'LookupFile.cxx',
   'DirectoryReader.cxx',
-  'io/PeekReader.cxx',
-  'io/FileReader.cxx',
-  'io/BufferedReader.cxx',
   'io/TextFile.cxx',
-  'io/FileOutputStream.cxx',
-  'io/BufferedOutputStream.cxx',
 ]
 
 if is_windows
   shlwapi_dep = c_compiler.find_library('shlwapi')
 else
   shlwapi_dep = dependency('', required: false)
-endif
-
-if zlib_dep.found()
-  fs_sources += [
-    'io/GunzipReader.cxx',
-    'io/AutoGunzipReader.cxx',
-    'io/GzipOutputStream.cxx',
-  ]
 endif
 
 fs = static_library(

@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "fs/io/FileOutputStream.hxx"
+#include "io/FileOutputStream.hxx"
 #include "fs/NarrowPath.hxx"
 #include "util/PrintException.hxx"
 

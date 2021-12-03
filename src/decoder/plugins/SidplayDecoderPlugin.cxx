@@ -27,7 +27,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "lib/icu/Converter.hxx"
 #ifdef HAVE_SIDPLAYFP
-#include "fs/io/FileReader.hxx"
+#include "io/FileReader.hxx"
 #include "util/RuntimeError.hxx"
 #endif
 #include "util/StringFormat.hxx"

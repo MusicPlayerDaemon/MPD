@@ -23,7 +23,7 @@
 #include "encoder/ToOutputStream.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "config/Block.hxx"
-#include "fs/io/StdioOutputStream.hxx"
+#include "io/StdioOutputStream.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Builder.hxx"
 #include "util/PrintException.hxx"

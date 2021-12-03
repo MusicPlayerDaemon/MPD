@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_READER_HXX
 #define MPD_DECODER_READER_HXX
 
-#include "fs/io/Reader.hxx"
+#include "io/Reader.hxx"
 
 class DecoderClient;
 class InputStream;

@@ -7,6 +7,9 @@ endif
 zlib = static_library(
   'zlib',
   'Error.cxx',
+  'GunzipReader.cxx',
+  'GzipOutputStream.cxx',
+  'AutoGunzipReader.cxx',
   include_directories: inc,
   dependencies: [
     zlib_dep,
@@ -17,5 +20,6 @@ zlib_dep = declare_dependency(
   link_with: zlib,
   dependencies: [
     zlib_dep,
+    io_dep,
   ],
 )

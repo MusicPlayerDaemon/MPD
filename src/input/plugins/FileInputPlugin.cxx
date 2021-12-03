@@ -21,7 +21,7 @@
 #include "../InputStream.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileInfo.hxx"
-#include "fs/io/FileReader.hxx"
+#include "io/FileReader.hxx"
 #include "io/FileDescriptor.hxx"
 #include "util/RuntimeError.hxx"
 

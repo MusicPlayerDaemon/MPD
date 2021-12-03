@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "fs/io/GzipOutputStream.hxx"
-#include "fs/io/StdioOutputStream.hxx"
+#include "lib/zlib/GzipOutputStream.hxx"
+#include "io/StdioOutputStream.hxx"
 #include "system/Error.hxx"
 #include "util/PrintException.hxx"
 

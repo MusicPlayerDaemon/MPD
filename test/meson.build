@@ -183,7 +183,8 @@ if zlib_dep.found()
     'run_gzip.cxx',
     include_directories: inc,
     dependencies: [
-      fs_dep,
+      zlib_dep,
+      util_dep,
     ],
   )
 

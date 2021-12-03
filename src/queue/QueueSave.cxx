@@ -23,8 +23,8 @@
 #include "song/DetachedSong.hxx"
 #include "SongSave.hxx"
 #include "playlist/PlaylistSong.hxx"
-#include "fs/io/LineReader.hxx"
-#include "fs/io/BufferedOutputStream.hxx"
+#include "io/LineReader.hxx"
+#include "io/BufferedOutputStream.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 

@@ -24,7 +24,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "pcm/AudioParser.hxx"
 #include "config/Block.hxx"
-#include "fs/io/StdioOutputStream.hxx"
+#include "io/StdioOutputStream.hxx"
 #include "util/PrintException.hxx"
 
 #include <exception>

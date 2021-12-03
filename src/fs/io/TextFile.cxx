@@ -18,9 +18,9 @@
  */
 
 #include "TextFile.hxx"
-#include "FileReader.hxx"
-#include "AutoGunzipReader.hxx"
-#include "BufferedReader.hxx"
+#include "io/FileReader.hxx"
+#include "io/BufferedReader.hxx"
+#include "lib/zlib/AutoGunzipReader.hxx"
 #include "fs/Path.hxx"
 
 #include <cassert>

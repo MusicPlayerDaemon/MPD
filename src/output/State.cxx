@@ -26,7 +26,7 @@
 #include "MultipleOutputs.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"
-#include "fs/io/BufferedOutputStream.hxx"
+#include "io/BufferedOutputStream.hxx"
 #include "util/StringCompare.hxx"
 
 #include <stdlib.h>

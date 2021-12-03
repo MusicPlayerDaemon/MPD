@@ -24,8 +24,8 @@
 
 #include "StorageState.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
-#include "fs/io/LineReader.hxx"
-#include "fs/io/BufferedOutputStream.hxx"
+#include "io/LineReader.hxx"
+#include "io/BufferedOutputStream.hxx"
 #include "storage/Registry.hxx"
 #include "storage/CompositeStorage.hxx"
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"

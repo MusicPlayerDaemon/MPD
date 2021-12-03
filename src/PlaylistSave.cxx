@@ -28,8 +28,8 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
-#include "fs/io/FileOutputStream.hxx"
-#include "fs/io/BufferedOutputStream.hxx"
+#include "io/FileOutputStream.hxx"
+#include "io/BufferedOutputStream.hxx"
 #include "util/UriExtract.hxx"
 
 static void

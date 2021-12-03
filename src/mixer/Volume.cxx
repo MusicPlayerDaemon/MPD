@@ -23,7 +23,7 @@
 #include "util/StringCompare.hxx"
 #include "util/Domain.hxx"
 #include "system/PeriodClock.hxx"
-#include "fs/io/BufferedOutputStream.hxx"
+#include "io/BufferedOutputStream.hxx"
 #include "Log.hxx"
 
 #include <cassert>

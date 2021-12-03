@@ -30,7 +30,7 @@
 #ifndef GZIP_OUTPUT_STREAM_HXX
 #define GZIP_OUTPUT_STREAM_HXX
 
-#include "OutputStream.hxx"
+#include "io/OutputStream.hxx"
 
 #include <zlib.h>
 

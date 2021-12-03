@@ -24,8 +24,8 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
-#include "fs/io/StdioOutputStream.hxx"
-#include "fs/io/BufferedOutputStream.hxx"
+#include "io/StdioOutputStream.hxx"
+#include "io/BufferedOutputStream.hxx"
 #include "util/PrintException.hxx"
 #include "util/UriExtract.hxx"
 

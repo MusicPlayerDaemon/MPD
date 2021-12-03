@@ -29,8 +29,8 @@
 #include "playlist/PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
-#include "fs/io/BufferedOutputStream.hxx"
-#include "fs/io/StdioOutputStream.hxx"
+#include "io/BufferedOutputStream.hxx"
+#include "io/StdioOutputStream.hxx"
 #include "thread/Cond.hxx"
 #include "util/PrintException.hxx"
 

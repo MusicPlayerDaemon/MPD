@@ -41,7 +41,7 @@
 #ifdef USE_XDG
 #include "util/StringStrip.hxx"
 #include "util/StringCompare.hxx"
-#include "io/TextFile.hxx"
+#include "fs/io/TextFile.hxx"
 #include <string.h>
 #include <utility>
 #endif

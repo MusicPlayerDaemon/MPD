@@ -27,7 +27,7 @@
 #include "config/Path.hxx"
 #include "Log.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/io/FileOutputStream.hxx"
+#include "io/FileOutputStream.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 

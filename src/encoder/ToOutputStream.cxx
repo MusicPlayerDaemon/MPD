@@ -19,7 +19,7 @@
 
 #include "ToOutputStream.hxx"
 #include "EncoderInterface.hxx"
-#include "fs/io/OutputStream.hxx"
+#include "io/OutputStream.hxx"
 
 void
 EncoderToOutputStream(OutputStream &os, Encoder &encoder)

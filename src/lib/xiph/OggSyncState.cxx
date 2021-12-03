@@ -18,7 +18,7 @@
  */
 
 #include "OggSyncState.hxx"
-#include "fs/io/Reader.hxx"
+#include "io/Reader.hxx"
 
 bool
 OggSyncState::Feed(size_t size)

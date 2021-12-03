@@ -20,7 +20,7 @@
 #ifndef MPD_AUTO_GUNZIP_READER_HXX
 #define MPD_AUTO_GUNZIP_READER_HXX
 
-#include "PeekReader.hxx"
+#include "io/PeekReader.hxx"
 
 #include <memory>
 

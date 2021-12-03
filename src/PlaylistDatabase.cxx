@@ -19,8 +19,8 @@
 
 #include "PlaylistDatabase.hxx"
 #include "db/PlaylistVector.hxx"
-#include "fs/io/LineReader.hxx"
-#include "fs/io/BufferedOutputStream.hxx"
+#include "io/LineReader.hxx"
+#include "io/BufferedOutputStream.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
