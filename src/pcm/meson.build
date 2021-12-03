@@ -46,6 +46,7 @@ pcm_sources = [
   'GlueResampler.cxx',
   'FallbackResampler.cxx',
   'ConfiguredResampler.cxx',
+  'AudioCompress/compress.c',
 ]
 
 libsamplerate_dep = dependency('samplerate', version: '>= 0.1.3', required: get_option('libsamplerate'))

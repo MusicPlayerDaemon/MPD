@@ -538,7 +538,6 @@ executable(
 executable(
   'run_normalize',
   'run_normalize.cxx',
-  '../src/AudioCompress/compress.c',
   include_directories: inc,
   dependencies: [
     pcm_dep,

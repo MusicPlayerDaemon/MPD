@@ -23,7 +23,7 @@
  *
  */
 
-#include "AudioCompress/compress.h"
+#include "pcm/AudioCompress/compress.h"
 #include "pcm/AudioParser.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "util/PrintException.hxx"

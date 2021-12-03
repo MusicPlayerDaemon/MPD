@@ -12,7 +12,6 @@ endif
 
 filter_plugins = static_library(
   'filter_plugins',
-  '../../AudioCompress/compress.c',
   'NullFilterPlugin.cxx',
   'TwoFilters.cxx',
   'AutoConvertFilterPlugin.cxx',
