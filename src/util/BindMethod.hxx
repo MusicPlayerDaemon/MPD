@@ -82,24 +82,6 @@ public:
 namespace BindMethodDetail {
 
 /**
- * Helper class which converts a signature type to a method pointer
- * type.
- *
- * @param T the wrapped class
- * @param S the function signature type (plain, without instance
- * pointer)
- */
-template<typename T, typename S>
-struct MethodWithSignature;
-
-template<typename T,
-	 bool NoExcept,
-	 typename R, typename... Args>
-struct MethodWithSignature<T, R(Args...) noexcept(NoExcept)> {
-	typedef R (T::*method_pointer)(Args...) noexcept(NoExcept);
-};
-
-/**
  * Helper class which introspects a method pointer type.
  *
  * @param M the method pointer type
