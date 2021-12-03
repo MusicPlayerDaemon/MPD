@@ -12,7 +12,7 @@ on:
       - 'win32/**'
     branches:
       - master
-      - actions
+      - v0.23.x
   pull_request:
     paths-ignore:
       - 'android/**'
@@ -24,6 +24,7 @@ on:
       - 'win32/**'
     branches:
       - master
+      - v0.23.x
 
 jobs:
   build-linux:
