@@ -328,6 +328,8 @@ private:
 	 */
 	bool OpenOutput() noexcept;
 
+	void CheckCrossFade() noexcept;
+
 	/**
 	 * Obtains the next chunk from the music pipe, optionally applies
 	 * cross-fading, and sends it to all audio outputs.
@@ -784,6 +786,46 @@ Player::ProcessCommand(std::unique_lock<Mutex> &lock) noexcept
 }
 
 inline void
+Player::CheckCrossFade() noexcept
+{
+	if (xfade_state != CrossFadeState::UNKNOWN)
+		/* already decided */
+		return;
+
+	if (pc.border_pause) {
+		/* no cross-fading if MPD is going to pause at the end
+		   of the current song */
+		xfade_state = CrossFadeState::UNKNOWN;
+		return;
+	}
+
+	if (!IsDecoderAtNextSong() || dc.IsStarting())
+		/* we need information about the next song before we
+		   can decide */
+		return;
+
+	/* enable cross fading in this song?  if yes, calculate how
+	   many chunks will be required for it */
+	cross_fade_chunks =
+		pc.cross_fade.Calculate(pc.total_time,
+					dc.total_time,
+					dc.replay_gain_db,
+					dc.replay_gain_prev_db,
+					dc.GetMixRampStart(),
+					dc.GetMixRampPreviousEnd(),
+					dc.out_audio_format,
+					play_audio_format,
+					buffer.GetSize() -
+					buffer_before_play);
+	if (cross_fade_chunks > 0)
+		xfade_state = CrossFadeState::ENABLED;
+	else
+		/* cross fading is disabled or the
+		   next song is too short */
+		xfade_state = CrossFadeState::DISABLED;
+}
+
+inline void
 PlayerControl::LockUpdateSongTag(DetachedSong &song,
 				 const Tag &new_tag) noexcept
 {
@@ -1039,33 +1081,7 @@ Player::Run() noexcept
 				     false);
 		}
 
-		if (/* no cross-fading if MPD is going to pause at the
-		       end of the current song */
-		    !pc.border_pause &&
-		    IsDecoderAtNextSong() &&
-		    xfade_state == CrossFadeState::UNKNOWN &&
-		    !dc.IsStarting()) {
-			/* enable cross fading in this song?  if yes,
-			   calculate how many chunks will be required
-			   for it */
-			cross_fade_chunks =
-				pc.cross_fade.Calculate(pc.total_time,
-							dc.total_time,
-							dc.replay_gain_db,
-							dc.replay_gain_prev_db,
-							dc.GetMixRampStart(),
-							dc.GetMixRampPreviousEnd(),
-							dc.out_audio_format,
-							play_audio_format,
-							buffer.GetSize() -
-							buffer_before_play);
-			if (cross_fade_chunks > 0)
-				xfade_state = CrossFadeState::ENABLED;
-			else
-				/* cross fading is disabled or the
-				   next song is too short */
-				xfade_state = CrossFadeState::DISABLED;
-		}
+		CheckCrossFade();
 
 		if (paused) {
 			if (pc.command == PlayerCommand::NONE)
