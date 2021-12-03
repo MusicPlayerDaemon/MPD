@@ -556,6 +556,17 @@ executable(
   ],
 )
 
+executable(
+  'RunReplayGainAnalyzer',
+  'RunReplayGainAnalyzer.cxx',
+  'ReadFrames.cxx',
+  include_directories: inc,
+  dependencies: [
+    pcm_dep,
+    io_dep,
+  ],
+)
+
 #
 # Encoder
 #
