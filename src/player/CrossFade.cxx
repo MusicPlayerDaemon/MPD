@@ -118,7 +118,7 @@ CrossFadeSettings::Calculate(SignedSongTime current_total_time,
 	const auto chunk_duration =
 		af.SizeToTime<FloatDuration>(sizeof(MusicChunk::data));
 
-	if (mixramp_delay <= FloatDuration::zero() ||
+	if (!IsMixRampEnabled() ||
 	    !mixramp_start || !mixramp_prev_end) {
 		chunks = lround(duration / chunk_duration);
 	} else {

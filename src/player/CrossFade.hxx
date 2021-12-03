@@ -48,6 +48,10 @@ struct CrossFadeSettings {
 		return duration.count() > 0;
 	}
 
+	constexpr bool IsMixRampEnabled() const noexcept {
+		return mixramp_delay > FloatDuration::zero();
+	}
+
 	/**
 	 * Calculate how many music pipe chunks should be used for crossfading.
 	 *
