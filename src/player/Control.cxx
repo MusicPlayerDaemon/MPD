@@ -28,15 +28,12 @@
 PlayerControl::PlayerControl(PlayerListener &_listener,
 			     PlayerOutputs &_outputs,
 			     InputCacheManager *_input_cache,
-			     unsigned _buffer_chunks,
-			     AudioFormat _configured_audio_format,
-			     const ReplayGainConfig &_replay_gain_config) noexcept
+			     const PlayerConfig &_config) noexcept
 	:listener(_listener), outputs(_outputs),
 	 input_cache(_input_cache),
-	 buffer_chunks(_buffer_chunks),
-	 configured_audio_format(_configured_audio_format),
-	 thread(BIND_THIS_METHOD(RunThread)),
-	 replay_gain_config(_replay_gain_config)
+	 config(_config),
+	 thread(BIND_THIS_METHOD(RunThread))
+
 {
 }
 

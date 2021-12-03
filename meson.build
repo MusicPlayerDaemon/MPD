@@ -279,6 +279,8 @@ sources = [
   'src/command/PartitionCommands.cxx',
   'src/command/OtherCommands.cxx',
   'src/command/CommandListBuilder.cxx',
+  'src/config/PartitionConfig.cxx',
+  'src/config/PlayerConfig.cxx',
   'src/Idle.cxx',
   'src/IdleFlags.cxx',
   'src/decoder/Thread.cxx',

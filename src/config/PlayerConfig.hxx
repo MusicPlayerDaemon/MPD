@@ -17,9 +17,29 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONFIG_DEFAULTS_HXX
-#define MPD_CONFIG_DEFAULTS_HXX
+#pragma once
 
-static constexpr bool DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS = false;
+#include "pcm/AudioFormat.hxx"
+#include "ReplayGainConfig.hxx"
 
-#endif
+struct ConfigData;
+
+static constexpr size_t KILOBYTE = 1024;
+static constexpr size_t MEGABYTE = 1024 * KILOBYTE;
+
+struct PlayerConfig {
+	static constexpr size_t DEFAULT_BUFFER_SIZE = 4 * MEGABYTE;
+
+	unsigned buffer_chunks = DEFAULT_BUFFER_SIZE;
+
+	/**
+	 * The "audio_output_format" setting.
+	 */
+	AudioFormat audio_format = AudioFormat::Undefined();
+
+	ReplayGainConfig replay_gain;
+
+	PlayerConfig() = default;
+
+	explicit PlayerConfig(const ConfigData &config);
+};

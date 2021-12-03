@@ -17,9 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONFIG_DEFAULTS_HXX
-#define MPD_CONFIG_DEFAULTS_HXX
+#pragma once
 
-static constexpr bool DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS = false;
+struct QueueConfig {
+	static constexpr unsigned DEFAULT_MAX_LENGTH = 16 * 1024;
 
-#endif
+	unsigned max_length = DEFAULT_MAX_LENGTH;
+};

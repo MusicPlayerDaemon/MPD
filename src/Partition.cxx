@@ -21,6 +21,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "Log.hxx"
+#include "config/PartitionConfig.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "song/DetachedSong.hxx"
 #include "mixer/Volume.hxx"
@@ -34,21 +35,18 @@ static constexpr Domain cache_domain("cache");
 
 Partition::Partition(Instance &_instance,
 		     const char *_name,
-		     unsigned max_length,
-		     unsigned buffer_chunks,
-		     AudioFormat configured_audio_format,
-		     const ReplayGainConfig &replay_gain_config) noexcept
+		     const PartitionConfig &_config) noexcept
 	:instance(_instance),
 	 name(_name),
+	 config(_config),
 	 listener(new ClientListener(instance.event_loop, *this)),
 	 idle_monitor(instance.event_loop, BIND_THIS_METHOD(OnIdleMonitor)),
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
-	 playlist(max_length, *this),
+	 playlist(config.queue.max_length, *this),
 	 outputs(pc, *this),
 	 pc(*this, outputs,
 	    instance.input_cache.get(),
-	    buffer_chunks,
-	    configured_audio_format, replay_gain_config)
+	    config.player)
 {
 	UpdateEffectiveReplayGainMode();
 }

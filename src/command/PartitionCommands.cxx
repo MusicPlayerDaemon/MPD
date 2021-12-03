@@ -101,11 +101,7 @@ handle_newpartition(Client &client, Request request, Response &response)
 	}
 
 	instance.partitions.emplace_back(instance, name,
-					 // TODO: use real configuration
-					 16384,
-					 1024,
-					 AudioFormat::Undefined(),
-					 ReplayGainConfig());
+					 client.GetPartition().config);
 	auto &partition = instance.partitions.back();
 	partition.UpdateEffectiveReplayGainMode();
 

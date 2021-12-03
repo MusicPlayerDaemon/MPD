@@ -33,6 +33,7 @@
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "config/Defaults.hxx"
+#include "config/QueueConfig.hxx"
 #include "Idle.hxx"
 #include "fs/Limits.hxx"
 #include "fs/Traits.hxx"
@@ -55,7 +56,7 @@ spl_global_init(const ConfigData &config)
 {
 	playlist_max_length =
 		config.GetPositive(ConfigOption::MAX_PLAYLIST_LENGTH,
-				   DEFAULT_PLAYLIST_MAX_LENGTH);
+				   QueueConfig::DEFAULT_MAX_LENGTH);
 
 	playlist_saveAbsolutePaths =
 		config.GetBool(ConfigOption::SAVE_ABSOLUTE_PATHS,

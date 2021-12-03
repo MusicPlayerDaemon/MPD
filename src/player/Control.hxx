@@ -21,13 +21,13 @@
 #define MPD_PLAYER_CONTROL_HXX
 
 #include "output/Client.hxx"
+#include "config/PlayerConfig.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "CrossFade.hxx"
 #include "Chrono.hxx"
-#include "ReplayGainConfig.hxx"
 #include "ReplayGainMode.hxx"
 #include "MusicChunkPtr.hxx"
 
@@ -36,6 +36,7 @@
 #include <memory>
 
 struct Tag;
+struct PlayerConfig;
 class PlayerListener;
 class PlayerOutputs;
 class InputCacheManager;
@@ -118,12 +119,7 @@ class PlayerControl final : public AudioOutputClient {
 
 	InputCacheManager *const input_cache;
 
-	const unsigned buffer_chunks;
-
-	/**
-	 * The "audio_output_format" setting.
-	 */
-	const AudioFormat configured_audio_format;
+	const PlayerConfig config;
 
 	/**
 	 * The handle of the player thread.
@@ -229,17 +225,13 @@ class PlayerControl final : public AudioOutputClient {
 
 	CrossFadeSettings cross_fade;
 
-	const ReplayGainConfig replay_gain_config;
-
 	FloatDuration total_play_time = FloatDuration::zero();
 
 public:
 	PlayerControl(PlayerListener &_listener,
 		      PlayerOutputs &_outputs,
 		      InputCacheManager *_input_cache,
-		      unsigned buffer_chunks,
-		      AudioFormat _configured_audio_format,
-		      const ReplayGainConfig &_replay_gain_config) noexcept;
+		      const PlayerConfig &_config) noexcept;
 	~PlayerControl() noexcept;
 
 	void Kill() noexcept;

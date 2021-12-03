@@ -17,9 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONFIG_DEFAULTS_HXX
-#define MPD_CONFIG_DEFAULTS_HXX
+#include "PartitionConfig.hxx"
+#include "Data.hxx"
 
-static constexpr bool DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS = false;
-
-#endif
+PartitionConfig::PartitionConfig(const ConfigData &config)
+	:player(config)
+{
+	queue.max_length =
+		config.GetPositive(ConfigOption::MAX_PLAYLIST_LENGTH,
+				   QueueConfig::DEFAULT_MAX_LENGTH);
+}

@@ -17,9 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONFIG_DEFAULTS_HXX
-#define MPD_CONFIG_DEFAULTS_HXX
+#pragma once
 
-static constexpr bool DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS = false;
+#include "QueueConfig.hxx"
+#include "PlayerConfig.hxx"
 
-#endif
+struct PartitionConfig {
+	QueueConfig queue;
+	PlayerConfig player;
+
+	PartitionConfig() = default;
+
+	explicit PartitionConfig(const ConfigData &config);
+};

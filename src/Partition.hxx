@@ -38,6 +38,7 @@
 #include <string>
 #include <memory>
 
+struct PartitionConfig;
 struct Instance;
 struct RangeArg;
 class MultipleOutputs;
@@ -57,6 +58,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	Instance &instance;
 
 	const std::string name;
+
+	const PartitionConfig &config;
 
 	std::unique_ptr<ClientListener> listener;
 
@@ -82,10 +85,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	Partition(Instance &_instance,
 		  const char *_name,
-		  unsigned max_length,
-		  unsigned buffer_chunks,
-		  AudioFormat configured_audio_format,
-		  const ReplayGainConfig &replay_gain_config) noexcept;
+		  const PartitionConfig &_config) noexcept;
 
 	~Partition() noexcept;
 

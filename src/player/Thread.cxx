@@ -1165,11 +1165,11 @@ try {
 
 	DecoderControl dc(mutex, cond,
 			  input_cache,
-			  configured_audio_format,
-			  replay_gain_config);
+			  config.audio_format,
+			  config.replay_gain);
 	dc.StartThread();
 
-	MusicBuffer buffer(buffer_chunks);
+	MusicBuffer buffer{config.buffer_chunks};
 
 	std::unique_lock<Mutex> lock(mutex);
 
