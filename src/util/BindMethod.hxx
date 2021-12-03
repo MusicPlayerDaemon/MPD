@@ -124,17 +124,24 @@ struct FunctionSignatureHelper<R (*)(Args...) noexcept(NoExcept)> {
 /**
  * Generate a wrapper function.
  *
- * @param method the method pointer
+ * @param method the method/function pointer
  */
 template<typename M, auto method>
-struct BindMethodWrapperGenerator;
+struct WrapperGenerator;
 
 template<typename T, bool NoExcept,
 	 auto method, typename R, typename... Args>
-struct BindMethodWrapperGenerator<R (T::*)(Args...) noexcept(NoExcept), method> {
+struct WrapperGenerator<R (T::*)(Args...) noexcept(NoExcept), method> {
 	static R Invoke(void *_instance, Args... args) noexcept(NoExcept) {
 		auto &t = *(T *)_instance;
 		return (t.*method)(std::forward<Args>(args)...);
+	}
+};
+
+template<auto function, bool NoExcept, typename R, typename... Args>
+struct WrapperGenerator<R (*)(Args...) noexcept(NoExcept), function> {
+	static R Invoke(void *, Args... args) noexcept(NoExcept) {
+		return function(std::forward<Args>(args)...);
 	}
 };
 
@@ -142,30 +149,14 @@ template<auto method>
 typename MethodSignatureHelper<decltype(method)>::function_pointer
 MakeBindMethodWrapper() noexcept
 {
-	return BindMethodWrapperGenerator<decltype(method), method>::Invoke;
+	return WrapperGenerator<decltype(method), method>::Invoke;
 }
-
-/**
- * Generate a wrapper function.
- *
- * @param F the function pointer type
- * @param function the function pointer
- */
-template<typename F, auto function>
-struct BindFunctionWrapperGenerator;
-
-template<auto function, bool NoExcept, typename R, typename... Args>
-struct BindFunctionWrapperGenerator<R (*)(Args...) noexcept(NoExcept), function> {
-	static R Invoke(void *, Args... args) noexcept(NoExcept) {
-		return function(std::forward<Args>(args)...);
-	}
-};
 
 template<auto function>
 typename FunctionSignatureHelper<decltype(function)>::function_pointer
 MakeBindFunctionWrapper() noexcept
 {
-	return BindFunctionWrapperGenerator<decltype(function), function>::Invoke;
+	return WrapperGenerator<decltype(function), function>::Invoke;
 }
 
 } /* namespace BindMethodDetail */
