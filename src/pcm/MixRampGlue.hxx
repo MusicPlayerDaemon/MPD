@@ -19,29 +19,16 @@
 
 #pragma once
 
-#include "pcm/AudioFormat.hxx"
-#include "ReplayGainConfig.hxx"
+#include <string>
 
-struct ConfigData;
+struct AudioFormat;
+class MusicPipe;
 
-static constexpr size_t KILOBYTE = 1024;
-static constexpr size_t MEGABYTE = 1024 * KILOBYTE;
-
-struct PlayerConfig {
-	static constexpr size_t DEFAULT_BUFFER_SIZE = 8 * MEGABYTE;
-
-	unsigned buffer_chunks = DEFAULT_BUFFER_SIZE;
-
-	/**
-	 * The "audio_output_format" setting.
-	 */
-	AudioFormat audio_format = AudioFormat::Undefined();
-
-	ReplayGainConfig replay_gain;
-
-	bool mixramp_analyzer = false;
-
-	PlayerConfig() = default;
-
-	explicit PlayerConfig(const ConfigData &config);
+enum class MixRampDirection {
+	START, END
 };
+
+[[gnu::pure]]
+std::string
+AnalyzeMixRamp(const MusicPipe &pipe, const AudioFormat &audio_format,
+	       MixRampDirection direction) noexcept;

@@ -76,6 +76,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "despotify_user", false, true },
 	{ "despotify_password", false, true },
 	{ "despotify_high_bitrate", false, true },
+	{ "mixramp_analyzer" },
 };
 
 static constexpr unsigned n_config_param_templates =

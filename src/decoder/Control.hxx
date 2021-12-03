@@ -419,12 +419,20 @@ public:
 		return mix_ramp.GetStart();
 	}
 
+	void SetMixRampStart(std::string &&s) noexcept {
+		mix_ramp.SetStart(std::move(s));
+	}
+
 	const char *GetMixRampEnd() const noexcept {
 		return mix_ramp.GetEnd();
 	}
 
 	const char *GetMixRampPreviousEnd() const noexcept {
 		return previous_mix_ramp.GetEnd();
+	}
+
+	void SetMixRampPreviousEnd(std::string &&s) noexcept {
+		previous_mix_ramp.SetEnd(std::move(s));
 	}
 
 	void SetMixRamp(MixRampInfo &&new_value) noexcept {

@@ -44,6 +44,7 @@
 #include "MusicChunk.hxx"
 #include "song/DetachedSong.hxx"
 #include "CrossFade.hxx"
+#include "pcm/MixRampGlue.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "util/Compiler.h"
@@ -328,6 +329,17 @@ private:
 	 */
 	bool OpenOutput() noexcept;
 
+	std::string UnlockAnalyzeMixRamp(const MusicPipe &pipe,
+					 const AudioFormat &audio_format,
+					 MixRampDirection direction) noexcept;
+
+	/**
+	 * @return false if more chunks of the next song are needed to
+	 * scan for MixRamp data
+	 */
+	[[nodiscard]]
+	bool MixRampScannerReady() noexcept;
+
 	void CheckCrossFade() noexcept;
 
 	/**
@@ -471,6 +483,75 @@ real_song_duration(const DetachedSong &song,
 		return {end_time - start_time};
 
 	return {SongTime(decoder_duration) - start_time};
+}
+
+std::string
+Player::UnlockAnalyzeMixRamp(const MusicPipe &_pipe,
+			    const AudioFormat &audio_format,
+			    MixRampDirection direction) noexcept
+{
+	const ScopeUnlock unlock(pc.mutex);
+	return AnalyzeMixRamp(_pipe, audio_format, direction);
+}
+
+inline bool
+Player::MixRampScannerReady() noexcept
+{
+	assert(pipe);
+	assert(dc.pipe);
+
+	if (!pc.cross_fade.IsMixRampEnabled())
+		return true;
+
+	if (!pc.config.mixramp_analyzer)
+		/* always ready if the scanner is disabled */
+		return true;
+
+	if (dc.GetMixRampPreviousEnd() == nullptr) {
+		// TODO: scan incrementally backwards until mixrampdb is reached
+		auto s = UnlockAnalyzeMixRamp(*pipe, play_audio_format,
+					      MixRampDirection::END);
+		if (!s.empty()) {
+			FmtDebug(player_domain, "Analyzed MixRamp end: {}", s);
+			dc.SetMixRampPreviousEnd(std::move(s));
+		}
+
+		if (dc.GetMixRampStart() == nullptr)
+			/* scan the next song in the next call; first,
+			   let the main loop submit a few more chunks
+			   to the outputs for playback to avoid
+			   xrun */
+			return false;
+	}
+
+	if (dc.GetMixRampStart() == nullptr) {
+		const std::size_t want_pipe_bytes =
+			dc.out_audio_format.TimeToSize(std::chrono::seconds{20});
+		const std::size_t want_pipe_chunks =
+			std::min((want_pipe_bytes + sizeof(MusicChunk::data) - 1)
+				 / sizeof(MusicChunk::data),
+				 buffer.GetSize() / std::size_t{3});
+
+		if (dc.pipe->GetSize() < want_pipe_chunks) {
+			/* need more data */
+			if (!buffer.IsFull()) {
+				decoder_woken = true;
+				dc.Signal();
+			}
+
+			return false;
+		}
+
+		// TODO: scan incrementally until mixrampdb is reached
+		auto s = UnlockAnalyzeMixRamp(*dc.pipe, dc.out_audio_format,
+					      MixRampDirection::START);
+		if (!s.empty()) {
+			FmtDebug(player_domain, "Analyzed MixRamp start: {}", s);
+			dc.SetMixRampStart(std::move(s));
+		}
+	}
+
+	return true;
 }
 
 bool
@@ -812,6 +893,10 @@ Player::CheckCrossFade() noexcept
 		xfade_state = CrossFadeState::DISABLED;
 		return;
 	}
+
+	if (!MixRampScannerReady())
+		/* need more chunks for the MixRamp scanner */
+		return;
 
 	/* enable cross fading in this song?  if yes, calculate how
 	   many chunks will be required for it */

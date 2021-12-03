@@ -67,6 +67,7 @@ PlayerConfig::PlayerConfig(const ConfigData &config)
 
 		 return ParseAudioFormat(s, true);
 	 })),
-	 replay_gain(config)
+	 replay_gain(config),
+	 mixramp_analyzer(config.GetBool(ConfigOption::MIXRAMP_ANALYZER, false))
 {
 }

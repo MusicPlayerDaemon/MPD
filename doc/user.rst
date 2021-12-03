@@ -658,13 +658,16 @@ MPD enables MixRamp if:
 - :ref:`mixrampdb <command_mixrampdb>` is set to a reasonable value,
   e.g.::
     mpc mixrampdb -17
-- both songs have MixRamp tags
+- both songs have MixRamp tags (or ``mixramp_analyzer`` is enabled)
 - both songs have the same audio format (or :ref:`audio_output_format`
   is configured)
 
 The `MixRamp <http://sourceforge.net/projects/mixramp>`__ tool can be
-used to add MixRamp tags to your song files.
+used to add MixRamp tags to your song files.  To analyze songs
+on-the-fly, you can enable the ``mixramp_analyzer`` option in
+:file:`mpd.conf`::
 
+ mixramp_analyzer "yes"
 
 
 Client Connections
