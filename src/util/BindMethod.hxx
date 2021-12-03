@@ -140,16 +140,9 @@ struct WrapperGenerator<R (*)(Args...) noexcept(NoExcept), function> {
 
 template<auto method>
 typename SignatureHelper<decltype(method)>::function_pointer
-MakeBindMethodWrapper() noexcept
+MakeWrapperFunction() noexcept
 {
 	return WrapperGenerator<decltype(method), method>::Invoke;
-}
-
-template<auto function>
-typename SignatureHelper<decltype(function)>::function_pointer
-MakeBindFunctionWrapper() noexcept
-{
-	return WrapperGenerator<decltype(function), function>::Invoke;
 }
 
 } /* namespace BindMethodDetail */
@@ -168,7 +161,7 @@ BindMethod(typename BindMethodDetail::SignatureHelper<decltype(method)>::class_t
 	using plain_signature = typename H::plain_signature;
 	return BoundMethod<plain_signature>{
 		&instance,
-		BindMethodDetail::MakeBindMethodWrapper<method>(),
+		BindMethodDetail::MakeWrapperFunction<method>(),
 	};
 }
 
@@ -198,7 +191,7 @@ BindFunction() noexcept
 	using plain_signature = typename H::plain_signature;
 	return BoundMethod<plain_signature>{
 		nullptr,
-		BindMethodDetail::MakeBindFunctionWrapper<function>(),
+		BindMethodDetail::MakeWrapperFunction<function>(),
 	};
 }
 
