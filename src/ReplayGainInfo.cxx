@@ -18,7 +18,7 @@
  */
 
 #include "ReplayGainInfo.hxx"
-#include "ReplayGainConfig.hxx"
+#include "config/ReplayGainConfig.hxx"
 
 #include <cmath>
 

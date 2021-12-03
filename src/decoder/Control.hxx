@@ -28,7 +28,7 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "Chrono.hxx"
-#include "ReplayGainConfig.hxx"
+#include "config/ReplayGainConfig.hxx"
 #include "ReplayGainMode.hxx"
 
 #include <cassert>

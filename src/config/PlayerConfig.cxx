@@ -25,13 +25,13 @@
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 #include "MusicChunk.hxx"
-#include "ReplayGainGlobal.hxx"
 
 static constexpr
 size_t MIN_BUFFER_SIZE = std::max(CHUNK_SIZE * 32,
 				  64 * KILOBYTE);
 
 PlayerConfig::PlayerConfig(const ConfigData &config)
+	:replay_gain(config)
 {
 	size_t buffer_size = PlayerConfig::DEFAULT_BUFFER_SIZE;
 	if (auto *param = config.GetParam(ConfigOption::AUDIO_BUFFER_SIZE)) {
@@ -62,6 +62,4 @@ PlayerConfig::PlayerConfig(const ConfigData &config)
 
 		return ParseAudioFormat(s, true);
 	});
-
-	replay_gain = LoadReplayGainConfig(config);
 }

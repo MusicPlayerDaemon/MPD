@@ -17,9 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ReplayGainGlobal.hxx"
 #include "ReplayGainConfig.hxx"
-#include "config/Data.hxx"
+#include "Data.hxx"
 
 #include <cassert>
 #include <cmath>
@@ -42,25 +41,18 @@ ParsePreamp(const char *s)
 	return std::pow(10.0f, f / 20.0f);
 }
 
-ReplayGainConfig
-LoadReplayGainConfig(const ConfigData &config)
+ReplayGainConfig::ReplayGainConfig(const ConfigData &config)
+	:preamp(config.With(ConfigOption::REPLAYGAIN_PREAMP, [](const char *s){
+		return s != nullptr
+			? ParsePreamp(s)
+			: 1.0f;
+	})),
+	 missing_preamp(config.With(ConfigOption::REPLAYGAIN_MISSING_PREAMP, [](const char *s){
+		 return s != nullptr
+			 ? ParsePreamp(s)
+			 : 1.0f;
+	 })),
+	 limit(config.GetBool(ConfigOption::REPLAYGAIN_LIMIT,
+			      ReplayGainConfig::DEFAULT_LIMIT))
 {
-	ReplayGainConfig replay_gain_config;
-
-	replay_gain_config.preamp = config.With(ConfigOption::REPLAYGAIN_PREAMP, [](const char *s){
-		return s != nullptr
-			? ParsePreamp(s)
-			: 1.0f;
-	});
-
-	replay_gain_config.missing_preamp = config.With(ConfigOption::REPLAYGAIN_MISSING_PREAMP, [](const char *s){
-		return s != nullptr
-			? ParsePreamp(s)
-			: 1.0f;
-	});
-
-	replay_gain_config.limit = config.GetBool(ConfigOption::REPLAYGAIN_LIMIT,
-						  ReplayGainConfig::DEFAULT_LIMIT);
-
-	return replay_gain_config;
 }

@@ -21,7 +21,7 @@
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
 #include "ReplayGainInfo.hxx"
-#include "ReplayGainConfig.hxx"
+#include "config/ReplayGainConfig.hxx"
 #include "mixer/MixerControl.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Volume.hxx"
