@@ -23,7 +23,7 @@
 #include "song/DetachedSong.hxx"
 #include "SongSave.hxx"
 #include "playlist/PlaylistSong.hxx"
-#include "fs/io/TextFile.hxx"
+#include "fs/io/LineReader.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
@@ -74,7 +74,7 @@ queue_save(BufferedOutputStream &os, const Queue &queue)
 }
 
 static DetachedSong
-LoadQueueSong(TextFile &file, const char *line)
+LoadQueueSong(LineReader &file, const char *line)
 {
 	std::unique_ptr<DetachedSong> song;
 
@@ -94,7 +94,7 @@ LoadQueueSong(TextFile &file, const char *line)
 }
 
 void
-queue_load_song(TextFile &file, const SongLoader &loader,
+queue_load_song(LineReader &file, const SongLoader &loader,
 		const char *line, Queue &queue)
 {
 	if (queue.IsFull())

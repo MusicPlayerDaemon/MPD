@@ -27,7 +27,7 @@
 
 struct Queue;
 class BufferedOutputStream;
-class TextFile;
+class LineReader;
 class SongLoader;
 
 void
@@ -39,7 +39,7 @@ queue_save(BufferedOutputStream &os, const Queue &queue);
  * Throws on error.
  */
 void
-queue_load_song(TextFile &file, const SongLoader &loader,
+queue_load_song(LineReader &file, const SongLoader &loader,
 		const char *line, Queue &queue);
 
 #endif

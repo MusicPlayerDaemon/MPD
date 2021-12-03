@@ -28,7 +28,7 @@
 struct StateFileConfig;
 struct playlist;
 class PlayerControl;
-class TextFile;
+class LineReader;
 class BufferedOutputStream;
 class SongLoader;
 
@@ -38,7 +38,7 @@ playlist_state_save(BufferedOutputStream &os, const playlist &playlist,
 
 bool
 playlist_state_restore(const StateFileConfig &config,
-		       const char *line, TextFile &file,
+		       const char *line, LineReader &file,
 		       const SongLoader &song_loader,
 		       playlist &playlist, PlayerControl &pc);
 

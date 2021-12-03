@@ -24,7 +24,7 @@
 
 #include "StorageState.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
-#include "fs/io/TextFile.hxx"
+#include "fs/io/LineReader.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "storage/Registry.hxx"
 #include "storage/CompositeStorage.hxx"
@@ -73,7 +73,7 @@ storage_state_save(BufferedOutputStream &os, const Instance &instance)
 }
 
 bool
-storage_state_restore(const char *line, TextFile &file, Instance &instance)
+storage_state_restore(const char *line, LineReader &file, Instance &instance)
 {
 	if (!StringStartsWith(line, MOUNT_STATE_BEGIN))
 		return false;

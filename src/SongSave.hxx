@@ -28,7 +28,7 @@ struct Song;
 struct AudioFormat;
 class DetachedSong;
 class BufferedOutputStream;
-class TextFile;
+class LineReader;
 
 void
 song_save(BufferedOutputStream &os, const Song &song);
@@ -43,7 +43,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  * Throws on error.
  */
 DetachedSong
-song_load(TextFile &file, const char *uri,
+song_load(LineReader &file, const char *uri,
 	  std::string *target_r=nullptr);
 
 #endif

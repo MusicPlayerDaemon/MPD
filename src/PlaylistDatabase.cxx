@@ -19,7 +19,7 @@
 
 #include "PlaylistDatabase.hxx"
 #include "db/PlaylistVector.hxx"
-#include "fs/io/TextFile.hxx"
+#include "fs/io/LineReader.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/StringStrip.hxx"
@@ -42,7 +42,7 @@ playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv)
 }
 
 void
-playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name)
+playlist_metadata_load(LineReader &file, PlaylistVector &pv, const char *name)
 {
 	PlaylistInfo pm(name);
 

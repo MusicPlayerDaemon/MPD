@@ -28,7 +28,7 @@
 #include "SingleMode.hxx"
 #include "StateFileConfig.hxx"
 #include "queue/QueueSave.hxx"
-#include "fs/io/TextFile.hxx"
+#include "fs/io/LineReader.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "player/Control.hxx"
 #include "util/CharUtil.hxx"
@@ -102,7 +102,7 @@ playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 }
 
 static void
-playlist_state_load(TextFile &file, const SongLoader &song_loader,
+playlist_state_load(LineReader &file, const SongLoader &song_loader,
 		    struct playlist &playlist)
 {
 	const char *line = file.ReadLine();
@@ -128,7 +128,7 @@ playlist_state_load(TextFile &file, const SongLoader &song_loader,
 
 bool
 playlist_state_restore(const StateFileConfig &config,
-		       const char *line, TextFile &file,
+		       const char *line, LineReader &file,
 		       const SongLoader &song_loader,
 		       struct playlist &playlist, PlayerControl &pc)
 {

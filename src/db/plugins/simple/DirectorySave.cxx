@@ -23,7 +23,7 @@
 #include "SongSave.hxx"
 #include "song/DetachedSong.hxx"
 #include "PlaylistDatabase.hxx"
-#include "fs/io/TextFile.hxx"
+#include "fs/io/LineReader.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/StringAPI.hxx"
@@ -121,7 +121,7 @@ ParseLine(Directory &directory, const char *line)
 }
 
 static Directory *
-directory_load_subdir(TextFile &file, Directory &parent, std::string_view name)
+directory_load_subdir(LineReader &file, Directory &parent, std::string_view name)
 {
 	if (parent.FindChild(name) != nullptr)
 		throw FormatRuntimeError("Duplicate subdirectory '%.*s'",
@@ -152,7 +152,7 @@ directory_load_subdir(TextFile &file, Directory &parent, std::string_view name)
 }
 
 void
-directory_load(TextFile &file, Directory &directory)
+directory_load(LineReader &file, Directory &directory)
 {
 	const char *line;
 

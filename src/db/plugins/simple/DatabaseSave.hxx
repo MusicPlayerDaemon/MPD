@@ -22,7 +22,7 @@
 
 struct Directory;
 class BufferedOutputStream;
-class TextFile;
+class LineReader;
 
 void
 db_save_internal(BufferedOutputStream &os, const Directory &root);
@@ -31,6 +31,6 @@ db_save_internal(BufferedOutputStream &os, const Directory &root);
  * Throws #std::runtime_error on error.
  */
 void
-db_load_internal(TextFile &file, Directory &root);
+db_load_internal(LineReader &file, Directory &root);
 
 #endif

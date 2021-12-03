@@ -24,7 +24,7 @@
 
 class PlaylistVector;
 class BufferedOutputStream;
-class TextFile;
+class LineReader;
 
 void
 playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv);
@@ -33,6 +33,7 @@ playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv);
  * Throws #std::runtime_error on error.
  */
 void
-playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name);
+playlist_metadata_load(LineReader &file, PlaylistVector &pv,
+		       const char *name);
 
 #endif

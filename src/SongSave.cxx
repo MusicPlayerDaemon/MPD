@@ -22,7 +22,7 @@
 #include "db/plugins/simple/Song.hxx"
 #include "song/DetachedSong.hxx"
 #include "TagSave.hxx"
-#include "fs/io/TextFile.hxx"
+#include "fs/io/LineReader.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Tag.hxx"
@@ -85,7 +85,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 }
 
 DetachedSong
-song_load(TextFile &file, const char *uri,
+song_load(LineReader &file, const char *uri,
 	  std::string *target_r)
 {
 	DetachedSong song(uri);

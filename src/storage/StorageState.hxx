@@ -27,13 +27,14 @@
 
 struct Instance;
 class BufferedOutputStream;
-class TextFile;
+class LineReader;
 
 void
 storage_state_save(BufferedOutputStream &os, const Instance &instance);
 
 bool
-storage_state_restore(const char *line, TextFile &file, Instance &instance);
+storage_state_restore(const char *line, LineReader &file,
+		      Instance &instance);
 
 /**
  * Generates a hash number for the current state of the composite storage.
