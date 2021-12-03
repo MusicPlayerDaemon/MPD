@@ -31,7 +31,7 @@ enum class SingleMode : uint8_t {
 /**
  * Return the string representation of a #SingleMode.
  */
-[[gnu::pure]]
+[[gnu::const]]
 const char *
 SingleToString(SingleMode mode) noexcept;
 
