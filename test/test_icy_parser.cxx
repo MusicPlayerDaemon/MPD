@@ -5,7 +5,7 @@
 #include "util/ScopeExit.hxx"
 
 /* include the .cxx file to get access to internal functions */
-#include "IcyMetaDataParser.cxx"
+#include "tag/IcyMetaDataParser.cxx"
 
 #include <gtest/gtest.h>
 

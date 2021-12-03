@@ -20,7 +20,7 @@ if curl_dep.found()
   input_plugins_sources += [
     'CurlInputPlugin.cxx',
     '../IcyInputStream.cxx',
-    '../../IcyMetaDataParser.cxx',
+    '../../tag/IcyMetaDataParser.cxx',
   ]
 endif
 

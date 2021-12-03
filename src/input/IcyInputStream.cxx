@@ -18,7 +18,7 @@
  */
 
 #include "IcyInputStream.hxx"
-#include "IcyMetaDataParser.hxx"
+#include "tag/IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
 #include "util/UriExtract.hxx"
 #include "util/UriQueryParser.hxx"

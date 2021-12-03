@@ -27,7 +27,7 @@
 #include "../MaybeBufferedInputStream.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
-#include "IcyMetaDataParser.hxx"
+#include "tag/IcyMetaDataParser.hxx"
 #include "../InputPlugin.hxx"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
