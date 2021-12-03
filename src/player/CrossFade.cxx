@@ -94,23 +94,28 @@ mixramp_interpolate(const char *ramp_list, float required_db) noexcept
 	return FloatDuration(-1);
 }
 
+bool
+CrossFadeSettings::CanCrossFade(SignedSongTime current_total_time,
+				SignedSongTime next_total_time,
+				AudioFormat af,
+				AudioFormat old_format) const noexcept
+{
+	return IsEnabled() &&
+		CanCrossFadeSong(current_total_time) &&
+		CanCrossFadeSong(next_total_time) &&
+		/* we can't crossfade when the audio formats are different */
+		af == old_format;
+}
+
 unsigned
-CrossFadeSettings::Calculate(SignedSongTime current_total_time,
-			     SignedSongTime next_total_time,
-			     float replay_gain_db, float replay_gain_prev_db,
+CrossFadeSettings::Calculate(float replay_gain_db, float replay_gain_prev_db,
 			     const char *mixramp_start, const char *mixramp_prev_end,
 			     const AudioFormat af,
-			     const AudioFormat old_format,
 			     unsigned max_chunks) const noexcept
 {
-	unsigned int chunks = 0;
+	assert(IsEnabled());
 
-	if (!IsEnabled() ||
-	    !CanCrossFadeSong(current_total_time) ||
-	    !CanCrossFadeSong(next_total_time) ||
-	    /* we can't crossfade when the audio formats are different */
-	    af != old_format)
-		return 0;
+	unsigned int chunks = 0;
 
 	assert(duration > FloatDuration::zero());
 	assert(af.IsValid());

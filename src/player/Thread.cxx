@@ -804,24 +804,29 @@ Player::CheckCrossFade() noexcept
 		   can decide */
 		return;
 
+	if (!pc.cross_fade.CanCrossFade(pc.total_time, dc.total_time,
+					dc.out_audio_format,
+					play_audio_format)) {
+		/* cross fading is disabled or the next song is too
+		   short */
+		xfade_state = CrossFadeState::DISABLED;
+		return;
+	}
+
 	/* enable cross fading in this song?  if yes, calculate how
 	   many chunks will be required for it */
 	cross_fade_chunks =
-		pc.cross_fade.Calculate(pc.total_time,
-					dc.total_time,
-					dc.replay_gain_db,
+		pc.cross_fade.Calculate(dc.replay_gain_db,
 					dc.replay_gain_prev_db,
 					dc.GetMixRampStart(),
 					dc.GetMixRampPreviousEnd(),
-					dc.out_audio_format,
 					play_audio_format,
 					buffer.GetSize() -
 					buffer_before_play);
 	if (cross_fade_chunks > 0)
 		xfade_state = CrossFadeState::ENABLED;
 	else
-		/* cross fading is disabled or the
-		   next song is too short */
+		// TODO: eliminate this "else" branch
 		xfade_state = CrossFadeState::DISABLED;
 }
 
