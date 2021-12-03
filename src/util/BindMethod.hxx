@@ -82,15 +82,15 @@ public:
 namespace BindMethodDetail {
 
 /**
- * Helper class which introspects a method pointer type.
+ * Helper class which introspects a method/function pointer type.
  *
- * @param M the method pointer type
+ * @param M the method/function pointer type
  */
 template<typename M>
-struct MethodSignatureHelper;
+struct SignatureHelper;
 
 template<typename R, bool NoExcept, typename T, typename... Args>
-struct MethodSignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
+struct SignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 	/**
 	 * The class which contains the given method (signature).
 	 */
@@ -106,15 +106,8 @@ struct MethodSignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 				      Args...) noexcept(NoExcept);
 };
 
-/**
- * Helper class which converts a function pointer to a wrapper
- * function pointer type.
- */
-template<typename S>
-struct FunctionSignatureHelper;
-
 template<typename R, bool NoExcept, typename... Args>
-struct FunctionSignatureHelper<R (*)(Args...) noexcept(NoExcept)> {
+struct SignatureHelper<R (*)(Args...) noexcept(NoExcept)> {
 	typedef R plain_signature(Args...) noexcept(NoExcept);
 
 	typedef R (*function_pointer)(void *instance,
@@ -146,14 +139,14 @@ struct WrapperGenerator<R (*)(Args...) noexcept(NoExcept), function> {
 };
 
 template<auto method>
-typename MethodSignatureHelper<decltype(method)>::function_pointer
+typename SignatureHelper<decltype(method)>::function_pointer
 MakeBindMethodWrapper() noexcept
 {
 	return WrapperGenerator<decltype(method), method>::Invoke;
 }
 
 template<auto function>
-typename FunctionSignatureHelper<decltype(function)>::function_pointer
+typename SignatureHelper<decltype(function)>::function_pointer
 MakeBindFunctionWrapper() noexcept
 {
 	return WrapperGenerator<decltype(function), function>::Invoke;
@@ -169,9 +162,9 @@ MakeBindFunctionWrapper() noexcept
  */
 template<auto method>
 constexpr auto
-BindMethod(typename BindMethodDetail::MethodSignatureHelper<decltype(method)>::class_type &instance) noexcept
+BindMethod(typename BindMethodDetail::SignatureHelper<decltype(method)>::class_type &instance) noexcept
 {
-	using H = BindMethodDetail::MethodSignatureHelper<decltype(method)>;
+	using H = BindMethodDetail::SignatureHelper<decltype(method)>;
 	using plain_signature = typename H::plain_signature;
 	return BoundMethod<plain_signature>{
 		&instance,
@@ -201,7 +194,7 @@ template<auto function>
 constexpr auto
 BindFunction() noexcept
 {
-	using H = BindMethodDetail::FunctionSignatureHelper<decltype(function)>;
+	using H = BindMethodDetail::SignatureHelper<decltype(function)>;
 	using plain_signature = typename H::plain_signature;
 	return BoundMethod<plain_signature>{
 		nullptr,
