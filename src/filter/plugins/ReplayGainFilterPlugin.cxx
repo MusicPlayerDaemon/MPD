@@ -20,7 +20,7 @@
 #include "ReplayGainFilterPlugin.hxx"
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
-#include "ReplayGainInfo.hxx"
+#include "tag/ReplayGainInfo.hxx"
 #include "config/ReplayGainConfig.hxx"
 #include "mixer/MixerControl.hxx"
 #include "pcm/AudioFormat.hxx"

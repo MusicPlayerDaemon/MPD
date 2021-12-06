@@ -22,7 +22,7 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
-#include "tag/ReplayGain.hxx"
+#include "tag/ReplayGainParser.hxx"
 #include "tag/MixRampParser.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"

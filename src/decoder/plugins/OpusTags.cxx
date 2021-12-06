@@ -24,7 +24,7 @@
 #include "tag/Handler.hxx"
 #include "tag/ParseName.hxx"
 #include "util/ASCII.hxx"
-#include "ReplayGainInfo.hxx"
+#include "tag/ReplayGainInfo.hxx"
 #include "util/NumberParser.hxx"
 #include "util/StringView.hxx"
 

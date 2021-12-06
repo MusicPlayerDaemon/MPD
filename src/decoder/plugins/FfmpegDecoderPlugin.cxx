@@ -37,7 +37,7 @@
 #include "pcm/Interleave.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Handler.hxx"
-#include "tag/ReplayGain.hxx"
+#include "tag/ReplayGainParser.hxx"
 #include "tag/MixRampParser.hxx"
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"

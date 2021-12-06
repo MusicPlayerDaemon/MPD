@@ -463,7 +463,6 @@ endif
 
 basic = static_library(
   'basic',
-  'src/ReplayGainInfo.cxx',
   'src/ReplayGainMode.cxx',
   'src/SingleMode.cxx',
   include_directories: inc,

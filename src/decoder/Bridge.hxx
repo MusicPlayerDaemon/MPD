@@ -21,7 +21,7 @@
 #define MPD_DECODER_BRIDGE_HXX
 
 #include "Client.hxx"
-#include "ReplayGainInfo.hxx"
+#include "tag/ReplayGainInfo.hxx"
 #include "MusicChunkPtr.hxx"
 
 #include <exception>

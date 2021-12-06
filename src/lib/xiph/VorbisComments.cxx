@@ -24,8 +24,8 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "tag/VorbisComment.hxx"
-#include "tag/ReplayGain.hxx"
-#include "ReplayGainInfo.hxx"
+#include "tag/ReplayGainInfo.hxx"
+#include "tag/ReplayGainParser.hxx"
 #include "util/StringView.hxx"
 #include "decoder/Features.h"
 

@@ -19,7 +19,7 @@
 
 #include "Id3ReplayGain.hxx"
 #include "Rva2.hxx"
-#include "ReplayGain.hxx"
+#include "ReplayGainParser.hxx"
 #include "ReplayGainInfo.hxx"
 
 #include <id3tag.h>

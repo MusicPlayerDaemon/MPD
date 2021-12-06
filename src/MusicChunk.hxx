@@ -22,7 +22,7 @@
 
 #include "MusicChunkPtr.hxx"
 #include "Chrono.hxx"
-#include "ReplayGainInfo.hxx"
+#include "tag/ReplayGainInfo.hxx"
 #include "util/WritableBuffer.hxx"
 
 #ifndef NDEBUG

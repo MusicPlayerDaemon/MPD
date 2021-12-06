@@ -19,7 +19,7 @@
 
 #include "ApeReplayGain.hxx"
 #include "ApeLoader.hxx"
-#include "ReplayGain.hxx"
+#include "ReplayGainParser.hxx"
 #include "util/StringView.hxx"
 
 #include <string.h>
