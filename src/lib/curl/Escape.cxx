@@ -60,7 +60,7 @@ CurlUnescape(CURL *curl, StringView src) noexcept
 	int outlength;
 	CurlString tmp(curl_easy_unescape(curl, src.data, src.size,
 					  &outlength));
-	return std::string(tmp.c_str(), outlength);
+	return {tmp.c_str(), size_t(outlength)};
 }
 
 std::string

@@ -479,7 +479,7 @@ Querying :program:`MPD`'s status
       current song in seconds, but with higher resolution.
     - ``duration`` [#since_0_20]_: Duration of the current song in seconds.
     - ``bitrate``: instantaneous bitrate in kbps
-    - ``xfade``: ``crossfade`` in seconds
+    - ``xfade``: ``crossfade`` in seconds (see :ref:`crossfading`)
     - ``mixrampdb``: ``mixramp`` threshold in dB
     - ``mixrampdelay``: ``mixrampdelay`` in seconds
     - ``audio``: The format emitted by the decoder plugin during
@@ -519,17 +519,19 @@ Playback options
 .. _command_crossfade:
 
 :command:`crossfade {SECONDS}`
-    Sets crossfading between songs.
+    Sets crossfading between songs.  See :ref:`crossfading`.
 
 .. _command_mixrampdb:
 
 :command:`mixrampdb {deciBels}`
-    Sets the threshold at which songs will be overlapped. Like crossfading but doesn't fade the track volume, just overlaps. The songs need to have MixRamp tags added by an external tool. 0dB is the normalized maximum volume so use negative values, I prefer -17dB. In the absence of mixramp tags crossfading will be used. See http://sourceforge.net/projects/mixramp
+    Sets the threshold at which songs will be overlapped.
+    See :ref:`mixramp`.
 
 .. _command_mixrampdelay:
 
 :command:`mixrampdelay {SECONDS}`
     Additional time subtracted from the overlap calculated by mixrampdb. A value of "nan" disables MixRamp overlapping and falls back to crossfading.
+    See :ref:`mixramp`.
 
 .. _command_random:
 
