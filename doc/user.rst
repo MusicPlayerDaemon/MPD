@@ -622,6 +622,51 @@ enabled by setting ``volume_normalization`` to ``yes``.  It supports
 16 bit PCM only.
 
 
+.. _crossfading:
+
+Cross-Fading
+------------
+
+If ``crossfade`` is set to a positive number, then adjacent songs are
+cross-faded by this number of seconds.  This is a run-time setting
+:ref:`which can be controlled by clients <command_crossfade>`,
+e.g. with :program:`mpc`::
+
+  mpc crossfade 10
+  mpc crossfade 0
+
+Zero means cross-fading is disabled.
+
+Cross-fading is only possible if both songs have the same audio
+format.  At the cost of quality loss and higher CPU usage, you can
+make sure this is always given by configuring
+:ref:`audio_output_format`.
+
+.. _mixramp:
+
+MixRamp
+^^^^^^^
+
+MixRamp tags describe the loudness levels at start and end of a song
+and can be used by MPD to find the best time to begin cross-fading.
+MPD enables MixRamp if:
+
+- Cross-fade is enabled
+- :ref:`mixrampdelay <command_mixrampdelay>` is set to a positive
+  value, e.g.::
+    mpc mixrampdelay 1
+- :ref:`mixrampdb <command_mixrampdb>` is set to a reasonable value,
+  e.g.::
+    mpc mixrampdb -17
+- both songs have MixRamp tags
+- both songs have the same audio format (or :ref:`audio_output_format`
+  is configured)
+
+The `MixRamp <http://sourceforge.net/projects/mixramp>`__ tool can be
+used to add MixRamp tags to your song files.
+
+
+
 Client Connections
 ------------------
 
