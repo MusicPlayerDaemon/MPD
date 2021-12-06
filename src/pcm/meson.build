@@ -48,6 +48,7 @@ pcm_sources = [
   'ConfiguredResampler.cxx',
   'AudioCompress/compress.c',
   'ReplayGainAnalyzer.cxx',
+  'MixRampAnalyzer.cxx',
 ]
 
 libsamplerate_dep = dependency('samplerate', version: '>= 0.1.3', required: get_option('libsamplerate'))
