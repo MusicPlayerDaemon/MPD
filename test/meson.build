@@ -520,6 +520,7 @@ test(
 executable(
   'run_filter',
   'run_filter.cxx',
+  'ReadFrames.cxx',
   include_directories: inc,
   dependencies: [
     filter_glue_dep,

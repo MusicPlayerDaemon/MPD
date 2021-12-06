@@ -18,6 +18,7 @@
  */
 
 #include "ConfigGlue.hxx"
+#include "ReadFrames.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "filter/LoadOne.hxx"
@@ -58,35 +59,6 @@ LoadFilter(const ConfigData &config, const char *name)
 					 name);
 
 	return filter_configured_new(*param);
-}
-
-static size_t
-ReadOrThrow(FileDescriptor fd, void *buffer, size_t size)
-{
-	auto nbytes = fd.Read(buffer, size);
-	if (nbytes < 0)
-		throw MakeErrno("Read failed");
-
-	return nbytes;
-}
-
-static size_t
-ReadFrames(FileDescriptor fd, void *_buffer, size_t size, size_t frame_size)
-{
-	auto buffer = (uint8_t *)_buffer;
-
-	size = (size / frame_size) * frame_size;
-
-	size_t nbytes = ReadOrThrow(fd, buffer, size);
-
-	const size_t modulo = nbytes % frame_size;
-	if (modulo > 0) {
-		size_t rest = frame_size - modulo;
-		fd.FullRead(buffer + nbytes, rest);
-		nbytes += rest;
-	}
-
-	return nbytes;
 }
 
 int main(int argc, char **argv)
