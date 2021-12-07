@@ -154,6 +154,8 @@ public:
 	void Done(CURLcode result) noexcept;
 
 private:
+	void SetupEasy();
+
 	/**
 	 * Frees the current "libcurl easy" handle, and everything
 	 * associated with it.
