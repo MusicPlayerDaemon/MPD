@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,6 +39,12 @@ struct StringView;
 class CurlGlobal;
 class CurlResponseHandler;
 
+/**
+ * A non-blocking HTTP request integrated via #CurlGlobal into the
+ * #EventLoop.
+ *
+ * To start sending the request, call Start().
+ */
 class CurlRequest final {
 	CurlGlobal &global;
 
@@ -136,7 +142,7 @@ public:
 		easy.SetPost(value);
 	}
 
-	void SetRequestBody(const void *data, size_t size) {
+	void SetRequestBody(const void *data, std::size_t size) {
 		easy.SetRequestBody(data, size);
 	}
 
