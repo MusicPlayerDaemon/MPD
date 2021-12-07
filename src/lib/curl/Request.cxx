@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,6 +49,17 @@ CurlRequest::CurlRequest(CurlGlobal &_global,
 			 CurlResponseHandler &_handler)
 	:global(_global), handler(_handler)
 {
+	SetupEasy();
+}
+
+CurlRequest::~CurlRequest() noexcept
+{
+	FreeEasy();
+}
+
+void
+CurlRequest::SetupEasy()
+{
 	error_buffer[0] = 0;
 
 	easy.SetPrivate((void *)this);
@@ -63,11 +74,6 @@ CurlRequest::CurlRequest(CurlGlobal &_global,
 	easy.SetNoSignal();
 	easy.SetConnectTimeout(10);
 	easy.SetOption(CURLOPT_HTTPAUTH, (long) CURLAUTH_ANY);
-}
-
-CurlRequest::~CurlRequest() noexcept
-{
-	FreeEasy();
 }
 
 void
