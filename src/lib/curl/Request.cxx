@@ -224,8 +224,8 @@ CurlRequest::HeaderFunction(StringView s) noexcept
 	headers.emplace(std::move(name), std::string(value, end));
 }
 
-size_t
-CurlRequest::_HeaderFunction(char *ptr, size_t size, size_t nmemb,
+std::size_t
+CurlRequest::_HeaderFunction(char *ptr, std::size_t size, std::size_t nmemb,
 			     void *stream) noexcept
 {
 	CurlRequest &c = *(CurlRequest *)stream;
@@ -236,8 +236,8 @@ CurlRequest::_HeaderFunction(char *ptr, size_t size, size_t nmemb,
 	return size;
 }
 
-inline size_t
-CurlRequest::DataReceived(const void *ptr, size_t received_size) noexcept
+inline std::size_t
+CurlRequest::DataReceived(const void *ptr, std::size_t received_size) noexcept
 {
 	assert(received_size > 0);
 
@@ -251,8 +251,8 @@ CurlRequest::DataReceived(const void *ptr, size_t received_size) noexcept
 
 }
 
-size_t
-CurlRequest::WriteFunction(char *ptr, size_t size, size_t nmemb,
+std::size_t
+CurlRequest::WriteFunction(char *ptr, std::size_t size, std::size_t nmemb,
 			   void *stream) noexcept
 {
 	CurlRequest &c = *(CurlRequest *)stream;
