@@ -45,6 +45,13 @@
 
 #include <string.h>
 
+CurlRequest::CurlRequest(CurlGlobal &_global, CurlEasy _easy,
+			 CurlResponseHandler &_handler)
+	:global(_global), handler(_handler), easy(std::move(_easy))
+{
+	SetupEasy();
+}
+
 CurlRequest::CurlRequest(CurlGlobal &_global,
 			 CurlResponseHandler &_handler)
 	:global(_global), handler(_handler)
