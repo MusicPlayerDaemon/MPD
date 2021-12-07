@@ -155,7 +155,7 @@ BufferedOutputStream::WriteWideToUTF8(const wchar_t *src,
 
 		/* grow the buffer and try again */
 		length = WideCharToMultiByte(CP_UTF8, 0, src, src_length,
-					     buffer.Write(length), length,
+					     (char *)buffer.Write(length), length,
 					     nullptr, nullptr);
 		if (length <= 0)
 			throw MakeLastError(error, "UTF-8 conversion failed");
