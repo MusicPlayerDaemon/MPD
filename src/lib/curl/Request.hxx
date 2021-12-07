@@ -165,17 +165,17 @@ private:
 	void FinishHeaders();
 	void FinishBody();
 
-	size_t DataReceived(const void *ptr, size_t size) noexcept;
+	std::size_t DataReceived(const void *ptr, std::size_t size) noexcept;
 
 	void HeaderFunction(StringView s) noexcept;
 
 	/** called by curl when new data is available */
-	static size_t _HeaderFunction(char *ptr, size_t size, size_t nmemb,
-				      void *stream) noexcept;
+	static std::size_t _HeaderFunction(char *ptr, std::size_t size, std::size_t nmemb,
+					   void *stream) noexcept;
 
 	/** called by curl when new data is available */
-	static size_t WriteFunction(char *ptr, size_t size, size_t nmemb,
-				    void *stream) noexcept;
+	static std::size_t WriteFunction(char *ptr, std::size_t size, std::size_t nmemb,
+					 void *stream) noexcept;
 };
 
 #endif
