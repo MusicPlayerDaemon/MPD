@@ -31,6 +31,7 @@
 #include "Reader.hxx"
 #include "util/TextFile.hxx"
 
+#include <cassert>
 #include <cstdint>
 #include <stdexcept>
 
@@ -52,7 +53,7 @@ BufferedReader::Fill(bool need_more)
 		assert(!w.empty());
 	}
 
-	size_t nbytes = reader.Read(w.data, w.size);
+	std::size_t nbytes = reader.Read(w.data, w.size);
 	if (nbytes == 0) {
 		eof = true;
 		return !need_more;
@@ -63,7 +64,7 @@ BufferedReader::Fill(bool need_more)
 }
 
 void *
-BufferedReader::ReadFull(size_t size)
+BufferedReader::ReadFull(std::size_t size)
 {
 	while (true) {
 		auto r = Read();
@@ -75,11 +76,11 @@ BufferedReader::ReadFull(size_t size)
 	}
 }
 
-size_t
+std::size_t
 BufferedReader::ReadFromBuffer(WritableBuffer<void> dest) noexcept
 {
 	auto src = Read();
-	size_t nbytes = std::min(src.size, dest.size);
+	std::size_t nbytes = std::min(src.size, dest.size);
 	memcpy(dest.data, src.data, nbytes);
 	Consume(nbytes);
 	return nbytes;
@@ -92,7 +93,7 @@ BufferedReader::ReadFull(WritableBuffer<void> _dest)
 	assert(dest.size == _dest.size);
 
 	while (true) {
-		size_t nbytes = ReadFromBuffer(dest.ToVoid());
+		std::size_t nbytes = ReadFromBuffer(dest.ToVoid());
 		dest.skip_front(nbytes);
 		if (dest.size == 0)
 			break;
