@@ -18,6 +18,7 @@ curl = static_library(
   'Init.cxx',
   'Global.cxx',
   'Request.cxx',
+  'Adapter.cxx',
   'Escape.cxx',
   'Form.cxx',
   include_directories: inc,
