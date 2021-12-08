@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -64,14 +64,14 @@ public:
 	virtual void OnData(ConstBuffer<void> data) = 0;
 
 	/**
-	 * The response has ended.  The method is allowed delete the
-	 * #CurlRequest here.
+	 * The response has ended.  The method is allowed to delete the
+	 * #CurlRequest.
 	 */
 	virtual void OnEnd() = 0;
 
 	/**
-	 * An error has occurred.  The method is allowed delete the
-	 * #CurlRequest here.
+	 * An error has occurred.  The method is allowed to delete the
+	 * #CurlRequest.
 	 */
 	virtual void OnError(std::exception_ptr e) noexcept = 0;
 };
