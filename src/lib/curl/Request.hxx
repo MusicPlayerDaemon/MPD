@@ -31,9 +31,9 @@
 #define CURL_REQUEST_HXX
 
 #include "Easy.hxx"
+#include "Adapter.hxx"
 
-#include <map>
-#include <string>
+#include <cstddef>
 
 struct StringView;
 class CurlGlobal;
@@ -48,21 +48,10 @@ class CurlResponseHandler;
 class CurlRequest final {
 	CurlGlobal &global;
 
-	CurlResponseHandler &handler;
+	CurlResponseHandlerAdapter handler;
 
 	/** the curl handle */
 	CurlEasy easy;
-
-	enum class State {
-		HEADERS,
-		BODY,
-		CLOSED,
-	} state = State::HEADERS;
-
-	std::multimap<std::string, std::string> headers;
-
-	/** error message provided by libcurl */
-	char error_buffer[CURL_ERROR_SIZE];
 
 	bool registered = false;
 
@@ -164,18 +153,6 @@ private:
 
 	void FinishHeaders();
 	void FinishBody();
-
-	std::size_t DataReceived(const void *ptr, std::size_t size) noexcept;
-
-	void HeaderFunction(StringView s) noexcept;
-
-	/** called by curl when new data is available */
-	static std::size_t _HeaderFunction(char *ptr, std::size_t size, std::size_t nmemb,
-					   void *stream) noexcept;
-
-	/** called by curl when new data is available */
-	static std::size_t WriteFunction(char *ptr, std::size_t size, std::size_t nmemb,
-					 void *stream) noexcept;
 };
 
 #endif
