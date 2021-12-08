@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -54,8 +54,8 @@ FileReader::GetFileInfo() const
 	return FileInfo(path);
 }
 
-size_t
-FileReader::Read(void *data, size_t size)
+std::size_t
+FileReader::Read(void *data, std::size_t size)
 {
 	assert(IsDefined());
 
@@ -116,8 +116,8 @@ FileReader::GetFileInfo() const
 	return info;
 }
 
-size_t
-FileReader::Read(void *data, size_t size)
+std::size_t
+FileReader::Read(void *data, std::size_t size)
 {
 	assert(IsDefined());
 
