@@ -51,3 +51,9 @@ DaysInMonth(unsigned month, unsigned year) noexcept
 	else
 		return DaysInFebruary(year);
 }
+
+constexpr unsigned
+DaysInYear(unsigned year) noexcept
+{
+	return IsLeapYear(year) ? 366 : 365;
+}
