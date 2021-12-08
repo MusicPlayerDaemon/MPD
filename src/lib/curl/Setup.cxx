@@ -27,103 +27,25 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Request.hxx"
 #include "Setup.hxx"
-#include "Global.hxx"
-#include "event/Call.hxx"
+#include "Easy.hxx"
+#include "Version.h"
 
-#include <curl/curl.h>
+#include <stdio.h>
 
-#include <cassert>
-
-CurlRequest::CurlRequest(CurlGlobal &_global, CurlEasy _easy,
-			 CurlResponseHandler &_handler)
-	:global(_global), handler(_handler), easy(std::move(_easy))
-{
-	SetupEasy();
-}
-
-CurlRequest::CurlRequest(CurlGlobal &_global,
-			 CurlResponseHandler &_handler)
-	:global(_global), handler(_handler)
-{
-	SetupEasy();
-}
-
-CurlRequest::~CurlRequest() noexcept
-{
-	FreeEasy();
-}
+namespace Curl {
 
 void
-CurlRequest::SetupEasy()
+Setup(CurlEasy &easy)
 {
-	easy.SetPrivate((void *)this);
-
-	handler.Install(easy);
-
-	Curl::Setup(easy);
+	easy.SetUserAgent("Music Player Daemon " VERSION);
+#if !defined(ANDROID) && !defined(_WIN32)
+	easy.SetOption(CURLOPT_NETRC, 1L);
+#endif
+	easy.SetNoProgress();
+	easy.SetNoSignal();
+	easy.SetConnectTimeout(10);
+	easy.SetOption(CURLOPT_HTTPAUTH, (long) CURLAUTH_ANY);
 }
 
-void
-CurlRequest::Start()
-{
-	assert(!registered);
-
-	global.Add(*this);
-	registered = true;
-}
-
-void
-CurlRequest::StartIndirect()
-{
-	BlockingCall(global.GetEventLoop(), [this](){
-			Start();
-		});
-}
-
-void
-CurlRequest::Stop() noexcept
-{
-	if (!registered)
-		return;
-
-	global.Remove(*this);
-	registered = false;
-}
-
-void
-CurlRequest::StopIndirect()
-{
-	BlockingCall(global.GetEventLoop(), [this](){
-			Stop();
-		});
-}
-
-void
-CurlRequest::FreeEasy() noexcept
-{
-	if (!easy)
-		return;
-
-	Stop();
-	easy = nullptr;
-}
-
-void
-CurlRequest::Resume() noexcept
-{
-	assert(registered);
-
-	easy.Unpause();
-
-	global.InvalidateSockets();
-}
-
-void
-CurlRequest::Done(CURLcode result) noexcept
-{
-	Stop();
-
-	handler.Done(result);
-}
+} // namespace Curl
