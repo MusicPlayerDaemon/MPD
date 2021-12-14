@@ -29,6 +29,7 @@
 
 #include "Error.hxx"
 
+#include <stdarg.h>
 #include <alsa/error.h>
 
 namespace Alsa {
