@@ -53,19 +53,21 @@ pkgconfig = '{toolchain.pkg_config}'
         f.write(f"""
 [properties]
 root = '{toolchain.install_prefix}'
-
-[built-in options]
-c_args = {repr((toolchain.cppflags + ' ' + toolchain.cflags).split())}
-c_link_args = {repr(toolchain.ldflags.split() + toolchain.libs.split())}
-
-cpp_args = {repr((toolchain.cppflags + ' ' + toolchain.cxxflags).split())}
-cpp_link_args = {repr(toolchain.ldflags.split() + toolchain.libs.split())}
 """)
 
         if 'android' in toolchain.arch:
             f.write("""
 # Keep Meson from executing Android-x86 test binariees
 needs_exe_wrapper = true
+""")
+
+        f.write(f"""
+[built-in options]
+c_args = {repr((toolchain.cppflags + ' ' + toolchain.cflags).split())}
+c_link_args = {repr(toolchain.ldflags.split() + toolchain.libs.split())}
+
+cpp_args = {repr((toolchain.cppflags + ' ' + toolchain.cxxflags).split())}
+cpp_link_args = {repr(toolchain.ldflags.split() + toolchain.libs.split())}
 """)
 
         f.write(f"""
