@@ -4,6 +4,7 @@ time = static_library(
   'Convert.cxx',
   'ISO8601.cxx',
   'Math.cxx',
+  'Zone.cxx',
   include_directories: inc,
 )
 

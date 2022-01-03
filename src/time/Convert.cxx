@@ -31,6 +31,7 @@
  */
 
 #include "Convert.hxx"
+#include "Zone.hxx"
 
 #include <stdexcept>
 
@@ -71,29 +72,6 @@ LocalTime(std::chrono::system_clock::time_point tp)
 
 	return *tm;
 }
-
-#ifndef __GLIBC__
-
-/**
- * Determine the time zone offset in a portable way.
- */
-[[gnu::const]]
-static time_t
-GetTimeZoneOffset() noexcept
-{
-	time_t t = 1234567890;
-#ifdef _WIN32
-	struct tm *p = gmtime(&t);
-#else
-	struct tm tm;
-	tm.tm_isdst = 0;
-	struct tm *p = &tm;
-	gmtime_r(&t, p);
-#endif
-	return t - mktime(p);
-}
-
-#endif /* !__GLIBC__ */
 
 std::chrono::system_clock::time_point
 TimeGm(struct tm &tm) noexcept
