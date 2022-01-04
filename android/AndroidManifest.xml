@@ -17,8 +17,6 @@
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-  <uses-permission android:name="android.permission.BLUETOOTH" />
 
   <application android:allowBackup="true"
                android:requestLegacyExternalStorage="true"
@@ -43,7 +41,6 @@
     <receiver android:name=".Receiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
-        <action android:name="android.intent.action.HEADSET_PLUG" />
       </intent-filter>
     </receiver>
     <service android:name=".Main" android:process=":main"/>

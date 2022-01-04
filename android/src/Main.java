@@ -24,14 +24,13 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothClass;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -200,24 +199,14 @@ public class Main extends Service implements Runnable {
 			return;
 
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(Intent.ACTION_HEADSET_PLUG);
-		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
-		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+		filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
 		registerReceiver(new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				if (!mPauseOnHeadphonesDisconnect) {
+				if (!mPauseOnHeadphonesDisconnect)
 					return;
-				}
-
-				if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
-					if (intent.hasExtra("state") && intent.getIntExtra("state", 0) == 0)
-						pause();
-				} else {
-					BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-					if (device.getBluetoothClass().hasService(BluetoothClass.Service.AUDIO))
-						pause();
-				}
+				if (intent.getAction() == AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+					pause();
 			}
 		}, filter);
 
