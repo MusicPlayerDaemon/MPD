@@ -28,7 +28,7 @@
  */
 
 #include "GzipOutputStream.hxx"
-#include "lib/zlib/Error.hxx"
+#include "Error.hxx"
 
 GzipOutputStream::GzipOutputStream(OutputStream &_next)
 	:next(_next)

@@ -28,7 +28,7 @@
  */
 
 #include "GunzipReader.hxx"
-#include "lib/zlib/Error.hxx"
+#include "Error.hxx"
 
 GunzipReader::GunzipReader(Reader &_next)
 	:next(_next)
@@ -50,7 +50,7 @@ GunzipReader::FillBuffer()
 	auto w = buffer.Write();
 	assert(!w.empty());
 
-	size_t nbytes = next.Read(w.data, w.size);
+	std::size_t nbytes = next.Read(w.data, w.size);
 	if (nbytes == 0)
 		return false;
 
@@ -58,8 +58,8 @@ GunzipReader::FillBuffer()
 	return true;
 }
 
-size_t
-GunzipReader::Read(void *data, size_t size)
+std::size_t
+GunzipReader::Read(void *data, std::size_t size)
 {
 	if (eof)
 		return 0;
