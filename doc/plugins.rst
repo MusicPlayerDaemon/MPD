@@ -994,6 +994,13 @@ It is highly recommended to configure a fixed format, because a stream cannot sw
      - Binds the HTTP server to the specified port.
    * - **bind_to_address ADDR**
      - Binds the HTTP server to the specified address (IPv4, IPv6 or local socket). Multiple addresses in parallel are not supported.
+   * - **dscp_class CLASS**
+     - Sets a DSCP (`Differentiated Services Code Point
+       <https://en.wikipedia.org/wiki/Differentiated_services>`__)
+       class for outgoing traffic.  This can either be a name
+       (``CS*``, ``LE``, ``AF*``, ``EF``) or numeric (decimal or
+       hexadecimal).  A reasonable choice for this setting is ``CS3``
+       ("broadcast video").
    * - **encoder NAME**
      - Chooses an encoder plugin. A list of encoder plugins can be found in the encoder plugin reference :ref:`encoder_plugins`.
    * - **max_clients MC**

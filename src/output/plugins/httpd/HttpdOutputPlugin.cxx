@@ -28,11 +28,13 @@
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "event/Call.hxx"
+#include "net/DscpParser.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "config/Net.hxx"
 
 #include <cassert>
+#include <stdexcept>
 
 #include <string.h>
 
@@ -49,6 +51,15 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	 website(block.GetBlockValue("website", "Set website in config")),
 	 clients_max(block.GetBlockValue("max_clients", 0U))
 {
+	if (const auto *p = block.GetBlockParam("dscp_class"))
+		p->With([this](const char *s){
+			const int value = ParseDscpClass(s);
+			if (value < 0)
+				throw std::runtime_error("Not a valid DSCP class");
+
+			ServerSocket::SetDscpClass(value);
+		});
+
 	/* set up bind_to_address */
 
 	ServerSocketAddGeneric(*this, block.GetBlockValue("bind_to_address"), block.GetBlockValue("port", 8000U));
