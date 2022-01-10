@@ -174,9 +174,12 @@ public:
 	bool SetOption(int level, int name,
 		       const void *value, std::size_t size) noexcept;
 
-	bool SetBoolOption(int level, int name, bool _value) noexcept {
-		const int value = _value;
+	bool SetIntOption(int level, int name, const int &value) noexcept {
 		return SetOption(level, name, &value, sizeof(value));
+	}
+
+	bool SetBoolOption(int level, int name, bool value) noexcept {
+		return SetIntOption(level, name, value);
 	}
 
 	bool SetKeepAlive(bool value=true) noexcept;
