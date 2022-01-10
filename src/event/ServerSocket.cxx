@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "ServerSocket.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "net/IPv4Address.hxx"
@@ -36,7 +35,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <cassert>
 #include <string>
 #include <utility>
 
@@ -182,6 +180,16 @@ ServerSocket::OneServerSocket::Open()
 	auto _fd = socket_bind_listen(address.GetFamily(),
 				      SOCK_STREAM, 0,
 				      address, 5);
+
+#ifdef HAVE_TCP
+	if (parent.ip_tos >= 0 && address.GetFamily() == AF_INET &&
+	    !_fd.SetIntOption(IPPROTO_IP, IP_TOS, parent.ip_tos)) {
+		const SocketErrorMessage msg;
+		FmtError(server_socket_domain,
+			 "Could not set TOS option: {}",
+			 (const char *)msg);
+	}
+#endif
 
 #ifdef HAVE_UN
 	/* allow everybody to connect */
