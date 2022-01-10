@@ -121,15 +121,17 @@ private:
 	/**
 	 * The configured name.
 	 */
-	char const *name;
+	char const *const name;
+
 	/**
 	 * The configured genre.
 	 */
-	char const *genre;
+	char const *const genre;
+
 	/**
 	 * The configured website address.
 	 */
-	char const *website;
+	char const *const website;
 
 private:
 	/**
@@ -147,7 +149,7 @@ private:
 	/**
 	 * The maximum number of clients connected at the same time.
 	 */
-	unsigned clients_max;
+	const unsigned clients_max;
 
 public:
 	HttpdOutput(EventLoop &_loop, const ConfigBlock &block);

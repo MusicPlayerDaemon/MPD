@@ -43,15 +43,12 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
 	 ServerSocket(_loop),
 	 prepared_encoder(CreateConfiguredEncoder(block)),
-	 defer_broadcast(_loop, BIND_THIS_METHOD(OnDeferredBroadcast))
+	 defer_broadcast(_loop, BIND_THIS_METHOD(OnDeferredBroadcast)),
+	 name(block.GetBlockValue("name", "Set name in config")),
+	 genre(block.GetBlockValue("genre", "Set genre in config")),
+	 website(block.GetBlockValue("website", "Set website in config")),
+	 clients_max(block.GetBlockValue("max_clients", 0U))
 {
-	/* read configuration */
-	name = block.GetBlockValue("name", "Set name in config");
-	genre = block.GetBlockValue("genre", "Set genre in config");
-	website = block.GetBlockValue("website", "Set website in config");
-
-	clients_max = block.GetBlockValue("max_clients", 0U);
-
 	/* set up bind_to_address */
 
 	ServerSocketAddGeneric(*this, block.GetBlockValue("bind_to_address"), block.GetBlockValue("port", 8000U));
