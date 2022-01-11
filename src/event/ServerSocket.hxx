@@ -43,10 +43,10 @@ class ServerSocket {
 
 #ifdef HAVE_TCP
 	/**
-	 * A non-negative value sets the IPPROTO_IP/IP_TOS socket
-	 * option.
+	 * A non-negative value sets the IPPROTO_IP/IP_TOS or
+	 * IPPROTO_IPV6/IPV6_TCLASS socket option.
 	 */
-	int ip_tos = -1;
+	int dscp_class = -1;
 #endif
 
 	unsigned next_serial = 1;
@@ -60,10 +60,10 @@ public:
 	}
 
 #ifdef HAVE_TCP
-	void SetIpTos(int _ip_tos) noexcept {
+	void SetDscpClass(int _dscp_class) noexcept {
 		assert(sockets.empty());
 
-		ip_tos = _ip_tos;
+		dscp_class = _dscp_class;
 	}
 #endif
 

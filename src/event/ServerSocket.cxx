@@ -182,12 +182,18 @@ ServerSocket::OneServerSocket::Open()
 				      address, 5);
 
 #ifdef HAVE_TCP
-	if (parent.ip_tos >= 0 && address.GetFamily() == AF_INET &&
-	    !_fd.SetIntOption(IPPROTO_IP, IP_TOS, parent.ip_tos)) {
-		const SocketErrorMessage msg;
-		FmtError(server_socket_domain,
-			 "Could not set TOS option: {}",
-			 (const char *)msg);
+	if (parent.dscp_class >= 0) {
+		const int family = address.GetFamily();
+		if ((family == AF_INET &&
+		     !_fd.SetIntOption(IPPROTO_IP, IP_TOS, parent.dscp_class)) ||
+		    (family == AF_INET6 &&
+		     !_fd.SetIntOption(IPPROTO_IPV6, IPV6_TCLASS,
+				       parent.dscp_class))) {
+			const SocketErrorMessage msg;
+			FmtError(server_socket_domain,
+				 "Could not set DSCP class: {}",
+				 (const char *)msg);
+		}
 	}
 #endif
 
