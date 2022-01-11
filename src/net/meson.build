@@ -1,5 +1,11 @@
+net_sources = []
+
 have_tcp = get_option('tcp')
 conf.set('HAVE_TCP', have_tcp)
+
+if have_tcp
+  net_sources += 'DscpParser.cxx'
+endif
 
 if have_tcp and not get_option('ipv6').disabled()
   if is_windows
@@ -29,6 +35,7 @@ endif
 
 net = static_library(
   'net',
+  net_sources,
   'ToString.cxx',
   'HostParser.cxx',
   'Resolver.cxx',
