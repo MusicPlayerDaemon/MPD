@@ -91,7 +91,8 @@ ScanOpusTags(const void *data, size_t size,
 	if (!r.Expect("OpusTags", 8))
 		return false;
 
-	if (!handler.WantPair() && !handler.WantTag())
+	if (!handler.WantPair() && !handler.WantTag() &&
+	    !handler.WantPicture())
 		return true;
 
 	if (!r.SkipString())
