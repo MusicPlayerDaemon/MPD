@@ -50,4 +50,4 @@ MakeError(int error, const char *msg) noexcept
 	return std::system_error(error, error_category, msg);
 }
 
-} // namespace Avahi
+} // namespace Alsa

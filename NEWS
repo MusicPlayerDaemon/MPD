@@ -3,6 +3,8 @@ ver 0.24 (not yet released)
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly
 
 ver 0.23.6 (not yet released)
+* decoder
+  - opus: fix "readpicture" on Opus files
 
 ver 0.23.5 (2021/12/01)
 * protocol
