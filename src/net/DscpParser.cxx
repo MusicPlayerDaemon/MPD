@@ -69,7 +69,7 @@
 #endif
 
 #ifndef IPTOS_DSCP_LE
-#define IPTOS_DSCP_LE 0x01
+#define IPTOS_DSCP_LE 0x04
 #endif
 
 static constexpr struct {
