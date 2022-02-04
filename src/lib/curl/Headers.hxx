@@ -37,6 +37,6 @@
 
 namespace Curl {
 
-using Headers = std::multimap<std::string, std::string>;
+using Headers = std::multimap<std::string, std::string, std::less<>>;
 
 } // namespace Curl
