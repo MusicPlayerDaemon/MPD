@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,8 +34,7 @@
 #include <utility>
 
 void
-DelegateCurlResponseHandler::OnHeaders(unsigned status,
-				       std::multimap<std::string, std::string> &&headers)
+DelegateCurlResponseHandler::OnHeaders(unsigned status, Curl::Headers &&headers)
 {
 	parser = MakeParser(status, std::move(headers));
 	assert(parser);

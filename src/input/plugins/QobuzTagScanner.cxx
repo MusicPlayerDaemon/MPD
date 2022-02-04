@@ -99,8 +99,7 @@ QobuzTagScanner::~QobuzTagScanner() noexcept
 }
 
 std::unique_ptr<CurlResponseParser>
-QobuzTagScanner::MakeParser(unsigned status,
-			    std::multimap<std::string, std::string> &&headers)
+QobuzTagScanner::MakeParser(unsigned status, Curl::Headers &&headers)
 {
 	if (status != 200)
 		return std::make_unique<QobuzErrorParser>(status, headers);

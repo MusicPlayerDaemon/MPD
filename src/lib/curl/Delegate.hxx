@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CURL_DELEGATE_HXX
-#define CURL_DELEGATE_HXX
+#pragma once
 
 #include "Handler.hxx"
 
@@ -53,7 +52,7 @@ protected:
 	 * CurlResponseParser::OnError()).
 	 */
 	virtual std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
-							       std::multimap<std::string, std::string> &&headers) = 0;
+							       Curl::Headers &&headers) = 0;
 
 	/**
 	 * The parser has finished parsing the response body.  This
@@ -64,10 +63,7 @@ protected:
 	virtual void FinishParser(std::unique_ptr<CurlResponseParser> p) = 0;
 
 public:
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) final;
+	void OnHeaders(unsigned status, Curl::Headers &&headers) final;
 	void OnData(ConstBuffer<void> data) final;
 	void OnEnd() final;
 };
-
-#endif

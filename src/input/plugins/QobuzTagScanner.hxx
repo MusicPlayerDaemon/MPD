@@ -49,7 +49,7 @@ public:
 private:
 	/* virtual methods from DelegateCurlResponseHandler */
 	std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
-						       std::multimap<std::string, std::string> &&headers) override;
+						       Curl::Headers &&headers) override;
 	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
 
 	/* virtual methods from CurlResponseHandler */

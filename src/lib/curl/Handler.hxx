@@ -27,14 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CURL_HANDLER_HXX
-#define CURL_HANDLER_HXX
+#pragma once
 
+#include "Headers.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <exception>
-#include <string>
-#include <map>
 
 /**
  * Asynchronous response handler for a #CurlRequest.
@@ -53,8 +51,7 @@ public:
 	/**
 	 * Status line and headers have been received.
 	 */
-	virtual void OnHeaders(unsigned status,
-			       std::multimap<std::string, std::string> &&headers) = 0;
+	virtual void OnHeaders(unsigned status, Curl::Headers &&headers) = 0;
 
 	/**
 	 * Response body data has been received.
@@ -75,5 +72,3 @@ public:
 	 */
 	virtual void OnError(std::exception_ptr e) noexcept = 0;
 };
-
-#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,14 +27,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CURL_ADAPTER_HXX
-#define CURL_ADAPTER_HXX
+#pragma once
+
+#include "Headers.hxx"
 
 #include <curl/curl.h>
 
 #include <cstddef>
-#include <map>
-#include <string>
 
 struct StringView;
 class CurlEasy;
@@ -45,7 +44,7 @@ class CurlResponseHandlerAdapter {
 
 	CurlResponseHandler &handler;
 
-	std::multimap<std::string, std::string> headers;
+	Curl::Headers headers;
 
 	/** error message provided by libcurl */
 	char error_buffer[CURL_ERROR_SIZE];
@@ -83,5 +82,3 @@ private:
 					 std::size_t size, std::size_t nmemb,
 					 void *stream) noexcept;
 };
-
-#endif

@@ -20,11 +20,9 @@
 #ifndef MPD_INPUT_CURL_HXX
 #define MPD_INPUT_CURL_HXX
 
+#include "lib/curl/Headers.hxx"
 #include "input/Ptr.hxx"
 #include "thread/Mutex.hxx"
-
-#include <string>
-#include <map>
 
 extern const struct InputPlugin input_plugin_curl;
 
@@ -36,8 +34,7 @@ extern const struct InputPlugin input_plugin_curl;
  * Throws on error.
  */
 InputStreamPtr
-OpenCurlInputStream(const char *uri,
-		    const std::multimap<std::string, std::string> &headers,
+OpenCurlInputStream(const char *uri, const Curl::Headers &headers,
 		    Mutex &mutex);
 
 #endif

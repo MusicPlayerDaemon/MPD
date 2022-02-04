@@ -164,7 +164,7 @@ QobuzClient::InvokeHandlers() noexcept
 
 std::string
 QobuzClient::MakeUrl(const char *object, const char *method,
-		     const std::multimap<std::string, std::string> &query) const noexcept
+		     const Curl::Headers &query) const noexcept
 {
 	assert(!query.empty());
 
@@ -183,7 +183,7 @@ QobuzClient::MakeUrl(const char *object, const char *method,
 
 std::string
 QobuzClient::MakeSignedUrl(const char *object, const char *method,
-			   const std::multimap<std::string, std::string> &query) const noexcept
+			   const Curl::Headers &query) const noexcept
 {
 	assert(!query.empty());
 

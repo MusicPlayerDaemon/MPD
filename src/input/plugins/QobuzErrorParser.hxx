@@ -20,10 +20,8 @@
 #ifndef QOBUZ_ERROR_PARSER_HXX
 #define QOBUZ_ERROR_PARSER_HXX
 
+#include "lib/curl/Headers.hxx"
 #include "lib/yajl/ResponseParser.hxx"
-
-#include <string>
-#include <map>
 
 template<typename T> struct ConstBuffer;
 struct StringView;
@@ -46,8 +44,7 @@ public:
 	 * May throw if there is a formal error in the response
 	 * headers.
 	 */
-	QobuzErrorParser(unsigned status,
-			 const std::multimap<std::string, std::string> &headers);
+	QobuzErrorParser(unsigned status, const Curl::Headers &headers);
 
 protected:
 	/* virtual methods from CurlResponseParser */

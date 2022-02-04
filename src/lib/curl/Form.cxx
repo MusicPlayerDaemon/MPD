@@ -31,8 +31,7 @@
 #include "String.hxx"
 
 std::string
-EncodeForm(CURL *curl,
-	   const std::multimap<std::string, std::string> &fields) noexcept
+EncodeForm(CURL *curl, const Curl::Headers &fields) noexcept
 {
 	std::string result;
 

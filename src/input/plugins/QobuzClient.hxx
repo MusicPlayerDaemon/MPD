@@ -23,12 +23,12 @@
 #include "QobuzSession.hxx"
 #include "QobuzLoginRequest.hxx"
 #include "lib/curl/Init.hxx"
+#include "lib/curl/Headers.hxx"
 #include "thread/Mutex.hxx"
 #include "event/DeferEvent.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <memory>
-#include <map>
 #include <string>
 
 class QobuzSessionHandler
@@ -94,10 +94,10 @@ public:
 	QobuzSession GetSession() const;
 
 	std::string MakeUrl(const char *object, const char *method,
-			    const std::multimap<std::string, std::string> &query) const noexcept;
+			    const Curl::Headers &query) const noexcept;
 
 	std::string MakeSignedUrl(const char *object, const char *method,
-				  const std::multimap<std::string, std::string> &query) const noexcept;
+				  const Curl::Headers &query) const noexcept;
 
 private:
 	void StartLogin();

@@ -38,7 +38,7 @@ static constexpr yajl_callbacks qobuz_error_parser_callbacks = {
 };
 
 QobuzErrorParser::QobuzErrorParser(unsigned _status,
-				   const std::multimap<std::string, std::string> &headers)
+				   const Curl::Headers &headers)
 	:YajlResponseParser(&qobuz_error_parser_callbacks, nullptr, this),
 	 status(_status)
 {
