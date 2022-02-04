@@ -227,7 +227,7 @@ IsXmlContentType(const char *content_type) noexcept
 
 gcc_pure
 static bool
-IsXmlContentType(const std::multimap<std::string, std::string> &headers) noexcept
+IsXmlContentType(const Curl::Headers &headers) noexcept
 {
 	auto i = headers.find("content-type");
 	return i != headers.end() && IsXmlContentType(i->second.c_str());
@@ -297,8 +297,7 @@ private:
 	}
 
 	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) final {
+	void OnHeaders(unsigned status, Curl::Headers &&headers) final {
 		if (status != 207)
 			throw FormatRuntimeError("Status %d from WebDAV server; expected \"207 Multi-Status\"",
 						 status);

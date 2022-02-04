@@ -77,7 +77,7 @@ QobuzLoginRequest::ResponseParser::GetSession()
 	return std::move(session);
 }
 
-static std::multimap<std::string, std::string>
+static Curl::Headers
 MakeLoginForm(const char *app_id,
 	      const char *username, const char *email,
 	      const char *password,
@@ -85,7 +85,7 @@ MakeLoginForm(const char *app_id,
 {
 	assert(username != nullptr || email != nullptr);
 
-	std::multimap<std::string, std::string> form{
+	Curl::Headers form{
 		{"app_id", app_id},
 		{"password", password},
 		{"device_manufacturer_id", device_manufacturer_id},
@@ -134,8 +134,7 @@ QobuzLoginRequest::~QobuzLoginRequest() noexcept
 }
 
 std::unique_ptr<CurlResponseParser>
-QobuzLoginRequest::MakeParser(unsigned status,
-			      std::multimap<std::string, std::string> &&headers)
+QobuzLoginRequest::MakeParser(unsigned status, Curl::Headers &&headers)
 {
 	if (status != 200)
 		return std::make_unique<QobuzErrorParser>(status, headers);

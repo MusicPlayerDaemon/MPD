@@ -55,7 +55,7 @@ UPnPDeviceDirectory::Downloader::Destroy() noexcept
 
 void
 UPnPDeviceDirectory::Downloader::OnHeaders(unsigned status,
-					   std::multimap<std::string, std::string> &&)
+					   Curl::Headers &&)
 {
 	if (status != 200) {
 		Destroy();

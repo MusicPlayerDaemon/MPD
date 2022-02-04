@@ -1,5 +1,8 @@
 /*
- * Copyright (C) 2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2020-2021 CM4all GmbH
+ * All rights reserved.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,20 +30,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CURL_FORM_HXX
-#define CURL_FORM_HXX
+#pragma once
 
-#include "Headers.hxx"
-
-#include <curl/curl.h>
-
+#include <map>
 #include <string>
 
-/**
- * Encode the given map of form fields to a
- * "application/x-www-form-urlencoded" string.
- */
-std::string
-EncodeForm(CURL *curl, const Curl::Headers &fields) noexcept;
+namespace Curl {
 
-#endif
+using Headers = std::multimap<std::string, std::string>;
+
+} // namespace Curl

@@ -82,7 +82,7 @@ class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 public:
 	template<typename I>
 	CurlInputStream(EventLoop &event_loop, const char *_url,
-			const std::multimap<std::string, std::string> &headers,
+			const Curl::Headers &headers,
 			I &&_icy,
 			Mutex &_mutex);
 
@@ -92,7 +92,7 @@ public:
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
 
 	static InputStreamPtr Open(const char *url,
-				   const std::multimap<std::string, std::string> &headers,
+				   const Curl::Headers &headers,
 				   Mutex &mutex);
 
 private:
@@ -131,8 +131,7 @@ private:
 	void SeekInternal(offset_type new_offset);
 
 	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) override;
+	void OnHeaders(unsigned status, Curl::Headers &&headers) override;
 	void OnData(ConstBuffer<void> data) override;
 	void OnEnd() override;
 	void OnError(std::exception_ptr e) noexcept override;
@@ -227,7 +226,7 @@ WithConvertedTagValue(const char *uri, const char *value, F &&f) noexcept
 
 void
 CurlInputStream::OnHeaders(unsigned status,
-			   std::multimap<std::string, std::string> &&headers)
+			   Curl::Headers &&headers)
 {
 	assert(GetEventLoop().IsInside());
 	assert(!postponed_exception);
@@ -391,7 +390,7 @@ input_curl_finish() noexcept
 template<typename I>
 inline
 CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
-				 const std::multimap<std::string, std::string> &headers,
+				 const Curl::Headers &headers,
 				 I &&_icy,
 				 Mutex &_mutex)
 	:AsyncInputStream(event_loop, _url, _mutex,
@@ -491,7 +490,7 @@ CurlInputStream::DoSeek(offset_type new_offset)
 
 inline InputStreamPtr
 CurlInputStream::Open(const char *url,
-		      const std::multimap<std::string, std::string> &headers,
+		      const Curl::Headers &headers,
 		      Mutex &mutex)
 {
 	auto icy = std::make_shared<IcyMetaDataParser>();
@@ -510,8 +509,7 @@ CurlInputStream::Open(const char *url,
 }
 
 InputStreamPtr
-OpenCurlInputStream(const char *uri,
-		    const std::multimap<std::string, std::string> &headers,
+OpenCurlInputStream(const char *uri, const Curl::Headers &headers,
 		    Mutex &mutex)
 {
 	return CurlInputStream::Open(uri, headers, mutex);

@@ -93,7 +93,7 @@ QobuzTrackRequest::~QobuzTrackRequest() noexcept
 
 std::unique_ptr<CurlResponseParser>
 QobuzTrackRequest::MakeParser(unsigned status,
-			      std::multimap<std::string, std::string> &&headers)
+			      Curl::Headers &&headers)
 {
 	if (status != 200)
 		return std::make_unique<QobuzErrorParser>(status, headers);
