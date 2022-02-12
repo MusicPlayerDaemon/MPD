@@ -17,37 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * This library sends information about songs in the queue to the
- * client.
- */
+#include "Selection.hxx"
+#include "Queue.hxx"
+#include "song/DetachedSong.hxx"
+#include "song/Filter.hxx"
+#include "song/LightSong.hxx"
 
-#pragma once
+bool
+QueueSelection::MatchPosition(const Queue &queue,
+			      unsigned position) const noexcept
+{
+	if (filter != nullptr) {
+		const LightSong song{queue.Get(position)};
+		if (!filter->Match(song))
+			return false;
+	}
 
-#include <cstdint>
-
-struct Queue;
-struct QueueSelection;
-class Response;
-
-void
-queue_print_info(Response &r, const Queue &queue,
-		 unsigned start, unsigned end);
-
-void
-queue_print_uris(Response &r, const Queue &queue,
-		 unsigned start, unsigned end);
-
-void
-queue_print_changes_info(Response &r, const Queue &queue,
-			 uint32_t version,
-			 unsigned start, unsigned end);
-
-void
-queue_print_changes_position(Response &r, const Queue &queue,
-			     uint32_t version,
-			     unsigned start, unsigned end);
-
-void
-PrintQueue(Response &response, const Queue &queue,
-	   const QueueSelection &selection);
+	return true;
+}

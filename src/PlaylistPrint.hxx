@@ -24,7 +24,7 @@
 
 struct playlist;
 struct RangeArg;
-class SongFilter;
+struct QueueSelection;
 class Response;
 
 /**
@@ -65,7 +65,7 @@ playlist_print_current(Response &r, const playlist &playlist);
  */
 void
 playlist_print_find(Response &r, const playlist &playlist,
-		    const SongFilter &filter);
+		    const QueueSelection &selection);
 
 /**
  * Print detailed changes since the specified playlist version.

@@ -29,6 +29,7 @@
 #include "song/DetachedSong.hxx"
 #include "LocateUri.hxx"
 #include "queue/Playlist.hxx"
+#include "queue/Selection.hxx"
 #include "PlaylistPrint.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
@@ -299,7 +300,10 @@ handle_playlist_match(Client &client, Request args, Response &r,
 	}
 	filter.Optimize();
 
-	playlist_print_find(r, client.GetPlaylist(), filter);
+	QueueSelection selection;
+	selection.filter = &filter;
+
+	playlist_print_find(r, client.GetPlaylist(), selection);
 	return CommandResult::OK;
 }
 

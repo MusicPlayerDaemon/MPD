@@ -19,6 +19,7 @@
 
 #include "Print.hxx"
 #include "Queue.hxx"
+#include "Selection.hxx"
 #include "song/Filter.hxx"
 #include "SongPrint.hxx"
 #include "song/DetachedSong.hxx"
@@ -100,13 +101,11 @@ queue_print_changes_position(Response &r, const Queue &queue,
 }
 
 void
-queue_find(Response &r, const Queue &queue,
-	   const SongFilter &filter)
+PrintQueue(Response &r, const Queue &queue,
+	   const QueueSelection &selection)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
-		const LightSong song{queue.Get(i)};
-
-		if (filter.Match(song))
+		if (selection.MatchPosition(queue, i))
 			queue_print_song_info(r, queue, i);
 	}
 }

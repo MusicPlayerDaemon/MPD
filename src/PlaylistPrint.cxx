@@ -77,9 +77,9 @@ playlist_print_current(Response &r, const playlist &playlist)
 
 void
 playlist_print_find(Response &r, const playlist &playlist,
-		    const SongFilter &filter)
+		    const QueueSelection &selection)
 {
-	queue_find(r, playlist.queue, filter);
+	PrintQueue(r, playlist.queue, selection);
 }
 
 void

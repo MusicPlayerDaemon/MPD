@@ -332,6 +332,7 @@ sources = [
   'src/queue/Queue.cxx',
   'src/queue/Print.cxx',
   'src/queue/Save.cxx',
+  'src/queue/Selection.cxx',
   'src/queue/Playlist.cxx',
   'src/queue/PlaylistControl.cxx',
   'src/queue/PlaylistEdit.cxx',

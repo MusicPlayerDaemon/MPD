@@ -17,37 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * This library sends information about songs in the queue to the
- * client.
- */
-
 #pragma once
 
-#include <cstdint>
-
 struct Queue;
-struct QueueSelection;
-class Response;
+class SongFilter;
 
-void
-queue_print_info(Response &r, const Queue &queue,
-		 unsigned start, unsigned end);
+/**
+ * Describes what part of and how the client wishes to see the queue.
+ */
+struct QueueSelection {
+	/**
+	 * An optional pointer to a #SongFilter (not owned by this
+	 * object).
+	 */
+	const SongFilter *filter = nullptr;
 
-void
-queue_print_uris(Response &r, const Queue &queue,
-		 unsigned start, unsigned end);
-
-void
-queue_print_changes_info(Response &r, const Queue &queue,
-			 uint32_t version,
-			 unsigned start, unsigned end);
-
-void
-queue_print_changes_position(Response &r, const Queue &queue,
-			     uint32_t version,
-			     unsigned start, unsigned end);
-
-void
-PrintQueue(Response &response, const Queue &queue,
-	   const QueueSelection &selection);
+	[[gnu::pure]]
+	bool MatchPosition(const Queue &queue,
+			   unsigned position) const noexcept;
+};
