@@ -60,6 +60,10 @@
 #define ID3_FRAME_LABEL "TPUB"
 #endif
 
+#ifndef ID3_FRAME_MOOD
+#define ID3_FRAME_MOOD "TMOO"
+#endif
+
 gcc_pure
 static Id3String
 tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
@@ -346,6 +350,7 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_LABEL, TAG_LABEL,
 			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_MOOD, TAG_MOOD, handler);
 
 	tag_id3_import_musicbrainz(tag, handler);
 	tag_id3_import_ufid(tag, handler);

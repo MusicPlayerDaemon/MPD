@@ -1,6 +1,8 @@
 ver 0.24 (not yet released)
 * player
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly
+* tags
+  - new tag "Mood"
 
 ver 0.23.6 (not yet released)
 * decoder
