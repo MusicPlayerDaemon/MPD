@@ -1106,6 +1106,15 @@ See :ref:`tags` for a list of supported tags.
 The :ref:`metadata_to_use <metadata_to_use>` setting can be used to
 enable or disable certain tags.
 
+Note that :program:`MPD` may not necessarily read metadata itself,
+instead relying on data reported by the decoder that was used to read
+a file. For example, this is the case for the FFmpeg decoder: both
+:program:`MPD` and FFmpeg need to support a given metadata format in
+order for metadata to be picked up correctly.
+
+Only if a decoder does not have metadata support will :program:`MPD`
+attempt to parse a song's metadata itself.
+
 The queue
 ---------
 
