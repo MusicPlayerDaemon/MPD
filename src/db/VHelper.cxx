@@ -21,13 +21,11 @@
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
 #include "song/Filter.hxx"
+#include "tag/Sort.hxx"
 
 #include <algorithm>
 #include <cassert>
 #include <utility>
-
-#include <stdlib.h>
-#include <string.h>
 
 DatabaseVisitorHelper::DatabaseVisitorHelper(DatabaseSelection _selection,
 					     VisitSong &visit_song) noexcept
@@ -57,38 +55,6 @@ DatabaseVisitorHelper::DatabaseVisitorHelper(DatabaseSelection _selection,
 }
 
 DatabaseVisitorHelper::~DatabaseVisitorHelper() noexcept = default;
-
-gcc_pure
-static bool
-CompareNumeric(const char *a, const char *b) noexcept
-{
-	long a_value = strtol(a, nullptr, 10);
-	long b_value = strtol(b, nullptr, 10);
-
-	return a_value < b_value;
-}
-
-gcc_pure
-static bool
-CompareTags(TagType type, bool descending, const Tag &a, const Tag &b) noexcept
-{
-	const char *a_value = a.GetSortValue(type);
-	const char *b_value = b.GetSortValue(type);
-
-	if (descending) {
-		using std::swap;
-		swap(a_value, b_value);
-	}
-
-	switch (type) {
-	case TAG_DISC:
-	case TAG_TRACK:
-		return CompareNumeric(a_value, b_value);
-
-	default:
-		return strcmp(a_value, b_value) < 0;
-	}
-}
 
 void
 DatabaseVisitorHelper::Commit()

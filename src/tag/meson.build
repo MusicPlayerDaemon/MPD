@@ -18,6 +18,7 @@ tag_sources = [
   'Builder.cxx',
   'Handler.cxx',
   'Settings.cxx',
+  'Sort.cxx',
   'Config.cxx',
   'ParseName.cxx',
   parse_name_cxx,
