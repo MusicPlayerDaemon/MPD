@@ -773,9 +773,18 @@ Whenever possible, ids should be used.
 
 .. _command_playlistfind:
 
-:command:`playlistfind {FILTER} [window {START:END}]`
+:command:`playlistfind {FILTER} [sort {TYPE}] [window {START:END}]`
     Search the queue for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`).
+
+    ``sort`` sorts the result by the specified tag.  The sort is
+    descending if the tag is prefixed with a minus ('-').  Only the
+    first tag value will be used, if multiple of the same type exist.
+    To sort by "Artist", "Album" or "AlbumArtist", you should specify
+    "ArtistSort", "AlbumSort" or "AlbumArtistSort" instead.  These
+    will automatically fall back to the former if "\*Sort" doesn't
+    exist.  "AlbumArtist" falls back to just "Artist".  The type
+    "Last-Modified" can sort by file modification time.
 
     ``window`` can be used to query only a portion of the real
     response.  The parameter is two zero-based queue positions; a
@@ -799,7 +808,7 @@ Whenever possible, ids should be used.
 
 .. _command_playlistsearch:
 
-:command:`playlistsearch {FILTER} [window {START:END}]`
+:command:`playlistsearch {FILTER} [sort {TYPE}] [window {START:END}]`
     Search the queue for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`).
     Parameters have the same meaning as for :ref:`find

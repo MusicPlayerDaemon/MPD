@@ -20,6 +20,7 @@
 #pragma once
 
 #include "protocol/RangeArg.hxx"
+#include "tag/Type.h"
 
 struct Queue;
 class SongFilter;
@@ -35,6 +36,18 @@ struct QueueSelection {
 	const SongFilter *filter = nullptr;
 
 	RangeArg window = RangeArg::All();
+
+	/**
+	 * Sort the result by the given tag.  #TAG_NUM_OF_ITEM_TYPES
+	 * means don't sort.  #SORT_TAG_LAST_MODIFIED sorts by
+	 * "Last-Modified" (not technically a tag).
+	 */
+	TagType sort = TAG_NUM_OF_ITEM_TYPES;
+
+	/**
+	 * If #sort is set, this flag can reverse the sort order.
+	 */
+	bool descending = false;
 
 	[[gnu::pure]]
 	bool MatchPosition(const Queue &queue,

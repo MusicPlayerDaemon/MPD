@@ -24,10 +24,13 @@
 #include "SongPrint.hxx"
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
+#include "tag/Sort.hxx"
 #include "client/Response.hxx"
 #include "PlaylistError.hxx"
 
 #include <fmt/format.h>
+
+#include <algorithm>
 
 /**
  * Send detailed information about a range of songs in the queue to a
@@ -101,10 +104,70 @@ queue_print_changes_position(Response &r, const Queue &queue,
 			      i, queue.PositionToId(i));
 }
 
+[[gnu::pure]]
+static std::vector<unsigned>
+CollectQueue(const Queue &queue, const QueueSelection &selection) noexcept
+{
+	std::vector<unsigned> v;
+
+	for (unsigned i = 0; i < queue.GetLength(); i++)
+		if (selection.MatchPosition(queue, i))
+			v.emplace_back(i);
+
+	return v;
+}
+
+static void
+PrintSortedQueue(Response &r, const Queue &queue,
+		 const QueueSelection &selection)
+{
+	/* collect all matching songs */
+	auto v = CollectQueue(queue, selection);
+
+	auto window = selection.window;
+	if (!window.CheckClip(v.size()))
+		throw PlaylistError::BadRange();
+
+	/* sort them */
+	const auto sort = selection.sort;
+	const auto descending = selection.descending;
+
+	if (sort == TagType(SORT_TAG_LAST_MODIFIED))
+		std::stable_sort(v.begin(), v.end(),
+				 [&queue, descending](unsigned a_pos, unsigned b_pos){
+					 if (descending)
+						 std::swap(a_pos, b_pos);
+
+					 const auto &a = queue.Get(a_pos);
+					 const auto &b = queue.Get(b_pos);
+
+					 return a.GetLastModified() < b.GetLastModified();
+				 });
+	else
+		std::stable_sort(v.begin(), v.end(),
+				 [&queue, sort, descending](unsigned a_pos,
+							    unsigned b_pos){
+					 const auto &a = queue.Get(a_pos);
+					 const auto &b = queue.Get(b_pos);
+
+					 return CompareTags(sort, descending,
+							    a.GetTag(),
+							    b.GetTag());
+				 });
+
+	for (unsigned i = window.start; i < window.end; ++i)
+		queue_print_song_info(r, queue, v[i]);
+}
+
 void
 PrintQueue(Response &r, const Queue &queue,
 	   const QueueSelection &selection)
 {
+	if (selection.sort != TAG_NUM_OF_ITEM_TYPES) {
+		PrintSortedQueue(r, queue, selection);
+		return;
+	}
+
 	auto window = selection.window;
 
 	if (!window.CheckClip(queue.GetLength()))
