@@ -28,7 +28,7 @@ QueueSelection::MatchPosition(const Queue &queue,
 			      unsigned position) const noexcept
 {
 	if (filter != nullptr) {
-		const LightSong song{queue.Get(position)};
+		const auto song = queue.GetLight(position);
 		if (!filter->Match(song))
 			return false;
 	}

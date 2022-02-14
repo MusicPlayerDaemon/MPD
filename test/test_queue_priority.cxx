@@ -1,5 +1,6 @@
 #include "queue/Queue.hxx"
 #include "song/DetachedSong.hxx"
+#include "song/LightSong.hxx"
 
 #include <gtest/gtest.h>
 
@@ -7,6 +8,11 @@
 
 Tag::Tag(const Tag &) noexcept {}
 void Tag::Clear() noexcept {}
+
+DetachedSong::operator LightSong() const noexcept
+{
+	return {uri.c_str(), tag};
+}
 
 static void
 check_descending_priority(const Queue *queue,

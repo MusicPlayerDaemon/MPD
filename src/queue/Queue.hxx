@@ -29,6 +29,7 @@
 #include <cstdint>
 #include <utility>
 
+struct LightSong;
 class DetachedSong;
 
 /**
@@ -199,6 +200,11 @@ struct Queue {
 
 		return *items[position].song;
 	}
+
+	/**
+	 * Like Get(), but return a #LightSong instance.
+	 */
+	LightSong GetLight(unsigned position) const noexcept;
 
 	/**
 	 * Returns the song at the specified order number.

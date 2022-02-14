@@ -19,6 +19,7 @@
 
 #include "Queue.hxx"
 #include "song/DetachedSong.hxx"
+#include "song/LightSong.hxx"
 
 #include <algorithm>
 
@@ -36,6 +37,15 @@ Queue::~Queue() noexcept
 
 	delete[] items;
 	delete[] order;
+}
+
+LightSong
+Queue::GetLight(unsigned position) const noexcept
+{
+	assert(position < length);
+
+	LightSong song{Get(position)};
+	return song;
 }
 
 int
