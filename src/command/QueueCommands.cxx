@@ -290,6 +290,14 @@ static CommandResult
 handle_playlist_match(Client &client, Request args, Response &r,
 		      bool fold_case)
 {
+	RangeArg window = RangeArg::All();
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "window")) {
+		window = args.ParseRange(args.size - 1);
+
+		args.pop_back();
+		args.pop_back();
+	}
+
 	SongFilter filter;
 	try {
 		filter.Parse(args, fold_case);
@@ -302,6 +310,7 @@ handle_playlist_match(Client &client, Request args, Response &r,
 
 	QueueSelection selection;
 	selection.filter = &filter;
+	selection.window = window;
 
 	playlist_print_find(r, client.GetPlaylist(), selection);
 	return CommandResult::OK;

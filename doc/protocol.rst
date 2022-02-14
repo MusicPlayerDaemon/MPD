@@ -773,9 +773,14 @@ Whenever possible, ids should be used.
 
 .. _command_playlistfind:
 
-:command:`playlistfind {FILTER}`
+:command:`playlistfind {FILTER} [window {START:END}]`
     Search the queue for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`).
+
+    ``window`` can be used to query only a portion of the real
+    response.  The parameter is two zero-based queue positions; a
+    start index (including) and an end index (excluding). The end
+    index can be omitted, which means the range is open-ended.
 
 .. _command_playlistid:
 
@@ -794,7 +799,7 @@ Whenever possible, ids should be used.
 
 .. _command_playlistsearch:
 
-:command:`playlistsearch {FILTER}`
+:command:`playlistsearch {FILTER} [window {START:END}]`
     Search the queue for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`).
     Parameters have the same meaning as for :ref:`find
