@@ -77,8 +77,8 @@ archive_plugin_from_name(const char *name) noexcept
 void archive_plugin_init_all()
 {
 	for (unsigned i = 0; archive_plugins[i] != nullptr; ++i) {
-		const ArchivePlugin *plugin = archive_plugins[i];
-		if (plugin->init == nullptr || archive_plugins[i]->init())
+		const auto &plugin = *archive_plugins[i];
+		if (plugin.init == nullptr || plugin.init())
 			archive_plugins_enabled[i] = true;
 	}
 }
