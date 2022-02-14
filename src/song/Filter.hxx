@@ -31,6 +31,11 @@
  */
 #define SORT_TAG_LAST_MODIFIED (TAG_NUM_OF_ITEM_TYPES + 3)
 
+/**
+ * Special value for QueueSelection::sort
+ */
+#define SORT_TAG_PRIO (TAG_NUM_OF_ITEM_TYPES + 4)
+
 template<typename T> struct ConstBuffer;
 enum TagType : uint8_t;
 struct LightSong;

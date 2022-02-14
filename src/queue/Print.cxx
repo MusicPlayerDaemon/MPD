@@ -143,6 +143,15 @@ PrintSortedQueue(Response &r, const Queue &queue,
 
 					 return a.GetLastModified() < b.GetLastModified();
 				 });
+	else if (sort == TagType(SORT_TAG_PRIO))
+		std::stable_sort(v.begin(), v.end(),
+				 [&queue, descending](unsigned a_pos, unsigned b_pos){
+					 if (descending)
+						 std::swap(a_pos, b_pos);
+
+					 return queue.GetPriorityAtPosition(a_pos) <
+						 queue.GetPriorityAtPosition(b_pos);
+				 });
 	else
 		std::stable_sort(v.begin(), v.end(),
 				 [&queue, sort, descending](unsigned a_pos,

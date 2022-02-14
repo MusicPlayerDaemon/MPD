@@ -787,7 +787,8 @@ Whenever possible, ids should be used.
     "ArtistSort", "AlbumSort" or "AlbumArtistSort" instead.  These
     will automatically fall back to the former if "\*Sort" doesn't
     exist.  "AlbumArtist" falls back to just "Artist".  The type
-    "Last-Modified" can sort by file modification time.
+    "Last-Modified" can sort by file modification time, and "prio"
+    sorts by queue priority.
 
     ``window`` can be used to query only a portion of the real
     response.  The parameter is two zero-based queue positions; a
