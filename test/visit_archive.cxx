@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "tag/Tag.hxx"
-#include "config/Data.hxx"
+#include "ConfigGlue.hxx"
 #include "event/Thread.hxx"
 #include "input/Init.hxx"
 #include "archive/ArchiveList.hxx"
@@ -36,17 +36,19 @@
 #include <stdio.h>
 
 class GlobalInit {
+	const ConfigData config;
+
 	EventThread io_thread;
 
 #ifdef ENABLE_ARCHIVE
 	const ScopeArchivePluginsInit archive_plugins_init;
 #endif
 
-	const ScopeInputPluginsInit input_plugins_init;
+	const ScopeInputPluginsInit input_plugins_init{config, io_thread.GetEventLoop()};
 
 public:
-	GlobalInit()
-		:input_plugins_init(ConfigData(), io_thread.GetEventLoop())
+	explicit GlobalInit(Path config_path)
+		:config(AutoLoadConfigFile(config_path))
 	{
 		io_thread.Start();
 	}
@@ -72,7 +74,7 @@ try {
 
 	/* initialize MPD */
 
-	const GlobalInit init;
+	const GlobalInit init{nullptr};
 
 	/* open the archive and dump it */
 

@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
+#include "ConfigGlue.hxx"
 #include "event/Thread.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
 #include "input/TextInputStream.hxx"
-#include "config/Data.hxx"
 #include "util/PrintException.hxx"
 
 #ifdef ENABLE_ARCHIVE
@@ -36,17 +36,19 @@
 #include <stdlib.h>
 
 class GlobalInit {
+	const ConfigData config;
+
 	EventThread io_thread;
 
 #ifdef ENABLE_ARCHIVE
 	const ScopeArchivePluginsInit archive_plugins_init;
 #endif
 
-	const ScopeInputPluginsInit input_plugins_init;
+	const ScopeInputPluginsInit input_plugins_init{config, io_thread.GetEventLoop()};
 
 public:
-	GlobalInit()
-		:input_plugins_init(ConfigData(), io_thread.GetEventLoop())
+	explicit GlobalInit(Path config_path)
+		:config(AutoLoadConfigFile(config_path))
 	{
 		io_thread.Start();
 	}
@@ -77,13 +79,13 @@ dump_input_stream(InputStreamPtr &&is)
 int main(int argc, char **argv)
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: run_input URI\n");
+		fprintf(stderr, "Usage: dump_text_file URI\n");
 		return EXIT_FAILURE;
 	}
 
 	/* initialize MPD */
 
-	const GlobalInit init;
+	const GlobalInit init{nullptr};
 
 	/* open the stream and dump it */
 
