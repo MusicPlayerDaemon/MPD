@@ -773,8 +773,8 @@ Whenever possible, ids should be used.
 .. _command_playlistfind:
 
 :command:`playlistfind {FILTER}`
-    Finds songs in the queue with strict
-    matching.
+    Search the queue for songs matching
+    ``FILTER`` (see :ref:`Filters <filter_syntax>`).
 
 .. _command_playlistid:
 
@@ -794,8 +794,10 @@ Whenever possible, ids should be used.
 .. _command_playlistsearch:
 
 :command:`playlistsearch {FILTER}`
-    Searches case-insensitively for partial matches in the
-    queue.
+    Search the queue for songs matching
+    ``FILTER`` (see :ref:`Filters <filter_syntax>`).
+    Parameters have the same meaning as for :ref:`find
+    <command_playlistfind>`, except that search is not case sensitive.
 
 .. _command_plchanges:
 
