@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "protocol/RangeArg.hxx"
+
 struct Queue;
 class SongFilter;
 
@@ -31,6 +33,8 @@ struct QueueSelection {
 	 * object).
 	 */
 	const SongFilter *filter = nullptr;
+
+	RangeArg window = RangeArg::All();
 
 	[[gnu::pure]]
 	bool MatchPosition(const Queue &queue,

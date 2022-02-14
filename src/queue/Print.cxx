@@ -25,6 +25,7 @@
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
 #include "client/Response.hxx"
+#include "PlaylistError.hxx"
 
 #include <fmt/format.h>
 
@@ -104,8 +105,29 @@ void
 PrintQueue(Response &r, const Queue &queue,
 	   const QueueSelection &selection)
 {
+	auto window = selection.window;
+
+	if (!window.CheckClip(queue.GetLength()))
+		throw PlaylistError::BadRange();
+
+	if (selection.window.IsEmpty())
+		return;
+
+	unsigned skip = window.start;
+	unsigned n = window.Count();
+
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
-		if (selection.MatchPosition(queue, i))
-			queue_print_song_info(r, queue, i);
+		if (!selection.MatchPosition(queue, i))
+			continue;
+
+		if (skip > 0) {
+			--skip;
+			continue;
+		}
+
+		queue_print_song_info(r, queue, i);
+
+		if (--n == 0)
+			break;
 	}
 }
