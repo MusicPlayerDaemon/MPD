@@ -34,9 +34,9 @@ DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 }
 
 bool
-DatabaseSelection::IsEmpty() const noexcept
+DatabaseSelection::IsFiltered() const noexcept
 {
-	return uri.empty() && (filter == nullptr || filter->IsEmpty());
+	return !uri.empty() || (filter != nullptr && !filter->IsEmpty());
 }
 
 bool

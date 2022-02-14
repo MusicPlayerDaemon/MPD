@@ -60,7 +60,7 @@ struct DatabaseSelection {
 			  const SongFilter *_filter=nullptr) noexcept;
 
 	[[gnu::pure]]
-	bool IsEmpty() const noexcept;
+	bool IsFiltered() const noexcept;
 
 	/**
 	 * Does this selection contain constraints other than "base"?

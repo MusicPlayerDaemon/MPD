@@ -992,7 +992,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 				     visit_song);
 
 	if (!visit_directory && !visit_playlist && selection.recursive &&
-	    !selection.IsEmpty()) {
+	    selection.IsFiltered()) {
 		/* this optimized code path can only be used under
 		   certain conditions */
 		::SearchSongs(connection, selection, visit_song);
