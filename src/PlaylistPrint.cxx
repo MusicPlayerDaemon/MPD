@@ -21,7 +21,7 @@
 #include "PlaylistFile.hxx"
 #include "PlaylistError.hxx"
 #include "queue/Playlist.hxx"
-#include "queue/QueuePrint.hxx"
+#include "queue/Print.hxx"
 #include "protocol/RangeArg.hxx"
 
 #define SONG_FILE "file: "

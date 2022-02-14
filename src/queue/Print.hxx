@@ -18,28 +18,36 @@
  */
 
 /*
- * This library saves the queue into the state file, and also loads it
- * back into memory.
+ * This library sends information about songs in the queue to the
+ * client.
  */
 
-#ifndef MPD_QUEUE_SAVE_HXX
-#define MPD_QUEUE_SAVE_HXX
+#pragma once
+
+#include <cstdint>
 
 struct Queue;
-class BufferedOutputStream;
-class LineReader;
-class SongLoader;
+class SongFilter;
+class Response;
 
 void
-queue_save(BufferedOutputStream &os, const Queue &queue);
+queue_print_info(Response &r, const Queue &queue,
+		 unsigned start, unsigned end);
 
-/**
- * Loads one song from the state file and appends it to the queue.
- *
- * Throws on error.
- */
 void
-queue_load_song(LineReader &file, const SongLoader &loader,
-		const char *line, Queue &queue);
+queue_print_uris(Response &r, const Queue &queue,
+		 unsigned start, unsigned end);
 
-#endif
+void
+queue_print_changes_info(Response &r, const Queue &queue,
+			 uint32_t version,
+			 unsigned start, unsigned end);
+
+void
+queue_print_changes_position(Response &r, const Queue &queue,
+			     uint32_t version,
+			     unsigned start, unsigned end);
+
+void
+queue_find(Response &response, const Queue &queue,
+	   const SongFilter &filter);

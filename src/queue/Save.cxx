@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "QueueSave.hxx"
+#include "Save.hxx"
 #include "Queue.hxx"
 #include "PlaylistError.hxx"
 #include "song/DetachedSong.hxx"

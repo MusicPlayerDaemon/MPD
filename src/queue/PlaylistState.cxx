@@ -27,7 +27,7 @@
 #include "Playlist.hxx"
 #include "SingleMode.hxx"
 #include "StateFileConfig.hxx"
-#include "queue/QueueSave.hxx"
+#include "Save.hxx"
 #include "io/LineReader.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "player/Control.hxx"
