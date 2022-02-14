@@ -220,6 +220,9 @@ of:
   matches the audio format with the given mask (i.e. one
   or more attributes may be ``*``).
 
+- ``(priority >= 42)``:
+  compares the priority of queued songs.
+
 - ``(!EXPRESSION)``: negate an expression.  Note that each expression
   must be enclosed in parentheses, e.g. :code:`(!(artist == 'VALUE'))`
   (which is equivalent to :code:`(artist != 'VALUE')`)

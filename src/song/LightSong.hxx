@@ -84,6 +84,11 @@ struct LightSong {
 	 */
 	AudioFormat audio_format = AudioFormat::Undefined();
 
+	/**
+	 * Copy of Queue::Item::priority.
+	 */
+	uint8_t priority = 0;
+
 	LightSong(const char *_uri, const Tag &_tag) noexcept
 		:uri(_uri), tag(_tag) {}
 

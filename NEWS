@@ -1,6 +1,7 @@
 ver 0.24 (not yet released)
 * protocol
   - "playlistfind"/"playlistsearch" have "sort" and "window" parameters
+  - filter "prio" (for "playlistfind"/"playlistsearch")
 * player
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly
 * tags

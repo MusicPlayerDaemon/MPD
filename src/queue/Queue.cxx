@@ -45,6 +45,7 @@ Queue::GetLight(unsigned position) const noexcept
 	assert(position < length);
 
 	LightSong song{Get(position)};
+	song.priority = GetPriorityAtPosition(position);
 	return song;
 }
 

@@ -25,6 +25,7 @@
 #include "TagSongFilter.hxx"
 #include "ModifiedSinceSongFilter.hxx"
 #include "AudioFormatSongFilter.hxx"
+#include "PrioritySongFilter.hxx"
 #include "pcm/AudioParser.hxx"
 #include "tag/ParseName.hxx"
 #include "time/ISO8601.hxx"
@@ -53,6 +54,7 @@ enum {
 
 	LOCATE_TAG_MODIFIED_SINCE,
 	LOCATE_TAG_AUDIO_FORMAT,
+	LOCATE_TAG_PRIORITY,
 	LOCATE_TAG_FILE_TYPE,
 	LOCATE_TAG_ANY_TYPE,
 };
@@ -79,6 +81,9 @@ locate_parse_type(const char *str) noexcept
 
 	if (StringEqualsCaseASCII(str, "AudioFormat"))
 		return LOCATE_TAG_AUDIO_FORMAT;
+
+	if (StringEqualsCaseASCII(str, "prio"))
+		return LOCATE_TAG_PRIORITY;
 
 	return tag_name_parse_i(str);
 }
@@ -322,6 +327,27 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 		s = StripLeft(s + 1);
 
 		return std::make_unique<AudioFormatSongFilter>(value);
+	} else if (type == LOCATE_TAG_PRIORITY) {
+		if (s[0] == '>' && s[1] == '=') {
+			// TODO support more operators
+		} else
+			throw std::runtime_error("'>=' expected");
+
+		s = StripLeft(s + 2);
+
+		char *endptr;
+		const auto value = strtoul(s, &endptr, 10);
+		if (endptr == s)
+			throw std::runtime_error("Number expected");
+
+		if (value > 0xff)
+			throw std::runtime_error("Invalid priority value");
+
+		if (*endptr != ')')
+			throw std::runtime_error("')' expected");
+		s = StripLeft(endptr + 1);
+
+		return std::make_unique<PrioritySongFilter>(value);
 	} else {
 		auto string_filter = ParseStringFilter(s, fold_case);
 		if (*s != ')')
