@@ -385,7 +385,7 @@ MainConfigured(const CommandLineOptions &options,
 	initPermissions(raw_config);
 	spl_global_init(raw_config);
 #ifdef ENABLE_ARCHIVE
-	const ScopeArchivePluginsInit archive_plugins_init;
+	const ScopeArchivePluginsInit archive_plugins_init{raw_config};
 #endif
 
 	pcm_convert_global_init(raw_config);

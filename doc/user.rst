@@ -341,6 +341,35 @@ The following table lists the input options valid for all plugins:
 
 More information can be found in the :ref:`input_plugins` reference.
 
+Configuring archive plugins
+---------------------------
+
+To configure an archive plugin, add an :code:`archive_plugin` block to
+:file:`mpd.conf`:
+
+.. code-block:: none
+
+    archive_plugin {
+        name "zzip"
+        enabled "no"
+    }
+
+The following table lists the input options valid for all plugins:
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Name
+     - Description
+   * - **name**
+     - The name of the plugin
+   * - **enabled yes|no**
+     - Allows you to disable a plugin without recompiling.  By
+       default, all plugins are enabled.
+
+More information can be found in the :ref:`archive_plugins` reference.
+
 .. _input_cache:
 
 Configuring the Input Cache

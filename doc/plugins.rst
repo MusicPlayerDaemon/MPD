@@ -1395,6 +1395,8 @@ xspf
 Reads XSPF playlist files. 
 
 
+.. _archive_plugins:
+
 Archive plugins
 ===============
 

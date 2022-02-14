@@ -90,6 +90,7 @@ const ConfigTemplate config_block_templates[] = {
 	{ "decoder", true },
 	{ "input", true },
 	{ "input_cache" },
+	{ "archive_plugin", true },
 	{ "playlist_plugin", true },
 	{ "resampler" },
 	{ "filter", true },

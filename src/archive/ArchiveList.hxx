@@ -22,6 +22,7 @@
 
 #include <string_view>
 
+struct ConfigData;
 struct ArchivePlugin;
 
 extern const ArchivePlugin *const archive_plugins[];
@@ -42,7 +43,7 @@ archive_plugin_from_name(const char *name) noexcept;
 
 /* this is where we "load" all the "plugins" ;-) */
 void
-archive_plugin_init_all();
+archive_plugin_init_all(const ConfigData &config);
 
 /* this is where we "unload" all the "plugins" */
 void
@@ -50,8 +51,8 @@ archive_plugin_deinit_all() noexcept;
 
 class ScopeArchivePluginsInit {
 public:
-	ScopeArchivePluginsInit() {
-		archive_plugin_init_all();
+	explicit ScopeArchivePluginsInit(const ConfigData &config) {
+		archive_plugin_init_all(config);
 	}
 
 	~ScopeArchivePluginsInit() noexcept {

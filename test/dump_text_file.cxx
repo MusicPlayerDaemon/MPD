@@ -41,7 +41,7 @@ class GlobalInit {
 	EventThread io_thread;
 
 #ifdef ENABLE_ARCHIVE
-	const ScopeArchivePluginsInit archive_plugins_init;
+	const ScopeArchivePluginsInit archive_plugins_init{config};
 #endif
 
 	const ScopeInputPluginsInit input_plugins_init{config, io_thread.GetEventLoop()};

@@ -20,6 +20,8 @@
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
 #include "archive/Features.h"
+#include "config/Data.hxx"
+#include "config/Block.hxx"
 #include "util/StringUtil.hxx"
 #include "plugins/Bzip2ArchivePlugin.hxx"
 #include "plugins/Iso9660ArchivePlugin.hxx"
@@ -74,10 +76,21 @@ archive_plugin_from_name(const char *name) noexcept
 	return nullptr;
 }
 
-void archive_plugin_init_all()
+void
+archive_plugin_init_all(const ConfigData &config)
 {
+	ConfigBlock empty;
+
 	for (unsigned i = 0; archive_plugins[i] != nullptr; ++i) {
 		const auto &plugin = *archive_plugins[i];
+
+		const auto *param =
+			config.FindBlock(ConfigBlockOption::ARCHIVE_PLUGIN,
+					 "name", plugin.name);
+		if (param != nullptr && !param->GetBlockValue("enabled", true))
+			/* the plugin is disabled in mpd.conf */
+			continue;
+
 		if (plugin.init == nullptr || plugin.init())
 			archive_plugins_enabled[i] = true;
 	}
@@ -86,8 +99,9 @@ void archive_plugin_init_all()
 void
 archive_plugin_deinit_all() noexcept
 {
+	unsigned i = 0;
 	archive_plugins_for_each_enabled(plugin)
-		if (plugin->finish != nullptr)
+		if (archive_plugins_enabled[i++] && plugin->finish != nullptr)
 			plugin->finish();
 }
 
