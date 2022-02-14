@@ -32,6 +32,12 @@ struct LightSong;
 class Storage;
 class Path;
 
+/**
+ * A stand-alone description of a song, that is, it manages all
+ * pointers.  It is called "detached" because it is usually a copy of
+ * a #Song (or #LightSong) instance that was detached from the
+ * database.
+ */
 class DetachedSong {
 	friend DetachedSong DatabaseDetachSong(const Storage &db,
 					       const LightSong &song);
