@@ -220,7 +220,7 @@ of:
   matches the audio format with the given mask (i.e. one
   or more attributes may be ``*``).
 
-- ``(priority >= 42)``:
+- ``(prio >= 42)``:
   compares the priority of queued songs.
 
 - ``(!EXPRESSION)``: negate an expression.  Note that each expression
