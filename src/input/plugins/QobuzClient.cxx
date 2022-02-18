@@ -211,8 +211,8 @@ QobuzClient::MakeSignedUrl(const char *object, const char *method,
 
 	concatenated_query += app_secret;
 
-	const auto md5_hex = MD5Hex({concatenated_query.data(), concatenated_query.size()});
-	q(uri, "request_sig", md5_hex.c_str());
+	const auto md5_hex = MD5Hex(std::as_bytes(std::span{concatenated_query}));
+	q(uri, "request_sig", std::string_view{md5_hex.data(), md5_hex.size()});
 
 	return uri;
 }

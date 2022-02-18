@@ -32,10 +32,7 @@
 
 #pragma once
 
-#include "ConstBuffer.hxx"
-#include "StringBuffer.hxx"
-
-#include <cstddef>
+#include <array>
 #include <cstdint>
 
 constexpr char hex_digits[] = "0123456789abcdef";
@@ -84,6 +81,14 @@ HexFormatUint64Fixed(char dest[16], uint64_t number) noexcept
 	return dest;
 }
 
+#if __cplusplus >= 202002 || (defined(__GNUC__) && __GNUC__ >= 10)
+#include <version>
+#endif
+
+#ifdef __cpp_lib_span
+#include <array>
+#include <span>
+
 /**
  * Format the given input buffer of bytes to hex.  The caller ensures
  * that the output buffer is at least twice as large as the input.
@@ -92,24 +97,25 @@ HexFormatUint64Fixed(char dest[16], uint64_t number) noexcept
  * @return a pointer to one after the last written character
  */
 constexpr char *
-HexFormat(char *output, ConstBuffer<uint8_t> input) noexcept
+HexFormat(char *output, std::span<const std::byte> input) noexcept
 {
 	for (const auto &i : input)
-		output = HexFormatUint8Fixed(output, i);
+		output = HexFormatUint8Fixed(output, (uint8_t)i);
 
 	return output;
 }
 
 /**
- * Like HexFormat(), but return a #StringBuffer with exactly the
- * required size.
+ * Return a std::array<char> (not null-terminated) containing a hex
+ * dump of the given fixed-size input.
  */
-template<size_t size>
-[[gnu::pure]]
+template<std::size_t size>
 constexpr auto
-HexFormatBuffer(const uint8_t *src) noexcept
+HexFormat(std::span<const std::byte, size> input) noexcept
 {
-	StringBuffer<size * 2 + 1> dest;
-	*HexFormat(dest.data(), {src, size}) = 0;
-	return dest;
+	std::array<char, size * 2> output;
+	HexFormat(output.data(), input);
+	return output;
 }
+
+#endif

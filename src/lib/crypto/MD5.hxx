@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2018-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,25 +27,18 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MD5_HXX
-#define MD5_HXX
-
-#include "util/StringBuffer.hxx"
+#pragma once
 
 #include <array>
-#include <cstdint>
-
-template<typename T> struct ConstBuffer;
+#include <span>
 
 void
 GlobalInitMD5() noexcept;
 
 [[gnu::pure]]
-std::array<uint8_t, 16>
-MD5(ConstBuffer<void> input) noexcept;
+std::array<std::byte, 16>
+MD5(std::span<const std::byte> input) noexcept;
 
 [[gnu::pure]]
-StringBuffer<33>
-MD5Hex(ConstBuffer<void> input) noexcept;
-
-#endif
+std::array<char, 32>
+MD5Hex(std::span<const std::byte> input) noexcept;

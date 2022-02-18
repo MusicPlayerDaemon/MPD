@@ -50,21 +50,22 @@ GlobalInitMD5() noexcept
 #endif
 }
 
-std::array<uint8_t, 16>
-MD5(ConstBuffer<void> input) noexcept
+std::array<std::byte, 16>
+MD5(std::span<const std::byte> input) noexcept
 {
 #ifdef HAVE_LIBAVUTIL
-	std::array<uint8_t, 16> result;
-	av_md5_sum(&result.front(), (const uint8_t *)input.data, input.size);
+	std::array<std::byte, 16> result;
+	av_md5_sum((uint8_t *)result.data(),
+		   (const uint8_t *)input.data(), input.size());
 	return result;
 #else
 	return Gcrypt::MD5(input);
 #endif
 }
 
-StringBuffer<33>
-MD5Hex(ConstBuffer<void> input) noexcept
+std::array<char, 32>
+MD5Hex(std::span<const std::byte> input) noexcept
 {
 	const auto raw = MD5(input);
-	return HexFormatBuffer<raw.size()>(&raw.front());
+	return HexFormat<raw.size()>(raw);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2018-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,8 +32,8 @@
 
 namespace Gcrypt {
 
-std::array<uint8_t, 16>
-MD5(ConstBuffer<void> input) noexcept
+std::array<std::byte, 16>
+MD5(std::span<const std::byte> input) noexcept
 {
 	return Gcrypt::Hash<GCRY_MD_MD5, 16>(input);
 }

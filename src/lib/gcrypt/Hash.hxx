@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2018-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,28 +27,24 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GCRYPT_HASH_HXX
-#define GCRYPT_HASH_HXX
-
-#include "util/ConstBuffer.hxx"
+#pragma once
 
 #include <gcrypt.h>
 
 #include <array>
+#include <span>
 
 namespace Gcrypt {
 
 template<int algo, size_t size>
 [[gnu::pure]]
 auto
-Hash(ConstBuffer<void> input) noexcept
+Hash(std::span<const std::byte> input) noexcept
 {
-	std::array<uint8_t, size> result;
+	std::array<std::byte, size> result;
 	gcry_md_hash_buffer(algo, &result.front(),
-			    input.data, input.size);
+			    input.data(), input.size());
 	return result;
 }
 
 } /* namespace Gcrypt */
-
-#endif
