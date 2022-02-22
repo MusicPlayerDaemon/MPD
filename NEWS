@@ -6,6 +6,7 @@ ver 0.23.6 (not yet released)
   - opus: fix "readpicture" on Opus files
 * output
   - pipewire: fix crash bug if setting volume before playback starts
+  - wasapi: fix resume after pause
 
 ver 0.23.5 (2021/12/01)
 * protocol
