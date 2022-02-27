@@ -37,9 +37,9 @@ if get_option('manpages')
   )
 endif
 
-doxygen = find_program('doxygen', required: false)
-if get_option('doxygen') and doxygen.found()
+if get_option('doxygen')
 
+  doxygen = find_program('doxygen', required: true)
   conf_data = configuration_data()
   conf_data.set('VERSION', meson.project_version())
   conf_data.set('abs_top_srcdir', meson.source_root())
