@@ -21,6 +21,7 @@
 #define __STDC_CONSTANT_MACROS
 
 #include "FfmpegIo.hxx"
+#include "libavutil/mem.h"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 
