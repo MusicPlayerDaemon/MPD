@@ -84,7 +84,7 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume) noexcept
 
 	/* software mixers are always updated, even if they are
 	   disabled */
-	if (!ao.IsEnabled() && !mixer->IsPlugin(software_mixer_plugin))
+	if (!ao.IsReallyEnabled() && !mixer->IsPlugin(software_mixer_plugin))
 		return false;
 
 	try {

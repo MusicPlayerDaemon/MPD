@@ -291,6 +291,13 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 */
+	bool IsReallyEnabled() const noexcept {
+		return really_enabled;
+	}
+
+	/**
+	 * Caller must lock the mutex.
+	 */
 	bool IsEnabled() const noexcept {
 		return enabled;
 	}
