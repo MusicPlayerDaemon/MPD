@@ -4,6 +4,7 @@ ver 0.23.7 (not yet released)
 * output
   - shout: require at least libshout 2.4.0
 * mixer
+  - pipewire: fix volume restore
   - software: update volume of disabled outputs
 * support libiconv
 

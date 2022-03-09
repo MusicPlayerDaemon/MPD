@@ -638,8 +638,8 @@ PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 			     [[maybe_unused]] const struct spa_pod *param) noexcept
 {
 	if (restore_volume) {
-		SetVolume(volume);
 		restore_volume = false;
+		SetVolume(volume);
 	}
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
