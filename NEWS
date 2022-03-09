@@ -1,6 +1,8 @@
 ver 0.23.6 (not yet released)
 * decoder
   - opus: fix "readpicture" on Opus files
+* output
+  - pipewire: fix crash bug if setting volume before playback starts
 
 ver 0.23.5 (2021/12/01)
 * protocol
