@@ -327,6 +327,13 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 			return;
 	}
 
+	/* Formula for calculation of bitrate of the current opus packet:
+	   bits_sent_into_decoder = packet.bytes * 8
+	   1/seconds_decoded = opus_sample_rate / nframes
+	   kbits = bits_sent_into_decoder * 1/seconds_decoded / 1000
+	*/
+	uint16_t kbits = (unsigned int)packet.bytes*8 * opus_sample_rate / nframes / 1000;
+
 	/* apply the "skip" value */
 	if (skip >= (unsigned)nframes) {
 		skip -= nframes;
@@ -361,7 +368,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	const size_t nbytes = nframes * frame_size;
 	auto cmd = client.SubmitData(input_stream,
 				     data, nbytes,
-				     0);
+				     kbits);
 	if (cmd != DecoderCommand::NONE)
 		throw cmd;
 

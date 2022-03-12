@@ -4,6 +4,8 @@ ver 0.24 (not yet released)
   - filter "prio" (for "playlistfind"/"playlistsearch")
 * archive
   - add option to disable archive plugins in mpd.conf
+* decoder
+  - opus: implement bitrate calculation
 * player
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly
 * tags
