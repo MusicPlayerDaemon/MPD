@@ -160,8 +160,7 @@ find_stream_art(std::string_view directory, Mutex &mutex)
 	static constexpr auto art_names = std::array {
 		"cover.png",
 		"cover.jpg",
-		"cover.tiff",
-		"cover.bmp",
+		"cover.webp",
 	};
 
 	for(const auto name : art_names) {
