@@ -327,9 +327,15 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 			return;
 	}
 
-	// the size of the opus packet in bits / number of samples * samp/sec / 1000
+	/* Formula for calculation of bitrate of the current opus packet:
+	* bits_sent_into_decoder = packet.bytes * 8
+	* bytes_of_audio_decoded = nframes * frame_size
+	* samples_of_audio_decoded_per_channel = bytes_of_audio_decoded / channels / 2
+	* 1/seconds_decoded = opus_sample_rate / samples_of_audio_decoded_per_channel
+	* kbits = bits_sent_into_decoder * 1/seconds_decoded / 1000
+	*/
 	int channels = opus_packet_get_nb_channels((const unsigned char*)packet.packet);
-	uint16_t kbits = (unsigned int)packet.bytes*channels*8 * opus_sample_rate / (nframes * frame_size / 2) / 1000;
+	uint16_t kbits = (unsigned int)packet.bytes*8 * opus_sample_rate / (nframes * frame_size / channels / 2) / 1000;
 
 	/* apply the "skip" value */
 	if (skip >= (unsigned)nframes) {
