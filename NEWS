@@ -1,6 +1,7 @@
 ver 0.23.6 (not yet released)
 * protocol
   - support filename "cover.webp" for "albumart" command
+  - support "readcomments" and "readpicture" on CUE tracks
 * decoder
   - ffmpeg: fix end-of-file check (update stuck at empty files)
   - opus: fix "readpicture" on Opus files

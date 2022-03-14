@@ -21,12 +21,16 @@
 #include "TagStream.hxx"
 #include "TagFile.hxx"
 #include "tag/Generic.hxx"
+#include "song/LightSong.hxx"
+#include "db/Interface.hxx"
 #include "storage/StorageInterface.hxx"
 #include "client/Client.hxx"
 #include "protocol/Ack.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "input/InputStream.hxx"
 #include "util/Compiler.h"
+#include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 #include "util/UriExtract.hxx"
 #include "LocateUri.hxx"
 
@@ -51,10 +55,67 @@ TagScanFile(const Path path_fs, TagHandler &handler)
 	ScanGenericTags(path_fs, handler);
 }
 
+#ifdef ENABLE_DATABASE
+
+/**
+ * Collapse "../" prefixes in a URI relative to the specified base
+ * URI.
+ */
+static std::string
+ResolveUri(std::string_view base, const char *relative)
+{
+	while (true) {
+		const char *rest = StringAfterPrefix(relative, "../");
+		if (rest == nullptr)
+			break;
+
+		if (base == ".")
+			throw ProtocolError(ACK_ERROR_NO_EXIST, "Bad real URI");
+
+		base = PathTraitsUTF8::GetParent(base);
+		relative = rest;
+	}
+
+	return PathTraitsUTF8::Build(base, relative);
+}
+
+/**
+ * Look up the specified song in the database and return its
+ * (resolved) "real" URI.
+ */
+static std::string
+GetRealSongUri(Client &client, std::string_view uri)
+{
+	const auto &db = client.GetDatabaseOrThrow();
+
+	const auto *song = db.GetSong(uri);
+	if (song == nullptr)
+		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such song");
+
+	AtScopeExit(&db, song) { db.ReturnSong(song); };
+
+	if (song->real_uri == nullptr)
+		return {};
+
+	return ResolveUri(PathTraitsUTF8::GetParent(uri), song->real_uri);
+}
+
+#endif
+
 static void
 TagScanDatabase(Client &client, const char *uri, TagHandler &handler)
 {
 #ifdef ENABLE_DATABASE
+	const auto real_uri = GetRealSongUri(client, uri);
+
+	if (!real_uri.empty()) {
+		uri = real_uri.c_str();
+
+		// TODO: support absolute paths?
+		if (uri_has_scheme(uri))
+			return TagScanStream(uri, handler);
+	}
+
 	const Storage *storage = client.GetStorage();
 	if (storage == nullptr) {
 #else
