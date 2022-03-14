@@ -30,8 +30,9 @@ class QueryStringBuilder {
 	bool first = true;
 
 public:
-	QueryStringBuilder &operator()(std::string &dest, const char *name,
-				       const char *value) noexcept {
+	QueryStringBuilder &operator()(std::string &dest,
+				       std::string_view name,
+				       std::string_view value) noexcept {
 		dest.push_back(first ? '?' : '&');
 		first = false;
 
@@ -175,7 +176,7 @@ QobuzClient::MakeUrl(const char *object, const char *method,
 
 	QueryStringBuilder q;
 	for (const auto &[key, url] : query)
-		q(uri, key.c_str(), url.c_str());
+		q(uri, key, url);
 
 	q(uri, "app_id", app_id);
 	return uri;
@@ -196,7 +197,7 @@ QobuzClient::MakeSignedUrl(const char *object, const char *method,
 	std::string concatenated_query(object);
 	concatenated_query += method;
 	for (const auto &[key, url] : query) {
-		q(uri, key.c_str(), url.c_str());
+		q(uri, key, url);
 
 		concatenated_query += key;
 		concatenated_query += url;
@@ -205,13 +206,13 @@ QobuzClient::MakeSignedUrl(const char *object, const char *method,
 	q(uri, "app_id", app_id);
 
 	const auto request_ts = std::to_string(time(nullptr));
-	q(uri, "request_ts", request_ts.c_str());
+	q(uri, "request_ts", request_ts);
 	concatenated_query += request_ts;
 
 	concatenated_query += app_secret;
 
 	const auto md5_hex = MD5Hex({concatenated_query.data(), concatenated_query.size()});
-	q(uri, "request_sig", md5_hex);
+	q(uri, "request_sig", md5_hex.c_str());
 
 	return uri;
 }
