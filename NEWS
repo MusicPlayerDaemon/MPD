@@ -1,3 +1,5 @@
+ver 0.23.7 (not yet released)
+
 ver 0.23.6 (2022/03/14)
 * protocol
   - support filename "cover.webp" for "albumart" command
