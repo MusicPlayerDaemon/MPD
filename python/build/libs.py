@@ -151,8 +151,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.4.1.tar.xz',
-    'eadbad9e9ab30b25f5520fbfde99fae4a92a1ae3c0257a8d68569a4651e30e02',
+    'http://ffmpeg.org/releases/ffmpeg-5.0.tar.xz',
+    '51e919f7d205062c0fd4fae6243a84850391115104ccf1efc451733bc0ac7298',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
