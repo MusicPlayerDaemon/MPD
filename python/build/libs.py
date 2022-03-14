@@ -421,8 +421,8 @@ curl = CmakeProject(
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-4.0.0.tar.gz',
-    '6ee77e9fe220e2d3e3b1f53cfea04fb319828cc7dbb97dd9df09e46e901d797d',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-5.0.1.tar.gz',
+    '7ef445410b42f36b9bad426608b53ccb9ccca4101e545c383f564c11db672ca8',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
@@ -433,8 +433,7 @@ libnfs = AutotoolsProject(
 
         '--disable-utils', '--disable-examples',
     ],
-    base='libnfs-libnfs-4.0.0',
-    patches='src/lib/nfs/patches',
+    base='libnfs-libnfs-5.0.1',
     autoreconf=True,
 )
 
