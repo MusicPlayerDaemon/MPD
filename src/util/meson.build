@@ -2,7 +2,6 @@ util = static_library(
   'util',
   'Exception.cxx',
   'UTF8.cxx',
-  'HexFormat.cxx',
   'MimeType.cxx',
   'NumberParser.cxx',
   'StringView.cxx',
