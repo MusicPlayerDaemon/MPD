@@ -12,8 +12,8 @@ from build.boost import BoostProject
 from build.jack import JackProject
 
 libmpdclient = MesonProject(
-    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.19.tar.xz',
-    '158aad4c2278ab08e76a3f2b0166c99b39fae00ee17231bd225c5a36e977a189',
+    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.20.tar.xz',
+    '18793f68e939c3301e34d8fcadea1f7daa24143941263cecadb80126194e277d',
     'lib/libmpdclient.a',
 )
 
