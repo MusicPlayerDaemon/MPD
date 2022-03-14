@@ -18,8 +18,8 @@ libmpdclient = MesonProject(
 )
 
 libogg = CmakeProject(
-    'http://downloads.xiph.org/releases/ogg/libogg-1.3.4.tar.xz',
-    'c163bc12bc300c401b6aa35907ac682671ea376f13ae0969a220f7ddf71893fe',
+    'http://downloads.xiph.org/releases/ogg/libogg-1.3.5.tar.xz',
+    'c4d91be36fc8e54deae7575241e03f4211eb102afb3fc0775fbbc1b740016705',
     'lib/libogg.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',
