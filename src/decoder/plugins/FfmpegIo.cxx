@@ -21,6 +21,7 @@
 #define __STDC_CONSTANT_MACROS
 
 #include "FfmpegIo.hxx"
+#include "libavutil/mem.h"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 
@@ -35,7 +36,11 @@ AvioStream::~AvioStream()
 inline int
 AvioStream::Read(void *dest, int size)
 {
-	return decoder_read(client, input, dest, size);
+	const auto nbytes = decoder_read(client, input, dest, size);
+	if (nbytes == 0)
+		return AVERROR_EOF;
+
+	return nbytes;
 }
 
 inline int64_t

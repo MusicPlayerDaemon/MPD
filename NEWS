@@ -9,9 +9,16 @@ ver 0.24 (not yet released)
 * tags
   - new tag "Mood"
 
-ver 0.23.6 (not yet released)
+ver 0.23.6 (2022/03/14)
+* protocol
+  - support filename "cover.webp" for "albumart" command
+  - support "readcomments" and "readpicture" on CUE tracks
 * decoder
+  - ffmpeg: fix end-of-file check (update stuck at empty files)
   - opus: fix "readpicture" on Opus files
+* output
+  - pipewire: fix crash bug if setting volume before playback starts
+  - wasapi: fix resume after pause
 
 ver 0.23.5 (2021/12/01)
 * protocol

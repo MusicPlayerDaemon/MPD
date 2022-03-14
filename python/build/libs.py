@@ -12,14 +12,14 @@ from build.boost import BoostProject
 from build.jack import JackProject
 
 libmpdclient = MesonProject(
-    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.19.tar.xz',
-    '158aad4c2278ab08e76a3f2b0166c99b39fae00ee17231bd225c5a36e977a189',
+    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.20.tar.xz',
+    '18793f68e939c3301e34d8fcadea1f7daa24143941263cecadb80126194e277d',
     'lib/libmpdclient.a',
 )
 
 libogg = CmakeProject(
-    'http://downloads.xiph.org/releases/ogg/libogg-1.3.4.tar.xz',
-    'c163bc12bc300c401b6aa35907ac682671ea376f13ae0969a220f7ddf71893fe',
+    'http://downloads.xiph.org/releases/ogg/libogg-1.3.5.tar.xz',
+    'c4d91be36fc8e54deae7575241e03f4211eb102afb3fc0775fbbc1b740016705',
     'lib/libogg.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',
@@ -43,8 +43,8 @@ opus = AutotoolsProject(
 )
 
 flac = AutotoolsProject(
-    'http://downloads.xiph.org/releases/flac/flac-1.3.3.tar.xz',
-    '213e82bd716c9de6db2f98bcadbc4c24c7e2efe8c75939a1a84e28539c4e1748',
+    'http://downloads.xiph.org/releases/flac/flac-1.3.4.tar.xz',
+    '8ff0607e75a322dd7cd6ec48f4f225471404ae2730d0ea945127b1355155e737',
     'lib/libFLAC.a',
     [
         '--disable-shared', '--enable-static',
@@ -151,8 +151,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-4.4.1.tar.xz',
-    'eadbad9e9ab30b25f5520fbfde99fae4a92a1ae3c0257a8d68569a4651e30e02',
+    'http://ffmpeg.org/releases/ffmpeg-5.0.tar.xz',
+    '51e919f7d205062c0fd4fae6243a84850391115104ccf1efc451733bc0ac7298',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -380,14 +380,14 @@ ffmpeg = FfmpegProject(
 )
 
 openssl = OpenSSLProject(
-    'https://www.openssl.org/source/openssl-3.0.0.tar.gz',
-    '59eedfcb46c25214c9bd37ed6078297b4df01d012267fe9e9eee31f61bc70536',
+    'https://www.openssl.org/source/openssl-3.0.1.tar.gz',
+    'c311ad853353bce796edad01a862c50a8a587f62e7e2100ef465ab53ec9b06d1',
     'include/openssl/ossl_typ.h',
 )
 
 curl = CmakeProject(
-    'https://curl.se/download/curl-7.79.1.tar.xz',
-    '0606f74b1182ab732a17c11613cbbaf7084f2e6cca432642d0e3ad7c224c3689',
+    'https://curl.se/download/curl-7.82.0.tar.xz',
+    '0aaa12d7bd04b0966254f2703ce80dd5c38dbbd76af0297d3d690cdce58a583c',
     'lib/libcurl.a',
     [
         '-DBUILD_CURL_EXE=OFF',
@@ -415,14 +415,14 @@ curl = CmakeProject(
         '-DBUILD_TESTING=OFF',
     ],
     windows_configure_args=[
-        '-DCMAKE_USE_SCHANNEL=ON',
+        '-DCURL_USE_SCHANNEL=ON',
     ],
     patches='src/lib/curl/patches',
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-4.0.0.tar.gz',
-    '6ee77e9fe220e2d3e3b1f53cfea04fb319828cc7dbb97dd9df09e46e901d797d',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-5.0.1.tar.gz',
+    '7ef445410b42f36b9bad426608b53ccb9ccca4101e545c383f564c11db672ca8',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
@@ -433,8 +433,7 @@ libnfs = AutotoolsProject(
 
         '--disable-utils', '--disable-examples',
     ],
-    base='libnfs-libnfs-4.0.0',
-    patches='src/lib/nfs/patches',
+    base='libnfs-libnfs-5.0.1',
     autoreconf=True,
 )
 
@@ -445,7 +444,7 @@ jack = JackProject(
 )
 
 boost = BoostProject(
-    'https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.bz2',
-    'fc9f85fc030e233142908241af7a846e60630aa7388de9a5fafb1f3a26840854',
+    'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2',
+    '8681f175d4bdb26c52222665793eef08490d7758529330f98d3b29dd0735bccc',
     'include/boost/version.hpp',
 )

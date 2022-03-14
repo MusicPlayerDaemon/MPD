@@ -336,6 +336,8 @@ PipeWireOutput::Enable()
 		throw MakeErrno("pw_thread_loop_new() failed");
 
 	pw_thread_loop_start(thread_loop);
+
+	stream = nullptr;
 }
 
 void

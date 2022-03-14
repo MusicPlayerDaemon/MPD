@@ -471,6 +471,16 @@ try {
 		}
 
 		UINT32 write_in_frames = buffer_size_in_frames;
+		DWORD mode = 0;
+		AtScopeExit(&) {
+			render_client->ReleaseBuffer(write_in_frames, mode);
+
+			if (!started) {
+				Start(client);
+				started = true;
+			}
+		};
+
 		if (!is_exclusive) {
 			UINT32 data_in_frames =
 				GetCurrentPaddingFrames(client);
@@ -481,22 +491,12 @@ try {
 		}
 
 		BYTE *data;
-		DWORD mode = 0;
 
 		if (HRESULT result =
 		    render_client->GetBuffer(write_in_frames, &data);
 		    FAILED(result)) {
 			throw MakeHResultError(result, "Failed to get buffer");
 		}
-
-		AtScopeExit(&) {
-			render_client->ReleaseBuffer(write_in_frames, mode);
-
-			if (!started) {
-				Start(client);
-				started = true;
-			}
-		};
 
 		const UINT32 write_size = write_in_frames * frame_size;
 		UINT32 new_data_size = 0;
