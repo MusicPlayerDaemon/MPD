@@ -1,4 +1,6 @@
 ver 0.23.7 (not yet released)
+* decoder
+  - opus: fix missing song length on high-latency files
 
 ver 0.23.6 (2022/03/14)
 * protocol
