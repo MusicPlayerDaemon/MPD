@@ -34,11 +34,13 @@ gcc_pure
 static int
 output_mixer_get_volume(const AudioOutputControl &ao) noexcept
 {
-	if (!ao.IsEnabled())
-		return -1;
-
 	auto *mixer = ao.GetMixer();
 	if (mixer == nullptr)
+		return -1;
+
+	/* software mixers are always considered, even if they are
+	   disabled */
+	if (!ao.IsEnabled() && !mixer->IsPlugin(software_mixer_plugin))
 		return -1;
 
 	try {
@@ -76,11 +78,13 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume) noexcept
 {
 	assert(volume <= 100);
 
-	if (!ao.IsEnabled())
-		return false;
-
 	auto *mixer = ao.GetMixer();
 	if (mixer == nullptr)
+		return false;
+
+	/* software mixers are always updated, even if they are
+	   disabled */
+	if (!ao.IsEnabled() && !mixer->IsPlugin(software_mixer_plugin))
 		return false;
 
 	try {
