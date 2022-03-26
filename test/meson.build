@@ -490,6 +490,19 @@ if libid3tag_dep.found()
     ],
   )
 endif
+
+if ogg_dep.found()
+  executable(
+    'DumpOgg',
+    'DumpOgg.cxx',
+    include_directories: inc,
+    dependencies: [
+      ogg_dep,
+      input_glue_dep,
+      archive_glue_dep,
+    ],
+  )
+endif
   
 #
 # Filter

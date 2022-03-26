@@ -11,6 +11,12 @@ ver 0.24 (not yet released)
 * tags
   - new tag "Mood"
 
+ver 0.23.7 (not yet released)
+* decoder
+  - opus: fix missing song length on high-latency files
+* mixer
+  - software: update volume of disabled outputs
+
 ver 0.23.6 (2022/03/14)
 * protocol
   - support filename "cover.webp" for "albumart" command
