@@ -58,19 +58,19 @@ class AddressInfo : addrinfo {
 	~AddressInfo() = delete;
 
 public:
-	constexpr int GetFamily() const {
+	constexpr int GetFamily() const noexcept {
 		return ai_family;
 	}
 
-	constexpr int GetType() const {
+	constexpr int GetType() const noexcept {
 		return ai_socktype;
 	}
 
-	constexpr int GetProtocol() const {
+	constexpr int GetProtocol() const noexcept {
 		return ai_protocol;
 	}
 
-	constexpr operator SocketAddress() const {
+	constexpr operator SocketAddress() const noexcept {
 		return {ai_addr, (SocketAddress::size_type)ai_addrlen};
 	}
 };
@@ -80,25 +80,26 @@ class AddressInfoList {
 
 public:
 	AddressInfoList() = default;
-	explicit AddressInfoList(struct addrinfo *_value):value(_value) {}
+	explicit AddressInfoList(struct addrinfo *_value) noexcept
+		:value(_value) {}
 
-	AddressInfoList(AddressInfoList &&src)
+	AddressInfoList(AddressInfoList &&src) noexcept
 		:value(std::exchange(src.value, nullptr)) {}
 
-	~AddressInfoList() {
+	~AddressInfoList() noexcept {
 		freeaddrinfo(value);
 	}
 
-	AddressInfoList &operator=(AddressInfoList &&src) {
+	AddressInfoList &operator=(AddressInfoList &&src) noexcept {
 		std::swap(value, src.value);
 		return *this;
 	}
 
-	bool empty() const {
+	bool empty() const noexcept {
 		return value == nullptr;
 	}
 
-	const AddressInfo &front() const {
+	const AddressInfo &front() const noexcept {
 		return *(const AddressInfo *)value;
 	}
 
@@ -109,42 +110,42 @@ public:
 	 * connections.
 	 */
 	[[gnu::pure]]
-	const AddressInfo &GetBest() const;
+	const AddressInfo &GetBest() const noexcept;
 
 	class const_iterator {
 		struct addrinfo *cursor;
 
 	public:
-		explicit constexpr const_iterator(struct addrinfo *_cursor)
+		explicit constexpr const_iterator(struct addrinfo *_cursor) noexcept
 			:cursor(_cursor) {}
 
-		constexpr bool operator==(const_iterator other) const {
+		constexpr bool operator==(const_iterator other) const noexcept {
 			return cursor == other.cursor;
 		}
 
-		constexpr bool operator!=(const_iterator other) const {
+		constexpr bool operator!=(const_iterator other) const noexcept {
 			return cursor != other.cursor;
 		}
 
-		const_iterator &operator++() {
+		const_iterator &operator++() noexcept {
 			cursor = cursor->ai_next;
 			return *this;
 		}
 
-		constexpr const AddressInfo &operator*() const {
+		constexpr const AddressInfo &operator*() const noexcept {
 			return *(const AddressInfo *)cursor;
 		}
 
-		constexpr const AddressInfo *operator->() const {
+		constexpr const AddressInfo *operator->() const noexcept {
 			return (const AddressInfo *)cursor;
 		}
 	};
 
-	const_iterator begin() const {
+	const_iterator begin() const noexcept {
 		return const_iterator(value);
 	}
 
-	const_iterator end() const {
+	const_iterator end() const noexcept {
 		return const_iterator(nullptr);
 	}
 };

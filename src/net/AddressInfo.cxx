@@ -40,8 +40,8 @@ static constexpr auto address_family_ranking = std::array {
 	AF_INET6,
 };
 
-static bool
-IsAddressFamilyBetter(int previous, int next)
+static constexpr bool
+IsAddressFamilyBetter(int previous, int next) noexcept
 {
 	for (auto i : address_family_ranking) {
 		if (next == i)
@@ -53,21 +53,21 @@ IsAddressFamilyBetter(int previous, int next)
 	return false;
 }
 
-static bool
-IsBetter(const AddressInfo &previous, const AddressInfo &next)
+static constexpr bool
+IsBetter(const AddressInfo &previous, const AddressInfo &next) noexcept
 {
 	return IsAddressFamilyBetter(previous.GetFamily(),
 				     next.GetFamily());
 }
 
-static bool
-IsBetter(const AddressInfo *previous, const AddressInfo &next)
+static constexpr bool
+IsBetter(const AddressInfo *previous, const AddressInfo &next) noexcept
 {
 	return previous == nullptr || IsBetter(*previous, next);
 }
 
 const AddressInfo &
-AddressInfoList::GetBest() const
+AddressInfoList::GetBest() const noexcept
 {
 	assert(!empty());
 
