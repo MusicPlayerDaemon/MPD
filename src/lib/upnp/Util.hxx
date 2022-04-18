@@ -22,10 +22,14 @@
 
 #include <string>
 
+namespace Upnp {
+
 void
 trimstring(std::string &s, const char *ws = " \t\n") noexcept;
 
 std::string
 path_getfather(const std::string &s) noexcept;
+
+} // namespace Upnp
 
 #endif /* _UPNPP_H_X_INCLUDED_ */

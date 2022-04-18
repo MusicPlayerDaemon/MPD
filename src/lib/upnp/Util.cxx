@@ -19,6 +19,8 @@
 
 #include "Util.hxx"
 
+namespace Upnp {
+
 /** Get rid of white space at both ends */
 void
 trimstring(std::string &s, const char *ws) noexcept
@@ -66,3 +68,5 @@ path_getfather(const std::string &s) noexcept
 	path_catslash(father);
 	return father;
 }
+
+} // namespace Upnp

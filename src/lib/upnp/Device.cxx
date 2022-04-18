@@ -23,6 +23,8 @@
 
 #include <string.h>
 
+using namespace Upnp;
+
 /* this destructor exists here just so it won't get inlined */
 UPnPDevice::~UPnPDevice() noexcept = default;
 
