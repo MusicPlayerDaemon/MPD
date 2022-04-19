@@ -64,7 +64,7 @@ AllocatedSocketAddress::SetSize(size_type new_size) noexcept
 
 #ifdef HAVE_UN
 
-StringView
+std::string_view
 AllocatedSocketAddress::GetLocalRaw() const noexcept
 {
 	return SocketAddress(*this).GetLocalRaw();

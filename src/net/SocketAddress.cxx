@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2012-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -56,12 +56,12 @@ SocketAddress::operator==(SocketAddress other) const noexcept
 
 #ifdef HAVE_UN
 
-StringView
+std::string_view
 SocketAddress::GetLocalRaw() const noexcept
 {
 	if (IsNull() || GetFamily() != AF_LOCAL)
 		/* not applicable */
-		return nullptr;
+		return {};
 
 	const auto *sun = &CastTo<struct sockaddr_un>();
 	const auto start = (const char *)sun;
@@ -69,7 +69,7 @@ SocketAddress::GetLocalRaw() const noexcept
 	const size_t header_size = path - start;
 	if (size < size_type(header_size))
 		/* malformed address */
-		return nullptr;
+		return {};
 
 	return {path, size - header_size};
 }
@@ -84,8 +84,8 @@ SocketAddress::GetLocalPath() const noexcept
 		/* must be null-terminated */
 		raw.back() == 0 &&
 		/* there must not be any other null byte */
-		std::memchr(raw.data, 0, raw.size - 1) == nullptr
-		? raw.data
+		std::memchr(raw.data(), 0, raw.size() - 1) == nullptr
+		? raw.data()
 		: nullptr;
 }
 
@@ -131,30 +131,36 @@ SocketAddress::GetPort() const noexcept
 	}
 }
 
-static constexpr ConstBuffer<void>
+static std::span<const std::byte>
 GetSteadyPart(const struct sockaddr_in &address) noexcept
 {
-	return {&address.sin_addr, sizeof(address.sin_addr)};
+	return {
+		reinterpret_cast<const std::byte *>(&address.sin_addr),
+		sizeof(address.sin_addr),
+	};
 }
 
-static constexpr ConstBuffer<void>
+static std::span<const std::byte>
 GetSteadyPart(const struct sockaddr_in6 &address) noexcept
 {
-	return {&address.sin6_addr, sizeof(address.sin6_addr)};
+	return {
+		reinterpret_cast<const std::byte *>(&address.sin6_addr),
+		sizeof(address.sin6_addr),
+	};
 }
 
 #endif
 
-ConstBuffer<void>
+std::span<const std::byte>
 SocketAddress::GetSteadyPart() const noexcept
 {
 	if (IsNull())
-		return nullptr;
+		return {};
 
 	switch (GetFamily()) {
 #ifdef HAVE_UN
 	case AF_LOCAL:
-		return GetLocalRaw().ToVoid();
+		return std::as_bytes(std::span<const char>{GetLocalRaw()});
 #endif
 
 #ifdef HAVE_TCP
@@ -166,6 +172,6 @@ SocketAddress::GetSteadyPart() const noexcept
 #endif
 
 	default:
-		return nullptr;
+		return {};
 	}
 }

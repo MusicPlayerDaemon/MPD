@@ -35,10 +35,13 @@
 
 #include <utility>
 
+#ifdef HAVE_UN
+#include <string_view>
+#endif
+
 #include <stdlib.h>
 
 struct sockaddr;
-struct StringView;
 
 class AllocatedSocketAddress {
 public:
@@ -145,7 +148,7 @@ public:
 	 * @see SocketAddress::GetLocalRaw()
 	 */
 	[[gnu::pure]]
-	StringView GetLocalRaw() const noexcept;
+	std::string_view GetLocalRaw() const noexcept;
 
 	/**
 	 * @see SocketAddress::GetLocalPath()
