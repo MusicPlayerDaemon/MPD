@@ -1,7 +1,2 @@
-/packagecache/
-
-/expat-*/
-/fmt-*/
-/googletest-*/
-/sqlite-*/
-/libvorbis-*/
+/*/
+!packagefiles/
