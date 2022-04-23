@@ -9,18 +9,7 @@ project(
     'cpp_std=c++17',
     'build.cpp_std=c++17',
     'warning_level=3',
-
-    # If we build those libraries as Meson subproject, they shall be
-    # linked statically into the MPD executable.
-    'expat:default_library=static',
-    'flac:default_library=static',
-    'fmt:default_library=static',
-    'gtest:default_library=static',
-    'libnpupnp:default_library=static',
-    'ogg:default_library=static',
-    'sqlite3:default_library=static',
-    'vorbis:default_library=static',
-    'zlib:default_library=static',
+    'default_library=static',
 
     # Not interested in compiler warnings from subprojects.
     'expat:werror=false',
