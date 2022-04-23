@@ -17,6 +17,7 @@ project(
     'fmt:default_library=static',
     'gtest:default_library=static',
     'libnpupnp:default_library=static',
+    'ogg:default_library=static',
     'sqlite3:default_library=static',
     'vorbis:default_library=static',
 
@@ -28,6 +29,7 @@ project(
     'fmt:warning_level=0',
     'gtest:warning_level=0',
     'libnpupnp:warning_level=0',
+    'ogg:warning_level=0',
     'sqlite3:warning_level=0',
     'vorbis:warning_level=0',
   ],

@@ -17,17 +17,6 @@ libmpdclient = MesonProject(
     'lib/libmpdclient.a',
 )
 
-libogg = CmakeProject(
-    'http://downloads.xiph.org/releases/ogg/libogg-1.3.5.tar.xz',
-    'c4d91be36fc8e54deae7575241e03f4211eb102afb3fc0775fbbc1b740016705',
-    'lib/libogg.a',
-    [
-        '-DBUILD_SHARED_LIBS=OFF',
-        '-DINSTALL_DOCS=OFF',
-        '-DINSTALL_CMAKE_PACKAGE_MODULE=OFF',
-    ],
-)
-
 opus = AutotoolsProject(
     'https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz',
     '65b58e1e25b2a114157014736a3d9dfeaad8d41be1c8179866f144a2fb44ff9d',

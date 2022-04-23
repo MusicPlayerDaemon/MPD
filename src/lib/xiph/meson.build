@@ -43,7 +43,7 @@ if need_encoder and not get_option('vorbisenc').disabled()
 endif
 
 if libopus_dep.found() or libvorbis_dep.found() or libvorbisenc_dep.found() or libvorbisidec_dep.found()
-  libogg_dep = dependency('ogg')
+  libogg_dep = dependency('ogg', fallback : [ 'ogg', 'libogg_dep' ])
 else
   libogg_dep = dependency('', required: false)
 endif
