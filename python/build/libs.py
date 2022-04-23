@@ -2,7 +2,6 @@ import re
 from os.path import abspath
 
 from build.project import Project
-from build.zlib import ZlibProject
 from build.meson import MesonProject
 from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
@@ -29,12 +28,6 @@ opus = AutotoolsProject(
 
     # suppress "visibility default" from opus_defines.h
     cppflags='-DOPUS_EXPORT=',
-)
-
-zlib = ZlibProject(
-    'http://zlib.net/zlib-1.2.11.tar.xz',
-    '4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066',
-    'lib/libz.a',
 )
 
 libid3tag = AutotoolsProject(

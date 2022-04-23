@@ -20,6 +20,7 @@ project(
     'ogg:default_library=static',
     'sqlite3:default_library=static',
     'vorbis:default_library=static',
+    'zlib:default_library=static',
 
     # Not interested in compiler warnings from subprojects.
     'expat:werror=false',
@@ -32,6 +33,7 @@ project(
     'ogg:warning_level=0',
     'sqlite3:warning_level=0',
     'vorbis:warning_level=0',
+    'zlib:warning_level=0',
   ],
   license: 'GPLv2+',
 )

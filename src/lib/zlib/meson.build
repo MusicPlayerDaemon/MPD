@@ -1,4 +1,4 @@
-zlib_dep = dependency('zlib', required: get_option('zlib'))
+zlib_dep = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ], required: get_option('zlib'))
 conf.set('ENABLE_ZLIB', zlib_dep.found())
 if not zlib_dep.found()
   subdir_done()
