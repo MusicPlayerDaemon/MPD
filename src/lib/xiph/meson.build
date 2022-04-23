@@ -1,4 +1,6 @@
-libflac_dep = dependency('flac', version: '>= 1.2', required: get_option('flac'))
+libflac_dep = dependency('flac', version: '>= 1.2',
+                         fallback: ['flac', 'flac_dep'],
+                         required: get_option('flac'))
 
 if is_windows
   # Our Windows build generates a static libFLAC build

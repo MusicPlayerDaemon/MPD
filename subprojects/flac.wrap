@@ -1,0 +1,12 @@
+[wrap-file]
+directory = flac-1.3.4
+source_url = https://github.com/xiph/flac/archive/refs/tags/1.3.4.tar.gz
+source_filename = 1.3.4.tar.gz
+source_hash = 53e9dbe3ae54a9f42c1e65afe7f516c02d8393c0c6d56bc455c15e1e044069a9
+patch_filename = flac_1.3.4-2_patch.zip
+patch_url = https://wrapdb.mesonbuild.com/v2/flac_1.3.4-2/get_patch
+patch_hash = e7df8f20e8aa968cd2fc903b34276f10a85f0fbb61ecb1c2fa37d43390b33e79
+
+[provide]
+flac = flac_dep
+
