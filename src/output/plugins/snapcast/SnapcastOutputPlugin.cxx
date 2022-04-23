@@ -49,10 +49,12 @@ SnapcastOutput::SnapcastOutput(EventLoop &_loop, const ConfigBlock &block)
 	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE|
 		     FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT),
 	 ServerSocket(_loop),
-	 inject_event(_loop, BIND_THIS_METHOD(OnInject)),
-	 // TODO: support other encoder plugins?
-	 prepared_encoder(encoder_init(wave_encoder_plugin, block))
+	 inject_event(_loop, BIND_THIS_METHOD(OnInject))
 {
+#ifdef ENABLE_WAVE_ENCODER
+	// TODO: support other encoder plugins?
+	this->prepared_encoder = encoder_init(wave_encoder_plugin, block);
+#endif
 	const unsigned port = block.GetBlockValue("port", 1704U);
 	ServerSocketAddGeneric(*this, block.GetBlockValue("bind_to_address"),
 			       port);
