@@ -14,13 +14,13 @@ if upnp_option == 'auto'
   upnp_dep = dependency('libupnp', version: '>= 1.8', required: false)
   conf.set('USING_PUPNP', upnp_dep.found())
   if not upnp_dep.found()
-    upnp_dep = dependency('libnpupnp', version: '>= 1.8', required: false)
+    upnp_dep = dependency('libnpupnp', fallback : [ 'libnpupnp', 'libnpupnp_dep' ], required: false)
   endif
 elif upnp_option == 'pupnp'
   upnp_dep = dependency('libupnp', version: '>= 1.8', required: true)
   conf.set('USING_PUPNP', true)
 elif upnp_option == 'npupnp'
-  upnp_dep = dependency('libnpupnp', required: true)
+  upnp_dep = dependency('libnpupnp', fallback : [ 'libnpupnp', 'libnpupnp_dep' ], required: true)
   conf.set('USING_PUPNP', false)
 elif upnp_option == 'disabled'
   upnp_dep = dependency('', required: false)
