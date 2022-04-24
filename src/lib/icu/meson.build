@@ -19,7 +19,7 @@ if icu_dep.found()
     'Init.cxx',
   ]
 elif not get_option('iconv').disabled()
-  # an installed iconv library will make the builtin iconf() unavailable,
+  # an installed iconv library will make the builtin iconv() unavailable,
   # so search for the library first and pass it as (possible) dependency
   iconv_dep = compiler.find_library('libiconv', required: false)
   have_iconv = compiler.has_function('iconv', 
