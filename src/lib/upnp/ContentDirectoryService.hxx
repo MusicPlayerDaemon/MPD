@@ -67,8 +67,10 @@ public:
 
 	/** An empty one */
 	ContentDirectoryService() = default;
-
 	~ContentDirectoryService() noexcept;
+
+	ContentDirectoryService(const ContentDirectoryService&) = default;
+	ContentDirectoryService& operator=(const ContentDirectoryService&) = default;
 
 	/** Read a container's children list into dirbuf.
 	 *

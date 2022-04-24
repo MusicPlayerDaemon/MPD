@@ -29,7 +29,11 @@ using ISongFilterPtr = std::unique_ptr<ISongFilter>;
 
 class ISongFilter {
 public:
+	ISongFilter() = default;
 	virtual ~ISongFilter() noexcept = default;
+
+	ISongFilter(const ISongFilter&) = default;
+	ISongFilter& operator=(const ISongFilter&) = default;
 
 	virtual ISongFilterPtr Clone() const noexcept = 0;
 
