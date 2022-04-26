@@ -384,7 +384,8 @@ static void
 FfmpegParseMetaData(const AVStream &stream,
 		    ReplayGainInfo &rg, MixRampInfo &mr)
 {
-	FfmpegParseMetaData(*stream.metadata, rg, mr);
+	if (stream.metadata != nullptr)
+		FfmpegParseMetaData(*stream.metadata, rg, mr);
 }
 
 static void
@@ -393,7 +394,9 @@ FfmpegParseMetaData(const AVFormatContext &format_context, int audio_stream,
 {
 	assert(audio_stream >= 0);
 
-	FfmpegParseMetaData(*format_context.metadata, rg, mr);
+	if (format_context.metadata != nullptr)
+		FfmpegParseMetaData(*format_context.metadata, rg, mr);
+
 	FfmpegParseMetaData(*format_context.streams[audio_stream],
 				    rg, mr);
 }
