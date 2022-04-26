@@ -3,6 +3,7 @@ ver 0.23.7 (not yet released)
   - opus: fix missing song length on high-latency files
 * mixer
   - software: update volume of disabled outputs
+* support libiconv
 
 ver 0.23.6 (2022/03/14)
 * protocol
