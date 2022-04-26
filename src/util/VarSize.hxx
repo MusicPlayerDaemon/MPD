@@ -30,8 +30,6 @@
 #ifndef MPD_VAR_SIZE_HXX
 #define MPD_VAR_SIZE_HXX
 
-#include "Compiler.h"
-
 #include <type_traits>
 #include <utility>
 #include <new>
@@ -49,7 +47,7 @@
  * #T
  */
 template<class T, typename... Args>
-gcc_malloc gcc_returns_nonnull
+[[gnu::malloc]] [[gnu::returns_nonnull]]
 T *
 NewVarSize(size_t declared_tail_size, size_t real_tail_size, Args&&... args)
 {
@@ -71,7 +69,7 @@ NewVarSize(size_t declared_tail_size, size_t real_tail_size, Args&&... args)
 }
 
 template<typename T>
-gcc_nonnull_all
+[[gnu::nonnull]]
 void
 DeleteVarSize(T *instance)
 {

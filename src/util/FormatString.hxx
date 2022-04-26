@@ -29,14 +29,15 @@ class AllocatedString;
 /**
  * Format into an #AllocatedString.
  */
-gcc_nonnull_all
+[[gnu::nonnull]]
 AllocatedString
 FormatStringV(const char *fmt, std::va_list args) noexcept;
 
 /**
  * Format into an #AllocatedString.
  */
-gcc_nonnull(1) gcc_printf(1,2)
+[[gnu::nonnull(1)]]
+gcc_printf(1,2)
 AllocatedString
 FormatString(const char *fmt, ...) noexcept;
 

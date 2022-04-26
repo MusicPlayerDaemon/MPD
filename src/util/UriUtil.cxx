@@ -70,7 +70,7 @@ uri_safe_local(const char *uri) noexcept
 	}
 }
 
-gcc_pure
+[[gnu::pure]]
 static const char *
 SkipUriScheme(const char *uri) noexcept
 {

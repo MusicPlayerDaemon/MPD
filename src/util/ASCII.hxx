@@ -41,7 +41,7 @@
  * Determine whether two strings are equal, ignoring case for ASCII
  * letters.
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringEqualsCaseASCII(const char *a, const char *b) noexcept
 {
@@ -56,7 +56,7 @@ StringEqualsCaseASCII(const char *a, const char *b) noexcept
 	return strcasecmp(a, b) == 0;
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringEqualsCaseASCII(const char *a, const char *b, size_t n) noexcept
 {
@@ -71,7 +71,7 @@ StringEqualsCaseASCII(const char *a, const char *b, size_t n) noexcept
 	return strncasecmp(a, b, n) == 0;
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringStartsWithCaseASCII(const char *haystack,
 			  std::string_view needle) noexcept
@@ -79,7 +79,7 @@ StringStartsWithCaseASCII(const char *haystack,
 	return StringEqualsCaseASCII(haystack, needle.data(), needle.length());
 }
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 static inline const char *
 StringAfterPrefixCaseASCII(const char *haystack,
 			   std::string_view needle) noexcept

@@ -28,7 +28,6 @@
  */
 
 #include "HugeAllocator.hxx"
-#include "Compiler.h"
 
 #include <new>
 
@@ -44,7 +43,7 @@
 /**
  * Round up the parameter, make it page-aligned.
  */
-gcc_const
+[[gnu::const]]
 static size_t
 AlignToPageSize(size_t size) noexcept
 {

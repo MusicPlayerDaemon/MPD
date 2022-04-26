@@ -30,8 +30,6 @@
 #ifndef URI_QUERY_PARSER_HXX
 #define URI_QUERY_PARSER_HXX
 
-#include "Compiler.h"
-
 struct StringView;
 
 /**
@@ -41,7 +39,7 @@ struct StringView;
  * @return the raw value (pointing into the #query_string parameter)
  * or nullptr if the parameter does not exist
  */
-gcc_pure
+[[gnu::pure]]
 StringView
 UriFindRawQueryParameter(StringView query_string, StringView name) noexcept;
 

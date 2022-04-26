@@ -30,8 +30,6 @@
 #ifndef URI_RELATIVE_HXX
 #define URI_RELATIVE_HXX
 
-#include "Compiler.h"
-
 #include <string>
 #include <string_view>
 
@@ -40,11 +38,11 @@
  * specified by #parent.  If the strings are equal, the function
  * returns false.
  */
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 bool
 uri_is_child(const char *parent, const char *child) noexcept;
 
-gcc_pure gcc_nonnull_all
+[[gnu::pure]] [[gnu::nonnull]]
 bool
 uri_is_child_or_same(const char *parent, const char *child) noexcept;
 
@@ -52,11 +50,11 @@ uri_is_child_or_same(const char *parent, const char *child) noexcept;
  * Translate the given URI in the context of #base.  For example,
  * uri_apply_base("foo", "http://bar/a/")=="http://bar/a/foo".
  */
-gcc_pure
+[[gnu::pure]]
 std::string
 uri_apply_base(std::string_view uri, std::string_view base) noexcept;
 
-gcc_pure
+[[gnu::pure]]
 std::string
 uri_apply_relative(std::string_view relative_uri,
 		   std::string_view base_uri) noexcept;

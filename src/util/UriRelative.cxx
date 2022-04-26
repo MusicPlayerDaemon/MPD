@@ -31,6 +31,7 @@
 #include "UriExtract.hxx"
 #include "StringAPI.hxx"
 #include "StringCompare.hxx"
+#include "Compiler.h"
 
 #include <cassert>
 

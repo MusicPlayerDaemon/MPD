@@ -20,8 +20,6 @@
 #ifndef MPD_PEAK_BUFFER_HXX
 #define MPD_PEAK_BUFFER_HXX
 
-#include "Compiler.h"
-
 #include <cstddef>
 
 template<typename T> struct WritableBuffer;
@@ -59,10 +57,10 @@ public:
 		return normal_size + peak_size;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool empty() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	WritableBuffer<void> Read() const noexcept;
 
 	void Consume(std::size_t length) noexcept;
