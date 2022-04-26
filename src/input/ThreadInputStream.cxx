@@ -35,6 +35,7 @@ ThreadInputStream::ThreadInputStream(const char *_plugin,
 	 allocation(_buffer_size),
 	 buffer(&allocation.front(), allocation.size())
 {
+	allocation.SetName("InputStream");
 	allocation.ForkCow(false);
 }
 

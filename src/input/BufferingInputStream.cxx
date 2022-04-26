@@ -31,6 +31,8 @@ BufferingInputStream::BufferingInputStream(InputStreamPtr _input)
 {
 	input->SetHandler(this);
 
+	buffer.SetName("InputCache");
+
 	thread.Start();
 }
 

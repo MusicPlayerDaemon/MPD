@@ -39,6 +39,7 @@ AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
 	 buffer(&allocation.front(), allocation.size()),
 	 resume_at(_resume_at)
 {
+	allocation.SetName("InputStream");
 	allocation.ForkCow(false);
 }
 
