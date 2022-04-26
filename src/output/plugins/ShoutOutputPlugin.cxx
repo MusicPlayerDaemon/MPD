@@ -252,7 +252,13 @@ ShoutConfig::Setup(shout_t &connection) const
 	    shout_set_mount(&connection, mount) != SHOUTERR_SUCCESS ||
 	    shout_set_user(&connection, user) != SHOUTERR_SUCCESS ||
 	    shout_set_public(&connection, is_public) != SHOUTERR_SUCCESS ||
+#ifdef SHOUT_USAGE_AUDIO
+	    /* since libshout 2.4.3 */
+	    shout_set_content_format(&connection, format, SHOUT_USAGE_AUDIO,
+				     nullptr) != SHOUTERR_SUCCESS ||
+#else
 	    shout_set_format(&connection, format) != SHOUTERR_SUCCESS ||
+#endif
 	    shout_set_protocol(&connection, protocol) != SHOUTERR_SUCCESS ||
 #ifdef SHOUT_TLS
 	    shout_set_tls(&connection, tls) != SHOUTERR_SUCCESS ||
