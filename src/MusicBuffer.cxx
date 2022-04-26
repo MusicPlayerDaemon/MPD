@@ -23,7 +23,9 @@
 #include <cassert>
 
 MusicBuffer::MusicBuffer(unsigned num_chunks)
-	:buffer(num_chunks) {
+	:buffer(num_chunks)
+{
+	buffer.SetName("MusicBuffer");
 }
 
 MusicChunkPtr
