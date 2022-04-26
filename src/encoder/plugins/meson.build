@@ -35,7 +35,7 @@ if libshine_dep.found()
 endif
 
 encoder_features.set('ENABLE_WAVE_ENCODER', get_option('wave_encoder'))
-if get_option('wave_encoder')
+if get_option('wave_encoder') or need_wave_encoder
   encoder_plugins_sources += 'WaveEncoderPlugin.cxx'
 endif
 
