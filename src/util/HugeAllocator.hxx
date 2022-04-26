@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -59,6 +59,14 @@ void
 HugeFree(void *p, size_t size) noexcept;
 
 /**
+ * Set a name for the specified virtual memory area.
+ *
+ * This feature requires Linux 5.17.
+ */
+void
+HugeSetName(void *p, size_t size, const char *name) noexcept;
+
+/**
  * Control whether this allocation is copied to newly forked child
  * processes.  Disabling that makes forking a little bit cheaper.
  */
@@ -89,6 +97,11 @@ HugeFree(void *p, size_t) noexcept
 }
 
 static inline void
+HugeSetName(void *, size_t, const char *) noexcept
+{
+}
+
+static inline void
 HugeForkCow(void *, size_t, bool) noexcept
 {
 }
@@ -116,6 +129,11 @@ HugeFree(void *_p, size_t) noexcept
 {
 	auto *p = (uint8_t *)_p;
 	delete[] p;
+}
+
+static inline void
+HugeSetName(void *, size_t, const char *) noexcept
+{
 }
 
 static inline void
@@ -165,6 +183,11 @@ public:
 		using std::swap;
 		swap(buffer, other.buffer);
 		return *this;
+	}
+
+	void SetName(const char *name) noexcept {
+		const auto v = buffer.ToVoid();
+		HugeSetName(v.data, v.size, name);
 	}
 
 	void ForkCow(bool enable) noexcept {

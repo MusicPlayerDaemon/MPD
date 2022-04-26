@@ -112,6 +112,10 @@ public:
 		return map.size();
 	}
 
+	void SetName(const char *name) noexcept {
+		buffer.SetName(name);
+	}
+
 	struct ReadResult {
 		size_type undefined_size;
 		ConstBuffer<T> defined_buffer;
