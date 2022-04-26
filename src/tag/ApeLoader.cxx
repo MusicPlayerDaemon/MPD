@@ -73,10 +73,10 @@ try {
 	unsigned n = FromLE32(footer.count);
 	const char *p = buffer.get();
 	while (n-- && remaining > 10) {
-		size_t size = FromLE32(*(const uint32_t *)p);
+		size_t size = *(const PackedLE32 *)p;
 		p += 4;
 		remaining -= 4;
-		unsigned long flags = FromLE32(*(const uint32_t *)p);
+		unsigned long flags = *(const PackedLE32 *)p;
 		p += 4;
 		remaining -= 4;
 
