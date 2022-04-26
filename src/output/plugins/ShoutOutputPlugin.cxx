@@ -229,6 +229,20 @@ ShoutOutput::Create(EventLoop &, const ConfigBlock &block)
 	return new ShoutOutput(block);
 }
 
+static void
+SetMeta(shout_t &connection, const char *name, const char *value)
+{
+	if (shout_set_meta(&connection, name, value) != SHOUTERR_SUCCESS)
+		throw std::runtime_error(shout_get_error(&connection));
+}
+
+static void
+SetOptionalMeta(shout_t &connection, const char *name, const char *value)
+{
+	if (value != nullptr)
+		SetMeta(connection, name, value);
+}
+
 inline void
 ShoutConfig::Setup(shout_t &connection) const
 {
@@ -236,7 +250,6 @@ ShoutConfig::Setup(shout_t &connection) const
 	    shout_set_port(&connection, port) != SHOUTERR_SUCCESS ||
 	    shout_set_password(&connection, passwd) != SHOUTERR_SUCCESS ||
 	    shout_set_mount(&connection, mount) != SHOUTERR_SUCCESS ||
-	    shout_set_name(&connection, name) != SHOUTERR_SUCCESS ||
 	    shout_set_user(&connection, user) != SHOUTERR_SUCCESS ||
 	    shout_set_public(&connection, is_public) != SHOUTERR_SUCCESS ||
 	    shout_set_format(&connection, format) != SHOUTERR_SUCCESS ||
@@ -247,17 +260,13 @@ ShoutConfig::Setup(shout_t &connection) const
 	    shout_set_agent(&connection, "MPD") != SHOUTERR_SUCCESS)
 		throw std::runtime_error(shout_get_error(&connection));
 
+	SetMeta(connection, SHOUT_META_NAME, name);
+
 	/* optional paramters */
 
-	if (genre != nullptr && shout_set_genre(&connection, genre))
-		throw std::runtime_error(shout_get_error(&connection));
-
-	if (description != nullptr &&
-	    shout_set_description(&connection, description))
-		throw std::runtime_error(shout_get_error(&connection));
-
-	if (url != nullptr && shout_set_url(&connection, url))
-		throw std::runtime_error(shout_get_error(&connection));
+	SetOptionalMeta(connection, SHOUT_META_GENRE, genre);
+	SetOptionalMeta(connection, SHOUT_META_DESCRIPTION, description);
+	SetOptionalMeta(connection, SHOUT_META_URL, url);
 
 	if (quality != nullptr)
 		shout_set_audio_info(&connection, SHOUT_AI_QUALITY, quality);
