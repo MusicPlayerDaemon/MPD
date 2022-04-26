@@ -59,7 +59,7 @@ class ShoutConfig {
 public:
 	ShoutConfig(const ConfigBlock &block, const char *mime_type);
 
-	void Setup(shout_t *connection) const;
+	void Setup(shout_t &connection) const;
 };
 
 struct ShoutOutput final : AudioOutput {
@@ -230,40 +230,40 @@ ShoutOutput::Create(EventLoop &, const ConfigBlock &block)
 }
 
 inline void
-ShoutConfig::Setup(shout_t *connection) const
+ShoutConfig::Setup(shout_t &connection) const
 {
-	if (shout_set_host(connection, host) != SHOUTERR_SUCCESS ||
-	    shout_set_port(connection, port) != SHOUTERR_SUCCESS ||
-	    shout_set_password(connection, passwd) != SHOUTERR_SUCCESS ||
-	    shout_set_mount(connection, mount) != SHOUTERR_SUCCESS ||
-	    shout_set_name(connection, name) != SHOUTERR_SUCCESS ||
-	    shout_set_user(connection, user) != SHOUTERR_SUCCESS ||
-	    shout_set_public(connection, is_public) != SHOUTERR_SUCCESS ||
-	    shout_set_format(connection, format) != SHOUTERR_SUCCESS ||
-	    shout_set_protocol(connection, protocol) != SHOUTERR_SUCCESS ||
+	if (shout_set_host(&connection, host) != SHOUTERR_SUCCESS ||
+	    shout_set_port(&connection, port) != SHOUTERR_SUCCESS ||
+	    shout_set_password(&connection, passwd) != SHOUTERR_SUCCESS ||
+	    shout_set_mount(&connection, mount) != SHOUTERR_SUCCESS ||
+	    shout_set_name(&connection, name) != SHOUTERR_SUCCESS ||
+	    shout_set_user(&connection, user) != SHOUTERR_SUCCESS ||
+	    shout_set_public(&connection, is_public) != SHOUTERR_SUCCESS ||
+	    shout_set_format(&connection, format) != SHOUTERR_SUCCESS ||
+	    shout_set_protocol(&connection, protocol) != SHOUTERR_SUCCESS ||
 #ifdef SHOUT_TLS
-	    shout_set_tls(connection, tls) != SHOUTERR_SUCCESS ||
+	    shout_set_tls(&connection, tls) != SHOUTERR_SUCCESS ||
 #endif
-	    shout_set_agent(connection, "MPD") != SHOUTERR_SUCCESS)
-		throw std::runtime_error(shout_get_error(connection));
+	    shout_set_agent(&connection, "MPD") != SHOUTERR_SUCCESS)
+		throw std::runtime_error(shout_get_error(&connection));
 
 	/* optional paramters */
 
-	if (genre != nullptr && shout_set_genre(connection, genre))
-		throw std::runtime_error(shout_get_error(connection));
+	if (genre != nullptr && shout_set_genre(&connection, genre))
+		throw std::runtime_error(shout_get_error(&connection));
 
 	if (description != nullptr &&
-	    shout_set_description(connection, description))
-		throw std::runtime_error(shout_get_error(connection));
+	    shout_set_description(&connection, description))
+		throw std::runtime_error(shout_get_error(&connection));
 
-	if (url != nullptr && shout_set_url(connection, url))
-		throw std::runtime_error(shout_get_error(connection));
+	if (url != nullptr && shout_set_url(&connection, url))
+		throw std::runtime_error(shout_get_error(&connection));
 
 	if (quality != nullptr)
-		shout_set_audio_info(connection, SHOUT_AI_QUALITY, quality);
+		shout_set_audio_info(&connection, SHOUT_AI_QUALITY, quality);
 
 	if (bitrate != nullptr)
-		shout_set_audio_info(connection, SHOUT_AI_BITRATE, bitrate);
+		shout_set_audio_info(&connection, SHOUT_AI_BITRATE, bitrate);
 }
 
 void
@@ -274,7 +274,7 @@ ShoutOutput::Enable()
 		throw std::bad_alloc{};
 
 	try {
-		config.Setup(shout_conn);
+		config.Setup(*shout_conn);
 	} catch (...) {
 		shout_free(shout_conn);
 		throw;
