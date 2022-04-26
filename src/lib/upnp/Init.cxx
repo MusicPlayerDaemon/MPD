@@ -35,9 +35,7 @@ static unsigned upnp_ref;
 static void
 DoInit(const char* iface)
 {
-
-	auto code = UpnpInit2(iface, 0);
-	if (code != UPNP_E_SUCCESS)
+	if (auto code = UpnpInit2(iface, 0); code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpInit() failed: %s",
 					 UpnpGetErrorMessage(code));
 
