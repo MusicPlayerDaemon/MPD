@@ -418,7 +418,7 @@ ShoutOutput::Pause()
 }
 
 static void
-shout_tag_to_metadata(const Tag &tag, char *dest, size_t size)
+shout_tag_to_metadata(const Tag &tag, char *dest, size_t size) noexcept
 {
 	const char *artist = tag.GetValue(TAG_ARTIST);
 	const char *title = tag.GetValue(TAG_TITLE);
