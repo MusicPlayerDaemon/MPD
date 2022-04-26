@@ -446,9 +446,9 @@ ShoutOutput::SendTag(const Tag &tag)
 		char song[1024];
 		shout_tag_to_metadata(tag, song, sizeof(song));
 
-		shout_metadata_add(meta, "song", song);
-		shout_metadata_add(meta, "charset", "UTF-8");
-		if (SHOUTERR_SUCCESS != shout_set_metadata(shout_conn, meta)) {
+		if (SHOUTERR_SUCCESS != shout_metadata_add(meta, "song", song) ||
+		    SHOUTERR_SUCCESS != shout_metadata_add(meta, "charset", "UTF-8") ||
+		    SHOUTERR_SUCCESS != shout_set_metadata(shout_conn, meta)) {
 			LogWarning(shout_output_domain,
 				   "error setting shout metadata");
 		}
