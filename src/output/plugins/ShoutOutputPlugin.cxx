@@ -462,8 +462,14 @@ ShoutOutput::SendTag(const Tag &tag)
 		shout_tag_to_metadata(tag, song, sizeof(song));
 
 		if (SHOUTERR_SUCCESS != shout_metadata_add(meta, "song", song) ||
+#ifdef SHOUT_FORMAT_TEXT
+		    /* since libshout 2.4.6 */
+		    SHOUTERR_SUCCESS != shout_set_metadata_utf8(shout_conn, meta)
+#else
 		    SHOUTERR_SUCCESS != shout_metadata_add(meta, "charset", "UTF-8") ||
-		    SHOUTERR_SUCCESS != shout_set_metadata(shout_conn, meta)) {
+		    SHOUTERR_SUCCESS != shout_set_metadata(shout_conn, meta)
+#endif
+			) {
 			LogWarning(shout_output_domain,
 				   "error setting shout metadata");
 		}
