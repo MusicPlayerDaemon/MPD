@@ -32,7 +32,7 @@ ReadString(ConstBuffer<uint8_t> &src) noexcept
 	if (src.size < 4)
 		return nullptr;
 
-	const size_t length = FromBE32(*(const uint32_t *)src.data);
+	const size_t length = *(const PackedBE32 *)src.data;
 	src.skip_front(4);
 
 	if (src.size < length)
@@ -65,7 +65,7 @@ ScanId3Apic(ConstBuffer<void> _buffer, TagHandler &handler) noexcept
 
 	buffer.skip_front(16);
 
-	const size_t image_size = FromBE32(*(const uint32_t *)buffer.data);
+	const size_t image_size = *(const PackedBE32 *)buffer.data;
 	buffer.skip_front(4);
 
 	if (buffer.size < image_size)
