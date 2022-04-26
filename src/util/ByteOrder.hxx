@@ -298,6 +298,60 @@ static_assert(sizeof(PackedBE16) == sizeof(uint16_t), "Wrong size");
 static_assert(alignof(PackedBE16) == 1, "Wrong alignment");
 
 /**
+ * A packed big-endian 32 bit integer.
+ */
+class PackedBE32 {
+	uint8_t a, b, c, d;
+
+public:
+	PackedBE32() = default;
+
+	constexpr PackedBE32(uint32_t src) noexcept
+		:a(uint8_t(src >> 24)),
+		 b(uint8_t(src >> 16)),
+		 c(uint8_t(src >> 8)),
+		 d(uint8_t(src)) {}
+
+	/**
+	 * Construct an instance from an integer which is already
+	 * big-endian.
+	 */
+	static constexpr auto FromBE(uint32_t src) noexcept {
+		union {
+			uint32_t in;
+			PackedBE32 out;
+		} u{src};
+		return u.out;
+	}
+
+	constexpr operator uint32_t() const noexcept {
+		return (uint32_t(a) << 24) | (uint32_t(b) << 16) |
+			(uint32_t(c) << 8) | uint32_t(d);
+	}
+
+	PackedBE32 &operator=(uint32_t new_value) noexcept {
+		d = uint8_t(new_value);
+		c = uint8_t(new_value >> 8);
+		b = uint8_t(new_value >> 16);
+		a = uint8_t(new_value >> 24);
+		return *this;
+	}
+
+	/**
+	 * Reads the raw, big-endian value.
+	 */
+	constexpr uint32_t raw() const noexcept {
+		uint32_t x = *this;
+		if (IsLittleEndian())
+			x = ByteSwap32(x);
+		return x;
+	}
+};
+
+static_assert(sizeof(PackedBE32) == sizeof(uint32_t), "Wrong size");
+static_assert(alignof(PackedBE32) == 1, "Wrong alignment");
+
+/**
  * A packed little-endian 16 bit integer.
  */
 class PackedLE16 {
