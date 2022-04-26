@@ -28,7 +28,7 @@
 
 template<typename T>
 static bool
-ParseReplayGainTagTemplate(ReplayGainInfo &info, const T t)
+ParseReplayGainTagTemplate(ReplayGainInfo &info, const T t) noexcept
 {
 	const char *value;
 
@@ -50,7 +50,8 @@ ParseReplayGainTagTemplate(ReplayGainInfo &info, const T t)
 }
 
 bool
-ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value)
+ParseReplayGainTag(ReplayGainInfo &info,
+		   const char *name, const char *value) noexcept
 {
 	assert(name != nullptr);
 	assert(value != nullptr);
@@ -71,7 +72,7 @@ ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value)
 }
 
 bool
-ParseReplayGainVorbis(ReplayGainInfo &info, StringView entry)
+ParseReplayGainVorbis(ReplayGainInfo &info, StringView entry) noexcept
 {
 	struct VorbisCommentEntry {
 		StringView entry;

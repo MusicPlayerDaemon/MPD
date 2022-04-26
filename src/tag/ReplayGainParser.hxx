@@ -24,9 +24,10 @@ struct StringView;
 struct ReplayGainInfo;
 
 bool
-ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value);
+ParseReplayGainTag(ReplayGainInfo &info,
+		   const char *name, const char *value) noexcept;
 
 bool
-ParseReplayGainVorbis(ReplayGainInfo &info, StringView entry);
+ParseReplayGainVorbis(ReplayGainInfo &info, StringView entry) noexcept;
 
 #endif
