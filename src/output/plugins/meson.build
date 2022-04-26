@@ -10,6 +10,7 @@ output_plugins_deps = [
 ]
 
 need_encoder = false
+need_wave_encoder = false
 
 if alsa_dep.found()
   output_plugins_sources += 'AlsaOutputPlugin.cxx'
@@ -127,9 +128,7 @@ if get_option('snapcast')
 
   output_features.set('HAVE_YAJL', yajl_dep.found())
 
-  # TODO: the Snapcast plugin needs just the "wave" encoder, but this
-  # enables all available encoders
-  need_encoder = true
+  need_wave_encoder = true
 endif
 
 enable_solaris_output = get_option('solaris_output')

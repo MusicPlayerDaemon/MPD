@@ -572,7 +572,7 @@ executable(
 # Encoder
 #
 
-if encoder_glue_dep.found()
+if need_encoder
   executable(
     'run_encoder',
     'run_encoder.cxx',
