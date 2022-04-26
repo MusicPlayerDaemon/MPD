@@ -12,10 +12,16 @@ ver 0.24 (not yet released)
   - new tag "Mood"
 
 ver 0.23.7 (not yet released)
+* database
+  - upnp: support pupnp 1.14
 * decoder
   - opus: fix missing song length on high-latency files
+* output
+  - shout: require at least libshout 2.4.0
 * mixer
+  - pipewire: fix volume restore
   - software: update volume of disabled outputs
+* support libiconv
 
 ver 0.23.6 (2022/03/14)
 * protocol

@@ -35,13 +35,7 @@ static unsigned upnp_ref;
 static void
 DoInit(const char* iface)
 {
-
-#ifdef UPNP_ENABLE_IPV6
-	auto code = UpnpInit2(iface, 0);
-#else
-	auto code = UpnpInit(iface, 0);
-#endif
-	if (code != UPNP_E_SUCCESS)
+	if (auto code = UpnpInit2(iface, 0); code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpInit() failed: %s",
 					 UpnpGetErrorMessage(code));
 

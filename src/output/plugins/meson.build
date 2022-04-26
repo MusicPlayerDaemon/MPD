@@ -99,7 +99,7 @@ if get_option('recorder')
   need_encoder = true
 endif
 
-libshout_dep = dependency('shout', required: get_option('shout'))
+libshout_dep = dependency('shout', version: '>= 2.4.0', required: get_option('shout'))
 output_features.set('HAVE_SHOUT', libshout_dep.found())
 if libshout_dep.found()
   output_plugins_sources += 'ShoutOutputPlugin.cxx'
