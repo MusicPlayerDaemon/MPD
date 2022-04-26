@@ -1,6 +1,8 @@
 ver 0.23.7 (not yet released)
 * decoder
   - opus: fix missing song length on high-latency files
+* output
+  - shout: require at least libshout 2.4.0
 * mixer
   - software: update volume of disabled outputs
 * support libiconv
