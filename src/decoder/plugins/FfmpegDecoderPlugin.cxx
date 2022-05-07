@@ -533,9 +533,8 @@ FfmpegDecode(DecoderClient &client, InputStream *input,
 		: FromFfmpegTimeChecked(format_context.duration, AV_TIME_BASE_Q);
 
 	client.Ready(audio_format,
-		     input
-		     ? input->IsSeekable()
-		     : IsSeekable(format_context),
+		     (input ? input->IsSeekable() : false)
+		     || IsSeekable(format_context),
 		     total_time);
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
