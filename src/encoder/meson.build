@@ -16,6 +16,7 @@ if not need_encoder
       link_with: encoder_glue,
     )
 
+    configure_file(output: 'Features.h', configuration: encoder_features)
     subdir_done()
   endif
 
