@@ -549,6 +549,13 @@ Playback options
     Sets repeat state to ``STATE``,
     ``STATE`` should be 0 or 1.
 
+    If enabled, MPD keeps repeating the whole queue (:ref:`single mode
+    <command_single>` disabled) or the current song (:ref:`single mode
+    <command_single>` enabled).
+
+    If :ref:`random mode <command_random>` is also enabled, the
+    playback order will be shuffled each time the queue gets repeated.
+
 .. _command_setvol:
 
 :command:`setvol {VOL}`

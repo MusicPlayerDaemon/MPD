@@ -473,7 +473,7 @@ static bool
 IsSeekable(const AVFormatContext &format_context) noexcept
 {
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 6, 100)
-	return (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) != 0;
+	return (format_context.ctx_flags & AVFMTCTX_UNSEEKABLE) == 0;
 #else
 	(void)format_context;
 	return false;
@@ -535,9 +535,8 @@ FfmpegDecode(DecoderClient &client, InputStream *input,
 		: FromFfmpegTimeChecked(format_context.duration, AV_TIME_BASE_Q);
 
 	client.Ready(audio_format,
-		     input
-		     ? input->IsSeekable()
-		     : IsSeekable(format_context),
+		     (input ? input->IsSeekable() : false)
+		     || IsSeekable(format_context),
 		     total_time);
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
