@@ -386,8 +386,8 @@ openssl = OpenSSLProject(
 )
 
 curl = CmakeProject(
-    'https://curl.se/download/curl-7.82.0.tar.xz',
-    '0aaa12d7bd04b0966254f2703ce80dd5c38dbbd76af0297d3d690cdce58a583c',
+    'https://curl.se/download/curl-7.83.0.tar.xz',
+    'bbff0e6b5047e773f3c3b084d80546cc1be4e354c09e419c2d0ef6116253511a',
     'lib/libcurl.a',
     [
         '-DBUILD_CURL_EXE=OFF',
