@@ -2,6 +2,7 @@ ver 0.23.7 (not yet released)
 * database
   - upnp: support pupnp 1.14
 * decoder
+  - ffmpeg: fix HLS seeking
   - opus: fix missing song length on high-latency files
 * output
   - shout: require at least libshout 2.4.0
