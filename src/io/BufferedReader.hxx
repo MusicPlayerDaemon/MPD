@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,12 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BUFFERED_READER_HXX
-#define BUFFERED_READER_HXX
+#pragma once
 
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <cstddef>
+#include <span>
 
 class Reader;
 
@@ -64,7 +64,7 @@ public:
 	bool Fill(bool need_more);
 
 	[[gnu::pure]]
-	WritableBuffer<void> Read() const noexcept {
+	std::span<std::byte> Read() const noexcept {
 		return buffer.Read().ToVoid();
 	}
 
@@ -83,14 +83,14 @@ public:
 	 * Read (and consume) data from the input buffer into the
 	 * given buffer.  Does not attempt to refill the buffer.
 	 */
-	std::size_t ReadFromBuffer(WritableBuffer<void> dest) noexcept;
+	std::size_t ReadFromBuffer(std::span<std::byte> dest) noexcept;
 
 	/**
 	 * Read data into the given buffer and consume it from our
 	 * buffer.  Throw an exception if the request cannot be
 	 * forfilled.
 	 */
-	void ReadFull(WritableBuffer<void> dest);
+	void ReadFull(std::span<std::byte> dest);
 
 	char *ReadLine();
 
@@ -98,5 +98,3 @@ public:
 		return line_number;
 	}
 };
-
-#endif
