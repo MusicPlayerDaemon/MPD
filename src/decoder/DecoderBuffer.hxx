@@ -21,10 +21,6 @@
 #define MPD_DECODER_BUFFER_HXX
 
 #include "util/DynamicFifoBuffer.hxx"
-#include "util/ConstBuffer.hxx"
-
-#include <cstddef>
-#include <cstdint>
 
 class DecoderClient;
 class InputStream;
@@ -38,7 +34,7 @@ class DecoderBuffer {
 	DecoderClient *const client;
 	InputStream &is;
 
-	DynamicFifoBuffer<uint8_t> buffer;
+	DynamicFifoBuffer<std::byte> buffer;
 
 public:
 	/**
@@ -83,16 +79,15 @@ public:
 	 * you have to call Consume() to do that.  The returned buffer
 	 * becomes invalid after a Fill() or a Consume() call.
 	 */
-	ConstBuffer<void> Read() const noexcept {
-		auto r = buffer.Read();
-		return { r.data, r.size };
+	std::span<const std::byte> Read() const noexcept {
+		return buffer.Read();
 	}
 
 	/**
 	 * Wait until this number of bytes are available.  Returns nullptr on
 	 * error.
 	 */
-	ConstBuffer<void> Need(size_t min_size);
+	std::span<const std::byte> Need(size_t min_size);
 
 	/**
 	 * Consume (delete, invalidate) a part of the buffer.  The

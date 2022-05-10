@@ -37,16 +37,16 @@ char *
 ReadBufferedLine(B &buffer)
 {
 	auto r = buffer.Read();
-	char *newline = reinterpret_cast<char*>(std::memchr(r.data, '\n', r.size));
+	char *newline = reinterpret_cast<char*>(std::memchr(r.data(), '\n', r.size()));
 	if (newline == nullptr)
 		return nullptr;
 
-	buffer.Consume(newline + 1 - r.data);
+	buffer.Consume(newline + 1 - r.data());
 
-	if (newline > r.data && newline[-1] == '\r')
+	if (newline > r.data() && newline[-1] == '\r')
 		--newline;
 	*newline = 0;
-	return r.data;
+	return r.data();
 }
 
 #endif

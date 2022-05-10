@@ -141,7 +141,7 @@ RunOutput(AudioOutput &ao, AudioFormat audio_format,
 			const auto dest = buffer.Write();
 			assert(!dest.empty());
 
-			ssize_t nbytes = in_fd.Read(dest.data, dest.size);
+			ssize_t nbytes = in_fd.Read(dest.data(), dest.size());
 			if (nbytes <= 0)
 				break;
 
@@ -151,13 +151,13 @@ RunOutput(AudioOutput &ao, AudioFormat audio_format,
 		auto src = buffer.Read();
 		assert(!src.empty());
 
-		src.size -= src.size % in_frame_size;
+		src = src.first(src.size() - src.size() % in_frame_size);
 		if (src.empty())
 			continue;
 
-		size_t consumed = ao.Play(src.data, src.size);
+		size_t consumed = ao.Play(src.data(), src.size());
 
-		assert(consumed <= src.size);
+		assert(consumed <= src.size());
 		assert(consumed % in_frame_size == 0);
 
 		buffer.Consume(consumed);

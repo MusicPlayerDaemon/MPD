@@ -93,7 +93,7 @@ adts_find_frame(DecoderBuffer &buffer)
 			continue;
 		}
 
-		if (buffer.Need(frame_length).IsNull()) {
+		if (buffer.Need(frame_length).empty()) {
 			/* not enough data; discard this frame to
 			   prevent a possible buffer overflow */
 			buffer.Clear();

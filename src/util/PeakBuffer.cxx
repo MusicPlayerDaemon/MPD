@@ -23,8 +23,6 @@
 #include <algorithm>
 #include <cassert>
 
-#include <string.h>
-
 PeakBuffer::~PeakBuffer() noexcept
 {
 	delete normal_buffer;
@@ -38,22 +36,22 @@ PeakBuffer::empty() const noexcept
 		(peak_buffer == nullptr || peak_buffer->empty());
 }
 
-WritableBuffer<void>
+std::span<std::byte>
 PeakBuffer::Read() const noexcept
 {
 	if (normal_buffer != nullptr) {
 		const auto p = normal_buffer->Read();
 		if (!p.empty())
-			return p.ToVoid();
+			return p;
 	}
 
 	if (peak_buffer != nullptr) {
 		const auto p = peak_buffer->Read();
 		if (!p.empty())
-			return p.ToVoid();
+			return p;
 	}
 
-	return nullptr;
+	return {};
 }
 
 void
@@ -77,10 +75,9 @@ PeakBuffer::Consume(std::size_t length) noexcept
 
 static std::size_t
 AppendTo(DynamicFifoBuffer<std::byte> &buffer,
-	 const void *data, size_t length) noexcept
+	 std::span<const std::byte> src) noexcept
 {
-	assert(data != nullptr);
-	assert(length > 0);
+	assert(!src.empty());
 
 	std::size_t total = 0;
 
@@ -89,37 +86,35 @@ AppendTo(DynamicFifoBuffer<std::byte> &buffer,
 		if (p.empty())
 			break;
 
-		const std::size_t nbytes = std::min(length, p.size);
-		memcpy(p.data, data, nbytes);
+		const std::size_t nbytes = std::min(src.size(), p.size());
+		std::copy_n(src.begin(), nbytes, p.begin());
 		buffer.Append(nbytes);
 
-		data = (const std::byte *)data + nbytes;
-		length -= nbytes;
+		src = src.subspan(nbytes);
 		total += nbytes;
-	} while (length > 0);
+	} while (!src.empty());
 
 	return total;
 }
 
 bool
-PeakBuffer::Append(const void *data, std::size_t length)
+PeakBuffer::Append(std::span<const std::byte> src)
 {
-	if (length == 0)
+	if (src.empty())
 		return true;
 
 	if (peak_buffer != nullptr && !peak_buffer->empty()) {
-		std::size_t nbytes = AppendTo(*peak_buffer, data, length);
-		return nbytes == length;
+		std::size_t nbytes = AppendTo(*peak_buffer, src);
+		return nbytes == src.size();
 	}
 
 	if (normal_buffer == nullptr)
 		normal_buffer = new DynamicFifoBuffer<std::byte>(normal_size);
 
-	std::size_t nbytes = AppendTo(*normal_buffer, data, length);
+	std::size_t nbytes = AppendTo(*normal_buffer, src);
 	if (nbytes > 0) {
-		data = (const std::byte *)data + nbytes;
-		length -= nbytes;
-		if (length == 0)
+		src = src.subspan(nbytes);
+		if (src.empty())
 			return true;
 	}
 
@@ -130,6 +125,6 @@ PeakBuffer::Append(const void *data, std::size_t length)
 			return false;
 	}
 
-	nbytes = AppendTo(*peak_buffer, data, length);
-	return nbytes == length;
+	nbytes = AppendTo(*peak_buffer, src);
+	return nbytes == src.size();
 }

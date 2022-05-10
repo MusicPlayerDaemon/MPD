@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2003-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,14 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef STATIC_FIFO_BUFFER_HXX
-#define STATIC_FIFO_BUFFER_HXX
-
-#include "WritableBuffer.hxx"
+#pragma once
 
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <span>
 #include <utility>
 
 /**
@@ -46,7 +44,7 @@ template<class T, size_t size>
 class StaticFifoBuffer {
 public:
 	using size_type = std::size_t;
-	using Range = WritableBuffer<T>;
+	using Range = std::span<T>;
 
 protected:
 	size_type head = 0, tail = 0;
@@ -132,5 +130,3 @@ public:
 		head += n;
 	}
 };
-
-#endif

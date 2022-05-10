@@ -51,7 +51,7 @@ BufferedReader::Fill(bool need_more)
 		assert(!w.empty());
 	}
 
-	std::size_t nbytes = reader.Read(w.data, w.size);
+	std::size_t nbytes = reader.Read(w.data(), w.size());
 	if (nbytes == 0) {
 		eof = true;
 		return !need_more;
@@ -122,7 +122,7 @@ BufferedReader::ReadLine()
 	/* terminate the last line */
 	w[0] = 0;
 
-	char *line = buffer.Read().data;
+	char *line = buffer.Read().data();
 	buffer.Clear();
 	++line_number;
 	return line;

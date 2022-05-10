@@ -54,7 +54,7 @@ BufferedSocket::ReadToBuffer() noexcept
 	const auto buffer = input.Write();
 	assert(!buffer.empty());
 
-	const auto nbytes = DirectRead(buffer.data, buffer.size);
+	const auto nbytes = DirectRead(buffer.data(), buffer.size());
 	if (nbytes > 0)
 		input.Append(nbytes);
 
@@ -73,7 +73,7 @@ BufferedSocket::ResumeInput() noexcept
 			return true;
 		}
 
-		const auto result = OnSocketInput(buffer.data, buffer.size);
+		const auto result = OnSocketInput(buffer.data(), buffer.size());
 		switch (result) {
 		case InputResult::MORE:
 			if (input.IsFull()) {

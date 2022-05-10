@@ -28,8 +28,8 @@
 #endif
 
 #include <cstddef>
+#include <span>
 
-template<typename T> struct ConstBuffer;
 class Client;
 class TagMask;
 
@@ -99,7 +99,7 @@ public:
 	 *
 	 * @return true on success
 	 */
-	bool WriteBinary(ConstBuffer<void> payload) noexcept;
+	bool WriteBinary(std::span<const std::byte> payload) noexcept;
 
 	void Error(enum ack code, const char *msg) noexcept;
 

@@ -103,7 +103,7 @@ public:
 	 */
 	pointer Write(size_type n) noexcept {
 		WantWrite(n);
-		return Write().data;
+		return Write().data();
 	}
 
 	/**

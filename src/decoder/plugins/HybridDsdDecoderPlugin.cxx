@@ -237,11 +237,11 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 		auto w = buffer.Write();
 		if (!w.empty()) {
 			if (remaining_bytes < (1<<30ULL) &&
-			    w.size > size_t(remaining_bytes))
-				w.size = remaining_bytes;
+			    w.size() > size_t(remaining_bytes))
+				w = w.first(remaining_bytes);
 
 			const size_t nbytes = client.Read(input,
-							  w.data, w.size);
+							  w.data(), w.size());
 			if (nbytes == 0)
 				return;
 
@@ -251,9 +251,9 @@ HybridDsdDecode(DecoderClient &client, InputStream &input)
 
 		/* submit the buffer to our client */
 		auto r = buffer.Read();
-		auto n_frames = r.size / frame_size;
+		auto n_frames = r.size() / frame_size;
 		if (n_frames > 0) {
-			cmd = client.SubmitData(input, r.data,
+			cmd = client.SubmitData(input, r.data(),
 						n_frames * frame_size,
 						kbit_rate);
 			buffer.Consume(n_frames * frame_size);

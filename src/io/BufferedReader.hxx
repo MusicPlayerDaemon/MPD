@@ -65,7 +65,7 @@ public:
 
 	[[gnu::pure]]
 	std::span<std::byte> Read() const noexcept {
-		return buffer.Read().ToVoid();
+		return std::as_writable_bytes(buffer.Read());
 	}
 
 	/**

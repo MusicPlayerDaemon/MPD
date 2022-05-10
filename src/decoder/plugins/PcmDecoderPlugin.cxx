@@ -51,7 +51,7 @@ FillBuffer(DecoderClient &client, InputStream &is, B &buffer)
 	if (w.empty())
 		return true;
 
-	size_t nbytes = decoder_read(client, is, w.data, w.size);
+	size_t nbytes = decoder_read(client, is, w.data(), w.size());
 	if (nbytes == 0 && is.LockIsEOF())
 		return false;
 
@@ -188,25 +188,28 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 		/* round down to the nearest frame size, because we
 		   must not pass partial frames to
 		   DecoderClient::SubmitData() */
-		r.size -= r.size % in_frame_size;
-		buffer.Consume(r.size);
+		r = r.first(r.size() - r.size() % in_frame_size);
+		buffer.Consume(r.size());
 
 		if (reverse_endian)
 			/* make sure we deliver samples in host byte order */
-			reverse_bytes_16((uint16_t *)r.data,
-					 (uint16_t *)r.data,
-					 (uint16_t *)(r.data + r.size));
+			reverse_bytes_16((uint16_t *)r.data(),
+					 (uint16_t *)r.data(),
+					 (uint16_t *)(r.data() + r.size()));
 		else if (l24) {
 			/* convert big-endian packed 24 bit
 			   (audio/L24) to native-endian 24 bit (in 32
 			   bit integers) */
-			pcm_unpack_24be(unpack_buffer, r.begin(), r.end());
-			r.data = (uint8_t *)&unpack_buffer[0];
-			r.size = (r.size / 3) * 4;
+			pcm_unpack_24be(unpack_buffer,
+					r.data(), r.data() + r.size());
+			r = {
+				(uint8_t *)&unpack_buffer[0],
+				(r.size() / 3) * 4,
+			};
 		}
 
 		cmd = !r.empty()
-			? client.SubmitData(is, r.data, r.size, 0)
+			? client.SubmitData(is, r.data(), r.size(), 0)
 			: client.GetCommand();
 		if (cmd == DecoderCommand::SEEK) {
 			uint64_t frame = client.GetSeekFrame();

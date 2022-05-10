@@ -58,7 +58,7 @@ FullyBufferedSocket::Flush() noexcept
 		return true;
 	}
 
-	auto nbytes = DirectWrite(data.data, data.size);
+	auto nbytes = DirectWrite(data.data(), data.size());
 	if (gcc_unlikely(nbytes <= 0))
 		return nbytes == 0;
 
@@ -82,7 +82,7 @@ FullyBufferedSocket::Write(const void *data, size_t length) noexcept
 
 	const bool was_empty = output.empty();
 
-	if (!output.Append(data, length)) {
+	if (!output.Append({(const std::byte *)data, length})) {
 		OnSocketError(std::make_exception_ptr(std::runtime_error("Output buffer is full")));
 		return false;
 	}

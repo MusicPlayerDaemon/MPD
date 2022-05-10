@@ -39,13 +39,13 @@ TextInputStream::ReadLine()
 
 	while (true) {
 		auto dest = buffer.Write();
-		if (dest.size < 2) {
+		if (dest.size() < 2) {
 			/* line too long: terminate the current
 			   line */
 
 			assert(!dest.empty());
 			dest[0] = 0;
-			line = buffer.Read().data;
+			line = buffer.Read().data();
 			buffer.Clear();
 			return line;
 		}
@@ -53,9 +53,9 @@ TextInputStream::ReadLine()
 		/* reserve one byte for the null terminator if the
 		   last line is not terminated by a newline
 		   character */
-		--dest.size;
+		dest = dest.first(dest.size() - 1);
 
-		size_t nbytes = is->LockRead(dest.data, dest.size);
+		size_t nbytes = is->LockRead(dest.data(), dest.size());
 
 		buffer.Append(nbytes);
 
@@ -75,7 +75,7 @@ TextInputStream::ReadLine()
 			buffer.Clear();
 			return r.empty()
 				? nullptr
-				: r.data;
+				: r.data();
 		}
 	}
 }

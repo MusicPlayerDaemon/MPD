@@ -29,7 +29,7 @@ DecoderBuffer::Fill()
 		return false;
 
 	size_t nbytes = decoder_read(client, is,
-				     w.data, w.size);
+				     w.data(), w.size());
 	if (nbytes == 0)
 		/* end of file, I/O error or decoder command
 		   received */
@@ -39,16 +39,16 @@ DecoderBuffer::Fill()
 	return true;
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 DecoderBuffer::Need(size_t min_size)
 {
 	while (true) {
 		const auto r = Read();
-		if (r.size >= min_size)
+		if (r.size() >= min_size)
 			return r;
 
 		if (!Fill())
-			return nullptr;
+			return {};
 	}
 }
 
@@ -56,13 +56,13 @@ bool
 DecoderBuffer::Skip(size_t nbytes)
 {
 	const auto r = buffer.Read();
-	if (r.size >= nbytes) {
+	if (r.size() >= nbytes) {
 		buffer.Consume(nbytes);
 		return true;
 	}
 
 	buffer.Clear();
-	nbytes -= r.size;
+	nbytes -= r.size();
 
 	return decoder_skip(client, is, nbytes);
 }

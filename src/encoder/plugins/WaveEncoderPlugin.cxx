@@ -131,8 +131,8 @@ WaveEncoder::WaveEncoder(AudioFormat &audio_format) noexcept
 	}
 
 	auto range = buffer.Write();
-	assert(range.size >= sizeof(WaveHeader));
-	auto *header = (WaveHeader *)range.data;
+	assert(range.size() >= sizeof(WaveHeader));
+	auto *header = (WaveHeader *)(void *)range.data();
 
 	/* create PCM wave header in initial buffer */
 	*header = MakeWaveHeader(audio_format.channels,

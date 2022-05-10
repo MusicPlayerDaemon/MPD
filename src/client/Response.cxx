@@ -53,13 +53,13 @@ Response::VFmt(fmt::string_view format_str, fmt::format_args args) noexcept
 }
 
 bool
-Response::WriteBinary(ConstBuffer<void> payload) noexcept
+Response::WriteBinary(std::span<const std::byte> payload) noexcept
 {
-	assert(payload.size <= client.binary_limit);
+	assert(payload.size() <= client.binary_limit);
 
 	return
-		Fmt("binary: {}\n", payload.size) &&
-		Write(payload.data, payload.size) &&
+		Fmt("binary: {}\n", payload.size()) &&
+		Write(payload.data(), payload.size()) &&
 		Write("\n");
 }
 

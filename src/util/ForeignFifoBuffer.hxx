@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2003-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,14 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FOREIGN_FIFO_BUFFER_HXX
-#define FOREIGN_FIFO_BUFFER_HXX
-
-#include "WritableBuffer.hxx"
+#pragma once
 
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <span>
 #include <utility>
 
 /**
@@ -50,7 +48,7 @@ template<typename T>
 class ForeignFifoBuffer {
 public:
 	using size_type = std::size_t;
-	using Range = WritableBuffer<T>;
+	using Range = std::span<T>;
 	using pointer = typename Range::pointer;
 	using const_pointer = typename Range::const_pointer;
 
@@ -211,9 +209,9 @@ public:
 
 	size_type Read(pointer p, size_type n) noexcept {
 		auto range = Read();
-		if (n > range.size)
-			n = range.size;
-		std::copy_n(range.data, n, p);
+		if (n > range.size())
+			n = range.size();
+		std::copy_n(range.data(), n, p);
 		Consume(n);
 		return n;
 	}
@@ -227,7 +225,7 @@ public:
 		auto r = src.Read();
 		auto w = Write();
 
-		if (w.size < r.size && head > 0) {
+		if (w.size() < r.size() && head > 0) {
 			/* if the source contains more data than we
 			   can append at the tail, try to make more
 			   room by shifting the head to 0 */
@@ -235,9 +233,9 @@ public:
 			w = Write();
 		}
 
-		const auto n = std::min(r.size, w.size);
+		const auto n = std::min(r.size(), w.size());
 
-		std::move(r.data, r.data + n, w.data);
+		std::move(r.data(), r.data() + n, w.data());
 		Append(n);
 		src.Consume(n);
 		return n;
@@ -258,5 +256,3 @@ protected:
 		head = 0;
 	}
 };
-
-#endif

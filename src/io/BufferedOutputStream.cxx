@@ -44,10 +44,10 @@ bool
 BufferedOutputStream::AppendToBuffer(const void *data, std::size_t size) noexcept
 {
 	auto r = buffer.Write();
-	if (r.size < size)
+	if (r.size() < size)
 		return false;
 
-	memcpy(r.data, data, size);
+	memcpy(r.data(), data, size);
 	buffer.Append(size);
 	return true;
 }
@@ -88,10 +88,10 @@ BufferedOutputStream::Format(const char *fmt, ...)
 	/* format into the buffer */
 	std::va_list ap;
 	va_start(ap, fmt);
-	std::size_t size = vsnprintf((char *)r.data, r.size, fmt, ap);
+	std::size_t size = vsnprintf((char *)r.data(), r.size(), fmt, ap);
 	va_end(ap);
 
-	if (gcc_unlikely(size >= r.size)) {
+	if (gcc_unlikely(size >= r.size())) {
 		/* buffer was not large enough; flush it and try
 		   again */
 
@@ -99,20 +99,20 @@ BufferedOutputStream::Format(const char *fmt, ...)
 
 		r = buffer.Write();
 
-		if (gcc_unlikely(size >= r.size)) {
+		if (gcc_unlikely(size >= r.size())) {
 			/* still not enough space: grow the buffer and
 			   try again */
-			r.size = size + 1;
-			r.data = buffer.Write(r.size);
+			++size;
+			r = {buffer.Write(size), size};
 		}
 
 		/* format into the new buffer */
 		va_start(ap, fmt);
-		size = vsnprintf((char *)r.data, r.size, fmt, ap);
+		size = vsnprintf((char *)r.data(), r.size(), fmt, ap);
 		va_end(ap);
 
 		/* this time, it must fit */
-		assert(size < r.size);
+		assert(size < r.size());
 	}
 
 	buffer.Append(size);
@@ -140,7 +140,7 @@ BufferedOutputStream::WriteWideToUTF8(const wchar_t *src,
 	}
 
 	int length = WideCharToMultiByte(CP_UTF8, 0, src, src_length,
-					 (char *)r.data, r.size,
+					 (char *)r.data(), r.size(),
 					 nullptr, nullptr);
 	if (length <= 0) {
 		const auto error = GetLastError();
@@ -173,6 +173,6 @@ BufferedOutputStream::Flush()
 	if (r.empty())
 		return;
 
-	os.Write(r.data, r.size);
-	buffer.Consume(r.size);
+	os.Write(r.data(), r.size());
+	buffer.Consume(r.size());
 }
