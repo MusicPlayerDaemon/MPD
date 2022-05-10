@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,13 +27,20 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WRITABLE_BUFFER_HXX
-#define WRITABLE_BUFFER_HXX
+#pragma once
 
 #include "ConstBuffer.hxx"
 
 #include <cassert>
 #include <cstddef>
+
+#if __cplusplus >= 202002 || (defined(__GNUC__) && __GNUC__ >= 10)
+#include <version>
+#endif
+
+#ifdef __cpp_lib_span
+#include <span>
+#endif
 
 template<typename T>
 struct WritableBuffer;
@@ -57,6 +64,11 @@ struct WritableBuffer<void> {
 
 	constexpr WritableBuffer(pointer _data, size_type _size) noexcept
 		:data(_data), size(_size) {}
+
+#ifdef __cpp_lib_span
+	constexpr WritableBuffer(std::span<std::byte> s) noexcept
+		:data(s.data()), size(s.size()) {}
+#endif
 
 	constexpr static WritableBuffer<void> FromVoid(WritableBuffer<void> other) noexcept {
 		return other;
@@ -85,6 +97,16 @@ struct WritableBuffer<void> {
 	constexpr bool empty() const noexcept {
 		return size == 0;
 	}
+
+#ifdef __cpp_lib_span
+	constexpr operator std::span<std::byte>() const noexcept {
+		return {static_cast<std::byte *>(data), size};
+	}
+
+	constexpr operator std::span<const std::byte>() const noexcept {
+		return {static_cast<const std::byte *>(data), size};
+	}
+#endif
 };
 
 /**
@@ -116,6 +138,11 @@ struct WritableBuffer {
 
 	constexpr WritableBuffer(pointer _data, pointer _end) noexcept
 		:data(_data), size(_end - _data) {}
+
+#ifdef __cpp_lib_span
+	constexpr WritableBuffer(std::span<T> s) noexcept
+		:data(s.data()), size(s.size()) {}
+#endif
 
 	/**
 	 * Convert array to WritableBuffer instance.
@@ -271,6 +298,14 @@ struct WritableBuffer {
 
 		size = new_end - data;
 	}
-};
 
+#ifdef __cpp_lib_span
+	constexpr operator std::span<T>() const noexcept {
+		return {data, size};
+	}
+
+	constexpr operator std::span<const T>() const noexcept {
+		return {data, size};
+	}
 #endif
+};
