@@ -51,8 +51,8 @@ mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is)
 
 	auto buffer = AllocatedArray<std::byte>(buffer_size);
 
-	std::byte *const end = buffer.end();
-	std::byte *p = buffer.begin();
+	std::byte *p = buffer.data();
+	std::byte *const end = p + buffer.size();
 
 	while (true) {
 		size_t ret = decoder_read(client, is, p, end - p);

@@ -73,7 +73,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 	char audio_buffer[OPENMPT_FRAME_SIZE];
 
 	const auto buffer = mod_loadfile(&openmpt_domain, &client, is);
-	if (buffer.IsNull()) {
+	if (buffer == nullptr) {
 		LogWarning(openmpt_domain, "could not load stream");
 		return;
 	}
@@ -128,7 +128,7 @@ static bool
 openmpt_scan_stream(InputStream &is, TagHandler &handler) noexcept
 try {
 	const auto buffer = mod_loadfile(&openmpt_domain, nullptr, is);
-	if (buffer.IsNull()) {
+	if (buffer == nullptr) {
 		LogWarning(openmpt_domain, "could not load stream");
 		return false;
 	}

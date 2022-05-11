@@ -760,7 +760,7 @@ Play_44_1_Silence(snd_pcm_t *pcm)
 		throw Alsa::MakeError(err, "snd_pcm_prepare() failed");
 
 	AllocatedArray<int16_t> buffer{channels * period_size};
-	buffer = {};
+	buffer = std::span<const int16_t>{};
 
 	/* play at least 250ms of silence */
 	for (snd_pcm_uframes_t remaining_frames = rate / 4;;) {

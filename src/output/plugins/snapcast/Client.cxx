@@ -95,8 +95,8 @@ SnapcastClient::OnSocketReady(unsigned flags) noexcept
 				/* discard old chunks */
 				continue;
 
-			const ConstBuffer<std::byte> payload = chunk->payload;
-			if (!SendWireChunk(payload.ToVoid(), chunk->time)) {
+			const std::span payload = chunk->payload;
+			if (!SendWireChunk(payload, chunk->time)) {
 				// TODO: handle EAGAIN
 				LockClose();
 				return;
@@ -110,23 +110,23 @@ SnapcastClient::OnSocketReady(unsigned flags) noexcept
 }
 
 static bool
-Send(SocketDescriptor s, ConstBuffer<void> buffer) noexcept
+Send(SocketDescriptor s, std::span<const std::byte> buffer) noexcept
 {
-	auto nbytes = s.Write(buffer.data, buffer.size);
-	return nbytes == ssize_t(buffer.size);
+	auto nbytes = s.Write(buffer.data(), buffer.size());
+	return nbytes == ssize_t(buffer.size());
 }
 
 template<typename T>
 static bool
 SendT(SocketDescriptor s, const T &buffer) noexcept
 {
-	return Send(s, ConstBuffer<T>{&buffer, 1}.ToVoid());
+	return Send(s, std::as_bytes(std::span{&buffer, 1}));
 }
 
 static bool
-Send(SocketDescriptor s, StringView buffer) noexcept
+Send(SocketDescriptor s, std::string_view buffer) noexcept
 {
-	return Send(s, buffer.ToVoid());
+	return Send(s, std::as_bytes(std::span{buffer}));
 }
 
 static bool
@@ -158,10 +158,10 @@ static bool
 SendCodecHeader(SocketDescriptor s, const PackedBE16 id,
 		const SnapcastBase &request,
 		const StringView codec,
-		const ConstBuffer<void> payload) noexcept
+		const std::span<const std::byte> payload) noexcept
 {
 	const PackedLE32 codec_size = codec.size;
-	const PackedLE32 payload_size = payload.size;
+	const PackedLE32 payload_size = payload.size();
 
 	SnapcastBase base{};
 	base.type = uint16_t(SnapcastMessageType::CODEC_HEADER);
@@ -169,7 +169,7 @@ SendCodecHeader(SocketDescriptor s, const PackedBE16 id,
 	base.refers_to = request.id;
 	base.sent = ToSnapcastTimestamp(std::chrono::steady_clock::now());
 	base.size = sizeof(codec_size) + codec.size +
-		sizeof(payload_size) + payload.size;
+		sizeof(payload_size) + payload.size();
 
 	return SendT(s, base) &&
 		SendT(s, codec_size) && Send(s, codec) &&
@@ -212,25 +212,25 @@ SnapcastClient::SendTime(const SnapcastBase &request_header,
 
 static bool
 SendWireChunk(SocketDescriptor s, const PackedBE16 id,
-	      const ConstBuffer<void> payload,
+	      const std::span<const std::byte> payload,
 	      std::chrono::steady_clock::time_point t) noexcept
 {
 	SnapcastWireChunk hdr{};
 	hdr.timestamp = ToSnapcastTimestamp(t);
-	hdr.size = payload.size;
+	hdr.size = payload.size();
 
 	SnapcastBase base{};
 	base.type = uint16_t(SnapcastMessageType::WIRE_CHUNK);
 	base.id = id;
 	base.sent = ToSnapcastTimestamp(std::chrono::steady_clock::now());
-	base.size = sizeof(hdr) + payload.size;
+	base.size = sizeof(hdr) + payload.size();
 
 	// TODO: no blocking send()
 	return SendT(s, base) && SendT(s, hdr) && Send(s, payload);
 }
 
 bool
-SnapcastClient::SendWireChunk(ConstBuffer<void> payload,
+SnapcastClient::SendWireChunk(std::span<const std::byte> payload,
 			      std::chrono::steady_clock::time_point t) noexcept
 {
 	return ::SendWireChunk(GetSocket(), next_id++, payload, t);
@@ -238,21 +238,21 @@ SnapcastClient::SendWireChunk(ConstBuffer<void> payload,
 
 static bool
 SendStreamTags(SocketDescriptor s, const PackedBE16 id,
-	       const ConstBuffer<void> payload) noexcept
+	       const std::span<const std::byte> payload) noexcept
 {
-	const PackedLE32 payload_size = payload.size;
+	const PackedLE32 payload_size = payload.size();
 
 	SnapcastBase base{};
 	base.type = uint16_t(SnapcastMessageType::STREAM_TAGS);
 	base.id = id;
 	base.sent = ToSnapcastTimestamp(std::chrono::steady_clock::now());
-	base.size = sizeof(payload_size) + payload.size;
+	base.size = sizeof(payload_size) + payload.size();
 
 	return SendT(s, base) && SendT(s, payload_size) && Send(s, payload);
 }
 
 void
-SnapcastClient::SendStreamTags(ConstBuffer<void> payload) noexcept
+SnapcastClient::SendStreamTags(std::span<const std::byte> payload) noexcept
 {
 	::SendStreamTags(GetSocket(), next_id++, payload);
 }
@@ -270,7 +270,7 @@ SnapcastClient::OnSocketInput(void *data, size_t length) noexcept
 
 	ConsumeInput(sizeof(base) + base.size);
 
-	const ConstBuffer<void> payload{&base + 1, base.size};
+	const std::span<const std::byte> payload{(const std::byte *)(&base + 1), base.size};
 
 	switch (SnapcastMessageType(uint16_t(base.type))) {
 	case SnapcastMessageType::HELLO:
@@ -284,8 +284,8 @@ SnapcastClient::OnSocketInput(void *data, size_t length) noexcept
 		break;
 
 	case SnapcastMessageType::TIME:
-		if (payload.size >= sizeof(SnapcastTime))
-			SendTime(base, *(const SnapcastTime *)payload.data);
+		if (payload.size() >= sizeof(SnapcastTime))
+			SendTime(base, *(const SnapcastTime *)(const void *)payload.data());
 		break;
 
 	default:

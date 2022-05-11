@@ -141,11 +141,11 @@ IcuConverter::FromUTF8(std::string_view s) const
 
 	// TODO: dynamic buffer?
 	char buffer[4096], *target = buffer;
-	const UChar *source = u.begin();
+	const UChar *source = u.data();
 	UErrorCode code = U_ZERO_ERROR;
 
 	ucnv_fromUnicode(converter, &target, buffer + std::size(buffer),
-			 &source, u.end(),
+			 &source, u.data() + u.size(),
 			 nullptr, true, &code);
 
 	if (code != U_ZERO_ERROR)

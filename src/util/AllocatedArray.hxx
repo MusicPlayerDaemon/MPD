@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,14 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ALLOCATED_ARRAY_HXX
-#define ALLOCATED_ARRAY_HXX
-
-#include "ConstBuffer.hxx"
-#include "WritableBuffer.hxx"
+#pragma once
 
 #include <algorithm>
 #include <cassert>
+#include <span>
 #include <utility>
 
 /**
@@ -42,7 +39,7 @@
  */
 template<class T>
 class AllocatedArray {
-	typedef WritableBuffer<T> Buffer;
+	using Buffer = std::span<T>;
 
 public:
 	using size_type = typename Buffer::size_type;
@@ -51,10 +48,10 @@ public:
 	using pointer = typename Buffer::pointer;
 	using const_pointer = typename Buffer::const_pointer;
 	using iterator = typename Buffer::iterator;
-	using const_iterator = typename Buffer::const_iterator;
+	using const_iterator = typename Buffer::iterator;
 
 protected:
-	Buffer buffer{nullptr};
+	Buffer buffer{};
 
 public:
 	constexpr AllocatedArray() = default;
@@ -62,16 +59,15 @@ public:
 	explicit AllocatedArray(size_type _size) noexcept
 		:buffer{new T[_size], _size} {}
 
-	explicit AllocatedArray(ConstBuffer<T> src) noexcept {
-		if (src == nullptr)
+	explicit AllocatedArray(std::span<const T> src) noexcept {
+		if (src.data() == nullptr)
 			return;
 
-		buffer = {new T[src.size], src.size};
-		std::copy_n(src.data, src.size, buffer.data);
+		buffer = {new T[src.size()], src.size()};
+		std::copy(src.begin(), src.end(), buffer.begin());
 	}
 
-	AllocatedArray(std::nullptr_t n) noexcept
-		:buffer(n) {}
+	AllocatedArray(std::nullptr_t) noexcept {}
 
 	explicit AllocatedArray(const AllocatedArray &other) noexcept
 		:AllocatedArray(other.buffer) {}
@@ -80,27 +76,28 @@ public:
 		:buffer(other.release()) {}
 
 	~AllocatedArray() noexcept {
-		delete[] buffer.data;
+		delete[] buffer.data();
 	}
 
-	AllocatedArray &operator=(ConstBuffer<T> src) noexcept {
-		assert(size() == 0 || buffer.data != nullptr);
-		assert(src.size == 0 || src.data != nullptr);
+	AllocatedArray &operator=(std::span<const T> src) noexcept {
+		assert(empty() || buffer.data() != nullptr);
+		assert(src.empty() || src.data() != nullptr);
 
-		ResizeDiscard(src.size);
-		std::copy_n(src.data, src.size, buffer.data);
+		ResizeDiscard(src.size());
+		std::copy(src.begin(), src.end(), buffer.begin());
 		return *this;
 	}
 
 	AllocatedArray &operator=(const AllocatedArray &other) noexcept {
-		assert(size() == 0 || buffer.data != nullptr);
-		assert(other.size() == 0 || other.buffer.data != nullptr);
+		assert(empty() || buffer.data() != nullptr);
+		assert(other.empty() || other.buffer.data() != nullptr);
 
 		if (&other == this)
 			return *this;
 
 		ResizeDiscard(other.size());
-		std::copy_n(other.buffer.data, other.buffer.size, buffer.data);
+		std::copy_n(other.buffer.begin(), other.buffer.end(),
+			    buffer.begin());
 		return *this;
 	}
 
@@ -111,29 +108,25 @@ public:
 	}
 
 	AllocatedArray &operator=(std::nullptr_t n) noexcept {
-		delete[] buffer.data;
-		buffer = n;
+		delete[] buffer.data();
+		buffer = {};
 		return *this;
 	}
 
-	operator ConstBuffer<T>() const noexcept {
+	operator std::span<const T>() const noexcept {
 		return buffer;
 	}
 
-	operator WritableBuffer<T>() noexcept {
+	operator std::span<T>() noexcept {
 		return buffer;
-	}
-
-	constexpr bool IsNull() const noexcept {
-		return buffer.IsNull();
 	}
 
 	constexpr bool operator==(std::nullptr_t) const noexcept {
-		return buffer == nullptr;
+		return buffer.data() == nullptr;
 	}
 
 	constexpr bool operator!=(std::nullptr_t) const noexcept {
-		return buffer != nullptr;
+		return buffer.data() != nullptr;
 	}
 
 	/**
@@ -147,22 +140,22 @@ public:
 	 * Returns the number of allocated elements.
 	 */
 	constexpr size_type size() const noexcept {
-		return buffer.size;
+		return buffer.size();
 	}
 
 	/**
 	 * Returns the number of allocated elements.
 	 */
 	constexpr size_type capacity() const noexcept {
-		return buffer.size;
+		return buffer.size();
 	}
 
 	pointer data() noexcept {
-		return buffer.data;
+		return buffer.data();
 	}
 
 	const_pointer data() const noexcept {
-		return buffer.data;
+		return buffer.data();
 	}
 
 	reference front() noexcept {
@@ -200,7 +193,7 @@ public:
 	}
 
 	constexpr const_iterator begin() const noexcept {
-		return buffer.cbegin();
+		return buffer.begin();
 	}
 
 	iterator end() noexcept {
@@ -208,19 +201,18 @@ public:
 	}
 
 	constexpr const_iterator end() const noexcept {
-		return buffer.cend();
+		return buffer.end();
 	}
 
 	/**
 	 * Resizes the array, discarding old data.
 	 */
 	void ResizeDiscard(size_type _size) noexcept {
-		if (_size == buffer.size)
+		if (_size == buffer.size())
 			return;
 
-		delete[] buffer.data;
-		buffer.size = _size;
-		buffer.data = new T[buffer.size];
+		delete[] buffer.data();
+		buffer = {new T[_size], _size};
 	}
 
 	/**
@@ -229,7 +221,7 @@ public:
 	 * avoid expensive heap operations.
 	 */
 	void GrowDiscard(size_type _size) noexcept {
-		if (_size > buffer.size)
+		if (_size > buffer.size())
 			ResizeDiscard(_size);
 	}
 
@@ -238,16 +230,16 @@ public:
 	 * range of elements, starting from the beginning.
 	 */
 	void GrowPreserve(size_type _size, size_type preserve) noexcept {
-		if (_size <= buffer.size)
+		if (_size <= buffer.size())
 			return;
 
 		T *new_data = new T[_size];
 
-		std::move(buffer.data, buffer.data + preserve, new_data);
+		std::move(buffer.begin(), std::next(buffer.begin(), preserve),
+			  new_data);
 
-		delete[] buffer.data;
-		buffer.data = new_data;
-		buffer.size = _size;
+		delete[] buffer.data();
+		buffer = {new_data, _size};
 	}
 
 	/**
@@ -256,17 +248,15 @@ public:
 	 * they are still allocated).
 	 */
 	void SetSize(size_type _size) noexcept {
-		assert(_size <= buffer.size);
+		assert(_size <= buffer.size());
 
-		buffer.size = _size;
+		buffer = buffer.first(_size);
 	}
 
 	/**
 	 * Give up ownership of the allocated buffer and return it.
 	 */
 	Buffer release() noexcept {
-		return std::exchange(buffer, nullptr);
+		return std::exchange(buffer, std::span<T>{});
 	}
 };
-
-#endif

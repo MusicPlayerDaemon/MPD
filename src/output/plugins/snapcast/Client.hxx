@@ -26,6 +26,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <span>
 
 struct SnapcastBase;
 struct SnapcastTime;
@@ -60,7 +61,7 @@ public:
 
 	void LockClose() noexcept;
 
-	void SendStreamTags(ConstBuffer<void> payload) noexcept;
+	void SendStreamTags(std::span<const std::byte> payload) noexcept;
 
 	/**
 	 * Caller must lock the mutex.
@@ -84,7 +85,7 @@ public:
 private:
 	SnapcastChunkPtr LockPopQueue() noexcept;
 
-	bool SendWireChunk(ConstBuffer<void> payload,
+	bool SendWireChunk(std::span<const std::byte> payload,
 			   std::chrono::steady_clock::time_point t) noexcept;
 
 	bool SendServerSettings(const SnapcastBase &request) noexcept;

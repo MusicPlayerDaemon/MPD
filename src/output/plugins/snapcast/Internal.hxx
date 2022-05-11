@@ -161,9 +161,8 @@ public:
 		return "pcm";
 	}
 
-	ConstBuffer<void> GetCodecHeader() const noexcept {
-		ConstBuffer<std::byte> result(codec_header);
-		return result.ToVoid();
+	std::span<const std::byte> GetCodecHeader() const noexcept {
+		return codec_header;
 	}
 
 	/* virtual methods from class AudioOutput */

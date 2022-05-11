@@ -127,7 +127,7 @@ ReadEncoder(Encoder &encoder)
 	std::byte buffer[4096];
 
 	size_t nbytes = encoder.Read(buffer, sizeof(buffer));
-	const ConstBuffer<std::byte> src(buffer, nbytes);
+	const std::span<const std::byte> src{buffer, nbytes};
 	return AllocatedArray<std::byte>{src};
 }
 
@@ -181,7 +181,7 @@ SnapcastOutput::Close() noexcept
 
 	ClearQueue(chunks);
 
-	codec_header = nullptr;
+	codec_header = std::span<const std::byte>{};
 	delete encoder;
 }
 
@@ -294,12 +294,12 @@ SnapcastOutput::SendTag(const Tag &tag)
 	if (json.empty())
 		return;
 
-	const ConstBuffer payload(json.data(), json.size());
+	const auto payload = std::as_bytes(std::span{json});
 
 	const std::scoped_lock<Mutex> protect(mutex);
 	// TODO: enqueue StreamTags, don't send directly
 	for (auto &client : clients)
-		client.SendStreamTags(payload.ToVoid());
+		client.SendStreamTags(payload);
 #else
 	(void)tag;
 #endif
@@ -348,7 +348,7 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 		if (chunks.empty())
 			inject_event.Schedule();
 
-		const ConstBuffer payload{buffer, nbytes};
+		const std::span<const std::byte> payload{buffer, nbytes};
 		chunks.push(std::make_shared<SnapcastChunk>(now, AllocatedArray{payload}));
 	}
 

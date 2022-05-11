@@ -73,7 +73,7 @@ static ModPlugFile *
 LoadModPlugFile(DecoderClient *client, InputStream &is)
 {
 	const auto buffer = mod_loadfile(&modplug_domain, client, is);
-	if (buffer.IsNull()) {
+	if (buffer == nullptr) {
 		LogWarning(modplug_domain, "could not load stream");
 		return nullptr;
 	}

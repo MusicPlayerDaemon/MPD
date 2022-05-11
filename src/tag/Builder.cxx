@@ -216,7 +216,7 @@ TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
 	assert(!value.empty());
 
 	auto f = FixTagString(value);
-	if (!f.IsNull())
+	if (f != nullptr)
 		value = { f.data(), f.size() };
 
 	AddItemUnchecked(type, value);

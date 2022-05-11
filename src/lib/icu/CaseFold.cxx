@@ -43,21 +43,21 @@ IcuCaseFold(std::string_view src) noexcept
 try {
 #ifdef HAVE_ICU
 	const auto u = UCharFromUTF8(src);
-	if (u.IsNull())
+	if (u.data() == nullptr)
 		return {src};
 
 	AllocatedArray<UChar> folded(u.size() * 2U);
 
 	UErrorCode error_code = U_ZERO_ERROR;
-	size_t folded_length = u_strFoldCase(folded.begin(), folded.size(),
-					     u.begin(), u.size(),
+	size_t folded_length = u_strFoldCase(folded.data(), folded.size(),
+					     u.data(), u.size(),
 					     U_FOLD_CASE_DEFAULT,
 					     &error_code);
 	if (folded_length == 0 || error_code != U_ZERO_ERROR)
 		return {src};
 
 	folded.SetSize(folded_length);
-	return UCharToUTF8({folded.begin(), folded.size()});
+	return UCharToUTF8(std::basic_string_view{folded.data(), folded.size()});
 
 #else
 #error not implemented

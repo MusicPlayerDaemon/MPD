@@ -114,5 +114,5 @@ icy_server_metadata_page(const Tag &tag, const TagType *types) noexcept
 	if (icy_string == nullptr)
 		return nullptr;
 
-	return std::make_shared<Page>(ConstBuffer<std::byte>{(const std::byte *)icy_string.c_str(), uint8_t(icy_string[0]) * 16U + 1U});
+	return std::make_shared<Page>(std::span{(const std::byte *)icy_string.c_str(), uint8_t(icy_string[0]) * 16U + 1U});
 }

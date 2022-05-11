@@ -172,7 +172,7 @@ HttpdOutput::ReadPage()
 	if (size == 0)
 		return nullptr;
 
-	return std::make_shared<Page>(ConstBuffer{buffer, size});
+	return std::make_shared<Page>(std::span{buffer, size});
 }
 
 inline void
