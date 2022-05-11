@@ -66,6 +66,18 @@ public:
 	 */
 	void ReadFull(std::span<std::byte> dest);
 
+	template<typename T>
+	void ReadFullT(T &dest) {
+		ReadFull({&dest, sizeof(dest)});
+	}
+
+	template<typename T>
+	T ReadFullT() {
+		T dest;
+		ReadFullT<T>(dest);
+		return dest;
+	}
+
 	char *ReadLine();
 
 	unsigned GetLineNumber() const noexcept {
