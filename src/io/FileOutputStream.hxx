@@ -58,6 +58,13 @@
 
 class Path;
 
+/**
+ * An #OutputStream implementation which writes to a file.
+ *
+ * The destructor will attempt to roll back the changes by calling
+ * Cancel().  To confirm that data shall be written and the existing
+ * file shall be replaced, call Commit().
+ */
 class FileOutputStream final : public OutputStream {
 	const AllocatedPath path;
 
@@ -132,13 +139,30 @@ public:
 		return path;
 	}
 
+	/**
+	 * Returns the current offset.
+	 */
 	[[gnu::pure]]
 	uint64_t Tell() const noexcept;
 
 	/* virtual methods from class OutputStream */
 	void Write(const void *data, size_t size) override;
 
+	/**
+	 * Commit all data written to the file and make the file
+	 * visible on the specified path.
+	 *
+	 * After returning, this object must not be used again.
+	 *
+	 * Throws on error.
+	 */
 	void Commit();
+
+	/**
+	 * Attempt to roll back all changes.
+	 *
+	 * After returning, this object must not be used again.
+	 */
 	void Cancel() noexcept;
 
 private:
