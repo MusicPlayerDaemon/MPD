@@ -149,6 +149,15 @@ public:
 	void Write(const void *data, size_t size) override;
 
 	/**
+	 * Flush all data written to this object to disk (but does not
+	 * commit to the final path).  This method blocks until this
+	 * flush is complete.  It can be called repeatedly.
+	 *
+	 * Throws on error.
+	 */
+	void Sync();
+
+	/**
 	 * Commit all data written to the file and make the file
 	 * visible on the specified path.
 	 *

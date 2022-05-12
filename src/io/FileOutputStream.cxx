@@ -139,6 +139,15 @@ FileOutputStream::Write(const void *data, size_t size)
 }
 
 void
+FileOutputStream::Sync()
+{
+	assert(IsDefined());
+
+	if (!FlushFileBuffers(handle))
+		throw FormatLastError("Failed to sync %s", GetPath().c_str());
+}
+
+void
 FileOutputStream::Commit()
 {
 	assert(IsDefined());
@@ -238,6 +247,15 @@ FileOutputStream::Write(const void *data, size_t size)
 	else if ((size_t)nbytes < size)
 		throw FormatErrno(ENOSPC, "Failed to write to %s",
 				  GetPath().c_str());
+}
+
+void
+FileOutputStream::Sync()
+{
+	assert(IsDefined());
+
+	if (fdatasync(fd.Get()) < 0)
+		throw FormatErrno("Failed to sync %s", GetPath().c_str());
 }
 
 void
