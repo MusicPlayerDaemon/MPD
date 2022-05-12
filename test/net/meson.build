@@ -19,6 +19,7 @@ test(
     include_directories: inc,
     dependencies: [
       net_dep,
+      fs_dep,
       gtest_dep,
     ],
   ),

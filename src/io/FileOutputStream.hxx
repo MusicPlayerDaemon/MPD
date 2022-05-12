@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -67,6 +67,13 @@ class Path;
  */
 class FileOutputStream final : public OutputStream {
 	const AllocatedPath path;
+
+	/**
+	 * If a temporary file is being written to, then this is its
+	 * path.  Commit() will rename it to the path specified in the
+	 * constructor.
+	 */
+	AllocatedPath tmp_path{nullptr};
 
 #ifdef __linux__
 	const FileDescriptor directory_fd;
@@ -206,6 +213,7 @@ private:
 #endif
 	}
 
+	void RenameOrThrow(Path old_path, Path new_path) const;
 	void Delete(Path delete_path) const noexcept;
 };
 
