@@ -296,13 +296,7 @@ FileOutputStream::Cancel() noexcept
 #ifdef HAVE_O_TMPFILE
 		if (!is_tmpfile)
 #endif
-#ifdef __linux__
-			unlinkat(directory_fd.Get(), GetPath().c_str(), 0);
-#elif _WIN32
-		DeleteFile(GetPath().c_str());
-#else
-		unlink(GetPath().c_str());
-#endif
+			Delete(GetPath());
 		break;
 
 	case Mode::CREATE_VISIBLE:
@@ -313,3 +307,16 @@ FileOutputStream::Cancel() noexcept
 	}
 }
 
+inline void
+FileOutputStream::Delete(Path delete_path) const noexcept
+{
+	assert(delete_path != nullptr);
+
+#ifdef _WIN32
+	DeleteFile(delete_path.c_str());
+#elif defined(__linux__)
+	unlinkat(directory_fd.Get(), delete_path.c_str(), 0);
+#else
+	unlink(delete_path.c_str());
+#endif
+}
