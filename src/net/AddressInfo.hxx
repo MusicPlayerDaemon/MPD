@@ -32,6 +32,7 @@
 
 #include "SocketAddress.hxx"
 
+#include <iterator>
 #include <utility>
 
 #ifdef _WIN32
@@ -116,6 +117,12 @@ public:
 		struct addrinfo *cursor;
 
 	public:
+		using iterator_category = std::forward_iterator_tag;
+		using value_type = AddressInfo;
+		using difference_type = std::ptrdiff_t;
+		using pointer = const value_type *;
+		using reference = const value_type &;
+
 		explicit constexpr const_iterator(struct addrinfo *_cursor) noexcept
 			:cursor(_cursor) {}
 
