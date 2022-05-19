@@ -6,8 +6,8 @@ project(
   default_options: [
     'c_std=c11',
     'build.c_std=c11',
-    'cpp_std=c++17',
-    'build.cpp_std=c++17',
+    'cpp_std=c++2a',
+    'build.cpp_std=c++2a',
     'warning_level=3',
 
     # If we build those libraries as Meson subproject, they shall be
