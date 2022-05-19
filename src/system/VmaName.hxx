@@ -55,5 +55,9 @@ SetVmaName(const void *start, size_t len, const char *name)
 #ifdef __linux__
 	prctl(PR_SET_VMA, PR_SET_VMA_ANON_NAME, (unsigned long)start, len,
 	      (unsigned long)name);
+#else
+	(void)start;
+	(void)len;
+	(void)name;
 #endif
 }
