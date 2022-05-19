@@ -41,7 +41,8 @@ jobs:
           key: linux
       - name: Install dependencies
         run: |
-          sudo apt install -y --no-install-recommends \
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
             g++-10 libfmt-dev libboost-dev \
             libgtest-dev \
             libpcre2-dev \

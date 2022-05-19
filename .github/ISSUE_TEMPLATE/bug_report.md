@@ -18,5 +18,9 @@ about: Create a bug report
 <!-- Paste the output of "mpd --version" here -->
 
 
+## Configuration
+<!-- Paste your MPD configuration here -->
+
+
 ## Log
 <!-- Paste relevant portions of the log file here (--verbose) -->
