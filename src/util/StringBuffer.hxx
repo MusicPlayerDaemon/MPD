@@ -66,11 +66,11 @@ public:
 	}
 
 	constexpr const_pointer c_str() const noexcept {
-		return &the_data.front();
+		return the_data.data();
 	}
 
 	pointer data() noexcept {
-		return &the_data.front();
+		return the_data.data();
 	}
 
 	constexpr value_type front() const noexcept {
