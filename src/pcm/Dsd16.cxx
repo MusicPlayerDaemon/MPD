@@ -64,5 +64,5 @@ ConstBuffer<uint16_t>
 Dsd16Converter::Convert(ConstBuffer<uint8_t> src) noexcept
 {
 	return rest_buffer.Process<uint16_t>(buffer, src, channels,
-					     [=](auto && arg1, auto && arg2, auto && arg3) { return Dsd8To16(arg1, arg2, arg3, channels); });
+					     [this](auto && arg1, auto && arg2, auto && arg3) { return Dsd8To16(arg1, arg2, arg3, channels); });
 }
