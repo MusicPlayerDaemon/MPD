@@ -17,7 +17,7 @@ system = static_library(
   system_sources,
   include_directories: inc,
   dependencies: [
-    log_dep,
+    fmt_dep,
   ],
 )
 
