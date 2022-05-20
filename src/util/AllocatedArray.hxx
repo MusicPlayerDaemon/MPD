@@ -107,7 +107,7 @@ public:
 		return *this;
 	}
 
-	AllocatedArray &operator=(std::nullptr_t n) noexcept {
+	AllocatedArray &operator=(std::nullptr_t) noexcept {
 		delete[] buffer.data();
 		buffer = {};
 		return *this;
