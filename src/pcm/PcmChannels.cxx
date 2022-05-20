@@ -23,7 +23,6 @@
 #include "Silence.hxx"
 #include "Traits.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/WritableBuffer.hxx"
 
 #include <array>
 #include <algorithm>
@@ -109,7 +108,7 @@ StereoToN(typename Traits::pointer dest,
 	assert((end - src) % 2 == 0);
 
 	std::array<typename Traits::value_type, MAX_CHANNELS - 2> silence;
-	PcmSilence({&silence.front(), sizeof(silence)}, F);
+	PcmSilence(std::as_writable_bytes(std::span{silence}), F);
 
 	while (src != end) {
 		/* copy left/right to front-left/front-right, which is

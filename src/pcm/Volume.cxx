@@ -21,7 +21,6 @@
 #include "Silence.hxx"
 #include "Traits.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/WritableBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/TransformN.hxx"
 
@@ -204,7 +203,8 @@ PcmVolume::Apply(ConstBuffer<void> src) noexcept
 
 	if (volume == 0) {
 		/* optimized special case: 0% volume = memset(0) */
-		PcmSilence({data, dest_size}, format);
+		PcmSilence(std::span{(std::byte *)data, dest_size},
+			   format);
 		return { data, dest_size };
 	}
 

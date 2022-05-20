@@ -20,16 +20,15 @@
 #include "Silence.hxx"
 #include "Traits.hxx"
 #include "SampleFormat.hxx"
-#include "util/WritableBuffer.hxx"
 
-#include <string.h>
+#include <algorithm>
 
 void
-PcmSilence(WritableBuffer<void> dest, SampleFormat format) noexcept
+PcmSilence(std::span<std::byte> dest, SampleFormat format) noexcept
 {
-	uint8_t pattern = 0;
+	std::byte pattern{0};
 	if (format == SampleFormat::DSD)
-		pattern = SampleTraits<SampleFormat::DSD>::SILENCE;
+		pattern = std::byte{SampleTraits<SampleFormat::DSD>::SILENCE};
 
-	memset(dest.data, pattern, dest.size);
+	std::fill(dest.begin(), dest.end(), pattern);
 }

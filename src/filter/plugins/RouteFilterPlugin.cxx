@@ -50,7 +50,6 @@
 #include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/WritableBuffer.hxx"
 
 #include <array>
 #include <cstdint>
@@ -237,7 +236,7 @@ RouteFilter::FilterPCM(ConstBuffer<void> src)
 	void *const result = output_buffer.Get(result_size);
 
 	// A moving pointer that always refers to the currently filled channel of the currently handled frame, in the output
-	auto *chan_destination = (uint8_t *)result;
+	auto *chan_destination = (std::byte *)result;
 
 	// Perform our copy operations, with N input channels and M output channels
 	for (unsigned int s=0; s<number_of_frames; ++s) {

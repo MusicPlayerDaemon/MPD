@@ -23,7 +23,6 @@
 #include "Silence.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/WritableBuffer.hxx"
 
 #include <cassert>
 
@@ -94,7 +93,7 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 	}
 
 	/* prepare a moment of silence for GetSilence() */
-	char buffer[sizeof(silence_buffer)];
+	std::byte buffer[sizeof(silence_buffer)];
 	const size_t buffer_size = GetInputBlockSize();
 	assert(buffer_size < sizeof(buffer));
 	PcmSilence({buffer, buffer_size}, src_sample_format);

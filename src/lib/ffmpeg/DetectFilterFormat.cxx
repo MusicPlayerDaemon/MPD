@@ -22,7 +22,6 @@
 #include "SampleFormat.hxx"
 #include "pcm/Silence.hxx"
 #include "pcm/CheckAudioFormat.hxx"
-#include "util/WritableBuffer.hxx"
 
 extern "C" {
 #include <libavfilter/buffersrc.h>
@@ -42,7 +41,7 @@ DetectFilterOutputFormat(const AudioFormat &in_audio_format,
 	const size_t silence_size = in_audio_format.GetFrameSize();
 	assert(sizeof(silence) >= silence_size);
 
-	PcmSilence(WritableBuffer<void>{&silence, silence_size},
+	PcmSilence(std::as_writable_bytes(std::span{silence}),
 		   in_audio_format.format);
 
 	Frame frame;
