@@ -29,7 +29,6 @@
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
-#include "util/WritableBuffer.hxx"
 #include "Log.hxx"
 #include "tag/Format.hxx"
 #include "config.h" // for ENABLE_DSD

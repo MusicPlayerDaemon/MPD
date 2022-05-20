@@ -20,7 +20,6 @@
 #include "FixString.hxx"
 #include "util/AllocatedArray.hxx"
 #include "util/CharUtil.hxx"
-#include "util/WritableBuffer.hxx"
 #include "util/StringView.hxx"
 #include "util/UTF8.hxx"
 
