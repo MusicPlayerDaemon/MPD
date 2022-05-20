@@ -240,7 +240,7 @@ AlsaInputStream::DispatchSockets() noexcept
 	const std::scoped_lock<Mutex> protect(mutex);
 
 	auto w = PrepareWriteBuffer();
-	const snd_pcm_uframes_t w_frames = w.size / frame_size;
+	const snd_pcm_uframes_t w_frames = w.size() / frame_size;
 	if (w_frames == 0) {
 		/* buffer is full */
 		Pause();
@@ -249,7 +249,7 @@ AlsaInputStream::DispatchSockets() noexcept
 
 	snd_pcm_sframes_t n_frames;
 	while ((n_frames = snd_pcm_readi(capture_handle,
-					 w.data, w_frames)) < 0) {
+					 w.data(), w_frames)) < 0) {
 		if (n_frames == -EAGAIN)
 			return;
 

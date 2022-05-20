@@ -117,9 +117,9 @@ AsyncInputStream::Seek(std::unique_lock<Mutex> &lock,
 			break;
 
 		const size_t nbytes =
-			new_offset - offset < (offset_type)r.size
-					       ? new_offset - offset
-					       : r.size;
+			new_offset - offset < (offset_type)r.size()
+			? new_offset - offset
+			: r.size();
 
 		buffer.Consume(nbytes);
 		offset += nbytes;
@@ -193,8 +193,8 @@ AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
 		cond_handler.cond.wait(lock);
 	}
 
-	const size_t nbytes = std::min(read_size, r.size);
-	memcpy(ptr, r.data, nbytes);
+	const size_t nbytes = std::min(read_size, r.size());
+	memcpy(ptr, r.data(), nbytes);
 	buffer.Consume(nbytes);
 
 	offset += (offset_type)nbytes;
@@ -222,17 +222,17 @@ AsyncInputStream::AppendToBuffer(const void *data, size_t append_size) noexcept
 	auto w = buffer.Write();
 	assert(!w.empty());
 
-	size_t nbytes = std::min(w.size, append_size);
-	memcpy(w.data, data, nbytes);
+	size_t nbytes = std::min(w.size(), append_size);
+	memcpy(w.data(), data, nbytes);
 	buffer.Append(nbytes);
 
 	const size_t remaining = append_size - nbytes;
 	if (remaining > 0) {
 		w = buffer.Write();
 		assert(!w.empty());
-		assert(w.size >= remaining);
+		assert(w.size() >= remaining);
 
-		memcpy(w.data, (const uint8_t *)data + nbytes, remaining);
+		memcpy(w.data(), (const uint8_t *)data + nbytes, remaining);
 		buffer.Append(remaining);
 	}
 

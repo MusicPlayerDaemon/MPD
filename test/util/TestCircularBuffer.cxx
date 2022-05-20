@@ -24,8 +24,8 @@ TEST(CircularBuffer, Basic)
 	EXPECT_EQ(size_t(7), buffer.GetSpace());
 	EXPECT_TRUE(buffer.Read().empty());
 	EXPECT_FALSE(buffer.Write().empty());
-	EXPECT_EQ(&data[0], buffer.Write().data);
-	EXPECT_EQ(size_t(7), buffer.Write().size);
+	EXPECT_EQ(&data[0], buffer.Write().data());
+	EXPECT_EQ(size_t(7), buffer.Write().size());
 
 	/* append one element */
 	/* [O......X] */
@@ -35,11 +35,11 @@ TEST(CircularBuffer, Basic)
 	EXPECT_FALSE(buffer.Read().empty());
 	EXPECT_EQ(size_t(1), buffer.GetSize());
 	EXPECT_EQ(size_t(6), buffer.GetSpace());
-	EXPECT_EQ(size_t(1), buffer.Read().size);
-	EXPECT_EQ(&data[0], buffer.Read().data);
+	EXPECT_EQ(size_t(1), buffer.Read().size());
+	EXPECT_EQ(&data[0], buffer.Read().data());
 	EXPECT_FALSE(buffer.Write().empty());
-	EXPECT_EQ(&data[1], buffer.Write().data);
-	EXPECT_EQ(size_t(6), buffer.Write().size);
+	EXPECT_EQ(&data[1], buffer.Write().data());
+	EXPECT_EQ(size_t(6), buffer.Write().size());
 
 	/* append 6 elements, buffer is now full */
 	/* [OOOOOOOX] */
@@ -49,8 +49,8 @@ TEST(CircularBuffer, Basic)
 	EXPECT_FALSE(buffer.Read().empty());
 	EXPECT_EQ(size_t(7), buffer.GetSize());
 	EXPECT_EQ(size_t(0), buffer.GetSpace());
-	EXPECT_EQ(size_t(7), buffer.Read().size);
-	EXPECT_EQ(&data[0], buffer.Read().data);
+	EXPECT_EQ(size_t(7), buffer.Read().size());
+	EXPECT_EQ(&data[0], buffer.Read().data());
 	EXPECT_TRUE(buffer.Write().empty());
 
 	/* consume [0]; can append one at [7] */
@@ -61,11 +61,11 @@ TEST(CircularBuffer, Basic)
 	EXPECT_FALSE(buffer.Read().empty());
 	EXPECT_EQ(size_t(6), buffer.GetSize());
 	EXPECT_EQ(size_t(1), buffer.GetSpace());
-	EXPECT_EQ(size_t(6), buffer.Read().size);
-	EXPECT_EQ(&data[1], buffer.Read().data);
+	EXPECT_EQ(size_t(6), buffer.Read().size());
+	EXPECT_EQ(&data[1], buffer.Read().data());
 	EXPECT_FALSE(buffer.Write().empty());
-	EXPECT_EQ(&data[7], buffer.Write().data);
-	EXPECT_EQ(size_t(1), buffer.Write().size);
+	EXPECT_EQ(&data[7], buffer.Write().data());
+	EXPECT_EQ(size_t(1), buffer.Write().size());
 
 	/* append one element; [0] is still empty but cannot
 	   be written to because head==1 */
@@ -76,8 +76,8 @@ TEST(CircularBuffer, Basic)
 	EXPECT_FALSE(buffer.Read().empty());
 	EXPECT_EQ(size_t(7), buffer.GetSize());
 	EXPECT_EQ(size_t(0), buffer.GetSpace());
-	EXPECT_EQ(size_t(7), buffer.Read().size);
-	EXPECT_EQ(&data[1], buffer.Read().data);
+	EXPECT_EQ(size_t(7), buffer.Read().size());
+	EXPECT_EQ(&data[1], buffer.Read().data());
 	EXPECT_TRUE(buffer.Write().empty());
 
 	/* consume [1..3]; can append [0..2] */
@@ -88,11 +88,11 @@ TEST(CircularBuffer, Basic)
 	EXPECT_FALSE(buffer.Read().empty());
 	EXPECT_EQ(size_t(4), buffer.GetSize());
 	EXPECT_EQ(size_t(3), buffer.GetSpace());
-	EXPECT_EQ(size_t(4), buffer.Read().size);
-	EXPECT_EQ(&data[4], buffer.Read().data);
+	EXPECT_EQ(size_t(4), buffer.Read().size());
+	EXPECT_EQ(&data[4], buffer.Read().data());
 	EXPECT_FALSE(buffer.Write().empty());
-	EXPECT_EQ(&data[0], buffer.Write().data);
-	EXPECT_EQ(size_t(3), buffer.Write().size);
+	EXPECT_EQ(&data[0], buffer.Write().data());
+	EXPECT_EQ(size_t(3), buffer.Write().size());
 
 	/* append [0..1] */
 	/* [OO.XOOOO] */
@@ -102,11 +102,11 @@ TEST(CircularBuffer, Basic)
 	EXPECT_FALSE(buffer.Read().empty());
 	EXPECT_EQ(size_t(6), buffer.GetSize());
 	EXPECT_EQ(size_t(1), buffer.GetSpace());
-	EXPECT_EQ(size_t(4), buffer.Read().size);
-	EXPECT_EQ(&data[4], buffer.Read().data);
+	EXPECT_EQ(size_t(4), buffer.Read().size());
+	EXPECT_EQ(&data[4], buffer.Read().data());
 	EXPECT_FALSE(buffer.Write().empty());
-	EXPECT_EQ(&data[2], buffer.Write().data);
-	EXPECT_EQ(size_t(1), buffer.Write().size);
+	EXPECT_EQ(&data[2], buffer.Write().data());
+	EXPECT_EQ(size_t(1), buffer.Write().size());
 
 	/* append [2] */
 	/* [OOOXOOOO] */
@@ -116,8 +116,8 @@ TEST(CircularBuffer, Basic)
 	EXPECT_FALSE(buffer.Read().empty());
 	EXPECT_EQ(size_t(7), buffer.GetSize());
 	EXPECT_EQ(size_t(0), buffer.GetSpace());
-	EXPECT_EQ(size_t(4), buffer.Read().size);
-	EXPECT_EQ(&data[4], buffer.Read().data);
+	EXPECT_EQ(size_t(4), buffer.Read().size());
+	EXPECT_EQ(&data[4], buffer.Read().data());
 	EXPECT_TRUE(buffer.Write().empty());
 
 	/* consume [4..7] */
@@ -128,11 +128,11 @@ TEST(CircularBuffer, Basic)
 	EXPECT_FALSE(buffer.Read().empty());
 	EXPECT_EQ(size_t(3), buffer.GetSize());
 	EXPECT_EQ(size_t(4), buffer.GetSpace());
-	EXPECT_EQ(size_t(3), buffer.Read().size);
-	EXPECT_EQ(&data[0], buffer.Read().data);
+	EXPECT_EQ(size_t(3), buffer.Read().size());
+	EXPECT_EQ(&data[0], buffer.Read().data());
 	EXPECT_FALSE(buffer.Write().empty());
-	EXPECT_EQ(&data[3], buffer.Write().data);
-	EXPECT_EQ(size_t(4), buffer.Write().size);
+	EXPECT_EQ(&data[3], buffer.Write().data());
+	EXPECT_EQ(size_t(4), buffer.Write().size());
 
 	/* consume [0..2]; after that, we can only write 5,
 	   because the CircularBuffer class doesn't have
@@ -145,6 +145,6 @@ TEST(CircularBuffer, Basic)
 	EXPECT_EQ(size_t(7), buffer.GetSpace());
 	EXPECT_TRUE(buffer.Read().empty());
 	EXPECT_FALSE(buffer.Write().empty());
-	EXPECT_EQ(&data[3], buffer.Write().data);
-	EXPECT_EQ(size_t(5), buffer.Write().size);
+	EXPECT_EQ(&data[3], buffer.Write().data());
+	EXPECT_EQ(size_t(5), buffer.Write().size());
 }

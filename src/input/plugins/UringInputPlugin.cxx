@@ -123,7 +123,7 @@ UringInputStream::SubmitRead() noexcept
 
 	read_operation = std::make_unique<Uring::ReadOperation>();
 	read_operation->Start(uring, fd, next_offset,
-			      std::min(w.size, URING_MAX_READ),
+			      std::min(w.size(), URING_MAX_READ),
 			      *this);
 }
 
@@ -158,8 +158,8 @@ UringInputStream::OnRead(std::unique_ptr<std::byte[]> data,
 	}
 
 	auto w = PrepareWriteBuffer();
-	assert(w.size >= nbytes);
-	memcpy(w.data, data.get(), nbytes);
+	assert(w.size() >= nbytes);
+	memcpy(w.data(), data.get(), nbytes);
 	CommitWriteBuffer(nbytes);
 	next_offset += nbytes;
 	SubmitRead();

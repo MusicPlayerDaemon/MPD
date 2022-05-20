@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,13 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CIRCULAR_BUFFER_HPP
-#define CIRCULAR_BUFFER_HPP
-
-#include "WritableBuffer.hxx"
+#pragma once
 
 #include <cassert>
 #include <cstddef>
+#include <span>
 
 /**
  * A circular buffer.
@@ -50,7 +48,7 @@
 template<typename T>
 class CircularBuffer {
 public:
-	typedef WritableBuffer<T> Range;
+	using Range = std::span<T>;
 	typedef typename Range::pointer pointer;
 	typedef typename Range::size_type size_type;
 
@@ -182,5 +180,3 @@ public:
 			head = 0;
 	}
 };
-
-#endif
