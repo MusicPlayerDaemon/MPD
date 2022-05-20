@@ -29,7 +29,6 @@
 
 #include "Base64.hxx"
 #include "lib/ffmpeg/Error.hxx"
-#include "util/StringView.hxx"
 
 extern "C" {
 #include <libavutil/base64.h>
@@ -38,11 +37,11 @@ extern "C" {
 #include <string>
 
 size_t
-DecodeBase64(std::span<std::byte> out, StringView in)
+DecodeBase64(std::span<std::byte> out, std::string_view in)
 {
 	/* since av_base64_decode() wants a null-terminated string, we
 	   need to make a copy here and null-terminate it */
-	const std::string copy(in.data, in.size);
+	const std::string copy{in};
 	return DecodeBase64(out, copy.c_str());
 }
 

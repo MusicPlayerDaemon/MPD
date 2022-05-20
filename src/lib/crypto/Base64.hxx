@@ -31,8 +31,7 @@
 
 #include <cstddef>
 #include <span>
-
-struct StringView;
+#include <string_view>
 
 constexpr size_t
 CalculateBase64OutputSize(size_t in_size) noexcept
@@ -44,7 +43,7 @@ CalculateBase64OutputSize(size_t in_size) noexcept
  * Throws on error.
  */
 size_t
-DecodeBase64(std::span<std::byte> out, StringView in);
+DecodeBase64(std::span<std::byte> out, std::string_view in);
 
 /**
  * Throws on error.
