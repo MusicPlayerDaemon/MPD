@@ -56,7 +56,7 @@ AlignToPageSize(size_t size) noexcept
 	return (size + ps - 1) / ps * ps;
 }
 
-WritableBuffer<void>
+std::span<std::byte>
 HugeAllocate(size_t size)
 {
 	size = AlignToPageSize(size);
@@ -74,7 +74,7 @@ HugeAllocate(size_t size)
 	madvise(p, size, MADV_HUGEPAGE);
 #endif
 
-	return {p, size};
+	return {(std::byte *)p, size};
 }
 
 void
@@ -108,7 +108,7 @@ HugeDiscard(void *p, size_t size) noexcept
 
 #elif defined(_WIN32)
 
-WritableBuffer<void>
+std::span<std::byte>
 HugeAllocate(size_t size)
 {
 	// TODO: use MEM_LARGE_PAGES
@@ -119,7 +119,7 @@ HugeAllocate(size_t size)
 		throw std::bad_alloc();
 
 	// TODO: round size up to the page size
-	return {p, size};
+	return {(std::byte *)p, size};
 }
 
 #endif

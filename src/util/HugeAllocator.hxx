@@ -27,12 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HUGE_ALLOCATOR_HXX
-#define HUGE_ALLOCATOR_HXX
+#pragma once
 
-#include "WritableBuffer.hxx"
+#include "SpanCast.hxx"
 
 #include <cstddef>
+#include <span>
 #include <utility>
 
 #ifdef __linux__
@@ -48,7 +48,7 @@
  * (to the next page size), so callers can take advantage of this
  * allocation overhead
  */
-WritableBuffer<void>
+std::span<std::byte>
 HugeAllocate(size_t size);
 
 /**
@@ -87,7 +87,7 @@ HugeDiscard(void *p, size_t size) noexcept;
 #elif defined(_WIN32)
 #include <memoryapi.h>
 
-WritableBuffer<void>
+std::span<std::byte>
 HugeAllocate(size_t size);
 
 static inline void
@@ -118,16 +118,16 @@ HugeDiscard(void *p, size_t size) noexcept
 
 #include <cstdint>
 
-static inline WritableBuffer<void>
+static inline std::span<std::byte>
 HugeAllocate(size_t size)
 {
-	return {new uint8_t[size], size};
+	return {new std::byte[size], size};
 }
 
 static inline void
 HugeFree(void *_p, size_t) noexcept
 {
-	auto *p = (uint8_t *)_p;
+	auto *p = (std::byte *)_p;
 	delete[] p;
 }
 
@@ -153,7 +153,7 @@ HugeDiscard(void *, size_t) noexcept
  */
 template<typename T>
 class HugeArray {
-	typedef WritableBuffer<T> Buffer;
+	using Buffer = std::span<T>;
 	Buffer buffer{nullptr};
 
 public:
@@ -162,20 +162,19 @@ public:
 	typedef typename Buffer::reference reference;
 	typedef typename Buffer::const_reference const_reference;
 	typedef typename Buffer::iterator iterator;
-	typedef typename Buffer::const_iterator const_iterator;
 
 	constexpr HugeArray() = default;
 
 	explicit HugeArray(size_type _size)
-		:buffer(Buffer::FromVoidFloor(HugeAllocate(sizeof(value_type) * _size))) {}
+		:buffer(FromBytesFloor<value_type>(HugeAllocate(sizeof(value_type) * _size))) {}
 
 	constexpr HugeArray(HugeArray &&other) noexcept
 		:buffer(std::exchange(other.buffer, nullptr)) {}
 
 	~HugeArray() noexcept {
-		if (buffer != nullptr) {
-			auto v = buffer.ToVoid();
-			HugeFree(v.data, v.size);
+		if (!buffer.empty()) {
+			auto v = std::as_writable_bytes(buffer);
+			HugeFree(v.data(), v.size());
 		}
 	}
 
@@ -186,18 +185,18 @@ public:
 	}
 
 	void SetName(const char *name) noexcept {
-		const auto v = buffer.ToVoid();
-		HugeSetName(v.data, v.size, name);
+		const auto v = std::as_writable_bytes(buffer);
+		HugeSetName(v.data(), v.size(), name);
 	}
 
 	void ForkCow(bool enable) noexcept {
-		auto v = buffer.ToVoid();
-		HugeForkCow(v.data, v.size, enable);
+		const auto v = std::as_writable_bytes(buffer);
+		HugeForkCow(v.data(), v.size(), enable);
 	}
 
 	void Discard() noexcept {
-		auto v = buffer.ToVoid();
-		HugeDiscard(v.data, v.size);
+		const auto v = std::as_writable_bytes(buffer);
+		HugeDiscard(v.data(), v.size());
 	}
 
 	constexpr bool operator==(std::nullptr_t) const noexcept {
@@ -212,7 +211,7 @@ public:
 	 * Returns the number of allocated elements.
 	 */
 	constexpr size_type size() const noexcept {
-		return buffer.size;
+		return buffer.size();
 	}
 
 	reference front() noexcept {
@@ -249,17 +248,15 @@ public:
 		return buffer.begin();
 	}
 
-	constexpr const_iterator begin() const noexcept {
-		return buffer.cbegin();
+	constexpr auto begin() const noexcept {
+		return buffer.begin();
 	}
 
 	iterator end() noexcept {
 		return buffer.end();
 	}
 
-	constexpr const_iterator end() const noexcept {
-		return buffer.cend();
+	constexpr auto end() const noexcept {
+		return buffer.end();
 	}
 };
-
-#endif

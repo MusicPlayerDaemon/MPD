@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,12 +27,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SPARSE_BUFFER_HXX
-#define SPARSE_BUFFER_HXX
+#pragma once
 
 #include "HugeAllocator.hxx"
-#include "ConstBuffer.hxx"
-#include "WritableBuffer.hxx"
 
 #include <cassert>
 #include <map>
@@ -118,7 +115,7 @@ public:
 
 	struct ReadResult {
 		size_type undefined_size;
-		ConstBuffer<T> defined_buffer;
+		std::span<const T> defined_buffer;
 
 		constexpr bool HasData() const noexcept {
 			return undefined_size == 0 &&
@@ -131,7 +128,7 @@ public:
 		return {c.undefined_size, {&buffer.front() + offset + c.undefined_size, c.defined_size}};
 	}
 
-	WritableBuffer<T> Write(size_type offset) noexcept {
+	std::span<T> Write(size_type offset) noexcept {
 		auto c = map.Check(offset);
 		return {&buffer.front() + offset, c.undefined_size};
 	}
@@ -140,5 +137,3 @@ public:
 		map.Commit(start_offset, end_offset);
 	}
 };
-
-#endif

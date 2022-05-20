@@ -84,8 +84,8 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, size_t offset,
 		auto r = buffer.Read(offset);
 		if (r.HasData()) {
 			/* yay, we have some data */
-			size_t nbytes = std::min(s, r.defined_buffer.size);
-			memcpy(ptr, r.defined_buffer.data, nbytes);
+			size_t nbytes = std::min(s, r.defined_buffer.size());
+			memcpy(ptr, r.defined_buffer.data(), nbytes);
 			return nbytes;
 		}
 
@@ -107,9 +107,9 @@ BufferingInputStream::FindFirstHole() const noexcept
 		/* a hole at the beginning */
 		return 0;
 
-	if (r.defined_buffer.size < size())
+	if (r.defined_buffer.size() < size())
 		/* a hole in the middle */
-		return r.defined_buffer.size;
+		return r.defined_buffer.size();
 
 	/* the file has been read completely */
 	return INVALID_OFFSET;
@@ -163,10 +163,10 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock)
 			   hard disk, instead of returning when "some"
 			   data has been read */
 			constexpr size_t MAX_READ = 64 * 1024;
-			if (w.size > MAX_READ)
-				w.size = MAX_READ;
 
-			size_t nbytes = input->Read(lock, w.data, w.size);
+			size_t nbytes = input->Read(lock, w.data(),
+						    std::min(w.size(),
+							     MAX_READ));
 			buffer.Commit(read_offset, read_offset + nbytes);
 
 			client_cond.notify_all();

@@ -20,6 +20,7 @@
 #ifndef MPD_MUSIC_BUFFER_HXX
 #define MPD_MUSIC_BUFFER_HXX
 
+#include "MusicChunk.hxx"
 #include "MusicChunkPtr.hxx"
 #include "util/SliceBuffer.hxx"
 #include "thread/Mutex.hxx"
