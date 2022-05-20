@@ -22,7 +22,6 @@
 #include "tag/Id3Picture.hxx"
 #include "tag/Handler.hxx"
 #include "util/StringView.hxx"
-#include "util/WritableBuffer.hxx"
 #include "config.h"
 
 #include <memory>
@@ -36,7 +35,7 @@ ScanVorbisPicture(StringView value, TagHandler &handler) noexcept
 		return;
 
 	size_t debase64_size = CalculateBase64OutputSize(value.size);
-	auto debase64_buffer = std::make_unique<uint8_t[]>(debase64_size);
+	auto debase64_buffer = std::make_unique<std::byte[]>(debase64_size);
 
 	try {
 		debase64_size =

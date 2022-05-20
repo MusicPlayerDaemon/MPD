@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2019-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,12 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BASE64_HXX
-#define BASE64_HXX
+#pragma once
 
 #include <cstddef>
+#include <span>
 
-template<typename T> struct WritableBuffer;
 struct StringView;
 
 constexpr size_t
@@ -45,12 +44,10 @@ CalculateBase64OutputSize(size_t in_size) noexcept
  * Throws on error.
  */
 size_t
-DecodeBase64(WritableBuffer<void> out, StringView in);
+DecodeBase64(std::span<std::byte> out, StringView in);
 
 /**
  * Throws on error.
  */
 size_t
-DecodeBase64(WritableBuffer<void> out, const char *in);
-
-#endif
+DecodeBase64(std::span<std::byte> out, const char *in);
