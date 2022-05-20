@@ -545,11 +545,11 @@ DecoderBridge::SubmitData(InputStream *is,
 			continue;
 		}
 
-		const size_t nbytes = std::min(dest.size, length);
+		const size_t nbytes = std::min(dest.size(), length);
 
 		/* copy the buffer */
 
-		memcpy(dest.data, data, nbytes);
+		memcpy(dest.data(), data, nbytes);
 
 		/* expand the music pipe chunk */
 

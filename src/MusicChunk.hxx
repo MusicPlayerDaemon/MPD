@@ -23,7 +23,6 @@
 #include "MusicChunkPtr.hxx"
 #include "Chrono.hxx"
 #include "tag/ReplayGainInfo.hxx"
-#include "util/WritableBuffer.hxx"
 
 #ifndef NDEBUG
 #include "pcm/AudioFormat.hxx"
@@ -32,6 +31,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <span>
 
 static constexpr size_t CHUNK_SIZE = 4096;
 
@@ -116,7 +116,7 @@ struct MusicChunkInfo {
  */
 struct MusicChunk : MusicChunkInfo {
 	/** the data (probably PCM) */
-	uint8_t data[CHUNK_SIZE - sizeof(MusicChunkInfo)];
+	std::byte data[CHUNK_SIZE - sizeof(MusicChunkInfo)];
 
 	/**
 	 * Prepares appending to the music chunk.  Returns a buffer
@@ -129,7 +129,7 @@ struct MusicChunk : MusicChunkInfo {
 	 * @param bit_rate the current bit rate of the source file
 	 * @return a writable buffer, or nullptr if the chunk is full
 	 */
-	WritableBuffer<void> Write(AudioFormat af,
+	std::span<std::byte> Write(AudioFormat af,
 				   SongTime data_time,
 				   uint16_t bit_rate) noexcept;
 

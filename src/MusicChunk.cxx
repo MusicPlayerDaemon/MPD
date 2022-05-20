@@ -36,7 +36,7 @@ MusicChunkInfo::CheckFormat(const AudioFormat other_format) const noexcept
 }
 #endif
 
-WritableBuffer<void>
+std::span<std::byte>
 MusicChunk::Write(const AudioFormat af,
 		  SongTime data_time, uint16_t _bit_rate) noexcept
 {

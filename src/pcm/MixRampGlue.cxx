@@ -23,6 +23,7 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "util/Compiler.h"
+#include "util/ConstBuffer.hxx"
 
 #include <stdio.h>
 
