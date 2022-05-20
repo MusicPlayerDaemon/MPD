@@ -30,7 +30,6 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UTF8.hxx"
-#include "util/WritableBuffer.hxx"
 
 #include <cdio/iso9660.h>
 
@@ -159,10 +158,10 @@ class Iso9660InputStream final : public InputStream {
 	class BlockBuffer {
 		size_t position = 0, fill = 0;
 
-		std::array<uint8_t, ISO_BLOCKSIZE> data;
+		std::array<std::byte, ISO_BLOCKSIZE> data;
 
 	public:
-		[[nodiscard]] ConstBuffer<uint8_t> Read() const noexcept {
+		[[nodiscard]] std::span<const std::byte> Read() const noexcept {
 			assert(fill <= data.size());
 			assert(position <= fill);
 
@@ -170,15 +169,15 @@ class Iso9660InputStream final : public InputStream {
 		}
 
 		void Consume(size_t nbytes) noexcept {
-			assert(nbytes <= Read().size);
+			assert(nbytes <= Read().size());
 
 			position += nbytes;
 		}
 
-		WritableBuffer<uint8_t> Write() noexcept {
+		std::span<std::byte> Write() noexcept {
 			assert(Read().empty());
 
-			return {data.data(), data.size()};
+			return data;
 		}
 
 		void Append(size_t nbytes) noexcept {
@@ -286,8 +285,8 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 		/* fill the buffer */
 
 		auto w = buffer.Write();
-		auto nbytes = iso->SeekRead(w.data, read_lsn,
-					    w.size / ISO_BLOCKSIZE);
+		auto nbytes = iso->SeekRead(w.data(), read_lsn,
+					    w.size() / ISO_BLOCKSIZE);
 		if (nbytes <= 0)
 			throw std::runtime_error("Failed to read ISO9660 file");
 
@@ -296,7 +295,7 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 		r = buffer.Read();
 
 		if (skip > 0) {
-			if (skip >= r.size)
+			if (skip >= r.size())
 				throw std::runtime_error("Premature end of ISO9660 track");
 
 			buffer.Consume(skip);
@@ -309,8 +308,8 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 	assert(!r.empty());
 	assert(skip == 0);
 
-	size_t nbytes = std::min(read_size, r.size);
-	memcpy(ptr, r.data, nbytes);
+	size_t nbytes = std::min(read_size, r.size());
+	memcpy(ptr, r.data(), nbytes);
 	buffer.Consume(nbytes);
 	offset += nbytes;
 	return nbytes;
