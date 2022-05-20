@@ -4,7 +4,6 @@ decoder_plugins_sources = [
 
 if get_option('dsd')
   decoder_plugins_sources += [
-    'HybridDsdDecoderPlugin.cxx',
     'DsdiffDecoderPlugin.cxx',
     'DsfDecoderPlugin.cxx',
     'DsdLib.cxx',

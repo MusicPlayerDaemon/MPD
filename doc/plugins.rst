@@ -429,19 +429,6 @@ Video game music file emulator based on `game-music-emu <https://bitbucket.org/m
    * - **default_fade**
      - The default fade-out time, in seconds. Used by songs that don't specify their own fade-out time.
 
-hybrid_dsd
-----------
-
-`Hybrid-DSD
-<http://dsdmaster.blogspot.de/p/bitperfect-introduces-hybrid-dsd-file.html>`_
-is an MP4 container file (:file:`*.m4a`) which contains both ALAC and
-DSD data. It is disabled by default, and works only if you explicitly
-enable it. Without this plugin, the ALAC parts gets handled by the
-:ref:`FFmpeg decoder plugin <decoder_ffmpeg>`. This
-plugin should be enabled only if you have a bit-perfect playback path
-to a DSD-capable DAC; for everybody else, playing back the ALAC copy
-of the file is better.
-
 mad
 ---
 

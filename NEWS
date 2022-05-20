@@ -5,6 +5,7 @@ ver 0.24 (not yet released)
 * archive
   - add option to disable archive plugins in mpd.conf
 * decoder
+  - hybrid_dsd: remove
   - opus: implement bitrate calculation
 * player
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly
