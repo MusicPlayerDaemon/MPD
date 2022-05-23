@@ -79,6 +79,7 @@ jobs:
           action: test
           directory: output/full
           setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled
+          options: --verbose
           meson-version: 0.56.0
 
       - name: Mini Build
@@ -87,6 +88,7 @@ jobs:
           action: test
           directory: output/mini
           setup-options: -Dbuildtype=minsize -Dauto_features=disabled -Dtest=true -Ddaemon=false -Dinotify=false -Depoll=false -Deventfd=false -Dsignalfd=false -Dtcp=false -Ddsd=false -Ddatabase=false -Dneighbor=false -Dcue=false -Dfifo=false -Dhttpd=false -Dpipe=false -Drecorder=false -Dsnapcast=false
+          options: --verbose
           meson-version: 0.56.0
 
   build-macos:
