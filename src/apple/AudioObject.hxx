@@ -95,7 +95,7 @@ AudioObjectGetPropertyDataArray(AudioObjectID inObjectID,
 
 	status = AudioObjectGetPropertyData(inObjectID, &inAddress,
 					    0, nullptr,
-					    &size, result.begin());
+					    &size, result.data());
 	if (status != noErr)
 		Apple::ThrowOSStatus(status);
 
