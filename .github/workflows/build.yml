@@ -125,7 +125,16 @@ jobs:
             wavpack \
             libmpdclient
 
-      - name: Meson Build
+      - name: Build
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          directory: output
+          setup-options: -Ddocumentation=disabled -Dtest=true
+          options: --verbose
+          meson-version: 0.56.0
+
+      - name: Unit Tests
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: test
