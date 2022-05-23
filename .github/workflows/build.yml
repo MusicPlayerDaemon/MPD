@@ -131,4 +131,5 @@ jobs:
           action: test
           directory: output
           setup-options: -Ddocumentation=disabled -Dtest=true
+          options: --verbose
           meson-version: 0.56.0
