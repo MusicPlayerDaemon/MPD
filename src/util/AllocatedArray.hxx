@@ -42,6 +42,7 @@ class AllocatedArray {
 	using Buffer = std::span<T>;
 
 public:
+	using value_type = T;
 	using size_type = typename Buffer::size_type;
 	using reference = typename Buffer::reference;
 	using const_reference = typename Buffer::const_reference;
