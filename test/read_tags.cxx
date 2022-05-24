@@ -77,8 +77,9 @@ public:
 	}
 
 	void OnPicture(const char *mime_type,
-		       ConstBuffer<void> buffer) noexcept override {
-		printf("picture mime='%s' size=%zu\n", mime_type, buffer.size);
+		       std::span<const std::byte> buffer) noexcept override {
+		printf("picture mime='%s' size=%zu\n",
+		       mime_type, buffer.size());
 	}
 };
 

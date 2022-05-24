@@ -111,7 +111,7 @@ Scan(const FLAC__StreamMetadata_Picture &picture, TagHandler &handler) noexcept
 		return;
 
 	handler.OnPicture(picture.mime_type,
-			  {picture.data, picture.data_length});
+			  std::as_bytes(std::span{picture.data, picture.data_length}));
 }
 
 void

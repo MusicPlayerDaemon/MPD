@@ -339,29 +339,28 @@ public:
 	}
 
 	void OnPicture(const char *mime_type,
-		       ConstBuffer<void> buffer) noexcept override {
+		       std::span<const std::byte> buffer) noexcept override {
 		if (found)
 			/* only use the first picture */
 			return;
 
 		found = true;
 
-		if (offset > buffer.size) {
+		if (offset > buffer.size()) {
 			bad_offset = true;
 			return;
 		}
 
-		response.Fmt(FMT_STRING("size: {}\n"), buffer.size);
+		response.Fmt(FMT_STRING("size: {}\n"), buffer.size());
 
 		if (mime_type != nullptr)
 			response.Fmt(FMT_STRING("type: {}\n"), mime_type);
 
-		buffer.size -= offset;
+		buffer = buffer.subspan(offset);
 
 		const std::size_t binary_limit = response.GetClient().binary_limit;
-		if (buffer.size > binary_limit)
-			buffer.size = binary_limit;
-		buffer.data = OffsetPointer(buffer.data, offset);
+		if (buffer.size() > binary_limit)
+			buffer = buffer.first(binary_limit);
 
 		response.WriteBinary(buffer);
 	}

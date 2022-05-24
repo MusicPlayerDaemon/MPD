@@ -159,10 +159,10 @@ GetMimeType(const AVStream &stream) noexcept
 	return nullptr;
 }
 
-static ConstBuffer<void>
-ToConstBuffer(const AVPacket &packet) noexcept
+static std::span<const std::byte>
+ToSpan(const AVPacket &packet) noexcept
 {
-	return {packet.data, size_t(packet.size)};
+	return std::as_bytes(std::span{packet.data, size_t(packet.size)});
 }
 
 /**
@@ -650,7 +650,7 @@ FfmpegScanStream(AVFormatContext &format_context, TagHandler &handler)
 		const auto *picture_stream = FindPictureStream(format_context);
 		if (picture_stream != nullptr)
 			handler.OnPicture(GetMimeType(*picture_stream),
-					  ToConstBuffer(picture_stream->attached_pic));
+					  ToSpan(picture_stream->attached_pic));
 	}
 
 	return true;

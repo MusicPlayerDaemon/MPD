@@ -24,7 +24,9 @@
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
-template<typename T> struct ConstBuffer;
+#include <cstddef>
+#include <span>
+
 struct StringView;
 struct AudioFormat;
 class TagBuilder;
@@ -116,7 +118,7 @@ public:
 	 * invalidated after this method returns
 	 */
 	virtual void OnPicture(const char *mime_type,
-			       ConstBuffer<void> buffer) noexcept = 0;
+			       std::span<const std::byte> buffer) noexcept = 0;
 };
 
 class NullTagHandler : public TagHandler {
@@ -129,7 +131,7 @@ public:
 	void OnPair(StringView key, StringView value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;
 	void OnPicture(const char *mime_type,
-		       ConstBuffer<void> buffer) noexcept override;
+		       std::span<const std::byte> buffer) noexcept override;
 };
 
 /**

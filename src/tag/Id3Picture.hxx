@@ -20,13 +20,14 @@
 #ifndef MPD_TAG_ID3_PICTURE_HXX
 #define MPD_TAG_ID3_PICTURE_HXX
 
-template<typename T> struct ConstBuffer;
+#include <span>
+
 class TagHandler;
 
 /**
  * Scan an "APIC" value and call TagHandler::OnPicture().
  */
 void
-ScanId3Apic(ConstBuffer<void> buffer, TagHandler &handler) noexcept;
+ScanId3Apic(std::span<const std::byte> buffer, TagHandler &handler) noexcept;
 
 #endif

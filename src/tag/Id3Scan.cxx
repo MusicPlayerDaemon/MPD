@@ -308,7 +308,8 @@ tag_id3_handle_apic(const struct id3_tag *id3_tag,
 		if (data == nullptr || size == 0)
 			continue;
 
-		handler.OnPicture(mime_type, {data, size});
+		handler.OnPicture(mime_type,
+				  std::as_bytes(std::span{data, size}));
 	}
 }
 

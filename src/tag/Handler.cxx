@@ -36,7 +36,7 @@ NullTagHandler::OnPair(StringView, StringView) noexcept
 }
 
 void
-NullTagHandler::OnPicture(const char *, ConstBuffer<void>) noexcept
+NullTagHandler::OnPicture(const char *, std::span<const std::byte>) noexcept
 {
 }
 

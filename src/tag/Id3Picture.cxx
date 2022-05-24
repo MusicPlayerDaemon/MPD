@@ -20,37 +20,35 @@
 #include "Id3Picture.hxx"
 #include "Handler.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/StringView.hxx"
 
 #include <cstdint>
 #include <string>
 
 static StringView
-ReadString(ConstBuffer<uint8_t> &src) noexcept
+ReadString(std::span<const std::byte> &src) noexcept
 {
-	if (src.size < 4)
+	if (src.size() < 4)
 		return nullptr;
 
-	const size_t length = *(const PackedBE32 *)src.data;
-	src.skip_front(4);
+	const size_t length = *(const PackedBE32 *)(const void *)src.data();
+	src = src.subspan(4);
 
-	if (src.size < length)
+	if (src.size() < length)
 		return nullptr;
 
-	StringView result((const char *)src.data, length);
-	src.skip_front(length);
+	const std::string_view result{(const char *)src.data(), length};
+	src = src.subspan(length);
 	return result;
 }
 
 void
-ScanId3Apic(ConstBuffer<void> _buffer, TagHandler &handler) noexcept
+ScanId3Apic(std::span<const std::byte> buffer, TagHandler &handler) noexcept
 {
-	auto buffer = ConstBuffer<uint8_t>::FromVoid(_buffer);
-	if (buffer.size < 4)
+	if (buffer.size() < 4)
 		return;
 
-	buffer.skip_front(4); /* picture type */
+	buffer = buffer.subspan(4); /* picture type */
 
 	const auto mime_type = ReadString(buffer);
 	if (mime_type.IsNull())
@@ -60,18 +58,18 @@ ScanId3Apic(ConstBuffer<void> _buffer, TagHandler &handler) noexcept
 	if (ReadString(buffer).IsNull())
 		return;
 
-	if (buffer.size < 20)
+	if (buffer.size() < 20)
 		return;
 
-	buffer.skip_front(16);
+	buffer = buffer.subspan(16);
 
-	const size_t image_size = *(const PackedBE32 *)buffer.data;
-	buffer.skip_front(4);
+	const size_t image_size = *(const PackedBE32 *)(const void *)buffer.data();
+	buffer = buffer.subspan(4);
 
-	if (buffer.size < image_size)
+	if (buffer.size() < image_size)
 		return;
 
-	ConstBuffer<void> image(buffer.data, image_size);
+	const auto image = buffer.first(image_size);
 
 	// TODO: don't copy MIME type, pass StringView to TagHandler::OnPicture()
 	handler.OnPicture(std::string(mime_type.data, mime_type.size).c_str(),
