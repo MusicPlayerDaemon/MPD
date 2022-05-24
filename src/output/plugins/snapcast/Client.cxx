@@ -25,11 +25,11 @@
 #include "event/Loop.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
-#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #include <cassert>
 #include <cstring>
+#include <string_view>
 
 SnapcastClient::SnapcastClient(SnapcastOutput &_output,
 			       UniqueSocketDescriptor _fd) noexcept
@@ -132,16 +132,16 @@ Send(SocketDescriptor s, std::string_view buffer) noexcept
 static bool
 SendServerSettings(SocketDescriptor s, const PackedBE16 id,
 		   const SnapcastBase &request,
-		   const StringView payload) noexcept
+		   const std::string_view payload) noexcept
 {
-	const PackedLE32 payload_size = payload.size;
+	const PackedLE32 payload_size = payload.size();
 
 	SnapcastBase base{};
 	base.type = uint16_t(SnapcastMessageType::SERVER_SETTINGS);
 	base.id = id;
 	base.refers_to = request.id;
 	base.sent = ToSnapcastTimestamp(std::chrono::steady_clock::now());
-	base.size = sizeof(payload_size) + payload.size;
+	base.size = sizeof(payload_size) + payload.size();
 
 	return SendT(s, base) && SendT(s, payload_size) && Send(s, payload);
 }
@@ -157,10 +157,10 @@ SnapcastClient::SendServerSettings(const SnapcastBase &request) noexcept
 static bool
 SendCodecHeader(SocketDescriptor s, const PackedBE16 id,
 		const SnapcastBase &request,
-		const StringView codec,
+		const std::string_view codec,
 		const std::span<const std::byte> payload) noexcept
 {
-	const PackedLE32 codec_size = codec.size;
+	const PackedLE32 codec_size = codec.size();
 	const PackedLE32 payload_size = payload.size();
 
 	SnapcastBase base{};
@@ -168,7 +168,7 @@ SendCodecHeader(SocketDescriptor s, const PackedBE16 id,
 	base.id = id;
 	base.refers_to = request.id;
 	base.sent = ToSnapcastTimestamp(std::chrono::steady_clock::now());
-	base.size = sizeof(codec_size) + codec.size +
+	base.size = sizeof(codec_size) + codec.size() +
 		sizeof(payload_size) + payload.size();
 
 	return SendT(s, base) &&
