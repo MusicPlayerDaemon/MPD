@@ -25,6 +25,7 @@
 #include "event/Loop.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "util/SpanCast.hxx"
 #include "Log.hxx"
 
 #include <cassert>
@@ -126,7 +127,7 @@ SendT(SocketDescriptor s, const T &buffer) noexcept
 static bool
 Send(SocketDescriptor s, std::string_view buffer) noexcept
 {
-	return Send(s, std::as_bytes(std::span{buffer}));
+	return Send(s, AsBytes(buffer));
 }
 
 static bool

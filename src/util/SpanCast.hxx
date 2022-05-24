@@ -31,6 +31,7 @@
 
 #include <cstddef>
 #include <span>
+#include <string_view>
 
 /**
  * Cast a std::span<std::byte> to a std::span<T>, rounding down to the
@@ -46,4 +47,22 @@ FromBytesFloor(std::span<std::byte> other) noexcept
 		reinterpret_cast<T *>(other.data()),
 		other.size() / sizeof(T),
 	};
+}
+
+constexpr std::span<const char>
+ToSpan(std::string_view sv) noexcept
+{
+#if defined(__clang__) && __clang_major__ < 15
+	/* workaround for old clang/libc++ versions which can't cast
+	   std::string_view to std::span */
+	return {sv.data(), sv.size()};
+#else
+	return std::span{sv};
+#endif
+}
+
+inline std::span<const std::byte>
+AsBytes(std::string_view sv) noexcept
+{
+	return std::as_bytes(ToSpan(sv));
 }
