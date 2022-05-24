@@ -29,6 +29,7 @@
 
 #include "Base64.hxx"
 #include "lib/ffmpeg/Error.hxx"
+#include "util/AllocatedArray.hxx"
 
 extern "C" {
 #include <libavutil/base64.h>
@@ -53,4 +54,13 @@ DecodeBase64(std::span<std::byte> out, const char *in)
 		throw MakeFfmpegError(nbytes, "Base64 decoder failed");
 
 	return nbytes;
+}
+
+AllocatedArray<std::byte>
+DecodeBase64(std::string_view src)
+{
+	AllocatedArray<std::byte> dest{CalculateBase64OutputSize(src.size())};
+	const std::size_t dest_size = DecodeBase64(dest, src);
+	dest.SetSize(dest_size);
+	return dest;
 }

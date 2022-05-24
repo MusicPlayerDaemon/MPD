@@ -20,10 +20,8 @@
 #include "VorbisPicture.hxx"
 #include "lib/crypto/Base64.hxx"
 #include "tag/Id3Picture.hxx"
-#include "tag/Handler.hxx"
+#include "util/AllocatedArray.hxx"
 #include "config.h"
-
-#include <memory>
 
 void
 ScanVorbisPicture(std::string_view value, TagHandler &handler) noexcept
@@ -33,19 +31,11 @@ ScanVorbisPicture(std::string_view value, TagHandler &handler) noexcept
 		/* ignore image files which are too huge */
 		return;
 
-	size_t debase64_size = CalculateBase64OutputSize(value.size());
-	auto debase64_buffer = std::make_unique<std::byte[]>(debase64_size);
-
 	try {
-		debase64_size =
-			DecodeBase64({debase64_buffer.get(), debase64_size},
-				     value);
+		return ScanId3Apic(DecodeBase64(value), handler);
 	} catch (...) {
 		// TODO: log?
-		return;
 	}
-
-	return ScanId3Apic({debase64_buffer.get(), debase64_size}, handler);
 #else
 	(void)value;
 	(void)handler;
