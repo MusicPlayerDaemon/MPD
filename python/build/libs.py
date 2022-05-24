@@ -177,6 +177,8 @@ ffmpeg = FfmpegProject(
         '--disable-filters',
         '--disable-v4l2_m2m',
 
+        '--disable-vulkan',
+
         '--disable-parser=bmp',
         '--disable-parser=cavsvideo',
         '--disable-parser=dvbsub',
