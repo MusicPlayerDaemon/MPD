@@ -73,6 +73,9 @@ test_common_flags = [
   # clang specific warning options:
   '-Wunreachable-code-aggressive',
   '-Wused-but-marked-unused',
+
+  # suppress bogus GCC12 warnings in libfmt headers
+  '-Wno-stringop-overflow',
 ]
 
 test_global_cxxflags = test_global_common_flags + [

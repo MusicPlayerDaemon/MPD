@@ -567,7 +567,7 @@ The following table lists the playlist_plugin options valid for all plugins:
 
    * - Name
      - Description
-   * - **plugin**
+   * - **name**
      - The name of the plugin
    * - **enabled yes|no**
      - Allows you to disable a playlist plugin without recompiling. By default, all plugins are enabled.

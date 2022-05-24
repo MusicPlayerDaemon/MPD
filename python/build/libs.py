@@ -177,6 +177,8 @@ ffmpeg = FfmpegProject(
         '--disable-filters',
         '--disable-v4l2_m2m',
 
+        '--disable-vulkan',
+
         '--disable-parser=bmp',
         '--disable-parser=cavsvideo',
         '--disable-parser=dvbsub',
@@ -381,13 +383,13 @@ ffmpeg = FfmpegProject(
 
 openssl = OpenSSLProject(
     'https://www.openssl.org/source/openssl-3.0.3.tar.gz',
-    '9384a2b0570dd80358841464677115df785edb941c71211f75076d72fe6b438f',
+    'ee0078adcef1de5f003c62c80cc96527721609c6f3bb42b7795df31f8b558c0b',
     'include/openssl/ossl_typ.h',
 )
 
 curl = CmakeProject(
-    'https://curl.se/download/curl-7.83.0.tar.xz',
-    'bbff0e6b5047e773f3c3b084d80546cc1be4e354c09e419c2d0ef6116253511a',
+    'https://curl.se/download/curl-7.83.1.tar.xz',
+    '2cb9c2356e7263a1272fd1435ef7cdebf2cd21400ec287b068396deb705c22c4',
     'lib/libcurl.a',
     [
         '-DBUILD_CURL_EXE=OFF',
