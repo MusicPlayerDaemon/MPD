@@ -20,10 +20,11 @@
 #ifndef MPD_TAG_STRING_HXX
 #define MPD_TAG_STRING_HXX
 
-struct StringView;
+#include <string_view>
+
 template<typename T> class AllocatedArray;
 
 AllocatedArray<char>
-FixTagString(StringView p);
+FixTagString(std::string_view p) noexcept;
 
 #endif
