@@ -21,20 +21,19 @@
 #include "lib/crypto/Base64.hxx"
 #include "tag/Id3Picture.hxx"
 #include "tag/Handler.hxx"
-#include "util/StringView.hxx"
 #include "config.h"
 
 #include <memory>
 
 void
-ScanVorbisPicture(StringView value, TagHandler &handler) noexcept
+ScanVorbisPicture(std::string_view value, TagHandler &handler) noexcept
 {
 #ifdef HAVE_BASE64
-	if (value.size > 1024 * 1024)
+	if (value.size() > 1024 * 1024)
 		/* ignore image files which are too huge */
 		return;
 
-	size_t debase64_size = CalculateBase64OutputSize(value.size);
+	size_t debase64_size = CalculateBase64OutputSize(value.size());
 	auto debase64_buffer = std::make_unique<std::byte[]>(debase64_size);
 
 	try {

@@ -20,10 +20,11 @@
 #ifndef MPD_VORBIS_PICTURE_HXX
 #define MPD_VORBIS_PICTURE_HXX
 
-struct StringView;
+#include <string_view>
+
 class TagHandler;
 
 void
-ScanVorbisPicture(StringView value, TagHandler &handler) noexcept;
+ScanVorbisPicture(std::string_view value, TagHandler &handler) noexcept;
 
 #endif
