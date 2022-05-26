@@ -301,7 +301,7 @@ Configuring neighbor plugins
 ----------------------------
 
 All neighbor plugins are disabled by default to avoid unwanted
-overhead. To enable (and configure) a plugin, add a :code:`neighbor`
+overhead. To enable (and configure) a plugin, add a :code:`neighbors`
 block to :file:`mpd.conf`:
 
 .. code-block:: none
