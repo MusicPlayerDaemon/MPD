@@ -234,12 +234,13 @@ public:
 			w = Write();
 		}
 
-		const auto n = std::min(r.size(), w.size());
+		if (r.size() > w.size())
+			r = r.first(w.size());
 
-		std::move(r.data(), r.data() + n, w.data());
-		Append(n);
-		src.Consume(n);
-		return n;
+		std::move(r.begin(), r.end(), w.begin());
+		Append(r.size());
+		src.Consume(r.size());
+		return r.size();
 	}
 
 protected:
