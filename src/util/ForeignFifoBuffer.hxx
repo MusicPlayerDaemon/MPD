@@ -63,13 +63,13 @@ public:
 	constexpr ForeignFifoBuffer(T *_data, size_type _capacity) noexcept
 		:capacity(_capacity), data(_data) {}
 
-	ForeignFifoBuffer(ForeignFifoBuffer &&src) noexcept
+	constexpr ForeignFifoBuffer(ForeignFifoBuffer &&src) noexcept
 		:head(src.head), tail(src.tail),
 		 capacity(src.capacity), data(src.data) {
 		src.SetNull();
 	}
 
-	ForeignFifoBuffer &operator=(ForeignFifoBuffer &&src) noexcept {
+	constexpr ForeignFifoBuffer &operator=(ForeignFifoBuffer &&src) noexcept {
 		head = src.head;
 		tail = src.tail;
 		capacity = src.capacity;
@@ -78,7 +78,7 @@ public:
 		return *this;
 	}
 
-	void swap(ForeignFifoBuffer<T> &other) noexcept {
+	constexpr void swap(ForeignFifoBuffer<T> &other) noexcept {
 		using std::swap;
 		swap(head, other.head);
 		swap(tail, other.tail);
@@ -86,7 +86,8 @@ public:
 		swap(data, other.data);
 	}
 
-	friend void swap(ForeignFifoBuffer<T> &a, ForeignFifoBuffer<T> &b) noexcept {
+	friend constexpr void swap(ForeignFifoBuffer<T> &a,
+				   ForeignFifoBuffer<T> &b) noexcept {
 		a.swap(b);
 	}
 
@@ -131,7 +132,7 @@ public:
 		head = 0;
 	}
 
-	void Clear() noexcept {
+	constexpr void Clear() noexcept {
 		head = tail = 0;
 	}
 
@@ -147,7 +148,7 @@ public:
 	 * Prepares writing.  Returns a buffer range which may be written.
 	 * When you are finished, call Append().
 	 */
-	Range Write() noexcept {
+	constexpr Range Write() noexcept {
 		if (empty())
 			Clear();
 		else if (tail == capacity)
@@ -156,7 +157,7 @@ public:
 		return Range(data + tail, capacity - tail);
 	}
 
-	bool WantWrite(size_type n) noexcept {
+	constexpr bool WantWrite(size_type n) noexcept {
 		if (tail + n <= capacity)
 			/* enough space after the tail */
 			return true;
@@ -175,7 +176,7 @@ public:
 	 * Expands the tail of the buffer, after data has been written to
 	 * the buffer returned by Write().
 	 */
-	void Append(size_type n) noexcept {
+	constexpr void Append(size_type n) noexcept {
 		assert(tail <= capacity);
 		assert(n <= capacity);
 		assert(tail + n <= capacity);
@@ -198,7 +199,7 @@ public:
 	/**
 	 * Marks a chunk as consumed.
 	 */
-	void Consume(size_type n) noexcept {
+	constexpr void Consume(size_type n) noexcept {
 		assert(tail <= capacity);
 		assert(head <= tail);
 		assert(n <= tail);
@@ -207,7 +208,7 @@ public:
 		head += n;
 	}
 
-	size_type Read(pointer p, size_type n) noexcept {
+	constexpr size_type Read(pointer p, size_type n) noexcept {
 		auto range = Read();
 		if (n > range.size())
 			n = range.size();
@@ -221,7 +222,7 @@ public:
 	 *
 	 * @return the number of items moved
 	 */
-	size_type MoveFrom(ForeignFifoBuffer<T> &src) noexcept {
+	constexpr size_type MoveFrom(ForeignFifoBuffer<T> &src) noexcept {
 		auto r = src.Read();
 		auto w = Write();
 
@@ -242,7 +243,7 @@ public:
 	}
 
 protected:
-	void Shift() noexcept {
+	constexpr void Shift() noexcept {
 		if (head == 0)
 			return;
 
