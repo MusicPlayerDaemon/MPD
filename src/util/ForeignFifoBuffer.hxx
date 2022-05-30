@@ -222,11 +222,11 @@ public:
 	 *
 	 * @return the number of items moved
 	 */
-	constexpr size_type MoveFrom(ForeignFifoBuffer<T> &src) noexcept {
-		auto r = src.Read();
+	template<typename U>
+	constexpr size_type MoveFrom(std::span<U> src) noexcept {
 		auto w = Write();
 
-		if (w.size() < r.size() && head > 0) {
+		if (src.size() > w.size() && head > 0) {
 			/* if the source contains more data than we
 			   can append at the tail, try to make more
 			   room by shifting the head to 0 */
@@ -234,13 +234,18 @@ public:
 			w = Write();
 		}
 
-		if (r.size() > w.size())
-			r = r.first(w.size());
+		if (src.size() > w.size())
+			src = src.first(w.size());
 
-		std::move(r.begin(), r.end(), w.begin());
-		Append(r.size());
-		src.Consume(r.size());
-		return r.size();
+		std::move(src.begin(), src.end(), w.begin());
+		Append(src.size());
+		return src.size();
+	}
+
+	constexpr size_type MoveFrom(ForeignFifoBuffer<T> &src) noexcept {
+		auto n = MoveFrom(src.Read());
+		src.Consume(n);
+		return n;
 	}
 
 protected:
