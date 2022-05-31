@@ -29,7 +29,6 @@
 
 #include "EventFD.hxx"
 #include "system/Error.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 
