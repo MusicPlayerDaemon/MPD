@@ -34,8 +34,7 @@
 #include "Features.hxx"
 
 #include <cassert>
-
-struct StringView;
+#include <string_view>
 
 /**
  * An OO wrapper for struct sockaddr_storage.
@@ -120,7 +119,7 @@ public:
 	 * @see SocketAddress::GetLocalRaw()
 	 */
 	[[gnu::pure]]
-	StringView GetLocalRaw() const noexcept;
+	std::string_view GetLocalRaw() const noexcept;
 #endif
 
 #ifdef HAVE_TCP

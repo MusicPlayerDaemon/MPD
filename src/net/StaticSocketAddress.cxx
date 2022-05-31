@@ -30,7 +30,6 @@
 #include "StaticSocketAddress.hxx"
 #include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
-#include "util/StringView.hxx"
 
 #include <algorithm>
 
@@ -46,7 +45,7 @@ StaticSocketAddress::operator=(SocketAddress other) noexcept
 
 #ifdef HAVE_UN
 
-StringView
+std::string_view
 StaticSocketAddress::GetLocalRaw() const noexcept
 {
 	return SocketAddress(*this).GetLocalRaw();
