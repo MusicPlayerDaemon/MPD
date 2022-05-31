@@ -30,7 +30,6 @@
 #include "AllocatedSocketAddress.hxx"
 #include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
-#include "util/StringView.hxx"
 
 #include <string.h>
 

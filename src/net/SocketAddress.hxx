@@ -39,7 +39,14 @@
 #endif
 
 #include <cstddef>
+
+#if __cplusplus >= 202002 || (defined(__GNUC__) && __GNUC__ >= 10)
+#include <version>
+#endif
+
+#ifdef __cpp_lib_span
 #include <span>
+#endif
 
 #ifdef HAVE_UN
 #include <string_view>
@@ -71,10 +78,6 @@ public:
 	constexpr SocketAddress(const struct sockaddr *_address,
 				size_type _size) noexcept
 		:address(_address), size(_size) {}
-
-	explicit SocketAddress(std::span<const std::byte> src) noexcept
-		:address((const struct sockaddr *)(const void *)src.data()),
-		 size(src.size()) {}
 
 	static constexpr SocketAddress Null() noexcept {
 		return nullptr;
@@ -161,14 +164,7 @@ public:
 	unsigned GetPort() const noexcept;
 #endif
 
-	operator std::span<const std::byte>() const noexcept {
-		const void *q = reinterpret_cast<const void *>(address);
-		return {
-			(const std::byte *)q,
-			(std::size_t)size,
-		};
-	}
-
+#ifdef __cpp_lib_span
 	/**
 	 * Return a buffer pointing to the "steady" portion of the
 	 * address, i.e. without volatile parts like the port number.
@@ -178,6 +174,7 @@ public:
 	 */
 	[[gnu::pure]]
 	std::span<const std::byte> GetSteadyPart() const noexcept;
+#endif
 
 	[[gnu::pure]]
 	bool operator==(const SocketAddress other) const noexcept;
