@@ -33,19 +33,18 @@
 #include <curl/curl.h>
 
 #include <string>
-
-struct StringView;
-
-std::string
-CurlEscapeUriPath(CURL *curl, StringView src) noexcept;
+#include <string_view>
 
 std::string
-CurlEscapeUriPath(StringView src) noexcept;
+CurlEscapeUriPath(CURL *curl, std::string_view src) noexcept;
 
 std::string
-CurlUnescape(CURL *curl, StringView src) noexcept;
+CurlEscapeUriPath(std::string_view src) noexcept;
 
 std::string
-CurlUnescape(StringView src) noexcept;
+CurlUnescape(CURL *curl, std::string_view src) noexcept;
+
+std::string
+CurlUnescape(std::string_view src) noexcept;
 
 #endif

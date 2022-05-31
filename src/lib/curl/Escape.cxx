@@ -33,7 +33,7 @@
 #include "util/IterableSplitString.hxx"
 
 std::string
-CurlEscapeUriPath(CURL *curl, StringView src) noexcept
+CurlEscapeUriPath(CURL *curl, std::string_view src) noexcept
 {
 	std::string dest;
 
@@ -48,23 +48,23 @@ CurlEscapeUriPath(CURL *curl, StringView src) noexcept
 }
 
 std::string
-CurlEscapeUriPath(StringView src) noexcept
+CurlEscapeUriPath(std::string_view src) noexcept
 {
 	CurlEasy easy;
 	return CurlEscapeUriPath(easy.Get(), src);
 }
 
 std::string
-CurlUnescape(CURL *curl, StringView src) noexcept
+CurlUnescape(CURL *curl, std::string_view src) noexcept
 {
 	int outlength;
-	CurlString tmp(curl_easy_unescape(curl, src.data, src.size,
+	CurlString tmp(curl_easy_unescape(curl, src.data(), src.size(),
 					  &outlength));
 	return {tmp.c_str(), size_t(outlength)};
 }
 
 std::string
-CurlUnescape(StringView src) noexcept
+CurlUnescape(std::string_view src) noexcept
 {
 	CurlEasy easy;
 	return CurlUnescape(easy.Get(), src);
