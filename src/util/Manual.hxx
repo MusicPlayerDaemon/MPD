@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MANUAL_HXX
-#define MANUAL_HXX
+#pragma once
 
 #include <cassert>
 #include <new>
@@ -56,7 +55,7 @@ class Manual {
 
 public:
 #ifndef NDEBUG
-	~Manual() {
+	~Manual() noexcept {
 		assert(!initialized);
 	}
 #endif
@@ -64,7 +63,7 @@ public:
 	/**
 	 * Cast a value reference to the containing Manual instance.
 	 */
-	static constexpr Manual<T> &Cast(T &value) {
+	static constexpr Manual<T> &Cast(T &value) noexcept {
 		return reinterpret_cast<Manual<T> &>(value);
 	}
 
@@ -80,7 +79,7 @@ public:
 #endif
 	}
 
-	void Destruct() {
+	void Destruct() noexcept {
 		assert(initialized);
 
 		T &t = Get();
@@ -91,39 +90,37 @@ public:
 #endif
 	}
 
-	T &Get() {
+	T &Get() noexcept {
 		assert(initialized);
 
 		void *p = static_cast<void *>(data);
 		return *static_cast<T *>(p);
 	}
 
-	const T &Get() const {
+	const T &Get() const noexcept {
 		assert(initialized);
 
 		const void *p = static_cast<const void *>(data);
 		return *static_cast<const T *>(p);
 	}
 
-	operator T &() {
+	operator T &() noexcept {
 		return Get();
 	}
 
-	operator const T &() const {
+	operator const T &() const noexcept {
 		return Get();
 	}
 
-	T *operator->() {
+	T *operator->() noexcept {
 		return &Get();
 	}
 
-	const T *operator->() const {
+	const T *operator->() const noexcept {
 		return &Get();
 	}
 };
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
-#endif
-
 #endif
