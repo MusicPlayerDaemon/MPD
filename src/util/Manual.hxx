@@ -31,12 +31,8 @@
 
 #include <cassert>
 #include <new>
+#include <type_traits>
 #include <utility>
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif
 
 /**
  * Container for an object that gets constructed and destructed
@@ -46,8 +42,9 @@
  */
 template<class T>
 class Manual {
-	alignas(T)
-	char data[sizeof(T)];
+	using Storage = std::aligned_storage_t<sizeof(T), alignof(T)>;
+
+	Storage storage;
 
 #ifndef NDEBUG
 	bool initialized = false;
@@ -77,8 +74,7 @@ public:
 	void Construct(Args&&... args) {
 		assert(!initialized);
 
-		void *p = data;
-		new(p) T(std::forward<Args>(args)...);
+		::new(&storage) T(std::forward<Args>(args)...);
 
 #ifndef NDEBUG
 		initialized = true;
@@ -99,15 +95,13 @@ public:
 	reference Get() noexcept {
 		assert(initialized);
 
-		void *p = static_cast<void *>(data);
-		return *static_cast<pointer>(p);
+		return *std::launder(reinterpret_cast<pointer>(&storage));
 	}
 
 	const_reference Get() const noexcept {
 		assert(initialized);
 
-		const void *p = static_cast<const void *>(data);
-		return *static_cast<const_pointer>(p);
+		return *std::launder(reinterpret_cast<const_pointer>(&storage));
 	}
 
 	operator reference() noexcept {
@@ -126,7 +120,3 @@ public:
 		return &Get();
 	}
 };
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
