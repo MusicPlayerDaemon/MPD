@@ -34,6 +34,7 @@
 #include <cdio/iso9660.h>
 
 #include <array>
+#include <span>
 #include <utility>
 
 #include <stdlib.h>

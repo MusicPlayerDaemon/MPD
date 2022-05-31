@@ -39,6 +39,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
+#include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 
 #include <cassert>

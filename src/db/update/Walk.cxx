@@ -34,6 +34,7 @@
 #include "input/InputStream.hxx"
 #include "input/Error.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 #include "Log.hxx"
 

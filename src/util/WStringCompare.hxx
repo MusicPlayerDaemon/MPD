@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,7 +30,6 @@
 #ifndef WSTRING_COMPARE_HXX
 #define WSTRING_COMPARE_HXX
 
-#include "WStringView.hxx"
 #include "WStringAPI.hxx"
 
 #include <string_view>
@@ -62,9 +61,9 @@ StringIsEqualIgnoreCase(std::wstring_view a, std::wstring_view b) noexcept
 
 [[gnu::pure]] [[gnu::nonnull]]
 static inline bool
-StringStartsWith(const wchar_t *haystack, WStringView needle) noexcept
+StringStartsWith(const wchar_t *haystack, std::wstring_view needle) noexcept
 {
-	return StringIsEqual(haystack, needle.data, needle.size);
+	return StringIsEqual(haystack, needle.data(), needle.size());
 }
 
 [[gnu::pure]] [[gnu::nonnull]]
@@ -83,19 +82,19 @@ StringEndsWithIgnoreCase(const wchar_t *haystack,
  */
 [[gnu::pure]] [[gnu::nonnull]]
 static inline const wchar_t *
-StringAfterPrefix(const wchar_t *haystack, WStringView needle) noexcept
+StringAfterPrefix(const wchar_t *haystack, std::wstring_view needle) noexcept
 {
 	return StringStartsWith(haystack, needle)
-		? haystack + needle.size
+		? haystack + needle.size()
 		: nullptr;
 }
 
 [[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringStartsWithIgnoreCase(const wchar_t *haystack,
-			   WStringView needle) noexcept
+			   std::wstring_view needle) noexcept
 {
-	return StringIsEqualIgnoreCase(haystack, needle.data, needle.size);
+	return StringIsEqualIgnoreCase(haystack, needle.data(), needle.size());
 }
 
 /**
@@ -106,10 +105,11 @@ StringStartsWithIgnoreCase(const wchar_t *haystack,
  */
 [[gnu::pure]] [[gnu::nonnull]]
 static inline const wchar_t *
-StringAfterPrefixIgnoreCase(const wchar_t *haystack, WStringView needle) noexcept
+StringAfterPrefixIgnoreCase(const wchar_t *haystack,
+			    std::wstring_view needle) noexcept
 {
 	return StringStartsWithIgnoreCase(haystack, needle)
-		? haystack + needle.size
+		? haystack + needle.size()
 		: nullptr;
 }
 

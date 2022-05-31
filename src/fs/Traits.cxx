@@ -19,6 +19,7 @@
 
 #include "Traits.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 
 #include <string.h>
