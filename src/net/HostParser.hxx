@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2020 CM4all GmbH
+ * Copyright 2007-2022 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -30,10 +30,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NET_HOST_PARSER_HXX
-#define NET_HOST_PARSER_HXX
+#pragma once
 
-#include "util/StringView.hxx"
+#include <string_view>
 
 /**
  * Result type for ExtractHost().
@@ -44,7 +43,7 @@ struct ExtractHostResult {
 	 *
 	 * If nothing was parsed, then this is nullptr.
 	 */
-	StringView host;
+	std::string_view host;
 
 	/**
 	 * Pointer to the first character that was not parsed.  On
@@ -57,7 +56,7 @@ struct ExtractHostResult {
 	const char *end;
 
 	constexpr bool HasFailed() const noexcept {
-		return host == nullptr;
+		return host.data() == nullptr;
 	}
 };
 
@@ -71,5 +70,3 @@ struct ExtractHostResult {
 [[gnu::pure]]
 ExtractHostResult
 ExtractHost(const char *src) noexcept;
-
-#endif

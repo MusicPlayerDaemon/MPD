@@ -108,11 +108,11 @@ Resolve(const char *host_and_port, int default_port,
 		if (eh.HasFailed())
 			throw std::runtime_error("Failed to extract host name");
 
-		if (eh.host.size >= sizeof(buffer))
+		if (eh.host.size() >= sizeof(buffer))
 			throw std::runtime_error("Host name too long");
 
-		memcpy(buffer, eh.host.data, eh.host.size);
-		buffer[eh.host.size] = 0;
+		memcpy(buffer, eh.host.data(), eh.host.size());
+		buffer[eh.host.size()] = 0;
 		host = buffer;
 
 #ifndef _WIN32

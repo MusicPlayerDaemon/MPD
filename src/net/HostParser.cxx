@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2020 CM4all GmbH
+ * Copyright 2007-2022 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -83,10 +83,22 @@ FindIPv6End(const char *p) noexcept
 	return p;
 }
 
+static constexpr std::string_view
+SV(const char *begin, const char *end) noexcept
+{
+#if __cplusplus >= 202002 && !defined(__clang__)
+	return {begin, end};
+#else
+	/* kludge for libc++ which does not yet implement the C++20
+	   iterator constructor */
+	return {begin, std::size_t(end - begin)};
+#endif
+}
+
 ExtractHostResult
 ExtractHost(const char *src) noexcept
 {
-	ExtractHostResult result{nullptr, src};
+	ExtractHostResult result{{}, src};
 	const char *hostname;
 
 	if (IsValidHostnameChar(*src)) {
@@ -100,7 +112,7 @@ ExtractHost(const char *src) noexcept
 					/* found a second colon: assume it's an IPv6
 					   address */
 					result.end = FindIPv6End(src + 1);
-					result.host = {hostname, result.end};
+					result.host = SV(hostname, result.end);
 					return result;
 				} else
 					/* remember the position of the first colon */
@@ -115,11 +127,11 @@ ExtractHost(const char *src) noexcept
 			src = colon;
 
 		result.end = src;
-		result.host = {hostname, result.end};
+		result.host = SV(hostname, result.end);
 	} else if (src[0] == ':' && src[1] == ':') {
 		/* IPv6 address beginning with "::" */
 		result.end = FindIPv6End(src + 2);
-		result.host = {src, result.end};
+		result.host = SV(src, result.end);
 	} else if (src[0] == '[') {
 		/* "[hostname]:port" (IPv6?) */
 
@@ -129,7 +141,7 @@ ExtractHost(const char *src) noexcept
 			/* failed, return nullptr */
 			return result;
 
-		result.host = {hostname, end};
+		result.host = SV(hostname, end);
 		result.end = end + 1;
 	} else {
 		/* failed, return nullptr */
