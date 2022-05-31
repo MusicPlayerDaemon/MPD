@@ -54,6 +54,12 @@ class Manual {
 #endif
 
 public:
+	using value_type = T;
+	using reference = T &;
+	using const_reference =  const T &;
+	using pointer = T *;
+	using const_pointer = const T *;
+
 #ifndef NDEBUG
 	~Manual() noexcept {
 		assert(!initialized);
@@ -63,7 +69,7 @@ public:
 	/**
 	 * Cast a value reference to the containing Manual instance.
 	 */
-	static constexpr Manual<T> &Cast(T &value) noexcept {
+	static constexpr Manual<T> &Cast(reference value) noexcept {
 		return reinterpret_cast<Manual<T> &>(value);
 	}
 
@@ -82,7 +88,7 @@ public:
 	void Destruct() noexcept {
 		assert(initialized);
 
-		T &t = Get();
+		reference t = Get();
 		t.T::~T();
 
 #ifndef NDEBUG
@@ -90,33 +96,33 @@ public:
 #endif
 	}
 
-	T &Get() noexcept {
+	reference Get() noexcept {
 		assert(initialized);
 
 		void *p = static_cast<void *>(data);
-		return *static_cast<T *>(p);
+		return *static_cast<pointer>(p);
 	}
 
-	const T &Get() const noexcept {
+	const_reference Get() const noexcept {
 		assert(initialized);
 
 		const void *p = static_cast<const void *>(data);
-		return *static_cast<const T *>(p);
+		return *static_cast<const_pointer>(p);
 	}
 
-	operator T &() noexcept {
+	operator reference() noexcept {
 		return Get();
 	}
 
-	operator const T &() const noexcept {
+	operator const_reference() const noexcept {
 		return Get();
 	}
 
-	T *operator->() noexcept {
+	pointer operator->() noexcept {
 		return &Get();
 	}
 
-	const T *operator->() const noexcept {
+	const_pointer operator->() const noexcept {
 		return &Get();
 	}
 };
