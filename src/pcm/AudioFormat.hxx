@@ -129,6 +129,10 @@ struct AudioFormat {
 	 */
 	unsigned GetFrameSize() const noexcept;
 
+	uint32_t GetSampleRate() const noexcept {
+		return sample_rate;
+	}
+
 	template<typename D>
 	constexpr auto TimeToFrames(D t) const noexcept {
 		using Period = typename D::period;
