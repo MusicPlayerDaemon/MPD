@@ -99,7 +99,8 @@ jobs:
             libupnp-dev \
             libsqlite3-dev \
             libchromaprint-dev \
-            libgcrypt20-dev
+            libgcrypt20-dev \
+            libfftw3-dev
 
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
@@ -140,8 +141,8 @@ jobs:
             -Dfifo=false \
             -Dhttpd=false -Dpipe=false -Drecorder=false \
             -Dsnapcast=false \
-            --wrap-mode nofallback \
             ${{ matrix.meson_options }} \
+            -Dvisualization=false \
             output/mini
 
       - name: Build Mini
@@ -149,6 +150,57 @@ jobs:
 
       - name: Unit Tests Mini
         run: meson test -C output/mini
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: macos
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          brew install \
+            meson ninja \
+            fmt \
+            googletest \
+            icu4c \
+            ffmpeg \
+            libnfs \
+            yajl \
+            libupnp \
+            libid3tag \
+            chromaprint \
+            libsamplerate \
+            libsoxr \
+            flac \
+            opus \
+            libvorbis \
+            faad2 \
+            wavpack \
+            libmpdclient \
+            fftw
+
+      - name: Configure
+        run: |
+          meson setup \
+            -Ddocumentation=disabled \
+            -Dtest=true \
+            output
+
+      - name: Build
+        run: meson compile -C output --verbose
+
+      - name: Unit Tests
+        run: meson test -C output
 
   build-msys2:
     strategy:
@@ -171,6 +223,7 @@ jobs:
             dbus:p
             faad2:p
             ffmpeg:p
+            fftw:p
             fmt:p
             flac:p
             gtest:p

@@ -43,6 +43,14 @@ jobs:
         with:
           key: android
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ninja-build \
+            quilt
+          pip3 install --user meson==1.3.0
+
       # todo: remove once NDK 27 is out of beta
       - name: Install Beta NDK
         run: |
@@ -54,7 +62,7 @@ jobs:
           cd ./output/android
           ../../android/build.py $ANDROID_SDK_ROOT $ANDROID_SDK_ROOT/ndk/27.0.12077973 arm64-v8a \
             --buildtype=debugoptimized -Db_ndebug=true \
-            -Dwrap_mode=forcefallback 
+            -Dwrap_mode=forcefallback -Dvisualization=false
 
           cd -
           cd ./android

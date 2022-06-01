@@ -637,3 +637,39 @@ if alsa_dep.found()
 endif
 
 subdir('fs')
+
+#
+# Visualization Output
+#
+
+if enable_visualization_output
+test(
+    'test_vis',
+    executable(
+      'test_vis',
+      'TestVisualization.cxx',
+      include_directories: inc,
+      dependencies: [
+        output_plugins_dep,
+        gtest_dep,
+      ],
+    ),
+    protocol: 'gtest',
+  )
+endif
+
+#
+# Visualization client
+#
+
+executable(
+  'run_vis',
+  'run_vis.cxx',
+  include_directories: inc,
+  dependencies: [
+    output_registry_dep,
+    encoder_glue_dep,
+    event_dep,
+    cmdline_dep,
+  ],
+)
