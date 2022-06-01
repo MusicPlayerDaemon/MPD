@@ -29,6 +29,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <span>
 #include <string_view>
@@ -50,6 +51,18 @@ FromBytesFloor(std::span<CopyConst<T, std::byte>> other) noexcept
 		reinterpret_cast<T *>(other.data()),
 		other.size() / sizeof(T),
 	};
+}
+
+/**
+ * Like FromBytesFloor(), but assert that rounding is not necessary.
+ */
+template<typename T>
+constexpr std::span<T>
+FromBytesStrict(std::span<CopyConst<T, std::byte>> other) noexcept
+{
+	assert(other.size() % sizeof(T) == 0);
+
+	return FromBytesFloor<T>(other);
 }
 
 constexpr std::span<const char>
