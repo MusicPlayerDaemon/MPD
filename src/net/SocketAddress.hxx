@@ -79,6 +79,12 @@ public:
 				size_type _size) noexcept
 		:address(_address), size(_size) {}
 
+#ifdef __cpp_lib_span
+	explicit SocketAddress(std::span<const std::byte> src) noexcept
+		:address((const struct sockaddr *)(const void *)src.data()),
+		 size(src.size()) {}
+#endif
+
 	static constexpr SocketAddress Null() noexcept {
 		return nullptr;
 	}
@@ -165,6 +171,14 @@ public:
 #endif
 
 #ifdef __cpp_lib_span
+	operator std::span<const std::byte>() const noexcept {
+		const void *q = reinterpret_cast<const void *>(address);
+		return {
+			(const std::byte *)q,
+			(std::size_t)size,
+		};
+	}
+
 	/**
 	 * Return a buffer pointing to the "steady" portion of the
 	 * address, i.e. without volatile parts like the port number.
