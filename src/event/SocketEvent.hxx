@@ -46,7 +46,7 @@ class EventLoop;
 class SocketEvent final : IntrusiveListHook, public EventPollBackendEvents
 {
 	friend class EventLoop;
-	friend class IntrusiveList<SocketEvent>;
+	friend struct IntrusiveListBaseHookTraits<SocketEvent>;
 
 	EventLoop &loop;
 

@@ -54,7 +54,7 @@ class EventLoop;
 class CoarseTimerEvent final : AutoUnlinkIntrusiveListHook
 {
 	friend class TimerWheel;
-	friend class IntrusiveList<CoarseTimerEvent>;
+	friend struct IntrusiveListBaseHookTraits<CoarseTimerEvent>;
 
 	EventLoop &loop;
 

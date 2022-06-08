@@ -43,7 +43,8 @@ struct IntrusiveListNode {
 };
 
 class IntrusiveListHook {
-	template<typename T> friend class IntrusiveList;
+	template<typename T> friend struct IntrusiveListBaseHookTraits;
+	template<typename T, typename HookTraits> friend class IntrusiveList;
 
 protected:
 	IntrusiveListNode siblings;
@@ -117,12 +118,13 @@ struct IntrusiveListHookDetection {
 					IntrusiveListHook>;
 };
 
+/**
+ * For classes which embed #IntrusiveListHook as base class.
+ */
 template<typename T>
-class IntrusiveList {
+struct IntrusiveListBaseHookTraits {
 	template<typename U>
 	using Hook = typename IntrusiveListHookDetection<U>::type;
-
-	IntrusiveListNode head{&head, &head};
 
 	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
 		auto *hook = &Hook<T>::Cast(*node);
@@ -140,6 +142,30 @@ class IntrusiveList {
 
 	static constexpr const auto &ToHook(const T &t) noexcept {
 		return static_cast<const Hook<T> &>(t);
+	}
+};
+
+template<typename T, typename HookTraits=IntrusiveListBaseHookTraits<T>>
+class IntrusiveList {
+	template<typename U>
+	using Hook = typename IntrusiveListHookDetection<U>::type;
+
+	IntrusiveListNode head{&head, &head};
+
+	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
+		return HookTraits::Cast(node);
+	}
+
+	static constexpr const T *Cast(const IntrusiveListNode *node) noexcept {
+		return HookTraits::Cast(node);
+	}
+
+	static constexpr auto &ToHook(T &t) noexcept {
+		return HookTraits::ToHook(t);
+	}
+
+	static constexpr const auto &ToHook(const T &t) noexcept {
+		return HookTraits::ToHook(t);
 	}
 
 	static constexpr IntrusiveListNode &ToNode(T &t) noexcept {

@@ -36,7 +36,7 @@ class EventLoop;
 class DeferEvent final : AutoUnlinkIntrusiveListHook
 {
 	friend class EventLoop;
-	friend class IntrusiveList<DeferEvent>;
+	friend struct IntrusiveListBaseHookTraits<DeferEvent>;
 
 	EventLoop &loop;
 
