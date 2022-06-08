@@ -34,7 +34,7 @@
 #include <span>
 #include <string_view>
 
-template<typename From, typename To>
+template<typename To, typename From>
 using CopyConst = std::conditional_t<std::is_const_v<From>, const To, To>;
 
 /**
@@ -43,7 +43,7 @@ using CopyConst = std::conditional_t<std::is_const_v<From>, const To, To>;
  */
 template<typename T>
 constexpr std::span<T>
-FromBytesFloor(std::span<CopyConst<T, std::byte>> other) noexcept
+FromBytesFloor(std::span<CopyConst<std::byte, T>> other) noexcept
 {
 	static_assert(sizeof(T) > 0, "Empty base type");
 
@@ -51,7 +51,7 @@ FromBytesFloor(std::span<CopyConst<T, std::byte>> other) noexcept
 	   warnings, but should we really suppress them? */
 
 	return {
-		reinterpret_cast<T *>(reinterpret_cast<CopyConst<T, void> *>(other.data())),
+		reinterpret_cast<T *>(reinterpret_cast<CopyConst<void, T> *>(other.data())),
 		other.size() / sizeof(T),
 	};
 }
@@ -61,7 +61,7 @@ FromBytesFloor(std::span<CopyConst<T, std::byte>> other) noexcept
  */
 template<typename T>
 constexpr std::span<T>
-FromBytesStrict(std::span<CopyConst<T, std::byte>> other) noexcept
+FromBytesStrict(std::span<CopyConst<std::byte, T>> other) noexcept
 {
 	assert(other.size() % sizeof(T) == 0);
 
