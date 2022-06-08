@@ -47,8 +47,11 @@ FromBytesFloor(std::span<CopyConst<T, std::byte>> other) noexcept
 {
 	static_assert(sizeof(T) > 0, "Empty base type");
 
+	/* TODO: the "void *" cast suppresses alignment
+	   warnings, but should we really suppress them? */
+
 	return {
-		reinterpret_cast<T *>(other.data()),
+		reinterpret_cast<T *>(reinterpret_cast<CopyConst<T, void> *>(other.data())),
 		other.size() / sizeof(T),
 	};
 }
