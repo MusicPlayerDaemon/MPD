@@ -228,7 +228,7 @@ public:
 			n = n->next;
 
 			if (pred(*i)) {
-				i->unlink();
+				ToHook(*i).unlink();
 				dispose(i);
 			}
 		}
@@ -243,13 +243,13 @@ public:
 	}
 
 	void pop_front() noexcept {
-		front().unlink();
+		ToHook(front()).unlink();
 	}
 
 	template<typename D>
 	void pop_front_and_dispose(D &&disposer) noexcept {
 		auto &i = front();
-		i.unlink();
+		ToHook(i).unlink();
 		disposer(&i);
 	}
 
@@ -258,7 +258,7 @@ public:
 	}
 
 	void pop_back() noexcept {
-		back().unlink();
+		ToHook(back()).unlink();
 	}
 
 	class const_iterator;
