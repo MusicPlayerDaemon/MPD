@@ -111,7 +111,7 @@ jobs:
         with:
           key: macos
 
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v3
 
       - name: Install dependencies
         run: |
