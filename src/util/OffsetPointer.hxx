@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,7 +37,7 @@
 constexpr void *
 OffsetPointer(void *p, std::ptrdiff_t offset) noexcept
 {
-	return (char *)p + offset;
+	return static_cast<std::byte *>(p) + offset;
 }
 
 /**
@@ -46,5 +46,5 @@ OffsetPointer(void *p, std::ptrdiff_t offset) noexcept
 constexpr const void *
 OffsetPointer(const void *p, std::ptrdiff_t offset) noexcept
 {
-	return (const char *)p + offset;
+	return static_cast<const std::byte *>(p) + offset;
 }
