@@ -85,3 +85,15 @@ AsBytes(std::string_view sv) noexcept
 {
 	return std::as_bytes(ToSpan(sv));
 }
+
+constexpr std::string_view
+ToStringView(std::span<const char> s) noexcept
+{
+	return {s.data(), s.size()};
+}
+
+constexpr std::string_view
+ToStringView(std::span<const std::byte> s) noexcept
+{
+	return ToStringView(FromBytesStrict<const char>(s));
+}
