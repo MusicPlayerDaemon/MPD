@@ -33,6 +33,7 @@
 #pragma once
 
 #include "Cast.hxx"
+#include "MemberPointer.hxx"
 
 #include <iterator>
 #include <type_traits>
@@ -44,6 +45,7 @@ struct IntrusiveListNode {
 
 class IntrusiveListHook {
 	template<typename T> friend struct IntrusiveListBaseHookTraits;
+	template<auto member> friend struct IntrusiveListMemberHookTraits;
 	template<typename T, typename HookTraits> friend class IntrusiveList;
 
 protected:
@@ -142,6 +144,34 @@ struct IntrusiveListBaseHookTraits {
 
 	static constexpr const auto &ToHook(const T &t) noexcept {
 		return static_cast<const Hook<T> &>(t);
+	}
+};
+
+/**
+ * For classes which embed #IntrusiveListHook as member.
+ */
+template<auto member>
+struct IntrusiveListMemberHookTraits {
+	using T = MemberPointerContainerType<decltype(member)>;
+	using _Hook = MemberPointerType<decltype(member)>;
+	using Hook = typename IntrusiveListHookDetection<_Hook>::type;
+
+	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
+		auto &hook = Hook::Cast(*node);
+		return &ContainerCast(hook, member);
+	}
+
+	static constexpr const T *Cast(const IntrusiveListNode *node) noexcept {
+		const auto &hook = Hook::Cast(*node);
+		return &ContainerCast(hook, member);
+	}
+
+	static constexpr auto &ToHook(T &t) noexcept {
+		return t.*member;
+	}
+
+	static constexpr const auto &ToHook(const T &t) noexcept {
+		return t.*member;
 	}
 };
 
