@@ -34,7 +34,7 @@ jobs:
       CXX: 'ccache g++-10'
     steps:
       - id: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
@@ -104,7 +104,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - id: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
