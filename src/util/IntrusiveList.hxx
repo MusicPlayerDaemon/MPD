@@ -102,25 +102,25 @@ public:
 	}
 };
 
+/**
+ * Detect the hook type; this is important because
+ * SafeLinkIntrusiveListHook::unlink() needs to clear the "next"
+ * pointer.  This is a template to postpone the type checks, to allow
+ * forward-declared types.
+ */
+template<typename U>
+struct IntrusiveListHookDetection {
+	static_assert(std::is_base_of_v<IntrusiveListHook, U>);
+
+	using type = std::conditional_t<std::is_base_of_v<SafeLinkIntrusiveListHook, U>,
+					SafeLinkIntrusiveListHook,
+					IntrusiveListHook>;
+};
+
 template<typename T>
 class IntrusiveList {
-	/**
-	 * Detect the hook type; this is important because
-	 * SafeLinkIntrusiveListHook::unlink() needs to clear the
-	 * "next" pointer.  This is a template to postpone the type
-	 * checks, to allow forward-declared types.
-	 */
 	template<typename U>
-	struct HookDetection {
-		static_assert(std::is_base_of_v<IntrusiveListHook, U>);
-
-		using type = std::conditional_t<std::is_base_of_v<SafeLinkIntrusiveListHook, U>,
-						SafeLinkIntrusiveListHook,
-						IntrusiveListHook>;
-	};
-
-	template<typename U>
-	using Hook = typename HookDetection<U>::type;
+	using Hook = typename IntrusiveListHookDetection<U>::type;
 
 	IntrusiveListNode head{&head, &head};
 
