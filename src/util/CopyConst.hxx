@@ -36,5 +36,5 @@
  */
 template<typename To, typename From>
 using CopyConst = std::conditional_t<std::is_const_v<From>,
-				     const To,
-				     To>;
+				     std::add_const_t<To>,
+				     std::remove_const_t<To>>;
