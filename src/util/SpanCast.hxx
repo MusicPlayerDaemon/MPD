@@ -29,13 +29,12 @@
 
 #pragma once
 
+#include "CopyConst.hxx"
+
 #include <cassert>
 #include <cstddef>
 #include <span>
 #include <string_view>
-
-template<typename To, typename From>
-using CopyConst = std::conditional_t<std::is_const_v<From>, const To, To>;
 
 /**
  * Cast a std::span<std::byte> to a std::span<T>, rounding down to the
