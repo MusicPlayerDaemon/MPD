@@ -34,6 +34,7 @@
 
 #include "Cast.hxx"
 #include "MemberPointer.hxx"
+#include "OptionalCounter.hxx"
 
 #include <iterator>
 #include <type_traits>
@@ -46,7 +47,7 @@ struct IntrusiveListNode {
 class IntrusiveListHook {
 	template<typename T> friend struct IntrusiveListBaseHookTraits;
 	template<auto member> friend struct IntrusiveListMemberHookTraits;
-	template<typename T, typename HookTraits> friend class IntrusiveList;
+	template<typename T, typename HookTraits, bool> friend class IntrusiveList;
 
 protected:
 	IntrusiveListNode siblings;
@@ -128,6 +129,10 @@ struct IntrusiveListBaseHookTraits {
 	template<typename U>
 	using Hook = typename IntrusiveListHookDetection<U>::type;
 
+	static constexpr bool IsAutoUnlink() noexcept {
+		return std::is_base_of_v<AutoUnlinkIntrusiveListHook, T>;
+	}
+
 	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
 		auto *hook = &Hook<T>::Cast(*node);
 		return static_cast<T *>(hook);
@@ -156,6 +161,10 @@ struct IntrusiveListMemberHookTraits {
 	using _Hook = MemberPointerType<decltype(member)>;
 	using Hook = typename IntrusiveListHookDetection<_Hook>::type;
 
+	static constexpr bool IsAutoUnlink() noexcept {
+		return std::is_base_of_v<AutoUnlinkIntrusiveListHook, _Hook>;
+	}
+
 	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
 		auto &hook = Hook::Cast(*node);
 		return &ContainerCast(hook, member);
@@ -175,12 +184,21 @@ struct IntrusiveListMemberHookTraits {
 	}
 };
 
-template<typename T, typename HookTraits=IntrusiveListBaseHookTraits<T>>
+/**
+ * @param constant_time_size make size() constant-time by caching the
+ * number of items in a field?
+ */
+template<typename T,
+	 typename HookTraits=IntrusiveListBaseHookTraits<T>,
+	 bool constant_time_size=false>
 class IntrusiveList {
 	template<typename U>
 	using Hook = typename IntrusiveListHookDetection<U>::type;
 
 	IntrusiveListNode head{&head, &head};
+
+	[[no_unique_address]]
+	OptionalCounter<constant_time_size> counter;
 
 	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
 		return HookTraits::Cast(node);
@@ -221,6 +239,9 @@ public:
 
 		src.head.next = &src.head;
 		src.head.prev = &src.head;
+
+		using std::swap;
+		swap(counter, src.counter);
 	}
 
 	~IntrusiveList() noexcept {
@@ -251,6 +272,8 @@ public:
 			b.head.next->prev = &b.head;
 			b.head.prev->next = &b.head;
 		}
+
+		swap(a.counter, b.counter);
 	}
 
 	constexpr bool empty() const noexcept {
@@ -258,7 +281,10 @@ public:
 	}
 
 	constexpr size_type size() const noexcept {
-		return std::distance(begin(), end());
+		if constexpr (constant_time_size)
+			return counter;
+		else
+			return std::distance(begin(), end());
 	}
 
 	void clear() noexcept {
@@ -268,8 +294,10 @@ public:
 			   is_linked() method will not work */
 			while (!empty())
 				pop_front();
-		} else
+		} else {
 			head = {&head, &head};
+			counter.reset();
+		}
 	}
 
 	template<typename D>
@@ -291,6 +319,7 @@ public:
 
 			if (pred(*i)) {
 				ToHook(*i).unlink();
+				--counter;
 				dispose(i);
 			}
 		}
@@ -306,12 +335,14 @@ public:
 
 	void pop_front() noexcept {
 		ToHook(front()).unlink();
+		--counter;
 	}
 
 	template<typename D>
 	void pop_front_and_dispose(D &&disposer) noexcept {
 		auto &i = front();
 		ToHook(i).unlink();
+		--counter;
 		disposer(&i);
 	}
 
@@ -321,6 +352,7 @@ public:
 
 	void pop_back() noexcept {
 		ToHook(back()).unlink();
+		--counter;
 	}
 
 	class const_iterator;
@@ -434,6 +466,7 @@ public:
 	iterator erase(iterator i) noexcept {
 		auto result = std::next(i);
 		ToHook(*i).unlink();
+		--counter;
 		return result;
 	}
 
@@ -453,6 +486,10 @@ public:
 	}
 
 	void insert(iterator p, T &t) noexcept {
+		static_assert(!constant_time_size ||
+			      !HookTraits::IsAutoUnlink(),
+			      "Can't use auto-unlink hooks with constant_time_size");
+
 		auto &existing_node = ToNode(*p);
 		auto &new_node = ToNode(t);
 
@@ -460,5 +497,7 @@ public:
 		new_node.prev = existing_node.prev;
 		existing_node.prev = &new_node;
 		new_node.next = &existing_node;
+
+		++counter;
 	}
 };
