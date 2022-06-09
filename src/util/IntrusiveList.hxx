@@ -207,6 +207,8 @@ class IntrusiveList {
 	}
 
 public:
+	using size_type = std::size_t;
+
 	constexpr IntrusiveList() noexcept = default;
 
 	IntrusiveList(IntrusiveList &&src) noexcept {
@@ -253,6 +255,10 @@ public:
 
 	constexpr bool empty() const noexcept {
 		return head.next == &head;
+	}
+
+	constexpr size_type size() const noexcept {
+		return std::distance(begin(), end());
 	}
 
 	void clear() noexcept {
