@@ -146,6 +146,16 @@ IsSocketErrorClosed(socket_error_t code) noexcept
 #endif
 }
 
+constexpr bool
+IsSocketErrorTimeout(socket_error_t code) noexcept
+{
+#ifdef _WIN32
+	return code == WSAETIMEDOUT;
+#else
+	return code == ETIMEDOUT;
+#endif
+}
+
 /**
  * Helper class that formats a socket error message into a
  * human-readable string.  On Windows, a buffer is necessary for this,
