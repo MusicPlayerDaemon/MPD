@@ -245,7 +245,7 @@ public:
 	}
 
 	~IntrusiveList() noexcept {
-		if constexpr (std::is_base_of<SafeLinkIntrusiveListHook, T>::value)
+		if constexpr (std::is_base_of_v<SafeLinkIntrusiveListHook, T>)
 			clear();
 	}
 
@@ -288,7 +288,7 @@ public:
 	}
 
 	void clear() noexcept {
-		if constexpr (std::is_base_of<SafeLinkIntrusiveListHook, T>::value) {
+		if constexpr (std::is_base_of_v<SafeLinkIntrusiveListHook, T>) {
 			/* for SafeLinkIntrusiveListHook, we need to
 			   remove each item manually, or else its
 			   is_linked() method will not work */
