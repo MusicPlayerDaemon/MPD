@@ -192,6 +192,14 @@ SocketErrorCategory() noexcept
 }
 
 [[gnu::pure]]
+static inline bool
+IsSocketErrorReceiveWouldBlock(const std::system_error &e) noexcept
+{
+	return e.code().category() == SocketErrorCategory() &&
+		IsSocketErrorReceiveWouldBlock(e.code().value());
+}
+
+[[gnu::pure]]
 static inline auto
 MakeSocketError(socket_error_t code, const char *msg) noexcept
 {
