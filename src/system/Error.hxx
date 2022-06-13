@@ -64,6 +64,14 @@ LastErrorCategory() noexcept
 	return std::system_category();
 }
 
+[[gnu::pure]]
+inline bool
+IsLastError(const std::system_error &e, DWORD code) noexcept
+{
+	return e.code().category() == LastErrorCategory() &&
+		(DWORD)e.code().value() == code;
+}
+
 static inline std::system_error
 MakeLastError(DWORD code, const char *msg) noexcept
 {
@@ -187,8 +195,7 @@ static inline bool
 IsFileNotFound(const std::system_error &e) noexcept
 {
 #ifdef _WIN32
-	return e.code().category() == LastErrorCategory() &&
-		e.code().value() == ERROR_FILE_NOT_FOUND;
+	return IsLastError(e, ERROR_FILE_NOT_FOUND);
 #else
 	return IsErrno(e, ENOENT);
 #endif
@@ -199,8 +206,7 @@ static inline bool
 IsPathNotFound(const std::system_error &e) noexcept
 {
 #ifdef _WIN32
-	return e.code().category() == LastErrorCategory() &&
-		e.code().value() == ERROR_PATH_NOT_FOUND;
+	return IsLastError(e, ERROR_PATH_NOT_FOUND);
 #else
 	return IsErrno(e, ENOTDIR);
 #endif
@@ -211,8 +217,7 @@ static inline bool
 IsAccessDenied(const std::system_error &e) noexcept
 {
 #ifdef _WIN32
-	return e.code().category() == LastErrorCategory() &&
-		e.code().value() == ERROR_ACCESS_DENIED;
+	return IsLastError(e, ERROR_ACCESS_DENIED);
 #else
 	return IsErrno(e, EACCES);
 #endif
