@@ -64,7 +64,7 @@ class FineTimerEvent final :
 {
 	friend class TimerList;
 #ifdef NO_BOOST
-	friend class IntrusiveList<FineTimerEvent>;
+	friend struct IntrusiveListBaseHookTraits<FineTimerEvent>;
 #endif
 
 	EventLoop &loop;
