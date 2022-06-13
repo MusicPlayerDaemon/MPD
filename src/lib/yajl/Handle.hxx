@@ -33,6 +33,7 @@
 #include <yajl/yajl_parse.h>
 
 #include <utility>
+#include <string>
 
 namespace Yajl {
 
@@ -41,6 +42,7 @@ namespace Yajl {
  */
 class Handle {
 	yajl_handle handle = nullptr;
+	std::string json;
 
 public:
 	Handle() = default;
@@ -62,8 +64,11 @@ public:
 		std::swap(handle, src.handle);
 		return *this;
 	}
+	
+	std::string getJson() {return json;}
 
 	void Parse(const unsigned char *jsonText, size_t jsonTextLength) {
+		json=std::string(reinterpret_cast<const char*>(jsonText));
 		HandleStatus(yajl_parse(handle, jsonText, jsonTextLength));
 	}
 

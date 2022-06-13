@@ -44,6 +44,7 @@ public:
 	YajlResponseParser(Args... args) noexcept
 		:handle(std::forward<Args>(args)...) {}
 
+	std::string getJson() {return handle.getJson();}
 	/* virtual methods fro CurlResponseParser */
 	void OnData(ConstBuffer<void> data) final;
 	void OnEnd() override;
