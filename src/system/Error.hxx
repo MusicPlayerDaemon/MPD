@@ -50,10 +50,24 @@ FormatSystemError(std::error_code code, const char *fmt,
 #include <windef.h> // for HWND (needed by winbase.h)
 #include <winbase.h> // for FormatMessageA()
 
+/**
+ * Returns the error_category to be used to wrap WIN32 GetLastError()
+ * values.  The C++ standard does not define this well, and this value
+ * is mostly guessed.
+ *
+ * TODO: verify
+ */
+[[gnu::const]]
+static inline const std::error_category &
+LastErrorCategory() noexcept
+{
+	return std::system_category();
+}
+
 static inline std::system_error
 MakeLastError(DWORD code, const char *msg) noexcept
 {
-	return std::system_error(std::error_code(code, std::system_category()),
+	return std::system_error(std::error_code(code, LastErrorCategory()),
 				 msg);
 }
 
@@ -173,7 +187,7 @@ static inline bool
 IsFileNotFound(const std::system_error &e) noexcept
 {
 #ifdef _WIN32
-	return e.code().category() == std::system_category() &&
+	return e.code().category() == LastErrorCategory() &&
 		e.code().value() == ERROR_FILE_NOT_FOUND;
 #else
 	return IsErrno(e, ENOENT);
@@ -185,7 +199,7 @@ static inline bool
 IsPathNotFound(const std::system_error &e) noexcept
 {
 #ifdef _WIN32
-	return e.code().category() == std::system_category() &&
+	return e.code().category() == LastErrorCategory() &&
 		e.code().value() == ERROR_PATH_NOT_FOUND;
 #else
 	return IsErrno(e, ENOTDIR);
@@ -197,7 +211,7 @@ static inline bool
 IsAccessDenied(const std::system_error &e) noexcept
 {
 #ifdef _WIN32
-	return e.code().category() == std::system_category() &&
+	return e.code().category() == LastErrorCategory() &&
 		e.code().value() == ERROR_ACCESS_DENIED;
 #else
 	return IsErrno(e, EACCES);
