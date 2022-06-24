@@ -44,6 +44,8 @@
 #include <wchar.h>
 #endif
 
+class UniqueFileDescriptor;
+
 /**
  * An OO wrapper for a UNIX file descriptor.
  *
@@ -175,6 +177,14 @@ public:
 	 * is executed.
 	 */
 	void DisableCloseOnExec() noexcept;
+
+	/**
+	 * Duplicate this file descriptor.
+	 *
+	 * @return the new file descriptor or UniqueFileDescriptor{}
+	 * on error
+	 */
+	UniqueFileDescriptor Duplicate() const noexcept;
 
 	/**
 	 * Duplicate the file descriptor onto the given file descriptor.

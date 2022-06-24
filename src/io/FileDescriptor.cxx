@@ -28,6 +28,7 @@
  */
 
 #include "FileDescriptor.hxx"
+#include "UniqueFileDescriptor.hxx"
 #include "system/Error.hxx"
 
 #include <cassert>
@@ -232,6 +233,12 @@ FileDescriptor::DisableCloseOnExec() noexcept
 
 	const int old_flags = fcntl(fd, F_GETFD, 0);
 	fcntl(fd, F_SETFD, old_flags & ~FD_CLOEXEC);
+}
+
+UniqueFileDescriptor
+FileDescriptor::Duplicate() const noexcept
+{
+	return UniqueFileDescriptor{::dup(Get())};
 }
 
 bool
