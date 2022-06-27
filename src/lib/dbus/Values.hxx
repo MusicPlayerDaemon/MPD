@@ -30,14 +30,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ODBUS_VALUES_HXX
-#define ODBUS_VALUES_HXX
+#pragma once
 
 #include "Types.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <dbus/dbus.h>
 
+#include <span>
 #include <tuple>
 
 namespace ODBus {
@@ -95,7 +94,7 @@ template<typename T>
 struct WrapFixedArray {
 	using ContainedTraits = TypeTraits<T>;
 	using Traits = ArrayTypeTraits<ContainedTraits>;
-	ConstBuffer<T> value;
+	std::span<const T> value;
 
 	explicit constexpr WrapFixedArray(const T *_data,
 					  size_t _size) noexcept
@@ -124,5 +123,3 @@ static WrapStruct<T...> Struct(const T&... values) noexcept {
 }
 
 } /* namespace ODBus */
-
-#endif

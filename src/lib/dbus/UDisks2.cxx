@@ -21,6 +21,7 @@
 #include "Message.hxx"
 #include "ReadIter.hxx"
 #include "ObjectManager.hxx"
+#include "util/SpanCast.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringView.hxx"
 #include "util/Compiler.h"
@@ -50,7 +51,7 @@ CheckRecursedByteArrayToString(I &&i) noexcept
 		return nullptr;
 
 	auto value = i.template GetFixedArray<char>();
-	return { value.data, value.size };
+	return ToStringView(value);
 }
 
 template<typename I>

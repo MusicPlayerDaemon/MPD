@@ -30,8 +30,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ODBUS_APPEND_ITER_HXX
-#define ODBUS_APPEND_ITER_HXX
+#pragma once
 
 #include "Iter.hxx"
 #include "Values.hxx"
@@ -88,12 +87,12 @@ public:
 		return *this;
 	}
 
-	AppendMessageIter &AppendFixedArray(ConstBuffer<uint32_t> value) {
+	AppendMessageIter &AppendFixedArray(std::span<const uint32_t> value) {
 		return AppendFixedArray(DBUS_TYPE_UINT32,
-					value.data, value.size);
+					value.data(), value.size());
 	}
 
-	AppendMessageIter &Append(ConstBuffer<uint32_t> value) {
+	AppendMessageIter &Append(std::span<const uint32_t> value) {
 		return AppendMessageIter(*this, DBUS_TYPE_ARRAY,
 					 DBUS_TYPE_UINT32_AS_STRING)
 			.AppendFixedArray(value)
@@ -206,5 +205,3 @@ public:
 };
 
 } /* namespace ODBus */
-
-#endif

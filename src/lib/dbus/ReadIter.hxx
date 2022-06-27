@@ -30,11 +30,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ODBUS_READ_ITER_HXX
-#define ODBUS_READ_ITER_HXX
+#pragma once
 
 #include "Iter.hxx"
-#include "util/ConstBuffer.hxx"
+
+#include <span>
 
 namespace ODBus {
 
@@ -76,7 +76,7 @@ public:
 	}
 
 	template<typename T>
-	ConstBuffer<T> GetFixedArray() noexcept {
+	std::span<const T> GetFixedArray() noexcept {
 		void *value;
 		int n_elements;
 		dbus_message_iter_get_fixed_array(&iter, &value, &n_elements);
@@ -136,5 +136,3 @@ public:
 };
 
 } /* namespace ODBus */
-
-#endif
