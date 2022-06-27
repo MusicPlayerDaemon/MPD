@@ -132,7 +132,7 @@ private:
 
 	/* virtual methods from CurlResponseHandler */
 	void OnHeaders(unsigned status, Curl::Headers &&headers) override;
-	void OnData(ConstBuffer<void> data) override;
+	void OnData(std::span<const std::byte> data) override;
 	void OnEnd() override;
 	void OnError(std::exception_ptr e) noexcept override;
 
@@ -296,21 +296,21 @@ CurlInputStream::OnHeaders(unsigned status,
 }
 
 void
-CurlInputStream::OnData(ConstBuffer<void> data)
+CurlInputStream::OnData(std::span<const std::byte> data)
 {
-	assert(data.size > 0);
+	assert(!data.empty());
 
 	const std::scoped_lock<Mutex> protect(mutex);
 
 	if (IsSeekPending())
 		SeekDone();
 
-	if (data.size > GetBufferSpace()) {
+	if (data.size() > GetBufferSpace()) {
 		AsyncInputStream::Pause();
 		throw CurlResponseHandler::Pause{};
 	}
 
-	AppendToBuffer(data.data, data.size);
+	AppendToBuffer(data.data(), data.size());
 }
 
 void

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef YAJL_RESPONSE_PARSER_HXX
-#define YAJL_RESPONSE_PARSER_HXX
+#pragma once
 
 #include "Handle.hxx"
 #include "lib/curl/Parser.hxx"
@@ -45,8 +44,6 @@ public:
 		:handle(std::forward<Args>(args)...) {}
 
 	/* virtual methods fro CurlResponseParser */
-	void OnData(ConstBuffer<void> data) final;
+	void OnData(std::span<const std::byte> data) final;
 	void OnEnd() override;
 };
-
-#endif

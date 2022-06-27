@@ -64,6 +64,6 @@ protected:
 
 public:
 	void OnHeaders(unsigned status, Curl::Headers &&headers) final;
-	void OnData(ConstBuffer<void> data) final;
+	void OnData(std::span<const std::byte> data) final;
 	void OnEnd() final;
 };

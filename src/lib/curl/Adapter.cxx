@@ -168,7 +168,7 @@ CurlResponseHandlerAdapter::DataReceived(const void *ptr,
 
 	try {
 		FinishHeaders();
-		handler.OnData({ptr, received_size});
+		handler.OnData({(const std::byte *)ptr, received_size});
 		return received_size;
 	} catch (CurlResponseHandler::Pause) {
 		return CURL_WRITEFUNC_PAUSE;

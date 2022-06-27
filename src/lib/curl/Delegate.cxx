@@ -41,7 +41,7 @@ DelegateCurlResponseHandler::OnHeaders(unsigned status, Curl::Headers &&headers)
 }
 
 void
-DelegateCurlResponseHandler::OnData(ConstBuffer<void> data)
+DelegateCurlResponseHandler::OnData(std::span<const std::byte> data)
 {
 	parser->OnData(data);
 }

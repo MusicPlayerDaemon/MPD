@@ -37,6 +37,7 @@
 #include "time/Parser.hxx"
 #include "util/ASCII.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
 #include "util/StringView.hxx"
@@ -307,9 +308,9 @@ private:
 			throw std::runtime_error("Unexpected Content-Type from WebDAV server");
 	}
 
-	void OnData(ConstBuffer<void> _data) final {
-		const auto data = ConstBuffer<char>::FromVoid(_data);
-		Parse(data.data, data.size);
+	void OnData(std::span<const std::byte> _src) final {
+		auto src = ToStringView(_src);
+		Parse(src.data(), src.size());
 	}
 
 	void OnEnd() final {

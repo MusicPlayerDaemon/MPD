@@ -30,9 +30,10 @@
 #pragma once
 
 #include "Headers.hxx"
-#include "util/ConstBuffer.hxx"
 
+#include <cstddef>
 #include <exception>
+#include <span>
 
 /**
  * Asynchronous response handler for a #CurlRequest.
@@ -58,7 +59,7 @@ public:
 	 *
 	 * May throw #Pause (but nothing else).
 	 */
-	virtual void OnData(ConstBuffer<void> data) = 0;
+	virtual void OnData(std::span<const std::byte> data) = 0;
 
 	/**
 	 * The response has ended.  The method is allowed to delete the

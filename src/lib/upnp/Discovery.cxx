@@ -24,6 +24,7 @@
 #include "event/Call.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/SpanCast.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <upnptools.h>
@@ -64,9 +65,9 @@ UPnPDeviceDirectory::Downloader::OnHeaders(unsigned status,
 }
 
 void
-UPnPDeviceDirectory::Downloader::OnData(ConstBuffer<void> _data)
+UPnPDeviceDirectory::Downloader::OnData(std::span<const std::byte> src)
 {
-	data.append((const char *)_data.data, _data.size);
+	data.append(ToStringView(src));
 }
 
 void

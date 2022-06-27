@@ -48,9 +48,9 @@ public:
 				i.first.c_str(), i.second.c_str());
 	}
 
-	void OnData(ConstBuffer<void> data) override {
+	void OnData(std::span<const std::byte> data) override {
 		try {
-			if (fwrite(data.data, data.size, 1, stdout) != 1)
+			if (fwrite(data.data(), data.size(), 1, stdout) != 1)
 				throw std::runtime_error("Failed to write");
 		} catch (...) {
 			OnError(std::current_exception());
