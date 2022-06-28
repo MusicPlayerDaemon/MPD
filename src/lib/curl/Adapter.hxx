@@ -34,8 +34,8 @@
 #include <curl/curl.h>
 
 #include <cstddef>
+#include <string_view>
 
-struct StringView;
 class CurlEasy;
 class CurlResponseHandler;
 
@@ -68,7 +68,7 @@ private:
 	void FinishHeaders();
 	void FinishBody();
 
-	void HeaderFunction(StringView s) noexcept;
+	void HeaderFunction(std::string_view s) noexcept;
 
 	/** called by curl when a new header is available */
 	static std::size_t _HeaderFunction(char *ptr,

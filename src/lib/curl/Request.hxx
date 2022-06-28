@@ -35,7 +35,6 @@
 
 #include <cstddef>
 
-struct StringView;
 class CurlGlobal;
 class CurlResponseHandler;
 
