@@ -39,6 +39,8 @@
 
 #include <string.h>
 
+using std::string_view_literals::operator""sv;
+
 class EmbeddedCuePlaylist final : public SongEnumerator {
 public:
 	/**
@@ -69,14 +71,15 @@ public:
 
 	ExtractCuesheetTagHandler() noexcept:NullTagHandler(WANT_PAIR) {}
 
-	void OnPair(StringView key, StringView value) noexcept override;
+	void OnPair(std::string_view key, std::string_view value) noexcept override;
 };
 
 void
-ExtractCuesheetTagHandler::OnPair(StringView name, StringView value) noexcept
+ExtractCuesheetTagHandler::OnPair(std::string_view name, std::string_view value) noexcept
 {
-	if (cuesheet.empty() && name.EqualsIgnoreCase("cuesheet"))
-		cuesheet = {value.data, value.size};
+	if (cuesheet.empty() &&
+	    StringView{name}.EqualsIgnoreCase("cuesheet"sv))
+		cuesheet = value;
 }
 
 static std::unique_ptr<SongEnumerator>

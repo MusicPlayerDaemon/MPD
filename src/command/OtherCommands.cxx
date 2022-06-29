@@ -148,7 +148,7 @@ public:
 	explicit PrintTagHandler(Response &_response) noexcept
 		:NullTagHandler(WANT_TAG), response(_response) {}
 
-	void OnTag(TagType type, StringView value) noexcept override {
+	void OnTag(TagType type, std::string_view value) noexcept override {
 		if (response.GetClient().tag_mask.Test(type))
 			tag_print(response, type, value);
 	}

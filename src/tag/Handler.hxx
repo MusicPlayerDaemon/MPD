@@ -26,8 +26,8 @@
 
 #include <cstddef>
 #include <span>
+#include <string_view>
 
-struct StringView;
 struct AudioFormat;
 class TagBuilder;
 
@@ -83,13 +83,14 @@ public:
 	 * @param the value of the tag; the pointer will become
 	 * invalid after returning
 	 */
-	virtual void OnTag(TagType type, StringView value) noexcept = 0;
+	virtual void OnTag(TagType type, std::string_view value) noexcept = 0;
 
 	/**
 	 * A name-value pair has been read.  It is the codec specific
 	 * representation of tags.
 	 */
-	virtual void OnPair(StringView key, StringView value) noexcept = 0;
+	virtual void OnPair(std::string_view key,
+			    std::string_view value) noexcept = 0;
 
 	/**
 	 * Declare the audio format of a song.
@@ -127,8 +128,9 @@ public:
 		:TagHandler(_want_mask) {}
 
 	void OnDuration([[maybe_unused]] SongTime duration) noexcept override {}
-	void OnTag(TagType type, StringView value) noexcept override;
-	void OnPair(StringView key, StringView value) noexcept override;
+	void OnTag(TagType type, std::string_view value) noexcept override;
+	void OnPair(std::string_view key,
+		    std::string_view value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;
 	void OnPicture(const char *mime_type,
 		       std::span<const std::byte> buffer) noexcept override;
@@ -151,7 +153,7 @@ public:
 		:AddTagHandler(0, _builder) {}
 
 	void OnDuration(SongTime duration) noexcept override;
-	void OnTag(TagType type, StringView value) noexcept override;
+	void OnTag(TagType type, std::string_view value) noexcept override;
 };
 
 /**
@@ -175,7 +177,8 @@ public:
 				AudioFormat *_audio_format=nullptr) noexcept
 		:FullTagHandler(0, _builder, _audio_format) {}
 
-	void OnPair(StringView key, StringView value) noexcept override;
+	void OnPair(std::string_view key,
+		    std::string_view value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;
 };
 

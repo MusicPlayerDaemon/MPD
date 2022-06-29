@@ -106,7 +106,7 @@ handle_listfiles_local(Response &r, Path path_fs)
 
 gcc_pure
 static bool
-IsValidName(const StringView s) noexcept
+IsValidName(const std::string_view s) noexcept
 {
 	if (s.empty() || !IsAlphaASCII(s.front()))
 		return false;
@@ -118,7 +118,7 @@ IsValidName(const StringView s) noexcept
 
 gcc_pure
 static bool
-IsValidValue(const StringView s) noexcept
+IsValidValue(const std::string_view s) noexcept
 {
 	return std::none_of(s.begin(), s.end(), [](const auto &ch) { return (unsigned char)ch < 0x20; });
 }
@@ -130,7 +130,7 @@ public:
 	explicit PrintCommentHandler(Response &_response) noexcept
 		:NullTagHandler(WANT_PAIR), response(_response) {}
 
-	void OnPair(StringView key, StringView value) noexcept override {
+	void OnPair(std::string_view key, std::string_view value) noexcept override {
 		if (IsValidName(key) && IsValidValue(value))
 			response.Fmt(FMT_STRING("{}: {}\n"), key, value);
 	}
