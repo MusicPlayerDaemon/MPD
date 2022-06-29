@@ -23,10 +23,10 @@
 #include "Type.h"
 #include "Chrono.hxx"
 
-#include <vector>
 #include <memory>
+#include <string_view>
+#include <vector>
 
-struct StringView;
 struct TagItem;
 struct Tag;
 
@@ -137,7 +137,7 @@ public:
 	 * A variant of AddItem() which does not attempt to fix up the
 	 * value and does not check whether the tag type is disabled.
 	 */
-	void AddItemUnchecked(TagType type, StringView value) noexcept;
+	void AddItemUnchecked(TagType type, std::string_view value) noexcept;
 
 	/**
 	 * Appends a new tag item.
@@ -146,7 +146,7 @@ public:
 	 * @param value the value of the tag item (not null-terminated)
 	 * @param length the length of #value
 	 */
-	void AddItem(TagType type, StringView value) noexcept;
+	void AddItem(TagType type, std::string_view value) noexcept;
 
 	/**
 	 * Appends a new tag item.
@@ -175,7 +175,7 @@ public:
 	void RemoveType(TagType type) noexcept;
 
 private:
-	void AddItemInternal(TagType type, StringView value) noexcept;
+	void AddItemInternal(TagType type, std::string_view value) noexcept;
 };
 
 #endif

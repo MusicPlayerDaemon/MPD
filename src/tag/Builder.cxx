@@ -23,7 +23,6 @@
 #include "FixString.hxx"
 #include "Tag.hxx"
 #include "util/AllocatedArray.hxx"
-#include "util/StringView.hxx"
 
 #include <algorithm>
 #include <array>
@@ -198,7 +197,7 @@ TagBuilder::Complement(const Tag &other) noexcept
 }
 
 void
-TagBuilder::AddItemUnchecked(TagType type, StringView value) noexcept
+TagBuilder::AddItemUnchecked(TagType type, std::string_view value) noexcept
 {
 	TagItem *i;
 
@@ -211,7 +210,7 @@ TagBuilder::AddItemUnchecked(TagType type, StringView value) noexcept
 }
 
 inline void
-TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
+TagBuilder::AddItemInternal(TagType type, std::string_view value) noexcept
 {
 	assert(!value.empty());
 
@@ -223,7 +222,7 @@ TagBuilder::AddItemInternal(TagType type, StringView value) noexcept
 }
 
 void
-TagBuilder::AddItem(TagType type, StringView value) noexcept
+TagBuilder::AddItem(TagType type, std::string_view value) noexcept
 {
 	if (value.empty() || !IsTagEnabled(type))
 		return;
@@ -234,7 +233,7 @@ TagBuilder::AddItem(TagType type, StringView value) noexcept
 void
 TagBuilder::AddItem(TagType type, const char *value) noexcept
 {
-	AddItem(type, StringView(value));
+	AddItem(type, std::string_view(value));
 }
 
 void
