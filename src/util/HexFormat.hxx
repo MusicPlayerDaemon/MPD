@@ -34,6 +34,7 @@
 
 #include <array>
 #include <cstdint>
+#include <span>
 
 constexpr char hex_digits[] = "0123456789abcdef";
 
@@ -81,14 +82,6 @@ HexFormatUint64Fixed(char dest[16], uint64_t number) noexcept
 	return dest;
 }
 
-#if __cplusplus >= 202002 || (defined(__GNUC__) && __GNUC__ >= 10)
-#include <version>
-#endif
-
-#ifdef __cpp_lib_span
-#include <array>
-#include <span>
-
 /**
  * Format the given input buffer of bytes to hex.  The caller ensures
  * that the output buffer is at least twice as large as the input.
@@ -117,5 +110,3 @@ HexFormat(std::span<const std::byte, size> input) noexcept
 	HexFormat(output.data(), input);
 	return output;
 }
-
-#endif
