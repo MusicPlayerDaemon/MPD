@@ -21,7 +21,6 @@
 #include "Item.hxx"
 #include "util/Cast.hxx"
 #include "util/VarSize.hxx"
-#include "util/StringView.hxx"
 
 #include <cassert>
 #include <cstdint>
@@ -42,24 +41,23 @@ struct TagPoolSlot {
 	static constexpr unsigned MAX_REF = std::numeric_limits<decltype(ref)>::max();
 
 	TagPoolSlot(TagPoolSlot *_next, TagType type,
-		    StringView value) noexcept
+		    std::string_view value) noexcept
 		:next(_next) {
 		item.type = type;
-		memcpy(item.value, value.data, value.size);
-		item.value[value.size] = 0;
+		*std::copy(value.begin(), value.end(), item.value) = 0;
 	}
 
 	static TagPoolSlot *Create(TagPoolSlot *_next, TagType type,
-				   StringView value) noexcept;
+				   std::string_view value) noexcept;
 };
 
 TagPoolSlot *
 TagPoolSlot::Create(TagPoolSlot *_next, TagType type,
-		    StringView value) noexcept
+		    std::string_view value) noexcept
 {
 	TagPoolSlot *dummy;
 	return NewVarSize<TagPoolSlot>(sizeof(dummy->item.value),
-				       value.size + 1,
+				       value.size() + 1,
 				       _next, type,
 				       value);
 }
@@ -67,7 +65,7 @@ TagPoolSlot::Create(TagPoolSlot *_next, TagType type,
 static TagPoolSlot *slots[NUM_SLOTS];
 
 static inline unsigned
-calc_hash(TagType type, StringView p) noexcept
+calc_hash(TagType type, std::string_view p) noexcept
 {
 	unsigned hash = 5381;
 
@@ -97,7 +95,7 @@ tag_item_to_slot(TagItem *item) noexcept
 }
 
 static inline TagPoolSlot **
-tag_value_slot_p(TagType type, StringView value) noexcept
+tag_value_slot_p(TagType type, std::string_view value) noexcept
 {
 	return &slots[calc_hash(type, value) % NUM_SLOTS];
 }
@@ -109,12 +107,12 @@ tag_value_slot_p(TagType type, const char *value) noexcept
 }
 
 TagItem *
-tag_pool_get_item(TagType type, StringView value) noexcept
+tag_pool_get_item(TagType type, std::string_view value) noexcept
 {
 	auto slot_p = tag_value_slot_p(type, value);
 	for (auto slot = *slot_p; slot != nullptr; slot = slot->next) {
 		if (slot->item.type == type &&
-		    value.Equals(slot->item.value) &&
+		    value == slot->item.value &&
 		    slot->ref < TagPoolSlot::MAX_REF) {
 			assert(slot->ref > 0);
 			++slot->ref;

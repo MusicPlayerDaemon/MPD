@@ -23,14 +23,15 @@
 #include "Type.h"
 #include "thread/Mutex.hxx"
 
+#include <string_view>
+
 extern Mutex tag_pool_lock;
 
 struct TagItem;
-struct StringView;
 
 [[nodiscard]]
 TagItem *
-tag_pool_get_item(TagType type, StringView value) noexcept;
+tag_pool_get_item(TagType type, std::string_view value) noexcept;
 
 [[nodiscard]]
 TagItem *
