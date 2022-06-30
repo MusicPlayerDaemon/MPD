@@ -29,12 +29,12 @@
  * the comment value into the tag.
  */
 static bool
-vorbis_copy_comment(StringView comment,
-		    StringView name, TagType tag_type,
+vorbis_copy_comment(std::string_view comment,
+		    std::string_view name, TagType tag_type,
 		    TagHandler &handler) noexcept
 {
 	const auto value = GetVorbisCommentValue(comment, name);
-	if (!value.IsNull()) {
+	if (value.data() != nullptr) {
 		handler.OnTag(tag_type, value);
 		return true;
 	}

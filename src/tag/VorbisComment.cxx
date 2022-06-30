@@ -18,21 +18,19 @@
  */
 
 #include "VorbisComment.hxx"
-#include "util/StringView.hxx"
+#include "util/StringCompare.hxx"
 
 #include <cassert>
 
-StringView
-GetVorbisCommentValue(StringView entry, StringView name) noexcept
+std::string_view
+GetVorbisCommentValue(std::string_view entry, std::string_view name) noexcept
 {
 	assert(!name.empty());
 
-	if (entry.StartsWithIgnoreCase(name) &&
-	    entry.size > name.size &&
-	    entry[name.size] == '=') {
-		entry.skip_front(name.size + 1);
-		return entry;
-	}
+	if (StringStartsWithIgnoreCase(entry, name) &&
+	    entry.size() > name.size() &&
+	    entry[name.size()] == '=')
+		return entry.substr(name.size() + 1);
 
-	return nullptr;
+	return {};
 }

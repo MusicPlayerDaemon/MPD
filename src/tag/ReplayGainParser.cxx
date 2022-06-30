@@ -75,11 +75,11 @@ bool
 ParseReplayGainVorbis(ReplayGainInfo &info, StringView entry) noexcept
 {
 	struct VorbisCommentEntry {
-		StringView entry;
+		std::string_view entry;
 
 		gcc_pure
-		const char *operator[](StringView n) const noexcept {
-			return GetVorbisCommentValue(entry, n).data;
+		const char *operator[](std::string_view n) const noexcept {
+			return GetVorbisCommentValue(entry, n).data();
 		}
 	};
 

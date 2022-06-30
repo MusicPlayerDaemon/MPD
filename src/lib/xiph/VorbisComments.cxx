@@ -68,8 +68,8 @@ vorbis_scan_comment(StringView comment, TagHandler &handler) noexcept
 {
 	const auto picture_b64 = handler.WantPicture()
 		? GetVorbisCommentValue(comment, "METADATA_BLOCK_PICTURE")
-		: nullptr;
-	if (!picture_b64.IsNull())
+		: std::string_view{};
+	if (picture_b64.data() != nullptr)
 		return ScanVorbisPicture(picture_b64, handler);
 
 	ScanVorbisComment(comment, handler);

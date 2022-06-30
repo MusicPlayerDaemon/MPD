@@ -20,14 +20,14 @@
 #ifndef MPD_TAG_VORBIS_COMMENT_HXX
 #define MPD_TAG_VORBIS_COMMENT_HXX
 
-struct StringView;
+#include <string_view>
 
 /**
  * Checks if the specified name matches the entry's name, and if yes,
  * returns the comment value.
  */
 [[gnu::pure]]
-StringView
-GetVorbisCommentValue(StringView entry, StringView name) noexcept;
+std::string_view
+GetVorbisCommentValue(std::string_view entry, std::string_view name) noexcept;
 
 #endif
