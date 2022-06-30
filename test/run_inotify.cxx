@@ -40,6 +40,13 @@ my_inotify_callback([[maybe_unused]] int wd, unsigned mask,
 	printf("mask=0x%x name='%s'\n", mask, name);
 }
 
+struct Instance {
+	EventLoop event_loop;
+	const ShutdownHandler shutdown_handler{event_loop};
+
+	InotifySource source{event_loop, my_inotify_callback, nullptr};
+};
+
 int main(int argc, char **argv)
 try {
 	const char *path;
@@ -51,13 +58,11 @@ try {
 
 	path = argv[1];
 
-	EventLoop event_loop;
-	const ShutdownHandler shutdown_handler(event_loop);
+	Instance instance;
 
-	InotifySource source(event_loop, my_inotify_callback, nullptr);
-	source.Add(path, IN_MASK);
+	instance.source.Add(path, IN_MASK);
 
-	event_loop.Run();
+	instance.event_loop.Run();
 
 	return EXIT_SUCCESS;
 } catch (...) {
