@@ -22,7 +22,7 @@
 
 #include "Type.h"
 
-struct StringView;
+#include <string_view>
 
 /**
  * Parse the string, and convert it into a #TagType.  Returns
@@ -34,7 +34,7 @@ tag_name_parse(const char *name) noexcept;
 
 [[gnu::pure]]
 TagType
-tag_name_parse(StringView name) noexcept;
+tag_name_parse(std::string_view name) noexcept;
 
 /**
  * Parse the string, and convert it into a #TagType.  Returns
@@ -48,6 +48,6 @@ tag_name_parse_i(const char *name) noexcept;
 
 [[gnu::pure]]
 TagType
-tag_name_parse_i(StringView name) noexcept;
+tag_name_parse_i(std::string_view name) noexcept;
 
 #endif

@@ -19,21 +19,19 @@
 
 #include "ParseName.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringView.hxx"
+#include "util/StringCompare.hxx"
 
 #include <cassert>
 
 #include <string.h>
 
 TagType
-tag_name_parse(StringView name) noexcept
+tag_name_parse(std::string_view name) noexcept
 {
-	assert(name != nullptr);
-
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
 		assert(tag_item_names[i] != nullptr);
 
-		if (name.Equals(tag_item_names[i]))
+		if (name == tag_item_names[i])
 			return (TagType)i;
 	}
 
@@ -56,14 +54,12 @@ tag_name_parse_i(const char *name) noexcept
 }
 
 TagType
-tag_name_parse_i(StringView name) noexcept
+tag_name_parse_i(std::string_view name) noexcept
 {
-	assert(name != nullptr);
-
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
 		assert(tag_item_names[i] != nullptr);
 
-		if (name.EqualsIgnoreCase(tag_item_names[i]))
+		if (StringIsEqualIgnoreCase(name, tag_item_names[i]))
 			return (TagType)i;
 	}
 
