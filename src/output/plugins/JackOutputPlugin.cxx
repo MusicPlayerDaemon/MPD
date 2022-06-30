@@ -199,11 +199,11 @@ static unsigned
 parse_port_list(const char *source, std::string dest[])
 {
 	unsigned n = 0;
-	for (auto i : IterableSplitString(source, ',')) {
+	for (const std::string_view i : IterableSplitString(source, ',')) {
 		if (n >= MAX_PORTS)
 			throw std::runtime_error("too many port names");
 
-		dest[n++] = std::string(i.data, i.size);
+		dest[n++] = i;
 	}
 
 	if (n == 0)
