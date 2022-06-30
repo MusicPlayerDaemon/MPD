@@ -20,7 +20,6 @@
 #include "ApeLoader.hxx"
 #include "util/ByteOrder.hxx"
 #include "input/InputStream.hxx"
-#include "util/StringView.hxx"
 
 #include <cassert>
 #include <cstdint>

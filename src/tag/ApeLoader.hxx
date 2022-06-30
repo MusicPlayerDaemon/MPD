@@ -21,12 +21,12 @@
 #define MPD_APE_LOADER_HXX
 
 #include <functional>
+#include <string_view>
 
-struct StringView;
 class InputStream;
 
 typedef std::function<bool(unsigned long flags, const char *key,
-			   StringView value)> ApeTagCallback;
+			   std::string_view value)> ApeTagCallback;
 
 /**
  * Scans the APE tag values from a file.
