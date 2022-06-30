@@ -24,7 +24,7 @@
 #include "config/Option.hxx"
 #include "util/ASCII.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/SplitString.hxx"
+#include "util/IterableSplitString.hxx"
 #include "util/StringView.hxx"
 
 void
@@ -45,7 +45,9 @@ TagLoadConfig(const ConfigData &config)
 		/* no "+-": not incremental */
 		global_tag_mask = TagMask::None();
 
-	for (StringView name : SplitString(value, ',')) {
+	for (StringView name : IterableSplitString(value, ',')) {
+		name.Strip();
+
 		if (name.SkipPrefix("+")) {
 			plus = true;
 		} else if (name.SkipPrefix("-")) {
