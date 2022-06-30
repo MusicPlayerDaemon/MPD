@@ -30,9 +30,9 @@
 #pragma once
 
 #include "StringSplit.hxx"
-#include "StringView.hxx"
 
 #include <iterator>
+#include <string_view>
 
 /**
  * Split a string at a certain separator character into sub strings
@@ -46,8 +46,6 @@ template<typename T>
 class BasicIterableSplitString {
 	using string_view = std::basic_string_view<T>;
 	using value_type = typename string_view::value_type;
-
-	using StringView = BasicStringView<T>;
 
 	string_view s;
 	value_type separator;
@@ -100,11 +98,11 @@ public:
 			return !(*this == other);
 		}
 
-		constexpr StringView operator*() const noexcept {
+		constexpr string_view operator*() const noexcept {
 			return current;
 		}
 
-		constexpr const StringView *operator->() const noexcept {
+		constexpr const string_view *operator->() const noexcept {
 			return &current;
 		}
 	};

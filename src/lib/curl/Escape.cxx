@@ -38,7 +38,7 @@ CurlEscapeUriPath(CURL *curl, std::string_view src) noexcept
 	std::string dest;
 
 	for (const auto i : IterableSplitString(src, '/')) {
-		CurlString escaped(curl_easy_escape(curl, i.data, i.size));
+		CurlString escaped(curl_easy_escape(curl, i.data(), i.size()));
 		if (!dest.empty())
 			dest.push_back('/');
 		dest += escaped.c_str();
