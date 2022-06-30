@@ -21,7 +21,6 @@
 #include "VorbisComment.hxx"
 #include "MixRampInfo.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringView.hxx"
 
 #include <cassert>
 
@@ -56,10 +55,10 @@ ParseMixRampTag(MixRampInfo &info,
 		const char *value;
 
 		[[gnu::pure]]
-		StringView operator[](const char *n) const noexcept {
+		std::string_view operator[](const char *n) const noexcept {
 			return StringEqualsCaseASCII(name, n)
 				? value
-				: nullptr;
+				: std::string_view{};
 		}
 	};
 
@@ -67,13 +66,13 @@ ParseMixRampTag(MixRampInfo &info,
 }
 
 bool
-ParseMixRampVorbis(MixRampInfo &info, StringView entry) noexcept
+ParseMixRampVorbis(MixRampInfo &info, std::string_view entry) noexcept
 {
 	struct VorbisCommentEntry {
-		StringView entry;
+		std::string_view entry;
 
 		[[gnu::pure]]
-		StringView operator[](StringView n) const noexcept {
+		std::string_view operator[](std::string_view n) const noexcept {
 			return GetVorbisCommentValue(entry, n);
 		}
 	};

@@ -19,7 +19,8 @@
 
 #pragma once
 
-struct StringView;
+#include <string_view>
+
 class MixRampInfo;
 
 bool
@@ -27,4 +28,4 @@ ParseMixRampTag(MixRampInfo &info,
 		const char *name, const char *value) noexcept;
 
 bool
-ParseMixRampVorbis(MixRampInfo &info, StringView entry) noexcept;
+ParseMixRampVorbis(MixRampInfo &info, std::string_view entry) noexcept;
