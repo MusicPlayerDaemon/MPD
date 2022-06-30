@@ -19,8 +19,8 @@
 
 #include "CueParser.hxx"
 #include "tag/ParseName.hxx"
-#include "util/StringView.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringView.hxx"
 
 #include <algorithm>
 #include <cassert>
@@ -110,7 +110,7 @@ CueParser::GetCurrentTag() noexcept
 }
 
 static bool
-IsDigit(StringView s) noexcept
+IsDigit(std::string_view s) noexcept
 {
 	return !s.empty() && IsDigitASCII(s.front());
 }
@@ -174,9 +174,11 @@ CueParser::Commit() noexcept
 }
 
 void
-CueParser::Feed(StringView src) noexcept
+CueParser::Feed(std::string_view _src) noexcept
 {
 	assert(!end);
+
+	StringView src{_src};
 
 	auto command = cue_next_token(src);
 	if (command == nullptr)

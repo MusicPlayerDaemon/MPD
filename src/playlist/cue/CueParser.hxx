@@ -24,10 +24,9 @@
 #include "tag/Builder.hxx"
 #include "util/Compiler.h"
 
-#include <string>
 #include <memory>
-
-struct StringView;
+#include <string>
+#include <string_view>
 
 class CueParser {
 	enum {
@@ -106,7 +105,7 @@ public:
 	 * Feed a text line from the CUE file into the parser.  Call
 	 * Get() after this to see if a song has been finished.
 	 */
-	void Feed(StringView line) noexcept;
+	void Feed(std::string_view line) noexcept;
 
 	/**
 	 * Tell the parser that the end of the file has been reached.  Call
