@@ -76,16 +76,9 @@ public:
 			if (rest == nullptr)
 				current = nullptr;
 			else {
-				const auto *i = rest.Find(separator);
-				if (i == nullptr) {
-					current = rest;
-					rest.data = nullptr;
-				} else {
-					current.data = rest.data;
-					current.size = i - current.data;
-					rest.size -= current.size + 1;
-					rest.data = i + 1;
-				}
+				const auto [a, b] = rest.Split(separator);
+				current = a;
+				rest = b;
 			}
 		}
 
