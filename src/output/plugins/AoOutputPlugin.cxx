@@ -31,6 +31,8 @@
 
 #include <ao/ao.h>
 
+#include <cassert>
+
 /* An ao_sample_format, with all fields set to zero: */
 static ao_sample_format OUR_AO_FORMAT_INITIALIZER;
 
