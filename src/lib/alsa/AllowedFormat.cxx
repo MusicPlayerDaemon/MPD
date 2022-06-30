@@ -21,24 +21,26 @@
 #include "pcm/AudioParser.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringBuffer.hxx"
+#include "util/StringCompare.hxx"
 #include "config.h"
 
 #include <stdexcept>
 
+using std::string_view_literals::operator""sv;
+
 namespace Alsa {
 
-AllowedFormat::AllowedFormat(StringView s)
+AllowedFormat::AllowedFormat(std::string_view s)
 {
 #ifdef ENABLE_DSD
-	dop = s.RemoveSuffix("=dop");
+	dop = RemoveSuffix(s, "=dop"sv);
 #endif
 
 	char buffer[64];
-	if (s.size >= sizeof(buffer))
+	if (s.size() >= sizeof(buffer))
 		throw std::invalid_argument("Failed to parse audio format");
 
-	memcpy(buffer, s.data, s.size);
-	buffer[s.size] = 0;
+	*std::copy(s.begin(), s.end(), buffer) = 0;
 
 	format = ParseAudioFormat(buffer, true);
 

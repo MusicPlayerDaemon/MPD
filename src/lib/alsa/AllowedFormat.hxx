@@ -26,8 +26,6 @@
 #include <forward_list>
 #include <string>
 
-struct StringView;
-
 namespace Alsa {
 
 /**
@@ -45,7 +43,7 @@ struct AllowedFormat {
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	explicit AllowedFormat(StringView s);
+	explicit AllowedFormat(std::string_view s);
 
 	/**
 	 * Parse a list of formats separated by space.
