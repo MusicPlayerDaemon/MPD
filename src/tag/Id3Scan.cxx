@@ -25,9 +25,12 @@
 #include "Builder.hxx"
 #include "Tag.hxx"
 #include "Id3MusicBrainz.hxx"
-#include "util/StringView.hxx"
+#include "util/StringAPI.hxx"
+#include "util/StringStrip.hxx"
 
 #include <id3tag.h>
+
+#include <cassert>
 
 #include <string.h>
 #include <stdlib.h>
@@ -89,10 +92,7 @@ InvokeOnTag(TagHandler &handler, TagType type, const id3_ucs4_t *ucs4) noexcept
 	if (!utf8)
 		return;
 
-	StringView s{utf8.c_str()};
-	s.Strip();
-
-	handler.OnTag(type, s);
+	handler.OnTag(type, Strip(std::string_view{utf8.c_str()}));
 }
 
 /**
