@@ -19,7 +19,7 @@
 
 #include "Table.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringView.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string.h>
 
@@ -39,10 +39,10 @@ tag_table_lookup(const struct tag_table *table, const char *name) noexcept
 }
 
 TagType
-tag_table_lookup(const struct tag_table *table, StringView name) noexcept
+tag_table_lookup(const struct tag_table *table, std::string_view name) noexcept
 {
 	for (; table->name != nullptr; ++table)
-		if (name.Equals(table->name))
+		if (name == table->name)
 			return table->type;
 
 	return TAG_NUM_OF_ITEM_TYPES;
@@ -64,10 +64,11 @@ tag_table_lookup_i(const struct tag_table *table, const char *name) noexcept
 }
 
 TagType
-tag_table_lookup_i(const struct tag_table *table, StringView name) noexcept
+tag_table_lookup_i(const struct tag_table *table,
+		   std::string_view name) noexcept
 {
 	for (; table->name != nullptr; ++table)
-		if (name.EqualsIgnoreCase(table->name))
+		if (StringIsEqualIgnoreCase(name, table->name))
 			return table->type;
 
 	return TAG_NUM_OF_ITEM_TYPES;

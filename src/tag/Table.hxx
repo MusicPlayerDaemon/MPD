@@ -22,7 +22,7 @@
 
 #include "Type.h"
 
-struct StringView;
+#include <string_view>
 
 struct tag_table {
 	const char *name;
@@ -41,7 +41,7 @@ tag_table_lookup(const tag_table *table, const char *name) noexcept;
 
 [[gnu::pure]]
 TagType
-tag_table_lookup(const tag_table *table, StringView name) noexcept;
+tag_table_lookup(const tag_table *table, std::string_view name) noexcept;
 
 /**
  * Looks up a string in a tag translation table (case insensitive).
@@ -54,7 +54,7 @@ tag_table_lookup_i(const tag_table *table, const char *name) noexcept;
 
 [[gnu::pure]]
 TagType
-tag_table_lookup_i(const tag_table *table, StringView name) noexcept;
+tag_table_lookup_i(const tag_table *table, std::string_view name) noexcept;
 
 /**
  * Looks up a #TagType in a tag translation table and returns its
