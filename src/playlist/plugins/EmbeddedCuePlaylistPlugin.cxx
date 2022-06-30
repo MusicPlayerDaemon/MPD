@@ -33,7 +33,7 @@
 #include "TagFile.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/StringView.hxx"
+#include "util/StringCompare.hxx"
 
 #include <memory>
 
@@ -77,8 +77,7 @@ public:
 void
 ExtractCuesheetTagHandler::OnPair(std::string_view name, std::string_view value) noexcept
 {
-	if (cuesheet.empty() &&
-	    StringView{name}.EqualsIgnoreCase("cuesheet"sv))
+	if (cuesheet.empty() && StringIsEqualIgnoreCase(name, "cuesheet"sv))
 		cuesheet = value;
 }
 

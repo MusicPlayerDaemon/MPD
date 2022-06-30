@@ -21,6 +21,7 @@
 #include "Builder.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/StringView.hxx"
 
 #include <algorithm>
@@ -81,7 +82,7 @@ AddTagHandler::OnTag(TagType type, std::string_view value) noexcept
 void
 FullTagHandler::OnPair(std::string_view name, std::string_view) noexcept
 {
-	if (StringView{name}.EqualsIgnoreCase("cuesheet"sv))
+	if (StringIsEqualIgnoreCase(name, "cuesheet"sv))
 		tag.SetHasPlaylist(true);
 }
 
