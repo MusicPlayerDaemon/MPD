@@ -28,6 +28,8 @@
 #include "time/ChronoUtil.hxx"
 #include "util/IterableSplitString.hxx"
 
+using std::string_view_literals::operator""sv;
+
 Song::Song(DetachedSong &&other, Directory &_parent) noexcept
 	:parent(_parent),
 	 filename(other.GetURI()),
@@ -63,14 +65,14 @@ Song::GetURI() const noexcept
  */
 gcc_pure
 static const Directory *
-FindTargetDirectory(const Directory &base, StringView path) noexcept
+FindTargetDirectory(const Directory &base, std::string_view path) noexcept
 {
 	const auto *directory = &base;
-	for (const StringView name : IterableSplitString(path, '/')) {
-		if (name.empty() || name.Equals("."))
+	for (const std::string_view name : IterableSplitString(path, '/')) {
+		if (name.empty() || name == "."sv)
 			continue;
 
-		directory = name.Equals("..")
+		directory = name == ".."sv
 			? directory->parent
 			: directory->FindChild(name);
 		if (directory == nullptr)
@@ -85,12 +87,12 @@ FindTargetDirectory(const Directory &base, StringView path) noexcept
  */
 gcc_pure
 static const Song *
-FindTargetSong(const Directory &_directory, StringView target) noexcept
+FindTargetSong(const Directory &_directory, std::string_view target) noexcept
 {
-	auto [path, last] = target.SplitLast('/');
-	if (last == nullptr) {
+	auto [path, last] = SplitLast(target, '/');
+	if (last.data() == nullptr) {
 		last = path;
-		path = nullptr;
+		path = {};
 	}
 
 	if (last.empty())
@@ -107,7 +109,7 @@ ExportedSong
 Song::Export() const noexcept
 {
 	const auto *target_song = !target.empty()
-		? FindTargetSong(parent, (std::string_view)target)
+		? FindTargetSong(parent, target)
 		: nullptr;
 
 	Tag merged_tag;
