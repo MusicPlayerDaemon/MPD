@@ -18,7 +18,7 @@
  */
 
 #include "ShutdownHandler.hxx"
-#include "db/update/InotifySource.hxx"
+#include "event/InotifyEvent.hxx"
 #include "event/Loop.hxx"
 #include "Log.hxx"
 
@@ -33,18 +33,23 @@ static constexpr unsigned IN_MASK =
 	IN_ATTRIB|IN_CLOSE_WRITE|IN_CREATE|IN_DELETE|IN_DELETE_SELF
 	|IN_MOVE|IN_MOVE_SELF;
 
-static void
-my_inotify_callback([[maybe_unused]] int wd, unsigned mask,
-		    const char *name, [[maybe_unused]] void *ctx)
-{
-	printf("mask=0x%x name='%s'\n", mask, name);
-}
-
-struct Instance {
+struct Instance final : InotifyHandler {
 	EventLoop event_loop;
 	const ShutdownHandler shutdown_handler{event_loop};
 
-	InotifySource source{event_loop, my_inotify_callback, nullptr};
+	InotifyEvent inotify_event{event_loop, *this};
+
+	std::exception_ptr error;
+
+	/* virtual methods from class InotifyHandler */
+	void OnInotify(int, unsigned mask, const char *name) override {
+		printf("mask=0x%x name='%s'\n", mask, name);
+	}
+
+	void OnInotifyError(std::exception_ptr _error) noexcept override {
+		error = std::move(_error);
+		event_loop.Break();
+	}
 };
 
 int main(int argc, char **argv)
@@ -60,9 +65,12 @@ try {
 
 	Instance instance;
 
-	instance.source.Add(path, IN_MASK);
+	instance.inotify_event.AddWatch(path, IN_MASK);
 
 	instance.event_loop.Run();
+
+	if (instance.error)
+		std::rethrow_exception(instance.error);
 
 	return EXIT_SUCCESS;
 } catch (...) {

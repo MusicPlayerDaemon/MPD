@@ -43,7 +43,6 @@ db_glue_sources = [
 if enable_inotify
   db_glue_sources += [
     'update/InotifyDomain.cxx',
-    'update/InotifySource.cxx',
     'update/InotifyQueue.cxx',
     'update/InotifyUpdate.cxx',
   ]

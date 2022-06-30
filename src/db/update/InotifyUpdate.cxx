@@ -118,7 +118,7 @@ InotifyUpdate::Disable(WatchDirectory &directory) noexcept
 	for (WatchDirectory &child : directory.children)
 		Disable(child);
 
-	source.Remove(directory.descriptor);
+	inotify_event.RemoveWatch(directory.descriptor);
 }
 
 void
@@ -199,7 +199,8 @@ try {
 			continue;
 
 		try {
-			ret = source.Add(child_path_fs.c_str(), IN_MASK);
+			ret = inotify_event.AddWatch(child_path_fs.c_str(),
+						     IN_MASK);
 		} catch (...) {
 			FmtError(inotify_domain,
 				 "Failed to register {}: {}",
@@ -240,7 +241,7 @@ WatchDirectory::GetDepth() const noexcept
 inline
 InotifyUpdate::InotifyUpdate(EventLoop &loop, UpdateService &update,
 			     unsigned _max_depth)
-	:source(loop, InotifyCallback, this),
+	:inotify_event(loop, *this),
 	 queue(loop, update),
 	 max_depth(_max_depth)
 {
@@ -251,7 +252,7 @@ InotifyUpdate::~InotifyUpdate() noexcept = default;
 inline void
 InotifyUpdate::Start(Path path)
 {
-	int descriptor = source.Add(path.c_str(), IN_MASK);
+	int descriptor = inotify_event.AddWatch(path.c_str(), IN_MASK);
 
 	root = std::make_unique<WatchDirectory>(path, descriptor);
 	root->LoadExcludeList(path);
@@ -262,8 +263,7 @@ InotifyUpdate::Start(Path path)
 }
 
 void
-InotifyUpdate::InotifyCallback(int wd, unsigned mask,
-			       [[maybe_unused]] const char *name) noexcept
+InotifyUpdate::OnInotify(int wd, unsigned mask, const char *)
 {
 	auto i = directories.find(wd);
 	if (i == directories.end())
@@ -308,6 +308,12 @@ InotifyUpdate::InotifyCallback(int wd, unsigned mask,
 		else
 			queue.Enqueue("");
 	}
+}
+
+void
+InotifyUpdate::OnInotifyError(std::exception_ptr error) noexcept
+{
+	LogError(error, "inotify error");
 }
 
 std::unique_ptr<InotifyUpdate>

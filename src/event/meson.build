@@ -19,6 +19,10 @@ else
   event_sources += 'PollBackend.cxx'
 endif
 
+if enable_inotify
+  event_sources += 'InotifyEvent.cxx'
+endif
+
 event = static_library(
   'event',
   'SignalMonitor.cxx',

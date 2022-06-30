@@ -209,7 +209,6 @@ public:
 #ifdef __linux__
 	bool CreateEventFD(unsigned initval=0) noexcept;
 	bool CreateSignalFD(const sigset_t *mask) noexcept;
-	bool CreateInotify() noexcept;
 #endif
 
 	/**

@@ -133,8 +133,6 @@ if enable_inotify
     'run_inotify',
     'run_inotify.cxx',
     'ShutdownHandler.cxx',
-    '../src/db/update/InotifyDomain.cxx',
-    '../src/db/update/InotifySource.cxx',
     include_directories: inc,
     dependencies: [
       log_dep,

@@ -20,8 +20,8 @@
 #ifndef MPD_INOTIFY_UPDATE_HXX
 #define MPD_INOTIFY_UPDATE_HXX
 
-#include "InotifySource.hxx"
 #include "InotifyQueue.hxx"
+#include "event/InotifyEvent.hxx"
 
 #include <map>
 #include <memory>
@@ -33,8 +33,8 @@ struct WatchDirectory;
 /**
  * Glue code between InotifySource and InotifyQueue.
  */
-class InotifyUpdate {
-	InotifySource source;
+class InotifyUpdate final : InotifyHandler {
+	InotifyEvent inotify_event;
 	InotifyQueue queue;
 
 	const unsigned max_depth;
@@ -50,14 +50,6 @@ public:
 	void Start(Path path);
 
 private:
-	void InotifyCallback(int wd, unsigned mask, const char *name) noexcept;
-
-	static void InotifyCallback(int wd, unsigned mask,
-				    const char *name, void *ctx) noexcept {
-		auto &iu = *(InotifyUpdate *)ctx;
-		iu.InotifyCallback(wd, mask, name);
-	}
-
 	void AddToMap(WatchDirectory &directory) noexcept;
 	void RemoveFromMap(WatchDirectory &directory) noexcept;
 	void Disable(WatchDirectory &directory) noexcept;
@@ -66,6 +58,11 @@ private:
 	void RecursiveWatchSubdirectories(WatchDirectory &parent,
 					  Path path_fs,
 					  unsigned depth) noexcept;
+
+private:
+	/* virtual methods from class InotifyHandler */
+	void OnInotify(int wd, unsigned mask, const char *name) override;
+	void OnInotifyError(std::exception_ptr error) noexcept override;
 };
 
 /**

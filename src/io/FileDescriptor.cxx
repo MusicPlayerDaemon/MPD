@@ -44,7 +44,6 @@
 #ifdef __linux__
 #include <sys/eventfd.h>
 #include <sys/signalfd.h>
-#include <sys/inotify.h>
 #endif
 
 #ifndef O_NOCTTY
@@ -276,17 +275,6 @@ bool
 FileDescriptor::CreateSignalFD(const sigset_t *mask) noexcept
 {
 	int new_fd = ::signalfd(fd, mask, SFD_NONBLOCK|SFD_CLOEXEC);
-	if (new_fd < 0)
-		return false;
-
-	fd = new_fd;
-	return true;
-}
-
-bool
-FileDescriptor::CreateInotify() noexcept
-{
-	int new_fd = inotify_init1(IN_CLOEXEC|IN_NONBLOCK);
 	if (new_fd < 0)
 		return false;
 
