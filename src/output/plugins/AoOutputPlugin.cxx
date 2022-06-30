@@ -25,6 +25,8 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringSplit.hxx"
+#include "util/StringStrip.hxx"
 #include "Log.hxx"
 
 #include <ao/ao.h>
@@ -127,16 +129,14 @@ AoOutput::AoOutput(const ConfigBlock &block)
 
 	value = block.GetBlockValue("options", nullptr);
 	if (value != nullptr) {
-		for (StringView i : IterableSplitString(value, ';')) {
-			i.Strip();
-
-			auto s = i.Split('=');
-			if (s.first.empty() || s.second.IsNull())
+		for (const std::string_view i : IterableSplitString(value, ';')) {
+			const auto [n, v] = Split(Strip(i), '=');
+			if (n.empty() || v.data() == nullptr)
 				throw FormatRuntimeError("problems parsing option \"%.*s\"",
-							 int(i.size), i.data);
+							 int(i.size()), i.data());
 
-			const std::string n(s.first), v(s.second);
-			ao_append_option(&options, n.c_str(), v.c_str());
+			ao_append_option(&options, std::string{n}.c_str(),
+					 std::string{v}.c_str());
 		}
 	}
 }
