@@ -7,10 +7,10 @@ endif
 avahi = static_library(
   'avahi',
   'Helper.cxx',
-  'Client.cxx',
-  'Error.cxx',
-  'Poll.cxx',
-  'Publisher.cxx',
+  '../../lib/avahi/Client.cxx',
+  '../../lib/avahi/Error.cxx',
+  '../../lib/avahi/Poll.cxx',
+  '../../lib/avahi/Publisher.cxx',
   include_directories: inc,
   dependencies: [
     log_dep,

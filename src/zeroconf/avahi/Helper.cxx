@@ -18,10 +18,10 @@
  */
 
 #include "Helper.hxx"
-#include "Client.hxx"
-#include "ErrorHandler.hxx"
-#include "Publisher.hxx"
-#include "Service.hxx"
+#include "lib/avahi/Client.hxx"
+#include "lib/avahi/ErrorHandler.hxx"
+#include "lib/avahi/Publisher.hxx"
+#include "lib/avahi/Service.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
