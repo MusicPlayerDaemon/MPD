@@ -20,7 +20,8 @@
 #ifndef MPD_TAG_REPLAY_GAIN_HXX
 #define MPD_TAG_REPLAY_GAIN_HXX
 
-struct StringView;
+#include <string_view>
+
 struct ReplayGainInfo;
 
 bool
@@ -28,6 +29,6 @@ ParseReplayGainTag(ReplayGainInfo &info,
 		   const char *name, const char *value) noexcept;
 
 bool
-ParseReplayGainVorbis(ReplayGainInfo &info, StringView entry) noexcept;
+ParseReplayGainVorbis(ReplayGainInfo &info, std::string_view entry) noexcept;
 
 #endif
