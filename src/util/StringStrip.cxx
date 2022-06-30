@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2009-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,7 @@
 #include "StringStrip.hxx"
 #include "CharUtil.hxx"
 
+#include <algorithm>
 #include <cstring>
 
 const char *
@@ -48,6 +49,18 @@ StripLeft(const char *p, const char *end) noexcept
 		++p;
 
 	return p;
+}
+
+std::string_view
+StripLeft(const std::string_view s) noexcept
+{
+	auto i = std::find_if_not(s.begin(), s.end(),
+				  [](auto ch){ return IsWhitespaceOrNull(ch); });
+
+	return {
+		i,
+		s.end(),
+	};
 }
 
 const char *
@@ -76,10 +89,25 @@ StripRight(char *p) noexcept
 	p[new_length] = 0;
 }
 
+std::string_view
+StripRight(std::string_view s) noexcept
+{
+	auto i = std::find_if_not(s.rbegin(), s.rend(),
+				  [](auto ch){ return IsWhitespaceOrNull(ch); });
+
+	return s.substr(0, std::distance(i, s.rend()));
+}
+
 char *
 Strip(char *p) noexcept
 {
 	p = StripLeft(p);
 	StripRight(p);
 	return p;
+}
+
+std::string_view
+Strip(std::string_view s) noexcept
+{
+	return StripRight(StripLeft(s));
 }

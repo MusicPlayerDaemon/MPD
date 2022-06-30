@@ -8,6 +8,7 @@ test(
     'TestIntrusiveList.cxx',
     'TestMimeType.cxx',
     'TestSplitString.cxx',
+    'TestStringStrip.cxx',
     'TestTemplateString.cxx',
     'TestUriExtract.cxx',
     'TestUriQueryParser.cxx',

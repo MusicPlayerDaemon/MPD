@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2009-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,10 +27,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef STRING_STRIP_HXX
-#define STRING_STRIP_HXX
+#pragma once
 
 #include <cstddef>
+#include <string_view>
 
 /**
  * Skips whitespace at the beginning of the string, and returns the
@@ -56,6 +56,10 @@ StripLeft(char *p) noexcept
 [[gnu::pure]] [[gnu::returns_nonnull]] [[gnu::nonnull]]
 const char *
 StripLeft(const char *p, const char *end) noexcept;
+
+[[gnu::pure]]
+std::string_view
+StripLeft(std::string_view s) noexcept;
 
 /**
  * Determine the string's end as if it was stripped on the right side.
@@ -90,6 +94,10 @@ StripRight(const char *p, std::size_t length) noexcept;
 void
 StripRight(char *p) noexcept;
 
+[[gnu::pure]]
+std::string_view
+StripRight(std::string_view s) noexcept;
+
 /**
  * Skip whitespace at the beginning and terminate the string after the
  * last non-whitespace character.
@@ -98,4 +106,6 @@ StripRight(char *p) noexcept;
 char *
 Strip(char *p) noexcept;
 
-#endif
+[[gnu::pure]]
+std::string_view
+Strip(std::string_view s) noexcept;
