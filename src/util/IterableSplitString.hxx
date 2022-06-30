@@ -29,6 +29,7 @@
 
 #pragma once
 
+#include "StringSplit.hxx"
 #include "StringView.hxx"
 
 #include <iterator>
@@ -43,40 +44,41 @@
  */
 template<typename T>
 class BasicIterableSplitString {
-	typedef BasicStringView<T> StringView;
+	using string_view = std::basic_string_view<T>;
+	using value_type = typename string_view::value_type;
 
-	using value_type = typename StringView::value_type;
+	using StringView = BasicStringView<T>;
 
-	StringView s;
+	string_view s;
 	value_type separator;
 
 public:
-	constexpr BasicIterableSplitString(StringView _s,
+	constexpr BasicIterableSplitString(string_view _s,
 					   value_type _separator) noexcept
 		:s(_s), separator(_separator) {}
 
 	class Iterator final {
 		friend class BasicIterableSplitString;
 
-		StringView current, rest;
+		string_view current, rest;
 
 		value_type separator;
 
-		constexpr Iterator(StringView _s,
+		constexpr Iterator(string_view _s,
 				   value_type _separator) noexcept
 			:rest(_s), separator(_separator)
 		{
 			Next();
 		}
 
-		constexpr Iterator(std::nullptr_t n) noexcept
-			:current(n), rest(n), separator(0) {}
+		constexpr Iterator(std::nullptr_t) noexcept
+			:current(), rest(), separator() {}
 
 		constexpr void Next() noexcept {
-			if (rest == nullptr)
-				current = nullptr;
+			if (rest.data() == nullptr)
+				current = {};
 			else {
-				const auto [a, b] = rest.Split(separator);
+				const auto [a, b] = Split(rest, separator);
 				current = a;
 				rest = b;
 			}
@@ -91,7 +93,7 @@ public:
 		}
 
 		constexpr bool operator==(Iterator other) const noexcept {
-			return current.data == other.current.data;
+			return current.data() == other.current.data();
 		}
 
 		constexpr bool operator!=(Iterator other) const noexcept {
@@ -115,7 +117,7 @@ public:
 	}
 
 	constexpr const_iterator end() const noexcept {
-		return {nullptr};
+		return nullptr;
 	}
 };
 
