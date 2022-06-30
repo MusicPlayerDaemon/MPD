@@ -32,6 +32,7 @@
 
 #include "ConstBuffer.hxx"
 #include "StringAPI.hxx"
+#include "StringSplit.hxx"
 
 #include <cstddef>
 #include <string_view>
@@ -114,11 +115,7 @@ struct BasicStringView : ConstBuffer<T> {
 	 */
 	[[gnu::pure]]
 	std::pair<BasicStringView<T>, BasicStringView<T>> Split(value_type ch) const noexcept {
-		const auto separator = Find(ch);
-		if (separator == nullptr)
-			return {*this, nullptr};
-
-		return {{begin(), separator}, {separator + 1, end()}};
+		return ::Split(static_cast<std::basic_string_view<T>>(*this), ch);
 	}
 
 	/**
@@ -128,11 +125,7 @@ struct BasicStringView : ConstBuffer<T> {
 	 */
 	[[gnu::pure]]
 	std::pair<BasicStringView<T>, BasicStringView<T>> SplitLast(value_type ch) const noexcept {
-		const auto separator = FindLast(ch);
-		if (separator == nullptr)
-			return {*this, nullptr};
-
-		return {{begin(), separator}, {separator + 1, end()}};
+		return ::SplitLast(static_cast<std::basic_string_view<T>>(*this), ch);
 	}
 
 	[[gnu::pure]]
