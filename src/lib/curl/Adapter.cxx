@@ -32,11 +32,13 @@
 #include "Handler.hxx"
 #include "util/CharUtil.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringSplit.hxx"
 #include "util/StringStrip.hxx"
-#include "util/StringView.hxx"
 
 #include <algorithm>
 #include <cassert>
+
+using std::string_view_literals::operator""sv;
 
 void
 CurlResponseHandlerAdapter::Install(CurlEasy &easy)
@@ -109,19 +111,17 @@ CurlResponseHandlerAdapter::Done(CURLcode result) noexcept
 
 [[gnu::pure]]
 static bool
-IsResponseBoundaryHeader(StringView s) noexcept
+IsResponseBoundaryHeader(std::string_view s) noexcept
 {
-	return s.size > 5 && (s.StartsWith("HTTP/") ||
-			      /* the proprietary "ICY 200 OK" is
-				 emitted by Shoutcast */
-			      s.StartsWith("ICY 2"));
+	return s.size() > 5 && (s.starts_with("HTTP/"sv) ||
+				/* the proprietary "ICY 200 OK" is
+				   emitted by Shoutcast */
+				s.starts_with("ICY 2"sv));
 }
 
 inline void
-CurlResponseHandlerAdapter::HeaderFunction(std::string_view _s) noexcept
+CurlResponseHandlerAdapter::HeaderFunction(std::string_view s) noexcept
 {
-	const StringView s{_s};
-
 	if (state > State::HEADERS)
 		return;
 
@@ -132,27 +132,15 @@ CurlResponseHandlerAdapter::HeaderFunction(std::string_view _s) noexcept
 		return;
 	}
 
-	const char *header = s.data;
-	const char *end = StripRight(header, header + s.size);
-
-	const char *value = s.Find(':');
-	if (value == nullptr)
+	auto [_name, value] = Split(StripRight(s), ':');
+	if (_name.empty() || value.data() == nullptr)
 		return;
 
-	std::string name(header, value);
+	std::string name{_name};
 	std::transform(name.begin(), name.end(), name.begin(),
 		       static_cast<char(*)(char)>(ToLowerASCII));
 
-	/* skip the colon */
-
-	++value;
-
-	/* strip the value */
-
-	value = StripLeft(value, end);
-	end = StripRight(value, end);
-
-	headers.emplace(std::move(name), std::string(value, end));
+	headers.emplace(std::move(name), value);
 }
 
 std::size_t
