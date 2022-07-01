@@ -113,10 +113,10 @@ CurlResponseHandlerAdapter::Done(CURLcode result) noexcept
 static bool
 IsResponseBoundaryHeader(std::string_view s) noexcept
 {
-	return s.size() > 5 && (s.starts_with("HTTP/"sv) ||
-				/* the proprietary "ICY 200 OK" is
-				   emitted by Shoutcast */
-				s.starts_with("ICY 2"sv));
+	return s.starts_with("HTTP/"sv) ||
+		/* the proprietary "ICY 200 OK" is emitted by
+		   Shoutcast */
+		s.starts_with("ICY 2"sv);
 }
 
 inline void
