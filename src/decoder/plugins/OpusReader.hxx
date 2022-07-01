@@ -20,10 +20,9 @@
 #ifndef MPD_OPUS_READER_HXX
 #define MPD_OPUS_READER_HXX
 
-#include "util/StringView.hxx"
-
 #include <algorithm>
 #include <cstdint>
+#include <string_view>
 
 #include <string.h>
 
@@ -83,14 +82,14 @@ public:
 		return ReadWord(length) && Skip(length);
 	}
 
-	constexpr StringView ReadString() noexcept {
+	constexpr std::string_view ReadString() noexcept {
 		uint32_t length;
 		if (!ReadWord(length))
-			return nullptr;
+			return {};
 
 		const char *src = (const char *)Read(length);
 		if (src == nullptr)
-			return nullptr;
+			return {};
 
 		return {src, length};
 	}

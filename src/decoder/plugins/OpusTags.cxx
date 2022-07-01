@@ -26,6 +26,7 @@
 #include "util/ASCII.hxx"
 #include "tag/ReplayGainInfo.hxx"
 #include "util/NumberParser.hxx"
+#include "util/StringSplit.hxx"
 #include "util/StringView.hxx"
 
 #include <cstdint>
@@ -104,11 +105,11 @@ ScanOpusTags(const void *data, size_t size,
 
 	while (n-- > 0) {
 		const auto s = r.ReadString();
-		if (s == nullptr)
+		if (s.data() == nullptr)
 			return false;
 
-		const auto split = s.Split('=');
-		if (split.first.empty() || split.second.IsNull())
+		const auto split = Split(s, '=');
+		if (split.first.empty() || split.second.data() == nullptr)
 			continue;
 
 		ScanOneOpusTag(split.first, split.second, rgi, handler);
