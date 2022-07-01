@@ -30,7 +30,6 @@
 
 #include <string>
 
-struct StringView;
 struct Directory;
 class ExportedSong;
 class DetachedSong;
