@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,12 +31,13 @@
 #include "UriExtract.hxx"
 #include "StringAPI.hxx"
 #include "StringCompare.hxx"
-#include "StringView.hxx"
 #include "Compiler.h"
 
 #include <cassert>
 
 #include <string.h>
+
+using std::string_view_literals::operator""sv;
 
 bool
 uri_is_child(const char *parent, const char *child) noexcept
@@ -90,50 +91,51 @@ uri_apply_base(std::string_view uri, std::string_view base) noexcept
 }
 
 static void
-ClearFilename(StringView &path) noexcept
+ClearFilename(std::string_view &path) noexcept
 {
-	const char *slash = path.FindLast('/');
-	if (slash != nullptr)
-		path.SetEnd(slash + 1);
+	const auto slash = path.rfind('/');
+	if (slash != path.npos)
+		path = path.substr(0, slash + 1);
 	else
-		path.size = 0;
+		path = path.substr(0, 0);
 }
 
 static void
-StripLeadingSlashes(StringView &s) noexcept
+StripLeadingSlashes(std::string_view &s) noexcept
 {
-	while (!s.empty() && s.front() == '/')
-		s.pop_front();
+	while (s.starts_with('/'))
+		s.remove_prefix(1);
 }
 
 static bool
-ConsumeLastSegment(StringView &path) noexcept
+ConsumeLastSegment(std::string_view &path) noexcept
 {
 	assert(!path.empty());
 	assert(path.back() == '/');
 
-	path.pop_back();
-	const char *slash = path.FindLast('/');
-	if (slash == nullptr)
+	path.remove_suffix(1);
+
+	const auto slash = path.rfind('/');
+	if (slash == path.npos)
 		return false;
 
-	path.SetEnd(slash + 1);
+	path = path.substr(0, slash + 1);
 	return true;
 }
 
 static bool
-ConsumeSpecial(StringView &relative_path, StringView &base_path) noexcept
+ConsumeSpecial(std::string_view &relative_path, std::string_view &base_path) noexcept
 {
 	while (true) {
-		if (relative_path.SkipPrefix("./")) {
+		if (SkipPrefix(relative_path, "./"sv)) {
 			StripLeadingSlashes(relative_path);
-		} else if (relative_path.SkipPrefix("../")) {
+		} else if (SkipPrefix(relative_path, "../"sv)) {
 			StripLeadingSlashes(relative_path);
 
 			if (!ConsumeLastSegment(base_path))
 				return false;
-		} else if (relative_path.Equals(".")) {
-			relative_path.pop_front();
+		} else if (relative_path == "."sv) {
+			relative_path.remove_prefix(1);
 			return true;
 		} else
 			return true;
@@ -170,29 +172,29 @@ uri_apply_relative(std::string_view relative_uri,
 		return result;
 	}
 
-	StringView relative_path{relative_uri};
+	std::string_view relative_path{relative_uri};
 
 	const auto _base_path = uri_get_path(base_uri);
 	if (_base_path.data() == nullptr) {
 		std::string result(base_uri);
 		if (relative_path.front() != '/')
 			result.push_back('/');
-		while (relative_path.SkipPrefix("./")) {}
-		if (relative_path.StartsWith("../"))
+		while (SkipPrefix(relative_path, "./"sv)) {}
+		if (relative_path.starts_with("../"sv))
 			return {};
-		if (!relative_path.Equals("."))
+		if (relative_path != "."sv)
 			result += relative_path;
 		return result;
 	}
 
-	StringView base_path(_base_path);
+	std::string_view base_path(_base_path);
 	ClearFilename(base_path);
 
 	if (!ConsumeSpecial(relative_path, base_path))
 		return {};
 
 	std::string result(base_uri.data(), _base_path.data());
-	result.append(base_path.data, base_path.size);
+	result.append(base_path);
 	result.append(relative_path);
 	return result;
 }
