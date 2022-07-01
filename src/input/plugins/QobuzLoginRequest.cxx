@@ -25,6 +25,8 @@
 
 #include <cassert>
 
+using std::string_view_literals::operator""sv;
+
 using Wrapper = Yajl::CallbacksWrapper<QobuzLoginRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
@@ -59,9 +61,9 @@ public:
 	QobuzSession &&GetSession();
 
 	/* yajl callbacks */
-	bool String(StringView value) noexcept;
+	bool String(std::string_view value) noexcept;
 	bool StartMap() noexcept;
-	bool MapKey(StringView value) noexcept;
+	bool MapKey(std::string_view value) noexcept;
 	bool EndMap() noexcept;
 };
 
@@ -161,7 +163,7 @@ QobuzLoginRequest::OnError(std::exception_ptr e) noexcept
 }
 
 inline bool
-QobuzLoginRequest::ResponseParser::String(StringView value) noexcept
+QobuzLoginRequest::ResponseParser::String(std::string_view value) noexcept
 {
 	switch (state) {
 	case State::NONE:
@@ -169,11 +171,11 @@ QobuzLoginRequest::ResponseParser::String(StringView value) noexcept
 		break;
 
 	case State::DEVICE_ID:
-		session.device_id.assign(value.data, value.size);
+		session.device_id = value;
 		break;
 
 	case State::USER_AUTH_TOKEN:
-		session.user_auth_token.assign(value.data, value.size);
+		session.user_auth_token = value;
 		break;
 	}
 
@@ -200,13 +202,13 @@ QobuzLoginRequest::ResponseParser::StartMap() noexcept
 }
 
 inline bool
-QobuzLoginRequest::ResponseParser::MapKey(StringView value) noexcept
+QobuzLoginRequest::ResponseParser::MapKey(std::string_view value) noexcept
 {
 	switch (state) {
 	case State::NONE:
-		if (value.Equals("user_auth_token"))
+		if (value == "user_auth_token"sv)
 			state = State::USER_AUTH_TOKEN;
-		else if (value.Equals("device")) {
+		else if (value == "device"sv) {
 			state = State::DEVICE;
 			map_depth = 0;
 		}
@@ -214,7 +216,7 @@ QobuzLoginRequest::ResponseParser::MapKey(StringView value) noexcept
 		break;
 
 	case State::DEVICE:
-		if (value.Equals("id"))
+		if (value == "id"sv)
 			state = State::DEVICE_ID;
 		break;
 

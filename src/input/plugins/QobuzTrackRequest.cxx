@@ -22,6 +22,8 @@
 #include "QobuzClient.hxx"
 #include "lib/yajl/Callbacks.hxx"
 
+using std::string_view_literals::operator""sv;
+
 using Wrapper = Yajl::CallbacksWrapper<QobuzTrackRequest::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
@@ -57,8 +59,8 @@ public:
 	}
 
 	/* yajl callbacks */
-	bool String(StringView value) noexcept;
-	bool MapKey(StringView value) noexcept;
+	bool String(std::string_view value) noexcept;
+	bool MapKey(std::string_view value) noexcept;
 	bool EndMap() noexcept;
 };
 
@@ -120,14 +122,14 @@ QobuzTrackRequest::OnError(std::exception_ptr e) noexcept
 }
 
 inline bool
-QobuzTrackRequest::ResponseParser::String(StringView value) noexcept
+QobuzTrackRequest::ResponseParser::String(std::string_view value) noexcept
 {
 	switch (state) {
 	case State::NONE:
 		break;
 
 	case State::URL:
-		url.assign(value.data, value.size);
+		url = value;
 		break;
 	}
 
@@ -135,9 +137,9 @@ QobuzTrackRequest::ResponseParser::String(StringView value) noexcept
 }
 
 inline bool
-QobuzTrackRequest::ResponseParser::MapKey(StringView value) noexcept
+QobuzTrackRequest::ResponseParser::MapKey(std::string_view value) noexcept
 {
-	if (value.Equals("url"))
+	if (value == "url"sv)
 		state = State::URL;
 	else
 		state = State::NONE;

@@ -22,6 +22,9 @@
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
+
+using std::string_view_literals::operator""sv;
+
 using Wrapper = Yajl::CallbacksWrapper<QobuzErrorParser>;
 static constexpr yajl_callbacks qobuz_error_parser_callbacks = {
 	nullptr,
@@ -60,14 +63,14 @@ QobuzErrorParser::OnEnd()
 }
 
 inline bool
-QobuzErrorParser::String(StringView value) noexcept
+QobuzErrorParser::String(std::string_view value) noexcept
 {
 	switch (state) {
 	case State::NONE:
 		break;
 
 	case State::MESSAGE:
-		message.assign(value.data, value.size);
+		message = value;
 		break;
 	}
 
@@ -75,9 +78,9 @@ QobuzErrorParser::String(StringView value) noexcept
 }
 
 inline bool
-QobuzErrorParser::MapKey(StringView value) noexcept
+QobuzErrorParser::MapKey(std::string_view value) noexcept
 {
-	if (value.Equals("message"))
+	if (value == "message"sv)
 		state = State::MESSAGE;
 	else
 		state = State::NONE;

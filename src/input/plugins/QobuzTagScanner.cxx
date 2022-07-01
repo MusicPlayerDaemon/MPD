@@ -24,6 +24,8 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 
+using std::string_view_literals::operator""sv;
+
 using Wrapper = Yajl::CallbacksWrapper<QobuzTagScanner::ResponseParser>;
 static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
@@ -68,9 +70,9 @@ public:
 
 	/* yajl callbacks */
 	bool Integer(long long value) noexcept;
-	bool String(StringView value) noexcept;
+	bool String(std::string_view value) noexcept;
 	bool StartMap() noexcept;
-	bool MapKey(StringView value) noexcept;
+	bool MapKey(std::string_view value) noexcept;
 	bool EndMap() noexcept;
 };
 
@@ -142,7 +144,7 @@ QobuzTagScanner::ResponseParser::Integer(long long value) noexcept
 }
 
 inline bool
-QobuzTagScanner::ResponseParser::String(StringView value) noexcept
+QobuzTagScanner::ResponseParser::String(std::string_view value) noexcept
 {
 	switch (state) {
 	case State::TITLE:
@@ -185,19 +187,19 @@ QobuzTagScanner::ResponseParser::StartMap() noexcept
 }
 
 inline bool
-QobuzTagScanner::ResponseParser::MapKey(StringView value) noexcept
+QobuzTagScanner::ResponseParser::MapKey(std::string_view value) noexcept
 {
 	switch (map_depth) {
 	case 1:
-		if (value.Equals("composer"))
+		if (value == "composer"sv)
 			state = State::COMPOSER;
-		else if (value.Equals("duration"))
+		else if (value == "duration"sv)
 			state = State::DURATION;
-		else if (value.Equals("title"))
+		else if (value == "title"sv)
 			state = State::TITLE;
-		else if (value.Equals("album"))
+		else if (value == "album"sv)
 			state = State::ALBUM;
-		else if (value.Equals("performer"))
+		else if (value == "performer"sv)
 			state = State::PERFORMER;
 		else
 			state = State::NONE;
@@ -212,7 +214,7 @@ QobuzTagScanner::ResponseParser::MapKey(StringView value) noexcept
 
 		case State::COMPOSER:
 		case State::COMPOSER_NAME:
-			if (value.Equals("name"))
+			if (value == "name"sv)
 				state = State::COMPOSER_NAME;
 			else
 				state = State::COMPOSER;
@@ -222,9 +224,9 @@ QobuzTagScanner::ResponseParser::MapKey(StringView value) noexcept
 		case State::ALBUM_TITLE:
 		case State::ALBUM_ARTIST:
 		case State::ALBUM_ARTIST_NAME:
-			if (value.Equals("title"))
+			if (value == "title"sv)
 				state = State::ALBUM_TITLE;
-			else if (value.Equals("artist"))
+			else if (value == "artist"sv)
 				state = State::ALBUM_ARTIST;
 			else
 				state = State::ALBUM;
@@ -232,7 +234,7 @@ QobuzTagScanner::ResponseParser::MapKey(StringView value) noexcept
 
 		case State::PERFORMER:
 		case State::PERFORMER_NAME:
-			if (value.Equals("name"))
+			if (value == "name"sv)
 				state = State::PERFORMER_NAME;
 			else
 				state = State::PERFORMER;
@@ -247,7 +249,7 @@ QobuzTagScanner::ResponseParser::MapKey(StringView value) noexcept
 		switch (state) {
 		case State::ALBUM_ARTIST:
 		case State::ALBUM_ARTIST_NAME:
-			if (value.Equals("name"))
+			if (value == "name"sv)
 				state = State::ALBUM_ARTIST_NAME;
 			else
 				state = State::ALBUM_ARTIST;
