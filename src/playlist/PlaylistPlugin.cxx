@@ -19,24 +19,23 @@
 
 #include "PlaylistPlugin.hxx"
 #include "util/StringUtil.hxx"
-#include "util/StringView.hxx"
 
 bool
-PlaylistPlugin::SupportsScheme(StringView scheme) const noexcept
+PlaylistPlugin::SupportsScheme(std::string_view scheme) const noexcept
 {
 	return schemes != nullptr &&
 		StringArrayContainsCase(schemes, scheme);
 }
 
 bool
-PlaylistPlugin::SupportsSuffix(StringView suffix) const noexcept
+PlaylistPlugin::SupportsSuffix(std::string_view suffix) const noexcept
 {
 	return suffixes != nullptr &&
 		StringArrayContainsCase(suffixes, suffix);
 }
 
 bool
-PlaylistPlugin::SupportsMimeType(StringView mime_type) const noexcept
+PlaylistPlugin::SupportsMimeType(std::string_view mime_type) const noexcept
 {
 	return mime_types != nullptr &&
 		StringArrayContainsCase(mime_types, mime_type);

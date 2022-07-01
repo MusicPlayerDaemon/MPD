@@ -24,9 +24,10 @@
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 
+#include <string_view>
+
 struct ConfigBlock;
 struct Tag;
-struct StringView;
 class SongEnumerator;
 
 struct PlaylistPlugin {
@@ -120,19 +121,19 @@ struct PlaylistPlugin {
 	 * Does the plugin announce the specified URI scheme?
 	 */
 	gcc_pure gcc_nonnull_all
-	bool SupportsScheme(StringView scheme) const noexcept;
+	bool SupportsScheme(std::string_view scheme) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified file name suffix?
 	 */
 	gcc_pure gcc_nonnull_all
-	bool SupportsSuffix(StringView suffix) const noexcept;
+	bool SupportsSuffix(std::string_view suffix) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified MIME type?
 	 */
 	gcc_pure gcc_nonnull_all
-	bool SupportsMimeType(StringView mime_type) const noexcept;
+	bool SupportsMimeType(std::string_view mime_type) const noexcept;
 };
 
 /**
