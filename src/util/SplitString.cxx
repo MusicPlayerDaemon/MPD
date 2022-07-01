@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,11 +32,10 @@
 #include "StringStrip.hxx"
 
 std::forward_list<std::string_view>
-SplitString(std::string_view _s, char separator, bool strip) noexcept
+SplitString(std::string_view s, char separator, bool strip) noexcept
 {
-	StringView s(_s);
 	if (strip)
-		s.StripLeft();
+		s = StripLeft(s);
 
 	std::forward_list<std::string_view> list;
 	if (s.empty())
@@ -46,7 +45,7 @@ SplitString(std::string_view _s, char separator, bool strip) noexcept
 
 	for (auto value : IterableSplitString(s, separator)) {
 		if (strip)
-			value.Strip();
+			value = Strip(value);
 
 		i = list.emplace_after(i, value);
 	}

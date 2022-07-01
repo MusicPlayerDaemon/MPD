@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2013-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SPLIT_STRING_HXX
-#define SPLIT_STRING_HXX
+#pragma once
 
 #include <forward_list>
 #include <string_view>
@@ -45,5 +44,3 @@
  */
 std::forward_list<std::string_view>
 SplitString(std::string_view s, char separator, bool strip=true) noexcept;
-
-#endif
