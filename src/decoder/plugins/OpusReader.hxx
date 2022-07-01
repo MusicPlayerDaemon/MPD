@@ -31,27 +31,27 @@ class OpusReader {
 	const uint8_t *p, *const end;
 
 public:
-	OpusReader(const void *_p, size_t size)
+	constexpr OpusReader(const void *_p, size_t size) noexcept
 		:p((const uint8_t *)_p), end(p + size) {}
 
-	bool Skip(size_t length) {
+	constexpr bool Skip(size_t length) noexcept {
 		p += length;
 		return p <= end;
 	}
 
-	const void *Read(size_t length) {
+	constexpr const void *Read(size_t length) noexcept {
 		const uint8_t *result = p;
 		return Skip(length)
 			? result
 			: nullptr;
 	}
 
-	bool Expect(const void *value, size_t length) {
+	bool Expect(const void *value, size_t length) noexcept {
 		const void *data = Read(length);
 		return data != nullptr && memcmp(value, data, length) == 0;
 	}
 
-	bool ReadByte(uint8_t &value_r) {
+	constexpr bool ReadByte(uint8_t &value_r) noexcept {
 		if (p >= end)
 			return false;
 
@@ -59,7 +59,7 @@ public:
 		return true;
 	}
 
-	bool ReadShort(uint16_t &value_r) {
+	constexpr bool ReadShort(uint16_t &value_r) noexcept {
 		const uint8_t *value = (const uint8_t *)Read(sizeof(value_r));
 		if (value == nullptr)
 			return false;
@@ -68,7 +68,7 @@ public:
 		return true;
 	}
 
-	bool ReadWord(uint32_t &value_r) {
+	constexpr bool ReadWord(uint32_t &value_r) noexcept {
 		const uint8_t *value = (const uint8_t *)Read(sizeof(value_r));
 		if (value == nullptr)
 			return false;
@@ -78,12 +78,12 @@ public:
 		return true;
 	}
 
-	bool SkipString() {
+	constexpr bool SkipString() noexcept {
 		uint32_t length;
 		return ReadWord(length) && Skip(length);
 	}
 
-	StringView ReadString() {
+	constexpr StringView ReadString() noexcept {
 		uint32_t length;
 		if (!ReadWord(length))
 			return nullptr;
