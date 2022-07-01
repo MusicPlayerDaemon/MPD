@@ -31,7 +31,8 @@
 #define YAJL_CALLBACKS_HXX
 
 #include "util/Cast.hxx"
-#include "util/StringView.hxx"
+
+#include <string_view>
 
 #include <yajl/yajl_parse.h>
 
@@ -53,8 +54,9 @@ struct CallbacksWrapper {
 
 	static int String(void *ctx, const unsigned char *stringVal,
 			  size_t stringLen) noexcept {
-		return Cast(ctx).String(StringView((const char *)stringVal,
-						   stringLen));
+		return Cast(ctx).String(std::string_view{
+				(const char *)stringVal, stringLen,
+			});
 	}
 
 	static int StartMap(void *ctx) noexcept {
@@ -63,8 +65,10 @@ struct CallbacksWrapper {
 
 	static int MapKey(void *ctx, const unsigned char *key,
 			  size_t stringLen) noexcept {
-		return Cast(ctx).MapKey(StringView((const char *)key,
-						   stringLen));
+		return Cast(ctx).MapKey(std::string_view{
+				(const char *)key,
+				stringLen,
+			});
 	}
 
 	static int EndMap(void *ctx) noexcept {
