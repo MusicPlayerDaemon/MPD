@@ -66,11 +66,11 @@ soundcloud_init(const ConfigBlock &block)
  * @return Constructed URL. Must be freed with free().
  */
 static AllocatedString
-soundcloud_resolve(StringView uri) noexcept
+soundcloud_resolve(std::string_view uri) noexcept
 {
-	if (uri.StartsWithIgnoreCase("https://")) {
+	if (StringStartsWithIgnoreCase(uri, "https://"sv)) {
 		return AllocatedString{uri};
-	} else if (uri.StartsWith("soundcloud.com")) {
+	} else if (uri.starts_with("soundcloud.com"sv)) {
 		return AllocatedString{"https://"sv, uri};
 	}
 
@@ -86,33 +86,33 @@ soundcloud_resolve(StringView uri) noexcept
 }
 
 static AllocatedString
-TranslateSoundCloudUri(StringView uri) noexcept
+TranslateSoundCloudUri(std::string_view uri) noexcept
 {
-	if (uri.SkipPrefix("track/"sv)) {
+	if (SkipPrefix(uri, "track/"sv)) {
 		return AllocatedString{
 			"https://api.soundcloud.com/tracks/"sv,
 			uri, ".json?client_id="sv,
 			soundcloud_config.apikey,
 		};
-	} else if (uri.SkipPrefix("playlist/"sv)) {
+	} else if (SkipPrefix(uri, "playlist/"sv)) {
 		return AllocatedString{
 			"https://api.soundcloud.com/playlists/"sv,
 			uri, ".json?client_id="sv,
 			soundcloud_config.apikey,
 		};
-	} else if (uri.SkipPrefix("user/"sv)) {
+	} else if (SkipPrefix(uri, "user/"sv)) {
 		return AllocatedString{
 			"https://api.soundcloud.com/users/"sv,
 			uri, "/tracks.json?client_id="sv,
 			soundcloud_config.apikey,
 		};
-	} else if (uri.SkipPrefix("search/"sv)) {
+	} else if (SkipPrefix(uri, "search/"sv)) {
 		return AllocatedString{
 			"https://api.soundcloud.com/tracks.json?q="sv,
 			uri, "&client_id="sv,
 			soundcloud_config.apikey,
 		};
-	} else if (uri.SkipPrefix("url/"sv)) {
+	} else if (SkipPrefix(uri, "url/"sv)) {
 		/* Translate to soundcloud resolver call. libcurl will automatically
 		   follow the redirect to the right resource. */
 		return soundcloud_resolve(uri);
@@ -146,9 +146,9 @@ struct SoundCloudJsonData {
 	std::forward_list<DetachedSong> songs;
 
 	bool Integer(long long value) noexcept;
-	bool String(StringView value) noexcept;
+	bool String(std::string_view value) noexcept;
 	bool StartMap() noexcept;
-	bool MapKey(StringView value) noexcept;
+	bool MapKey(std::string_view value) noexcept;
 	bool EndMap() noexcept;
 };
 
@@ -167,15 +167,15 @@ SoundCloudJsonData::Integer(long long intval) noexcept
 }
 
 inline bool
-SoundCloudJsonData::String(StringView value) noexcept
+SoundCloudJsonData::String(std::string_view value) noexcept
 {
 	switch (key) {
 	case SoundCloudJsonData::Key::TITLE:
-		title.assign(value.data, value.size);
+		title = value;
 		break;
 
 	case SoundCloudJsonData::Key::STREAM_URL:
-		stream_url.assign(value.data, value.size);
+		stream_url = value;
 		got_url = 1;
 		break;
 
@@ -187,7 +187,7 @@ SoundCloudJsonData::String(StringView value) noexcept
 }
 
 inline bool
-SoundCloudJsonData::MapKey(StringView value) noexcept
+SoundCloudJsonData::MapKey(std::string_view value) noexcept
 {
 	const auto *i = key_str;
 	while (*i != nullptr && !StringStartsWith(*i, value))
