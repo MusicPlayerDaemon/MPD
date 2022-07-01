@@ -29,25 +29,25 @@
 
 #include "MimeType.hxx"
 #include "IterableSplitString.hxx"
-#include "StringView.hxx"
+#include "util/StringSplit.hxx"
+#include "util/StringStrip.hxx"
 
 std::string_view
 GetMimeTypeBase(std::string_view s) noexcept
 {
-	return StringView(s).Split(';').first;
+	return Split(s, ';').first;
 }
 
 std::map<std::string, std::string>
 ParseMimeTypeParameters(std::string_view mime_type) noexcept
 {
 	/* discard the first segment (the base MIME type) */
-	const auto params = StringView(mime_type).Split(';').second;
+	const auto params = Split(mime_type, ';').second;
 
 	std::map<std::string, std::string> result;
-	for (auto i : IterableSplitString(params, ';')) {
-		i.Strip();
-		auto s = i.Split('=');
-		if (!s.second.IsNull())
+	for (const std::string_view i : IterableSplitString(params, ';')) {
+		const auto s = Split(Strip(i), '=');
+		if (!s.first.empty() && s.second.data() != nullptr)
 			result.emplace(s);
 	}
 
