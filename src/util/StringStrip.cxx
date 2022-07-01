@@ -57,10 +57,15 @@ StripLeft(const std::string_view s) noexcept
 	auto i = std::find_if_not(s.begin(), s.end(),
 				  [](auto ch){ return IsWhitespaceOrNull(ch); });
 
+#ifdef __clang__
+	// libc++ doesn't yet support the C++20 constructor
+	return s.substr(std::distance(s.begin(), i));
+#else
 	return {
 		i,
 		s.end(),
 	};
+#endif
 }
 
 const char *
