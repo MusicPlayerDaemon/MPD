@@ -30,20 +30,20 @@
 #include "UriQueryParser.hxx"
 #include "IterableSplitString.hxx"
 
-StringView
-UriFindRawQueryParameter(StringView query_string, StringView name) noexcept
-{
-	for (StringView i : IterableSplitString(query_string, '&')) {
-		if (i.StartsWith(name)) {
-			if (i.size == name.size)
-				return "";
+using std::string_view_literals::operator""sv;
 
-			if (i[name.size] == '=') {
-				i.skip_front(name.size + 1);
-				return i;
-			}
+std::string_view
+UriFindRawQueryParameter(std::string_view query_string, std::string_view name) noexcept
+{
+	for (const std::string_view i : IterableSplitString(query_string, '&')) {
+		if (i.starts_with(name)) {
+			if (i.size() == name.size())
+				return ""sv;
+
+			if (i[name.size()] == '=')
+				return i.substr(name.size() + 1);
 		}
 	}
 
-	return nullptr;
+	return {};
 }

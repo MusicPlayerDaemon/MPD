@@ -195,11 +195,10 @@ CreateIcuConverterForUri(const char *uri)
 		return nullptr;
 
 	const auto charset = UriFindRawQueryParameter(fragment, "charset");
-	if (charset == nullptr)
+	if (charset.data() == nullptr)
 		return nullptr;
 
-	const std::string copy(charset.data, charset.size);
-	return IcuConverter::Create(copy.c_str());
+	return IcuConverter::Create(std::string{charset}.c_str());
 }
 
 #endif
