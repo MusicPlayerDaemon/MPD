@@ -20,10 +20,11 @@
 #ifndef MPD_SCAN_VORBIS_COMMENT_HXX
 #define MPD_SCAN_VORBIS_COMMENT_HXX
 
-struct StringView;
+#include <string_view>
+
 class TagHandler;
 
 void
-ScanVorbisComment(StringView comment, TagHandler &handler) noexcept;
+ScanVorbisComment(std::string_view comment, TagHandler &handler) noexcept;
 
 #endif
