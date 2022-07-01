@@ -22,6 +22,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringSplit.hxx"
 
 #include <set>
 #include <stdexcept>
@@ -86,8 +87,7 @@ CompositeDirectoryReader::GetInfo(bool follow)
 static std::string_view
 NextSegment(std::string_view &uri_r) noexcept
 {
-	StringView uri(uri_r);
-	auto s = uri.Split('/');
+	auto s = Split(uri_r, '/');
 	uri_r = s.second;
 	return s.first;
 }
