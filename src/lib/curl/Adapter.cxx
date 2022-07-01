@@ -85,6 +85,12 @@ CurlResponseHandlerAdapter::FinishBody()
 void
 CurlResponseHandlerAdapter::Done(CURLcode result) noexcept
 {
+	if (postponed_error) {
+		state = State::CLOSED;
+		handler.OnError(std::move(postponed_error));
+		return;
+	}
+
 	try {
 		if (result != CURLE_OK) {
 			StripRight(error_buffer);
@@ -174,6 +180,13 @@ CurlResponseHandlerAdapter::DataReceived(const void *ptr,
 		return received_size;
 	} catch (CurlResponseHandler::Pause) {
 		return CURL_WRITEFUNC_PAUSE;
+	} catch (...) {
+		/* from inside this libCURL callback function, we
+		   can't do much, so we remember the exception to be
+		   handled later by Done(), and return 0, causing the
+		   response to be aborted with CURLE_WRITE_ERROR */
+		postponed_error = std::current_exception();
+		return 0;
 	}
 
 }

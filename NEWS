@@ -15,6 +15,8 @@ ver 0.24 (not yet released)
   - GCC 10 or clang 11 (or newer) recommended
 
 ver 0.23.8 (not yet released)
+* storage
+  - curl: fix crash if web server does not understand WebDAV
 
 ver 0.23.7 (2022/05/09)
 * database
