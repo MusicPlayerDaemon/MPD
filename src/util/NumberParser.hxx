@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2009-2022 Max Kellermann <max.kellermann@gmail.com>
  * http://www.musicpd.org
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,15 +28,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NUMBER_PARSER_HXX
-#define NUMBER_PARSER_HXX
+#pragma once
 
 #include <cassert>
 #include <cstdint>
+#include <string_view>
 
 #include <stdlib.h>
-
-struct StringView;
 
 static inline unsigned
 ParseUnsigned(const char *p, char **endptr=nullptr, int base=10) noexcept
@@ -71,7 +69,7 @@ ParseInt64(const char *p, char **endptr=nullptr, int base=10) noexcept
 }
 
 int64_t
-ParseInt64(StringView s, const char **endptr_r=nullptr, int base=10) noexcept;
+ParseInt64(std::string_view s, const char **endptr_r=nullptr, int base=10) noexcept;
 
 static inline double
 ParseDouble(const char *p, char **endptr=nullptr) noexcept
@@ -91,5 +89,3 @@ ParseFloat(const char *p, char **endptr=nullptr) noexcept
 	return strtof(p, endptr);
 #endif
 }
-
-#endif
