@@ -140,7 +140,7 @@ CurlResponseHandlerAdapter::HeaderFunction(std::string_view s) noexcept
 	std::transform(name.begin(), name.end(), name.begin(),
 		       static_cast<char(*)(char)>(ToLowerASCII));
 
-	headers.emplace(std::move(name), value);
+	headers.emplace(std::move(name), StripLeft(value));
 }
 
 std::size_t
