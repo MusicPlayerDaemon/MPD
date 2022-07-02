@@ -149,9 +149,6 @@ private:
 	 * associated with it.
 	 */
 	void FreeEasy() noexcept;
-
-	void FinishHeaders();
-	void FinishBody();
 };
 
 #endif
