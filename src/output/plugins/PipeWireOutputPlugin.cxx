@@ -235,7 +235,8 @@ private:
 				[[maybe_unused]] uint32_t id,
 				const struct pw_stream_control *control) noexcept {
 		auto &o = *(PipeWireOutput *)data;
-		if (StringIsEqual(control->name, "Channel Volumes"))
+		if (control->name != nullptr &&
+		    StringIsEqual(control->name, "Channel Volumes"))
 			o.ControlInfo(control);
 	}
 
