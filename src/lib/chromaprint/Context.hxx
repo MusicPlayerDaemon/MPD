@@ -34,6 +34,7 @@
 
 #include <chromaprint.h>
 
+#include <span>
 #include <stdexcept>
 #include <string>
 
@@ -58,8 +59,8 @@ public:
 			throw std::runtime_error("chromaprint_start() failed");
 	}
 
-	void Feed(const int16_t *data, size_t size) {
-		if (chromaprint_feed(ctx, data, size) != 1)
+	void Feed(std::span<const int16_t> src) {
+		if (chromaprint_feed(ctx, src.data(), src.size()) != 1)
 			throw std::runtime_error("chromaprint_feed() failed");
 	}
 

@@ -20,7 +20,7 @@
 #include "DecoderClient.hxx"
 #include "pcm/Convert.hxx"
 #include "input/InputStream.hxx"
-#include "util/ConstBuffer.hxx"
+#include "util/SpanCast.hxx"
 
 ChromaprintDecoderClient::ChromaprintDecoderClient() = default;
 ChromaprintDecoderClient::~ChromaprintDecoderClient() noexcept = default;
@@ -36,8 +36,7 @@ ChromaprintDecoderClient::Finish()
 
 	if (convert) {
 		auto flushed = convert->Flush();
-		auto data = ConstBuffer<int16_t>::FromVoid(flushed);
-		chromaprint.Feed(data.data, data.size);
+		chromaprint.Feed(FromBytesStrict<const int16_t>(flushed));
 	}
 
 	chromaprint.Finish();
@@ -75,16 +74,12 @@ ChromaprintDecoderClient::SubmitData(InputStream *,
 	else
 		remaining_bytes -= length;
 
-	ConstBuffer<void> src{_data, length};
-	ConstBuffer<int16_t> data;
+	std::span<const std::byte> src{(const std::byte *)_data, length};
 
-	if (convert) {
-		auto result = convert->Convert(src);
-		data = ConstBuffer<int16_t>::FromVoid(result);
-	} else
-		data = ConstBuffer<int16_t>::FromVoid(src);
+	if (convert)
+		src = convert->Convert(src);
 
-	chromaprint.Feed(data.data, data.size);
+	chromaprint.Feed(FromBytesStrict<const int16_t>(src));
 
 	return GetCommand();
 }
