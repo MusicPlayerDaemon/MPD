@@ -23,23 +23,24 @@
 #include "tag/Builder.hxx"
 #include "tag/Table.hxx"
 #include "util/NumberParser.hxx"
-#include "util/StringView.hxx"
 
 #include <algorithm>
 #include <string>
 
 #include <string.h>
 
+using std::string_view_literals::operator""sv;
+
 /* this destructor exists here just so it won't get inlined */
 UPnPDirContent::~UPnPDirContent() = default;
 
 [[gnu::pure]]
 static UPnPDirObject::ItemClass
-ParseItemClass(StringView name) noexcept
+ParseItemClass(std::string_view name) noexcept
 {
-	if (name.Equals("object.item.audioItem.musicTrack"))
+	if (name == "object.item.audioItem.musicTrack"sv)
 		return UPnPDirObject::ItemClass::MUSIC;
-	else if (name.Equals("object.item.playlistItem"))
+	else if (name == "object.item.playlistItem"sv)
 		return UPnPDirObject::ItemClass::PLAYLIST;
 	else
 		return UPnPDirObject::ItemClass::UNKNOWN;
@@ -224,7 +225,7 @@ protected:
 			break;
 
 		case CLASS:
-			object.item_class = ParseItemClass(StringView(s, len));
+			object.item_class = ParseItemClass(std::string_view(s, len));
 			break;
 		}
 	}

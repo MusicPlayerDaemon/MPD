@@ -34,7 +34,7 @@
 #include "input/InputStream.hxx"
 #include "input/Error.hxx"
 #include "util/StringCompare.hxx"
-#include "util/StringView.hxx"
+#include "util/StringSplit.hxx"
 #include "util/UriExtract.hxx"
 #include "Log.hxx"
 
@@ -434,14 +434,13 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 
 inline Directory *
 UpdateWalk::DirectoryMakeUriParentChecked(Directory &root,
-					  std::string_view _uri) noexcept
+					  std::string_view uri) noexcept
 {
 	Directory *directory = &root;
-	StringView uri(_uri);
 
 	while (true) {
-		auto [name, rest] = uri.Split('/');
-		if (rest == nullptr)
+		auto [name, rest] = Split(uri, '/');
+		if (rest.data() == nullptr)
 			break;
 
 		if (!name.empty()) {
