@@ -21,7 +21,6 @@
 #include "Buffer.hxx"
 #include "Error.hxx"
 #include "pcm/Interleave.hxx"
-#include "util/ConstBuffer.hxx"
 
 extern "C" {
 #include <libavutil/frame.h>
