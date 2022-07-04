@@ -76,13 +76,13 @@ ParseCommandLine(int argc, char **argv)
 	}
 
 	auto args = option_parser.GetRemaining();
-	if (args.size < 2 || args.size > 3)
+	if (args.size() < 2 || args.size() > 3)
 		throw std::runtime_error("Usage: run_output CONFIG NAME [FORMAT] <IN");
 
 	c.config_path = args[0];
 	c.output_name = args[1];
 
-	if (args.size > 2)
+	if (args.size() > 2)
 		c.audio_format = ParseAudioFormat(args[2], false);
 
 	return c;

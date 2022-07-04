@@ -20,18 +20,18 @@
 #ifndef MPD_UTIL_OPTIONPARSER_HXX
 #define MPD_UTIL_OPTIONPARSER_HXX
 
-#include "util/ConstBuffer.hxx"
+#include "OptionDef.hxx"
 
-class OptionDef;
+#include <span>
 
 /**
  * Command line option parser.
  */
 class OptionParser
 {
-	ConstBuffer<OptionDef> options;
+	std::span<const OptionDef> options;
 
-	ConstBuffer<const char *> args;
+	std::span<const char *const> args;
 
 	const char **const remaining_head, **remaining_tail;
 
@@ -39,7 +39,7 @@ public:
 	/**
 	 * Constructs #OptionParser.
 	 */
-	OptionParser(ConstBuffer<OptionDef> _options,
+	OptionParser(std::span<const OptionDef> _options,
 		     int _argc, char **_argv) noexcept
 		:options(_options), args(_argv + 1, _argc - 1),
 		 remaining_head(const_cast<const char **>(_argv + 1)),
@@ -66,7 +66,7 @@ public:
 	/**
 	 * Returns the remaining non-option arguments.
 	 */
-	ConstBuffer<const char *> GetRemaining() const noexcept {
+	std::span<const char *const> GetRemaining() const noexcept {
 		return {remaining_head, remaining_tail};
 	}
 

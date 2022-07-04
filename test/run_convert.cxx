@@ -82,7 +82,7 @@ ParseCommandLine(int argc, char **argv)
 	}
 
 	auto args = option_parser.GetRemaining();
-	if (args.size != 2)
+	if (args.size() != 2)
 		throw std::runtime_error("Usage: run_convert IN_FORMAT OUT_FORMAT <IN >OUT");
 
 	c.in_audio_format = ParseAudioFormat(args[0], false);

@@ -22,6 +22,14 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
+static const char *
+Shift(std::span<const char *const> &s) noexcept
+{
+	const char *value = s.front();
+	s = s.subspan(1);
+	return value;
+}
+
 inline const char *
 OptionParser::CheckShiftValue(const char *s, const OptionDef &option)
 {
@@ -31,7 +39,7 @@ OptionParser::CheckShiftValue(const char *s, const OptionDef &option)
 	if (args.empty())
 		throw FormatRuntimeError("Value expected after %s", s);
 
-	return args.shift();
+	return Shift(args);
 }
 
 inline OptionParser::Result
@@ -58,14 +66,14 @@ OptionParser::IdentifyOption(const char *s)
 			else
 				continue;
 
-			return {int(&i - options.data), value};
+			return {int(&i - options.data()), value};
 		}
 	} else if (s[1] != 0 && s[2] == 0) {
 		const char ch = s[1];
 		for (const auto &i : options) {
 			if (i.HasShortOption() && ch == i.GetShortOption()) {
 				const char *value = CheckShiftValue(s, i);
-				return {int(&i - options.data), value};
+				return {int(&i - options.data()), value};
 			}
 		}
 	}
@@ -77,7 +85,7 @@ OptionParser::Result
 OptionParser::Next()
 {
 	while (!args.empty()) {
-		const char *arg = args.shift();
+		const char *arg = Shift(args);
 		if (arg[0] == '-')
 			return IdentifyOption(arg);
 
