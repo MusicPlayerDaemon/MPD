@@ -24,7 +24,6 @@
 #include "fs/NarrowPath.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
-#include "util/StringView.hxx"
 #include "util/PrintException.hxx"
 
 #include <stdlib.h>
@@ -36,11 +35,12 @@
 
 static bool
 MyApeTagCallback([[maybe_unused]] unsigned long flags,
-		 const char *key, StringView value)
+		 const char *key, std::string_view value)
 {
 	if ((flags & (0x3 << 1)) == 0)
 		// UTF-8
-		printf("\"%s\"=\"%.*s\"\n", key, (int)value.size, value.data);
+		printf("\"%s\"=\"%.*s\"\n", key,
+		       (int)value.size(), value.data());
 	else
 		printf("\"%s\"=0x%lx\n", key, flags);
 	return true;

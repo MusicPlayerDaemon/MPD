@@ -1,4 +1,5 @@
-/*
+/*yes
+
  * Copyright 2003-2021 The Music Player Daemon Project
  * http://www.musicpd.org
  *
@@ -20,7 +21,6 @@
 #include "IcyMetaDataParser.hxx"
 #include "tag/Builder.hxx"
 #include "util/AllocatedString.hxx"
-#include "util/StringView.hxx"
 
 #include <algorithm>
 #include <cassert>
@@ -73,15 +73,14 @@ IcyMetaDataParser::Data(size_t length) noexcept
 }
 
 static void
-icy_add_item(TagBuilder &tag, TagType type, StringView value) noexcept
+icy_add_item(TagBuilder &tag, TagType type, std::string_view value) noexcept
 {
-	if (value.size >= 2 && value.front() == '\'' && value.back() == '\'') {
+	if (value.size() >= 2 && value.front() == '\'' && value.back() == '\'') {
 		/* strip the single quotes */
-		++value.data;
-		value.size -= 2;
+		value = value.substr(1, value.size() - 2);
 	}
 
-	if (value.size > 0)
+	if (!value.empty())
 		tag.AddItem(type, value);
 }
 

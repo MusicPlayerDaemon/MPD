@@ -22,7 +22,6 @@
 #include "pcm/AudioFormat.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringCompare.hxx"
-#include "util/StringView.hxx"
 
 #include <algorithm>
 
@@ -64,7 +63,7 @@ NormalizeDecimal(std::string_view s)
 				  [](char ch){ return ch != '0'; });
 	auto end = std::find_if(start, s.end(),
 				[](char ch){ return !IsDigitASCII(ch); });
-	return StringView{start, end};
+	return std::string_view{start, std::size_t(std::distance(start, end))};
 }
 
 void

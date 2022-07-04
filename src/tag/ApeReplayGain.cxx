@@ -20,13 +20,15 @@
 #include "ApeReplayGain.hxx"
 #include "ApeLoader.hxx"
 #include "ReplayGainParser.hxx"
-#include "util/StringView.hxx"
+
+#include <algorithm>
+#include <string_view>
 
 #include <string.h>
 
 static bool
 replay_gain_ape_callback(unsigned long flags, const char *key,
-			 StringView _value,
+			 std::string_view _value,
 			 ReplayGainInfo &info)
 {
 	/* we only care about utf-8 text tags */
@@ -34,11 +36,10 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 		return false;
 
 	char value[16];
-	if (_value.size >= sizeof(value))
+	if (_value.size() >= sizeof(value))
 		return false;
 
-	memcpy(value, _value.data, _value.size);
-	value[_value.size] = 0;
+	*std::copy(_value.begin(), _value.end(), value) = 0;
 
 	return ParseReplayGainTag(info, key, value);
 }
@@ -50,7 +51,7 @@ replay_gain_ape_read(InputStream &is, ReplayGainInfo &info)
 
 	auto callback = [&info, &found]
 		(unsigned long flags, const char *key,
-		 StringView value) {
+		 std::string_view value) {
 		found |= replay_gain_ape_callback(flags, key,
 						  value,
 						  info);

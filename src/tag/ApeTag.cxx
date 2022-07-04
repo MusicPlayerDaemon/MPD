@@ -22,7 +22,6 @@
 #include "ParseName.hxx"
 #include "Table.hxx"
 #include "Handler.hxx"
-#include "util/StringView.hxx"
 #include "util/IterableSplitString.hxx"
 
 static constexpr struct tag_table ape_tags[] = {
@@ -46,7 +45,7 @@ tag_ape_name_parse(const char *name)
  */
 static bool
 tag_ape_import_item(unsigned long flags,
-		    const char *key, StringView value,
+		    const char *key, std::string_view value,
 		    TagHandler &handler) noexcept
 {
 	/* we only care about utf-8 text tags */
@@ -74,7 +73,7 @@ tag_ape_scan2(InputStream &is, TagHandler &handler)
 
 	auto callback = [&handler, &recognized]
 		(unsigned long flags, const char *key,
-		 StringView value) {
+		 std::string_view value) {
 		recognized |= tag_ape_import_item(flags, key, value, handler);
 		return true;
 	};

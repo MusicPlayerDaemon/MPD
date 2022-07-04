@@ -31,7 +31,6 @@
 #include "pcm/AudioFormat.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
-#include "util/StringView.hxx"
 #include "util/PrintException.hxx"
 
 #include <cassert>

@@ -20,22 +20,21 @@
 #include "Id3Picture.hxx"
 #include "Handler.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/StringView.hxx"
 
 #include <cstdint>
 #include <string>
 
-static StringView
+static std::string_view
 ReadString(std::span<const std::byte> &src) noexcept
 {
 	if (src.size() < 4)
-		return nullptr;
+		return {};
 
 	const size_t length = *(const PackedBE32 *)(const void *)src.data();
 	src = src.subspan(4);
 
 	if (src.size() < length)
-		return nullptr;
+		return {};
 
 	const std::string_view result{(const char *)src.data(), length};
 	src = src.subspan(length);
@@ -51,11 +50,11 @@ ScanId3Apic(std::span<const std::byte> buffer, TagHandler &handler) noexcept
 	buffer = buffer.subspan(4); /* picture type */
 
 	const auto mime_type = ReadString(buffer);
-	if (mime_type.IsNull())
+	if (mime_type.data() == nullptr)
 		return;
 
 	/* description */
-	if (ReadString(buffer).IsNull())
+	if (ReadString(buffer).data() == nullptr)
 		return;
 
 	if (buffer.size() < 20)
@@ -71,7 +70,7 @@ ScanId3Apic(std::span<const std::byte> buffer, TagHandler &handler) noexcept
 
 	const auto image = buffer.first(image_size);
 
-	// TODO: don't copy MIME type, pass StringView to TagHandler::OnPicture()
-	handler.OnPicture(std::string(mime_type.data, mime_type.size).c_str(),
+	// TODO: don't copy MIME type, pass std::string_view to TagHandler::OnPicture()
+	handler.OnPicture(std::string{mime_type}.c_str(),
 			  image);
 }

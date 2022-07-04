@@ -19,7 +19,6 @@
 
 #include "tag/MixRampParser.cxx"
 #include "tag/MixRampInfo.hxx"
-#include "util/StringView.hxx"
 
 #include <gtest/gtest.h>
 

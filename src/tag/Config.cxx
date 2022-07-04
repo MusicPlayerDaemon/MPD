@@ -25,7 +25,10 @@
 #include "util/ASCII.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/IterableSplitString.hxx"
-#include "util/StringView.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringStrip.hxx"
+
+using std::string_view_literals::operator""sv;
 
 void
 TagLoadConfig(const ConfigData &config)
@@ -45,12 +48,12 @@ TagLoadConfig(const ConfigData &config)
 		/* no "+-": not incremental */
 		global_tag_mask = TagMask::None();
 
-	for (StringView name : IterableSplitString(value, ',')) {
-		name.Strip();
+	for (std::string_view name : IterableSplitString(value, ',')) {
+		name = Strip(name);
 
-		if (name.SkipPrefix("+")) {
+		if (SkipPrefix(name, "+"sv)) {
 			plus = true;
-		} else if (name.SkipPrefix("-")) {
+		} else if (SkipPrefix(name, "-"sv)) {
 			plus = false;
 		}
 
