@@ -27,7 +27,7 @@
 #include "net/ToString.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringView.hxx"
+#include "util/StringSplit.hxx"
 
 #include <cassert>
 #include <map>
@@ -62,14 +62,14 @@ static std::map<std::string, unsigned> host_passwords;
 #endif
 
 static unsigned
-ParsePermission(StringView s)
+ParsePermission(std::string_view s)
 {
 	for (auto i = permission_names; i->name != nullptr; ++i)
-		if (s.Equals(i->name))
+		if (s == i->name)
 			return i->value;
 
 	throw FormatRuntimeError("unknown permission \"%.*s\"",
-				 int(s.size), s.data);
+				 int(s.size()), s.data());
 }
 
 static unsigned
@@ -99,10 +99,10 @@ initPermissions(const ConfigData &config)
 	for (const auto &param : config.GetParamList(ConfigOption::PASSWORD)) {
 		permission_default = 0;
 
-		param.With([](const StringView value){
+		param.With([](const std::string_view value){
 			const auto [password, permissions] =
-				value.Split(PERMISSION_PASSWORD_CHAR);
-			if (permissions == nullptr)
+				Split(value, PERMISSION_PASSWORD_CHAR);
+			if (permissions.data() == nullptr)
 				throw FormatRuntimeError("\"%c\" not found in password string",
 							 PERMISSION_PASSWORD_CHAR);
 
@@ -128,8 +128,8 @@ initPermissions(const ConfigData &config)
 	for (const auto &param : config.GetParamList(ConfigOption::HOST_PERMISSIONS)) {
 		permission_default = 0;
 
-		param.With([](StringView value){
-			auto [host_sv, permissions_s] = value.Split(' ');
+		param.With([](std::string_view value){
+			auto [host_sv, permissions_s] = Split(value, ' ');
 			unsigned permissions = parsePermissions(permissions_s);
 
 			const std::string host_s{host_sv};
