@@ -23,6 +23,7 @@
 #include "AndSongFilter.hxx"
 
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -36,7 +37,6 @@
  */
 #define SORT_TAG_PRIO (TAG_NUM_OF_ITEM_TYPES + 4)
 
-template<typename T> struct ConstBuffer;
 enum TagType : uint8_t;
 struct LightSong;
 
@@ -68,7 +68,7 @@ public:
 	/**
 	 * Throws on error.
 	 */
-	void Parse(ConstBuffer<const char *> args, bool fold_case=false);
+	void Parse(std::span<const char *const> args, bool fold_case=false);
 
 	void Optimize() noexcept;
 

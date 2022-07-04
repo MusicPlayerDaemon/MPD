@@ -30,7 +30,6 @@
 #include "tag/ParseName.hxx"
 #include "time/ISO8601.hxx"
 #include "util/CharUtil.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringStrip.hxx"
@@ -410,14 +409,15 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 }
 
 void
-SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
+SongFilter::Parse(std::span<const char *const> args, bool fold_case)
 {
 	if (args.empty())
 		throw std::runtime_error("Incorrect number of filter arguments");
 
 	do {
 		if (*args.front() == '(') {
-			const char *s = args.shift();
+			const char *s = args.front();
+			args = args.subspan(1);
 			const char *end = s;
 			auto f = ParseExpression(end, fold_case);
 			if (*end != 0)
@@ -427,11 +427,12 @@ SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 			continue;
 		}
 
-		if (args.size < 2)
+		if (args.size() < 2)
 			throw std::runtime_error("Incorrect number of filter arguments");
 
-		const char *tag = args.shift();
-		const char *value = args.shift();
+		const char *tag = args[0];
+		const char *value = args[1];
+		args = args.subspan(2);
 		Parse(tag, value, fold_case);
 	} while (!args.empty());
 }

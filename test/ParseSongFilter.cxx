@@ -23,7 +23,6 @@
  */
 
 #include "song/Filter.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 
 #include <stdexcept>
@@ -39,7 +38,7 @@ try {
 	}
 
 	SongFilter filter;
-	filter.Parse(ConstBuffer<const char *>(argv + 1, argc - 1));
+	filter.Parse({argv + 1, std::size_t(argc - 1)});
 	filter.Optimize();
 
 	puts(filter.ToExpression().c_str());
