@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef URI_EXTRACT_HXX
-#define URI_EXTRACT_HXX
+#pragma once
 
 #include <string_view>
 
@@ -67,10 +66,8 @@ uri_get_suffix(std::string_view uri) noexcept;
  * Returns the URI fragment, i.e. the portion after the '#', but
  * without the '#'.  If there is no '#', this function returns
  * nullptr; if there is a '#' but no fragment text, it returns an
- * empty StringView.
+ * empty std::string_view.
  */
 [[gnu::pure]] [[gnu::nonnull]]
 const char *
 uri_get_fragment(const char *uri) noexcept;
-
-#endif

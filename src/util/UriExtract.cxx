@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2008-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,9 +29,9 @@
 
 #include "UriExtract.hxx"
 #include "CharUtil.hxx"
-#include "StringView.hxx"
+#include "StringSplit.hxx"
 
-#include <string.h>
+#include <cstring>
 
 static constexpr bool
 IsValidSchemeStart(char ch)
@@ -121,10 +121,10 @@ uri_get_path(std::string_view uri) noexcept
 }
 
 [[gnu::pure]]
-static StringView
-UriWithoutQueryString(StringView uri) noexcept
+static std::string_view
+UriWithoutQueryString(std::string_view uri) noexcept
 {
-	return uri.Split('?').first;
+	return Split(uri, '?').first;
 }
 
 /* suffixes should be ascii only characters */
@@ -133,13 +133,14 @@ uri_get_suffix(std::string_view _uri) noexcept
 {
 	const auto uri = UriWithoutQueryString(_uri);
 
-	const char *dot = uri.FindLast('.');
-	if (dot == nullptr || dot == uri.data ||
-	    dot[-1] == '/' || dot[-1] == '\\')
+	const auto dot = uri.rfind('.');
+	if (dot == uri.npos || dot == 0 ||
+	    uri[dot - 1] == '/' || uri[dot - 1] == '\\')
 		return {};
 
 	auto suffix = uri.substr(dot + 1);
-	if (suffix.Find('/') != nullptr || suffix.Find('\\') != nullptr)
+	if (suffix.find('/') != suffix.npos ||
+	    suffix.find('\\') != suffix.npos)
 		/* this was not the last path segment */
 		return {};
 
