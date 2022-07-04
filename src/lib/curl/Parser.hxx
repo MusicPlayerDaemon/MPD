@@ -31,8 +31,6 @@
 
 #include <span>
 
-template<typename T> struct ConstBuffer;
-
 class CurlResponseParser {
 public:
 	virtual ~CurlResponseParser() = default;
