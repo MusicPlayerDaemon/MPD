@@ -27,7 +27,6 @@
 #include "util/OffsetPointer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
-#include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"

@@ -37,7 +37,6 @@
 #include "time/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringAPI.hxx"
-#include "util/StringView.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
 #include "PlaylistFile.hxx"

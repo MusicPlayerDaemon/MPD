@@ -23,7 +23,7 @@
 #include "fs/Traits.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringView.hxx"
+#include "util/StringSplit.hxx"
 
 #include <cassert>
 
@@ -101,8 +101,7 @@ ParsePath(const char *path)
 			return GetConfiguredHome() /
 				AllocatedPath::FromUTF8Throw(path);
 		} else {
-			const auto [user, rest] =
-				StringView{path}.Split('/');
+			const auto [user, rest] = Split(std::string_view{path}, '/');
 
 			return GetHome(std::string{user}.c_str())
 				/ AllocatedPath::FromUTF8Throw(rest);
