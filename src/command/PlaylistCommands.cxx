@@ -41,7 +41,6 @@
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "time/ChronoUtil.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/UriExtract.hxx"
 #include "LocateUri.hxx"
 
@@ -88,7 +87,7 @@ handle_load(Client &client, Request args, [[maybe_unused]] Response &r)
 	auto &playlist = client.GetPlaylist();
 	const unsigned old_size = playlist.GetLength();
 
-	const unsigned position = args.size > 2
+	const unsigned position = args.size() > 2
 		? ParseInsertPosition(args[2], partition.playlist)
 		: old_size;
 
@@ -257,7 +256,7 @@ handle_playlistadd(Client &client, Request args, [[maybe_unused]] Response &r)
 	const char *const playlist = args[0];
 	const char *const uri = args[1];
 
-	if (args.size >= 3)
+	if (args.size() >= 3)
 		return handle_playlistadd_position(client, playlist, uri,
 						   args.ParseUnsigned(2), r);
 

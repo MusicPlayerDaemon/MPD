@@ -22,7 +22,6 @@
 #include "Request.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
-#include "util/ConstBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"

@@ -37,7 +37,6 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "BulkEdit.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
@@ -82,7 +81,7 @@ handle_add(Client &client, Request args, [[maybe_unused]] Response &r)
 		uri = "";
 
 	const auto old_size = partition.playlist.GetLength();
-	const unsigned position = args.size > 1
+	const unsigned position = args.size() > 1
 		? ParseInsertPosition(args[1], partition.playlist)
 		: old_size;
 
@@ -137,7 +136,7 @@ handle_addid(Client &client, Request args, Response &r)
 
 	const auto queue_length = partition.playlist.queue.GetLength();
 
-	if (args.size > 1)
+	if (args.size() > 1)
 		to = ParseInsertPosition(args[1], partition.playlist);
 
 	const SongLoader loader(client);
@@ -308,8 +307,8 @@ handle_playlist_match(Client &client, Request args, Response &r,
 		      bool fold_case)
 {
 	RangeArg window = RangeArg::All();
-	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "window")) {
-		window = args.ParseRange(args.size - 1);
+	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "window")) {
+		window = args.ParseRange(args.size() - 1);
 
 		args.pop_back();
 		args.pop_back();
@@ -317,7 +316,7 @@ handle_playlist_match(Client &client, Request args, Response &r,
 
 	TagType sort = TAG_NUM_OF_ITEM_TYPES;
 	bool descending = false;
-	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "sort")) {
+	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "sort")) {
 		const char *s = args.back();
 		if (*s == '-') {
 			descending = true;

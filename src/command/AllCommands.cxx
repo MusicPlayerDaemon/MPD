@@ -337,17 +337,17 @@ command_check_request(const struct command *cmd, Response &r,
 	if (min < 0)
 		return true;
 
-	if (min == max && unsigned(max) != args.size) {
+	if (min == max && unsigned(max) != args.size()) {
 		r.FmtError(ACK_ERROR_ARG,
 			   FMT_STRING("wrong number of arguments for \"{}\""),
 			   cmd->cmd);
 		return false;
-	} else if (args.size < unsigned(min)) {
+	} else if (args.size() < unsigned(min)) {
 		r.FmtError(ACK_ERROR_ARG,
 			   FMT_STRING("too few arguments for \"{}\""),
 			   cmd->cmd);
 		return false;
-	} else if (max >= 0 && args.size > unsigned(max)) {
+	} else if (max >= 0 && args.size() > unsigned(max)) {
 		r.FmtError(ACK_ERROR_ARG,
 			   FMT_STRING("too many arguments for \"{}\""),
 			   cmd->cmd);
@@ -403,13 +403,13 @@ command_process(Client &client, unsigned num, char *line) noexcept
 	}
 
 	char *argv[COMMAND_ARGV_MAX];
-	Request args(argv, 0);
 
 	try {
 		/* now parse the arguments (quoted or unquoted) */
 
+		std::size_t n_args = 0;
 		while (true) {
-			if (args.size == COMMAND_ARGV_MAX) {
+			if (n_args == COMMAND_ARGV_MAX) {
 				r.Error(ACK_ERROR_ARG, "Too many arguments");
 				return CommandResult::ERROR;
 			}
@@ -418,8 +418,10 @@ command_process(Client &client, unsigned num, char *line) noexcept
 			if (a == nullptr)
 				break;
 
-			argv[args.size++] = a;
+			argv[n_args++] = a;
 		}
+
+		Request args{argv, n_args};
 
 		/* look up and invoke the command handler */
 

@@ -30,7 +30,7 @@
 CommandResult
 handle_enableoutput(Client &client, Request args, Response &r)
 {
-	assert(args.size == 1);
+	assert(args.size() == 1);
 	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_enable_index(client.GetPartition().outputs, device)) {
@@ -44,7 +44,7 @@ handle_enableoutput(Client &client, Request args, Response &r)
 CommandResult
 handle_disableoutput(Client &client, Request args, Response &r)
 {
-	assert(args.size == 1);
+	assert(args.size() == 1);
 	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_disable_index(client.GetPartition().outputs, device)) {
@@ -58,7 +58,7 @@ handle_disableoutput(Client &client, Request args, Response &r)
 CommandResult
 handle_toggleoutput(Client &client, Request args, Response &r)
 {
-	assert(args.size == 1);
+	assert(args.size() == 1);
 	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_toggle_index(client.GetPartition().outputs, device)) {
@@ -90,7 +90,7 @@ IsValidAttributeName(const char *s) noexcept
 CommandResult
 handle_outputset(Client &client, Request request, Response &response)
 {
-	assert(request.size == 3);
+	assert(request.size() == 3);
 	const unsigned i = request.ParseUnsigned(0);
 
 	auto &partition = client.GetPartition();

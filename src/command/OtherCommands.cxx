@@ -277,7 +277,7 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 #ifdef ENABLE_DATABASE
 	const char *path = "";
 
-	assert(args.size <= 1);
+	assert(args.size() <= 1);
 	if (!args.empty()) {
 		path = args.front();
 

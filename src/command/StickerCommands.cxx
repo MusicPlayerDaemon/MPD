@@ -59,7 +59,7 @@ handle_sticker_song(Response &r, Partition &partition,
 	const char *const cmd = args.front();
 
 	/* get song song_id key */
-	if (args.size == 4 && StringIsEqual(cmd, "get")) {
+	if (args.size() == 4 && StringIsEqual(cmd, "get")) {
 		const LightSong *song = db.GetSong(args[2]);
 		assert(song != nullptr);
 		AtScopeExit(&db, song) { db.ReturnSong(song); };
@@ -75,7 +75,7 @@ handle_sticker_song(Response &r, Partition &partition,
 
 		return CommandResult::OK;
 	/* list song song_id */
-	} else if (args.size == 3 && StringIsEqual(cmd, "list")) {
+	} else if (args.size() == 3 && StringIsEqual(cmd, "list")) {
 		const LightSong *song = db.GetSong(args[2]);
 		assert(song != nullptr);
 		AtScopeExit(&db, song) { db.ReturnSong(song); };
@@ -85,7 +85,7 @@ handle_sticker_song(Response &r, Partition &partition,
 
 		return CommandResult::OK;
 	/* set song song_id id key */
-	} else if (args.size == 5 && StringIsEqual(cmd, "set")) {
+	} else if (args.size() == 5 && StringIsEqual(cmd, "set")) {
 		const LightSong *song = db.GetSong(args[2]);
 		assert(song != nullptr);
 		AtScopeExit(&db, song) { db.ReturnSong(song); };
@@ -94,13 +94,13 @@ handle_sticker_song(Response &r, Partition &partition,
 				       args[3], args[4]);
 		return CommandResult::OK;
 	/* delete song song_id [key] */
-	} else if ((args.size == 3 || args.size == 4) &&
+	} else if ((args.size() == 3 || args.size() == 4) &&
 		   StringIsEqual(cmd, "delete")) {
 		const LightSong *song = db.GetSong(args[2]);
 		assert(song != nullptr);
 		AtScopeExit(&db, song) { db.ReturnSong(song); };
 
-		bool ret = args.size == 3
+		bool ret = args.size() == 3
 			? sticker_song_delete(sticker_database, *song)
 			: sticker_song_delete_value(sticker_database, *song,
 						    args[3]);
@@ -111,7 +111,7 @@ handle_sticker_song(Response &r, Partition &partition,
 
 		return CommandResult::OK;
 	/* find song dir key */
-	} else if ((args.size == 4 || args.size == 6) &&
+	} else if ((args.size() == 4 || args.size() == 6) &&
 		   StringIsEqual(cmd, "find")) {
 		/* "sticker find song a/directory name" */
 
@@ -120,7 +120,7 @@ handle_sticker_song(Response &r, Partition &partition,
 		StickerOperator op = StickerOperator::EXISTS;
 		const char *value = nullptr;
 
-		if (args.size == 6) {
+		if (args.size() == 6) {
 			/* match the value */
 
 			const char *op_s = args[4];
@@ -157,7 +157,7 @@ handle_sticker_song(Response &r, Partition &partition,
 CommandResult
 handle_sticker(Client &client, Request args, Response &r)
 {
-	assert(args.size >= 3);
+	assert(args.size() >= 3);
 
 	auto &instance = client.GetInstance();
 	if (!instance.HasStickerDatabase()) {

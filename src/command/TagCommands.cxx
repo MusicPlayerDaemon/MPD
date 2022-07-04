@@ -23,7 +23,6 @@
 #include "client/Response.hxx"
 #include "tag/ParseName.hxx"
 #include "queue/Playlist.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <fmt/format.h>
 
@@ -52,7 +51,7 @@ handle_cleartagid(Client &client, Request args, Response &r)
 	unsigned song_id = args.ParseUnsigned(0);
 
 	TagType tag_type = TAG_NUM_OF_ITEM_TYPES;
-	if (args.size >= 2) {
+	if (args.size() >= 2) {
 		const char *const tag_name = args[1];
 		tag_type = tag_name_parse_i(tag_name);
 		if (tag_type == TAG_NUM_OF_ITEM_TYPES) {

@@ -22,7 +22,6 @@
 #include "client/Client.hxx"
 #include "client/List.hxx"
 #include "client/Response.hxx"
-#include "util/ConstBuffer.hxx"
 #include "Partition.hxx"
 
 #include <fmt/format.h>
@@ -34,7 +33,7 @@
 CommandResult
 handle_subscribe(Client &client, Request args, Response &r)
 {
-	assert(args.size == 1);
+	assert(args.size() == 1);
 	const char *const channel_name = args[0];
 
 	switch (client.Subscribe(channel_name)) {
@@ -62,7 +61,7 @@ handle_subscribe(Client &client, Request args, Response &r)
 CommandResult
 handle_unsubscribe(Client &client, Request args, Response &r)
 {
-	assert(args.size == 1);
+	assert(args.size() == 1);
 	const char *const channel_name = args[0];
 
 	if (client.Unsubscribe(channel_name))
@@ -109,7 +108,7 @@ handle_read_messages(Client &client,
 CommandResult
 handle_send_message(Client &client, Request args, Response &r)
 {
-	assert(args.size == 2);
+	assert(args.size() == 2);
 
 	const char *const channel_name = args[0];
 	const char *const message_text = args[1];

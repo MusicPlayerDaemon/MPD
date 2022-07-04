@@ -30,7 +30,6 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "tag/ParseName.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ASCII.hxx"
@@ -75,8 +74,8 @@ ParseSortTag(const char *s)
 static unsigned
 ParseQueuePosition(Request &args, unsigned queue_length)
 {
-	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "position")) {
-		unsigned position = args.ParseUnsigned(args.size - 1,
+	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "position")) {
+		unsigned position = args.ParseUnsigned(args.size() - 1,
 						       queue_length);
 		args.pop_back();
 		args.pop_back();
@@ -90,7 +89,7 @@ ParseQueuePosition(Request &args, unsigned queue_length)
 static unsigned
 ParseInsertPosition(Request &args, const playlist &playlist)
 {
-	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "position")) {
+	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "position")) {
 		unsigned position = ParseInsertPosition(args.back(), playlist);
 		args.pop_back();
 		args.pop_back();
@@ -110,8 +109,8 @@ static DatabaseSelection
 ParseDatabaseSelection(Request args, bool fold_case, SongFilter &filter)
 {
 	RangeArg window = RangeArg::All();
-	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "window")) {
-		window = args.ParseRange(args.size - 1);
+	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "window")) {
+		window = args.ParseRange(args.size() - 1);
 
 		args.pop_back();
 		args.pop_back();
@@ -119,7 +118,7 @@ ParseDatabaseSelection(Request args, bool fold_case, SongFilter &filter)
 
 	TagType sort = TAG_NUM_OF_ITEM_TYPES;
 	bool descending = false;
-	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "sort")) {
+	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "sort")) {
 		const char *s = args.back();
 		if (*s == '-') {
 			descending = true;
@@ -236,8 +235,8 @@ CommandResult
 handle_count(Client &client, Request args, Response &r)
 {
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
-	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "group")) {
-		const char *s = args[args.size - 1];
+	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "group")) {
+		const char *s = args[args.size() - 1];
 		group = tag_name_parse_i(s);
 		if (group == TAG_NUM_OF_ITEM_TYPES) {
 			r.FmtError(ACK_ERROR_ARG,
@@ -317,7 +316,7 @@ handle_list(Client &client, Request args, Response &r)
 	std::unique_ptr<SongFilter> filter;
 	std::vector<TagType> tag_types;
 
-	if (args.size == 1 &&
+	if (args.size() == 1 &&
 	    /* parantheses are the syntax for filter expressions: no
 	       compatibility mode */
 	    args.front()[0] != '(') {
@@ -333,9 +332,9 @@ handle_list(Client &client, Request args, Response &r)
 					    args.shift());
 	}
 
-	while (args.size >= 2 &&
-	       StringIsEqual(args[args.size - 2], "group")) {
-		const char *s = args[args.size - 1];
+	while (args.size() >= 2 &&
+	       StringIsEqual(args[args.size() - 2], "group")) {
+		const char *s = args[args.size() - 1];
 		const auto group = tag_name_parse_i(s);
 		if (group == TAG_NUM_OF_ITEM_TYPES) {
 			r.FmtError(ACK_ERROR_ARG,
