@@ -28,11 +28,12 @@
 #include "tag/MixRampParser.hxx"
 #include "tag/ReplayGainInfo.hxx"
 #include "tag/ReplayGainParser.hxx"
-#include "util/StringView.hxx"
 
 #include <cassert>
 
-static StringView
+using std::string_view_literals::operator""sv;
+
+static std::string_view
 ToStringView(const FLAC__StreamMetadata_VorbisComment_Entry &entry) noexcept
 {
 	return {(const char *)entry.entry, entry.length};
@@ -106,7 +107,7 @@ Scan(const FLAC__StreamMetadata_Picture &picture, TagHandler &handler) noexcept
 		return;
 
 	if (picture.mime_type != nullptr &&
-	    StringIsEqual(picture.mime_type, "-->"))
+	    "-->"sv == picture.mime_type)
 		/* this is a URL, not image data */
 		return;
 

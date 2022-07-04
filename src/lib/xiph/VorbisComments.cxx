@@ -26,7 +26,6 @@
 #include "tag/VorbisComment.hxx"
 #include "tag/ReplayGainInfo.hxx"
 #include "tag/ReplayGainParser.hxx"
-#include "util/StringView.hxx"
 #include "decoder/Features.h"
 
 #ifndef HAVE_TREMOR
@@ -44,7 +43,7 @@ ForEachUserComment(const vorbis_comment &vc, F &&f)
 
 	const size_t n = vc.comments;
 	for (size_t i = 0; i < n; ++i)
-		f(StringView{user_comments[i], size_t(comment_lengths[i])});
+		f(std::string_view{user_comments[i], size_t(comment_lengths[i])});
 }
 
 bool
@@ -55,8 +54,8 @@ VorbisCommentToReplayGain(ReplayGainInfo &rgi,
 
 	bool found = false;
 
-	ForEachUserComment(vc, [&](StringView s){
-		if (ParseReplayGainVorbis(rgi, s.data))
+	ForEachUserComment(vc, [&](std::string_view s){
+		if (ParseReplayGainVorbis(rgi, s))
 			found = true;
 	});
 
@@ -64,7 +63,7 @@ VorbisCommentToReplayGain(ReplayGainInfo &rgi,
 }
 
 static void
-vorbis_scan_comment(StringView comment, TagHandler &handler) noexcept
+vorbis_scan_comment(std::string_view comment, TagHandler &handler) noexcept
 {
 	const auto picture_b64 = handler.WantPicture()
 		? GetVorbisCommentValue(comment, "METADATA_BLOCK_PICTURE")
@@ -78,7 +77,7 @@ vorbis_scan_comment(StringView comment, TagHandler &handler) noexcept
 void
 VorbisCommentScan(const vorbis_comment &vc, TagHandler &handler) noexcept
 {
-	ForEachUserComment(vc, [&](StringView s){
+	ForEachUserComment(vc, [&](std::string_view s){
 		vorbis_scan_comment(s, handler);
 	});
 }
