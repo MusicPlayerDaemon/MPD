@@ -30,11 +30,10 @@
 #ifndef YAJL_GEN_HXX
 #define YAJL_GEN_HXX
 
-#include "util/ConstBuffer.hxx"
-
 #include <yajl/yajl_gen.h>
 
 #include <algorithm>
+#include <span>
 #include <string_view>
 
 namespace Yajl {
@@ -89,12 +88,12 @@ public:
 		yajl_gen_array_close(gen);
 	}
 
-	ConstBuffer<char> GetBuffer() const noexcept {
+	std::span<const char> GetBuffer() const noexcept {
 		const unsigned char *buf;
 		size_t len;
 		auto status = yajl_gen_get_buf(gen, &buf, &len);
 		if (status != yajl_gen_status_ok)
-			return nullptr;
+			return {};
 
 		return {(const char *)buf, len};
 	}

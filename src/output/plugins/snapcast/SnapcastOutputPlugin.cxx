@@ -30,6 +30,7 @@
 #include "event/Call.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
+#include "util/SpanCast.hxx"
 #include "config/Net.hxx"
 
 #ifdef HAVE_ZEROCONF
@@ -277,8 +278,7 @@ ToJson(const Tag &tag) noexcept
 
 	gen.CloseMap();
 
-	const auto result = gen.GetBuffer();
-	return {(const char *)result.data, result.size};
+	return std::string{ToStringView(gen.GetBuffer())};
 }
 
 #endif

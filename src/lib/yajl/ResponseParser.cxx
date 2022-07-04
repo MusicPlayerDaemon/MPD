@@ -28,7 +28,6 @@
  */
 
 #include "ResponseParser.hxx"
-#include "util/ConstBuffer.hxx"
 
 void
 YajlResponseParser::OnData(std::span<const std::byte> data)
