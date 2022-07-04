@@ -19,7 +19,6 @@
 
 #include "FormatConverter.hxx"
 #include "PcmFormat.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <cassert>
@@ -61,8 +60,8 @@ PcmFormatConverter::Close() noexcept
 #endif
 }
 
-ConstBuffer<void>
-PcmFormatConverter::Convert(ConstBuffer<void> src) noexcept
+std::span<const std::byte>
+PcmFormatConverter::Convert(std::span<const std::byte> src) noexcept
 {
 	switch (dest_format) {
 	case SampleFormat::UNDEFINED:
@@ -72,24 +71,24 @@ PcmFormatConverter::Convert(ConstBuffer<void> src) noexcept
 		gcc_unreachable();
 
 	case SampleFormat::S16:
-		return pcm_convert_to_16(buffer, dither,
-					 src_format,
-					 src).ToVoid();
+		return std::as_bytes(pcm_convert_to_16(buffer, dither,
+						       src_format,
+						       src));
 
 	case SampleFormat::S24_P32:
-		return pcm_convert_to_24(buffer,
-					 src_format,
-					 src).ToVoid();
+		return std::as_bytes(pcm_convert_to_24(buffer,
+						       src_format,
+						       src));
 
 	case SampleFormat::S32:
-		return pcm_convert_to_32(buffer,
-					 src_format,
-					 src).ToVoid();
+		return std::as_bytes(pcm_convert_to_32(buffer,
+						       src_format,
+						       src));
 
 	case SampleFormat::FLOAT:
-		return pcm_convert_to_float(buffer,
-					    src_format,
-					    src).ToVoid();
+		return std::as_bytes(pcm_convert_to_float(buffer,
+							  src_format,
+							  src));
 	}
 
 	assert(false);

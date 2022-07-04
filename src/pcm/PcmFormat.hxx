@@ -23,8 +23,8 @@
 #include "SampleFormat.hxx"
 
 #include <cstdint>
+#include <span>
 
-template<typename T> struct ConstBuffer;
 class PcmBuffer;
 class PcmDither;
 
@@ -38,9 +38,9 @@ class PcmDither;
  * @return the destination buffer
  */
 [[gnu::pure]]
-ConstBuffer<int16_t>
+std::span<const int16_t>
 pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
-		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
+		  SampleFormat src_format, std::span<const std::byte> src) noexcept;
 
 /**
  * Converts PCM samples to 24 bit (32 bit alignment).
@@ -50,9 +50,9 @@ pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
  * @return the destination buffer
  */
 [[gnu::pure]]
-ConstBuffer<int32_t>
+std::span<const int32_t>
 pcm_convert_to_24(PcmBuffer &buffer,
-		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
+		  SampleFormat src_format, std::span<const std::byte> src) noexcept;
 
 /**
  * Converts PCM samples to 32 bit.
@@ -62,9 +62,9 @@ pcm_convert_to_24(PcmBuffer &buffer,
  * @return the destination buffer
  */
 [[gnu::pure]]
-ConstBuffer<int32_t>
+std::span<const int32_t>
 pcm_convert_to_32(PcmBuffer &buffer,
-		  SampleFormat src_format, ConstBuffer<void> src) noexcept;
+		  SampleFormat src_format, std::span<const std::byte> src) noexcept;
 
 /**
  * Converts PCM samples to 32 bit floating point.
@@ -74,8 +74,8 @@ pcm_convert_to_32(PcmBuffer &buffer,
  * @return the destination buffer
  */
 [[gnu::pure]]
-ConstBuffer<float>
+std::span<const float>
 pcm_convert_to_float(PcmBuffer &buffer,
-		     SampleFormat src_format, ConstBuffer<void> src) noexcept;
+		     SampleFormat src_format, std::span<const std::byte> src) noexcept;
 
 #endif

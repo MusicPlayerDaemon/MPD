@@ -23,11 +23,11 @@
 
 static void
 GenericPcmInterleave(uint8_t *gcc_restrict dest,
-		     ConstBuffer<const uint8_t *> src,
+		     std::span<const uint8_t *const> src,
 		     size_t n_frames, size_t sample_size) noexcept
 {
 	for (size_t frame = 0; frame < n_frames; ++frame) {
-		for (size_t channel = 0; channel < src.size; ++channel) {
+		for (size_t channel = 0; channel < src.size(); ++channel) {
 			memcpy(dest, src[channel] + frame * sample_size,
 			       sample_size);
 			dest += sample_size;
@@ -51,10 +51,10 @@ PcmInterleaveStereo(T *gcc_restrict dest,
 template<typename T>
 static void
 PcmInterleaveT(T *gcc_restrict dest,
-	       const ConstBuffer<const T *> src,
+	       const std::span<const T *const> src,
 	       size_t n_frames) noexcept
 {
-	switch (src.size) {
+	switch (src.size()) {
 	case 2:
 		PcmInterleaveStereo(dest, src[0], src[1], n_frames);
 		return;
@@ -64,14 +64,14 @@ PcmInterleaveT(T *gcc_restrict dest,
 		auto *d = dest++;
 
 		for (const auto *const s_end = s + n_frames;
-		     s != s_end; ++s, d += src.size)
+		     s != s_end; ++s, d += src.size())
 			*d = *s;
 	}
 }
 
 static void
 PcmInterleave16(int16_t *gcc_restrict dest,
-		const ConstBuffer<const int16_t *> src,
+		const std::span<const int16_t *const> src,
 		size_t n_frames) noexcept
 {
 	PcmInterleaveT(dest, src, n_frames);
@@ -79,7 +79,7 @@ PcmInterleave16(int16_t *gcc_restrict dest,
 
 void
 PcmInterleave32(int32_t *gcc_restrict dest,
-		const ConstBuffer<const int32_t *> src,
+		const std::span<const int32_t *const> src,
 		size_t n_frames) noexcept
 {
 	PcmInterleaveT(dest, src, n_frames);
@@ -87,28 +87,25 @@ PcmInterleave32(int32_t *gcc_restrict dest,
 
 void
 PcmInterleave(void *gcc_restrict dest,
-	      ConstBuffer<const void *> src,
+	      std::span<const void *const> src,
 	      size_t n_frames, size_t sample_size) noexcept
 {
 	switch (sample_size) {
 	case 2:
 		PcmInterleave16((int16_t *)dest,
-				ConstBuffer<const int16_t *>((const int16_t *const*)src.data,
-							     src.size),
+				{(const int16_t *const*)src.data(), src.size()},
 				n_frames);
 		break;
 
 	case 4:
 		PcmInterleave32((int32_t *)dest,
-				ConstBuffer<const int32_t *>((const int32_t *const*)src.data,
-							     src.size),
+				{(const int32_t *const*)src.data(), src.size()},
 				n_frames);
 		break;
 
 	default:
 		GenericPcmInterleave((uint8_t *)dest,
-				     ConstBuffer<const uint8_t *>((const uint8_t *const*)src.data,
-								  src.size),
+				     {(const uint8_t *const*)src.data(), src.size()},
 				     n_frames, sample_size);
 	}
 }

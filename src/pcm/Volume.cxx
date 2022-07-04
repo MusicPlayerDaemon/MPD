@@ -20,7 +20,6 @@
 #include "Volume.hxx"
 #include "Silence.hxx"
 #include "Traits.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/TransformN.hxx"
 
@@ -185,13 +184,13 @@ PcmVolume::Open(SampleFormat _format, bool allow_convert)
 	return format = _format;
 }
 
-ConstBuffer<void>
-PcmVolume::Apply(ConstBuffer<void> src) noexcept
+std::span<const std::byte>
+PcmVolume::Apply(std::span<const std::byte> src) noexcept
 {
 	if (volume == PCM_VOLUME_1 && !convert)
 		return src;
 
-	size_t dest_size = src.size;
+	size_t dest_size = src.size();
 	if (convert) {
 		assert(format == SampleFormat::S16);
 
@@ -205,7 +204,7 @@ PcmVolume::Apply(ConstBuffer<void> src) noexcept
 		/* optimized special case: 0% volume = memset(0) */
 		PcmSilence(std::span{(std::byte *)data, dest_size},
 			   format);
-		return { data, dest_size };
+		return { (const std::byte *)data, dest_size };
 	}
 
 	switch (format) {
@@ -215,42 +214,42 @@ PcmVolume::Apply(ConstBuffer<void> src) noexcept
 
 	case SampleFormat::S8:
 		pcm_volume_change_8(dither, (int8_t *)data,
-				    (const int8_t *)src.data,
-				    src.size / sizeof(int8_t),
+				    (const int8_t *)src.data(),
+				    src.size() / sizeof(int8_t),
 				    volume);
 		break;
 
 	case SampleFormat::S16:
 		if (convert)
 			PcmVolumeChange16to32((int32_t *)data,
-					      (const int16_t *)src.data,
-					      src.size / sizeof(int16_t),
+					      (const int16_t *)src.data(),
+					      src.size() / sizeof(int16_t),
 					      volume);
 		else
 			pcm_volume_change_16(dither, (int16_t *)data,
-					     (const int16_t *)src.data,
-					     src.size / sizeof(int16_t),
+					     (const int16_t *)src.data(),
+					     src.size() / sizeof(int16_t),
 					     volume);
 		break;
 
 	case SampleFormat::S24_P32:
 		pcm_volume_change_24(dither, (int32_t *)data,
-				     (const int32_t *)src.data,
-				     src.size / sizeof(int32_t),
+				     (const int32_t *)src.data(),
+				     src.size() / sizeof(int32_t),
 				     volume);
 		break;
 
 	case SampleFormat::S32:
 		pcm_volume_change_32(dither, (int32_t *)data,
-				     (const int32_t *)src.data,
-				     src.size / sizeof(int32_t),
+				     (const int32_t *)src.data(),
+				     src.size() / sizeof(int32_t),
 				     volume);
 		break;
 
 	case SampleFormat::FLOAT:
 		pcm_volume_change_float((float *)data,
-					(const float *)src.data,
-					src.size / sizeof(float),
+					(const float *)src.data(),
+					src.size() / sizeof(float),
 					pcm_volume_to_float(volume));
 		break;
 
@@ -259,5 +258,5 @@ PcmVolume::Apply(ConstBuffer<void> src) noexcept
 		return src;
 	}
 
-	return { data, dest_size };
+	return { (const std::byte *)data, dest_size };
 }

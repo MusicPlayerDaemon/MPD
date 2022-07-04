@@ -29,8 +29,7 @@
 
 #include <array>
 #include <cstdint>
-
-template<typename T> struct ConstBuffer;
+#include <span>
 
 /**
  * Analyze a 44.1 kHz / stereo / float32 audio stream and calculate
@@ -112,7 +111,7 @@ private:
 public:
 	ReplayGainAnalyzer() noexcept;
 
-	void Process(ConstBuffer<Frame> src) noexcept;
+	void Process(std::span<const Frame> src) noexcept;
 
 	float GetPeak() const noexcept {
 		return peak;
@@ -133,10 +132,10 @@ class WindowReplayGainAnalyzer : public ReplayGainAnalyzer {
 	std::size_t window_fill = 0;
 
 public:
-	void Process(ConstBuffer<Frame> src) noexcept;
+	void Process(std::span<const Frame> src) noexcept;
 
 	void Flush() noexcept;
 
 private:
-	void CopyToBuffer(ConstBuffer<Frame> src) noexcept;
+	void CopyToBuffer(std::span<const Frame> src) noexcept;
 };

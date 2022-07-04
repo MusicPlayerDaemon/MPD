@@ -19,7 +19,7 @@
 
 #include "Convert.hxx"
 #include "ConfiguredResampler.hxx"
-#include "util/ConstBuffer.hxx"
+#include "util/SpanCast.hxx"
 
 #include <cassert>
 #include <stdexcept>
@@ -111,16 +111,16 @@ PcmConvert::Reset() noexcept
 #endif
 }
 
-ConstBuffer<void>
-PcmConvert::Convert(ConstBuffer<void> buffer)
+std::span<const std::byte>
+PcmConvert::Convert(std::span<const std::byte> buffer)
 {
 #ifdef ENABLE_DSD
 	if (src_format.format == SampleFormat::DSD) {
-		auto s = ConstBuffer<uint8_t>::FromVoid(buffer);
+		auto s = FromBytesStrict<const uint8_t>(buffer);
 		auto d = dsd2pcm_float
-			? dsd.ToFloat(src_format.channels, s).ToVoid()
-			: dsd.ToS24(src_format.channels, s).ToVoid();
-		if (d.IsNull())
+			? std::as_bytes(dsd.ToFloat(src_format.channels, s))
+			: std::as_bytes(dsd.ToS24(src_format.channels, s));
+		if (d.data() == nullptr)
 			throw std::runtime_error("DSD to PCM conversion failed");
 
 		buffer = d;
@@ -139,12 +139,12 @@ PcmConvert::Convert(ConstBuffer<void> buffer)
 	return buffer;
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 PcmConvert::Flush()
 {
 	if (enable_resampler) {
 		auto buffer = resampler.Flush();
-		if (!buffer.IsNull()) {
+		if (buffer.data() != nullptr) {
 			if (enable_format)
 				buffer = format_converter.Convert(buffer);
 
@@ -155,5 +155,5 @@ PcmConvert::Flush()
 		}
 	}
 
-	return nullptr;
+	return {};
 }

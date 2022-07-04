@@ -24,8 +24,7 @@
 #include "RestBuffer.hxx"
 
 #include <cstdint>
-
-template<typename T> struct ConstBuffer;
+#include <span>
 
 /**
  * Pack DSD 1 bit samples into (padded) 24 bit PCM samples for
@@ -60,7 +59,7 @@ public:
 		return 2 * GetInputBlockSize();
 	}
 
-	ConstBuffer<uint32_t> Convert(ConstBuffer<uint8_t> src) noexcept;
+	std::span<const uint32_t> Convert(std::span<const uint8_t> src) noexcept;
 };
 
 #endif

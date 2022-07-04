@@ -21,9 +21,9 @@
 #define MPD_PCM_CHANNELS_HXX
 
 #include <cstdint>
+#include <span>
 
 class PcmBuffer;
-template<typename T> struct ConstBuffer;
 
 /**
  * Changes the number of channels in 16 bit PCM data.
@@ -34,11 +34,11 @@ template<typename T> struct ConstBuffer;
  * @param src the source PCM buffer
  * @return the destination buffer
  */
-ConstBuffer<int16_t>
+std::span<const int16_t>
 pcm_convert_channels_16(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int16_t> src) noexcept;
+			std::span<const int16_t> src) noexcept;
 
 /**
  * Changes the number of channels in 24 bit PCM data (aligned at 32
@@ -50,11 +50,11 @@ pcm_convert_channels_16(PcmBuffer &buffer,
  * @param src the source PCM buffer
  * @return the destination buffer
  */
-ConstBuffer<int32_t>
+std::span<const int32_t>
 pcm_convert_channels_24(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int32_t> src) noexcept;
+			std::span<const int32_t> src) noexcept;
 
 /**
  * Changes the number of channels in 32 bit PCM data.
@@ -65,11 +65,11 @@ pcm_convert_channels_24(PcmBuffer &buffer,
  * @param src the source PCM buffer
  * @return the destination buffer
  */
-ConstBuffer<int32_t>
+std::span<const int32_t>
 pcm_convert_channels_32(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int32_t> src) noexcept;
+			std::span<const int32_t> src) noexcept;
 
 /**
  * Changes the number of channels in 32 bit float PCM data.
@@ -80,10 +80,10 @@ pcm_convert_channels_32(PcmBuffer &buffer,
  * @param src the source PCM buffer
  * @return the destination buffer
  */
-ConstBuffer<float>
+std::span<const float>
 pcm_convert_channels_float(PcmBuffer &buffer,
 			   unsigned dest_channels,
 			   unsigned src_channels,
-			   ConstBuffer<float> src) noexcept;
+			   std::span<const float> src) noexcept;
 
 #endif

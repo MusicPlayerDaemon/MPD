@@ -19,8 +19,8 @@
 
 #include "ChannelsConverter.hxx"
 #include "PcmChannels.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/SpanCast.hxx"
 
 #include <cassert>
 
@@ -55,8 +55,8 @@ PcmChannelsConverter::Close() noexcept
 #endif
 }
 
-ConstBuffer<void>
-PcmChannelsConverter::Convert(ConstBuffer<void> src) noexcept
+std::span<const std::byte>
+PcmChannelsConverter::Convert(std::span<const std::byte> src) noexcept
 {
 	switch (format) {
 	case SampleFormat::UNDEFINED:
@@ -66,24 +66,24 @@ PcmChannelsConverter::Convert(ConstBuffer<void> src) noexcept
 		gcc_unreachable();
 
 	case SampleFormat::S16:
-		return pcm_convert_channels_16(buffer, dest_channels,
-					       src_channels,
-					       ConstBuffer<int16_t>::FromVoid(src)).ToVoid();
+		return std::as_bytes(pcm_convert_channels_16(buffer, dest_channels,
+							     src_channels,
+							     FromBytesStrict<const int16_t>(src)));
 
 	case SampleFormat::S24_P32:
-		return pcm_convert_channels_24(buffer, dest_channels,
-					       src_channels,
-					       ConstBuffer<int32_t>::FromVoid(src)).ToVoid();
+		return std::as_bytes(pcm_convert_channels_24(buffer, dest_channels,
+							     src_channels,
+							     FromBytesStrict<const int32_t>(src)));
 
 	case SampleFormat::S32:
-		return pcm_convert_channels_32(buffer, dest_channels,
-					       src_channels,
-					       ConstBuffer<int32_t>::FromVoid(src)).ToVoid();
+		return std::as_bytes(pcm_convert_channels_32(buffer, dest_channels,
+							     src_channels,
+							     FromBytesStrict<const int32_t>(src)));
 
 	case SampleFormat::FLOAT:
-		return pcm_convert_channels_float(buffer, dest_channels,
-						  src_channels,
-						  ConstBuffer<float>::FromVoid(src)).ToVoid();
+		return std::as_bytes(pcm_convert_channels_float(buffer, dest_channels,
+								src_channels,
+								FromBytesStrict<const float>(src)));
 	}
 
 	assert(false);

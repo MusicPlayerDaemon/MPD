@@ -24,6 +24,9 @@
 #include "Buffer.hxx"
 #include "AudioFormat.hxx"
 
+#include <cstddef>
+#include <span>
+
 /**
  * A naive resampler that is used when no external library was found
  * (or when the user explicitly asks for bad quality).
@@ -37,7 +40,7 @@ class FallbackPcmResampler final : public PcmResampler {
 public:
 	AudioFormat Open(AudioFormat &af, unsigned new_sample_rate) override;
 	void Close() noexcept override;
-	ConstBuffer<void> Resample(ConstBuffer<void> src) override;
+	std::span<const std::byte> Resample(std::span<const std::byte> src) override;
 };
 
 #endif

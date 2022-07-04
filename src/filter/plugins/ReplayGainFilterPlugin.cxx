@@ -201,7 +201,7 @@ ConstBuffer<void>
 ReplayGainFilter::FilterPCM(ConstBuffer<void> src)
 {
 	return mixer != nullptr
-		? src
+		? std::span<const std::byte>{src}
 		: pv.Apply(src);
 }
 

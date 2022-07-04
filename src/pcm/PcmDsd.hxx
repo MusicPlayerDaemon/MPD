@@ -24,8 +24,7 @@
 #include "Dsd2Pcm.hxx"
 
 #include <cstdint>
-
-template<typename T> struct ConstBuffer;
+#include <span>
 
 /**
  * Wrapper for the dsd2pcm library.
@@ -40,11 +39,11 @@ public:
 		dsd2pcm.Reset();
 	}
 
-	ConstBuffer<float> ToFloat(unsigned channels,
-				   ConstBuffer<uint8_t> src) noexcept;
+	std::span<const float> ToFloat(unsigned channels,
+				       std::span<const uint8_t> src) noexcept;
 
-	ConstBuffer<int32_t> ToS24(unsigned channels,
-				   ConstBuffer<uint8_t> src) noexcept;
+	std::span<const int32_t> ToS24(unsigned channels,
+				       std::span<const uint8_t> src) noexcept;
 };
 
 #endif

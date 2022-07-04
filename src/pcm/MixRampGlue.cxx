@@ -23,7 +23,7 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "util/Compiler.h"
-#include "util/ConstBuffer.hxx"
+#include "util/SpanCast.hxx"
 
 #include <stdio.h>
 
@@ -99,7 +99,7 @@ AnalyzeMixRamp(const MusicPipe &pipe, const AudioFormat &audio_format,
 
 	MixRampAnalyzer a;
 	do {
-		a.Process(ConstBuffer<ReplayGainAnalyzer::Frame>::FromVoid({chunk->data, chunk->length}));
+		a.Process(FromBytesStrict<const ReplayGainAnalyzer::Frame>({chunk->data, chunk->length}));
 	} while ((chunk = chunk->next.get()) != nullptr);
 
 	return ToString(a.GetResult(), a.GetTime(), direction);

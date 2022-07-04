@@ -44,10 +44,10 @@ public:
 	AudioFormat Open(AudioFormat &af, unsigned new_sample_rate) override;
 	void Close() noexcept override;
 	void Reset() noexcept override;
-	ConstBuffer<void> Resample(ConstBuffer<void> src) override;
+	std::span<const std::byte> Resample(std::span<const std::byte> src) override;
 
 private:
-	ConstBuffer<float> Resample2(ConstBuffer<float> src);
+	std::span<const float> Resample2(std::span<const float> src);
 };
 
 void

@@ -22,11 +22,10 @@
 #include "Pack.hxx"
 #include "Silence.hxx"
 #include "util/ByteReverse.hxx"
-#include "util/ConstBuffer.hxx"
+#include "util/SpanCast.hxx"
 
+#include <algorithm>
 #include <cassert>
-
-#include <string.h>
 
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
@@ -98,9 +97,9 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 	assert(buffer_size < sizeof(buffer));
 	PcmSilence({buffer, buffer_size}, src_sample_format);
 	auto s = Export({buffer, buffer_size});
-	assert(s.size < sizeof(silence_buffer));
-	silence_size = s.size;
-	memcpy(silence_buffer, s.data, s.size);
+	assert(s.size() < sizeof(silence_buffer));
+	silence_size = s.size();
+	std::copy(s.begin(), s.end(), silence_buffer);
 }
 
 void
@@ -200,7 +199,7 @@ PcmExport::GetOutputBlockSize() const noexcept
 	return GetOutputFrameSize();
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 PcmExport::GetSilence() const noexcept
 {
 	return {silence_buffer, silence_size};
@@ -262,8 +261,8 @@ PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const noexcept
 	return sample_rate;
 }
 
-ConstBuffer<void>
-PcmExport::Export(ConstBuffer<void> data) noexcept
+std::span<const std::byte>
+PcmExport::Export(std::span<const std::byte> data) noexcept
 {
 	if (alsa_channel_order)
 		data = ToAlsaChannelOrder(order_buffer, data,
@@ -275,38 +274,34 @@ PcmExport::Export(ConstBuffer<void> data) noexcept
 		break;
 
 	case DsdMode::U16:
-		data = dsd16_converter.Convert(ConstBuffer<uint8_t>::FromVoid(data))
-			.ToVoid();
+		data = std::as_bytes(dsd16_converter.Convert(FromBytesStrict<const uint8_t>(data)));
 		break;
 
 	case DsdMode::U32:
-		data = dsd32_converter.Convert(ConstBuffer<uint8_t>::FromVoid(data))
-			.ToVoid();
+		data = std::as_bytes(dsd32_converter.Convert(FromBytesStrict<const uint8_t>(data)));
 		break;
 
 	case DsdMode::DOP:
-		data = dop_converter.Convert(ConstBuffer<uint8_t>::FromVoid(data))
-			.ToVoid();
+		data = std::as_bytes(dop_converter.Convert(FromBytesStrict<const uint8_t>(data)));
 		break;
 	}
 #endif
 
 	if (pack24) {
-		const auto src = ConstBuffer<int32_t>::FromVoid(data);
-		const size_t num_samples = src.size;
+		const auto src = FromBytesStrict<const int32_t>(data);
+		const size_t num_samples = src.size();
 		const size_t dest_size = num_samples * 3;
 		auto *dest = (uint8_t *)pack_buffer.Get(dest_size);
 		assert(dest != nullptr);
 
-		pcm_pack_24(dest, src.begin(), src.end());
+		pcm_pack_24(dest, src.data(), src.data() + src.size());
 
-		data.data = dest;
-		data.size = dest_size;
+		data = std::as_bytes(std::span{dest, dest_size});
 	} else if (shift8) {
-		const auto src = ConstBuffer<int32_t>::FromVoid(data);
+		const auto src = FromBytesStrict<const int32_t>(data);
 
-		auto *dest = (uint32_t *)pack_buffer.Get(data.size);
-		data.data = dest;
+		auto *dest = (uint32_t *)pack_buffer.Get(data.size());
+		data = {(const std::byte *)dest, data.size()};
 
 		for (auto i : src)
 			*dest++ = i << 8;
@@ -315,13 +310,14 @@ PcmExport::Export(ConstBuffer<void> data) noexcept
 	if (reverse_endian > 0) {
 		assert(reverse_endian >= 2);
 
-		const auto src = ConstBuffer<uint8_t>::FromVoid(data);
+		const auto src = FromBytesStrict<const uint8_t>(data);
 
-		auto *dest = (uint8_t *)reverse_buffer.Get(data.size);
+		auto *dest = (uint8_t *)reverse_buffer.Get(data.size());
 		assert(dest != nullptr);
-		data.data = dest;
+		data = {(const std::byte *)dest, data.size()};
 
-		reverse_bytes(dest, src.begin(), src.end(), reverse_endian);
+		reverse_bytes(dest, src.data(), src.data() + src.size(),
+			      reverse_endian);
 	}
 
 	return data;

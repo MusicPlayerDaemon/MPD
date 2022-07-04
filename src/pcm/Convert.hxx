@@ -30,7 +30,9 @@
 #include "PcmDsd.hxx"
 #endif
 
-template<typename T> struct ConstBuffer;
+#include <cstddef>
+#include <span>
+
 struct ConfigData;
 
 /**
@@ -77,13 +79,13 @@ public:
 	 * @param src the source PCM buffer
 	 * @return the destination buffer
 	 */
-	ConstBuffer<void> Convert(ConstBuffer<void> src);
+	std::span<const std::byte> Convert(std::span<const std::byte> src);
 
 	/**
 	 * Flush pending data and return it.  This should be called
 	 * repepatedly until it returns nullptr.
 	 */
-	ConstBuffer<void> Flush();
+	std::span<const std::byte> Flush();
 };
 
 void

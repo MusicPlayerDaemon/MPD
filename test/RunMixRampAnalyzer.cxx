@@ -20,7 +20,6 @@
 #include "ReadFrames.hxx"
 #include "pcm/MixRampAnalyzer.hxx"
 #include "io/FileDescriptor.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 
 #include <array>

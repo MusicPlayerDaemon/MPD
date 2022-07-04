@@ -19,8 +19,7 @@
 
 #include "Order.hxx"
 #include "Buffer.hxx"
-#include "util/ConstBuffer.hxx"
-
+#include "util/SpanCast.hxx"
 
 /*
  * According to:
@@ -109,12 +108,12 @@ ToAlsaChannelOrder50(V *dest, const V *src, size_t n) noexcept
 }
 
 template<typename V>
-static inline ConstBuffer<V>
-ToAlsaChannelOrder50(PcmBuffer &buffer, ConstBuffer<V> src) noexcept
+static inline std::span<const V>
+ToAlsaChannelOrder50(PcmBuffer &buffer, std::span<const V> src) noexcept
 {
-	auto dest = buffer.GetT<V>(src.size);
-	ToAlsaChannelOrder50(dest, src.data, src.size / 5);
-	return { dest, src.size };
+	auto dest = buffer.GetT<V>(src.size());
+	ToAlsaChannelOrder50(dest, src.data(), src.size() / 5);
+	return { dest, src.size() };
 }
 
 template<typename V>
@@ -127,12 +126,12 @@ ToAlsaChannelOrder51(V *dest, const V *src, size_t n) noexcept
 }
 
 template<typename V>
-static inline ConstBuffer<V>
-ToAlsaChannelOrder51(PcmBuffer &buffer, ConstBuffer<V> src) noexcept
+static inline std::span<const V>
+ToAlsaChannelOrder51(PcmBuffer &buffer, std::span<const V> src) noexcept
 {
-	auto dest = buffer.GetT<V>(src.size);
-	ToAlsaChannelOrder51(dest, src.data, src.size / 6);
-	return { dest, src.size };
+	auto dest = buffer.GetT<V>(src.size());
+	ToAlsaChannelOrder51(dest, src.data(), src.size() / 6);
+	return { dest, src.size() };
 }
 
 template<typename V>
@@ -145,12 +144,12 @@ ToAlsaChannelOrder70(V *dest, const V *src, size_t n) noexcept
 }
 
 template<typename V>
-static inline ConstBuffer<V>
-ToAlsaChannelOrder70(PcmBuffer &buffer, ConstBuffer<V> src) noexcept
+static inline std::span<const V>
+ToAlsaChannelOrder70(PcmBuffer &buffer, std::span<const V> src) noexcept
 {
-	auto dest = buffer.GetT<V>(src.size);
-	ToAlsaChannelOrder70(dest, src.data, src.size / 7);
-	return { dest, src.size };
+	auto dest = buffer.GetT<V>(src.size());
+	ToAlsaChannelOrder70(dest, src.data(), src.size() / 7);
+	return { dest, src.size() };
 }
 
 template<typename V>
@@ -163,17 +162,17 @@ ToAlsaChannelOrder71(V *dest, const V *src, size_t n) noexcept
 }
 
 template<typename V>
-static inline ConstBuffer<V>
-ToAlsaChannelOrder71(PcmBuffer &buffer, ConstBuffer<V> src) noexcept
+static inline std::span<const V>
+ToAlsaChannelOrder71(PcmBuffer &buffer, std::span<const V> src) noexcept
 {
-	auto dest = buffer.GetT<V>(src.size);
-	ToAlsaChannelOrder71(dest, src.data, src.size / 8);
-	return { dest, src.size };
+	auto dest = buffer.GetT<V>(src.size());
+	ToAlsaChannelOrder71(dest, src.data(), src.size() / 8);
+	return { dest, src.size() };
 }
 
 template<typename V>
-static ConstBuffer<V>
-ToAlsaChannelOrderT(PcmBuffer &buffer, ConstBuffer<V> src,
+static std::span<const V>
+ToAlsaChannelOrderT(PcmBuffer &buffer, std::span<const V> src,
 		    unsigned channels) noexcept
 {
 	switch (channels) {
@@ -194,8 +193,8 @@ ToAlsaChannelOrderT(PcmBuffer &buffer, ConstBuffer<V> src,
 	}
 }
 
-ConstBuffer<void>
-ToAlsaChannelOrder(PcmBuffer &buffer, ConstBuffer<void> src,
+std::span<const std::byte>
+ToAlsaChannelOrder(PcmBuffer &buffer, std::span<const std::byte> src,
 		   SampleFormat sample_format, unsigned channels) noexcept
 {
 	switch (sample_format) {
@@ -205,16 +204,16 @@ ToAlsaChannelOrder(PcmBuffer &buffer, ConstBuffer<void> src,
 		return src;
 
 	case SampleFormat::S16:
-		return ToAlsaChannelOrderT(buffer,
-					   ConstBuffer<int16_t>::FromVoid(src),
-					   channels).ToVoid();
+		return std::as_bytes(ToAlsaChannelOrderT(buffer,
+							 FromBytesStrict<const int16_t>(src),
+							 channels));
 
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
 	case SampleFormat::FLOAT:
-		return ToAlsaChannelOrderT(buffer,
-					   ConstBuffer<int32_t>::FromVoid(src),
-					   channels).ToVoid();
+		return std::as_bytes(ToAlsaChannelOrderT(buffer,
+							 FromBytesStrict<const int32_t>(src),
+							 channels));
 	}
 
 	gcc_unreachable();

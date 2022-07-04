@@ -71,18 +71,16 @@ GluePcmResampler::Reset() noexcept
 	resampler->Reset();
 }
 
-ConstBuffer<void>
-GluePcmResampler::Resample(ConstBuffer<void> src)
+std::span<const std::byte>
+GluePcmResampler::Resample(std::span<const std::byte> src)
 {
-	assert(!src.IsNull());
-
 	if (requested_sample_format != src_sample_format)
 		src = format_converter.Convert(src);
 
 	return resampler->Resample(src);
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 GluePcmResampler::Flush()
 {
 	return resampler->Flush();

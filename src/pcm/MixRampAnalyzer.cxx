@@ -18,7 +18,8 @@
  */
 
 #include "MixRampAnalyzer.hxx"
-#include "util/ConstBuffer.hxx"
+
+#include <cassert>
 
 inline void
 MixRampData::Add(MixRampItem item) noexcept
@@ -35,20 +36,20 @@ MixRampData::Add(MixRampItem item) noexcept
 }
 
 void
-MixRampAnalyzer::Process(ConstBuffer<ReplayGainAnalyzer::Frame> src) noexcept
+MixRampAnalyzer::Process(std::span<const ReplayGainAnalyzer::Frame> src) noexcept
 {
 	while (!src.empty()) {
 		std::size_t chunk_remaining = chunk_frames - chunk_fill;
 		assert(chunk_remaining > 0);
 
-		if (chunk_remaining > src.size) {
+		if (chunk_remaining > src.size()) {
 			gain_analyzer.Process(src);
-			chunk_fill += src.size;
+			chunk_fill += src.size();
 			return;
 		}
 
-		gain_analyzer.Process({src.data, chunk_remaining});
-		src.skip_front(chunk_remaining);
+		gain_analyzer.Process({src.data(), chunk_remaining});
+		src = src.subspan(chunk_remaining);
 
 		gain_analyzer.Flush();
 

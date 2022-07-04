@@ -26,7 +26,6 @@
 #include "pcm/Volume.hxx"
 #include "pcm/AudioParser.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 
 #include <stdio.h>
@@ -37,7 +36,7 @@
 int
 main(int argc, char **argv)
 try {
-	static char buffer[4096];
+	static std::byte buffer[4096];
 	ssize_t nbytes;
 
 	if (argc > 2) {
@@ -58,7 +57,7 @@ try {
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		auto dest = pv.Apply({buffer, size_t(nbytes)});
-		[[maybe_unused]] ssize_t ignored = write(1, dest.data, dest.size);
+		[[maybe_unused]] ssize_t ignored = write(1, dest.data(), dest.size());
 	}
 
 	pv.Close();

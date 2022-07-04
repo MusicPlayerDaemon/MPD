@@ -19,7 +19,7 @@
 
 #include "pcm/Volume.hxx"
 #include "pcm/Traits.hxx"
-#include "util/ConstBuffer.hxx"
+#include "util/SpanCast.hxx"
 #include "test_pcm_util.hxx"
 
 #include <gtest/gtest.h>
@@ -41,23 +41,23 @@ TestVolume(G g=G())
 	constexpr size_t N = 509;
 	static value_type zero[N];
 	const auto _src = TestDataBuffer<value_type, N>(g);
-	const ConstBuffer<void> src(_src, sizeof(_src));
+	const std::span<const std::byte> src = _src;
 
 	pv.SetVolume(0);
 	auto dest = pv.Apply(src);
-	EXPECT_EQ(src.size, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, zero, sizeof(zero)));
+	EXPECT_EQ(src.size(), dest.size());
+	EXPECT_EQ(0, memcmp(dest.data(), zero, sizeof(zero)));
 
 	pv.SetVolume(PCM_VOLUME_1);
 	dest = pv.Apply(src);
-	EXPECT_EQ(src.size, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, src.data, src.size));
+	EXPECT_EQ(src.size(), dest.size());
+	EXPECT_EQ(0, memcmp(dest.data(), src.data(), src.size()));
 
 	pv.SetVolume(PCM_VOLUME_1 / 2);
 	dest = pv.Apply(src);
-	EXPECT_EQ(src.size, dest.size);
+	EXPECT_EQ(src.size(), dest.size());
 
-	const auto _dest = ConstBuffer<value_type>::FromVoid(dest);
+	const auto _dest = FromBytesStrict<const value_type>(dest);
 	for (unsigned i = 0; i < N; ++i) {
 		const auto expected = (_src[i] + 1) / 2;
 		EXPECT_GE(_dest[i], expected - 4);
@@ -89,27 +89,27 @@ TEST(PcmTest, Volume16to32)
 	constexpr size_t N = 509;
 	static value_type zero[N];
 	const auto _src = TestDataBuffer<value_type, N>(g);
-	const ConstBuffer<void> src(_src, sizeof(_src));
+	const std::span<const std::byte> src = _src;
 
 	pv.SetVolume(0);
 	auto dest = pv.Apply(src);
-	EXPECT_EQ(src.size * 2, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, zero, sizeof(zero)));
+	EXPECT_EQ(src.size() * 2, dest.size());
+	EXPECT_EQ(0, memcmp(dest.data(), zero, sizeof(zero)));
 
 	pv.SetVolume(PCM_VOLUME_1);
 	dest = pv.Apply(src);
-	EXPECT_EQ(src.size * 2, dest.size);
-	auto s = ConstBuffer<int16_t>::FromVoid(src);
-	auto d = ConstBuffer<int32_t>::FromVoid(dest);
+	EXPECT_EQ(src.size() * 2, dest.size());
+	auto s = FromBytesStrict<const int16_t>(src);
+	auto d = FromBytesStrict<const int32_t>(dest);
 	for (size_t i = 0; i < N; ++i)
 		EXPECT_EQ(d[i], s[i] << 8);
 
 	pv.SetVolume(PCM_VOLUME_1 / 2);
 	dest = pv.Apply(src);
-	EXPECT_EQ(src.size * 2, dest.size);
+	EXPECT_EQ(src.size() * 2, dest.size());
 
-	s = ConstBuffer<int16_t>::FromVoid(src);
-	d = ConstBuffer<int32_t>::FromVoid(dest);
+	s = FromBytesStrict<const int16_t>(src);
+	d = FromBytesStrict<const int32_t>(dest);
 	for (unsigned i = 0; i < N; ++i) {
 		const int32_t expected = (s[i] << 8) / 2;
 		EXPECT_EQ(d[i], expected);
@@ -136,23 +136,23 @@ TEST(PcmTest, VolumeFloat)
 	constexpr size_t N = 509;
 	static float zero[N];
 	const auto _src = TestDataBuffer<float, N>(RandomFloat());
-	const ConstBuffer<void> src(_src, sizeof(_src));
+	const std::span<const std::byte> src = _src;
 
 	pv.SetVolume(0);
 	auto dest = pv.Apply(src);
-	EXPECT_EQ(src.size, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, zero, sizeof(zero)));
+	EXPECT_EQ(src.size(), dest.size());
+	EXPECT_EQ(0, memcmp(dest.data(), zero, sizeof(zero)));
 
 	pv.SetVolume(PCM_VOLUME_1);
 	dest = pv.Apply(src);
-	EXPECT_EQ(src.size, dest.size);
-	EXPECT_EQ(0, memcmp(dest.data, src.data, src.size));
+	EXPECT_EQ(src.size(), dest.size());
+	EXPECT_EQ(0, memcmp(dest.data(), src.data(), src.size()));
 
 	pv.SetVolume(PCM_VOLUME_1 / 2);
 	dest = pv.Apply(src);
-	EXPECT_EQ(src.size, dest.size);
+	EXPECT_EQ(src.size(), dest.size());
 
-	const auto _dest = ConstBuffer<float>::FromVoid(dest);
+	const auto _dest = FromBytesStrict<const float>(dest);
 	for (unsigned i = 0; i < N; ++i)
 		EXPECT_NEAR((double)_src[i] / 2., (double)_dest[i], 1.);
 

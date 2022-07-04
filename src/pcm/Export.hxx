@@ -30,9 +30,9 @@
 #include "Dop.hxx"
 #endif
 
+#include <cstddef>
 #include <cstdint>
-
-template<typename T> struct ConstBuffer;
+#include <span>
 
 /**
  * An object that handles export of PCM samples to some instance
@@ -80,7 +80,7 @@ class PcmExport {
 
 	size_t silence_size;
 
-	uint8_t silence_buffer[64]; /* worst-case size */
+	std::byte silence_buffer[64]; /* worst-case size */
 
 	/**
 	 * The sample format of input data.
@@ -227,7 +227,7 @@ public:
 	 * this #PcmExport object exists and until the next Open()
 	 * call
 	 */
-	ConstBuffer<void> GetSilence() const noexcept;
+	std::span<const std::byte> GetSilence() const noexcept;
 
 	/**
 	 * Export a PCM buffer.
@@ -236,7 +236,7 @@ public:
 	 * @return the destination buffer; may be empty (and may be a
 	 * pointer to the source buffer)
 	 */
-	ConstBuffer<void> Export(ConstBuffer<void> src) noexcept;
+	std::span<const std::byte> Export(std::span<const std::byte> src) noexcept;
 
 	/**
 	 * Converts the number of consumed bytes from the Export()

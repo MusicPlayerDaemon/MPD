@@ -25,7 +25,6 @@
 
 #include "ReplayGainAnalyzer.hxx"
 #include "util/Compiler.h"
-#include "util/ConstBuffer.hxx"
 
 #include <algorithm>
 #include <cassert>
@@ -85,7 +84,7 @@ SquareHypot(ReplayGainAnalyzer::Frame f) noexcept
  */
 [[gnu::hot]]
 static double
-CalcStereoRMS(ConstBuffer<ReplayGainAnalyzer::Frame> src) noexcept
+CalcStereoRMS(std::span<const ReplayGainAnalyzer::Frame> src) noexcept
 {
 #if GCC_OLDER_THAN(10,0)
 	/* GCC 8 doesn't have std::transform_reduce() */
@@ -100,7 +99,7 @@ CalcStereoRMS(ConstBuffer<ReplayGainAnalyzer::Frame> src) noexcept
 					   SquareHypot);
 #endif
 
-	return 10 * std::log10(sum / src.size) + 90.0 - 3.0;
+	return 10 * std::log10(sum / src.size()) + 90.0 - 3.0;
 }
 
 static constexpr bool
@@ -118,7 +117,7 @@ IsSilentFrame(ReplayGainAnalyzer::Frame frame) noexcept
 
 [[gnu::pure]]
 static bool
-IsSilentBuffer(ConstBuffer<ReplayGainAnalyzer::Frame> buffer) noexcept
+IsSilentBuffer(std::span<const ReplayGainAnalyzer::Frame> buffer) noexcept
 {
 	return std::all_of(buffer.begin(), buffer.end(), IsSilentFrame);
 }
@@ -261,20 +260,20 @@ ReplayGainAnalyzer::Butter::Filter(Frame *gcc_restrict samples,
 }
 
 void
-ReplayGainAnalyzer::Process(ConstBuffer<Frame> src) noexcept
+ReplayGainAnalyzer::Process(std::span<const Frame> src) noexcept
 {
 	assert(!src.empty());
 
 	float new_peak = FindPeak(src.front().data(),
-				  src.size * src.front().size());
+				  src.size() * src.front().size());
 	if (new_peak > peak)
 		peak = new_peak;
 
-	Frame *tmp = buffer.GetT<Frame>(src.size);
-	yule.Filter(src.data, tmp, src.size);
-	butter.Filter(tmp, src.size);
+	Frame *tmp = buffer.GetT<Frame>(src.size());
+	yule.Filter(src.data(), tmp, src.size());
+	butter.Filter(tmp, src.size());
 
-	const long level = std::lrint(std::floor(STEPS_PER_DB * CalcStereoRMS({tmp, src.size})));
+	const long level = std::lrint(std::floor(STEPS_PER_DB * CalcStereoRMS({tmp, src.size()})));
 	const std::size_t level_index = std::clamp(level, 0L, (long)histogram.size() - 1L);
 	histogram[level_index]++;
 }
@@ -318,37 +317,37 @@ ReplayGainAnalyzer::GetGain() const noexcept
 }
 
 void
-WindowReplayGainAnalyzer::CopyToBuffer(ConstBuffer<Frame> src) noexcept
+WindowReplayGainAnalyzer::CopyToBuffer(std::span<const Frame> src) noexcept
 {
 	std::copy(src.begin(), src.end(),
 		  window_buffer.data() + window_fill);
-	window_fill += src.size;
+	window_fill += src.size();
 }
 
 void
-WindowReplayGainAnalyzer::Process(ConstBuffer<Frame> src) noexcept
+WindowReplayGainAnalyzer::Process(std::span<const Frame> src) noexcept
 {
 	assert(window_fill < WINDOW_FRAMES);
 
 	if (window_fill > 0) {
 		std::size_t window_space = WINDOW_FRAMES - window_fill;
 
-		if (src.size < window_space) {
+		if (src.size() < window_space) {
 			CopyToBuffer(src);
 			return;
 		}
 
-		CopyToBuffer({src.data, window_space});
+		CopyToBuffer({src.data(), window_space});
 		Flush();
 
-		src.skip_front(window_space);
+		src = src.subspan(window_space);
 		if (src.empty())
 			return;
 	}
 
-	while (src.size >= WINDOW_FRAMES) {
-		ReplayGainAnalyzer::Process({src.data, WINDOW_FRAMES});
-		src.skip_front(WINDOW_FRAMES);
+	while (src.size() >= WINDOW_FRAMES) {
+		ReplayGainAnalyzer::Process({src.data(), WINDOW_FRAMES});
+		src = src.subspan(WINDOW_FRAMES);
 	}
 
 	CopyToBuffer(src);

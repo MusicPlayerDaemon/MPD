@@ -20,8 +20,10 @@
 #ifndef MPD_PCM_RESAMPLER_HXX
 #define MPD_PCM_RESAMPLER_HXX
 
-#include "util/ConstBuffer.hxx"
 #include "util/Compiler.h"
+
+#include <cstddef>
+#include <span>
 
 struct AudioFormat;
 
@@ -68,14 +70,14 @@ public:
 	 * @return the destination buffer (will be invalidated by
 	 * filter_close() or filter_filter())
 	 */
-	virtual ConstBuffer<void> Resample(ConstBuffer<void> src) = 0;
+	virtual std::span<const std::byte> Resample(std::span<const std::byte> src) = 0;
 
 	/**
 	 * Flush pending data and return it.  This should be called
 	 * repepatedly until it returns nullptr.
 	 */
-	virtual ConstBuffer<void> Flush() {
-		return nullptr;
+	virtual std::span<const std::byte> Flush() {
+		return {};
 	}
 };
 

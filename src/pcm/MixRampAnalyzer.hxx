@@ -22,6 +22,8 @@
 #include "ReplayGainAnalyzer.hxx"
 #include "Chrono.hxx"
 
+#include <span>
+
 constexpr auto mixramp_volumes = std::array{
 	-90., -60., -40., -30., -24., -21., -18.,
 	-15., -12., -9., -6., -3.,  0.,  3.,  6.,
@@ -74,7 +76,7 @@ class MixRampAnalyzer {
 	std::size_t chunk_fill = 0;
 
 public:
-	void Process(ConstBuffer<ReplayGainAnalyzer::Frame> src) noexcept;
+	void Process(std::span<const ReplayGainAnalyzer::Frame> src) noexcept;
 
 	FloatDuration GetTime() const noexcept {
 		return chunk_number * chunk_duration;

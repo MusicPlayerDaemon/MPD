@@ -227,8 +227,7 @@ VorbisDecoder::SubmitSomePcm()
 	}
 #else
 	PcmInterleaveFloat(buffer,
-			   ConstBuffer<const in_sample_t *>(pcm,
-							    channels),
+			   {pcm, channels},
 			   n_frames);
 #endif
 

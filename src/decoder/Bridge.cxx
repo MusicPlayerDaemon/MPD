@@ -511,9 +511,9 @@ DecoderBridge::SubmitData(InputStream *is,
 		assert(dc.in_audio_format != dc.out_audio_format);
 
 		try {
-			auto result = convert->Convert({data, length});
-			data = result.data;
-			length = result.size;
+			auto result = convert->Convert({(const std::byte *)data, length});
+			data = result.data();
+			length = result.size();
 		} catch (...) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to

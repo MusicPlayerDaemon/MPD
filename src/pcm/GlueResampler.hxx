@@ -23,9 +23,11 @@
 #include "SampleFormat.hxx"
 #include "FormatConverter.hxx"
 
+#include <cstddef>
+#include <span>
+
 struct AudioFormat;
 class PcmResampler;
-template<typename T> struct ConstBuffer;
 
 /**
  * A glue class that integrates a #PcmResampler and automatically
@@ -60,9 +62,9 @@ public:
 	 */
 	void Reset() noexcept;
 
-	ConstBuffer<void> Resample(ConstBuffer<void> src);
+	std::span<const std::byte> Resample(std::span<const std::byte> src);
 
-	ConstBuffer<void> Flush();
+	std::span<const std::byte> Flush();
 };
 
 #endif

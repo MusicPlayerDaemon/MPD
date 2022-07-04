@@ -24,8 +24,7 @@
 #include "RestBuffer.hxx"
 
 #include <cstdint>
-
-template<typename T> struct ConstBuffer;
+#include <span>
 
 /**
  * Convert DSD_U8 to DSD_U32 (native endian, oldest bits in MSB).
@@ -58,7 +57,7 @@ public:
 		return GetInputBlockSize();
 	}
 
-	ConstBuffer<uint32_t> Convert(ConstBuffer<uint8_t> src) noexcept;
+	std::span<const uint32_t> Convert(std::span<const uint8_t> src) noexcept;
 };
 
 #endif

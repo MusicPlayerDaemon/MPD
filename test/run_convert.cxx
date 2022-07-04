@@ -30,7 +30,6 @@
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "io/FileDescriptor.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
@@ -132,16 +131,16 @@ RunConvert(PcmConvert &convert, size_t in_frame_size,
 
 		buffer.Consume(src.size());
 
-		auto output = convert.Convert({src.data(), src.size()});
-		out_fd.FullWrite(output.data, output.size);
+		auto output = convert.Convert(src);
+		out_fd.FullWrite(output.data(), output.size());
 	}
 
 	while (true) {
 		auto output = convert.Flush();
-		if (output.IsNull())
+		if (output.data() == nullptr)
 			break;
 
-		out_fd.FullWrite(output.data, output.size);
+		out_fd.FullWrite(output.data(), output.size());
 	}
 }
 

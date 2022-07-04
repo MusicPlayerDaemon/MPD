@@ -22,7 +22,7 @@
 #include "Traits.hxx"
 #include "FloatConvert.hxx"
 #include "ShiftConvert.hxx"
-#include "util/ConstBuffer.hxx"
+#include "util/SpanCast.hxx"
 #include "util/TransformN.hxx"
 
 #include "Dither.cxx" // including the .cxx file to get inlined templates
@@ -115,51 +115,51 @@ struct FloatToInteger<SampleFormat::S16, SampleTraits<SampleFormat::S16>>
 #endif
 
 template<class C>
-static ConstBuffer<typename C::DstTraits::value_type>
+static std::span<const typename C::DstTraits::value_type>
 AllocateConvert(PcmBuffer &buffer, C convert,
-		ConstBuffer<typename C::SrcTraits::value_type> src)
+		std::span<const typename C::SrcTraits::value_type> src)
 {
-	auto dest = buffer.GetT<typename C::DstTraits::value_type>(src.size);
-	convert.Convert(dest, src.data, src.size);
-	return { dest, src.size };
+	auto dest = buffer.GetT<typename C::DstTraits::value_type>(src.size());
+	convert.Convert(dest, src.data(), src.size());
+	return { dest, src.size() };
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
-static ConstBuffer<typename Traits::value_type>
-AllocateFromFloat(PcmBuffer &buffer, ConstBuffer<float> src)
+static std::span<const typename Traits::value_type>
+AllocateFromFloat(PcmBuffer &buffer, std::span<const float> src)
 {
 	return AllocateConvert(buffer, FloatToInteger<F, Traits>(), src);
 }
 
-static ConstBuffer<int16_t>
-pcm_allocate_8_to_16(PcmBuffer &buffer, ConstBuffer<int8_t> src)
+static std::span<const int16_t>
+pcm_allocate_8_to_16(PcmBuffer &buffer, std::span<const int8_t> src)
 {
 	return AllocateConvert(buffer, Convert8To16(), src);
 }
 
-static ConstBuffer<int16_t>
+static std::span<const int16_t>
 pcm_allocate_24p32_to_16(PcmBuffer &buffer, PcmDither &dither,
-			 ConstBuffer<int32_t> src)
+			 std::span<const int32_t> src)
 {
 	return AllocateConvert(buffer, Convert24To16(dither), src);
 }
 
-static ConstBuffer<int16_t>
+static std::span<const int16_t>
 pcm_allocate_32_to_16(PcmBuffer &buffer, PcmDither &dither,
-		      ConstBuffer<int32_t> src)
+		      std::span<const int32_t> src)
 {
 	return AllocateConvert(buffer, Convert32To16(dither), src);
 }
 
-static ConstBuffer<int16_t>
-pcm_allocate_float_to_16(PcmBuffer &buffer, ConstBuffer<float> src)
+static std::span<const int16_t>
+pcm_allocate_float_to_16(PcmBuffer &buffer, std::span<const float> src)
 {
 	return AllocateFromFloat<SampleFormat::S16>(buffer, src);
 }
 
-ConstBuffer<int16_t>
+std::span<const int16_t>
 pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
-		  SampleFormat src_format, ConstBuffer<void> src) noexcept
+		  SampleFormat src_format, std::span<const std::byte> src) noexcept
 {
 	switch (src_format) {
 	case SampleFormat::UNDEFINED:
@@ -168,25 +168,25 @@ pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
 
 	case SampleFormat::S8:
 		return pcm_allocate_8_to_16(buffer,
-					    ConstBuffer<int8_t>::FromVoid(src));
+					    FromBytesStrict<const int8_t>(src));
 
 	case SampleFormat::S16:
-		return ConstBuffer<int16_t>::FromVoid(src);
+		return FromBytesStrict<const int16_t>(src);
 
 	case SampleFormat::S24_P32:
 		return pcm_allocate_24p32_to_16(buffer, dither,
-						ConstBuffer<int32_t>::FromVoid(src));
+						FromBytesStrict<const int32_t>(src));
 
 	case SampleFormat::S32:
 		return pcm_allocate_32_to_16(buffer, dither,
-					     ConstBuffer<int32_t>::FromVoid(src));
+					     FromBytesStrict<const int32_t>(src));
 
 	case SampleFormat::FLOAT:
 		return pcm_allocate_float_to_16(buffer,
-						ConstBuffer<float>::FromVoid(src));
+						FromBytesStrict<const float>(src));
 	}
 
-	return nullptr;
+	return {};
 }
 
 struct Convert8To24
@@ -197,14 +197,14 @@ struct Convert16To24
 	: PerSampleConvert<LeftShiftSampleConvert<SampleFormat::S16,
 						  SampleFormat::S24_P32>> {};
 
-static ConstBuffer<int32_t>
-pcm_allocate_8_to_24(PcmBuffer &buffer, ConstBuffer<int8_t> src)
+static std::span<const int32_t>
+pcm_allocate_8_to_24(PcmBuffer &buffer, std::span<const int8_t> src)
 {
 	return AllocateConvert(buffer, Convert8To24(), src);
 }
 
-static ConstBuffer<int32_t>
-pcm_allocate_16_to_24(PcmBuffer &buffer, ConstBuffer<int16_t> src)
+static std::span<const int32_t>
+pcm_allocate_16_to_24(PcmBuffer &buffer, std::span<const int16_t> src)
 {
 	return AllocateConvert(buffer, Convert16To24(), src);
 }
@@ -213,21 +213,21 @@ struct Convert32To24
 	: PerSampleConvert<RightShiftSampleConvert<SampleFormat::S32,
 						   SampleFormat::S24_P32>> {};
 
-static ConstBuffer<int32_t>
-pcm_allocate_32_to_24(PcmBuffer &buffer, ConstBuffer<int32_t> src)
+static std::span<const int32_t>
+pcm_allocate_32_to_24(PcmBuffer &buffer, std::span<const int32_t> src)
 {
 	return AllocateConvert(buffer, Convert32To24(), src);
 }
 
-static ConstBuffer<int32_t>
-pcm_allocate_float_to_24(PcmBuffer &buffer, ConstBuffer<float> src)
+static std::span<const int32_t>
+pcm_allocate_float_to_24(PcmBuffer &buffer, std::span<const float> src)
 {
 	return AllocateFromFloat<SampleFormat::S24_P32>(buffer, src);
 }
 
-ConstBuffer<int32_t>
+std::span<const int32_t>
 pcm_convert_to_24(PcmBuffer &buffer,
-		  SampleFormat src_format, ConstBuffer<void> src) noexcept
+		  SampleFormat src_format, std::span<const std::byte> src) noexcept
 {
 	switch (src_format) {
 	case SampleFormat::UNDEFINED:
@@ -236,25 +236,25 @@ pcm_convert_to_24(PcmBuffer &buffer,
 
 	case SampleFormat::S8:
 		return pcm_allocate_8_to_24(buffer,
-					    ConstBuffer<int8_t>::FromVoid(src));
+					    FromBytesStrict<const int8_t>(src));
 
 	case SampleFormat::S16:
 		return pcm_allocate_16_to_24(buffer,
-					     ConstBuffer<int16_t>::FromVoid(src));
+					     FromBytesStrict<const int16_t>(src));
 
 	case SampleFormat::S24_P32:
-		return ConstBuffer<int32_t>::FromVoid(src);
+		return FromBytesStrict<const int32_t>(src);
 
 	case SampleFormat::S32:
 		return pcm_allocate_32_to_24(buffer,
-					     ConstBuffer<int32_t>::FromVoid(src));
+					     FromBytesStrict<const int32_t>(src));
 
 	case SampleFormat::FLOAT:
 		return pcm_allocate_float_to_24(buffer,
-						ConstBuffer<float>::FromVoid(src));
+						FromBytesStrict<const float>(src));
 	}
 
-	return nullptr;
+	return {};
 }
 
 struct Convert8To32
@@ -269,33 +269,33 @@ struct Convert24To32
 	: PerSampleConvert<LeftShiftSampleConvert<SampleFormat::S24_P32,
 						  SampleFormat::S32>> {};
 
-static ConstBuffer<int32_t>
-pcm_allocate_8_to_32(PcmBuffer &buffer, ConstBuffer<int8_t> src)
+static std::span<const int32_t>
+pcm_allocate_8_to_32(PcmBuffer &buffer, std::span<const int8_t> src)
 {
 	return AllocateConvert(buffer, Convert8To32(), src);
 }
 
-static ConstBuffer<int32_t>
-pcm_allocate_16_to_32(PcmBuffer &buffer, ConstBuffer<int16_t> src)
+static std::span<const int32_t>
+pcm_allocate_16_to_32(PcmBuffer &buffer, std::span<const int16_t> src)
 {
 	return AllocateConvert(buffer, Convert16To32(), src);
 }
 
-static ConstBuffer<int32_t>
-pcm_allocate_24p32_to_32(PcmBuffer &buffer, ConstBuffer<int32_t> src)
+static std::span<const int32_t>
+pcm_allocate_24p32_to_32(PcmBuffer &buffer, std::span<const int32_t> src)
 {
 	return AllocateConvert(buffer, Convert24To32(), src);
 }
 
-static ConstBuffer<int32_t>
-pcm_allocate_float_to_32(PcmBuffer &buffer, ConstBuffer<float> src)
+static std::span<const int32_t>
+pcm_allocate_float_to_32(PcmBuffer &buffer, std::span<const float> src)
 {
 	return AllocateFromFloat<SampleFormat::S32>(buffer, src);
 }
 
-ConstBuffer<int32_t>
+std::span<const int32_t>
 pcm_convert_to_32(PcmBuffer &buffer,
-		  SampleFormat src_format, ConstBuffer<void> src) noexcept
+		  SampleFormat src_format, std::span<const std::byte> src) noexcept
 {
 	switch (src_format) {
 	case SampleFormat::UNDEFINED:
@@ -304,25 +304,25 @@ pcm_convert_to_32(PcmBuffer &buffer,
 
 	case SampleFormat::S8:
 		return pcm_allocate_8_to_32(buffer,
-					    ConstBuffer<int8_t>::FromVoid(src));
+					    FromBytesStrict<const int8_t>(src));
 
 	case SampleFormat::S16:
 		return pcm_allocate_16_to_32(buffer,
-					     ConstBuffer<int16_t>::FromVoid(src));
+					     FromBytesStrict<const int16_t>(src));
 
 	case SampleFormat::S24_P32:
 		return pcm_allocate_24p32_to_32(buffer,
-						ConstBuffer<int32_t>::FromVoid(src));
+						FromBytesStrict<const int32_t>(src));
 
 	case SampleFormat::S32:
-		return ConstBuffer<int32_t>::FromVoid(src);
+		return FromBytesStrict<const int32_t>(src);
 
 	case SampleFormat::FLOAT:
 		return pcm_allocate_float_to_32(buffer,
-						ConstBuffer<float>::FromVoid(src));
+						FromBytesStrict<const float>(src));
 	}
 
-	return nullptr;
+	return {};
 }
 
 struct Convert8ToFloat
@@ -337,33 +337,33 @@ struct Convert24ToFloat
 struct Convert32ToFloat
 	: PerSampleConvert<IntegerToFloatSampleConvert<SampleFormat::S32>> {};
 
-static ConstBuffer<float>
-pcm_allocate_8_to_float(PcmBuffer &buffer, ConstBuffer<int8_t> src)
+static std::span<const float>
+pcm_allocate_8_to_float(PcmBuffer &buffer, std::span<const int8_t> src)
 {
 	return AllocateConvert(buffer, Convert8ToFloat(), src);
 }
 
-static ConstBuffer<float>
-pcm_allocate_16_to_float(PcmBuffer &buffer, ConstBuffer<int16_t> src)
+static std::span<const float>
+pcm_allocate_16_to_float(PcmBuffer &buffer, std::span<const int16_t> src)
 {
 	return AllocateConvert(buffer, Convert16ToFloat(), src);
 }
 
-static ConstBuffer<float>
-pcm_allocate_24p32_to_float(PcmBuffer &buffer, ConstBuffer<int32_t> src)
+static std::span<const float>
+pcm_allocate_24p32_to_float(PcmBuffer &buffer, std::span<const int32_t> src)
 {
 	return AllocateConvert(buffer, Convert24ToFloat(), src);
 }
 
-static ConstBuffer<float>
-pcm_allocate_32_to_float(PcmBuffer &buffer, ConstBuffer<int32_t> src)
+static std::span<const float>
+pcm_allocate_32_to_float(PcmBuffer &buffer, std::span<const int32_t> src)
 {
 	return AllocateConvert(buffer, Convert32ToFloat(), src);
 }
 
-ConstBuffer<float>
+std::span<const float>
 pcm_convert_to_float(PcmBuffer &buffer,
-		     SampleFormat src_format, ConstBuffer<void> src) noexcept
+		     SampleFormat src_format, std::span<const std::byte> src) noexcept
 {
 	switch (src_format) {
 	case SampleFormat::UNDEFINED:
@@ -372,23 +372,23 @@ pcm_convert_to_float(PcmBuffer &buffer,
 
 	case SampleFormat::S8:
 		return pcm_allocate_8_to_float(buffer,
-					       ConstBuffer<int8_t>::FromVoid(src));
+					       FromBytesStrict<const int8_t>(src));
 
 	case SampleFormat::S16:
 		return pcm_allocate_16_to_float(buffer,
-					       ConstBuffer<int16_t>::FromVoid(src));
+					       FromBytesStrict<const int16_t>(src));
 
 	case SampleFormat::S32:
 		return pcm_allocate_32_to_float(buffer,
-					       ConstBuffer<int32_t>::FromVoid(src));
+					       FromBytesStrict<const int32_t>(src));
 
 	case SampleFormat::S24_P32:
 		return pcm_allocate_24p32_to_float(buffer,
-						   ConstBuffer<int32_t>::FromVoid(src));
+						   FromBytesStrict<const int32_t>(src));
 
 	case SampleFormat::FLOAT:
-		return ConstBuffer<float>::FromVoid(src);
+		return FromBytesStrict<const float>(src);
 	}
 
-	return nullptr;
+	return {};
 }

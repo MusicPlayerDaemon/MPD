@@ -55,7 +55,7 @@ public:
 	ConstBuffer<void> Flush() override {
 		return state
 			? state->Flush()
-			: nullptr;
+			: std::span<const std::byte>{};
 	}
 };
 
@@ -108,7 +108,7 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src)
 	return state
 		? state->Convert(src)
 		/* optimized special case: no-op */
-		: src;
+		: std::span<const std::byte>{src};
 }
 
 std::unique_ptr<PreparedFilter>

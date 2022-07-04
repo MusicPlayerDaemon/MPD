@@ -22,15 +22,16 @@
 
 #include "SampleFormat.hxx"
 
+#include <span>
+
 class PcmBuffer;
-template<typename T> struct ConstBuffer;
 
 /**
  * Convert the given buffer from FLAC channel order
  * (https://xiph.org/flac/format.html) to ALSA channel order.
  */
-ConstBuffer<void>
-ToAlsaChannelOrder(PcmBuffer &buffer, ConstBuffer<void> src,
+std::span<const std::byte>
+ToAlsaChannelOrder(PcmBuffer &buffer, std::span<const std::byte> src,
 		   SampleFormat sample_format, unsigned channels) noexcept;
 
 #endif

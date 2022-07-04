@@ -267,13 +267,13 @@ SoxrPcmResampler::Reset() noexcept
 #endif
 }
 
-ConstBuffer<void>
-SoxrPcmResampler::Resample(ConstBuffer<void> src)
+std::span<const std::byte>
+SoxrPcmResampler::Resample(std::span<const std::byte> src)
 {
 	const size_t frame_size = channels * sizeof(float);
-	assert(src.size % frame_size == 0);
+	assert(src.size() % frame_size == 0);
 
-	const size_t n_frames = src.size / frame_size;
+	const size_t n_frames = src.size() / frame_size;
 
 	/* always round up: worst case output buffer size */
 	const size_t o_frames = size_t(n_frames * ratio) + 1;
@@ -281,15 +281,15 @@ SoxrPcmResampler::Resample(ConstBuffer<void> src)
 	auto *output_buffer = (float *)buffer.Get(o_frames * frame_size);
 
 	size_t i_done, o_done;
-	soxr_error_t e = soxr_process(soxr, src.data, n_frames, &i_done,
+	soxr_error_t e = soxr_process(soxr, src.data(), n_frames, &i_done,
 				      output_buffer, o_frames, &o_done);
 	if (e != nullptr)
 		throw FormatRuntimeError("soxr error: %s", e);
 
-	return { output_buffer, o_done * frame_size };
+	return { (const std::byte *)output_buffer, o_done * frame_size };
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 SoxrPcmResampler::Flush()
 {
 	const size_t frame_size = channels * sizeof(float);
@@ -307,5 +307,5 @@ SoxrPcmResampler::Flush()
 		/* flush complete */
 		output_buffer = nullptr;
 
-	return { output_buffer, o_done * frame_size };
+	return { (const std::byte *)output_buffer, o_done * frame_size };
 }

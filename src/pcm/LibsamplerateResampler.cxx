@@ -22,6 +22,7 @@
 #include "util/ASCII.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/SpanCast.hxx"
 #include "Log.hxx"
 
 #include <cassert>
@@ -120,17 +121,17 @@ LibsampleratePcmResampler::Reset() noexcept
 	src_reset(state);
 }
 
-inline ConstBuffer<float>
-LibsampleratePcmResampler::Resample2(ConstBuffer<float> src)
+inline std::span<const float>
+LibsampleratePcmResampler::Resample2(std::span<const float> src)
 {
-	assert(src.size % channels == 0);
+	assert(src.size() % channels == 0);
 
-	const unsigned src_frames = src.size / channels;
+	const unsigned src_frames = src.size() / channels;
 	const unsigned dest_frames =
 		(src_frames * dest_rate + src_rate - 1) / src_rate;
 	size_t data_out_size = dest_frames * sizeof(float) * channels;
 
-	data.data_in = const_cast<float *>(src.data);
+	data.data_in = const_cast<float *>(src.data());
 	data.data_out = (float *)buffer.Get(data_out_size);
 	data.input_frames = src_frames;
 	data.output_frames = dest_frames;
@@ -143,8 +144,8 @@ LibsampleratePcmResampler::Resample2(ConstBuffer<float> src)
 	return {data.data_out, size_t(data.output_frames_gen * channels)};
 }
 
-ConstBuffer<void>
-LibsampleratePcmResampler::Resample(ConstBuffer<void> src)
+std::span<const std::byte>
+LibsampleratePcmResampler::Resample(std::span<const std::byte> src)
 {
-	return Resample2(ConstBuffer<float>::FromVoid(src)).ToVoid();
+	return std::as_bytes(Resample2(FromBytesStrict<const float>(src)));
 }

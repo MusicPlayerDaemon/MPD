@@ -57,8 +57,7 @@ InterleaveFrame(const AVFrame &frame, FfmpegBuffer &buffer)
 			throw std::bad_alloc();
 
 		PcmInterleave(output_buffer,
-			      ConstBuffer<const void *>((const void *const*)frame.extended_data,
-							channels),
+			      {(const void *const*)frame.extended_data, channels},
 			      n_frames,
 			      av_get_bytes_per_sample(format));
 	} else {

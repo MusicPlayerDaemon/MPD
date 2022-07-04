@@ -18,9 +18,6 @@
  */
 
 #include "Dsd32.hxx"
-#include "util/ConstBuffer.hxx"
-
-#include <functional>
 
 /**
  * Construct a 32 bit integer from four bytes.
@@ -62,8 +59,8 @@ Dsd32Converter::Open(unsigned _channels) noexcept
 	rest_buffer.Open(channels);
 }
 
-ConstBuffer<uint32_t>
-Dsd32Converter::Convert(ConstBuffer<uint8_t> src) noexcept
+std::span<const uint32_t>
+Dsd32Converter::Convert(std::span<const uint8_t> src) noexcept
 {
 	return rest_buffer.Process<uint32_t>(buffer, src, channels,
 					     [this](auto && arg1, auto && arg2, auto && arg3) { return Dsd8To32(arg1, arg2, arg3, channels); });

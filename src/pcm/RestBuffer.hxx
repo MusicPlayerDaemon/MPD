@@ -25,8 +25,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <span>
 
-template<typename T> struct ConstBuffer;
 class PcmBuffer;
 
 /**
@@ -65,33 +65,33 @@ public:
 	}
 
 private:
-	ConstBuffer<T> Complete(ConstBuffer<T> &src) noexcept {
+	std::span<const T> Complete(std::span<const T> &src) noexcept {
 		assert(audio_valid_channel_count(GetChannelCount()));
-		assert(src.size % GetChannelCount() == 0);
+		assert(src.size() % GetChannelCount() == 0);
 
 		if (size == 0)
-			return nullptr;
+			return {};
 
 		size_t missing = capacity - size;
-		size_t n = std::min(missing, src.size);
+		size_t n = std::min(missing, src.size());
 		std::copy_n(src.begin(), n, &data[size]);
-		src.skip_front(n);
+		src = src.subspan(n);
 		size += n;
 
 		if (size < capacity)
-			return nullptr;
+			return {};
 
 		size = 0;
 		return {data, capacity};
 	}
 
-	void Append(ConstBuffer<T> src) noexcept {
+	void Append(std::span<const T> src) noexcept {
 		assert(audio_valid_channel_count(GetChannelCount()));
-		assert(src.size % GetChannelCount() == 0);
-		assert(size + src.size < capacity);
+		assert(src.size() % GetChannelCount() == 0);
+		assert(size + src.size() < capacity);
 
-		std::copy_n(src.begin(), src.size, &data[size]);
-		size += src.size;
+		std::copy(src.begin(), src.end(), &data[size]);
+		size += src.size();
 	}
 
 public:
@@ -109,18 +109,18 @@ public:
 	 * may be empty
 	 */
 	template<typename U, typename F>
-	ConstBuffer<U> Process(PcmBuffer &buffer, ConstBuffer<T> src,
-			       size_t dest_block_size,
-			       F &&f) {
+	std::span<const U> Process(PcmBuffer &buffer, std::span<const T> src,
+				   size_t dest_block_size,
+				   F &&f) {
 		assert(dest_block_size % GetChannelCount() == 0);
 
 		const auto previous_rest = Complete(src);
-		assert(previous_rest.size == 0 ||
-		       previous_rest.size == capacity);
+		assert(previous_rest.size() == 0 ||
+		       previous_rest.size() == capacity);
 
 		const size_t previous_rest_blocks = !previous_rest.empty();
-		const size_t src_blocks = src.size / capacity;
-		const size_t next_rest_samples = src.size % capacity;
+		const size_t src_blocks = src.size() / capacity;
+		const size_t next_rest_samples = src.size() % capacity;
 		const size_t dest_blocks = previous_rest_blocks + src_blocks;
 		const size_t dest_samples = dest_blocks * dest_block_size;
 
@@ -128,14 +128,14 @@ public:
 		auto dest = dest0;
 
 		if (!previous_rest.empty()) {
-			f(dest, previous_rest.data, previous_rest_blocks);
+			f(dest, previous_rest.data(), previous_rest_blocks);
 			dest += dest_block_size;
 		}
 
-		f(dest, src.data, src_blocks);
+		f(dest, src.data(), src_blocks);
 
 		if (next_rest_samples > 0)
-			Append({src.data + src_blocks * capacity,
+			Append({src.data() + src_blocks * capacity,
 				next_rest_samples});
 
 		return { dest0, dest_samples };

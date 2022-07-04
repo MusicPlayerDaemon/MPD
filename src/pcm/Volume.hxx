@@ -24,11 +24,12 @@
 #include "Buffer.hxx"
 #include "Dither.hxx"
 
+#include <cstddef>
+#include <span>
+
 #ifndef NDEBUG
 #include <cassert>
 #endif
-
-template<typename T> struct ConstBuffer;
 
 /**
  * Number of fractional bits for a fixed-point volume value.
@@ -121,7 +122,7 @@ public:
 	 * Apply the volume level.
 	 */
 	[[gnu::pure]]
-	ConstBuffer<void> Apply(ConstBuffer<void> src) noexcept;
+	std::span<const std::byte> Apply(std::span<const std::byte> src) noexcept;
 };
 
 #endif

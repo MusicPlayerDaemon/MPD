@@ -24,11 +24,11 @@
 #include "Buffer.hxx"
 #include "Dither.hxx"
 
+#include <span>
+
 #ifndef NDEBUG
 #include <cassert>
 #endif
-
-template<typename T> struct ConstBuffer;
 
 /**
  * A class that converts samples from one format to another.
@@ -73,7 +73,7 @@ public:
 	 * @return the destination buffer
 	 */
 	[[gnu::pure]]
-	ConstBuffer<void> Convert(ConstBuffer<void> src) noexcept;
+	std::span<const std::byte> Convert(std::span<const std::byte> src) noexcept;
 };
 
 #endif

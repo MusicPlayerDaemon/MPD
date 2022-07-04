@@ -35,8 +35,10 @@ TestInterleaveN()
 	static constexpr size_t n_frames = std::size(src1);
 	static constexpr unsigned channels = std::size(src_all);
 
-	static const ConstBuffer<const void *> src((const void *const*)src_all,
-						   channels);
+	static const std::span<const void *const> src{
+		(const void *const*)src_all,
+		channels,
+	};
 
 	static constexpr T poison = T(0xdeadbeef);
 	T dest[n_frames * channels + 1];
@@ -77,8 +79,10 @@ TEST(PcmTest, Interleave24)
 	static constexpr size_t n_frames = std::size(src1) / 3;
 	static constexpr unsigned channels = std::size(src_all);
 
-	static const ConstBuffer<const void *> src((const void *const*)src_all,
-						   channels);
+	static const std::span<const void *const> src{
+		(const void *const*)src_all,
+		channels,
+	};
 
 	static constexpr T poison = 0xff;
 	T dest[n_frames * channels * 3 + 1];

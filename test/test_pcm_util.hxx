@@ -17,12 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "util/ConstBuffer.hxx"
-
 #include <gtest/gtest.h>
 
 #include <array>
 #include <random>
+#include <span>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -81,12 +80,12 @@ public:
 		return begin();
 	}
 
-	operator ConstBuffer<T>() const {
+	operator std::span<const T>() const {
 		return { begin(), size() };
 	}
 
-	operator ConstBuffer<void>() const {
-		return { begin(), size() * sizeof(T) };
+	operator std::span<const std::byte>() const {
+		return { (const std::byte *)begin(), size() * sizeof(T) };
 	}
 };
 

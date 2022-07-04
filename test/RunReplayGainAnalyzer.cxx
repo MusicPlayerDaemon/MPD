@@ -21,7 +21,6 @@
 #include "pcm/ReplayGainAnalyzer.hxx"
 #include "io/FileDescriptor.hxx"
 #include "system/Error.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 
 #include <array>

@@ -19,38 +19,35 @@
 
 #include "PcmDsd.hxx"
 #include "Dsd2Pcm.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <cassert>
 
-ConstBuffer<float>
-PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src) noexcept
+std::span<const float>
+PcmDsd::ToFloat(unsigned channels, std::span<const uint8_t> src) noexcept
 {
-	assert(!src.IsNull());
 	assert(!src.empty());
-	assert(src.size % channels == 0);
+	assert(src.size() % channels == 0);
 
-	const size_t num_samples = src.size;
-	const size_t num_frames = src.size / channels;
+	const size_t num_samples = src.size();
+	const size_t num_frames = src.size() / channels;
 
 	auto *dest = buffer.GetT<float>(num_samples);
 
-	dsd2pcm.Translate(channels, num_frames, src.data, dest);
+	dsd2pcm.Translate(channels, num_frames, src.data(), dest);
 	return { dest, num_samples };
 }
 
-ConstBuffer<int32_t>
-PcmDsd::ToS24(unsigned channels, ConstBuffer<uint8_t> src) noexcept
+std::span<const int32_t>
+PcmDsd::ToS24(unsigned channels, std::span<const uint8_t> src) noexcept
 {
-	assert(!src.IsNull());
 	assert(!src.empty());
-	assert(src.size % channels == 0);
+	assert(src.size() % channels == 0);
 
-	const size_t num_samples = src.size;
-	const size_t num_frames = src.size / channels;
+	const size_t num_samples = src.size();
+	const size_t num_frames = src.size() / channels;
 
 	auto *dest = buffer.GetT<int32_t>(num_samples);
 
-	dsd2pcm.TranslateS24(channels, num_frames, src.data, dest);
+	dsd2pcm.TranslateS24(channels, num_frames, src.data(), dest);
 	return { dest, num_samples };
 }

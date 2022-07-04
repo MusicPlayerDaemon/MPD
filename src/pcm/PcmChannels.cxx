@@ -22,7 +22,6 @@
 #include "Buffer.hxx"
 #include "Silence.hxx"
 #include "Traits.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <array>
 #include <algorithm>
@@ -30,11 +29,9 @@
 
 template<typename D, typename S>
 static void
-MonoToStereo(D dest, S src, S end) noexcept
+MonoToStereo(D dest, S src) noexcept
 {
-	while (src != end) {
-		const auto value = *src++;
-
+	for (const auto value : src) {
 		*dest++ = value;
 		*dest++ = value;
 	}
@@ -55,10 +52,9 @@ StereoToMono(typename Traits::value_type _a,
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::pointer
 StereoToMono(typename Traits::pointer dest,
-	     typename Traits::const_pointer src,
-	     typename Traits::const_pointer end) noexcept
+	     std::span<const typename Traits::value_type> _src) noexcept
 {
-	while (src != end) {
+	for (auto src = _src.begin(), end = _src.end(); src != end;) {
 		const auto a = *src++;
 		const auto b = *src++;
 
@@ -72,12 +68,11 @@ template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::pointer
 NToStereo(typename Traits::pointer dest,
 	  unsigned src_channels,
-	  typename Traits::const_pointer src,
-	  typename Traits::const_pointer end) noexcept
+	  std::span<const typename Traits::value_type> _src) noexcept
 {
-	assert((end - src) % src_channels == 0);
+	assert(_src.size() % src_channels == 0);
 
-	while (src != end) {
+	for (auto src = _src.begin(), end = _src.end(); src != end;) {
 		typename Traits::sum_type sum = *src++;
 		for (unsigned c = 1; c < src_channels; ++c)
 			sum += *src++;
@@ -101,16 +96,15 @@ template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::pointer
 StereoToN(typename Traits::pointer dest,
 	  unsigned dest_channels,
-	  typename Traits::const_pointer src,
-	  typename Traits::const_pointer end) noexcept
+	  std::span<const typename Traits::value_type> _src) noexcept
 {
 	assert(dest_channels > 2);
-	assert((end - src) % 2 == 0);
+	assert(_src.size() % 2 == 0);
 
 	std::array<typename Traits::value_type, MAX_CHANNELS - 2> silence;
 	PcmSilence(std::as_writable_bytes(std::span{silence}), F);
 
-	while (src != end) {
+	for (auto src = _src.begin(), end = _src.end(); src != end;) {
 		/* copy left/right to front-left/front-right, which is
 		   the first two channels in all multi-channel
 		   configurations **/
@@ -129,12 +123,11 @@ static typename Traits::pointer
 NToM(typename Traits::pointer dest,
      unsigned dest_channels,
      unsigned src_channels,
-     typename Traits::const_pointer src,
-     typename Traits::const_pointer end) noexcept
+     std::span<const typename Traits::value_type> _src) noexcept
 {
-	assert((end - src) % src_channels == 0);
+	assert(_src.size() % src_channels == 0);
 
-	while (src != end) {
+	for (auto src = _src.begin(), end = _src.end(); src != end;) {
 		typename Traits::sum_type sum = *src++;
 		for (unsigned c = 1; c < src_channels; ++c)
 			sum += *src++;
@@ -150,68 +143,66 @@ NToM(typename Traits::pointer dest,
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
-static ConstBuffer<typename Traits::value_type>
+static std::span<const typename Traits::value_type>
 ConvertChannels(PcmBuffer &buffer,
 		unsigned dest_channels,
 		unsigned src_channels,
-		ConstBuffer<typename Traits::value_type> src) noexcept
+		std::span<const typename Traits::value_type> src) noexcept
 {
-	assert(src.size % src_channels == 0);
+	assert(src.size() % src_channels == 0);
 
-	const size_t dest_size = src.size / src_channels * dest_channels;
+	const size_t dest_size = src.size() / src_channels * dest_channels;
 	auto dest = buffer.GetT<typename Traits::value_type>(dest_size);
 
 	if (src_channels == 1 && dest_channels == 2)
-		MonoToStereo(dest, src.begin(), src.end());
+		MonoToStereo(dest, src);
 	else if (src_channels == 2 && dest_channels == 1)
-		StereoToMono<F>(dest, src.begin(), src.end());
+		StereoToMono<F>(dest, src);
 	else if (dest_channels == 2)
-		NToStereo<F>(dest, src_channels, src.begin(), src.end());
+		NToStereo<F>(dest, src_channels, src);
 	else if (src_channels == 2 && dest_channels > 2)
-		StereoToN<F, Traits>(dest, dest_channels,
-				     src.begin(), src.end());
+		StereoToN<F, Traits>(dest, dest_channels, src);
 	else
-		NToM<F>(dest, dest_channels,
-			src_channels, src.begin(), src.end());
+		NToM<F>(dest, dest_channels, src_channels, src);
 
 	return { dest, dest_size };
 }
 
-ConstBuffer<int16_t>
+std::span<const int16_t>
 pcm_convert_channels_16(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int16_t> src) noexcept
+			std::span<const int16_t> src) noexcept
 {
 	return ConvertChannels<SampleFormat::S16>(buffer, dest_channels,
 						  src_channels, src);
 }
 
-ConstBuffer<int32_t>
+std::span<const int32_t>
 pcm_convert_channels_24(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int32_t> src) noexcept
+			std::span<const int32_t> src) noexcept
 {
 	return ConvertChannels<SampleFormat::S24_P32>(buffer, dest_channels,
 						      src_channels, src);
 }
 
-ConstBuffer<int32_t>
+std::span<const int32_t>
 pcm_convert_channels_32(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels,
-			ConstBuffer<int32_t> src) noexcept
+			std::span<const int32_t> src) noexcept
 {
 	return ConvertChannels<SampleFormat::S32>(buffer, dest_channels,
 						  src_channels, src);
 }
 
-ConstBuffer<float>
+std::span<const float>
 pcm_convert_channels_float(PcmBuffer &buffer,
 			   unsigned dest_channels,
 			   unsigned src_channels,
-			   ConstBuffer<float> src) noexcept
+			   std::span<const float> src) noexcept
 {
 	return ConvertChannels<SampleFormat::FLOAT>(buffer, dest_channels,
 						    src_channels, src);

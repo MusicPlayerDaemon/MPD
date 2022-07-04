@@ -1231,13 +1231,13 @@ AlsaOutput::Play(const void *chunk, size_t size)
 	if (size > max_size)
 		size = max_size;
 
-	const auto e = pcm_export->Export({chunk, size});
+	const auto e = pcm_export->Export({(const std::byte *)chunk, size});
 	if (e.empty())
 		return size;
 
-	size_t bytes_written = ring_buffer->push((const uint8_t *)e.data,
-						 e.size);
-	assert(bytes_written == e.size);
+	size_t bytes_written = ring_buffer->push((const uint8_t *)e.data(),
+						 e.size());
+	assert(bytes_written == e.size());
 	(void)bytes_written;
 
 	return size;
