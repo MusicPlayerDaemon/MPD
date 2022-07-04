@@ -32,12 +32,14 @@
 #include "fs/Traits.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
-#include "util/StringView.hxx"
+#include "util/StringSplit.hxx"
 
 #include <cassert>
 
 #include <string.h>
 #include <stdlib.h>
+
+using std::string_view_literals::operator""sv;
 
 Directory::Directory(std::string &&_path_utf8, Directory *_parent) noexcept
 	:parent(_parent),
@@ -110,11 +112,9 @@ Directory::FindChild(std::string_view name) const noexcept
 }
 
 Song *
-Directory::LookupTargetSong(std::string_view _target) noexcept
+Directory::LookupTargetSong(std::string_view target) noexcept
 {
-	StringView target{_target};
-
-	if (target.SkipPrefix("../")) {
+	if (SkipPrefix(target, "../"sv)) {
 		if (parent == nullptr)
 			return nullptr;
 
@@ -151,11 +151,11 @@ Directory::LookupDirectory(std::string_view _uri) noexcept
 	if (isRootDirectory(_uri))
 		return { this, _uri, {} };
 
-	StringView uri(_uri);
+	auto uri = _uri;
 
 	Directory *d = this;
 	do {
-		auto [name, rest] = uri.Split(PathTraitsUTF8::SEPARATOR);
+		auto [name, rest] = Split(uri, PathTraitsUTF8::SEPARATOR);
 		if (name.empty())
 			break;
 
@@ -167,9 +167,9 @@ Directory::LookupDirectory(std::string_view _uri) noexcept
 		d = tmp;
 
 		uri = rest;
-	} while (uri != nullptr);
+	} while (uri.data() != nullptr);
 
-	return { d, _uri.substr(0, uri.data - _uri.data()), uri };
+	return { d, _uri.substr(0, uri.data() - _uri.data()), uri };
 }
 
 void

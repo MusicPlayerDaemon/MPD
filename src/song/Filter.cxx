@@ -34,7 +34,6 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringStrip.hxx"
-#include "util/StringView.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 
