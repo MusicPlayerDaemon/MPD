@@ -44,8 +44,8 @@ public:
 		second->Reset();
 	}
 
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
-	ConstBuffer<void> Flush() override;
+	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
+	std::span<const std::byte> Flush() override;
 };
 
 /**

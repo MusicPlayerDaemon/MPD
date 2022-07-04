@@ -21,13 +21,12 @@
 #define MPD_NULL_FILTER_HXX
 
 #include "filter/Filter.hxx"
-#include "util/ConstBuffer.hxx"
 
 class NullFilter final : public Filter {
 public:
 	explicit NullFilter(const AudioFormat &af):Filter(af) {}
 
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
+	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override {
 		return src;
 	}
 };

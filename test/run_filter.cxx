@@ -30,7 +30,6 @@
 #include "mixer/MixerControl.hxx"
 #include "system/Error.hxx"
 #include "io/FileDescriptor.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/PrintException.hxx"
@@ -102,22 +101,22 @@ try {
 	FileDescriptor output_fd(STDOUT_FILENO);
 
 	while (true) {
-		char buffer[4096];
+		std::byte buffer[4096];
 
 		ssize_t nbytes = ReadFrames(input_fd, buffer, sizeof(buffer),
 					    in_frame_size);
 		if (nbytes == 0)
 			break;
 
-		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes});
-		output_fd.FullWrite(dest.data, dest.size);
+		auto dest = filter->FilterPCM(std::span{buffer}.first(nbytes));
+		output_fd.FullWrite(dest.data(), dest.size());
 	}
 
 	while (true) {
 		auto dest = filter->Flush();
-		if (dest.IsNull())
+		if (dest.data() == nullptr)
 			break;
-		output_fd.FullWrite(dest.data, dest.size);
+		output_fd.FullWrite(dest.data(), dest.size());
 	}
 
 	/* cleanup and exit */

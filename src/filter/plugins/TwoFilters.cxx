@@ -19,21 +19,20 @@
 
 #include "TwoFilters.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringBuffer.hxx"
 
-ConstBuffer<void>
-TwoFilters::FilterPCM(ConstBuffer<void> src)
+std::span<const std::byte>
+TwoFilters::FilterPCM(std::span<const std::byte> src)
 {
 	return second->FilterPCM(first->FilterPCM(src));
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 TwoFilters::Flush()
 {
 	auto result = first->Flush();
-	if (!result.IsNull())
+	if (result.data() != nullptr)
 		/* Flush() output from the first Filter must be
 		   filtered by the second Filter */
 		return second->FilterPCM(result);

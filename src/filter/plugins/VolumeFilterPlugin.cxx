@@ -22,7 +22,6 @@
 #include "filter/Prepared.hxx"
 #include "pcm/Volume.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/ConstBuffer.hxx"
 
 class VolumeFilter final : public Filter {
 	PcmVolume pv;
@@ -43,7 +42,7 @@ public:
 	}
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
+	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
 };
 
 class PreparedVolumeFilter final : public PreparedFilter {
@@ -58,8 +57,8 @@ PreparedVolumeFilter::Open(AudioFormat &audio_format)
 	return std::make_unique<VolumeFilter>(audio_format);
 }
 
-ConstBuffer<void>
-VolumeFilter::FilterPCM(ConstBuffer<void> src)
+std::span<const std::byte>
+VolumeFilter::FilterPCM(std::span<const std::byte> src)
 {
 	return pv.Apply(src);
 }

@@ -24,7 +24,6 @@
 #include "pcm/Buffer.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/AudioCompress/compress.h"
-#include "util/ConstBuffer.hxx"
 
 #include <string.h>
 
@@ -47,7 +46,7 @@ public:
 	NormalizeFilter &operator=(const NormalizeFilter &) = delete;
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
+	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
 };
 
 class PreparedNormalizeFilter final : public PreparedFilter {
@@ -70,14 +69,14 @@ PreparedNormalizeFilter::Open(AudioFormat &audio_format)
 	return std::make_unique<NormalizeFilter>(audio_format);
 }
 
-ConstBuffer<void>
-NormalizeFilter::FilterPCM(ConstBuffer<void> src)
+std::span<const std::byte>
+NormalizeFilter::FilterPCM(std::span<const std::byte> src)
 {
-	auto *dest = (int16_t *)buffer.Get(src.size);
-	memcpy(dest, src.data, src.size);
+	auto *dest = (int16_t *)buffer.Get(src.size());
+	memcpy(dest, src.data(), src.size());
 
-	Compressor_Process_int16(compressor, dest, src.size / 2);
-	return { (const void *)dest, src.size };
+	Compressor_Process_int16(compressor, dest, src.size() / 2);
+	return { (const std::byte *)dest, src.size() };
 }
 
 const FilterPlugin normalize_filter_plugin = {

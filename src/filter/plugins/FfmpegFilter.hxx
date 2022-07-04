@@ -55,7 +55,7 @@ public:
 		     AVFilterContext &_buffer_sink) noexcept;
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
+	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
 };
 
 #endif

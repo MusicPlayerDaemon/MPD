@@ -23,8 +23,8 @@
 #include "pcm/AudioFormat.hxx"
 
 #include <cassert>
-
-template<typename T> struct ConstBuffer;
+#include <cstddef>
+#include <span>
 
 class Filter {
 protected:
@@ -61,7 +61,7 @@ public:
 	 * invalidated by deleting this object or the next FilterPCM()
 	 * or Reset() call)
 	 */
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) = 0;
+	virtual std::span<const std::byte> FilterPCM(std::span<const std::byte> src) = 0;
 
 	/**
 	 * Flush pending data and return it.  This should be called
@@ -69,7 +69,9 @@ public:
 	 *
 	 * Throws on error.
 	 */
-	virtual ConstBuffer<void> Flush();
+	virtual std::span<const std::byte> Flush() {
+		return {};
+	}
 };
 
 #endif

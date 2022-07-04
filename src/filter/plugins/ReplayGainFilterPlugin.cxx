@@ -25,7 +25,6 @@
 #include "mixer/MixerControl.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Volume.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/Domain.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"
@@ -109,7 +108,7 @@ public:
 	void Update();
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
+	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
 };
 
 class PreparedReplayGainFilter final : public PreparedFilter {
@@ -197,8 +196,8 @@ PreparedReplayGainFilter::Open(AudioFormat &af)
 						  af, mixer, base);
 }
 
-ConstBuffer<void>
-ReplayGainFilter::FilterPCM(ConstBuffer<void> src)
+std::span<const std::byte>
+ReplayGainFilter::FilterPCM(std::span<const std::byte> src)
 {
 	return mixer != nullptr
 		? std::span<const std::byte>{src}

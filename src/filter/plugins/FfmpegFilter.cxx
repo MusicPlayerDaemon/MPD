@@ -20,7 +20,6 @@
 #include "FfmpegFilter.hxx"
 #include "lib/ffmpeg/Interleave.hxx"
 #include "lib/ffmpeg/SampleFormat.hxx"
-#include "util/ConstBuffer.hxx"
 
 extern "C" {
 #include <libavfilter/buffersrc.h>
@@ -46,8 +45,8 @@ FfmpegFilter::FfmpegFilter(const AudioFormat &in_audio_format,
 {
 }
 
-ConstBuffer<void>
-FfmpegFilter::FilterPCM(ConstBuffer<void> src)
+std::span<const std::byte>
+FfmpegFilter::FilterPCM(std::span<const std::byte> src)
 {
 	/* submit source data into the FFmpeg audio buffer source */
 
@@ -55,11 +54,11 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 	frame->format = in_format;
 	frame->sample_rate = in_sample_rate;
 	frame->channels = in_channels;
-	frame->nb_samples = src.size / in_audio_frame_size;
+	frame->nb_samples = src.size() / in_audio_frame_size;
 
 	frame.GetBuffer();
 
-	memcpy(frame.GetData(0), src.data, src.size);
+	memcpy(frame.GetData(0), src.data(), src.size());
 
 	int err = av_buffersrc_add_frame(&buffer_src, frame.get());
 	if (err < 0)
@@ -72,7 +71,7 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 	err = av_buffersink_get_frame(&buffer_sink, frame.get());
 	if (err < 0) {
 		if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
-			return nullptr;
+			return {};
 
 		throw MakeFfmpegError(err, "av_buffersink_get_frame() failed");
 	}

@@ -255,5 +255,5 @@ AudioOutputSource::Flush()
 {
 	return filter
 		? filter->Flush()
-		: nullptr;
+		: std::span<const std::byte>{};
 }

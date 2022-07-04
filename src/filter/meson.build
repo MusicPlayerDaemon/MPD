@@ -1,7 +1,6 @@
 filter_api = static_library(
   'filter_api',
   'Observer.cxx',
-  'Filter.cxx',
   include_directories: inc,
 )
 

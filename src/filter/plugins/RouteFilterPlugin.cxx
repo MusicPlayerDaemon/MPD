@@ -49,7 +49,6 @@
 #include "pcm/Silence.hxx"
 #include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <array>
 #include <cstdint>
@@ -94,7 +93,7 @@ public:
 		    const std::array<int8_t, MAX_CHANNELS> &_sources);
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
+	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
 };
 
 class PreparedRouteFilter final : public PreparedFilter {
@@ -221,15 +220,15 @@ PreparedRouteFilter::Open(AudioFormat &audio_format)
 					     sources);
 }
 
-ConstBuffer<void>
-RouteFilter::FilterPCM(ConstBuffer<void> src)
+std::span<const std::byte>
+RouteFilter::FilterPCM(std::span<const std::byte> src)
 {
-	size_t number_of_frames = src.size / input_frame_size;
+	size_t number_of_frames = src.size() / input_frame_size;
 
 	const size_t bytes_per_frame_per_channel = input_format.GetSampleSize();
 
 	// A moving pointer that always refers to channel 0 in the input, at the currently handled frame
-	const auto *base_source = (const uint8_t *)src.data;
+	const auto *base_source = (const uint8_t *)src.data();
 
 	// Grow our reusable buffer, if needed, and set the moving pointer
 	const size_t result_size = number_of_frames * output_frame_size;
@@ -268,7 +267,7 @@ RouteFilter::FilterPCM(ConstBuffer<void> src)
 	}
 
 	// Here it is, ladies and gentlemen! Rerouted data!
-	return { result, result_size };
+	return { (const std::byte *)result, result_size };
 }
 
 const FilterPlugin route_filter_plugin = {

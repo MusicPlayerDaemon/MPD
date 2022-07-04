@@ -20,7 +20,6 @@
 #include "Observer.hxx"
 #include "Filter.hxx"
 #include "Prepared.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <cassert>
 
@@ -81,11 +80,11 @@ public:
 		filter->Reset();
 	}
 
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
+	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override {
 		return filter->FilterPCM(src);
 	}
 
-	ConstBuffer<void> Flush() override {
+	std::span<const std::byte> Flush() override {
 		return filter->Flush();
 	}
 };
