@@ -19,7 +19,6 @@
 
 #include "QobuzErrorParser.hxx"
 #include "lib/yajl/Callbacks.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
 

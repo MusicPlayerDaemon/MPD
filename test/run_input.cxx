@@ -35,7 +35,6 @@
 #include "fs/NarrowPath.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "io/StdioOutputStream.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
 #include "util/PrintException.hxx"

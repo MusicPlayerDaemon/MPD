@@ -19,7 +19,6 @@
 
 #include "QobuzClient.hxx"
 #include "lib/crypto/MD5.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <cassert>
 #include <stdexcept>

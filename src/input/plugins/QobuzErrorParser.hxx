@@ -25,8 +25,6 @@
 
 #include <string_view>
 
-template<typename T> struct ConstBuffer;
-
 /**
  * Parse an error JSON response.
  */
