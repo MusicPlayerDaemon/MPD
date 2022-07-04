@@ -48,7 +48,7 @@ CopyGzip(OutputStream &_dest, int src)
 {
 	GzipOutputStream dest(_dest);
 	Copy(dest, src);
-	dest.Flush();
+	dest.Finish();
 }
 
 static void

@@ -56,7 +56,7 @@ public:
 	 * Finish the file and write all data remaining in zlib's
 	 * output buffer.
 	 */
-	void Flush();
+	void Finish();
 
 	/* virtual methods from class OutputStream */
 	void Write(const void *data, size_t size) override;

@@ -380,7 +380,7 @@ SimpleDatabase::Save()
 
 #ifdef ENABLE_ZLIB
 	if (gzip != nullptr) {
-		gzip->Flush();
+		gzip->Finish();
 		gzip.reset();
 	}
 #endif

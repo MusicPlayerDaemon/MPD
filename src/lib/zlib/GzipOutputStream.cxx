@@ -55,7 +55,7 @@ GzipOutputStream::~GzipOutputStream()
 }
 
 void
-GzipOutputStream::Flush()
+GzipOutputStream::Finish()
 {
 	/* no more input */
 	z.next_in = nullptr;
