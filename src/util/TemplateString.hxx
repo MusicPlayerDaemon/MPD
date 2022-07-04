@@ -30,8 +30,6 @@
 #ifndef TEMPLATE_STRING_HXX
 #define TEMPLATE_STRING_HXX
 
-#include "StringView.hxx"
-
 #include <array> // for std::size()
 #include <cstddef>
 #include <string_view>
@@ -48,10 +46,6 @@ struct Buffer {
 	}
 
 	constexpr operator std::string_view() const noexcept {
-		return {value, size};
-	}
-
-	constexpr operator StringView() const noexcept {
 		return {value, size};
 	}
 };
