@@ -36,7 +36,6 @@
 #include "db/Stats.hxx"
 #include "tag/Table.hxx"
 #include "fs/Traits.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RecursiveMap.hxx"
 #include "util/SplitString.hxx"
 #include "config/Block.hxx"
@@ -101,7 +100,7 @@ public:
 		   VisitPlaylist visit_playlist) const override;
 
 	[[nodiscard]] RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
-						    ConstBuffer<TagType> tag_types) const override;
+								  std::span<const TagType> tag_types) const override;
 
 	[[nodiscard]] DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
@@ -629,7 +628,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 
 RecursiveMap<std::string>
 UpnpDatabase::CollectUniqueTags(const DatabaseSelection &selection,
-				ConstBuffer<TagType> tag_types) const
+				std::span<const TagType> tag_types) const
 {
 	return ::CollectUniqueTags(*this, selection, tag_types);
 }

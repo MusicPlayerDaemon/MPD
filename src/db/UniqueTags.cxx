@@ -21,18 +21,18 @@
 #include "Interface.hxx"
 #include "song/LightSong.hxx"
 #include "tag/VisitFallback.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RecursiveMap.hxx"
 
 static void
 CollectUniqueTags(RecursiveMap<std::string> &result,
 		  const Tag &tag,
-		  ConstBuffer<TagType> tag_types) noexcept
+		  std::span<const TagType> tag_types) noexcept
 {
 	if (tag_types.empty())
 		return;
 
-	const auto tag_type = tag_types.shift();
+	const auto tag_type = tag_types.front();
+	tag_types = tag_types.subspan(1);
 
 	VisitTagWithFallbackOrEmpty(tag, tag_type, [&result, &tag, tag_types](const char *value){
 			CollectUniqueTags(result[value], tag, tag_types);
@@ -41,7 +41,7 @@ CollectUniqueTags(RecursiveMap<std::string> &result,
 
 RecursiveMap<std::string>
 CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
-		  ConstBuffer<TagType> tag_types)
+		  std::span<const TagType> tag_types)
 {
 	RecursiveMap<std::string> result;
 

@@ -24,6 +24,7 @@
 #include "tag/Type.h"
 
 #include <chrono>
+#include <span>
 #include <string>
 
 struct DatabasePlugin;
@@ -31,7 +32,6 @@ struct DatabaseStats;
 struct DatabaseSelection;
 struct LightSong;
 template<typename Key> class RecursiveMap;
-template<typename T> struct ConstBuffer;
 
 class Database {
 	const DatabasePlugin &plugin;
@@ -111,7 +111,7 @@ public:
 	 * Throws on error.
 	 */
 	virtual RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
-							    ConstBuffer<TagType> tag_types) const = 0;
+							    std::span<const TagType> tag_types) const = 0;
 
 	/**
 	 * Throws on error.

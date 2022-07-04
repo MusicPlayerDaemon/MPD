@@ -37,7 +37,6 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "tag/ParseName.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RecursiveMap.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
@@ -136,7 +135,7 @@ public:
 		   VisitPlaylist visit_playlist) const override;
 
 	RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
-						    ConstBuffer<TagType> tag_types) const override;
+						    std::span<const TagType> tag_types) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
@@ -440,13 +439,13 @@ SendGroup(mpd_connection *connection, TagType group)
 }
 
 static bool
-SendGroup(mpd_connection *connection, ConstBuffer<TagType> group)
+SendGroup(mpd_connection *connection, std::span<const TagType> group)
 {
 	while (!group.empty()) {
 		if (!SendGroup(connection, group.back()))
 		    return false;
 
-		group.pop_back();
+		group = group.first(group.size() - 1);
 	}
 
 	return true;
@@ -1010,7 +1009,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 
 RecursiveMap<std::string>
 ProxyDatabase::CollectUniqueTags(const DatabaseSelection &selection,
-				 ConstBuffer<TagType> tag_types) const
+				 std::span<const TagType> tag_types) const
 try {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
@@ -1019,8 +1018,7 @@ try {
 	if (tag_type2 == MPD_TAG_COUNT)
 		throw std::runtime_error("Unsupported tag");
 
-	auto group = tag_types;
-	group.pop_back();
+	const auto group = tag_types.first(tag_types.size() - 1);
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
 	    !SendConstraints(connection, selection, selection.window) ||

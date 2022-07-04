@@ -21,8 +21,8 @@
 #define MPD_DB_PRINT_H
 
 #include <cstdint>
+#include <span>
 
-template<typename T> struct ConstBuffer;
 enum TagType : uint8_t;
 class SongFilter;
 struct DatabaseSelection;
@@ -44,7 +44,7 @@ PrintSongUris(Response &r, Partition &partition,
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
-		ConstBuffer<TagType> tag_types,
+		std::span<const TagType> tag_types,
 		const SongFilter *filter);
 
 #endif

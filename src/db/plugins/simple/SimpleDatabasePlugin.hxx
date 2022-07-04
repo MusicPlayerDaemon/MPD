@@ -126,7 +126,7 @@ public:
 		   VisitPlaylist visit_playlist) const override;
 
 	RecursiveMap<std::string> CollectUniqueTags(const DatabaseSelection &selection,
-						    ConstBuffer<TagType> tag_types) const override;
+						    std::span<const TagType> tag_types) const override;
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 

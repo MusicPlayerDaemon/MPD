@@ -22,18 +22,18 @@
 
 #include "tag/Type.h"
 
+#include <span>
 #include <string>
 
 class Database;
 struct DatabaseSelection;
 template<typename Key> class RecursiveMap;
-template<typename T> struct ConstBuffer;
 
 /**
  * Walk the database and collect unique tag values.
  */
 RecursiveMap<std::string>
 CollectUniqueTags(const Database &db, const DatabaseSelection &selection,
-		  ConstBuffer<TagType> tag_types);
+		  std::span<const TagType> tag_types);
 
 #endif

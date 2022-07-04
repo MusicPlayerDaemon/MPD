@@ -41,7 +41,6 @@
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
 #include "util/Domain.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RecursiveMap.hxx"
 #include "Log.hxx"
 
@@ -334,7 +333,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 
 RecursiveMap<std::string>
 SimpleDatabase::CollectUniqueTags(const DatabaseSelection &selection,
-				  ConstBuffer<TagType> tag_types) const
+				  std::span<const TagType> tag_types) const
 {
 	return ::CollectUniqueTags(*this, selection, tag_types);
 }
