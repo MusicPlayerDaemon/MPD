@@ -22,7 +22,6 @@
 #include "tag/Tag.hxx"
 #include "util/UriExtract.hxx"
 #include "util/UriQueryParser.hxx"
-#include "util/StringView.hxx"
 
 #include <string>
 

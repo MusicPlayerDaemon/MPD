@@ -26,7 +26,6 @@
 #include "tag/Type.h"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #include <libopenmpt/libopenmpt.hpp>

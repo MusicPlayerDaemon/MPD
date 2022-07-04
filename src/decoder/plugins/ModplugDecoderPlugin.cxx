@@ -24,7 +24,6 @@
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #ifdef _WIN32

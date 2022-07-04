@@ -31,7 +31,6 @@
 #include "util/RuntimeError.hxx"
 #endif
 #include "util/StringFormat.hxx"
-#include "util/StringView.hxx"
 #include "util/Domain.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"

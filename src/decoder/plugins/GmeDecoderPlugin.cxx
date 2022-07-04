@@ -31,7 +31,6 @@
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
-#include "util/StringView.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 

@@ -27,7 +27,6 @@
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #include <mpg123.h>

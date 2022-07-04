@@ -25,7 +25,6 @@
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringView.hxx"
 #include "Log.hxx"
 #include "Version.h"
 

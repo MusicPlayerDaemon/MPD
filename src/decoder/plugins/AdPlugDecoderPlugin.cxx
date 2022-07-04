@@ -23,7 +23,6 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
-#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #include <adplug/adplug.h>

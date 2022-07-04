@@ -33,7 +33,6 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/BitReverse.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/StringView.hxx"
 #include "tag/Handler.hxx"
 #include "DsdLib.hxx"
 

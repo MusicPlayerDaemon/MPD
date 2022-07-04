@@ -24,7 +24,6 @@
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Id3MusicBrainz.hxx"
-#include "util/StringView.hxx"
 
 extern "C" {
 #include <libavutil/dict.h>
