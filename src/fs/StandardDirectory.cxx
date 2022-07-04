@@ -24,8 +24,8 @@
 #include "StandardDirectory.hxx"
 #include "FileSystem.hxx"
 #include "XDG.hxx"
-#include "util/StringView.hxx"
 #include "config.h"
+#include "util/StringSplit.hxx"
 
 #include <array>
 
@@ -299,7 +299,7 @@ GetAppRuntimeDir() noexcept
 #ifdef __linux__
 	/* systemd specific; see systemd.exec(5) */
 	if (const char *runtime_directory = getenv("RUNTIME_DIRECTORY"))
-		if (auto dir = StringView{runtime_directory}.Split(':').first;
+		if (auto dir = Split(std::string_view{runtime_directory}, ':').first;
 		    !dir.empty())
 			return AllocatedPath::FromFS(dir);
 #endif
