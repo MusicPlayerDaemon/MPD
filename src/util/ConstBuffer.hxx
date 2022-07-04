@@ -31,14 +31,7 @@
 
 #include <cassert>
 #include <cstddef>
-
-#if __cplusplus >= 202002 || (defined(__GNUC__) && __GNUC__ >= 10)
-#include <version>
-#endif
-
-#ifdef __cpp_lib_span
 #include <span>
-#endif
 
 template<typename T>
 struct ConstBuffer;
@@ -63,10 +56,8 @@ struct ConstBuffer<void> {
 	constexpr ConstBuffer(pointer _data, size_type _size) noexcept
 		:data(_data), size(_size) {}
 
-#ifdef __cpp_lib_span
 	constexpr ConstBuffer(std::span<const std::byte> s) noexcept
 		:data(s.data()), size(s.size()) {}
-#endif
 
 	constexpr static ConstBuffer<void> FromVoid(ConstBuffer<void> other) noexcept {
 		return other;
@@ -92,11 +83,9 @@ struct ConstBuffer<void> {
 		return size == 0;
 	}
 
-#ifdef __cpp_lib_span
 	constexpr operator std::span<const std::byte>() const noexcept {
 		return {static_cast<const std::byte *>(data), size};
 	}
-#endif
 };
 
 /**
@@ -134,10 +123,8 @@ struct ConstBuffer {
 	constexpr ConstBuffer(const T (&_data)[_size]) noexcept
 		:data(_data), size(_size) {}
 
-#ifdef __cpp_lib_span
 	constexpr ConstBuffer(std::span<const T> s) noexcept
 		:data(s.data()), size(s.size()) {}
-#endif
 
 	/**
 	 * Cast a ConstBuffer<void> to a ConstBuffer<T>, rounding down
@@ -292,9 +279,7 @@ struct ConstBuffer {
 		size = new_end - data;
 	}
 
-#ifdef __cpp_lib_span
 	constexpr operator std::span<const T>() const noexcept {
 		return {data, size};
 	}
-#endif
 };
