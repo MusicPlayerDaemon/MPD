@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2014-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -52,6 +52,29 @@ GzipOutputStream::GzipOutputStream(OutputStream &_next)
 GzipOutputStream::~GzipOutputStream()
 {
 	deflateEnd(&z);
+}
+
+void
+GzipOutputStream::SyncFlush()
+{
+	/* no more input */
+	z.next_in = nullptr;
+	z.avail_in = 0;
+
+	do {
+		Bytef output[16384];
+		z.next_out = output;
+		z.avail_out = sizeof(output);
+
+		int result = deflate(&z, Z_SYNC_FLUSH);
+		if (result != Z_OK)
+			throw ZlibError(result);
+
+		if (z.next_out == output)
+			break;
+
+		next.Write(output, z.next_out - output);
+	} while (z.avail_out == 0);
 }
 
 void
