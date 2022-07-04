@@ -48,6 +48,8 @@ class GzipOutputStream final : public OutputStream {
 public:
 	/**
 	 * Construct the filter.
+	 *
+	 * Throws #ZlibError on error.
 	 */
 	explicit GzipOutputStream(OutputStream &_next);
 	~GzipOutputStream();
@@ -55,6 +57,8 @@ public:
 	/**
 	 * Finish the file and write all data remaining in zlib's
 	 * output buffer.
+	 *
+	 * Throws on error.
 	 */
 	void Finish();
 
