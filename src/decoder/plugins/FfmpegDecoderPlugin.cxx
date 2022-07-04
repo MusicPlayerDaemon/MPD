@@ -42,7 +42,6 @@
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "Log.hxx"
 
@@ -216,23 +215,20 @@ FfmpegSendFrame(DecoderClient &client, InputStream *is,
 		size_t &skip_bytes,
 		FfmpegBuffer &buffer)
 {
-	ConstBuffer<void> output_buffer =
-		Ffmpeg::InterleaveFrame(frame, buffer);
+	auto output_buffer = Ffmpeg::InterleaveFrame(frame, buffer);
 
 	if (skip_bytes > 0) {
-		if (skip_bytes >= output_buffer.size) {
-			skip_bytes -= output_buffer.size;
+		if (skip_bytes >= output_buffer.size()) {
+			skip_bytes -= output_buffer.size();
 			return DecoderCommand::NONE;
 		}
 
-		output_buffer.data =
-			(const uint8_t *)output_buffer.data + skip_bytes;
-		output_buffer.size -= skip_bytes;
+		output_buffer = output_buffer.subspan(skip_bytes);
 		skip_bytes = 0;
 	}
 
 	return client.SubmitData(is,
-				 output_buffer.data, output_buffer.size,
+				 output_buffer.data(), output_buffer.size(),
 				 codec_context.bit_rate / 1000);
 }
 

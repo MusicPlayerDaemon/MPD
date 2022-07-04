@@ -25,7 +25,8 @@
 
 #include <FLAC/ordinals.h>
 
-template<typename T> struct ConstBuffer;
+#include <cstddef>
+#include <span>
 
 /**
  * This class imports libFLAC PCM data into a PCM format supported by
@@ -47,8 +48,8 @@ public:
 		return audio_format;
 	}
 
-	ConstBuffer<void> Import(const FLAC__int32 *const src[],
-				 size_t n_frames);
+	std::span<const std::byte> Import(const FLAC__int32 *const src[],
+					  size_t n_frames);
 };
 
 #endif

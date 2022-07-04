@@ -20,8 +20,9 @@
 #ifndef MPD_FFMPEG_INTERLEAVE_HXX
 #define MPD_FFMPEG_INTERLEAVE_HXX
 
+#include <span>
+
 struct AVFrame;
-template<typename T> struct ConstBuffer;
 class FfmpegBuffer;
 
 namespace Ffmpeg {
@@ -32,7 +33,7 @@ namespace Ffmpeg {
  *
  * Throws on error.
  */
-ConstBuffer<void>
+std::span<const std::byte>
 InterleaveFrame(const AVFrame &frame, FfmpegBuffer &buffer);
 
 } // namespace Ffmpeg

@@ -32,7 +32,7 @@ extern "C" {
 
 namespace Ffmpeg {
 
-ConstBuffer<void>
+std::span<const std::byte>
 InterleaveFrame(const AVFrame &frame, FfmpegBuffer &buffer)
 {
 	assert(frame.nb_samples > 0);
@@ -49,9 +49,9 @@ InterleaveFrame(const AVFrame &frame, FfmpegBuffer &buffer)
 	if (data_size < 0)
 		throw MakeFfmpegError(data_size);
 
-	void *output_buffer;
+	std::byte *output_buffer;
 	if (av_sample_fmt_is_planar(format) && channels > 1) {
-		output_buffer = buffer.GetT<uint8_t>(data_size);
+		output_buffer = buffer.GetT<std::byte>(data_size);
 		if (output_buffer == nullptr)
 			/* Not enough memory - shouldn't happen */
 			throw std::bad_alloc();
@@ -61,7 +61,7 @@ InterleaveFrame(const AVFrame &frame, FfmpegBuffer &buffer)
 			      n_frames,
 			      av_get_bytes_per_sample(format));
 	} else {
-		output_buffer = frame.extended_data[0];
+		output_buffer = (std::byte *)frame.extended_data[0];
 	}
 
 	return { output_buffer, (size_t)data_size };

@@ -27,9 +27,11 @@
 #include "FlacInput.hxx"
 #include "FlacPcm.hxx"
 #include "../DecoderAPI.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <FLAC/stream_decoder.h>
+
+#include <cstddef>
+#include <span>
 
 struct FlacDecoder : public FlacInput {
 	/**
@@ -63,7 +65,7 @@ struct FlacDecoder : public FlacInput {
 	 * If this is non-empty, then DecoderBridge::SubmitData()
 	 * should be called.
 	 */
-	ConstBuffer<void> chunk = nullptr;
+	std::span<const std::byte> chunk = {};
 
 	FlacDecoder(DecoderClient &_client, InputStream &_input_stream)
 		:FlacInput(_input_stream, &_client) {}

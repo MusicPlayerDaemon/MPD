@@ -21,7 +21,6 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "lib/xiph/FlacAudioFormat.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <cassert>
 
@@ -69,7 +68,7 @@ FlacImport(T *dest, const FLAC__int32 *const src[], size_t n_frames,
 }
 
 template<typename T>
-static ConstBuffer<void>
+static std::span<const std::byte>
 FlacImport(PcmBuffer &buffer, const FLAC__int32 *const src[], size_t n_frames,
 	   unsigned n_channels)
 {
@@ -77,10 +76,10 @@ FlacImport(PcmBuffer &buffer, const FLAC__int32 *const src[], size_t n_frames,
 	size_t dest_size = n_samples * sizeof(T);
 	T *dest = (T *)buffer.Get(dest_size);
 	FlacImport(dest, src, n_frames, n_channels);
-	return {dest, dest_size};
+	return std::as_bytes(std::span{dest, n_samples});
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 FlacPcmImport::Import(const FLAC__int32 *const src[], size_t n_frames)
 {
 	switch (audio_format.format) {

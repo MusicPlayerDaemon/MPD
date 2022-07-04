@@ -34,7 +34,6 @@
 #include "input/cache/Manager.hxx"
 #include "input/cache/Stream.hxx"
 #include "fs/Path.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/StringBuffer.hxx"
 
 #include <cassert>
