@@ -4,7 +4,6 @@ util = static_library(
   'UTF8.cxx',
   'MimeType.cxx',
   'NumberParser.cxx',
-  'StringView.cxx',
   'TruncateString.cxx',
   'StringStrip.cxx',
   'StringUtil.cxx',
