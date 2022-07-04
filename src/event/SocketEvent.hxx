@@ -25,9 +25,6 @@
 #include "util/BindMethod.hxx"
 #include "util/IntrusiveList.hxx"
 
-#include <cstddef>
-#include <type_traits>
-
 class EventLoop;
 
 /**
@@ -74,8 +71,6 @@ public:
 	 * need to be registered with epoll_ctl().
 	 */
 	static constexpr unsigned IMPLICIT_FLAGS = ERROR|HANGUP;
-
-	using ssize_t = std::make_signed<size_t>::type;
 
 	SocketEvent(EventLoop &_loop, Callback _callback,
 		    SocketDescriptor _fd=SocketDescriptor::Undefined()) noexcept

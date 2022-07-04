@@ -26,6 +26,7 @@
 #include <cassert>
 #include <cstdint>
 #include <exception>
+#include <type_traits>
 
 class EventLoop;
 
@@ -39,7 +40,7 @@ protected:
 	SocketEvent event;
 
 public:
-	using ssize_t = SocketEvent::ssize_t;
+	using ssize_t = std::make_signed<size_t>::type;
 
 	BufferedSocket(SocketDescriptor _fd, EventLoop &_loop) noexcept
 		:event(_loop, BIND_THIS_METHOD(OnSocketReady), _fd) {
