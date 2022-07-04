@@ -35,7 +35,6 @@
 #include "decoder/Features.h"
 #include "input/InputStream.hxx"
 #include "util/MimeType.hxx"
-#include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
@@ -194,7 +193,7 @@ playlist_list_open_uri(const char *uri, Mutex &mutex)
 }
 
 static std::unique_ptr<SongEnumerator>
-playlist_list_open_stream_mime2(InputStreamPtr &&is, StringView mime)
+playlist_list_open_stream_mime2(InputStreamPtr &&is, std::string_view mime)
 {
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->open_stream != nullptr &&

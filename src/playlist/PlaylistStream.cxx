@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "fs/Path.hxx"
-#include "util/StringView.hxx"
 #include "util/UriExtract.hxx"
 #include "Log.hxx"
 
