@@ -24,7 +24,6 @@
 #include "output/Features.h"
 #include "thread/Mutex.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
@@ -32,6 +31,7 @@
 
 #include <atomic>
 #include <cassert>
+#include <span>
 
 #include <jack/jack.h>
 #include <jack/types.h>
@@ -287,7 +287,7 @@ JackOutput::GetAvailable() const noexcept
  * Call jack_ringbuffer_read_advance() on all buffers in the list.
  */
 static void
-MultiReadAdvance(ConstBuffer<jack_ringbuffer_t *> buffers,
+MultiReadAdvance(std::span<jack_ringbuffer_t *const> buffers,
 		 size_t size)
 {
 	for (auto *i : buffers)
@@ -316,7 +316,7 @@ WriteSilence(jack_port_t &port, jack_nframes_t nframes)
  * Write a specific amount of "silence" to all ports in the list.
  */
 static void
-MultiWriteSilence(ConstBuffer<jack_port_t *> ports, jack_nframes_t nframes)
+MultiWriteSilence(std::span<jack_port_t *const> ports, jack_nframes_t nframes)
 {
 	for (auto *i : ports)
 		WriteSilence(*i, nframes);

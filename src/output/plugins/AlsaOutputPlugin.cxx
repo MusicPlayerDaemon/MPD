@@ -35,7 +35,6 @@
 #include "util/Manual.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
-#include "util/ConstBuffer.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/InjectEvent.hxx"
 #include "event/FineTimerEvent.hxx"

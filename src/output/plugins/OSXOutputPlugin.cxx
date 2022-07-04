@@ -28,7 +28,6 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"
-#include "util/ConstBuffer.hxx"
 #include "pcm/Export.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
@@ -46,6 +45,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 #include <memory>
+#include <span>
 
 static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
 
@@ -96,7 +96,7 @@ struct OSXOutput final : AudioOutput {
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
 
-	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
+	boost::lockfree::spsc_queue<std::byte> *ring_buffer;
 
 	OSXOutput(const ConfigBlock &block);
 
@@ -620,7 +620,7 @@ osx_render(void *vdata,
 
 	int count = in_number_frames * od->asbd.mBytesPerFrame;
 	buffer_list->mBuffers[0].mDataByteSize =
-		od->ring_buffer->pop((uint8_t *)buffer_list->mBuffers[0].mData,
+		od->ring_buffer->pop((std::byte *)buffer_list->mBuffers[0].mData,
 				     count);
 	return noErr;
 }
@@ -764,7 +764,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetOutputFrameSize() * asbd.mSampleRate / 1000);
 	}
 #endif
-	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(ring_buffer_size);
+	ring_buffer = new boost::lockfree::spsc_queue<std::byte>(ring_buffer_size);
 
 	pause = false;
 	started = false;
@@ -777,17 +777,17 @@ OSXOutput::Play(const void *chunk, size_t size)
 
 	pause = false;
 
-	ConstBuffer<uint8_t> input((const uint8_t *)chunk, size);
+	std::span<const std::byte> input((const std::byte *)chunk, size);
 
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
-		input = ConstBuffer<uint8_t>::FromVoid(pcm_export->Export(input.ToVoid()));
+		input = pcm_export->Export(input);
 		if (input.empty())
 			return size;
 	}
 #endif
 
-	size_t bytes_written = ring_buffer->push(input.data, input.size);
+	size_t bytes_written = ring_buffer->push(input.data(), input.size());
 
 	if (!started) {
 		OSStatus status = AudioOutputUnitStart(au);

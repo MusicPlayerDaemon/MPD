@@ -26,11 +26,11 @@
 #include "pcm/Buffer.hxx"
 #include "pcm/Dither.hxx"
 #include "thread/Mutex.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <cassert>
 #include <cstdint>
 #include <memory>
+#include <span>
 #include <utility>
 
 struct MusicChunk;
@@ -115,7 +115,7 @@ class AudioOutputSource {
 	 * Filtered #MusicChunk PCM data to be processed by the
 	 * #AudioOutput.
 	 */
-	ConstBuffer<uint8_t> pending_data;
+	std::span<const std::byte> pending_data;
 
 public:
 	AudioOutputSource() noexcept;
@@ -174,8 +174,8 @@ public:
 	 * Be sure to call Fill() successfully before calling this
 	 * metohd.
 	 */
-	ConstBuffer<void> PeekData() const noexcept {
-		return pending_data.ToVoid();
+	std::span<const std::byte> PeekData() const noexcept {
+		return pending_data;
 	}
 
 	/**
@@ -196,7 +196,7 @@ public:
 	/**
 	 * Wrapper for Filter::Flush().
 	 */
-	ConstBuffer<void> Flush();
+	std::span<const std::byte> Flush();
 
 private:
 	void OpenFilter(AudioFormat audio_format,
@@ -206,11 +206,11 @@ private:
 
 	void CloseFilter() noexcept;
 
-	ConstBuffer<void> GetChunkData(const MusicChunk &chunk,
+	std::span<const std::byte> GetChunkData(const MusicChunk &chunk,
 				       Filter *replay_gain_filter,
 				       unsigned *replay_gain_serial_p);
 
-	ConstBuffer<void> FilterChunk(const MusicChunk &chunk);
+	std::span<const std::byte> FilterChunk(const MusicChunk &chunk);
 
 	void DropCurrentChunk() noexcept {
 		assert(current_chunk != nullptr);

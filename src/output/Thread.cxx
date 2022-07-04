@@ -265,9 +265,9 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 
 		try {
 			const ScopeUnlock unlock(mutex);
-			nbytes = output->Play(data.data, data.size);
+			nbytes = output->Play(data.data(), data.size());
 			assert(nbytes > 0);
-			assert(nbytes <= data.size);
+			assert(nbytes <= data.size());
 		} catch (AudioOutputInterrupted) {
 			caught_interrupted = true;
 			return false;
@@ -377,15 +377,13 @@ AudioOutputControl::InternalPause(std::unique_lock<Mutex> &lock) noexcept
 }
 
 static void
-PlayFull(FilteredAudioOutput &output, ConstBuffer<void> _buffer)
+PlayFull(FilteredAudioOutput &output, std::span<const std::byte> buffer)
 {
-	auto buffer = ConstBuffer<uint8_t>::FromVoid(_buffer);
-
 	while (!buffer.empty()) {
-		size_t nbytes = output.Play(buffer.data, buffer.size);
+		size_t nbytes = output.Play(buffer.data(), buffer.size());
 		assert(nbytes > 0);
 
-		buffer.skip_front(nbytes);
+		buffer = buffer.subspan(nbytes);
 	}
 
 }
@@ -404,7 +402,7 @@ AudioOutputControl::InternalDrain() noexcept
 
 		while (true) {
 			auto buffer = source.Flush();
-			if (buffer.IsNull())
+			if (buffer.data() == nullptr)
 				break;
 
 			PlayFull(*output, buffer);

@@ -24,7 +24,6 @@
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "pcm/Mix.hxx"
 #include "thread/Mutex.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <string.h>
@@ -130,7 +129,7 @@ AudioOutputSource::CloseFilter() noexcept
 	filter.reset();
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 				Filter *current_replay_gain_filter,
 				unsigned *replay_gain_serial_p)
@@ -138,9 +137,9 @@ AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 	assert(!chunk.IsEmpty());
 	assert(chunk.CheckFormat(in_audio_format));
 
-	ConstBuffer<void> data(chunk.data, chunk.length);
+	std::span<const std::byte> data(chunk.data, chunk.length);
 
-	assert(data.size % in_audio_format.GetFrameSize() == 0);
+	assert(data.size() % in_audio_format.GetFrameSize() == 0);
 
 	if (!data.empty() && current_replay_gain_filter != nullptr) {
 		replay_gain_filter_set_mode(*current_replay_gain_filter,
@@ -160,7 +159,7 @@ AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 	return data;
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 {
 	auto data = GetChunkData(chunk, replay_gain_filter.get(),
@@ -182,8 +181,8 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 		   "next" song being faded in, and if there's a rest,
 		   it means cross-fading ends here */
 
-		if (data.size > other_data.size)
-			data.size = other_data.size;
+		if (data.size() > other_data.size())
+			data = data.first(other_data.size());
 
 		float mix_ratio = chunk.mix_ratio;
 		if (mix_ratio >= 0)
@@ -194,16 +193,15 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 			   case */
 			mix_ratio = 1.0f - mix_ratio;
 
-		void *dest = cross_fade_buffer.Get(other_data.size);
-		memcpy(dest, other_data.data, other_data.size);
-		if (!pcm_mix(cross_fade_dither, dest, data.data, data.size,
+		void *dest = cross_fade_buffer.Get(other_data.size());
+		memcpy(dest, other_data.data(), other_data.size());
+		if (!pcm_mix(cross_fade_dither, dest, data.data(), data.size(),
 			     in_audio_format.format,
 			     mix_ratio))
 			throw FormatRuntimeError("Cannot cross-fade format %s",
 						 sample_format_to_string(in_audio_format.format));
 
-		data.data = dest;
-		data.size = other_data.size;
+		data = {(const std::byte *)dest, other_data.size()};
 	}
 
 	/* apply filter chain */
@@ -232,7 +230,7 @@ AudioOutputSource::Fill(Mutex &mutex)
 		   that may take a while */
 		const ScopeUnlock unlock(mutex);
 
-		pending_data = pending_data.FromVoid(FilterChunk(*current_chunk));
+		pending_data = FilterChunk(*current_chunk);
 	} catch (...) {
 		current_chunk = nullptr;
 		throw;
@@ -244,13 +242,13 @@ AudioOutputSource::Fill(Mutex &mutex)
 void
 AudioOutputSource::ConsumeData(size_t nbytes) noexcept
 {
-	pending_data.skip_front(nbytes);
+	pending_data = pending_data.subspan(nbytes);
 
 	if (pending_data.empty())
 		DropCurrentChunk();
 }
 
-ConstBuffer<void>
+std::span<const std::byte>
 AudioOutputSource::Flush()
 {
 	return filter

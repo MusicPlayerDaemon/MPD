@@ -35,7 +35,6 @@
 #include "thread/Name.hxx"
 #include "thread/Thread.hxx"
 #include "util/AllocatedString.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
@@ -228,12 +227,12 @@ public:
 		SetStatus(Status::PAUSE);
 	}
 
-	std::size_t Push(ConstBuffer<void> input) noexcept {
+	std::size_t Push(std::span<const std::byte> input) noexcept {
 		empty.store(false);
 
 		std::size_t consumed =
-			spsc_buffer.push(static_cast<const BYTE *>(input.data),
-					 input.size);
+			spsc_buffer.push((const BYTE *)input.data(),
+					 input.size());
 
 		if (!playing) {
 			playing = true;
@@ -717,7 +716,7 @@ WasapiOutput::Play(const void *chunk, size_t size)
 
 	not_interrupted.test_and_set();
 
-	ConstBuffer<void> input(chunk, size);
+	std::span<const std::byte> input{(const std::byte*)chunk, size};
 	if (pcm_export) {
 		input = pcm_export->Export(input);
 	}
@@ -725,7 +724,7 @@ WasapiOutput::Play(const void *chunk, size_t size)
 		return size;
 
 	do {
-		const size_t consumed_size = thread->Push({input.data, input.size});
+		const size_t consumed_size = thread->Push(input);
 
 		if (consumed_size == 0) {
 			thread->Wait();
