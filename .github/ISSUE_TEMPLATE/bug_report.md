@@ -24,3 +24,4 @@ about: Create a bug report
 
 ## Log
 <!-- Paste relevant portions of the log file here (--verbose) -->
+<!-- If MPD has crashed, include a backtrace (see https://mpd.readthedocs.io/en/stable/user.html#mpd-crashes) -->
