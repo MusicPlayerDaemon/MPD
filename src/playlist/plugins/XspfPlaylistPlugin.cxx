@@ -24,7 +24,6 @@
 #include "input/InputStream.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Table.hxx"
-#include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
 
 #include <string.h>
@@ -158,8 +157,7 @@ xspf_end_element(void *user_data, const XML_Char *element_name)
 	case XspfParser::TAG:
 		if (!parser->value.empty())
 			parser->tag_builder.AddItem(parser->tag_type,
-						    StringView(parser->value.data(),
-							       parser->value.length()));
+						    parser->value);
 
 		parser->state = XspfParser::TRACK;
 		break;

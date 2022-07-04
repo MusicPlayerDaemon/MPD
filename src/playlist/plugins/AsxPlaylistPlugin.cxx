@@ -23,7 +23,6 @@
 #include "tag/Builder.hxx"
 #include "tag/Table.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
 
 /**
@@ -128,8 +127,7 @@ asx_end_element(void *user_data, const XML_Char *element_name)
 	case AsxParser::TAG:
 		if (!parser->value.empty())
 			parser->tag_builder.AddItem(parser->tag_type,
-						    StringView(parser->value.data(),
-							       parser->value.length()));
+						    parser->value);
 		parser->state = AsxParser::ENTRY;
 		break;
 	}

@@ -22,7 +22,6 @@
 #include "../MemorySongEnumerator.hxx"
 #include "tag/Builder.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
 
 /**
@@ -126,7 +125,7 @@ rss_char_data(void *user_data, const XML_Char *s, int len)
 	case RssParser::ITEM:
 		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
 			parser->tag_builder.AddItem(parser->tag_type,
-						    StringView(s, len));
+						    std::string_view(s, len));
 
 		break;
 	}
