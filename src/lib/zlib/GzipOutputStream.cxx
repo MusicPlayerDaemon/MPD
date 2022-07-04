@@ -87,7 +87,7 @@ GzipOutputStream::Write(const void *_data, size_t size)
 	z.avail_in = size;
 
 	while (z.avail_in > 0) {
-		Bytef output[16384];
+		Bytef output[65536];
 		z.next_out = output;
 		z.avail_out = sizeof(output);
 
