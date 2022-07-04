@@ -30,11 +30,10 @@
 #ifndef CDIO_PARANOIA_HXX
 #define CDIO_PARANOIA_HXX
 
-#include "util/ConstBuffer.hxx"
-
 #include <cdio/version.h>
 #include <cdio/paranoia/paranoia.h>
 
+#include <span>
 #include <stdexcept>
 #include <utility>
 
@@ -149,7 +148,7 @@ public:
 			throw std::runtime_error("Failed to seek disc");
 	}
 
-	ConstBuffer<int16_t> Read() {
+	std::span<const int16_t> Read() {
 		const int16_t *data = cdio_paranoia_read(paranoia, nullptr);
 		if (data == nullptr)
 			throw std::runtime_error("Read from audio CD failed");

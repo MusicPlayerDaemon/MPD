@@ -298,7 +298,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 			const ScopeUnlock unlock(mutex);
 
 			try {
-				rbuf = para.Read().data;
+				rbuf = para.Read().data();
 			} catch (...) {
 				char *s_err = cdio_cddap_errors(drv);
 				if (s_err) {
