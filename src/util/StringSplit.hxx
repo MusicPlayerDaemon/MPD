@@ -32,6 +32,25 @@
 #include <string_view>
 
 template<typename T>
+constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
+Partition(const std::basic_string_view<T> haystack,
+	  const typename std::basic_string_view<T>::size_type position) noexcept
+{
+	return {
+		haystack.substr(0, position),
+		haystack.substr(position),
+	};
+}
+
+template<typename T>
+constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
+Partition(const std::basic_string_view<T> haystack,
+	  const typename std::basic_string_view<T>::const_pointer position) noexcept
+{
+	return Partition(haystack, std::distance(haystack.data(), position));
+}
+
+template<typename T>
 [[gnu::pure]]
 std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
 PartitionWithout(const std::basic_string_view<T> haystack,
