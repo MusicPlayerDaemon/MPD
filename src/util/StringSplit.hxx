@@ -51,8 +51,7 @@ Partition(const std::basic_string_view<T> haystack,
 }
 
 template<typename T>
-[[gnu::pure]]
-std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
+constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
 PartitionWithout(const std::basic_string_view<T> haystack,
 		 const typename std::basic_string_view<T>::size_type separator) noexcept
 {
@@ -68,8 +67,7 @@ PartitionWithout(const std::basic_string_view<T> haystack,
  * string and the second value is nullptr.
  */
 template<typename T>
-[[gnu::pure]]
-std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
+constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
 Split(const std::basic_string_view<T> haystack, const T ch) noexcept
 {
 	const auto i = haystack.find(ch);
@@ -85,8 +83,7 @@ Split(const std::basic_string_view<T> haystack, const T ch) noexcept
  * value is the whole string and the second value is nullptr.
  */
 template<typename T>
-[[gnu::pure]]
-std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
+constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
 SplitLast(const std::basic_string_view<T> haystack, const T ch) noexcept
 {
 	const auto i = haystack.rfind(ch);
