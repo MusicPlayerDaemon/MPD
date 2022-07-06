@@ -47,7 +47,7 @@ constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
 Partition(const std::basic_string_view<T> haystack,
 	  const typename std::basic_string_view<T>::const_pointer position) noexcept
 {
-	return Partition(haystack, std::distance(haystack.data(), position));
+	return Partition(haystack, position - haystack.data());
 }
 
 template<typename T>
