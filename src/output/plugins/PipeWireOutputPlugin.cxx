@@ -309,6 +309,23 @@ PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 	}
 }
 
+/**
+ * Throws on error.
+ *
+ * @param volume a volume level between 0.0 and 1.0
+ */
+static void
+SetVolume(struct pw_stream &stream, unsigned channels, float volume)
+{
+	float value[MAX_CHANNELS];
+	std::fill_n(value, channels, volume * volume * volume);
+
+	if (pw_stream_set_control(&stream,
+				  SPA_PROP_channelVolumes, channels, value,
+				  0) != 0)
+		throw std::runtime_error("pw_stream_set_control() failed");
+}
+
 void
 PipeWireOutput::SetVolume(float _volume)
 {
@@ -322,17 +339,8 @@ PipeWireOutput::SetVolume(float _volume)
 
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
-	float newvol = _volume*_volume*_volume;
-
-	if (stream != nullptr && !restore_volume) {
-		float vol[MAX_CHANNELS];
-		std::fill_n(vol, channels, newvol);
-
-		if (pw_stream_set_control(stream,
-				  SPA_PROP_channelVolumes, channels, vol,
-				  0) != 0)
-			throw std::runtime_error("pw_stream_set_control() failed");
-	}
+	if (stream != nullptr && !restore_volume)
+		::SetVolume(*stream, channels, _volume);
 
 	volume = _volume;
 }
