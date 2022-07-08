@@ -226,10 +226,10 @@ private:
 		float sum = std::accumulate(control->values,
 					    control->values + control->n_values,
 					    0.0f);
-		sum /= control->n_values;
+		volume = std::cbrt(sum / control->n_values);
 
 		if (mixer != nullptr)
-			pipewire_mixer_on_change(*mixer, std::cbrt(sum));
+			pipewire_mixer_on_change(*mixer, volume);
 
 		pw_thread_loop_signal(thread_loop, false);
 	}
