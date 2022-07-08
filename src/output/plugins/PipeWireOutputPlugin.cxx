@@ -866,6 +866,17 @@ PipeWireOutput::Drain()
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
+	if (drained)
+		return;
+
+	if (!active) {
+		/* there is data in the ring_buffer, but the stream is
+		   not yet active; activate it now to ensure it is
+		   played before this method returns */
+		active = true;
+		pw_stream_set_active(stream, true);
+	}
+
 	drain_requested = true;
 	AtScopeExit(this) { drain_requested = false; };
 
