@@ -895,7 +895,12 @@ PipeWireOutput::Cancel() noexcept
 	if (drained)
 		return;
 
+	/* clear MPD's ring buffer */
 	ring_buffer->reset();
+
+	/* clear libpipewire's buffer */
+	pw_stream_flush(stream, false);
+	drained = true;
 }
 
 bool

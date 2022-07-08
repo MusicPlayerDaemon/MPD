@@ -6,6 +6,7 @@ ver 0.23.8 (not yet released)
   - cdio_paranoia: faster cancellation
   - cdio_paranoia: don't scan for replay gain tags
   - pipewire: fix playback of very short tracks
+  - pipewire: drop all buffers before manual song change
   - snapcast: fix busy loop while paused
   - snapcast: fix stuttering after resuming playback
 * mixer
