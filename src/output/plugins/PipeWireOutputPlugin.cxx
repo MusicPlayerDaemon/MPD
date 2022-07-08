@@ -222,11 +222,11 @@ private:
 		o.Drained();
 	}
 
-	void ControlInfo(const struct pw_stream_control *control) noexcept {
-		float sum = std::accumulate(control->values,
-					    control->values + control->n_values,
+	void OnChannelVolumes(const struct pw_stream_control &control) noexcept {
+		float sum = std::accumulate(control.values,
+					    control.values + control.n_values,
 					    0.0f);
-		volume = std::cbrt(sum / control->n_values);
+		volume = std::cbrt(sum / control.n_values);
 
 		if (mixer != nullptr)
 			pipewire_mixer_on_change(*mixer, volume);
@@ -234,13 +234,17 @@ private:
 		pw_thread_loop_signal(thread_loop, false);
 	}
 
-	static void ControlInfo(void *data,
-				[[maybe_unused]] uint32_t id,
+	void ControlInfo([[maybe_unused]] uint32_t id,
+			 const struct pw_stream_control &control) noexcept {
+		if (control.name != nullptr &&
+		    StringIsEqual(control.name, "Channel Volumes"))
+			OnChannelVolumes(control);
+	}
+
+	static void ControlInfo(void *data, uint32_t id,
 				const struct pw_stream_control *control) noexcept {
 		auto &o = *(PipeWireOutput *)data;
-		if (control->name != nullptr &&
-		    StringIsEqual(control->name, "Channel Volumes"))
-			o.ControlInfo(control);
+		o.ControlInfo(id, *control);
 	}
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
