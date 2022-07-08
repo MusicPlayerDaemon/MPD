@@ -31,22 +31,24 @@ class Timer {
 	bool started = false;
 	const int rate;
 public:
-	explicit Timer(AudioFormat af);
+	explicit Timer(AudioFormat af) noexcept;
 
-	bool IsStarted() const { return started; }
+	bool IsStarted() const noexcept { return started; }
 
-	void Start();
-	void Reset();
+	void Start() noexcept;
+	void Reset() noexcept;
 
-	void Add(size_t size);
+	void Add(size_t size) noexcept;
 
 	/**
 	 * Returns the duration to sleep to get back to sync.
 	 */
-	std::chrono::steady_clock::duration GetDelay() const;
+	[[gnu::pure]]
+	std::chrono::steady_clock::duration GetDelay() const noexcept;
 
 private:
-	static Time Now() {
+	[[gnu::pure]]
+	static Time Now() noexcept {
 		return std::chrono::duration_cast<Time>(std::chrono::steady_clock::now().time_since_epoch());
 	}
 };

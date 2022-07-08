@@ -22,24 +22,26 @@
 
 #include <cassert>
 
-Timer::Timer(const AudioFormat af)
+Timer::Timer(const AudioFormat af) noexcept
 	:rate(af.sample_rate * af.GetFrameSize())
 {
 }
 
-void Timer::Start()
+void
+Timer::Start() noexcept
 {
 	time = Now();
 	started = true;
 }
 
-void Timer::Reset()
+void
+Timer::Reset() noexcept
 {
 	started = false;
 }
 
 void
-Timer::Add(size_t size)
+Timer::Add(size_t size) noexcept
 {
 	assert(started);
 
@@ -49,7 +51,7 @@ Timer::Add(size_t size)
 }
 
 std::chrono::steady_clock::duration
-Timer::GetDelay() const
+Timer::GetDelay() const noexcept
 {
 	assert(started);
 
