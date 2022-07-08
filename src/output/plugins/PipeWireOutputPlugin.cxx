@@ -223,6 +223,9 @@ private:
 	}
 
 	void OnChannelVolumes(const struct pw_stream_control &control) noexcept {
+		if (control.n_values < 1)
+			return;
+
 		float sum = std::accumulate(control.values,
 					    control.values + control.n_values,
 					    0.0f);
