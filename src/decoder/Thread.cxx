@@ -36,6 +36,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 #include "thread/Name.hxx"
 #include "tag/ApeReplayGain.hxx"
 #include "Log.hxx"
@@ -263,6 +264,13 @@ MaybeLoadReplayGain(DecoderBridge &bridge, InputStream &is)
 {
 	if (!bridge.dc.LockIsReplayGainEnabled())
 		/* ReplayGain is disabled */
+		return;
+
+	if (is.HasMimeType() &&
+	    StringStartsWith(is.GetMimeType(), "audio/x-mpd-"))
+		/* skip for (virtual) files (e.g. from the
+		   cdio_paranoia input plugin) which cannot possibly
+		   contain tags */
 		return;
 
 	LoadReplayGain(bridge, is);

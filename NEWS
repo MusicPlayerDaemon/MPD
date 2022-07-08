@@ -4,6 +4,7 @@ ver 0.23.8 (not yet released)
 * input
   - cdio_paranoia: fix crash if no drive was found
   - cdio_paranoia: faster cancellation
+  - cdio_paranoia: don't scan for replay gain tags
 * output
   - pipewire: fix crash with PipeWire 0.3.53
 * mixer
