@@ -91,7 +91,10 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume)
 
 	/* software mixers are always updated, even if they are
 	   disabled */
-	if (!ao.IsReallyEnabled() && !mixer->IsPlugin(software_mixer_plugin))
+	if (!mixer->IsPlugin(software_mixer_plugin) &&
+	    /* "global" mixers can be used even if the output hasn't
+	       been used yet */
+	    !(mixer->IsGlobal() ? ao.IsEnabled() : ao.IsReallyEnabled()))
 		return SetVolumeResult::DISABLED;
 
 	try {

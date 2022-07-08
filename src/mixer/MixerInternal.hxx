@@ -63,6 +63,10 @@ public:
 		return &plugin == &other;
 	}
 
+	bool IsGlobal() const noexcept {
+		return plugin.global;
+	}
+
 	/**
 	 * Open mixer device
 	 *

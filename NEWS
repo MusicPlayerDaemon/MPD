@@ -5,6 +5,7 @@ ver 0.23.8 (not yet released)
   - pipewire: fix crash with PipeWire 0.3.53
 * mixer
   - better error messages
+  - alsa: fix setting volume before playback starts
 * support libfmt 9
 
 ver 0.23.7 (2022/05/09)
