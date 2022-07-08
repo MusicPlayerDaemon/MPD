@@ -236,9 +236,11 @@ private:
 
 	void ControlInfo([[maybe_unused]] uint32_t id,
 			 const struct pw_stream_control &control) noexcept {
-		if (control.name != nullptr &&
-		    StringIsEqual(control.name, "Channel Volumes"))
+		switch (id) {
+		case SPA_PROP_channelVolumes:
 			OnChannelVolumes(control);
+			break;
+		}
 	}
 
 	static void ControlInfo(void *data, uint32_t id,
