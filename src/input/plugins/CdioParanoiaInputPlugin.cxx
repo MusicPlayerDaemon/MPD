@@ -50,7 +50,7 @@ class CdioParanoiaInputStream final : public InputStream {
 	CdIo_t *const cdio;
 	CdromParanoia para;
 
-	const lsn_t lsn_from, lsn_to;
+	const lsn_t lsn_from;
 	int lsn_relofs;
 
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
@@ -60,10 +60,10 @@ class CdioParanoiaInputStream final : public InputStream {
 	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex,
 				cdrom_drive_t *_drv, CdIo_t *_cdio,
 				bool reverse_endian,
-				lsn_t _lsn_from, lsn_t _lsn_to)
+				lsn_t _lsn_from, lsn_t lsn_to)
 		:InputStream(_uri, _mutex),
 		 drv(_drv), cdio(_cdio), para(drv),
-		 lsn_from(_lsn_from), lsn_to(_lsn_to),
+		 lsn_from(_lsn_from),
 		 lsn_relofs(0),
 		 buffer_lsn(-1)
 	{
@@ -350,7 +350,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 bool
 CdioParanoiaInputStream::IsEOF() const noexcept
 {
-	return lsn_from + lsn_relofs > lsn_to;
+	return offset >= size;
 }
 
 static constexpr const char *cdio_paranoia_prefixes[] = {
