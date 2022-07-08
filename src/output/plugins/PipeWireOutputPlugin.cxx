@@ -901,6 +901,15 @@ PipeWireOutput::Cancel() noexcept
 	/* clear libpipewire's buffer */
 	pw_stream_flush(stream, false);
 	drained = true;
+
+	/* pause the PipeWire stream so libpipewire ceases invoking
+	   the "process" callback (we have no data until our Play()
+	   method gets called again); the stream will be resume by
+	   Play() after the ring_buffer has been refilled */
+	if (active) {
+		active = false;
+		pw_stream_set_active(stream, false);
+	}
 }
 
 bool
