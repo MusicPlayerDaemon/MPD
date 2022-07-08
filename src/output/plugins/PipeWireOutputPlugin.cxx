@@ -892,6 +892,9 @@ PipeWireOutput::Cancel() noexcept
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 	interrupted = false;
 
+	if (drained)
+		return;
+
 	ring_buffer->reset();
 }
 
