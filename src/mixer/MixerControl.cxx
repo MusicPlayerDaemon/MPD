@@ -60,9 +60,9 @@ mixer_open(Mixer *mixer)
 	try {
 		mixer->Open();
 		mixer->open = true;
-		mixer->failed = false;
+		mixer->failure = {};
 	} catch (...) {
-		mixer->failed = true;
+		mixer->failure = std::current_exception();
 		throw;
 	}
 }
@@ -75,6 +75,7 @@ mixer_close_internal(Mixer *mixer)
 
 	mixer->Close();
 	mixer->open = false;
+	mixer->failure = {};
 }
 
 void
@@ -95,20 +96,6 @@ mixer_auto_close(Mixer *mixer)
 		mixer_close(mixer);
 }
 
-/*
- * Close the mixer due to failure.  The mutex must be locked before
- * calling this function.
- */
-static void
-mixer_failed(Mixer *mixer)
-{
-	assert(mixer->open);
-
-	mixer_close_internal(mixer);
-
-	mixer->failed = true;
-}
-
 int
 mixer_get_volume(Mixer *mixer)
 {
@@ -116,7 +103,7 @@ mixer_get_volume(Mixer *mixer)
 
 	assert(mixer != nullptr);
 
-	if (mixer->plugin.global && !mixer->failed)
+	if (mixer->plugin.global && !mixer->failure)
 		mixer_open(mixer);
 
 	const std::scoped_lock<Mutex> protect(mixer->mutex);
@@ -125,7 +112,8 @@ mixer_get_volume(Mixer *mixer)
 		try {
 			volume = mixer->GetVolume();
 		} catch (...) {
-			mixer_failed(mixer);
+			mixer_close_internal(mixer);
+			mixer->failure = std::current_exception();
 			throw;
 		}
 	} else
@@ -140,11 +128,13 @@ mixer_set_volume(Mixer *mixer, unsigned volume)
 	assert(mixer != nullptr);
 	assert(volume <= 100);
 
-	if (mixer->plugin.global && !mixer->failed)
+	if (mixer->plugin.global && !mixer->failure)
 		mixer_open(mixer);
 
 	const std::scoped_lock<Mutex> protect(mixer->mutex);
 
 	if (mixer->open)
 		mixer->SetVolume(volume);
+	else if (mixer->failure)
+		std::rethrow_exception(mixer->failure);
 }
