@@ -30,6 +30,7 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/ScopeExit.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 #include "config/Block.hxx"
@@ -173,9 +174,9 @@ cdio_detect_device()
 	if (devices == nullptr)
 		return nullptr;
 
-	AllocatedPath path = AllocatedPath::FromFS(devices[0]);
-	cdio_free_device_list(devices);
-	return path;
+	AtScopeExit(devices) { cdio_free_device_list(devices); };
+
+	return AllocatedPath::FromFS(devices[0]);
 }
 
 static InputStreamPtr
