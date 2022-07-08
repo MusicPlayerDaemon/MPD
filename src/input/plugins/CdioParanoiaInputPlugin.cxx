@@ -294,7 +294,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 
 	while (length > 0) {
 		/* end of track ? */
-		if (lsn_from + lsn_relofs > lsn_to)
+		if (IsEOF())
 			break;
 
 		//current sector was changed ?
