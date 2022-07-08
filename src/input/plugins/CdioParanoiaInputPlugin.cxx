@@ -35,6 +35,7 @@
 #include "Log.hxx"
 #include "config/Block.hxx"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 
@@ -328,7 +329,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 		assert(diff >= 0 && diff < CDIO_CD_FRAMESIZE_RAW);
 
 		const size_t maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
-		const size_t len = (length < maxwrite? length : maxwrite);
+		const size_t len = std::min(length, maxwrite);
 
 		//skip diff bytes from this lsn
 		memcpy(wptr, ((const char *)rbuf) + diff, len);
