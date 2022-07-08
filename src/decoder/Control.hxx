@@ -257,6 +257,12 @@ public:
 		return HasFailed();
 	}
 
+	[[gnu::pure]]
+	bool LockIsReplayGainEnabled() const noexcept {
+		const std::scoped_lock<Mutex> protect(mutex);
+		return replay_gain_mode != ReplayGainMode::OFF;
+	}
+
 	/**
 	 * Transition this obejct from DecoderState::START to
 	 * DecoderState::DECODE.

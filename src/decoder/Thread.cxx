@@ -261,12 +261,9 @@ LoadReplayGain(DecoderClient &client, InputStream &is)
 static void
 MaybeLoadReplayGain(DecoderBridge &bridge, InputStream &is)
 {
-	{
-		const std::scoped_lock<Mutex> protect(bridge.dc.mutex);
-		if (bridge.dc.replay_gain_mode == ReplayGainMode::OFF)
-			/* ReplayGain is disabled */
-			return;
-	}
+	if (!bridge.dc.LockIsReplayGainEnabled())
+		/* ReplayGain is disabled */
+		return;
 
 	LoadReplayGain(bridge, is);
 }
