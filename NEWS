@@ -1,4 +1,4 @@
-ver 0.23.8 (not yet released)
+ver 0.23.8 (2022/07/09)
 * storage
   - curl: fix crash if web server does not understand WebDAV
 * input
