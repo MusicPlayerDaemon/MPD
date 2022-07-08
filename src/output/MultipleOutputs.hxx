@@ -141,10 +141,11 @@ public:
 	/**
 	 * Sets the volume on all available mixers.
 	 *
+	 * Throws on error.
+	 *
 	 * @param volume the volume (range 0..100)
-	 * @return true on success, false on failure
 	 */
-	bool SetVolume(unsigned volume) noexcept;
+	void SetVolume(unsigned volume);
 
 	/**
 	 * Similar to GetVolume(), but gets the volume only for

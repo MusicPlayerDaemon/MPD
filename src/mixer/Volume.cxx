@@ -71,16 +71,16 @@ software_volume_change(MultipleOutputs &outputs, unsigned volume)
 	return true;
 }
 
-static bool
+static void
 hardware_volume_change(MultipleOutputs &outputs, unsigned volume)
 {
 	/* reset the cache */
 	last_hardware_volume = -1;
 
-	return outputs.SetVolume(volume);
+	outputs.SetVolume(volume);
 }
 
-bool
+void
 volume_level_change(MultipleOutputs &outputs, unsigned volume)
 {
 	assert(volume <= 100);
@@ -89,7 +89,7 @@ volume_level_change(MultipleOutputs &outputs, unsigned volume)
 
 	idle_add(IDLE_MIXER);
 
-	return hardware_volume_change(outputs, volume);
+	hardware_volume_change(outputs, volume);
 }
 
 bool
