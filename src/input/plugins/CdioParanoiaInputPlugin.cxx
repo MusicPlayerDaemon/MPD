@@ -53,7 +53,7 @@ class CdioParanoiaInputStream final : public InputStream {
 	const lsn_t lsn_from;
 
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
-	int buffer_lsn;
+	lsn_t buffer_lsn;
 
  public:
 	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex,
@@ -274,7 +274,7 @@ CdioParanoiaInputStream::Seek(std::unique_lock<Mutex> &,
 		return;
 
 	/* calculate current LSN */
-	const int32_t lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
+	const lsn_t lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
 
 	if (lsn_relofs != buffer_lsn) {
 		const ScopeUnlock unlock(mutex);
@@ -295,7 +295,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 	//current sector was changed ?
 	const int16_t *rbuf;
 
-	const int32_t lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
+	const lsn_t lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
 	if (lsn_relofs != buffer_lsn) {
 		const ScopeUnlock unlock(mutex);
 
