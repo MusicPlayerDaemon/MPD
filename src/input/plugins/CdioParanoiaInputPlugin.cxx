@@ -176,6 +176,9 @@ cdio_detect_device()
 
 	AtScopeExit(devices) { cdio_free_device_list(devices); };
 
+	if (devices[0] == nullptr)
+		return nullptr;
+
 	return AllocatedPath::FromFS(devices[0]);
 }
 
