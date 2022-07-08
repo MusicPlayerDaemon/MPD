@@ -3,6 +3,7 @@ ver 0.23.8 (not yet released)
   - curl: fix crash if web server does not understand WebDAV
 * input
   - cdio_paranoia: fix crash if no drive was found
+  - cdio_paranoia: faster cancellation
 * output
   - pipewire: fix crash with PipeWire 0.3.53
 * mixer

@@ -288,61 +288,51 @@ size_t
 CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 			      void *ptr, size_t length)
 {
-	size_t nbytes = 0;
-	char *wptr = (char *) ptr;
+	/* end of track ? */
+	if (IsEOF())
+		return 0;
 
-	while (length > 0) {
-		/* end of track ? */
-		if (IsEOF())
-			break;
+	//current sector was changed ?
+	const int16_t *rbuf;
 
-		//current sector was changed ?
-		const int16_t *rbuf;
+	const int32_t lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
+	if (lsn_relofs != buffer_lsn) {
+		const ScopeUnlock unlock(mutex);
 
-		const int32_t lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
-		if (lsn_relofs != buffer_lsn) {
-			const ScopeUnlock unlock(mutex);
-
-			try {
-				rbuf = para.Read().data;
-			} catch (...) {
-				char *s_err = cdio_cddap_errors(drv);
-				if (s_err) {
-					FmtError(cdio_domain,
-						 "paranoia_read: {}", s_err);
-					cdio_cddap_free_messages(s_err);
-				}
-
-				throw;
+		try {
+			rbuf = para.Read().data;
+		} catch (...) {
+			char *s_err = cdio_cddap_errors(drv);
+			if (s_err) {
+				FmtError(cdio_domain,
+					 "paranoia_read: {}", s_err);
+				cdio_cddap_free_messages(s_err);
 			}
 
-			//store current buffer
-			memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
-			buffer_lsn = lsn_relofs;
-		} else {
-			//use cached sector
-			rbuf = (const int16_t *)buffer;
+			throw;
 		}
 
-		//correct offset
-		const int diff = offset - lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
-
-		assert(diff >= 0 && diff < CDIO_CD_FRAMESIZE_RAW);
-
-		const size_t maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
-		const size_t len = std::min(length, maxwrite);
-
-		//skip diff bytes from this lsn
-		memcpy(wptr, ((const char *)rbuf) + diff, len);
-		//update pointer
-		wptr += len;
-		nbytes += len;
-
-		//update offset
-		offset += len;
-		//update length
-		length -= len;
+		//store current buffer
+		memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
+		buffer_lsn = lsn_relofs;
+	} else {
+		//use cached sector
+		rbuf = (const int16_t *)buffer;
 	}
+
+	//correct offset
+	const int diff = offset - lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
+
+	assert(diff >= 0 && diff < CDIO_CD_FRAMESIZE_RAW);
+
+	const size_t maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
+	const std::size_t nbytes = std::min(length, maxwrite);
+
+	//skip diff bytes from this lsn
+	memcpy(ptr, ((const char *)rbuf) + diff, nbytes);
+
+	//update offset
+	offset += nbytes;
 
 	return nbytes;
 }
