@@ -276,7 +276,7 @@ CdioParanoiaInputStream::Seek(std::unique_lock<Mutex> &,
 	/* calculate current LSN */
 	const int32_t lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
 
-	{
+	if (lsn_relofs != buffer_lsn) {
 		const ScopeUnlock unlock(mutex);
 		para.Seek(lsn_from + lsn_relofs);
 	}
