@@ -5,6 +5,8 @@ ver 0.23.8 (not yet released)
   - cdio_paranoia: fix crash if no drive was found
   - cdio_paranoia: faster cancellation
   - cdio_paranoia: don't scan for replay gain tags
+  - snapcast: fix busy loop while paused
+  - snapcast: fix stuttering after resuming playback
 * mixer
   - better error messages
   - alsa: fix setting volume before playback starts
