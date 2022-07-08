@@ -89,8 +89,12 @@ class PipeWireOutput final : AudioOutput {
 
 	/**
 	 * The current volume level (0.0 .. 1.0).
+	 *
+	 * This get initialized to -1 which means "unknown", so
+	 * restore_volume will not attempt to override PipeWire's
+	 * initial volume level.
 	 */
-	float volume = 1.0f;
+	float volume = -1;
 
 	PipeWireMixer *mixer = nullptr;
 	unsigned channels;
@@ -669,12 +673,14 @@ PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 	if (restore_volume) {
 		restore_volume = false;
 
-		try {
-			::SetVolume(*stream, channels, volume);
-		} catch (...) {
-			FmtError(pipewire_output_domain,
-				 FMT_STRING("Failed to restore volume: {}"),
-				 std::current_exception());
+		if (volume >= 0) {
+			try {
+				::SetVolume(*stream, channels, volume);
+			} catch (...) {
+				FmtError(pipewire_output_domain,
+					 FMT_STRING("Failed to restore volume: {}"),
+					 std::current_exception());
+			}
 		}
 	}
 

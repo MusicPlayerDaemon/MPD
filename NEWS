@@ -10,6 +10,7 @@ ver 0.23.8 (not yet released)
   - alsa: fix setting volume before playback starts
   - pipewire: fix crash bug
   - pipewire: fix volume change events with PipeWire 0.3.53
+  - pipewire: don't force initial volume=100%
 * support libfmt 9
 
 ver 0.23.7 (2022/05/09)
