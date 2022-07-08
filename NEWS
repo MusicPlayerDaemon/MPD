@@ -3,6 +3,7 @@ ver 0.23.8 (not yet released)
   - curl: fix crash if web server does not understand WebDAV
 * output
   - pipewire: fix crash with PipeWire 0.3.53
+* support libfmt 9
 
 ver 0.23.7 (2022/05/09)
 * database

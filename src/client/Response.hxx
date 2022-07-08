@@ -82,7 +82,10 @@ public:
 
 	template<typename S, typename... Args>
 	bool Fmt(const S &format_str, Args&&... args) noexcept {
-#if FMT_VERSION >= 70000
+#if FMT_VERSION >= 90000
+		return VFmt(format_str,
+			    fmt::make_format_args(args...));
+#elif FMT_VERSION >= 70000
 		return VFmt(fmt::to_string_view(format_str),
 			    fmt::make_args_checked<Args...>(format_str,
 							    args...));
@@ -109,7 +112,10 @@ public:
 	template<typename S, typename... Args>
 	void FmtError(enum ack code,
 		      const S &format_str, Args&&... args) noexcept {
-#if FMT_VERSION >= 70000
+#if FMT_VERSION >= 90000
+		return VFmtError(code, format_str,
+				 fmt::make_format_args(args...));
+#elif FMT_VERSION >= 70000
 		return VFmtError(code, fmt::to_string_view(format_str),
 				 fmt::make_args_checked<Args...>(format_str,
 								 args...));
