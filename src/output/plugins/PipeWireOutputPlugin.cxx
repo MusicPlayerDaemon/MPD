@@ -86,7 +86,10 @@ class PipeWireOutput final : AudioOutput {
 
 	uint32_t target_id = PW_ID_ANY;
 
-	float volume = 1.0;
+	/**
+	 * The current volume level (0.0 .. 1.0).
+	 */
+	float volume = 1.0f;
 
 	PipeWireMixer *mixer = nullptr;
 	unsigned channels;
