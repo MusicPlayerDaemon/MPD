@@ -45,7 +45,10 @@ void
 LogFmt(LogLevel level, const Domain &domain,
        const S &format_str, Args&&... args) noexcept
 {
-#if FMT_VERSION >= 70000
+#if FMT_VERSION >= 90000
+	return LogVFmt(level, domain, format_str,
+		       fmt::make_format_args(args...));
+#elif FMT_VERSION >= 70000
 	return LogVFmt(level, domain, fmt::to_string_view(format_str),
 		       fmt::make_args_checked<Args...>(format_str,
 						       args...));

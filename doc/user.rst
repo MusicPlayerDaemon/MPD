@@ -1095,7 +1095,19 @@ The "music directory" is where you store your music files. :program:`MPD` stores
 
 Depending on the size of your music collection and the speed of the storage, this can take a while.
 
-To exclude a file from the update, create a file called :file:`.mpdignore` in its parent directory. Each line of that file may contain a list of shell wildcards. Matching files in the current directory and all subdirectories are excluded.
+To exclude a file from the update, create a file called
+:file:`.mpdignore` in its parent directory.  Each line of that file
+may contain a list of shell wildcards.  Matching files (or
+directories) in the current directory and all subdirectories are
+excluded.  Example::
+
+  *.opus
+  99*
+
+Subject to pattern matching is the file/directory name.  It is (not
+yet) possible to match nested path names, e.g. something like
+``foo/*.flac`` is not possible.
+
 
 Mounting other storages into the music directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

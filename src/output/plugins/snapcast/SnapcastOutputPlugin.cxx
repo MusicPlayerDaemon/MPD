@@ -215,9 +215,8 @@ SnapcastOutput::RemoveClient(SnapcastClient &client) noexcept
 std::chrono::steady_clock::duration
 SnapcastOutput::Delay() const noexcept
 {
-	if (!LockHasClients() && pause) {
-		/* if there's no client and this output is paused,
-		   then Pause() will not do anything, it will not fill
+	if (pause) {
+		/* Pause() will not do anything, it will not fill
 		   the buffer and it will not update the timer;
 		   therefore, we reset the timer here */
 		timer->Reset();

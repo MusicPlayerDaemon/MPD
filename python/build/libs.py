@@ -382,14 +382,14 @@ ffmpeg = FfmpegProject(
 )
 
 openssl = OpenSSLProject(
-    'https://www.openssl.org/source/openssl-3.0.3.tar.gz',
-    'ee0078adcef1de5f003c62c80cc96527721609c6f3bb42b7795df31f8b558c0b',
+    'https://www.openssl.org/source/openssl-3.0.5.tar.gz',
+    'aa7d8d9bef71ad6525c55ba11e5f4397889ce49c2c9349dcea6d3e4f0b024a7a',
     'include/openssl/ossl_typ.h',
 )
 
 curl = CmakeProject(
-    'https://curl.se/download/curl-7.83.1.tar.xz',
-    '2cb9c2356e7263a1272fd1435ef7cdebf2cd21400ec287b068396deb705c22c4',
+    'https://curl.se/download/curl-7.84.0.tar.xz',
+    '2d118b43f547bfe5bae806d8d47b4e596ea5b25a6c1f080aef49fbcd817c5db8',
     'lib/libcurl.a',
     [
         '-DBUILD_CURL_EXE=OFF',

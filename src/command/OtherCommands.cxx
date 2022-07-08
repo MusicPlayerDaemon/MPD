@@ -332,15 +332,11 @@ handle_getvol(Client &client, Request, Response &r)
 }
 
 CommandResult
-handle_setvol(Client &client, Request args, Response &r)
+handle_setvol(Client &client, Request args, Response &)
 {
 	unsigned level = args.ParseUnsigned(0, 100);
 
-	if (!volume_level_change(client.GetPartition().outputs, level)) {
-		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
-		return CommandResult::ERROR;
-	}
-
+	volume_level_change(client.GetPartition().outputs, level);
 	return CommandResult::OK;
 }
 
@@ -363,11 +359,8 @@ handle_volume(Client &client, Request args, Response &r)
 	else if (new_volume > 100)
 		new_volume = 100;
 
-	if (new_volume != old_volume &&
-	    !volume_level_change(outputs, new_volume)) {
-		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
-		return CommandResult::ERROR;
-	}
+	if (new_volume != old_volume)
+		volume_level_change(outputs, new_volume);
 
 	return CommandResult::OK;
 }

@@ -24,6 +24,7 @@
 #include "../Error.hxx"
 #include "mixer/plugins/PipeWireMixerPlugin.hxx"
 #include "pcm/Silence.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "system/Error.hxx"
 #include "util/BitReverse.hxx"
 #include "util/Domain.hxx"
@@ -55,6 +56,7 @@
 
 #include <algorithm>
 #include <array>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 
@@ -84,7 +86,14 @@ class PipeWireOutput final : AudioOutput {
 
 	uint32_t target_id = PW_ID_ANY;
 
-	float volume = 1.0;
+	/**
+	 * The current volume level (0.0 .. 1.0).
+	 *
+	 * This get initialized to -1 which means "unknown", so
+	 * restore_volume will not attempt to override PipeWire's
+	 * initial volume level.
+	 */
+	float volume = -1;
 
 	PipeWireMixer *mixer = nullptr;
 	unsigned channels;
@@ -216,27 +225,34 @@ private:
 		o.Drained();
 	}
 
-	void ControlInfo(const struct pw_stream_control *control) noexcept {
-		float sum = 0;
-		unsigned c;
-		for (c = 0; c < control->n_values; c++)
-			sum += control->values[c];
+	void OnChannelVolumes(const struct pw_stream_control &control) noexcept {
+		if (control.n_values < 1)
+			return;
 
-		sum /= control->n_values;
+		float sum = std::accumulate(control.values,
+					    control.values + control.n_values,
+					    0.0f);
+		volume = std::cbrt(sum / control.n_values);
 
 		if (mixer != nullptr)
-			pipewire_mixer_on_change(*mixer, std::cbrt(sum));
+			pipewire_mixer_on_change(*mixer, volume);
 
 		pw_thread_loop_signal(thread_loop, false);
 	}
 
-	static void ControlInfo(void *data,
-				[[maybe_unused]] uint32_t id,
+	void ControlInfo([[maybe_unused]] uint32_t id,
+			 const struct pw_stream_control &control) noexcept {
+		switch (id) {
+		case SPA_PROP_channelVolumes:
+			OnChannelVolumes(control);
+			break;
+		}
+	}
+
+	static void ControlInfo(void *data, uint32_t id,
 				const struct pw_stream_control *control) noexcept {
 		auto &o = *(PipeWireOutput *)data;
-		if (control->name != nullptr &&
-		    StringIsEqual(control->name, "Channel Volumes"))
-			o.ControlInfo(control);
+		o.ControlInfo(id, *control);
 	}
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
@@ -308,22 +324,38 @@ PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 	}
 }
 
+/**
+ * Throws on error.
+ *
+ * @param volume a volume level between 0.0 and 1.0
+ */
+static void
+SetVolume(struct pw_stream &stream, unsigned channels, float volume)
+{
+	float value[MAX_CHANNELS];
+	std::fill_n(value, channels, volume * volume * volume);
+
+	if (pw_stream_set_control(&stream,
+				  SPA_PROP_channelVolumes, channels, value,
+				  0) != 0)
+		throw std::runtime_error("pw_stream_set_control() failed");
+}
+
 void
 PipeWireOutput::SetVolume(float _volume)
 {
+	if (thread_loop == nullptr) {
+		/* the mixer is open (because it is a "global" mixer),
+		   but Enable() on this output has not yet been
+		   called */
+		volume = _volume;
+		return;
+	}
+
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
-	float newvol = _volume*_volume*_volume;
-
-	if (stream != nullptr && !restore_volume) {
-		float vol[MAX_CHANNELS];
-		std::fill_n(vol, channels, newvol);
-
-		if (pw_stream_set_control(stream,
-				  SPA_PROP_channelVolumes, channels, vol,
-				  0) != 0)
-			throw std::runtime_error("pw_stream_set_control() failed");
-	}
+	if (stream != nullptr && !restore_volume)
+		::SetVolume(*stream, channels, _volume);
 
 	volume = _volume;
 }
@@ -639,7 +671,16 @@ PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 {
 	if (restore_volume) {
 		restore_volume = false;
-		SetVolume(volume);
+
+		if (volume >= 0) {
+			try {
+				::SetVolume(*stream, channels, volume);
+			} catch (...) {
+				FmtError(pipewire_output_domain,
+					 FMT_STRING("Failed to restore volume: {}"),
+					 std::current_exception());
+			}
+		}
 	}
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
@@ -824,6 +865,17 @@ PipeWireOutput::Drain()
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
+	if (drained)
+		return;
+
+	if (!active) {
+		/* there is data in the ring_buffer, but the stream is
+		   not yet active; activate it now to ensure it is
+		   played before this method returns */
+		active = true;
+		pw_stream_set_active(stream, true);
+	}
+
 	drain_requested = true;
 	AtScopeExit(this) { drain_requested = false; };
 
@@ -839,7 +891,24 @@ PipeWireOutput::Cancel() noexcept
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 	interrupted = false;
 
+	if (drained)
+		return;
+
+	/* clear MPD's ring buffer */
 	ring_buffer->reset();
+
+	/* clear libpipewire's buffer */
+	pw_stream_flush(stream, false);
+	drained = true;
+
+	/* pause the PipeWire stream so libpipewire ceases invoking
+	   the "process" callback (we have no data until our Play()
+	   method gets called again); the stream will be resume by
+	   Play() after the ring_buffer has been refilled */
+	if (active) {
+		active = false;
+		pw_stream_set_active(stream, false);
+	}
 }
 
 bool

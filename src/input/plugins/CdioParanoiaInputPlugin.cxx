@@ -30,10 +30,12 @@
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/ScopeExit.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 #include "config/Block.hxx"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 
@@ -48,21 +50,19 @@ class CdioParanoiaInputStream final : public InputStream {
 	CdIo_t *const cdio;
 	CdromParanoia para;
 
-	const lsn_t lsn_from, lsn_to;
-	int lsn_relofs;
+	const lsn_t lsn_from;
 
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
-	int buffer_lsn;
+	lsn_t buffer_lsn;
 
  public:
 	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex,
 				cdrom_drive_t *_drv, CdIo_t *_cdio,
 				bool reverse_endian,
-				lsn_t _lsn_from, lsn_t _lsn_to)
+				lsn_t _lsn_from, lsn_t lsn_to)
 		:InputStream(_uri, _mutex),
 		 drv(_drv), cdio(_cdio), para(drv),
-		 lsn_from(_lsn_from), lsn_to(_lsn_to),
-		 lsn_relofs(0),
+		 lsn_from(_lsn_from),
 		 buffer_lsn(-1)
 	{
 		/* Set reading mode for full paranoia, but allow
@@ -173,9 +173,12 @@ cdio_detect_device()
 	if (devices == nullptr)
 		return nullptr;
 
-	AllocatedPath path = AllocatedPath::FromFS(devices[0]);
-	cdio_free_device_list(devices);
-	return path;
+	AtScopeExit(devices) { cdio_free_device_list(devices); };
+
+	if (devices[0] == nullptr)
+		return nullptr;
+
+	return AllocatedPath::FromFS(devices[0]);
 }
 
 static InputStreamPtr
@@ -271,73 +274,62 @@ CdioParanoiaInputStream::Seek(std::unique_lock<Mutex> &,
 		return;
 
 	/* calculate current LSN */
-	lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
-	offset = new_offset;
+	const lsn_t lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
 
-	{
+	if (lsn_relofs != buffer_lsn) {
 		const ScopeUnlock unlock(mutex);
 		para.Seek(lsn_from + lsn_relofs);
 	}
+
+	offset = new_offset;
 }
 
 size_t
 CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 			      void *ptr, size_t length)
 {
-	size_t nbytes = 0;
-	char *wptr = (char *) ptr;
+	/* end of track ? */
+	if (IsEOF())
+		return 0;
 
-	while (length > 0) {
-		/* end of track ? */
-		if (lsn_from + lsn_relofs > lsn_to)
-			break;
+	//current sector was changed ?
+	const int16_t *rbuf;
 
-		//current sector was changed ?
-		const int16_t *rbuf;
-		if (lsn_relofs != buffer_lsn) {
-			const ScopeUnlock unlock(mutex);
+	const lsn_t lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
+	const std::size_t diff = offset % CDIO_CD_FRAMESIZE_RAW;
 
-			try {
-				rbuf = para.Read().data();
-			} catch (...) {
-				char *s_err = cdio_cddap_errors(drv);
-				if (s_err) {
-					FmtError(cdio_domain,
-						 "paranoia_read: {}", s_err);
-					cdio_cddap_free_messages(s_err);
-				}
+	if (lsn_relofs != buffer_lsn) {
+		const ScopeUnlock unlock(mutex);
 
-				throw;
+		try {
+			rbuf = para.Read().data();
+		} catch (...) {
+			char *s_err = cdio_cddap_errors(drv);
+			if (s_err) {
+				FmtError(cdio_domain,
+					 "paranoia_read: {}", s_err);
+				cdio_cddap_free_messages(s_err);
 			}
 
-			//store current buffer
-			memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
-			buffer_lsn = lsn_relofs;
-		} else {
-			//use cached sector
-			rbuf = (const int16_t *)buffer;
+			throw;
 		}
 
-		//correct offset
-		const int diff = offset - lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
-
-		assert(diff >= 0 && diff < CDIO_CD_FRAMESIZE_RAW);
-
-		const size_t maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
-		const size_t len = (length < maxwrite? length : maxwrite);
-
-		//skip diff bytes from this lsn
-		memcpy(wptr, ((const char *)rbuf) + diff, len);
-		//update pointer
-		wptr += len;
-		nbytes += len;
-
-		//update offset
-		offset += len;
-		lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
-		//update length
-		length -= len;
+		//store current buffer
+		memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
+		buffer_lsn = lsn_relofs;
+	} else {
+		//use cached sector
+		rbuf = (const int16_t *)buffer;
 	}
+
+	const size_t maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
+	const std::size_t nbytes = std::min(length, maxwrite);
+
+	//skip diff bytes from this lsn
+	memcpy(ptr, ((const char *)rbuf) + diff, nbytes);
+
+	//update offset
+	offset += nbytes;
 
 	return nbytes;
 }
@@ -345,7 +337,7 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 bool
 CdioParanoiaInputStream::IsEOF() const noexcept
 {
-	return lsn_from + lsn_relofs > lsn_to;
+	return offset >= size;
 }
 
 static constexpr const char *cdio_paranoia_prefixes[] = {

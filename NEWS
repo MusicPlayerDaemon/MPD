@@ -14,11 +14,25 @@ ver 0.24 (not yet released)
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
 
-ver 0.23.8 (not yet released)
+ver 0.23.8 (2022/07/09)
 * storage
   - curl: fix crash if web server does not understand WebDAV
-* output
-  - pipewire: fix crash with PipeWire 0.3.53
+* input
+  - cdio_paranoia: fix crash if no drive was found
+  - cdio_paranoia: faster cancellation
+  - cdio_paranoia: don't scan for replay gain tags
+  - pipewire: fix playback of very short tracks
+  - pipewire: drop all buffers before manual song change
+  - pipewire: fix stuttering after manual song change
+  - snapcast: fix busy loop while paused
+  - snapcast: fix stuttering after resuming playback
+* mixer
+  - better error messages
+  - alsa: fix setting volume before playback starts
+  - pipewire: fix crash bug
+  - pipewire: fix volume change events with PipeWire 0.3.53
+  - pipewire: don't force initial volume=100%
+* support libfmt 9
 
 ver 0.23.7 (2022/05/09)
 * database

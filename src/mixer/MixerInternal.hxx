@@ -25,6 +25,8 @@
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 
+#include <exception>
+
 class MixerListener;
 
 class Mixer {
@@ -40,15 +42,15 @@ public:
 	Mutex mutex;
 
 	/**
+	 * Contains error details if this mixer has failed.  If set,
+	 * it should not be reopened automatically.
+	 */
+	std::exception_ptr failure;
+
+	/**
 	 * Is the mixer device currently open?
 	 */
 	bool open = false;
-
-	/**
-	 * Has this mixer failed, and should not be reopened
-	 * automatically?
-	 */
-	bool failed = false;
 
 public:
 	explicit Mixer(const MixerPlugin &_plugin,
@@ -61,6 +63,10 @@ public:
 
 	bool IsPlugin(const MixerPlugin &other) const noexcept {
 		return &plugin == &other;
+	}
+
+	bool IsGlobal() const noexcept {
+		return plugin.global;
 	}
 
 	/**
