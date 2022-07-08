@@ -296,6 +296,8 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 	const int16_t *rbuf;
 
 	const lsn_t lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
+	const std::size_t diff = offset % CDIO_CD_FRAMESIZE_RAW;
+
 	if (lsn_relofs != buffer_lsn) {
 		const ScopeUnlock unlock(mutex);
 
@@ -319,11 +321,6 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 		//use cached sector
 		rbuf = (const int16_t *)buffer;
 	}
-
-	//correct offset
-	const int diff = offset - lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
-
-	assert(diff >= 0 && diff < CDIO_CD_FRAMESIZE_RAW);
 
 	const size_t maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
 	const std::size_t nbytes = std::min(length, maxwrite);
