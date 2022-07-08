@@ -57,6 +57,7 @@
 
 #include <algorithm>
 #include <array>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 
@@ -222,11 +223,9 @@ private:
 	}
 
 	void ControlInfo(const struct pw_stream_control *control) noexcept {
-		float sum = 0;
-		unsigned c;
-		for (c = 0; c < control->n_values; c++)
-			sum += control->values[c];
-
+		float sum = std::accumulate(control->values,
+					    control->values + control->n_values,
+					    0.0f);
 		sum /= control->n_values;
 
 		if (mixer != nullptr)
