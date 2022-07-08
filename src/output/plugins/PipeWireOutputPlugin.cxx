@@ -24,6 +24,7 @@
 #include "../Error.hxx"
 #include "mixer/plugins/PipeWireMixerPlugin.hxx"
 #include "pcm/Silence.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "system/Error.hxx"
 #include "util/BitReverse.hxx"
 #include "util/Domain.hxx"
@@ -656,7 +657,14 @@ PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 {
 	if (restore_volume) {
 		restore_volume = false;
-		::SetVolume(*stream, channels, volume);
+
+		try {
+			::SetVolume(*stream, channels, volume);
+		} catch (...) {
+			FmtError(pipewire_output_domain,
+				 FMT_STRING("Failed to restore volume: {}"),
+				 std::current_exception());
+		}
 	}
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
