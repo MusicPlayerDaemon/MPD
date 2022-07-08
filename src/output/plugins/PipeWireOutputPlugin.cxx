@@ -312,6 +312,14 @@ PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 void
 PipeWireOutput::SetVolume(float _volume)
 {
+	if (thread_loop == nullptr) {
+		/* the mixer is open (because it is a "global" mixer),
+		   but Enable() on this output has not yet been
+		   called */
+		volume = _volume;
+		return;
+	}
+
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
 	float newvol = _volume*_volume*_volume;
