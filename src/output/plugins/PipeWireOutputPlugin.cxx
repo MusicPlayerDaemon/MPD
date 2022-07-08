@@ -656,7 +656,7 @@ PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 {
 	if (restore_volume) {
 		restore_volume = false;
-		SetVolume(volume);
+		::SetVolume(*stream, channels, volume);
 	}
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
