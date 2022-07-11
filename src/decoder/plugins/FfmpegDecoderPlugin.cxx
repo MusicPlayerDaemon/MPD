@@ -205,7 +205,7 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
 }
 
 /**
- * Invoke DecoderClient::SubmitData() with the contents of an
+ * Invoke DecoderClient::SubmitAudio() with the contents of an
  * #AVFrame.
  */
 static DecoderCommand
@@ -227,9 +227,8 @@ FfmpegSendFrame(DecoderClient &client, InputStream *is,
 		skip_bytes = 0;
 	}
 
-	return client.SubmitData(is,
-				 output_buffer.data(), output_buffer.size(),
-				 codec_context.bit_rate / 1000);
+	return client.SubmitAudio(is, output_buffer,
+				  codec_context.bit_rate / 1000);
 }
 
 static DecoderCommand

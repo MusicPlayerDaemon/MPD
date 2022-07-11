@@ -241,9 +241,9 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 		long bit_rate = unsigned(frame.bits) * audio_format.sample_rate
 			/ (1000 * frame.samples);
 
-		cmd = client.SubmitData(is,
-					chunk, ret * sizeof(chunk[0]),
-					bit_rate);
+		cmd = client.SubmitAudio(is,
+					 std::span{chunk, ret},
+					 bit_rate);
 	} while (cmd != DecoderCommand::STOP);
 }
 

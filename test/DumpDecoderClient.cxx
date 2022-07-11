@@ -91,16 +91,17 @@ DumpDecoderClient::SubmitTimestamp([[maybe_unused]] FloatDuration t) noexcept
 }
 
 DecoderCommand
-DumpDecoderClient::SubmitData([[maybe_unused]] InputStream *is,
-			      const void *data, size_t datalen,
-			      [[maybe_unused]] uint16_t kbit_rate) noexcept
+DumpDecoderClient::SubmitAudio([[maybe_unused]] InputStream *is,
+			       std::span<const std::byte> audio,
+			       [[maybe_unused]] uint16_t kbit_rate) noexcept
 {
 	if (kbit_rate != prev_kbit_rate) {
 		prev_kbit_rate = kbit_rate;
 		fprintf(stderr, "%u kbit/s\n", kbit_rate);
 	}
 
-	[[maybe_unused]] ssize_t nbytes = write(STDOUT_FILENO, data, datalen);
+	[[maybe_unused]] ssize_t nbytes = write(STDOUT_FILENO,
+						audio.data(), audio.size());
 	return GetCommand();
 }
 

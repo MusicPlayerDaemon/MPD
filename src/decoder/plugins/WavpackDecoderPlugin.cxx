@@ -234,9 +234,12 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		int bitrate = lround(WavpackGetInstantBitrate(wpc) / 1000);
 		format_samples(buffer, n_frames * audio_format.channels);
 
-		cmd = client.SubmitData(nullptr, buffer,
-					n_frames * output_frame_size,
-					bitrate);
+		cmd = client.SubmitAudio(nullptr,
+					 {
+						 (const std::byte *)buffer,
+						 n_frames * output_frame_size,
+					 },
+					 bitrate);
 	}
 }
 

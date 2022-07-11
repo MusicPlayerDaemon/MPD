@@ -185,13 +185,13 @@ private:
 
 	/**
 	 * Sends the synthesized current frame via
-	 * DecoderClient::SubmitData().
+	 * DecoderClient::SubmitAudio().
 	 */
 	DecoderCommand SubmitPCM(size_t start, size_t n) noexcept;
 
 	/**
 	 * Synthesize the current frame and send it via
-	 * DecoderClient::SubmitData().
+	 * DecoderClient::SubmitAudio().
 	 */
 	DecoderCommand SynthAndSubmit() noexcept;
 
@@ -805,9 +805,9 @@ MadDecoder::SubmitPCM(size_t i, size_t pcm_length) noexcept
 			       MAD_NCHANNELS(&frame.header));
 	num_samples *= MAD_NCHANNELS(&frame.header);
 
-	return client->SubmitData(input_stream, output_buffer,
-				  sizeof(output_buffer[0]) * num_samples,
-				  frame.header.bitrate / 1000);
+	return client->SubmitAudio(input_stream,
+				   std::span{output_buffer, num_samples},
+				   frame.header.bitrate / 1000);
 }
 
 inline DecoderCommand

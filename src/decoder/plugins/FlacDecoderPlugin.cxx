@@ -152,10 +152,8 @@ FlacSubmitToClient(DecoderClient &client, FlacDecoder &d) noexcept
 	}
 
 	if (!d.chunk.empty()) {
-		auto cmd = client.SubmitData(d.GetInputStream(),
-					     d.chunk.data(),
-					     d.chunk.size(),
-					     d.kbit_rate);
+		auto cmd = client.SubmitAudio(d.GetInputStream(), d.chunk,
+					      d.kbit_rate);
 		d.chunk = {};
 		if (cmd != DecoderCommand::NONE)
 			return cmd;

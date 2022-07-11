@@ -24,7 +24,9 @@
 #include "Chrono.hxx"
 #include "input/Ptr.hxx"
 
+#include <cstddef>
 #include <cstdint>
+#include <span>
 
 struct AudioFormat;
 struct Tag;
@@ -41,7 +43,7 @@ public:
 	 * that it has read the song's meta data.
 	 *
 	 * @param audio_format the audio format which is going to be
-	 * sent to SubmitData()
+	 * sent to SubmitAudio()
 	 * @param seekable true if the song is seekable
 	 * @param duration the total duration of this song; negative if
 	 * unknown
@@ -128,14 +130,32 @@ public:
 	 * @return the current command, or DecoderCommand::NONE if there is no
 	 * command pending
 	 */
-	virtual DecoderCommand SubmitData(InputStream *is,
-					  const void *data, size_t length,
-					  uint16_t kbit_rate) noexcept = 0;
+	virtual DecoderCommand SubmitAudio(InputStream *is,
+					   std::span<const std::byte> audio,
+					   uint16_t kbit_rate) noexcept = 0;
 
-	DecoderCommand SubmitData(InputStream &is,
-				  const void *data, size_t length,
-				  uint16_t kbit_rate) noexcept {
-		return SubmitData(&is, data, length, kbit_rate);
+	DecoderCommand SubmitAudio(InputStream &is,
+				   std::span<const std::byte> audio,
+				   uint16_t kbit_rate) noexcept {
+		return SubmitAudio(&is, audio, kbit_rate);
+	}
+
+	template<typename T, std::size_t extent>
+	DecoderCommand SubmitAudio(InputStream *is,
+				   std::span<T, extent> audio,
+				   uint16_t kbit_rate) noexcept {
+		const std::span<const std::byte> audio_bytes =
+			std::as_bytes(audio);
+		return SubmitAudio(is, audio_bytes, kbit_rate);
+	}
+
+	template<typename T, std::size_t extent>
+	DecoderCommand SubmitAudio(InputStream &is,
+				   std::span<T, extent> audio,
+				   uint16_t kbit_rate) noexcept {
+		const std::span<const std::byte> audio_bytes =
+			std::as_bytes(audio);
+		return SubmitAudio(is, audio_bytes, kbit_rate);
 	}
 
 	/**

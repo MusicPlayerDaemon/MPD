@@ -94,7 +94,9 @@ wildmidi_output(DecoderClient &client, midi *wm)
 	if (length <= 0)
 		return DecoderCommand::STOP;
 
-	return client.SubmitData(nullptr, buffer, length, 0);
+	return client.SubmitAudio(nullptr,
+				  std::span{buffer, std::size_t(length)},
+				  0);
 }
 
 static void

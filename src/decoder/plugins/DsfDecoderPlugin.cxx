@@ -289,9 +289,9 @@ dsf_decode_chunk(DecoderClient &client, InputStream &is,
 		uint8_t interleaved_buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 		InterleaveDsfBlock(interleaved_buffer, buffer, channels);
 
-		cmd = client.SubmitData(is,
-					interleaved_buffer, block_size,
-					kbit_rate);
+		cmd = client.SubmitAudio(is,
+					 std::span{interleaved_buffer, block_size},
+					 kbit_rate);
 		++i;
 	}
 

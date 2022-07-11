@@ -451,18 +451,18 @@ DecoderBridge::SubmitTimestamp(FloatDuration t) noexcept
 }
 
 DecoderCommand
-DecoderBridge::SubmitData(InputStream *is,
-			  const void *data, size_t length,
-			  uint16_t kbit_rate) noexcept
+DecoderBridge::SubmitAudio(InputStream *is,
+			   std::span<const std::byte> audio,
+			   uint16_t kbit_rate) noexcept
 {
 	assert(dc.state == DecoderState::DECODE);
 	assert(dc.pipe != nullptr);
-	assert(length % dc.in_audio_format.GetFrameSize() == 0);
+	assert(audio.size() % dc.in_audio_format.GetFrameSize() == 0);
 
 	DecoderCommand cmd = LockGetVirtualCommand();
 
 	if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK ||
-	    length == 0)
+	    audio.empty())
 		return cmd;
 
 	assert(!initial_seek_pending);
@@ -486,7 +486,7 @@ DecoderBridge::SubmitData(InputStream *is,
 	cmd = DecoderCommand::NONE;
 
 	const size_t frame_size = dc.in_audio_format.GetFrameSize();
-	size_t data_frames = length / frame_size;
+	size_t data_frames = audio.size() / frame_size;
 
 	if (dc.end_time.IsPositive()) {
 		/* enforce the given end time */
@@ -501,7 +501,7 @@ DecoderBridge::SubmitData(InputStream *is,
 			/* past the end of the range: truncate this
 			   data submission and stop the decoder */
 			data_frames = remaining_frames;
-			length = data_frames * frame_size;
+			audio = audio.first(data_frames * frame_size);
 			cmd = DecoderCommand::STOP;
 		}
 	}
@@ -510,9 +510,7 @@ DecoderBridge::SubmitData(InputStream *is,
 		assert(dc.in_audio_format != dc.out_audio_format);
 
 		try {
-			auto result = convert->Convert({(const std::byte *)data, length});
-			data = result.data();
-			length = result.size();
+			audio = convert->Convert(audio);
 		} catch (...) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
@@ -524,7 +522,7 @@ DecoderBridge::SubmitData(InputStream *is,
 		assert(dc.in_audio_format == dc.out_audio_format);
 	}
 
-	while (length > 0) {
+	while (!audio.empty()) {
 		bool full;
 
 		auto *chunk = GetChunk();
@@ -544,11 +542,11 @@ DecoderBridge::SubmitData(InputStream *is,
 			continue;
 		}
 
-		const size_t nbytes = std::min(dest.size(), length);
+		const size_t nbytes = std::min(dest.size(), audio.size());
 
 		/* copy the buffer */
 
-		memcpy(dest.data(), data, nbytes);
+		memcpy(dest.data(), audio.data(), nbytes);
 
 		/* expand the music pipe chunk */
 
@@ -558,8 +556,7 @@ DecoderBridge::SubmitData(InputStream *is,
 			FlushChunk();
 		}
 
-		data = (const uint8_t *)data + nbytes;
-		length -= nbytes;
+		audio = audio.subspan(nbytes);
 
 		timestamp += dc.out_audio_format.SizeToTime<FloatDuration>(nbytes);
 	}

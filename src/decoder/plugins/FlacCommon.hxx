@@ -46,7 +46,7 @@ struct FlacDecoder : public FlacInput {
 
 	/**
 	 * The kbit_rate parameter for the next
-	 * DecoderBridge::SubmitData() call.
+	 * DecoderBridge::SubmitAudio() call.
 	 */
 	uint16_t kbit_rate;
 
@@ -62,7 +62,7 @@ struct FlacDecoder : public FlacInput {
 
 	/**
 	 * Decoded PCM data obtained by our libFLAC write callback.
-	 * If this is non-empty, then DecoderBridge::SubmitData()
+	 * If this is non-empty, then DecoderBridge::SubmitAudio()
 	 * should be called.
 	 */
 	std::span<const std::byte> chunk = {};

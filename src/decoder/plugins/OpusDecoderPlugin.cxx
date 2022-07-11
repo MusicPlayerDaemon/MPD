@@ -114,11 +114,9 @@ class MPDOpusDecoder final : public OggDecoder {
 	 */
 	unsigned previous_channels = 0;
 
-	size_t frame_size;
-
 	/**
 	 * The granulepos of the next sample to be submitted to
-	 * DecoderClient::SubmitData().  Negative if unkown.
+	 * DecoderClient::SubmitAudio().  Negative if unkown.
 	 * Initialized by OnOggBeginning().
 	 */
 	ogg_int64_t granulepos;
@@ -238,7 +236,6 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	const AudioFormat audio_format(opus_sample_rate,
 				       SampleFormat::S16, channels);
 	client.Ready(audio_format, eos_granulepos > 0, duration);
-	frame_size = audio_format.GetFrameSize();
 
 	if (output_buffer == nullptr)
 		/* note: if we ever support changing the channel count
@@ -365,10 +362,10 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	}
 
 	/* submit decoded samples to the DecoderClient */
-	const size_t nbytes = nframes * frame_size;
-	auto cmd = client.SubmitData(input_stream,
-				     data, nbytes,
-				     kbits);
+	const size_t n_samples = nframes * previous_channels;
+	auto cmd = client.SubmitAudio(input_stream,
+				      std::span{data, n_samples},
+				      kbits);
 	if (cmd != DecoderCommand::NONE)
 		throw cmd;
 

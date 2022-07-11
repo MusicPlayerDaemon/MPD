@@ -417,8 +417,8 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 		if (lsbitfirst)
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
-		cmd = client.SubmitData(is, buffer, nbytes,
-					kbit_rate);
+		cmd = client.SubmitAudio(is, std::span{buffer, nbytes},
+					 kbit_rate);
 	}
 
 	return true;

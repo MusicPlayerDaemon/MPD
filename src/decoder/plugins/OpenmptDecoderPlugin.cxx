@@ -69,7 +69,6 @@ static void
 mod_decode(DecoderClient &client, InputStream &is)
 {
 	int ret;
-	char audio_buffer[OPENMPT_FRAME_SIZE];
 
 	const auto buffer = mod_loadfile(&openmpt_domain, &client, is);
 	if (buffer == nullptr) {
@@ -99,7 +98,8 @@ mod_decode(DecoderClient &client, InputStream &is)
 	mod.ctl_set("render.resampler.emulate_amiga", std::to_string((unsigned)openmpt_emulate_amiga));
 #endif
 
-	static constexpr AudioFormat audio_format(OPENMPT_SAMPLE_RATE, SampleFormat::FLOAT, 2);
+	static constexpr unsigned channels = 2;
+	static constexpr AudioFormat audio_format(OPENMPT_SAMPLE_RATE, SampleFormat::FLOAT, channels);
 	assert(audio_format.IsValid());
 
 	client.Ready(audio_format, is.IsSeekable(),
@@ -107,13 +107,16 @@ mod_decode(DecoderClient &client, InputStream &is)
 
 	DecoderCommand cmd;
 	do {
-		ret = mod.read_interleaved_stereo(OPENMPT_SAMPLE_RATE, OPENMPT_FRAME_SIZE / 2 / sizeof(float), (float*)audio_buffer);
+		float audio_buffer[OPENMPT_FRAME_SIZE / sizeof(float)];
+		ret = mod.read_interleaved_stereo(OPENMPT_SAMPLE_RATE,
+						  OPENMPT_FRAME_SIZE / channels / sizeof(float),
+						  audio_buffer);
 		if (ret <= 0)
 			break;
 
-		cmd = client.SubmitData(nullptr,
-					audio_buffer, ret * 2 * sizeof(float),
-					0);
+		cmd = client.SubmitAudio(nullptr,
+					 std::span{audio_buffer, ret * channels},
+					 0);
 
 		if (cmd == DecoderCommand::SEEK) {
 			mod.set_position_seconds(client.GetSeekTime().ToS());
