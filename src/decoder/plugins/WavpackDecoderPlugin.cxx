@@ -78,7 +78,7 @@ WavpackOpenInput(const WavpackStreamReader64 &reader, void *wv_id, void *wvc_id,
 	return wpc;
 }
 
-gcc_pure
+[[gnu::pure]]
 static SignedSongTime
 GetDuration(WavpackContext *wpc) noexcept
 {
