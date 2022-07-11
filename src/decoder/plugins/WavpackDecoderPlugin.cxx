@@ -92,7 +92,7 @@ GetDuration(WavpackContext *wpc) noexcept
  */
 template<typename T>
 static void
-format_samples_int(void *buffer, uint32_t count)
+format_samples_int(void *buffer, uint32_t count) noexcept
 {
 	auto *src = (int32_t *)buffer;
 	T *dst = (T *)buffer;
@@ -112,7 +112,8 @@ format_samples_int(void *buffer, uint32_t count)
  * No conversion necessary.
  */
 static void
-format_samples_nop([[maybe_unused]] void *buffer, [[maybe_unused]] uint32_t count)
+format_samples_nop([[maybe_unused]] void *buffer,
+		   [[maybe_unused]] uint32_t count) noexcept
 {
 	/* do nothing */
 }
@@ -125,7 +126,7 @@ wavpack_bits_to_sample_format(bool is_float,
 #ifdef ENABLE_DSD
 			      bool is_dsd,
 #endif
-			      int bytes_per_sample)
+			      int bytes_per_sample) noexcept
 {
 	if (is_float)
 		return SampleFormat::FLOAT;
@@ -246,16 +247,17 @@ struct WavpackInput {
 	/* Needed for push_back_byte() */
 	int last_byte;
 
-	constexpr WavpackInput(DecoderClient *_client, InputStream &_is)
+	constexpr WavpackInput(DecoderClient *_client,
+			       InputStream &_is) noexcept
 		:client(_client), is(_is), last_byte(EOF) {}
 
-	int32_t ReadBytes(void *data, size_t bcount);
+	int32_t ReadBytes(void *data, size_t bcount) noexcept;
 
-	[[nodiscard]] InputStream::offset_type GetPos() const {
+	[[nodiscard]] InputStream::offset_type GetPos() const noexcept {
 		return is.GetOffset();
 	}
 
-	int SetPosAbs(InputStream::offset_type pos) {
+	int SetPosAbs(InputStream::offset_type pos) noexcept {
 		try {
 			is.LockSeek(pos);
 			return 0;
@@ -264,7 +266,7 @@ struct WavpackInput {
 		}
 	}
 
-	int SetPosRel(InputStream::offset_type delta, int mode) {
+	int SetPosRel(InputStream::offset_type delta, int mode) noexcept {
 		offset_type offset = delta;
 		switch (mode) {
 		case SEEK_SET:
@@ -288,7 +290,7 @@ struct WavpackInput {
 		return SetPosAbs(offset);
 	}
 
-	int PushBackByte(int c) {
+	int PushBackByte(int c) noexcept {
 		if (last_byte == EOF) {
 			last_byte = c;
 			return c;
@@ -297,14 +299,14 @@ struct WavpackInput {
 		}
 	}
 
-	[[nodiscard]] InputStream::offset_type GetLength() const {
+	[[nodiscard]] InputStream::offset_type GetLength() const noexcept {
 		if (!is.KnownSize())
 			return 0;
 
 		return is.GetSize();
 	}
 
-	[[nodiscard]] bool CanSeek() const {
+	[[nodiscard]] bool CanSeek() const noexcept {
 		return is.IsSeekable();
 	}
 };
@@ -313,20 +315,20 @@ struct WavpackInput {
  * Little wrapper for struct WavpackInput to cast from void *.
  */
 static WavpackInput *
-wpin(void *id)
+wpin(void *id) noexcept
 {
 	assert(id);
 	return (WavpackInput *)id;
 }
 
 static int32_t
-wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
+wavpack_input_read_bytes(void *id, void *data, int32_t bcount) noexcept
 {
 	return wpin(id)->ReadBytes(data, bcount);
 }
 
 int32_t
-WavpackInput::ReadBytes(void *data, size_t bcount)
+WavpackInput::ReadBytes(void *data, size_t bcount) noexcept
 {
 	auto *buf = (uint8_t *)data;
 	int32_t i = 0;
@@ -356,42 +358,42 @@ WavpackInput::ReadBytes(void *data, size_t bcount)
 }
 
 static int64_t
-wavpack_input_get_pos(void *id)
+wavpack_input_get_pos(void *id) noexcept
 {
 	const auto &wpi = *wpin(id);
 	return wpi.GetPos();
 }
 
 static int
-wavpack_input_set_pos_abs(void *id, int64_t pos)
+wavpack_input_set_pos_abs(void *id, int64_t pos) noexcept
 {
 	auto &wpi = *wpin(id);
 	return wpi.SetPosAbs(pos);
 }
 
 static int
-wavpack_input_set_pos_rel(void *id, int64_t delta, int mode)
+wavpack_input_set_pos_rel(void *id, int64_t delta, int mode) noexcept
 {
 	auto &wpi = *wpin(id);
 	return wpi.SetPosRel(delta, mode);
 }
 
 static int
-wavpack_input_push_back_byte(void *id, int c)
+wavpack_input_push_back_byte(void *id, int c) noexcept
 {
 	auto &wpi = *wpin(id);
 	return wpi.PushBackByte(c);
 }
 
 static int64_t
-wavpack_input_get_length(void *id)
+wavpack_input_get_length(void *id) noexcept
 {
 	const auto &wpi = *wpin(id);
 	return wpi.GetLength();
 }
 
 static int
-wavpack_input_can_seek(void *id)
+wavpack_input_can_seek(void *id) noexcept
 {
 	const auto &wpi = *wpin(id);
 	return wpi.CanSeek();
