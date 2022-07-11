@@ -20,10 +20,6 @@
 #ifndef MPD_ENCODER_INTERFACE_HXX
 #define MPD_ENCODER_INTERFACE_HXX
 
-#include "EncoderPlugin.hxx"
-#include "util/Compiler.h"
-
-#include <cassert>
 #include <cstddef>
 
 struct AudioFormat;
@@ -95,7 +91,7 @@ public:
 	 * @param data the buffer containing PCM samples
 	 * @param length the length of the buffer in bytes
 	 */
-	virtual void Write(const void *data, size_t length) = 0;
+	virtual void Write(const void *data, std::size_t length) = 0;
 
 	/**
 	 * Reads encoded data from the encoder.
@@ -106,7 +102,7 @@ public:
 	 * @param length the maximum length of the destination buffer
 	 * @return the number of bytes written to #dest
 	 */
-	virtual size_t Read(void *dest, size_t length) = 0;
+	virtual std::size_t Read(void *dest, std::size_t length) = 0;
 };
 
 class PreparedEncoder {

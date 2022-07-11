@@ -23,6 +23,7 @@
 #include "output/OutputAPI.hxx"
 #include "output/Features.h"
 #include "encoder/EncoderInterface.hxx"
+#include "encoder/EncoderPlugin.hxx"
 #include "encoder/Configured.hxx"
 #include "encoder/plugins/WaveEncoderPlugin.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
