@@ -333,7 +333,7 @@ RecorderOutput::Play(const void *chunk, size_t size)
 		return size;
 	}
 
-	encoder->Write(chunk, size);
+	encoder->Write({(const std::byte *)chunk, size});
 
 	EncoderToFile();
 

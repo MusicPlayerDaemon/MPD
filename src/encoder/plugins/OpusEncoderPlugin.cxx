@@ -61,7 +61,7 @@ public:
 
 	/* virtual methods from class Encoder */
 	void End() override;
-	void Write(const void *data, size_t length) override;
+	void Write(std::span<const std::byte> src) override;
 
 	void PreTag() override;
 	void SendTag(const Tag &tag) override;
@@ -272,10 +272,8 @@ OpusEncoder::WriteSilence(unsigned fill_frames)
 }
 
 void
-OpusEncoder::Write(const void *_data, size_t length)
+OpusEncoder::Write(std::span<const std::byte> src)
 {
-	const auto *data = (const std::byte *)_data;
-
 	if (lookahead > 0) {
 		/* generate some silence at the beginning of the
 		   stream */
@@ -286,14 +284,12 @@ OpusEncoder::Write(const void *_data, size_t length)
 		lookahead = 0;
 	}
 
-	while (length > 0) {
-		size_t nbytes = buffer_size - buffer_position;
-		if (nbytes > length)
-			nbytes = length;
+	while (!src.empty()) {
+		const std::size_t nbytes = std::min(buffer_size - buffer_position,
+						    src.size());
 
-		memcpy(buffer + buffer_position, data, nbytes);
-		data += nbytes;
-		length -= nbytes;
+		memcpy(buffer + buffer_position, src.data(), nbytes);
+		src = src.subspan(nbytes);
 		buffer_position += nbytes;
 
 		if (buffer_position == buffer_size)

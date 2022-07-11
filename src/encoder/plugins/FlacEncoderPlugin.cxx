@@ -71,10 +71,10 @@ public:
 
 	void SendTag(const Tag &tag) override;
 
-	void Write(const void *data, size_t length) override;
+	void Write(std::span<const std::byte> src) override;
 
-	size_t Read(void *dest, size_t length) noexcept override {
-		return output_buffer.Read((std::byte *)dest, length);
+	std::span<const std::byte> Read(std::span<std::byte> buffer) noexcept override {
+		return buffer.first(output_buffer.Read(buffer.data(), buffer.size()));
 	}
 
 private:
@@ -267,27 +267,27 @@ pcm16_to_flac(int32_t *out, const int16_t *in, std::size_t num_samples) noexcept
 }
 
 void
-FlacEncoder::Write(const void *data, size_t length)
+FlacEncoder::Write(std::span<const std::byte> src)
 {
 	void *exbuffer;
 	const void *buffer = nullptr;
 
 	/* format conversion */
 
-	const std::size_t num_frames = length / audio_format.GetFrameSize();
+	const std::size_t num_frames = src.size() / audio_format.GetFrameSize();
 	const std::size_t num_samples = num_frames * audio_format.channels;
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
-		exbuffer = expand_buffer.Get(length * 4);
-		pcm8_to_flac((int32_t *)exbuffer, (const int8_t *)data,
+		exbuffer = expand_buffer.Get(src.size() * 4);
+		pcm8_to_flac((int32_t *)exbuffer, (const int8_t *)src.data(),
 			     num_samples);
 		buffer = exbuffer;
 		break;
 
 	case SampleFormat::S16:
-		exbuffer = expand_buffer.Get(length * 2);
-		pcm16_to_flac((int32_t *)exbuffer, (const int16_t *)data,
+		exbuffer = expand_buffer.Get(src.size() * 2);
+		pcm16_to_flac((int32_t *)exbuffer, (const int16_t *)src.data(),
 			      num_samples);
 		buffer = exbuffer;
 		break;
@@ -296,7 +296,7 @@ FlacEncoder::Write(const void *data, size_t length)
 	case SampleFormat::S32:
 		/* nothing need to be done; format is the same for
 		   both mpd and libFLAC */
-		buffer = data;
+		buffer = src.data();
 		break;
 
 	default:

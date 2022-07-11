@@ -23,6 +23,7 @@
 #include "util/NumberParser.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/SpanCast.hxx"
 
 #include <lame/lame.h>
 
@@ -167,14 +168,14 @@ LameEncoder::~LameEncoder() noexcept
 }
 
 void
-LameEncoder::Write(std::span<const std::byte> src)
+LameEncoder::Write(std::span<const std::byte> _src)
 {
-	const auto *src = (const int16_t*)data;
+	const auto src = FromBytesStrict<const int16_t>(_src);
 
 	assert(output_begin == output_end);
 
-	const std::size_t num_frames = length / audio_format.GetFrameSize();
-	const std::size_t num_samples = length / audio_format.GetSampleSize();
+	const std::size_t num_samples = src.size();
+	const std::size_t num_frames = num_samples / audio_format.channels;
 
 	/* worst-case formula according to LAME documentation */
 	const std::size_t output_buffer_size = 5 * num_samples / 4 + 7200;
@@ -183,7 +184,7 @@ LameEncoder::Write(std::span<const std::byte> src)
 	/* this is for only 16-bit audio */
 
 	int bytes_out = lame_encode_buffer_interleaved(gfp,
-						       const_cast<short *>(src),
+						       const_cast<short *>(src.data()),
 						       num_frames,
 						       dest, output_buffer_size);
 
@@ -194,19 +195,18 @@ LameEncoder::Write(std::span<const std::byte> src)
 	output_end = dest + bytes_out;
 }
 
-size_t
-LameEncoder::Read(void *dest, size_t length) noexcept
+std::span<const std::byte>
+LameEncoder::Read(std::span<std::byte> buffer) noexcept
 {
 	const auto begin = output_begin;
 	assert(begin <= output_end);
 	const std::size_t remainning = output_end - begin;
-	if (length > remainning)
-		length = remainning;
+	const std::size_t nbytes = std::min(remainning, buffer.size());
 
-	memcpy(dest, begin, length);
+	memcpy(buffer.data(), begin, nbytes);
 
-	output_begin = begin + length;
-	return length;
+	output_begin = begin + nbytes;
+	return buffer.first(nbytes);
 }
 
 const EncoderPlugin lame_encoder_plugin = {

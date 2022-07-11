@@ -22,6 +22,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/SpanCast.hxx"
 
 extern "C"
 {
@@ -75,10 +76,10 @@ public:
 
 	void Flush() override;
 
-	void Write(const void *data, size_t length) override;
+	void Write(std::span<const std::byte> src) override;
 
-	size_t Read(void *dest, size_t length) noexcept override {
-		return output_buffer.Read((std::byte *)dest, length);
+	std::span<const std::byte> Read(std::span<std::byte> buffer) noexcept override {
+		return buffer.first(output_buffer.Read(buffer.data(), buffer.size()));
 	}
 };
 
@@ -165,24 +166,24 @@ ShineEncoder::WriteChunk(bool flush)
 }
 
 void
-ShineEncoder::Write(const void *_data, size_t length)
+ShineEncoder::Write(std::span<const std::byte> _src)
 {
-	const auto *data = (const int16_t*)_data;
-	length /= sizeof(*data) * audio_format.channels;
+	const auto src = FromBytesStrict<const int16_t>(_src);
+	const std::size_t nframes = src.size() / audio_format.channels;
 	size_t written = 0;
 
 	if (input_pos > SHINE_MAX_SAMPLES)
 		input_pos = 0;
 
 	/* write all data to de-interleaved buffers */
-	while (written < length) {
+	while (written < nframes) {
 		for (;
-		     written < length && input_pos < frame_size;
+		     written < nframes && input_pos < frame_size;
 		     written++, input_pos++) {
 			const size_t base =
 				written * audio_format.channels;
-			stereo[0][input_pos] = data[base];
-			stereo[1][input_pos] = data[base + 1];
+			stereo[0][input_pos] = src[base];
+			stereo[1][input_pos] = src[base + 1];
 		}
 		/* write if chunk is filled */
 		WriteChunk(false);

@@ -50,7 +50,7 @@ public:
 		flush = true;
 	}
 
-	size_t Read(void *dest, size_t length) noexcept override {
+	std::span<const std::byte> Read(std::span<std::byte> buffer) noexcept override {
 		ogg_page page;
 		bool success = stream.PageOut(page);
 		if (!success) {
@@ -60,10 +60,11 @@ public:
 			}
 
 			if (!success)
-				return 0;
+				return {};
 		}
 
-		return ReadPage(page, dest, length);
+		return buffer.first(ReadPage(page, buffer.data(),
+					     buffer.size()));
 	}
 };
 

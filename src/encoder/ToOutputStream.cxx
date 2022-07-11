@@ -28,12 +28,12 @@ EncoderToOutputStream(OutputStream &os, Encoder &encoder)
 		/* read from the encoder */
 
 		std::byte buffer[32768];
-		size_t nbytes = encoder.Read(buffer, sizeof(buffer));
-		if (nbytes == 0)
+		const auto r = encoder.Read(std::span{buffer});
+		if (r.empty())
 			return;
 
 		/* write everything to the stream */
 
-		os.Write(buffer, nbytes);
+		os.Write(r.data(), r.size());
 	}
 }

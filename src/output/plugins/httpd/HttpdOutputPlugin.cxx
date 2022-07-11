@@ -161,14 +161,13 @@ HttpdOutput::ReadPage() noexcept
 
 	size_t size = 0;
 	do {
-		size_t nbytes = encoder->Read(buffer + size,
-					      sizeof(buffer) - size);
-		if (nbytes == 0)
+		const auto r = encoder->Read(std::span{buffer}.subspan(size));
+		if (r.empty())
 			break;
 
 		unflushed_input = 0;
 
-		size += nbytes;
+		size += r.size();
 	} while (size < sizeof(buffer));
 
 	if (size == 0)
@@ -301,11 +300,11 @@ HttpdOutput::BroadcastFromEncoder() noexcept
 }
 
 inline void
-HttpdOutput::EncodeAndPlay(const void *chunk, size_t size)
+HttpdOutput::EncodeAndPlay(std::span<const std::byte> src)
 {
-	encoder->Write(chunk, size);
+	encoder->Write(src);
 
-	unflushed_input += size;
+	unflushed_input += src.size();
 
 	BroadcastFromEncoder();
 }
@@ -316,7 +315,7 @@ HttpdOutput::Play(const void *chunk, size_t size)
 	pause = false;
 
 	if (LockHasClients())
-		EncodeAndPlay(chunk, size);
+		EncodeAndPlay({(const std::byte *)chunk, size});
 
 	if (!timer->IsStarted())
 		timer->Start();

@@ -55,7 +55,7 @@ public:
 	void PreTag() override;
 	void SendTag(const Tag &tag) override;
 
-	void Write(const void *data, size_t length) override;
+	void Write(std::span<const std::byte> src) override;
 
 private:
 	void HeaderOut(vorbis_comment &vc);
@@ -245,14 +245,14 @@ interleaved_to_vorbis_buffer(float **dest, const float *src,
 }
 
 void
-VorbisEncoder::Write(const void *data, size_t length)
+VorbisEncoder::Write(std::span<const std::byte> src)
 {
-	std::size_t num_frames = length / audio_format.GetFrameSize();
+	std::size_t num_frames = src.size() / audio_format.GetFrameSize();
 
 	/* this is for only 16-bit audio */
 
 	interleaved_to_vorbis_buffer(vorbis_analysis_buffer(&vd, num_frames),
-				     (const float *)data,
+				     (const float *)(const void *)src.data(),
 				     num_frames,
 				     audio_format.channels);
 

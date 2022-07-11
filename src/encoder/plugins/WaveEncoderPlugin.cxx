@@ -36,10 +36,10 @@ public:
 	explicit WaveEncoder(AudioFormat &audio_format) noexcept;
 
 	/* virtual methods from class Encoder */
-	void Write(const void *data, size_t length) override;
+	void Write(std::span<const std::byte> src) override;
 
-	size_t Read(void *dest, size_t length) noexcept override {
-		return buffer.Read((std::byte *)dest, length);
+	std::span<const std::byte> Read(std::span<std::byte> b) noexcept override {
+		return b.first(buffer.Read(b.data(), b.size()));
 	}
 };
 
@@ -183,8 +183,9 @@ pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length) noexcept
 }
 
 void
-WaveEncoder::Write(const void *src, size_t length)
+WaveEncoder::Write(std::span<const std::byte> src)
 {
+	std::size_t length = src.size();
 	std::byte *dst = buffer.Write(length);
 
 	if (IsLittleEndian()) {
@@ -192,29 +193,33 @@ WaveEncoder::Write(const void *src, size_t length)
 		case 8:
 		case 16:
 		case 32:// optimized cases
-			memcpy(dst, src, length);
+			memcpy(dst, src.data(), length);
 			break;
 		case 24:
 			length = pcm24_to_wave((uint8_t *)dst,
-					       (const uint32_t *)src, length);
+					       (const uint32_t *)(const void *)src.data(),
+					       length);
 			break;
 		}
 	} else {
 		switch (bits) {
 		case 8:
-			memcpy(dst, src, length);
+			memcpy(dst, src.data(), length);
 			break;
 		case 16:
 			length = pcm16_to_wave((uint16_t *)dst,
-					       (const uint16_t *)src, length);
+					       (const uint16_t *)(const void *)src.data(),
+					       length);
 			break;
 		case 24:
 			length = pcm24_to_wave((uint8_t *)dst,
-					       (const uint32_t *)src, length);
+					       (const uint32_t *)(const void *)src.data(),
+					       length);
 			break;
 		case 32:
 			length = pcm32_to_wave((uint32_t *)dst,
-					       (const uint32_t *)src, length);
+					       (const uint32_t *)(const void *)src.data(),
+					       length);
 			break;
 		}
 	}

@@ -29,12 +29,12 @@ public:
 		:Encoder(false) {}
 
 	/* virtual methods from class Encoder */
-	void Write(const void *data, size_t length) override {
-		buffer.Append({(const std::byte *)data, length});
+	void Write(std::span<const std::byte> src) override {
+		buffer.Append(src);
 	}
 
-	size_t Read(void *dest, size_t length) noexcept override {
-		return buffer.Read((std::byte *)dest, length);
+	std::span<const std::byte> Read(std::span<std::byte> b) noexcept override {
+		return b.first(buffer.Read(b.data(), b.size()));
 	}
 };
 

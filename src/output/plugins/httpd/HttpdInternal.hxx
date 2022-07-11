@@ -40,6 +40,7 @@
 #include <queue>
 #include <list>
 #include <memory>
+#include <span>
 
 struct ConfigBlock;
 class EventLoop;
@@ -249,7 +250,7 @@ public:
 	 *
 	 * Throws on error.
 	 */
-	void EncodeAndPlay(const void *chunk, size_t size);
+	void EncodeAndPlay(std::span<const std::byte> src);
 
 	void SendTag(const Tag &tag) override;
 

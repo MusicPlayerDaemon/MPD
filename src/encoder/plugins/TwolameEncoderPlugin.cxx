@@ -22,6 +22,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/SpanCast.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -67,8 +68,8 @@ public:
 		flush = true;
 	}
 
-	void Write(const void *data, size_t length) override;
-	size_t Read(void *dest, size_t length) noexcept override;
+	void Write(std::span<const std::byte> src) override;
+	std::span<const std::byte> Read(std::span<std::byte> buffer) noexcept override;
 };
 
 class PreparedTwolameEncoder final : public PreparedEncoder {
@@ -187,16 +188,16 @@ TwolameEncoder::~TwolameEncoder() noexcept
 }
 
 void
-TwolameEncoder::Write(const void *data, size_t length)
+TwolameEncoder::Write(std::span<const std::byte> _src)
 {
-	const auto *src = (const int16_t*)data;
+	const auto src = FromBytesStrict<const int16_t>(_src);
 
 	assert(output_buffer_position == output_buffer_length);
 
-	const std::size_t num_frames = length / audio_format.GetFrameSize();
+	const std::size_t num_frames = src.size() / audio_format.channels;
 
 	int bytes_out = twolame_encode_buffer_interleaved(options,
-							  src, num_frames,
+							  src.data(), num_frames,
 							  output_buffer,
 							  sizeof(output_buffer));
 	if (bytes_out < 0)
@@ -206,8 +207,8 @@ TwolameEncoder::Write(const void *data, size_t length)
 	output_buffer_position = 0;
 }
 
-size_t
-TwolameEncoder::Read(void *dest, size_t length) noexcept
+std::span<const std::byte>
+TwolameEncoder::Read(std::span<std::byte> buffer) noexcept
 {
 	assert(output_buffer_position <= output_buffer_length);
 
@@ -224,14 +225,13 @@ TwolameEncoder::Read(void *dest, size_t length) noexcept
 
 
 	const std::size_t remainning = output_buffer_length - output_buffer_position;
-	if (length > remainning)
-		length = remainning;
+	const std::size_t nbytes = std::min(remainning, buffer.size());
 
-	memcpy(dest, output_buffer + output_buffer_position, length);
+	memcpy(buffer.data(), output_buffer + output_buffer_position, nbytes);
 
-	output_buffer_position += length;
+	output_buffer_position += nbytes;
 
-	return length;
+	return buffer.first(nbytes);
 }
 
 const EncoderPlugin twolame_encoder_plugin = {

@@ -21,6 +21,7 @@
 #define MPD_ENCODER_INTERFACE_HXX
 
 #include <cstddef>
+#include <span>
 
 struct AudioFormat;
 struct Tag;
@@ -91,18 +92,19 @@ public:
 	 * @param data the buffer containing PCM samples
 	 * @param length the length of the buffer in bytes
 	 */
-	virtual void Write(const void *data, std::size_t length) = 0;
+	virtual void Write(std::span<const std::byte> src) = 0;
 
 	/**
 	 * Reads encoded data from the encoder.
 	 *
 	 * Call this repeatedly until no more data is returned.
 	 *
-	 * @param dest the destination buffer to copy to
-	 * @param length the maximum length of the destination buffer
-	 * @return the number of bytes written to #dest
+	 * @param buffer a buffer that can be used to write data into
+	 *
+	 * @return the portion of the buffer that was filled (but may
+	 *  also point to a different buffer, e.g. one owned by this object)
 	 */
-	virtual std::size_t Read(void *dest, std::size_t length) noexcept = 0;
+	virtual std::span<const std::byte> Read(std::span<std::byte> buffer) noexcept = 0;
 };
 
 class PreparedEncoder {

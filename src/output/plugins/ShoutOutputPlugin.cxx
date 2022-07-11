@@ -326,12 +326,14 @@ static void
 EncoderToShout(shout_t *shout_conn, Encoder &encoder)
 {
 	while (true) {
-		uint8_t buffer[32768];
-		size_t nbytes = encoder.Read(buffer, sizeof(buffer));
-		if (nbytes == 0)
+		std::byte buffer[32768];
+		const auto e = encoder.Read(std::span{buffer});
+		if (e.empty() == 0)
 			return;
 
-		int err = shout_send(shout_conn, buffer, nbytes);
+		int err = shout_send(shout_conn,
+				     (const unsigned char *)e.data(),
+				     e.size());
 		HandleShoutError(shout_conn, err);
 	}
 }
@@ -414,7 +416,7 @@ ShoutOutput::Delay() const noexcept
 size_t
 ShoutOutput::Play(const void *chunk, size_t size)
 {
-	encoder->Write(chunk, size);
+	encoder->Write({(const std::byte *)chunk, size});
 	WritePage();
 	return size;
 }
@@ -422,9 +424,9 @@ ShoutOutput::Play(const void *chunk, size_t size)
 bool
 ShoutOutput::Pause()
 {
-	static char silence[1020];
+	static std::byte silence[1020];
 
-	encoder->Write(silence, sizeof(silence));
+	encoder->Write(std::span{silence});
 	WritePage();
 
 	return true;

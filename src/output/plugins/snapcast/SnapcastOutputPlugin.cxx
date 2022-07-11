@@ -128,9 +128,7 @@ ReadEncoder(Encoder &encoder) noexcept
 {
 	std::byte buffer[4096];
 
-	size_t nbytes = encoder.Read(buffer, sizeof(buffer));
-	const std::span<const std::byte> src{buffer, nbytes};
-	return AllocatedArray<std::byte>{src};
+	return AllocatedArray<std::byte>{encoder.Read(std::span{buffer})};
 }
 
 inline void
@@ -313,7 +311,7 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 	if (!LockHasClients())
 		return size;
 
-	encoder->Write(chunk, size);
+	encoder->Write({(const std::byte *)chunk, size});
 	unflushed_input += size;
 
 	if (unflushed_input >= 65536) {
@@ -332,8 +330,8 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 	while (true) {
 		std::byte buffer[32768];
 
-		size_t nbytes = encoder->Read(buffer, sizeof(buffer));
-		if (nbytes == 0)
+		const auto payload = encoder->Read(std::span{buffer});
+		if (payload.empty())
 			break;
 
 		unflushed_input = 0;
@@ -342,7 +340,6 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 		if (chunks.empty())
 			inject_event.Schedule();
 
-		const std::span<const std::byte> payload{buffer, nbytes};
 		chunks.push(std::make_shared<SnapcastChunk>(now, AllocatedArray{payload}));
 	}
 
