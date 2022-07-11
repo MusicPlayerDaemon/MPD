@@ -156,7 +156,7 @@ ShineEncoder::WriteChunk(bool flush)
 			shine_encode_buffer(shine, stereo, &written);
 
 		if (written > 0)
-			output_buffer.Append(out, written);
+			output_buffer.Append({out, std::size_t(written)});
 
 		input_pos = 0;
 	}
@@ -199,7 +199,7 @@ ShineEncoder::Flush()
 	const auto data = (const std::byte *)shine_flush(shine, &written);
 
 	if (written > 0)
-		output_buffer.Append(data, written);
+		output_buffer.Append({data, std::size_t(written)});
 }
 
 const EncoderPlugin shine_encoder_plugin = {

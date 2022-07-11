@@ -85,7 +85,7 @@ private:
 							    [[maybe_unused]] unsigned current_frame,
 							    void *client_data) noexcept {
 		auto &encoder = *(FlacEncoder *)client_data;
-		encoder.output_buffer.Append((const std::byte *)data, bytes);
+		encoder.output_buffer.Append({(const std::byte *)data, bytes});
 		return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
 	}
 };

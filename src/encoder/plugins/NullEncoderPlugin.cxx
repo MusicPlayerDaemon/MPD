@@ -30,7 +30,7 @@ public:
 
 	/* virtual methods from class Encoder */
 	void Write(const void *data, size_t length) override {
-		buffer.Append((const std::byte *)data, length);
+		buffer.Append({(const std::byte *)data, length});
 	}
 
 	size_t Read(void *dest, size_t length) override {
