@@ -198,12 +198,11 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 
 	client.Ready(audio_format, can_seek, GetDuration(wpc));
 
-	const int output_sample_size = audio_format.GetFrameSize();
+	const std::size_t output_frame_size = audio_format.GetFrameSize();
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
-	int32_t chunk[1024];
-	const uint32_t samples_requested = std::size(chunk) /
-		audio_format.channels;
+	int32_t buffer[1024];
+	const uint32_t max_frames = std::size(buffer) / audio_format.channels;
 
 	DecoderCommand cmd = client.GetCommand();
 	while (cmd != DecoderCommand::STOP) {
@@ -222,16 +221,16 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 			}
 		}
 
-		uint32_t samples_got = WavpackUnpackSamples(wpc, chunk,
-							    samples_requested);
-		if (samples_got == 0)
+		uint32_t n_frames = WavpackUnpackSamples(wpc, buffer,
+							 max_frames);
+		if (n_frames == 0)
 			break;
 
 		int bitrate = lround(WavpackGetInstantBitrate(wpc) / 1000);
-		format_samples(chunk, samples_got * audio_format.channels);
+		format_samples(buffer, n_frames * audio_format.channels);
 
-		cmd = client.SubmitData(nullptr, chunk,
-					samples_got * output_sample_size,
+		cmd = client.SubmitData(nullptr, buffer,
+					n_frames * output_frame_size,
 					bitrate);
 	}
 }
