@@ -135,7 +135,7 @@ if libsndfile_dep.found()
   decoder_plugins_sources += 'SndfileDecoderPlugin.cxx'
 endif
 
-wavpack_dep = dependency('wavpack', required: get_option('wavpack'))
+wavpack_dep = dependency('wavpack', version: '>= 5', required: get_option('wavpack'))
 decoder_features.set('ENABLE_WAVPACK', wavpack_dep.found())
 if wavpack_dep.found()
   decoder_plugins_sources += 'WavpackDecoderPlugin.cxx'
