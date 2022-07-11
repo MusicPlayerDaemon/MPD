@@ -27,7 +27,7 @@ EncoderToOutputStream(OutputStream &os, Encoder &encoder)
 	while (true) {
 		/* read from the encoder */
 
-		char buffer[32768];
+		std::byte buffer[32768];
 		size_t nbytes = encoder.Read(buffer, sizeof(buffer));
 		if (nbytes == 0)
 			return;

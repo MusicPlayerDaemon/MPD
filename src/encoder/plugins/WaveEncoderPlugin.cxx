@@ -30,7 +30,7 @@
 class WaveEncoder final : public Encoder {
 	unsigned bits;
 
-	DynamicFifoBuffer<uint8_t> buffer;
+	DynamicFifoBuffer<std::byte> buffer{8192};
 
 public:
 	explicit WaveEncoder(AudioFormat &audio_format) noexcept;
@@ -39,7 +39,7 @@ public:
 	void Write(const void *data, size_t length) override;
 
 	size_t Read(void *dest, size_t length) noexcept override {
-		return buffer.Read((uint8_t *)dest, length);
+		return buffer.Read((std::byte *)dest, length);
 	}
 };
 
@@ -102,8 +102,7 @@ wave_encoder_init([[maybe_unused]] const ConfigBlock &block)
 }
 
 WaveEncoder::WaveEncoder(AudioFormat &audio_format) noexcept
-	:Encoder(false),
-	 buffer(8192)
+	:Encoder(false)
 {
 	assert(audio_format.IsValid());
 
@@ -186,7 +185,7 @@ pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length) noexcept
 void
 WaveEncoder::Write(const void *src, size_t length)
 {
-	uint8_t *dst = buffer.Write(length);
+	std::byte *dst = buffer.Write(length);
 
 	if (IsLittleEndian()) {
 		switch (bits) {
@@ -196,7 +195,8 @@ WaveEncoder::Write(const void *src, size_t length)
 			memcpy(dst, src, length);
 			break;
 		case 24:
-			length = pcm24_to_wave(dst, (const uint32_t *)src, length);
+			length = pcm24_to_wave((uint8_t *)dst,
+					       (const uint32_t *)src, length);
 			break;
 		}
 	} else {
@@ -209,7 +209,8 @@ WaveEncoder::Write(const void *src, size_t length)
 					       (const uint16_t *)src, length);
 			break;
 		case 24:
-			length = pcm24_to_wave(dst, (const uint32_t *)src, length);
+			length = pcm24_to_wave((uint8_t *)dst,
+					       (const uint32_t *)src, length);
 			break;
 		case 32:
 			length = pcm32_to_wave((uint32_t *)dst,

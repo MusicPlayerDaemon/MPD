@@ -40,7 +40,7 @@ class OpusEncoder final : public OggEncoder {
 
 	const size_t buffer_frames, buffer_size;
 	size_t buffer_position = 0;
-	uint8_t *const buffer;
+	std::byte *const buffer;
 
 	::OpusEncoder *const enc;
 
@@ -155,7 +155,7 @@ OpusEncoder::OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc, bool _
 	 frame_size(_audio_format.GetFrameSize()),
 	 buffer_frames(_audio_format.sample_rate / 50),
 	 buffer_size(frame_size * buffer_frames),
-	 buffer(new uint8_t[buffer_size]),
+	 buffer(new std::byte[buffer_size]),
 	 enc(_enc)
 {
 	opus_encoder_ctl(enc, OPUS_GET_LOOKAHEAD(&lookahead));
@@ -274,7 +274,7 @@ OpusEncoder::WriteSilence(unsigned fill_frames)
 void
 OpusEncoder::Write(const void *_data, size_t length)
 {
-	const auto *data = (const uint8_t *)_data;
+	const auto *data = (const std::byte *)_data;
 
 	if (lookahead > 0) {
 		/* generate some silence at the beginning of the

@@ -44,15 +44,15 @@ class ShineEncoder final : public Encoder {
 
 	int16_t *stereo[CHANNELS];
 
-	DynamicFifoBuffer<uint8_t> output_buffer;
+	DynamicFifoBuffer<std::byte> output_buffer{BUFFER_INIT_SIZE};
 
 public:
 	ShineEncoder(AudioFormat _audio_format, shine_t _shine) noexcept
 		:Encoder(false),
 		 audio_format(_audio_format), shine(_shine),
 		 frame_size(shine_samples_per_pass(shine)),
-		 stereo{new int16_t[frame_size], new int16_t[frame_size]},
-		 output_buffer(BUFFER_INIT_SIZE) {}
+		 stereo{new int16_t[frame_size], new int16_t[frame_size]}
+	{}
 
 	~ShineEncoder() noexcept override {
 		if (input_pos > SHINE_MAX_SAMPLES) {
@@ -78,7 +78,7 @@ public:
 	void Write(const void *data, size_t length) override;
 
 	size_t Read(void *dest, size_t length) noexcept override {
-		return output_buffer.Read((uint8_t *)dest, length);
+		return output_buffer.Read((std::byte *)dest, length);
 	}
 };
 
@@ -152,7 +152,7 @@ ShineEncoder::WriteChunk(bool flush)
 		}
 
 		int written;
-		const uint8_t *out =
+		const auto out = (const std::byte *)
 			shine_encode_buffer(shine, stereo, &written);
 
 		if (written > 0)
@@ -196,7 +196,7 @@ ShineEncoder::Flush()
 	WriteChunk(true);
 
 	int written;
-	const uint8_t *data = shine_flush(shine, &written);
+	const auto data = (const std::byte *)shine_flush(shine, &written);
 
 	if (written > 0)
 		output_buffer.Append(data, written);

@@ -45,7 +45,7 @@ class FlacEncoder final : public Encoder {
 	 * This buffer will hold encoded data from libFLAC until it is
 	 * picked up with flac_encoder_read().
 	 */
-	DynamicFifoBuffer<uint8_t> output_buffer;
+	DynamicFifoBuffer<std::byte> output_buffer{8192};
 
 public:
 	FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse, unsigned _compression, bool _oggflac, bool _oggchaining);
@@ -74,7 +74,7 @@ public:
 	void Write(const void *data, size_t length) override;
 
 	size_t Read(void *dest, size_t length) noexcept override {
-		return output_buffer.Read((uint8_t *)dest, length);
+		return output_buffer.Read((std::byte *)dest, length);
 	}
 
 private:
@@ -85,7 +85,7 @@ private:
 							    [[maybe_unused]] unsigned current_frame,
 							    void *client_data) noexcept {
 		auto &encoder = *(FlacEncoder *)client_data;
-		encoder.output_buffer.Append((const uint8_t *)data, bytes);
+		encoder.output_buffer.Append((const std::byte *)data, bytes);
 		return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
 	}
 };
@@ -165,8 +165,7 @@ flac_encoder_setup(FLAC__StreamEncoder *fse, unsigned compression,
 FlacEncoder::FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse, unsigned _compression, bool _oggflac, bool _oggchaining)
 	:Encoder(_oggchaining),
 	 audio_format(_audio_format), fse(_fse),
-	 compression(_compression),
-	 output_buffer(8192)
+	 compression(_compression)
 {
 	/* this immediately outputs data through callback */
 
