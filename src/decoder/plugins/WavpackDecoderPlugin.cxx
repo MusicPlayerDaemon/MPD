@@ -61,11 +61,15 @@ WavpackOpenInput(Path path, int flags, int norm_offset)
 }
 
 static WavpackContext *
-WavpackOpenInput(WavpackStreamReader64 &reader, void *wv_id, void *wvc_id,
+WavpackOpenInput(const WavpackStreamReader64 &reader, void *wv_id, void *wvc_id,
 		 int flags, int norm_offset)
 {
 	char error[ERRORLEN];
-	auto *wpc = WavpackOpenFileInputEx64(&reader, wv_id, wvc_id, error,
+
+	/* unfortunately, WavpackOpenFileInputEx64() wants a non-const
+	   pointer, so we fake it with a const_cast */
+	auto *wpc = WavpackOpenFileInputEx64(const_cast<WavpackStreamReader64 *>(&reader),
+					     wv_id, wvc_id, error,
 					     flags, norm_offset);
 	if (wpc == nullptr)
 		throw FormatRuntimeError("failed to open WavPack stream: %s",
@@ -399,7 +403,7 @@ wavpack_input_can_seek(void *id) noexcept
 	return wpi.CanSeek();
 }
 
-static WavpackStreamReader64 mpd_is_reader = {
+static constexpr WavpackStreamReader64 mpd_is_reader = {
 	wavpack_input_read_bytes,
 	nullptr, /* write_bytes */
 	wavpack_input_get_pos,
