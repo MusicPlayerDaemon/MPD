@@ -61,11 +61,11 @@ WavpackOpenInput(Path path, int flags, int norm_offset)
 }
 
 static WavpackContext *
-WavpackOpenInput(WavpackStreamReader64 *reader, void *wv_id, void *wvc_id,
+WavpackOpenInput(WavpackStreamReader64 &reader, void *wv_id, void *wvc_id,
 		 int flags, int norm_offset)
 {
 	char error[ERRORLEN];
-	auto *wpc = WavpackOpenFileInputEx64(reader, wv_id, wvc_id, error,
+	auto *wpc = WavpackOpenFileInputEx64(&reader, wv_id, wvc_id, error,
 					     flags, norm_offset);
 	if (wpc == nullptr)
 		throw FormatRuntimeError("failed to open WavPack stream: %s",
@@ -448,7 +448,7 @@ wavpack_streamdecode(DecoderClient &client, InputStream &is)
 
 	WavpackInput isp(&client, is);
 
-	auto *wpc = WavpackOpenInput(&mpd_is_reader, &isp, wvc.get(),
+	auto *wpc = WavpackOpenInput(mpd_is_reader, &isp, wvc.get(),
 				     open_flags, 0);
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
@@ -515,8 +515,8 @@ wavpack_scan_stream(InputStream &is, TagHandler &handler)
 
 	WavpackContext *wpc;
 	try {
-		wpc = WavpackOpenInput(&mpd_is_reader, &isp, nullptr,
-					     OPEN_DSD_FLAG, 0);
+		wpc = WavpackOpenInput(mpd_is_reader, &isp, nullptr,
+				       OPEN_DSD_FLAG, 0);
 	} catch (...) {
 		return false;
 	}
