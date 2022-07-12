@@ -183,7 +183,7 @@ public:
 
 	void SendTag(const Tag &tag) override;
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 
 	void Drain() override;
 	void Cancel() noexcept override;

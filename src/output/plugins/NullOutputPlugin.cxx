@@ -53,14 +53,14 @@ private:
 			: std::chrono::steady_clock::duration::zero();
 	}
 
-	size_t Play([[maybe_unused]] const void *chunk, size_t size) override {
+	size_t Play(std::span<const std::byte> src) override {
 		if (sync) {
 			if (!timer->IsStarted())
 				timer->Start();
-			timer->Add(size);
+			timer->Add(src.size());
 		}
 
-		return size;
+		return src.size();
 	}
 
 	void Cancel() noexcept override {

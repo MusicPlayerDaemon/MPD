@@ -290,7 +290,7 @@ private:
 	}
 
 	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 
 	void Drain() override;
 	void Cancel() noexcept override;
@@ -828,8 +828,8 @@ PipeWireOutput::Delay() const noexcept
 	return result;
 }
 
-size_t
-PipeWireOutput::Play(const void *chunk, size_t size)
+std::size_t
+PipeWireOutput::Play(std::span<const std::byte> src)
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
@@ -839,7 +839,7 @@ PipeWireOutput::Play(const void *chunk, size_t size)
 		CheckThrowError();
 
 		std::size_t bytes_written =
-			ring_buffer->push((const std::byte *)chunk, size);
+			ring_buffer->push(src.data(), src.size());
 		if (bytes_written > 0) {
 			drained = false;
 			return bytes_written;

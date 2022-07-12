@@ -283,7 +283,7 @@ private:
 
 	void Interrupt() noexcept override;
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 	void Drain() override;
 	void Cancel() noexcept override;
 	bool Pause() noexcept override;
@@ -1219,26 +1219,26 @@ AlsaOutput::LockWaitWriteAvailable()
 	}
 }
 
-size_t
-AlsaOutput::Play(const void *chunk, size_t size)
+std::size_t
+AlsaOutput::Play(std::span<const std::byte> src)
 {
-	assert(size > 0);
-	assert(size % in_frame_size == 0);
+	assert(!src.empty());
+	assert(src.size() % in_frame_size == 0);
 
 	const size_t max_frames = LockWaitWriteAvailable();
 	const size_t max_size = max_frames * in_frame_size;
-	if (size > max_size)
-		size = max_size;
+	if (src.size() > max_size)
+		src = src.first(max_size);
 
-	const auto e = pcm_export->Export({(const std::byte *)chunk, size});
+	const auto e = pcm_export->Export(src);
 	if (e.empty())
-		return size;
+		return src.size();
 
 	size_t bytes_written = ring_buffer->push(e.data(), e.size());
 	assert(bytes_written == e.size());
 	(void)bytes_written;
 
-	return size;
+	return src.size();
 }
 
 Event::Duration

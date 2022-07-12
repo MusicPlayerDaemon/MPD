@@ -75,7 +75,7 @@ private:
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 
@@ -256,17 +256,17 @@ HaikuOutput::Open(AudioFormat &audio_format)
 	sound_player->SetHasData(false);
 }
 
-size_t
-HaikuOutput::Play(const void *chunk, size_t size)
+std::size_t
+HaikuOutput::Play(std::span<const std::byte> src)
 {
 	BSoundPlayer* const soundPlayer = sound_player;
-	const uint8 *data = (const uint8 *)chunk;
+	const uint8 *data = (const uint8 *)src.data();
 
 	if (!soundPlayer->HasData())
 		soundPlayer->SetHasData(true);
 	acquire_sem(new_buffer);
 
-	size_t bytesLeft = size;
+	size_t bytesLeft = src.size();
 	while (bytesLeft > 0) {
 		if (buffer_filled == buffer_size) {
 			// Request another buffer from BSoundPlayer
@@ -293,7 +293,7 @@ HaikuOutput::Play(const void *chunk, size_t size)
 		//soundPlayer->SetHasData(false);
 	}
 
-	return size;
+	return src.size();
 }
 
 inline std::chrono::steady_clock::duration

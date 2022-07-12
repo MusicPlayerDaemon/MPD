@@ -155,7 +155,7 @@ RunOutput(AudioOutput &ao, AudioFormat audio_format,
 		if (src.empty())
 			continue;
 
-		size_t consumed = ao.Play(src.data(), src.size());
+		size_t consumed = ao.Play(src);
 
 		assert(consumed <= src.size());
 		assert(consumed % in_frame_size == 0);

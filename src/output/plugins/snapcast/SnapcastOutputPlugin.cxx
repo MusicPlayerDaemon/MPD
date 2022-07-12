@@ -297,8 +297,8 @@ SnapcastOutput::SendTag(const Tag &tag)
 #endif
 }
 
-size_t
-SnapcastOutput::Play(const void *chunk, size_t size)
+std::size_t
+SnapcastOutput::Play(std::span<const std::byte> src)
 {
 	pause = false;
 
@@ -306,13 +306,13 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 
 	if (!timer->IsStarted())
 		timer->Start();
-	timer->Add(size);
+	timer->Add(src.size());
 
 	if (!LockHasClients())
-		return size;
+		return src.size();
 
-	encoder->Write({(const std::byte *)chunk, size});
-	unflushed_input += size;
+	encoder->Write(src);
+	unflushed_input += src.size();
 
 	if (unflushed_input >= 65536) {
 		/* we have fed a lot of input into the encoder, but it
@@ -343,7 +343,7 @@ SnapcastOutput::Play(const void *chunk, size_t size)
 		chunks.push(std::make_shared<SnapcastChunk>(now, AllocatedArray{payload}));
 	}
 
-	return size;
+	return src.size();
 }
 
 bool

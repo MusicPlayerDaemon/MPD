@@ -86,7 +86,7 @@ private:
 
 	void SendTag(const Tag &tag) override;
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 
 	[[nodiscard]] gcc_pure
 	bool HasDynamicPath() const noexcept {
@@ -322,22 +322,22 @@ RecorderOutput::SendTag(const Tag &tag)
 	encoder->SendTag(tag);
 }
 
-size_t
-RecorderOutput::Play(const void *chunk, size_t size)
+std::size_t
+RecorderOutput::Play(std::span<const std::byte> src)
 {
 	if (file == nullptr) {
 		/* not currently encoding to a file; discard incoming
 		   data */
 		assert(HasDynamicPath());
 		assert(path.IsNull());
-		return size;
+		return src.size();
 	}
 
-	encoder->Write({(const std::byte *)chunk, size});
+	encoder->Write(src);
 
 	EncoderToFile();
 
-	return size;
+	return src.size();
 }
 
 const struct AudioOutputPlugin recorder_output_plugin = {

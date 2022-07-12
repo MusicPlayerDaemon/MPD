@@ -69,7 +69,7 @@ private:
 	void Close() noexcept override;
 
 	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 	void Cancel() noexcept override;
 };
 
@@ -208,17 +208,17 @@ FifoOutput::Delay() const noexcept
 		: std::chrono::steady_clock::duration::zero();
 }
 
-size_t
-FifoOutput::Play(const void *chunk, size_t size)
+std::size_t
+FifoOutput::Play(std::span<const std::byte> src)
 {
 	if (!timer->IsStarted())
 		timer->Start();
-	timer->Add(size);
+	timer->Add(src.size());
 
 	while (true) {
-		ssize_t bytes = write(output, chunk, size);
+		ssize_t bytes = write(output, src.data(), src.size());
 		if (bytes > 0)
-			return (size_t)bytes;
+			return (std::size_t)bytes;
 
 		if (bytes < 0) {
 			switch (errno) {

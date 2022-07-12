@@ -99,7 +99,7 @@ private:
 			: std::chrono::steady_clock::duration::zero();
 	}
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 
 	void Drain() override;
 	void Cancel() noexcept override;
@@ -333,8 +333,8 @@ SlesOutput::Close() noexcept
 	engine_object.Destroy();
 }
 
-size_t
-SlesOutput::Play(const void *chunk, size_t size)
+std::size_t
+SlesOutput::Play(std::span<const std::byte> src)
 {
 	cancel = false;
 
@@ -356,8 +356,8 @@ SlesOutput::Play(const void *chunk, size_t size)
 		return ret;
 	});
 
-	size_t nbytes = std::min(BUFFER_SIZE - filled, size);
-	memcpy(buffers[next] + filled, chunk, nbytes);
+	size_t nbytes = std::min(BUFFER_SIZE - filled, src.size());
+	memcpy(buffers[next] + filled, src.data(), nbytes);
 	filled += nbytes;
 	if (filled < BUFFER_SIZE)
 		return nbytes;

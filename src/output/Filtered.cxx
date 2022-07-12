@@ -173,10 +173,10 @@ FilteredAudioOutput::SendTag(const Tag &tag)
 	output->SendTag(tag);
 }
 
-size_t
-FilteredAudioOutput::Play(const void *data, size_t size)
+std::size_t
+FilteredAudioOutput::Play(std::span<const std::byte> src)
 {
-	return output->Play(data, size);
+	return output->Play(src);
 }
 
 void

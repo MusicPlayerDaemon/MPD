@@ -26,6 +26,7 @@
 #include "util/ScopeExit.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/SpanCast.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -178,7 +179,7 @@ public:
 			: std::chrono::steady_clock::duration::zero();
 	}
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 
 	void Cancel() noexcept override;
 	bool Pause() override;
@@ -689,14 +690,17 @@ JackOutput::WriteSamples(const float *src, size_t n_frames)
 	return result;
 }
 
-inline size_t
-JackOutput::Play(const void *chunk, size_t size)
+std::size_t
+JackOutput::Play(std::span<const std::byte> _src)
 {
+	const auto src = FromBytesStrict<const float>(_src);
+
 	pause = false;
 
 	const size_t frame_size = audio_format.GetFrameSize();
-	assert(size % frame_size == 0);
-	size /= frame_size;
+	assert(src.size() % frame_size == 0);
+
+	const std::size_t n_frames = src.size() / audio_format.channels;
 
 	while (true) {
 		{
@@ -709,7 +713,7 @@ JackOutput::Play(const void *chunk, size_t size)
 		}
 
 		size_t frames_written =
-			WriteSamples((const float *)chunk, size);
+			WriteSamples(src.data(), n_frames);
 		if (frames_written > 0)
 			return frames_written * frame_size;
 

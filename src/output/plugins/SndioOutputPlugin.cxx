@@ -144,11 +144,9 @@ SndioOutput::Close()  noexcept
 }
 
 size_t
-SndioOutput::Play(const void *chunk, size_t size)
+SndioOutput::Play(std::span<const std::byte> src)
 {
-	size_t n;
-
-	n = sio_write(hdl, chunk, size);
+	const std::size_t n = sio_write(hdl, src.data(), src.size());
 	if (n == 0 && sio_eof(hdl) != 0)
 		throw std::runtime_error("sndio write failed");
 	return n;

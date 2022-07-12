@@ -88,7 +88,7 @@ struct ShoutOutput final : AudioOutput {
 
 	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
 	void SendTag(const Tag &tag) override;
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 	void Cancel() noexcept override;
 	bool Pause() override;
 
@@ -413,12 +413,12 @@ ShoutOutput::Delay() const noexcept
 	return std::chrono::milliseconds(delay);
 }
 
-size_t
-ShoutOutput::Play(const void *chunk, size_t size)
+std::size_t
+ShoutOutput::Play(std::span<const std::byte> src)
 {
-	encoder->Write({(const std::byte *)chunk, size});
+	encoder->Write(src);
 	WritePage();
-	return size;
+	return src.size();
 }
 
 bool

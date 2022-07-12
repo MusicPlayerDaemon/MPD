@@ -265,7 +265,7 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 
 		try {
 			const ScopeUnlock unlock(mutex);
-			nbytes = output->Play(data.data(), data.size());
+			nbytes = output->Play(data);
 			assert(nbytes > 0);
 			assert(nbytes <= data.size());
 		} catch (AudioOutputInterrupted) {
@@ -380,7 +380,7 @@ static void
 PlayFull(FilteredAudioOutput &output, std::span<const std::byte> buffer)
 {
 	while (!buffer.empty()) {
-		size_t nbytes = output.Play(buffer.data(), buffer.size());
+		size_t nbytes = output.Play(buffer);
 		assert(nbytes > 0);
 
 		buffer = buffer.subspan(nbytes);

@@ -309,19 +309,19 @@ HttpdOutput::EncodeAndPlay(std::span<const std::byte> src)
 	BroadcastFromEncoder();
 }
 
-size_t
-HttpdOutput::Play(const void *chunk, size_t size)
+std::size_t
+HttpdOutput::Play(std::span<const std::byte> src)
 {
 	pause = false;
 
 	if (LockHasClients())
-		EncodeAndPlay({(const std::byte *)chunk, size});
+		EncodeAndPlay(src);
 
 	if (!timer->IsStarted())
 		timer->Start();
-	timer->Add(size);
+	timer->Add(src.size());
 
-	return size;
+	return src.size();
 }
 
 bool
@@ -330,8 +330,8 @@ HttpdOutput::Pause()
 	pause = true;
 
 	if (LockHasClients()) {
-		static const char silence[1020] = { 0 };
-		Play(silence, sizeof(silence));
+		static constexpr std::byte silence[1020]{};
+		Play(std::span{silence});
 	}
 
 	return true;

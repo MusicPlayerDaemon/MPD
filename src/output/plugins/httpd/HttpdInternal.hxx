@@ -254,7 +254,7 @@ public:
 
 	void SendTag(const Tag &tag) override;
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 
 	/**
 	 * Mutext must not be locked.

@@ -110,7 +110,7 @@ public:
 	void Interrupt() noexcept override;
 
 	[[nodiscard]] std::chrono::steady_clock::duration Delay() const noexcept override;
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 	void Drain() override;
 	void Cancel() noexcept override;
 	bool Pause() override;
@@ -775,8 +775,8 @@ PulseOutput::Delay() const noexcept
 	return result;
 }
 
-size_t
-PulseOutput::Play(const void *chunk, size_t size)
+std::size_t
+PulseOutput::Play(std::span<const std::byte> src)
 {
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);
@@ -811,18 +811,18 @@ PulseOutput::Play(const void *chunk, size_t size)
 
 	/* now write */
 
-	if (size > writable)
+	if (src.size() > writable)
 		/* don't send more than possible */
-		size = writable;
+		src = src.first(writable);
 
-	writable -= size;
+	writable -= src.size();
 
-	int result = pa_stream_write(stream, chunk, size, nullptr,
+	int result = pa_stream_write(stream, src.data(), src.size(), nullptr,
 				     0, PA_SEEK_RELATIVE);
 	if (result < 0)
 		throw MakePulseError(context, "pa_stream_write() failed");
 
-	return size;
+	return src.size();
 }
 
 void

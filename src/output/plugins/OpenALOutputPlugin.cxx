@@ -69,7 +69,7 @@ private:
 			: std::chrono::milliseconds(50);
 	}
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 
 	void Cancel() noexcept override;
 
@@ -180,8 +180,8 @@ OpenALOutput::Close() noexcept
 	alcCloseDevice(device);
 }
 
-size_t
-OpenALOutput::Play(const void *chunk, size_t size)
+std::size_t
+OpenALOutput::Play(std::span<const std::byte> src)
 {
 	if (alcGetCurrentContext() != context)
 		alcMakeContextCurrent(context);
@@ -199,13 +199,13 @@ OpenALOutput::Play(const void *chunk, size_t size)
 		alSourceUnqueueBuffers(source, 1, &buffer);
 	}
 
-	alBufferData(buffer, format, chunk, size, frequency);
+	alBufferData(buffer, format, src.data(), src.size(), frequency);
 	alSourceQueueBuffers(source, 1, &buffer);
 
 	if (!IsPlaying())
 		alSourcePlay(source);
 
-	return size;
+	return src.size();
 }
 
 void

@@ -23,10 +23,11 @@
 #include "pcm/AudioFormat.hxx"
 #include "filter/Observer.hxx"
 
-#include <memory>
-#include <string>
-#include <map>
 #include <chrono>
+#include <map>
+#include <memory>
+#include <span>
+#include <string>
 
 class FilterFactory;
 class PreparedFilter;
@@ -224,7 +225,7 @@ public:
 
 	void SendTag(const Tag &tag);
 
-	size_t Play(const void *data, size_t size);
+	std::size_t Play(std::span<const std::byte> src);
 
 	void Drain();
 	void Cancel() noexcept;

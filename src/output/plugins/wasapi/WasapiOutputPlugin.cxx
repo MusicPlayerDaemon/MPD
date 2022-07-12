@@ -357,7 +357,7 @@ public:
 	}
 	void Close() noexcept override;
 	std::chrono::steady_clock::duration Delay() const noexcept override;
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 	void Drain() override;
 	void Cancel() noexcept override;
 	bool Pause() override;
@@ -707,8 +707,8 @@ WasapiOutput::Delay() const noexcept
 	return std::chrono::steady_clock::duration::zero();
 }
 
-size_t
-WasapiOutput::Play(const void *chunk, size_t size)
+std::size_t
+WasapiOutput::Play(std::span<const std::byte> input)
 {
 	assert(thread);
 
@@ -716,12 +716,11 @@ WasapiOutput::Play(const void *chunk, size_t size)
 
 	not_interrupted.test_and_set();
 
-	std::span<const std::byte> input{(const std::byte*)chunk, size};
 	if (pcm_export) {
 		input = pcm_export->Export(input);
 	}
 	if (input.empty())
-		return size;
+		return input.size();
 
 	do {
 		const size_t consumed_size = thread->Push(input);

@@ -69,7 +69,7 @@ private:
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
 
-	size_t Play(const void *chunk, size_t size) override;
+	std::size_t Play(std::span<const std::byte> src) override;
 	void Drain() override;
 	void Cancel() noexcept override;
 
@@ -256,13 +256,13 @@ WinmmOutput::DrainBuffer(WinmmBuffer &buffer)
 	}
 }
 
-size_t
-WinmmOutput::Play(const void *chunk, size_t size)
+std::size_t
+WinmmOutput::Play(std::span<const std::byte> src)
 {
 	/* get the next buffer from the ring and prepare it */
 	WinmmBuffer *buffer = &buffers[next_buffer];
 	DrainBuffer(*buffer);
-	winmm_set_buffer(handle, buffer, chunk, size);
+	winmm_set_buffer(handle, buffer, src.data(), src.size());
 
 	/* enqueue the buffer */
 	MMRESULT result = waveOutWrite(handle, &buffer->hdr,
@@ -276,7 +276,7 @@ WinmmOutput::Play(const void *chunk, size_t size)
 	/* mark our buffer as "used" */
 	next_buffer = (next_buffer + 1) % buffers.size();
 
-	return size;
+	return src.size();
 }
 
 void
