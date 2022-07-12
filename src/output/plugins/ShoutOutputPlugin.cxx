@@ -71,8 +71,6 @@ struct ShoutOutput final : AudioOutput {
 
 	Encoder *encoder;
 
-	uint8_t buffer[32768];
-
 	explicit ShoutOutput(const ConfigBlock &block);
 	~ShoutOutput() override;
 
@@ -325,11 +323,11 @@ HandleShoutError(shout_t *shout_conn, int err)
 }
 
 static void
-EncoderToShout(shout_t *shout_conn, Encoder &encoder,
-	       unsigned char *buffer, size_t buffer_size)
+EncoderToShout(shout_t *shout_conn, Encoder &encoder)
 {
 	while (true) {
-		size_t nbytes = encoder.Read(buffer, buffer_size);
+		uint8_t buffer[32768];
+		size_t nbytes = encoder.Read(buffer, sizeof(buffer));
 		if (nbytes == 0)
 			return;
 
@@ -343,7 +341,7 @@ ShoutOutput::WritePage()
 {
 	assert(encoder != nullptr);
 
-	EncoderToShout(shout_conn, *encoder, buffer, sizeof(buffer));
+	EncoderToShout(shout_conn, *encoder);
 }
 
 void
