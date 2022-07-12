@@ -15,6 +15,7 @@ ver 0.24 (not yet released)
   - new tag "Mood"
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
+* static partition configuration
 * remove Haiku support
 
 ver 0.23.9 (not yet released)

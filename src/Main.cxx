@@ -410,6 +410,15 @@ MainConfigured(const CommandLineOptions &options,
 		partition.UpdateEffectiveReplayGainMode();
 	}
 
+	raw_config.WithEach(ConfigBlockOption::PARTITION, [&](const auto &block){
+		const char *name = block.GetBlockValue("name");
+		if (name == nullptr)
+			throw std::runtime_error("Missing 'name'");
+
+		instance.partitions.emplace_back(instance, name,
+						 partition_config);
+	});
+
 	client_manager_init(raw_config);
 	const ScopeInputPluginsInit input_plugins_init(raw_config,
 						       instance.io_thread.GetEventLoop());

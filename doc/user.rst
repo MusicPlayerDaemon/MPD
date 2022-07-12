@@ -297,6 +297,38 @@ configure this plugin, add a :code:`database` block to
 More information can be found in the :ref:`database_plugins`
 reference.
 
+
+Configuring Partitions
+----------------------
+
+:program:`MPD` can have multiple "partitions", that is, multiple
+independent players, each with their own queue and outputs.  All
+partitions share one database.  By default, there is only one
+partition called "default".  Additional partitions can be created in
+the configuration file with ``partition`` blocks or at runtime with
+the :ref:`newpartition <command_newpartition>` command.
+
+Example for specifying an additional partition in the configuration
+file:
+
+.. code-block:: none
+
+    partition {
+        name "foo"
+    }
+
+The following options are available in ``partition`` blocks:
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Name
+     - Description
+   * - **name**
+     - The name of the partition.
+
+
 Configuring neighbor plugins
 ----------------------------
 
