@@ -42,7 +42,7 @@ namespace Alsa {
 class PeriodBuffer {
 	size_t capacity, head, tail;
 
-	uint8_t *buffer;
+	std::byte *buffer;
 
 public:
 	PeriodBuffer() = default;
@@ -56,7 +56,7 @@ public:
 		   to be able to fill the buffer with silence,
 		   after moving an unfinished frame to the
 		   end */
-		buffer = new uint8_t[capacity + frame_size - 1];
+		buffer = new std::byte[capacity + frame_size - 1];
 		head = tail = 0;
 	}
 
@@ -95,7 +95,7 @@ public:
 	 * copied to the returned pointer, and call AppendBytes() to
 	 * commit the operation.
 	 */
-	uint8_t *GetTail() noexcept {
+	std::byte *GetTail() noexcept {
 		assert(!IsFull());
 
 		return buffer + tail;
@@ -131,7 +131,7 @@ public:
 	 *
 	 * @param _silence one period worth of silence
 	 */
-	void FillWithSilence(const uint8_t *_silence,
+	void FillWithSilence(const std::byte *_silence,
 			     const size_t frame_size) noexcept {
 		assert(!IsFull());
 
@@ -153,7 +153,7 @@ public:
 	 * from the returned pointer, and call ConsumeBytes() to
 	 * commit the operation.
 	 */
-	const uint8_t *GetHead() const noexcept {
+	const std::byte *GetHead() const noexcept {
 		return buffer + head;
 	}
 

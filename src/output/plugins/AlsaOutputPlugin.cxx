@@ -223,14 +223,14 @@ class AlsaOutput final
 	 * It contains silence samples, enough to fill one period (see
 	 * #period_frames).
 	 */
-	uint8_t *silence;
+	std::byte *silence;
 
 	AlsaNonBlockPcm non_block;
 
 	/**
 	 * For copying data from OutputThread to IOThread.
 	 */
-	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
+	boost::lockfree::spsc_queue<std::byte> *ring_buffer;
 
 	Alsa::PeriodBuffer period_buffer;
 
@@ -585,7 +585,7 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 	   in the ALSA-PCM buffer */
 	max_avail_frames = hw_result.buffer_size - hw_result.period_size;
 
-	silence = new uint8_t[snd_pcm_frames_to_bytes(pcm, alsa_period_size)];
+	silence = new std::byte[snd_pcm_frames_to_bytes(pcm, alsa_period_size)];
 	snd_pcm_format_set_silence(hw_result.format, silence,
 				   alsa_period_size * audio_format.channels);
 
@@ -874,7 +874,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	interrupted = false;
 
 	size_t period_size = period_frames * out_frame_size;
-	ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(period_size * 4);
+	ring_buffer = new boost::lockfree::spsc_queue<std::byte>(period_size * 4);
 
 	period_buffer.Allocate(period_frames, out_frame_size);
 
@@ -1234,8 +1234,7 @@ AlsaOutput::Play(const void *chunk, size_t size)
 	if (e.empty())
 		return size;
 
-	size_t bytes_written = ring_buffer->push((const uint8_t *)e.data(),
-						 e.size());
+	size_t bytes_written = ring_buffer->push(e.data(), e.size());
 	assert(bytes_written == e.size());
 	(void)bytes_written;
 
