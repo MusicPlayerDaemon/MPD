@@ -773,7 +773,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 std::size_t
 OSXOutput::Play(std::span<const std::byte> input)
 {
-	assert(size > 0);
+	assert(!input.empty());
 
 	pause = false;
 
@@ -781,7 +781,7 @@ OSXOutput::Play(std::span<const std::byte> input)
 	if (dop_enabled) {
 		input = pcm_export->Export(input);
 		if (input.empty())
-			return size;
+			return input.size();
 	}
 #endif
 
