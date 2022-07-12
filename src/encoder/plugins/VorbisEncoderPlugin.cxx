@@ -237,7 +237,7 @@ VorbisEncoder::SendTag(const Tag &tag)
 
 static void
 interleaved_to_vorbis_buffer(float **dest, const float *src,
-			     unsigned num_frames, unsigned num_channels)
+			     std::size_t num_frames, std::size_t num_channels)
 {
 	for (unsigned i = 0; i < num_frames; i++)
 		for (unsigned j = 0; j < num_channels; j++)
@@ -247,7 +247,7 @@ interleaved_to_vorbis_buffer(float **dest, const float *src,
 void
 VorbisEncoder::Write(const void *data, size_t length)
 {
-	unsigned num_frames = length / audio_format.GetFrameSize();
+	std::size_t num_frames = length / audio_format.GetFrameSize();
 
 	/* this is for only 16-bit audio */
 
