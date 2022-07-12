@@ -249,7 +249,7 @@ FlacEncoder::SendTag(const Tag &tag)
 
 
 static inline void
-pcm8_to_flac(int32_t *out, const int8_t *in, unsigned num_samples) noexcept
+pcm8_to_flac(int32_t *out, const int8_t *in, std::size_t num_samples) noexcept
 {
 	while (num_samples > 0) {
 		*out++ = *in++;
@@ -258,7 +258,7 @@ pcm8_to_flac(int32_t *out, const int8_t *in, unsigned num_samples) noexcept
 }
 
 static inline void
-pcm16_to_flac(int32_t *out, const int16_t *in, unsigned num_samples) noexcept
+pcm16_to_flac(int32_t *out, const int16_t *in, std::size_t num_samples) noexcept
 {
 	while (num_samples > 0) {
 		*out++ = *in++;
@@ -274,8 +274,8 @@ FlacEncoder::Write(const void *data, size_t length)
 
 	/* format conversion */
 
-	const unsigned num_frames = length / audio_format.GetFrameSize();
-	const unsigned num_samples = num_frames * audio_format.channels;
+	const std::size_t num_frames = length / audio_format.GetFrameSize();
+	const std::size_t num_samples = num_frames * audio_format.channels;
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
