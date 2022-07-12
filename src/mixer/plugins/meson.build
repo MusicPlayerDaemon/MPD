@@ -10,10 +10,6 @@ if alsa_dep.found()
   ]
 endif
 
-if is_haiku
-  mixer_plugins_sources += 'HaikuMixerPlugin.cxx'
-endif
-
 if enable_oss
   mixer_plugins_sources += 'OssMixerPlugin.cxx'
 endif

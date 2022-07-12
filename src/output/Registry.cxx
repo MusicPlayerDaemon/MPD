@@ -27,7 +27,6 @@
 #include "plugins/SndioOutputPlugin.hxx"
 #include "plugins/snapcast/SnapcastOutputPlugin.hxx"
 #include "plugins/httpd/HttpdOutputPlugin.hxx"
-#include "plugins/HaikuOutputPlugin.hxx"
 #include "plugins/JackOutputPlugin.hxx"
 #include "plugins/NullOutputPlugin.hxx"
 #include "plugins/OpenALOutputPlugin.hxx"
@@ -61,9 +60,6 @@ constexpr const AudioOutputPlugin *audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_SNDIO
 	&sndio_output_plugin,
-#endif
-#ifdef ENABLE_HAIKU
-	&haiku_output_plugin,
 #endif
 #ifdef ENABLE_PIPE_OUTPUT
 	&pipe_output_plugin,

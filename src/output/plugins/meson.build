@@ -29,10 +29,6 @@ if enable_fifo_output
   output_plugins_sources += 'FifoOutputPlugin.cxx'
 endif
 
-if is_haiku
-  output_plugins_sources += 'HaikuOutputPlugin.cxx'
-endif
-
 output_features.set('ENABLE_HTTPD_OUTPUT', get_option('httpd'))
 if get_option('httpd')
   output_plugins_sources += [

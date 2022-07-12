@@ -158,7 +158,6 @@ is_linux = host_machine.system() == 'linux'
 is_android = get_option('android_ndk') != ''
 is_darwin = host_machine.system() == 'darwin'
 is_windows = host_machine.system() == 'windows'
-is_haiku = host_machine.system() == 'haiku'
 
 if is_android
   common_cppflags += '-DANDROID'
@@ -516,13 +515,6 @@ if is_android
     declare_dependency(sources: [classes_jar]),
     java_dep,
   ]
-elif is_haiku
-  target_type = 'executable'
-  target_name = 'mpd.nores'
-  link_args += [
-    '-lnetwork',
-    '-lbe',
-  ]
 else
   target_type = 'executable'
   target_name = 'mpd'
@@ -562,23 +554,11 @@ mpd = build_target(
   ],
   link_args: link_args,
   build_by_default: not get_option('fuzzer'),
-  install: not is_android and not is_haiku,
+  install: not is_android
 )
 
 if is_android
   subdir('android/apk')
-endif
-
-if is_haiku
-  subdir('src/haiku')
-  custom_target(
-    'mpd',
-    output: 'mpd',
-    input: [mpd, rsrc],
-    command: [addres, '@OUTPUT@', '@INPUT0@', '@INPUT1@'],
-    install: true,
-    install_dir: get_option('bindir'),
-  )
 endif
 
 configure_file(output: 'config.h', configuration: conf)
