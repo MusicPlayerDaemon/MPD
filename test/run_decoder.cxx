@@ -148,8 +148,6 @@ public:
 	}
 
 	DecoderCommand GetCommand() noexcept override {
-		assert(IsInitialized());
-
 		if (seek_where != SongTime{}) {
 			if (!seekable)
 				return DecoderCommand::STOP;
