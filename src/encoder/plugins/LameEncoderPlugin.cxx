@@ -51,8 +51,8 @@ public:
 	LameEncoder &operator=(const LameEncoder &) = delete;
 
 	/* virtual methods from class Encoder */
-	void Write(const void *data, size_t length) override;
-	size_t Read(void *dest, size_t length) noexcept override;
+	void Write(std::span<const std::byte> src) override;
+	std::span<const std::byte> Read(std::span<std::byte> buffer) noexcept override;
 };
 
 class PreparedLameEncoder final : public PreparedEncoder {
@@ -167,17 +167,17 @@ LameEncoder::~LameEncoder() noexcept
 }
 
 void
-LameEncoder::Write(const void *data, size_t length)
+LameEncoder::Write(std::span<const std::byte> src)
 {
 	const auto *src = (const int16_t*)data;
 
 	assert(output_begin == output_end);
 
-	const unsigned num_frames = length / audio_format.GetFrameSize();
-	const unsigned num_samples = length / audio_format.GetSampleSize();
+	const std::size_t num_frames = length / audio_format.GetFrameSize();
+	const std::size_t num_samples = length / audio_format.GetSampleSize();
 
 	/* worst-case formula according to LAME documentation */
-	const size_t output_buffer_size = 5 * num_samples / 4 + 7200;
+	const std::size_t output_buffer_size = 5 * num_samples / 4 + 7200;
 	const auto dest = output_buffer.Get(output_buffer_size);
 
 	/* this is for only 16-bit audio */
@@ -199,7 +199,7 @@ LameEncoder::Read(void *dest, size_t length) noexcept
 {
 	const auto begin = output_begin;
 	assert(begin <= output_end);
-	const size_t remainning = output_end - begin;
+	const std::size_t remainning = output_end - begin;
 	if (length > remainning)
 		length = remainning;
 

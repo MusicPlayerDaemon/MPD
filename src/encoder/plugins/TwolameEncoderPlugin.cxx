@@ -38,8 +38,8 @@ class TwolameEncoder final : public Encoder {
 	twolame_options *options;
 
 	unsigned char output_buffer[32768];
-	size_t output_buffer_length = 0;
-	size_t output_buffer_position = 0;
+	std::size_t output_buffer_length = 0;
+	std::size_t output_buffer_position = 0;
 
 	/**
 	 * Call libtwolame's flush function when the output_buffer is
@@ -193,7 +193,7 @@ TwolameEncoder::Write(const void *data, size_t length)
 
 	assert(output_buffer_position == output_buffer_length);
 
-	const unsigned num_frames = length / audio_format.GetFrameSize();
+	const std::size_t num_frames = length / audio_format.GetFrameSize();
 
 	int bytes_out = twolame_encode_buffer_interleaved(options,
 							  src, num_frames,
@@ -202,7 +202,7 @@ TwolameEncoder::Write(const void *data, size_t length)
 	if (bytes_out < 0)
 		throw std::runtime_error("twolame encoder failed");
 
-	output_buffer_length = (size_t)bytes_out;
+	output_buffer_length = (std::size_t)bytes_out;
 	output_buffer_position = 0;
 }
 
@@ -223,7 +223,7 @@ TwolameEncoder::Read(void *dest, size_t length) noexcept
 	}
 
 
-	const size_t remainning = output_buffer_length - output_buffer_position;
+	const std::size_t remainning = output_buffer_length - output_buffer_position;
 	if (length > remainning)
 		length = remainning;
 
