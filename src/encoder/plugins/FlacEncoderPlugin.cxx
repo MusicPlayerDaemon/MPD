@@ -43,7 +43,7 @@ class FlacEncoder final : public Encoder {
 
 	/**
 	 * This buffer will hold encoded data from libFLAC until it is
-	 * picked up with flac_encoder_read().
+	 * picked up with Read().
 	 */
 	DynamicFifoBuffer<std::byte> output_buffer{8192};
 
@@ -73,8 +73,10 @@ public:
 
 	void Write(std::span<const std::byte> src) override;
 
-	std::span<const std::byte> Read(std::span<std::byte> buffer) noexcept override {
-		return buffer.first(output_buffer.Read(buffer.data(), buffer.size()));
+	std::span<const std::byte> Read(std::span<std::byte>) noexcept override {
+		auto r = output_buffer.Read();
+		output_buffer.Consume(r.size());
+		return r;
 	}
 
 private:
