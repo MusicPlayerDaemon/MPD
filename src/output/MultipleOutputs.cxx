@@ -92,8 +92,7 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 	const AudioOutputDefaults defaults(config);
 	FilterFactory filter_factory(config);
 
-	for (const auto &block : config.GetBlockList(ConfigBlockOption::AUDIO_OUTPUT)) {
-		block.SetUsed();
+	config.WithEach(ConfigBlockOption::AUDIO_OUTPUT, [&, this](const auto &block){
 		auto output = LoadOutputControl(event_loop, rt_event_loop,
 						replay_gain_config,
 						mixer_listener,
@@ -104,7 +103,7 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 						 "names: %s", output->GetName());
 
 		outputs.emplace_back(std::move(output));
-	}
+	});
 
 	if (outputs.empty()) {
 		/* auto-detect device */

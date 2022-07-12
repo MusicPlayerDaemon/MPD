@@ -137,6 +137,14 @@ struct ConfigBlock {
 	unsigned GetPositiveValue(const char *name, unsigned default_value) const;
 
 	bool GetBlockValue(const char *name, bool default_value) const;
+
+	/**
+	 * Call this method in a "catch" block to throw a nested
+	 * exception showing the location of this block in the
+	 * configuration file.
+	 */
+	[[noreturn]]
+	void ThrowWithNested() const;
 };
 
 #endif

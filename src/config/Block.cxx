@@ -143,3 +143,10 @@ ConfigBlock::GetBlockValue(const char *name, bool default_value) const
 
 	return bp->GetBoolValue();
 }
+
+void
+ConfigBlock::ThrowWithNested() const
+{
+	std::throw_with_nested(FormatRuntimeError("Error in block on line %i",
+						  line));
+}
