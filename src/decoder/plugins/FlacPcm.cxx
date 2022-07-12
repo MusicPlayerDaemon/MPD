@@ -38,7 +38,8 @@ FlacPcmImport::Open(unsigned sample_rate, unsigned bits_per_sample,
 
 template<typename T>
 static void
-FlacImportStereo(T *dest, const FLAC__int32 *const src[], size_t n_frames)
+FlacImportStereo(T *dest, const FLAC__int32 *const src[],
+		 size_t n_frames) noexcept
 {
 	for (size_t i = 0; i != n_frames; ++i) {
 		*dest++ = (T)src[0][i];
@@ -49,7 +50,7 @@ FlacImportStereo(T *dest, const FLAC__int32 *const src[], size_t n_frames)
 template<typename T>
 static void
 FlacImportAny(T *dest, const FLAC__int32 *const src[], size_t n_frames,
-	      unsigned n_channels)
+	      unsigned n_channels) noexcept
 {
 	for (size_t i = 0; i != n_frames; ++i)
 		for (unsigned c = 0; c != n_channels; ++c)
@@ -59,7 +60,7 @@ FlacImportAny(T *dest, const FLAC__int32 *const src[], size_t n_frames,
 template<typename T>
 static void
 FlacImport(T *dest, const FLAC__int32 *const src[], size_t n_frames,
-	   unsigned n_channels)
+	   unsigned n_channels) noexcept
 {
 	if (n_channels == 2)
 		FlacImportStereo(dest, src, n_frames);
@@ -70,7 +71,7 @@ FlacImport(T *dest, const FLAC__int32 *const src[], size_t n_frames,
 template<typename T>
 static std::span<const std::byte>
 FlacImport(PcmBuffer &buffer, const FLAC__int32 *const src[], size_t n_frames,
-	   unsigned n_channels)
+	   unsigned n_channels) noexcept
 {
 	size_t n_samples = n_frames * n_channels;
 	size_t dest_size = n_samples * sizeof(T);
@@ -80,7 +81,7 @@ FlacImport(PcmBuffer &buffer, const FLAC__int32 *const src[], size_t n_frames,
 }
 
 std::span<const std::byte>
-FlacPcmImport::Import(const FLAC__int32 *const src[], size_t n_frames)
+FlacPcmImport::Import(const FLAC__int32 *const src[], size_t n_frames) noexcept
 {
 	switch (audio_format.format) {
 	case SampleFormat::S16:
