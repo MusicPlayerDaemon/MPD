@@ -233,7 +233,7 @@ public:
 	 * Reads data from the encoder (as much as available) and
 	 * returns it as a new #page object.
 	 */
-	PagePtr ReadPage();
+	PagePtr ReadPage() noexcept;
 
 	/**
 	 * Broadcasts a page struct to all clients.
@@ -247,7 +247,7 @@ public:
 	 *
 	 * Mutext must not be locked.
 	 */
-	void BroadcastFromEncoder();
+	void BroadcastFromEncoder() noexcept;
 
 	/**
 	 * Mutext must not be locked.

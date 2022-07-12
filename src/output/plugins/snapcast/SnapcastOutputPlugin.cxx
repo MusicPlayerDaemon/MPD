@@ -124,7 +124,7 @@ SnapcastOutput::OnAccept(UniqueSocketDescriptor fd,
 }
 
 static AllocatedArray<std::byte>
-ReadEncoder(Encoder &encoder)
+ReadEncoder(Encoder &encoder) noexcept
 {
 	std::byte buffer[4096];
 
@@ -137,13 +137,7 @@ inline void
 SnapcastOutput::OpenEncoder(AudioFormat &audio_format)
 {
 	encoder = prepared_encoder->Open(audio_format);
-
-	try {
-		codec_header = ReadEncoder(*encoder);
-	} catch (...) {
-		delete encoder;
-		throw;
-	}
+	codec_header = ReadEncoder(*encoder);
 
 	unflushed_input = 0;
 }

@@ -33,7 +33,7 @@ public:
 		buffer.Append({(const std::byte *)data, length});
 	}
 
-	size_t Read(void *dest, size_t length) override {
+	size_t Read(void *dest, size_t length) noexcept override {
 		return buffer.Read((std::byte *)dest, length);
 	}
 };

@@ -102,7 +102,7 @@ public:
 	 * @param length the maximum length of the destination buffer
 	 * @return the number of bytes written to #dest
 	 */
-	virtual std::size_t Read(void *dest, std::size_t length) = 0;
+	virtual std::size_t Read(void *dest, std::size_t length) noexcept = 0;
 };
 
 class PreparedEncoder {

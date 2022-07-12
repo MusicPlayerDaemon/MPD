@@ -142,7 +142,7 @@ HttpdOutput::OnAccept(UniqueSocketDescriptor fd,
 }
 
 PagePtr
-HttpdOutput::ReadPage()
+HttpdOutput::ReadPage() noexcept
 {
 	if (unflushed_input >= 65536) {
 		/* we have fed a lot of input into the encoder, but it
@@ -277,7 +277,7 @@ HttpdOutput::BroadcastPage(PagePtr page) noexcept
 }
 
 void
-HttpdOutput::BroadcastFromEncoder()
+HttpdOutput::BroadcastFromEncoder() noexcept
 {
 	/* synchronize with the IOThread */
 	{
