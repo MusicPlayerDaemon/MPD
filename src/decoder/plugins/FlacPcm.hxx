@@ -43,7 +43,7 @@ public:
 	void Open(unsigned sample_rate, unsigned bits_per_sample,
 		  unsigned channels);
 
-	const AudioFormat &GetAudioFormat() const {
+	const AudioFormat &GetAudioFormat() const noexcept {
 		return audio_format;
 	}
 

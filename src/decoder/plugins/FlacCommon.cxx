@@ -30,7 +30,7 @@
 
 bool
 FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
-			unsigned channels, FLAC__uint64 total_frames)
+			unsigned channels, FLAC__uint64 total_frames) noexcept
 {
 	assert(!initialized);
 	assert(!unsupported);
@@ -60,7 +60,7 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 }
 
 inline void
-FlacDecoder::OnStreamInfo(const FLAC__StreamMetadata_StreamInfo &stream_info)
+FlacDecoder::OnStreamInfo(const FLAC__StreamMetadata_StreamInfo &stream_info) noexcept
 {
 	if (initialized)
 		return;
@@ -72,7 +72,7 @@ FlacDecoder::OnStreamInfo(const FLAC__StreamMetadata_StreamInfo &stream_info)
 }
 
 inline void
-FlacDecoder::OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc)
+FlacDecoder::OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc) noexcept
 {
 	ReplayGainInfo rgi;
 	if (flac_parse_replay_gain(rgi, vc))
@@ -86,7 +86,7 @@ FlacDecoder::OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc)
 }
 
 void
-FlacDecoder::OnMetadata(const FLAC__StreamMetadata &metadata)
+FlacDecoder::OnMetadata(const FLAC__StreamMetadata &metadata) noexcept
 {
 	if (unsupported)
 		return;
@@ -106,7 +106,7 @@ FlacDecoder::OnMetadata(const FLAC__StreamMetadata &metadata)
 }
 
 inline bool
-FlacDecoder::OnFirstFrame(const FLAC__FrameHeader &header)
+FlacDecoder::OnFirstFrame(const FLAC__FrameHeader &header) noexcept
 {
 	if (unsupported)
 		return false;
@@ -139,7 +139,7 @@ FlacDecoder::GetDeltaPosition(const FLAC__StreamDecoder &sd)
 FLAC__StreamDecoderWriteStatus
 FlacDecoder::OnWrite(const FLAC__Frame &frame,
 		     const FLAC__int32 *const buf[],
-		     FLAC__uint64 nbytes)
+		     FLAC__uint64 nbytes) noexcept
 {
 	if (!initialized && !OnFirstFrame(frame.header))
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;

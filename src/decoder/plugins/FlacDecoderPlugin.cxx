@@ -32,7 +32,8 @@
 #error libFLAC is too old
 #endif
 
-static void flacPrintErroredState(FLAC__StreamDecoderState state)
+static void
+flacPrintErroredState(FLAC__StreamDecoderState state) noexcept
 {
 	switch (state) {
 	case FLAC__STREAM_DECODER_SEARCH_FOR_METADATA:
@@ -53,8 +54,9 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 	LogError(flac_domain, FLAC__StreamDecoderStateString[state]);
 }
 
-static void flacMetadata([[maybe_unused]] const FLAC__StreamDecoder * dec,
-			 const FLAC__StreamMetadata * block, void *vdata)
+static void
+flacMetadata([[maybe_unused]] const FLAC__StreamDecoder * dec,
+	     const FLAC__StreamMetadata * block, void *vdata) noexcept
 {
 	auto &fd = *(FlacDecoder *)vdata;
 	fd.OnMetadata(*block);
@@ -62,14 +64,14 @@ static void flacMetadata([[maybe_unused]] const FLAC__StreamDecoder * dec,
 
 static FLAC__StreamDecoderWriteStatus
 flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
-	      const FLAC__int32 *const buf[], void *vdata)
+	      const FLAC__int32 *const buf[], void *vdata) noexcept
 {
 	auto &fd = *(FlacDecoder *)vdata;
 	return fd.OnWrite(*frame, buf, fd.GetDeltaPosition(*dec));
 }
 
 static bool
-flac_scan_file(Path path_fs, TagHandler &handler)
+flac_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(NarrowPath(path_fs))) {
@@ -84,7 +86,7 @@ flac_scan_file(Path path_fs, TagHandler &handler)
 }
 
 static bool
-flac_scan_stream(InputStream &is, TagHandler &handler)
+flac_scan_stream(InputStream &is, TagHandler &handler) noexcept
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(is)) {
@@ -102,7 +104,7 @@ flac_scan_stream(InputStream &is, TagHandler &handler)
  * Some glue code around FLAC__stream_decoder_new().
  */
 static FlacStreamDecoder
-flac_decoder_new()
+flac_decoder_new() noexcept
 {
 	FlacStreamDecoder sd;
 	if(!FLAC__stream_decoder_set_metadata_respond(sd.get(), FLAC__METADATA_TYPE_VORBIS_COMMENT))
@@ -113,7 +115,7 @@ flac_decoder_new()
 }
 
 static bool
-flac_decoder_initialize(FlacDecoder *data, FLAC__StreamDecoder *sd)
+flac_decoder_initialize(FlacDecoder *data, FLAC__StreamDecoder *sd) noexcept
 {
 	if (!FLAC__stream_decoder_process_until_end_of_metadata(sd)) {
 		if (FLAC__stream_decoder_get_state(sd) != FLAC__STREAM_DECODER_END_OF_STREAM)
@@ -231,7 +233,7 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 }
 
 static FLAC__StreamDecoderInitStatus
-stream_init_oggflac(FLAC__StreamDecoder *flac_dec, FlacDecoder *data)
+stream_init_oggflac(FLAC__StreamDecoder *flac_dec, FlacDecoder *data) noexcept
 {
 	return FLAC__stream_decoder_init_ogg_stream(flac_dec,
 						    FlacInput::Read,
@@ -246,7 +248,7 @@ stream_init_oggflac(FLAC__StreamDecoder *flac_dec, FlacDecoder *data)
 }
 
 static FLAC__StreamDecoderInitStatus
-stream_init_flac(FLAC__StreamDecoder *flac_dec, FlacDecoder *data)
+stream_init_flac(FLAC__StreamDecoder *flac_dec, FlacDecoder *data) noexcept
 {
 	return FLAC__stream_decoder_init_stream(flac_dec,
 						FlacInput::Read,
@@ -261,7 +263,8 @@ stream_init_flac(FLAC__StreamDecoder *flac_dec, FlacDecoder *data)
 }
 
 static FLAC__StreamDecoderInitStatus
-stream_init(FLAC__StreamDecoder *flac_dec, FlacDecoder *data, bool is_ogg)
+stream_init(FLAC__StreamDecoder *flac_dec, FlacDecoder *data,
+	    bool is_ogg) noexcept
 {
 	return is_ogg
 		? stream_init_oggflac(flac_dec, data)
@@ -307,7 +310,7 @@ flac_decode(DecoderClient &client, InputStream &input_stream)
 }
 
 static bool
-oggflac_init([[maybe_unused]] const ConfigBlock &block)
+oggflac_init([[maybe_unused]] const ConfigBlock &block) noexcept
 {
 	return !!FLAC_API_SUPPORTS_OGG_FLAC;
 }
