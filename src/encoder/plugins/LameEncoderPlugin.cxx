@@ -31,18 +31,16 @@
 #include <stdexcept>
 
 class LameEncoder final : public Encoder {
-	const AudioFormat audio_format;
-
 	lame_global_flags *const gfp;
 
 	ReusableArray<std::byte, 32768> output_buffer;
 	std::span<const std::byte> output{};
 
 public:
-	LameEncoder(const AudioFormat _audio_format,
-		    lame_global_flags *_gfp) noexcept
-		:Encoder(false),
-		 audio_format(_audio_format), gfp(_gfp) {}
+	static constexpr unsigned CHANNELS = 2;
+
+	explicit LameEncoder(lame_global_flags *_gfp) noexcept
+		:Encoder(false), gfp(_gfp) {}
 
 	~LameEncoder() noexcept override;
 
@@ -144,7 +142,7 @@ Encoder *
 PreparedLameEncoder::Open(AudioFormat &audio_format)
 {
 	audio_format.format = SampleFormat::S16;
-	audio_format.channels = 2;
+	audio_format.channels = LameEncoder::CHANNELS;
 
 	auto gfp = lame_init();
 	if (gfp == nullptr)
@@ -157,7 +155,7 @@ PreparedLameEncoder::Open(AudioFormat &audio_format)
 		throw;
 	}
 
-	return new LameEncoder(audio_format, gfp);
+	return new LameEncoder(gfp);
 }
 
 LameEncoder::~LameEncoder() noexcept
@@ -173,7 +171,7 @@ LameEncoder::Write(std::span<const std::byte> _src)
 	assert(output.empty());
 
 	const std::size_t num_samples = src.size();
-	const std::size_t num_frames = num_samples / audio_format.channels;
+	const std::size_t num_frames = num_samples / CHANNELS;
 
 	/* worst-case formula according to LAME documentation */
 	const std::size_t output_buffer_size = 5 * num_samples / 4 + 7200;

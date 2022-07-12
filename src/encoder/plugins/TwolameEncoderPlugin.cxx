@@ -32,8 +32,6 @@
 #include <stdexcept>
 
 class TwolameEncoder final : public Encoder {
-	const AudioFormat audio_format;
-
 	twolame_options *options;
 
 	std::byte output_buffer[32768];
@@ -46,10 +44,10 @@ class TwolameEncoder final : public Encoder {
 	bool flush = false;
 
 public:
-	TwolameEncoder(const AudioFormat _audio_format,
-		       twolame_options *_options)
-		:Encoder(false),
-		 audio_format(_audio_format), options(_options) {}
+	static constexpr unsigned CHANNELS = 2;
+
+	explicit TwolameEncoder(twolame_options *_options) noexcept
+		:Encoder(false), options(_options) {}
 	~TwolameEncoder() noexcept override;
 
 	TwolameEncoder(const TwolameEncoder &) = delete;
@@ -162,7 +160,7 @@ Encoder *
 PreparedTwolameEncoder::Open(AudioFormat &audio_format)
 {
 	audio_format.format = SampleFormat::S16;
-	audio_format.channels = 2;
+	audio_format.channels = TwolameEncoder::CHANNELS;
 
 	auto options = twolame_init();
 	if (options == nullptr)
@@ -176,7 +174,7 @@ PreparedTwolameEncoder::Open(AudioFormat &audio_format)
 		throw;
 	}
 
-	return new TwolameEncoder(audio_format, options);
+	return new TwolameEncoder(options);
 }
 
 TwolameEncoder::~TwolameEncoder() noexcept
@@ -191,7 +189,7 @@ TwolameEncoder::Write(std::span<const std::byte> _src)
 
 	assert(fill == 0);
 
-	const std::size_t num_frames = src.size() / audio_format.channels;
+	const std::size_t num_frames = src.size() / CHANNELS;
 
 	int bytes_out = twolame_encode_buffer_interleaved(options,
 							  src.data(), num_frames,
