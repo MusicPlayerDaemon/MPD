@@ -142,11 +142,6 @@ private:
 			       boost::intrusive::constant_time_size<true>> clients;
 
 	/**
-	 * A temporary buffer for the ReadPage() function.
-	 */
-	std::byte buffer[32768];
-
-	/**
 	 * The maximum number of clients connected at the same time.
 	 */
 	const unsigned clients_max;

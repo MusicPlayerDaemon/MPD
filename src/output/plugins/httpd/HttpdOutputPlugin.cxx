@@ -157,6 +157,8 @@ HttpdOutput::ReadPage() noexcept
 		unflushed_input = 0;
 	}
 
+	std::byte buffer[32768];
+
 	size_t size = 0;
 	do {
 		size_t nbytes = encoder->Read(buffer + size,
