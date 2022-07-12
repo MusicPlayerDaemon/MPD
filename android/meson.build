@@ -17,7 +17,7 @@ android_dx = join_paths(android_build_tools_dir, 'dx')
 android_zipalign = join_paths(android_build_tools_dir, 'zipalign')
 
 javac = find_program('javac')
-jarsigner = find_program('jarsigner')
+apksigner = find_program('apksigner')
 rsvg_convert = find_program('rsvg-convert')
 convert = find_program('convert')
 zip = find_program('zip')
