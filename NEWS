@@ -15,6 +15,8 @@ ver 0.24 (not yet released)
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
 
+ver 0.23.9 (not yet released)
+
 ver 0.23.8 (2022/07/09)
 * storage
   - curl: fix crash if web server does not understand WebDAV

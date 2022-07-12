@@ -12,18 +12,30 @@ unsigned_apk = custom_target(
   ],
 )
 
+aligned_apk = custom_target(
+  'mpd-aligned.apk',
+  output: 'mpd-aligned.apk',
+  input: unsigned_apk,
+  command: [
+    android_zipalign,
+    '-f', '4',
+    '@INPUT@', '@OUTPUT@',
+  ],
+)
+
 if get_option('android_debug_keystore') != ''
   debug_apk = custom_target(
     'mpd-debug.apk',
     output: 'mpd-debug.apk',
-    input: unsigned_apk,
+    input: aligned_apk,
     command: [
-      jarsigner,
-      '-keystore', get_option('android_debug_keystore'),
-      '-storepass', 'android',
-      '-signedjar', '@OUTPUT@',
-      '@INPUT@',
-      'androiddebugkey',
+      apksigner, 'sign',
+      '--in', '@INPUT@',
+      '--out', '@OUTPUT@',
+      '--debuggable-apk-permitted',
+      '-ks', get_option('android_debug_keystore'),
+      '--ks-key-alias', 'androiddebugkey',
+      '--ks-pass', 'pass:android',
     ],
     build_by_default: true
   )
@@ -31,29 +43,16 @@ endif
 
 if get_option('android_keystore') != '' and get_option('android_keyalias') != '' and get_option('android_keypass') != ''
   unaligned_apk = custom_target(
-    'mpd-unaligned.apk',
-    output: 'mpd-unaligned.apk',
-    input: unsigned_apk,
-    command: [
-      jarsigner,
-      '-digestalg', 'SHA1', '-sigalg', 'MD5withRSA',
-      '-keystore', get_option('android_keystore'),
-      '-storepass', get_option('android_keypass'),
-      '-signedjar', '@OUTPUT@',
-      '@INPUT@',
-      get_option('android_keyalias'),
-    ],
-  )
-
-  apk = custom_target(
     'mpd.apk',
     output: 'mpd.apk',
-    input: unaligned_apk,
+    input: aligned_apk,
     command: [
-      android_zipalign,
-      '-f', '4',
-      '@INPUT@', '@OUTPUT@',
+      apksigner, 'sign',
+      '--in', '@INPUT@',
+      '--out', '@OUTPUT@',
+      '-ks', get_option('android_keystore'),
+      '--ks-key-alias', get_option('android_keyalias'),
+      '--ks-pass', 'pass:' + get_option('android_keypass'),
     ],
-    build_by_default: true
   )
 endif
