@@ -24,10 +24,13 @@
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Serial.hxx"
+#include "util/SpanCast.hxx"
 #include "util/StringUtil.hxx"
 
 #include <FLAC/stream_encoder.h>
 #include <FLAC/metadata.h>
+
+#include <algorithm>
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #error libFLAC is too old
@@ -249,67 +252,48 @@ FlacEncoder::SendTag(const Tag &tag)
 					 FLAC__StreamEncoderInitStatusString[init_status]);
 }
 
-
-static inline void
-pcm8_to_flac(int32_t *out, const int8_t *in, std::size_t num_samples) noexcept
+template<typename T>
+static std::span<const FLAC__int32>
+ToFlac32(PcmBuffer &buffer, std::span<const T> src) noexcept
 {
-	while (num_samples > 0) {
-		*out++ = *in++;
-		--num_samples;
-	}
+	FLAC__int32 *dest = buffer.GetT<FLAC__int32>(src.size());
+	std::copy(src.begin(), src.end(), dest);
+	return {dest, src.size()};
 }
 
-static inline void
-pcm16_to_flac(int32_t *out, const int16_t *in, std::size_t num_samples) noexcept
+static std::span<const FLAC__int32>
+ToFlac32(PcmBuffer &buffer, std::span<const std::byte> src,
+	 SampleFormat format)
 {
-	while (num_samples > 0) {
-		*out++ = *in++;
-		--num_samples;
+	switch (format) {
+	case SampleFormat::S8:
+		return ToFlac32(buffer, FromBytesStrict<const int8_t>(src));
+
+	case SampleFormat::S16:
+		return ToFlac32(buffer, FromBytesStrict<const int16_t>(src));
+
+	case SampleFormat::S24_P32:
+	case SampleFormat::S32:
+		/* nothing need to be done; format is the same for
+		   both mpd and libFLAC */
+		return FromBytesStrict<const int32_t>(src);
+
+	default:
+		gcc_unreachable();
 	}
 }
 
 void
 FlacEncoder::Write(std::span<const std::byte> src)
 {
-	void *exbuffer;
-	const void *buffer = nullptr;
-
-	/* format conversion */
-
-	const std::size_t num_frames = src.size() / audio_format.GetFrameSize();
-	const std::size_t num_samples = num_frames * audio_format.channels;
-
-	switch (audio_format.format) {
-	case SampleFormat::S8:
-		exbuffer = expand_buffer.Get(src.size() * 4);
-		pcm8_to_flac((int32_t *)exbuffer, (const int8_t *)src.data(),
-			     num_samples);
-		buffer = exbuffer;
-		break;
-
-	case SampleFormat::S16:
-		exbuffer = expand_buffer.Get(src.size() * 2);
-		pcm16_to_flac((int32_t *)exbuffer, (const int16_t *)src.data(),
-			      num_samples);
-		buffer = exbuffer;
-		break;
-
-	case SampleFormat::S24_P32:
-	case SampleFormat::S32:
-		/* nothing need to be done; format is the same for
-		   both mpd and libFLAC */
-		buffer = src.data();
-		break;
-
-	default:
-		gcc_unreachable();
-	}
+	const auto imported = ToFlac32(expand_buffer, src,
+				       audio_format.format);
+	const std::size_t n_frames = imported.size() / audio_format.channels;
 
 	/* feed samples to encoder */
 
-	if (!FLAC__stream_encoder_process_interleaved(fse,
-						      (const FLAC__int32 *)buffer,
-						      num_frames))
+	if (!FLAC__stream_encoder_process_interleaved(fse, imported.data(),
+						      n_frames))
 		throw std::runtime_error("flac encoder process failed");
 }
 
