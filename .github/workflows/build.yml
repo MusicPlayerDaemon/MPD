@@ -28,7 +28,7 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CC: 'ccache gcc-10'
       CXX: 'ccache g++-10'
