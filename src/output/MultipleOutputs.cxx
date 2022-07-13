@@ -100,7 +100,8 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 						&filter_factory);
 		if (HasName(output->GetName()))
 			throw FormatRuntimeError("output devices with identical "
-						 "names: %s", output->GetName());
+						 "names: %s",
+						 output->GetName().c_str());
 
 		outputs.emplace_back(std::move(output));
 	});

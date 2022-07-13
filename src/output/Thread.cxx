@@ -421,7 +421,7 @@ AudioOutputControl::InternalDrain() noexcept
 void
 AudioOutputControl::Task() noexcept
 {
-	FormatThreadName("output:%s", GetName());
+	FormatThreadName("output:%s", GetName().c_str());
 
 	try {
 		SetThreadRealtime();

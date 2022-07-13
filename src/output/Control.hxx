@@ -269,8 +269,8 @@ public:
 	AudioOutputControl &operator=(const AudioOutputControl &) = delete;
 
 	[[gnu::pure]]
-	const char *GetName() const noexcept {
-		return name.c_str();
+	const auto &GetName() const noexcept {
+		return name;
 	}
 
 	[[gnu::pure]]
