@@ -8,8 +8,14 @@ io = static_library(
   'FileOutputStream.cxx',
   'BufferedOutputStream.cxx',
   include_directories: inc,
+  dependencies: [
+    fmt_dep,
+  ],
 )
 
 io_dep = declare_dependency(
   link_with: io,
+  dependencies: [
+    fmt_dep,
+  ],
 )
