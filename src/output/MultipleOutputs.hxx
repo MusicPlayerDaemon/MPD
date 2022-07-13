@@ -115,13 +115,13 @@ public:
 	 * Returns nullptr if the name does not exist.
 	 */
 	gcc_pure
-	AudioOutputControl *FindByName(const char *name) noexcept;
+	AudioOutputControl *FindByName(std::string_view name) noexcept;
 
 	/**
 	 * Does an audio output device with this name exist?
 	 */
 	gcc_pure
-	bool HasName(const char *name) noexcept {
+	bool HasName(std::string_view name) noexcept {
 		return FindByName(name) != nullptr;
 	}
 
