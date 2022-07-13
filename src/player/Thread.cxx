@@ -931,10 +931,6 @@ PlayerControl::LockUpdateSongTag(DetachedSong &song,
 	/* the main thread will update the playlist version when he
 	   receives this event */
 	listener.OnPlayerTagModified();
-
-	/* notify all clients that the tag of the current song has
-	   changed */
-	idle_add(IDLE_PLAYER);
 }
 
 inline void

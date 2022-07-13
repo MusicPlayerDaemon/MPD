@@ -193,6 +193,10 @@ void
 Partition::OnPlayerTagModified() noexcept
 {
 	EmitGlobalEvent(TAG_MODIFIED);
+
+	/* notify all clients that the tag of the current song has
+	   changed */
+	EmitIdle(IDLE_PLAYER);
 }
 
 void
