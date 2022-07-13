@@ -278,6 +278,7 @@ private:
 
 	/* virtual methods from class PlayerListener */
 	void OnPlayerError() noexcept override;
+	void OnPlayerStateChanged() noexcept override;
 	void OnPlayerSync() noexcept override;
 	void OnPlayerTagModified() noexcept override;
 	void OnBorderPause() noexcept override;

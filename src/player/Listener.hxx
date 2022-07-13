@@ -29,6 +29,12 @@ public:
 	virtual void OnPlayerError() noexcept = 0;
 
 	/**
+	 * Some state of the player has changed.  This maps to
+	 * #IDLE_PLAYER.
+	 */
+	virtual void OnPlayerStateChanged() noexcept = 0;
+
+	/**
 	 * Must call playlist_sync().
 	 */
 	virtual void OnPlayerSync() noexcept = 0;
