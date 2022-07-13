@@ -25,6 +25,8 @@
 #include "util/StringStrip.hxx"
 #include "util/RuntimeError.hxx"
 
+#include <fmt/format.h>
+
 #include <cstring>
 
 #include <stdlib.h>

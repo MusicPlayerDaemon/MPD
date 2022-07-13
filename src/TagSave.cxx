@@ -21,6 +21,8 @@
 #include "tag/Tag.hxx"
 #include "io/BufferedOutputStream.hxx"
 
+#include <fmt/format.h>
+
 #define SONG_TIME "Time: "
 
 void

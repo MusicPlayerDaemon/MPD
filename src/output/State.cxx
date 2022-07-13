@@ -29,6 +29,8 @@
 #include "io/BufferedOutputStream.hxx"
 #include "util/StringCompare.hxx"
 
+#include <fmt/format.h>
+
 #include <stdlib.h>
 
 #define AUDIO_DEVICE_STATE "audio_device_state:"

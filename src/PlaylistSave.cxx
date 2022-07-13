@@ -32,6 +32,8 @@
 #include "io/BufferedOutputStream.hxx"
 #include "util/UriExtract.hxx"
 
+#include <fmt/format.h>
+
 static void
 playlist_print_path(BufferedOutputStream &os, const Path path)
 {

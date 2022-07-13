@@ -31,6 +31,8 @@
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
 
+#include <fmt/format.h>
+
 #include <string.h>
 
 #define DIRECTORY_DIR "directory: "

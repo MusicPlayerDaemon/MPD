@@ -30,6 +30,8 @@
 #include "BufferedOutputStream.hxx"
 #include "OutputStream.hxx"
 
+#include <fmt/format.h>
+
 #include <cstdarg>
 
 #include <string.h>

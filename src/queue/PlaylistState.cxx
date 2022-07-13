@@ -37,6 +37,8 @@
 #include "util/NumberParser.hxx"
 #include "Log.hxx"
 
+#include <fmt/format.h>
+
 #include <string.h>
 #include <stdlib.h>
 

@@ -28,6 +28,8 @@
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
+#include <fmt/format.h>
+
 #include <exception>
 
 #include <stdlib.h>

@@ -29,6 +29,8 @@
 #include "util/RuntimeError.hxx"
 #include "Version.h"
 
+#include <fmt/format.h>
+
 #include <string.h>
 #include <stdlib.h>
 

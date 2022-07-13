@@ -26,6 +26,8 @@
 #include "io/BufferedOutputStream.hxx"
 #include "Log.hxx"
 
+#include <fmt/format.h>
+
 #include <cassert>
 
 #include <stdlib.h>
