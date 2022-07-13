@@ -22,6 +22,7 @@
 #include "db/plugins/simple/Song.hxx"
 #include "song/DetachedSong.hxx"
 #include "TagSave.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "io/LineReader.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "tag/ParseName.hxx"
@@ -43,45 +44,45 @@ static void
 range_save(BufferedOutputStream &os, unsigned start_ms, unsigned end_ms)
 {
 	if (end_ms > 0)
-		os.Format("Range: %u-%u\n", start_ms, end_ms);
+		os.Fmt(FMT_STRING("Range: {}-{}\n"), start_ms, end_ms);
 	else if (start_ms > 0)
-		os.Format("Range: %u-\n", start_ms);
+		os.Fmt(FMT_STRING("Range: {}-\n"), start_ms);
 }
 
 void
 song_save(BufferedOutputStream &os, const Song &song)
 {
-	os.Format(SONG_BEGIN "%s\n", song.filename.c_str());
+	os.Fmt(FMT_STRING(SONG_BEGIN "{}\n"), song.filename);
 
 	if (!song.target.empty())
-		os.Format("Target: %s\n", song.target.c_str());
+		os.Fmt(FMT_STRING("Target: {}\n"), song.target);
 
 	range_save(os, song.start_time.ToMS(), song.end_time.ToMS());
 
 	tag_save(os, song.tag);
 
 	if (song.audio_format.IsDefined())
-		os.Format("Format: %s\n", ToString(song.audio_format).c_str());
+		os.Fmt(FMT_STRING("Format: {}\n"), song.audio_format);
 
 	if (!IsNegative(song.mtime))
-		os.Format(SONG_MTIME ": %li\n",
-			  (long)std::chrono::system_clock::to_time_t(song.mtime));
-	os.Format(SONG_END "\n");
+		os.Fmt(FMT_STRING(SONG_MTIME ": {}\n"),
+		       std::chrono::system_clock::to_time_t(song.mtime));
+	os.Write(SONG_END "\n");
 }
 
 void
 song_save(BufferedOutputStream &os, const DetachedSong &song)
 {
-	os.Format(SONG_BEGIN "%s\n", song.GetURI());
+	os.Fmt(FMT_STRING(SONG_BEGIN "{}\n"), song.GetURI());
 
 	range_save(os, song.GetStartTime().ToMS(), song.GetEndTime().ToMS());
 
 	tag_save(os, song.GetTag());
 
 	if (!IsNegative(song.GetLastModified()))
-		os.Format(SONG_MTIME ": %li\n",
-			  (long)std::chrono::system_clock::to_time_t(song.GetLastModified()));
-	os.Format(SONG_END "\n");
+		os.Fmt(FMT_STRING(SONG_MTIME ": {}\n"),
+		       std::chrono::system_clock::to_time_t(song.GetLastModified()));
+	os.Write(SONG_END "\n");
 }
 
 DetachedSong

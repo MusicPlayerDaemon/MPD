@@ -27,11 +27,12 @@ void
 tag_save(BufferedOutputStream &os, const Tag &tag)
 {
 	if (!tag.duration.IsNegative())
-		os.Format(SONG_TIME "%f\n", tag.duration.ToDoubleS());
+		os.Fmt(FMT_STRING(SONG_TIME "{}\n"), tag.duration.ToDoubleS());
 
 	if (tag.has_playlist)
-		os.Format("Playlist: yes\n");
+		os.Write("Playlist: yes\n");
 
 	for (const auto &i : tag)
-		os.Format("%s: %s\n", tag_item_names[i.type], i.value);
+		os.Fmt(FMT_STRING("{}: {}\n"),
+		       tag_item_names[i.type], i.value);
 }

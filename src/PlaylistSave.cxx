@@ -40,11 +40,11 @@ playlist_print_path(BufferedOutputStream &os, const Path path)
 	   "narrow" charset (i.e. CP_ACP) is incapable of storing all
 	   Unicode paths */
 	try {
-		os.Format("%s\n", path.ToUTF8Throw().c_str());
+		os.Fmt(FMT_STRING("{}\n"), path.ToUTF8Throw());
 	} catch (...) {
 	}
 #else
-	os.Format("%s\n", path.c_str());
+	os.Fmt(FMT_STRING("{}\n"), path.c_str());
 #endif
 }
 

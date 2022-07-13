@@ -73,29 +73,32 @@ playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 		default:
 			os.Write(PLAYLIST_STATE_FILE_STATE_PLAY "\n");
 		}
-		os.Format(PLAYLIST_STATE_FILE_CURRENT "%i\n",
-			  playlist.queue.OrderToPosition(playlist.current));
-		os.Format(PLAYLIST_STATE_FILE_TIME "%f\n",
-			  player_status.elapsed_time.ToDoubleS());
+		os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CURRENT "{}\n"),
+		       playlist.queue.OrderToPosition(playlist.current));
+		os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_TIME "{}\n"),
+		       player_status.elapsed_time.ToDoubleS());
 	} else {
 		os.Write(PLAYLIST_STATE_FILE_STATE_STOP "\n");
 
 		if (playlist.current >= 0)
-			os.Format(PLAYLIST_STATE_FILE_CURRENT "%i\n",
-				playlist.queue.OrderToPosition(playlist.current));
+			os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CURRENT "{}\n"),
+			       playlist.queue.OrderToPosition(playlist.current));
 	}
 
-	os.Format(PLAYLIST_STATE_FILE_RANDOM "%i\n", playlist.queue.random);
-	os.Format(PLAYLIST_STATE_FILE_REPEAT "%i\n", playlist.queue.repeat);
-	os.Format(PLAYLIST_STATE_FILE_SINGLE "%i\n",
+	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_RANDOM "{}\n"),
+	       (unsigned)playlist.queue.random);
+	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_REPEAT "{}\n"),
+	       (unsigned)playlist.queue.repeat);
+	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_SINGLE "{}\n"),
 			  (int)playlist.queue.single);
-	os.Format(PLAYLIST_STATE_FILE_CONSUME "%i\n", playlist.queue.consume);
-	os.Format(PLAYLIST_STATE_FILE_CROSSFADE "%i\n",
-		  (int)pc.GetCrossFade().count());
-	os.Format(PLAYLIST_STATE_FILE_MIXRAMPDB "%f\n",
-		  (double)pc.GetMixRampDb());
-	os.Format(PLAYLIST_STATE_FILE_MIXRAMPDELAY "%f\n",
-		  pc.GetMixRampDelay().count());
+	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CONSUME "{}\n"),
+	       (unsigned)playlist.queue.consume);
+	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CROSSFADE "{}\n"),
+	       pc.GetCrossFade().count());
+	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_MIXRAMPDB "{}\n"),
+	       pc.GetMixRampDb());
+	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_MIXRAMPDELAY "{}\n"),
+	       pc.GetMixRampDelay().count());
 	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n");
 	queue_save(os, playlist.queue);
 	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_END "\n");

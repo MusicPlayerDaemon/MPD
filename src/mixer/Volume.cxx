@@ -114,7 +114,7 @@ read_sw_volume_state(const char *line, MultipleOutputs &outputs)
 void
 save_sw_volume_state(BufferedOutputStream &os)
 {
-	os.Format(SW_VOLUME_STATE "%u\n", volume_software_set);
+	os.Fmt(FMT_STRING(SW_VOLUME_STATE "{}\n"), volume_software_set);
 }
 
 unsigned

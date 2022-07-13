@@ -49,16 +49,17 @@ static constexpr unsigned OLDEST_DB_FORMAT = 1;
 void
 db_save_internal(BufferedOutputStream &os, const Directory &music_root)
 {
-	os.Format("%s\n", DIRECTORY_INFO_BEGIN);
-	os.Format(DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
-	os.Format("%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
-	os.Format("%s%s\n", DIRECTORY_FS_CHARSET, GetFSCharset());
+	os.Write(DIRECTORY_INFO_BEGIN "\n");
+	os.Fmt(FMT_STRING(DB_FORMAT_PREFIX "{}\n"), DB_FORMAT);
+	os.Write(DIRECTORY_MPD_VERSION VERSION "\n");
+	os.Fmt(FMT_STRING(DIRECTORY_FS_CHARSET "{}\n"), GetFSCharset());
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (IsTagEnabled(i))
-			os.Format(DB_TAG_PREFIX "%s\n", tag_item_names[i]);
+			os.Fmt(FMT_STRING(DB_TAG_PREFIX "{}\n"),
+			       tag_item_names[i]);
 
-	os.Format("%s\n", DIRECTORY_INFO_END);
+	os.Write(DIRECTORY_INFO_END "\n");
 
 	directory_save(os, music_root);
 }

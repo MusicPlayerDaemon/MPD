@@ -62,11 +62,11 @@ storage_state_save(BufferedOutputStream &os, const Instance &instance)
 		if (uri.empty() || StringIsEmpty(mount_uri))
 			return;
 
-		os.Format(
-			MOUNT_STATE_BEGIN "\n"
-			MOUNT_STATE_STORAGE_URI "%s\n"
-			MOUNT_STATE_MOUNTED_URL "%s\n"
-			MOUNT_STATE_END "\n", mount_uri, uri.c_str());
+		os.Fmt(FMT_STRING(MOUNT_STATE_BEGIN "\n"
+				  MOUNT_STATE_STORAGE_URI "{}\n"
+				  MOUNT_STATE_MOUNTED_URL "{}\n"
+				  MOUNT_STATE_END "\n"),
+		       mount_uri, uri);
 	};
 
 	((CompositeStorage*)instance.storage)->VisitMounts(visitor);
