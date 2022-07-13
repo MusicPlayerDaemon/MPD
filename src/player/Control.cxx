@@ -19,6 +19,7 @@
 
 #include "Control.hxx"
 #include "Outputs.hxx"
+#include "Listener.hxx"
 #include "Idle.hxx"
 #include "song/DetachedSong.hxx"
 
@@ -190,6 +191,9 @@ PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error) noexcept
 
 	error_type = type;
 	error = std::move(_error);
+
+	// TODO: is it ok to call this while holding mutex lock?
+	listener.OnPlayerError();
 }
 
 void

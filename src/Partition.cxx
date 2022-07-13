@@ -184,6 +184,12 @@ Partition::OnQueueSongStarted() noexcept
 }
 
 void
+Partition::OnPlayerError() noexcept
+{
+	EmitIdle(IDLE_PLAYER);
+}
+
+void
 Partition::OnPlayerSync() noexcept
 {
 	EmitGlobalEvent(SYNC_WITH_PLAYER);

@@ -277,6 +277,7 @@ private:
 	void OnQueueSongStarted() noexcept override;
 
 	/* virtual methods from class PlayerListener */
+	void OnPlayerError() noexcept override;
 	void OnPlayerSync() noexcept override;
 	void OnPlayerTagModified() noexcept override;
 	void OnBorderPause() noexcept override;

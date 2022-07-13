@@ -575,8 +575,6 @@ Player::OpenOutput() noexcept
 
 		pc.SetOutputError(std::current_exception());
 
-		idle_add(IDLE_PLAYER);
-
 		return false;
 	}
 
@@ -1064,8 +1062,6 @@ Player::PlayNextChunk() noexcept
 		paused = true;
 
 		pc.LockSetOutputError(std::current_exception());
-
-		idle_add(IDLE_PLAYER);
 
 		return false;
 	}

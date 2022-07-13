@@ -23,6 +23,12 @@
 class PlayerListener {
 public:
 	/**
+	 * A playback error has occurred and
+	 * PlayerControl::CheckRethrowError() will provide details.
+	 */
+	virtual void OnPlayerError() noexcept = 0;
+
+	/**
 	 * Must call playlist_sync().
 	 */
 	virtual void OnPlayerSync() noexcept = 0;
