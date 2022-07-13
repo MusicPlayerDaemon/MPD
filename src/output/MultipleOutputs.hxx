@@ -82,20 +82,20 @@ public:
 	 * those which are disabled right now.
 	 */
 	[[gnu::pure]]
-	unsigned Size() const noexcept {
+	std::size_t Size() const noexcept {
 		return outputs.size();
 	}
 
 	/**
 	 * Returns the "i"th audio output device.
 	 */
-	const AudioOutputControl &Get(unsigned i) const noexcept {
+	const AudioOutputControl &Get(std::size_t i) const noexcept {
 		assert(i < Size());
 
 		return *outputs[i];
 	}
 
-	AudioOutputControl &Get(unsigned i) noexcept {
+	AudioOutputControl &Get(std::size_t i) noexcept {
 		assert(i < Size());
 
 		return *outputs[i];
