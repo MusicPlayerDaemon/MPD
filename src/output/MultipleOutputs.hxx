@@ -26,7 +26,6 @@
 #include "pcm/AudioFormat.hxx"
 #include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
-#include "util/Compiler.h"
 
 #include <algorithm>
 #include <cassert>
@@ -82,7 +81,7 @@ public:
 	 * Returns the total number of audio output devices, including
 	 * those which are disabled right now.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	unsigned Size() const noexcept {
 		return outputs.size();
 	}
@@ -105,7 +104,7 @@ public:
 	/**
 	 * Are all outputs dummy?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool IsDummy() const noexcept {
 		return std::all_of(outputs.begin(), outputs.end(), [](const auto &i) { return i->IsDummy(); });
 	}
@@ -114,13 +113,13 @@ public:
 	 * Returns the audio output device with the specified name.
 	 * Returns nullptr if the name does not exist.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	AudioOutputControl *FindByName(std::string_view name) noexcept;
 
 	/**
 	 * Does an audio output device with this name exist?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasName(std::string_view name) noexcept {
 		return FindByName(name) != nullptr;
 	}
@@ -135,7 +134,7 @@ public:
 	 * Returns the average volume of all available mixers (range
 	 * 0..100).  Returns -1 if no mixer can be queried.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	int GetVolume() const noexcept;
 
 	/**
@@ -152,7 +151,7 @@ public:
 	 * software mixers.  See #software_mixer_plugin.  This
 	 * function fails if no software mixer is configured.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	int GetSoftwareVolume() const noexcept;
 
 	/**
