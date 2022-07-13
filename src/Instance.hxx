@@ -38,6 +38,7 @@ class InotifyUpdate;
 
 class ClientList;
 struct Partition;
+class AudioOutputControl;
 class StateFile;
 class RemoteTagCache;
 class StickerDatabase;
@@ -170,6 +171,17 @@ struct Instance final
 	void DeletePartition(Partition &partition) noexcept;
 
 	void BeginShutdownPartitions() noexcept;
+
+	/**
+	 * Returns the (non-dummy) audio output device with the
+	 * specified name.  Returns nullptr if the name does not
+	 * exist.
+	 *
+	 * @param excluding_partition ignore this partition
+	 */
+	[[gnu::pure]]
+	AudioOutputControl *FindOutput(std::string_view name,
+				       Partition &excluding_partition) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**
