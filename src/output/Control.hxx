@@ -269,7 +269,9 @@ public:
 	AudioOutputControl &operator=(const AudioOutputControl &) = delete;
 
 	[[gnu::pure]]
-	const char *GetName() const noexcept;
+	const char *GetName() const noexcept {
+		return name.c_str();
+	}
 
 	[[gnu::pure]]
 	const char *GetPluginName() const noexcept;

@@ -100,12 +100,6 @@ AudioOutputControl::ReplaceDummy(std::unique_ptr<FilteredAudioOutput> new_output
 }
 
 const char *
-AudioOutputControl::GetName() const noexcept
-{
-	return name.c_str();
-}
-
-const char *
 AudioOutputControl::GetPluginName() const noexcept
 {
 	return output ? output->GetPluginName() : "dummy";
