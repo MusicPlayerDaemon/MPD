@@ -295,6 +295,10 @@ public:
 		return Traits::Relative(c_str(), other_fs.c_str());
 	}
 
+	/**
+	 * Returns the filename extension (excluding the dot) or
+	 * nullptr if the path does not have one.
+	 */
 	[[gnu::pure]]
 	const_pointer GetExtension() const noexcept {
 		return Path{*this}.GetExtension();

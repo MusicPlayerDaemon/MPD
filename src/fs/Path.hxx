@@ -166,6 +166,10 @@ public:
 		return Traits::IsAbsolute(c_str());
 	}
 
+	/**
+	 * Returns the filename extension (excluding the dot) or
+	 * nullptr if the path does not have one.
+	 */
 	[[gnu::pure]]
 	const_pointer GetExtension() const noexcept;
 };
