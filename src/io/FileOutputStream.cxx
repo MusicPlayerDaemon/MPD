@@ -252,7 +252,12 @@ FileOutputStream::Sync()
 {
 	assert(IsDefined());
 
-	if (fdatasync(fd.Get()) < 0)
+#ifdef __linux__
+	const bool success = fdatasync(fd.Get()) == 0;
+#else
+	const bool success = fsync(fd.Get()) == 0;
+#endif
+	if (!success)
 		throw FormatErrno("Failed to sync %s", GetPath().c_str());
 }
 
