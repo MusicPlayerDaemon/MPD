@@ -305,6 +305,27 @@ public:
 	}
 
 	/**
+	 * Replace the suffix of this path (or append the suffix if
+	 * there is none currently).
+	 *
+	 * @param new_suffix the new filename suffix (must start with
+	 * a dot)
+	 */
+	void SetSuffix(const_pointer new_suffix) noexcept;
+
+	/**
+	 * Return a copy of this path but with the given suffix
+	 * (replacing the existing suffix if there is one).
+	 *
+	 * @param new_suffix the new filename suffix (must start with
+	 * a dot)
+	 */
+	[[gnu::pure]]
+	AllocatedPath WithSuffix(const_pointer new_suffix) const noexcept {
+		return Path{*this}.WithSuffix(new_suffix);
+	}
+
+	/**
 	 * Returns the filename extension (excluding the dot) or
 	 * nullptr if the path does not have one.
 	 */

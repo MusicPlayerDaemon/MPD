@@ -27,6 +27,14 @@ Path::GetDirectoryName() const noexcept
 }
 
 AllocatedPath
+Path::WithSuffix(const_pointer new_suffix) const noexcept
+{
+	AllocatedPath result{*this};
+	result.SetSuffix(new_suffix);
+	return result;
+}
+
+AllocatedPath
 operator/(Path a, Path b) noexcept
 {
 	return AllocatedPath::Build(a, b);

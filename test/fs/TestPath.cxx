@@ -96,3 +96,14 @@ TEST(Path, Suffix)
 	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).GetSuffix(), ".abc");
 	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).GetSuffix(), ".def");
 }
+
+TEST(Path, WithSuffix)
+{
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo")).WithSuffix(".abc").c_str(), "foo.abc");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar")).WithSuffix(".abc").c_str(), "/foo/bar.abc");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.xyz/bar")).WithSuffix(".abc").c_str(), "/foo.xyz/bar.abc");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def")).WithSuffix(".xyz").c_str(), "/foo.abc/bar.xyz");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def.ghi")).WithSuffix(".xyz").c_str(), "/foo.abc/bar.def.xyz");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).WithSuffix(".xyz").c_str(), "/foo/.bar.xyz");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).WithSuffix(".xyz").c_str(), "/foo/.bar.abc.xyz");
+}

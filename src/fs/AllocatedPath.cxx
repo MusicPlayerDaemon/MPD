@@ -49,6 +49,21 @@ AllocatedPath::FromUTF8Throw(std::string_view path_utf8)
 }
 
 void
+AllocatedPath::SetSuffix(const_pointer new_suffix) noexcept
+{
+	assert(new_suffix != nullptr);
+	assert(*new_suffix == '.');
+
+	const auto end = value.end();
+	auto begin = end;
+
+	if (auto old = GetSuffix())
+		begin = std::next(value.begin(), old - value.data());
+
+	value.replace(begin, end, new_suffix);
+}
+
+void
 AllocatedPath::ChopSeparators() noexcept
 {
 	size_t l = length();

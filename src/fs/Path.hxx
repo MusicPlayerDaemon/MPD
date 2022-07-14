@@ -174,6 +174,16 @@ public:
 	const_pointer GetSuffix() const noexcept;
 
 	/**
+	 * Return a copy of this path but with the given suffix
+	 * (replacing the existing suffix if there is one).
+	 *
+	 * @param new_suffix the new filename suffix (must start with
+	 * a dot)
+	 */
+	[[gnu::pure]]
+	AllocatedPath WithSuffix(const_pointer new_suffix) const noexcept;
+
+	/**
 	 * Returns the filename extension (excluding the dot) or
 	 * nullptr if the path does not have one.
 	 */
