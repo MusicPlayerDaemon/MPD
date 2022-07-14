@@ -268,11 +268,11 @@ public:
 	 */
 	[[gnu::pure]]
 	std::string ToUTF8() const noexcept {
-		return ((Path)*this).ToUTF8();
+		return Path{*this}.ToUTF8();
 	}
 
 	std::string ToUTF8Throw() const {
-		return ((Path)*this).ToUTF8Throw();
+		return Path{*this}.ToUTF8Throw();
 	}
 
 	/**
@@ -281,7 +281,7 @@ public:
 	 */
 	[[gnu::pure]]
 	AllocatedPath GetDirectoryName() const noexcept {
-		return ((Path)*this).GetDirectoryName();
+		return Path{*this}.GetDirectoryName();
 	}
 
 	/**
@@ -297,7 +297,7 @@ public:
 
 	[[gnu::pure]]
 	const_pointer GetSuffix() const noexcept {
-		return ((Path)*this).GetSuffix();
+		return Path{*this}.GetSuffix();
 	}
 
 	/**
