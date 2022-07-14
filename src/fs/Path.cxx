@@ -39,9 +39,15 @@ Path::ToUTF8Throw() const
 Path::const_pointer
 Path::GetExtension() const noexcept
 {
-	const auto base = GetBase().c_str();
+	const auto *base = GetBase().c_str();
+
+	/* skip all leading dots (hidden/special files on UNIX-like
+	   operating systems) */
+	while (*base == '.')
+		++base;
+
 	const auto *dot = StringFindLast(base, '.');
-	if (dot == nullptr || dot == base)
+	if (dot == nullptr)
 		return nullptr;
 
 	return dot + 1;
