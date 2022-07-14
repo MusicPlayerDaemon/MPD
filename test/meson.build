@@ -86,21 +86,6 @@ test(
 )
 
 test(
-  'TestFs',
-  executable(
-    'TestFs',
-    'TestFs.cxx',
-    'TestLookupFile.cxx',
-    include_directories: inc,
-    dependencies: [
-      fs_dep,
-      gtest_dep,
-    ],
-  ),
-  protocol: 'gtest',
-)
-
-test(
   'TestIcu',
   executable(
     'TestIcu',
@@ -644,3 +629,5 @@ if alsa_dep.found()
     ],
   )
 endif
+
+subdir('fs')
