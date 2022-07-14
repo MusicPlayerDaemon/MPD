@@ -78,7 +78,7 @@ public:
 		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
 		return SleepConditionVariableCS(&cond,
 						&lock.mutex()->critical_section,
-						timeout_ms);
+						static_cast<DWORD>(timeout_ms));
 	}
 
 	template<typename M, typename P>
