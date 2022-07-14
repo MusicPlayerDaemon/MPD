@@ -4,6 +4,7 @@ test(
     'TestFs',
     'TestGlob.cxx',
     'TestLookupFile.cxx',
+    'TestPath.cxx',
     include_directories: inc,
     dependencies: [
       fs_dep,
