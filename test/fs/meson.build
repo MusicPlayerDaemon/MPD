@@ -2,7 +2,7 @@ test(
   'TestFs',
   executable(
     'TestFs',
-    'TestFs.cxx',
+    'TestGlob.cxx',
     'TestLookupFile.cxx',
     include_directories: inc,
     dependencies: [
