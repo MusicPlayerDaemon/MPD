@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2010-2021 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,12 @@
 #include "String.hxx"
 #include "util/TruncateString.hxx"
 #include "util/ScopeExit.hxx"
+
+Java::String::String(JNIEnv *_env, std::string_view _value) noexcept
+	// TODO: is there no way to do this without duplicating the string?
+	:String(_env, std::string{_value}.c_str())
+{
+}
 
 char *
 Java::String::CopyTo(JNIEnv *env, jstring value,
