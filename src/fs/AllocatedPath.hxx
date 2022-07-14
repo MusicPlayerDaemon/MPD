@@ -296,6 +296,15 @@ public:
 	}
 
 	/**
+	 * Returns the filename suffix (including the dot) or nullptr
+	 * if the path does not have one.
+	 */
+	[[gnu::pure]]
+	const_pointer GetSuffix() const noexcept {
+		return Path{*this}.GetSuffix();
+	}
+
+	/**
 	 * Returns the filename extension (excluding the dot) or
 	 * nullptr if the path does not have one.
 	 */

@@ -79,3 +79,20 @@ TEST(Path, Extension)
 	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).GetExtension(), "abc");
 	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).GetExtension(), "def");
 }
+
+TEST(Path, Suffix)
+{
+	EXPECT_EQ(Path::FromFS(PATH_LITERAL("foo")).GetSuffix(), nullptr);
+	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo/bar")).GetSuffix(), nullptr);
+	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo/./bar")).GetSuffix(), nullptr);
+	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo/.bar")).GetSuffix(), nullptr);
+	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo/.")).GetSuffix(), nullptr);
+	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo/..")).GetSuffix(), nullptr);
+	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar")).GetSuffix(), nullptr);
+	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo.abc/")).GetSuffix(), nullptr);
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def")).GetSuffix(), ".def");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.")).GetSuffix(), ".");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def.ghi")).GetSuffix(), ".ghi");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).GetSuffix(), ".abc");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).GetSuffix(), ".def");
+}

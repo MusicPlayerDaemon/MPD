@@ -37,7 +37,7 @@ Path::ToUTF8Throw() const
 }
 
 Path::const_pointer
-Path::GetExtension() const noexcept
+Path::GetSuffix() const noexcept
 {
 	const auto *base = GetBase().c_str();
 
@@ -46,9 +46,16 @@ Path::GetExtension() const noexcept
 	while (*base == '.')
 		++base;
 
-	const auto *dot = StringFindLast(base, '.');
-	if (dot == nullptr)
-		return nullptr;
+	return StringFindLast(base, '.');
+}
 
-	return dot + 1;
+Path::const_pointer
+Path::GetExtension() const noexcept
+{
+	const auto *result = GetSuffix();
+	if (result != nullptr)
+		/* skip the dot */
+		++result;
+
+	return result;
 }
