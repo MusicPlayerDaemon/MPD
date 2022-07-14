@@ -33,34 +33,52 @@ TEST(Path, Basic)
 
 TEST(Path, GetBase)
 {
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("")).GetBase().c_str(), "");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo")).GetBase().c_str(), "foo");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("./foo")).GetBase().c_str(), "foo");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("../foo")).GetBase().c_str(), "foo");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo/bar")).GetBase().c_str(), "bar");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar")).GetBase().c_str(), "bar");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("")).GetBase().c_str(),
+		     PATH_LITERAL(""));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo")).GetBase().c_str(),
+		     PATH_LITERAL("foo"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("./foo")).GetBase().c_str(),
+		     PATH_LITERAL("foo"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("../foo")).GetBase().c_str(),
+		     PATH_LITERAL("foo"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo/bar")).GetBase().c_str(),
+		     PATH_LITERAL("bar"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar")).GetBase().c_str(),
+		     PATH_LITERAL("bar"));
 }
 
 TEST(Path, GetDirectoryName)
 {
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("")).GetDirectoryName().c_str(), ".");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo")).GetDirectoryName().c_str(), ".");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("./foo")).GetDirectoryName().c_str(), ".");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("../foo")).GetDirectoryName().c_str(), "..");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo/bar")).GetDirectoryName().c_str(), "foo");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar")).GetDirectoryName().c_str(), "/foo");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/")).GetDirectoryName().c_str(), "/foo");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar/baz")).GetDirectoryName().c_str(), "/foo/bar");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("")).GetDirectoryName().c_str(),
+		     PATH_LITERAL("."));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo")).GetDirectoryName().c_str(),
+		     PATH_LITERAL("."));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("./foo")).GetDirectoryName().c_str(),
+		     PATH_LITERAL("."));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("../foo")).GetDirectoryName().c_str(),
+		     PATH_LITERAL(".."));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo/bar")).GetDirectoryName().c_str(),
+		     PATH_LITERAL("foo"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar")).GetDirectoryName().c_str(),
+		     PATH_LITERAL("/foo"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/")).GetDirectoryName().c_str(),
+		     PATH_LITERAL("/foo"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar/baz")).GetDirectoryName().c_str(),
+		     PATH_LITERAL("/foo/bar"));
 }
 
 TEST(Path, Relative)
 {
 	EXPECT_EQ(Path::FromFS(PATH_LITERAL("foo")).Relative(Path::FromFS(PATH_LITERAL(""))), nullptr);
 	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/bar")).Relative(Path::FromFS(PATH_LITERAL("/foo/bar"))), nullptr);
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo")).Relative(Path::FromFS(PATH_LITERAL("/foo/bar"))), "bar");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/")).Relative(Path::FromFS(PATH_LITERAL("/foo/bar"))), "bar");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo")).Relative(Path::FromFS(PATH_LITERAL("/foo///bar"))), "bar");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo")).Relative(Path::FromFS(PATH_LITERAL("/foo///"))), "");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo")).Relative(Path::FromFS(PATH_LITERAL("/foo/bar"))),
+		  PATH_LITERAL("bar"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/")).Relative(Path::FromFS(PATH_LITERAL("/foo/bar"))),
+		     PATH_LITERAL("bar"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo")).Relative(Path::FromFS(PATH_LITERAL("/foo///bar"))),
+		     PATH_LITERAL("bar"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo")).Relative(Path::FromFS(PATH_LITERAL("/foo///"))),
+		     PATH_LITERAL(""));
 }
 
 TEST(Path, Extension)
@@ -73,11 +91,16 @@ TEST(Path, Extension)
 	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo/..")).GetExtension(), nullptr);
 	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar")).GetExtension(), nullptr);
 	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo.abc/")).GetExtension(), nullptr);
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def")).GetExtension(), "def");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.")).GetExtension(), "");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def.ghi")).GetExtension(), "ghi");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).GetExtension(), "abc");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).GetExtension(), "def");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def")).GetExtension(),
+		     PATH_LITERAL("def"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.")).GetExtension(),
+		     PATH_LITERAL(""));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def.ghi")).GetExtension(),
+		     PATH_LITERAL("ghi"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).GetExtension(),
+		     PATH_LITERAL("abc"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).GetExtension(),
+		     PATH_LITERAL("def"));
 }
 
 TEST(Path, Suffix)
@@ -90,20 +113,32 @@ TEST(Path, Suffix)
 	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo/..")).GetSuffix(), nullptr);
 	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar")).GetSuffix(), nullptr);
 	EXPECT_EQ(Path::FromFS(PATH_LITERAL("/foo.abc/")).GetSuffix(), nullptr);
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def")).GetSuffix(), ".def");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.")).GetSuffix(), ".");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def.ghi")).GetSuffix(), ".ghi");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).GetSuffix(), ".abc");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).GetSuffix(), ".def");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def")).GetSuffix(),
+		     PATH_LITERAL(".def"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.")).GetSuffix(),
+		     PATH_LITERAL("."));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def.ghi")).GetSuffix(),
+		     PATH_LITERAL(".ghi"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).GetSuffix(),
+		     PATH_LITERAL(".abc"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).GetSuffix(),
+		     PATH_LITERAL(".def"));
 }
 
 TEST(Path, WithSuffix)
 {
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo")).WithSuffix(".abc").c_str(), "foo.abc");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar")).WithSuffix(".abc").c_str(), "/foo/bar.abc");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.xyz/bar")).WithSuffix(".abc").c_str(), "/foo.xyz/bar.abc");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def")).WithSuffix(".xyz").c_str(), "/foo.abc/bar.xyz");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def.ghi")).WithSuffix(".xyz").c_str(), "/foo.abc/bar.def.xyz");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).WithSuffix(".xyz").c_str(), "/foo/.bar.xyz");
-	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).WithSuffix(".xyz").c_str(), "/foo/.bar.abc.xyz");
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("foo")).WithSuffix(PATH_LITERAL(".abc")).c_str(),
+		     PATH_LITERAL("foo.abc"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar")).WithSuffix(PATH_LITERAL(".abc")).c_str(),
+		     PATH_LITERAL("/foo/bar.abc"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.xyz/bar")).WithSuffix(PATH_LITERAL(".abc")).c_str(),
+		     PATH_LITERAL("/foo.xyz/bar.abc"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def")).WithSuffix(PATH_LITERAL(".xyz")).c_str(),
+		     PATH_LITERAL("/foo.abc/bar.xyz"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo.abc/bar.def.ghi")).WithSuffix(PATH_LITERAL(".xyz")).c_str(),
+		     PATH_LITERAL("/foo.abc/bar.def.xyz"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc")).WithSuffix(PATH_LITERAL(".xyz")).c_str(),
+		     PATH_LITERAL("/foo/.bar.xyz"));
+	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/.bar.abc.def")).WithSuffix(PATH_LITERAL(".xyz")).c_str(),
+		     PATH_LITERAL("/foo/.bar.abc.xyz"));
 }
