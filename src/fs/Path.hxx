@@ -167,7 +167,7 @@ public:
 	}
 
 	[[gnu::pure]]
-	const_pointer GetSuffix() const noexcept;
+	const_pointer GetExtension() const noexcept;
 };
 
 /**

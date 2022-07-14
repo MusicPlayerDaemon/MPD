@@ -296,8 +296,8 @@ public:
 	}
 
 	[[gnu::pure]]
-	const_pointer GetSuffix() const noexcept {
-		return Path{*this}.GetSuffix();
+	const_pointer GetExtension() const noexcept {
+		return Path{*this}.GetExtension();
 	}
 
 	/**

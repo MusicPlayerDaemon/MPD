@@ -37,7 +37,7 @@ Path::ToUTF8Throw() const
 }
 
 Path::const_pointer
-Path::GetSuffix() const noexcept
+Path::GetExtension() const noexcept
 {
 	const auto base = GetBase().c_str();
 	const auto *dot = StringFindLast(base, '.');

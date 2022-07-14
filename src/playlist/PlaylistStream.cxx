@@ -34,7 +34,7 @@ playlist_open_path_suffix(Path path, Mutex &mutex)
 try {
 	assert(!path.IsNull());
 
-	const auto *suffix = path.GetSuffix();
+	const auto *suffix = path.GetExtension();
 	if (suffix == nullptr)
 		return nullptr;
 

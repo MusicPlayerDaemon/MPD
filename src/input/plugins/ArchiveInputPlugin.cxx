@@ -49,7 +49,7 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 		return nullptr;
 	}
 
-	const char *suffix = l.archive.GetSuffix();
+	const char *suffix = l.archive.GetExtension();
 	if (suffix == nullptr)
 		return nullptr;
 

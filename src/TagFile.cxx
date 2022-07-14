@@ -77,7 +77,7 @@ ScanFileTagsNoGeneric(Path path_fs, TagHandler &handler)
 
 	/* check if there's a suffix and a plugin */
 
-	const auto *suffix = path_fs.GetSuffix();
+	const auto *suffix = path_fs.GetExtension();
 	if (suffix == nullptr)
 		return false;
 
