@@ -35,6 +35,12 @@ Path::WithSuffix(const_pointer new_suffix) const noexcept
 }
 
 AllocatedPath
+operator+(Path a, PathTraitsFS::string_view b) noexcept
+{
+	return AllocatedPath::Concat(a.c_str(), b);
+}
+
+AllocatedPath
 operator/(Path a, Path b) noexcept
 {
 	return AllocatedPath::Build(a, b);

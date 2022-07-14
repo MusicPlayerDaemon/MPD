@@ -86,6 +86,18 @@ public:
 	}
 
 	/**
+	 * Concatenate two paths.
+	 */
+	[[gnu::pure]]
+	static AllocatedPath Concat(string_view a, string_view b) noexcept {
+		AllocatedPath result{nullptr};
+		result.value.reserve(a.size() + b.size());
+		result.value.assign(a);
+		result.value.append(b);
+		return result;
+	}
+
+	/**
 	 * Join two path components with the path separator.
 	 */
 	[[gnu::pure]]

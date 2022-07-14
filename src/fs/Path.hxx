@@ -192,6 +192,13 @@ public:
 };
 
 /**
+ * Concatenate a string to a #Path object.
+ */
+[[gnu::pure]]
+AllocatedPath
+operator+(Path path, PathTraitsFS::string_view other) noexcept;
+
+/**
  * Concatenate two path components using the directory separator.
  *
  * Wrapper for AllocatedPath::Build().
