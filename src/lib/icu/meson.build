@@ -19,16 +19,8 @@ if icu_dep.found()
     'Init.cxx',
   ]
 elif not get_option('iconv').disabled()
-  # an installed iconv library will make the builtin iconv() unavailable,
-  # so search for the library first and pass it as (possible) dependency
-  iconv_dep = compiler.find_library('libiconv', required: false)
-  have_iconv = compiler.has_function('iconv', 
-    dependencies: iconv_dep, 
-    prefix : '#include <iconv.h>')
-  if not have_iconv and get_option('iconv').enabled()
-    error('iconv() not available')
-  endif
-  conf.set('HAVE_ICONV', have_iconv)
+  iconv_dep = dependency('iconv')
+  conf.set('HAVE_ICONV', iconv_dep.found())
 endif
 
 icu = static_library(
