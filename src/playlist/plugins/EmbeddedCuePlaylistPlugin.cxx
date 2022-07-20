@@ -106,7 +106,7 @@ embcue_playlist_open_uri(const char *uri,
 
 	playlist->cuesheet = std::move(extract_cuesheet.cuesheet);
 
-	playlist->next = &playlist->cuesheet[0];
+	playlist->next = playlist->cuesheet.data();
 	playlist->parser = std::make_unique<CueParser>();
 
 	return playlist;
