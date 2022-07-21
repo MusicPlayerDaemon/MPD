@@ -27,6 +27,7 @@ const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_ALBUM_ARTIST] = "AlbumArtist",
 	[TAG_ALBUM_ARTIST_SORT] = "AlbumArtistSort",
 	[TAG_TITLE] = "Title",
+	[TAG_TITLE_SORT] = "TitleSort",
 	[TAG_TRACK] = "Track",
 	[TAG_NAME] = "Name",
 	[TAG_GENRE] = "Genre",

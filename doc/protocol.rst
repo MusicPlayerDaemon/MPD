@@ -283,6 +283,7 @@ The following tags are supported by :program:`MPD`:
 * **albumartist**: on multi-artist albums, this is the artist name which shall be used for the whole album. The exact meaning of this tag is not well-defined.
 * **albumartistsort**: same as albumartist, but for sorting.
 * **title**: the song title.
+* **titlesort**:  same as title, but for sorting.
 * **track**: the decimal track number within the album.
 * **name**: a name for this song. This is not the song title. The exact meaning of this tag is not well-defined. It is often used by badly configured internet radio stations with broken tags to squeeze both the artist name and the song title in one tag.
 * **genre**: the music genre.

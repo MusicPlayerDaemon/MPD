@@ -55,6 +55,10 @@
 #define ID3_FRAME_ALBUM_ARTIST "TPE2"
 #endif
 
+#ifndef ID3_FRAME_TITLE_SORT
+#define ID3_FRAME_TITLE_SORT "TSOT"
+#endif
+
 #ifndef ID3_FRAME_ORIGINAL_RELEASE_DATE
 #define ID3_FRAME_ORIGINAL_RELEASE_DATE "TDOR"
 #endif
@@ -352,6 +356,7 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 	tag_id3_import_text(tag, ID3_FRAME_LABEL, TAG_LABEL,
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_MOOD, TAG_MOOD, handler);
+	tag_id3_import_text(tag, ID3_FRAME_TITLE_SORT, TAG_TITLE_SORT, handler);
 
 	tag_id3_import_musicbrainz(tag, handler);
 	tag_id3_import_ufid(tag, handler);

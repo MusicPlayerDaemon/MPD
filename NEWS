@@ -12,7 +12,7 @@ ver 0.24 (not yet released)
 * player
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly
 * tags
-  - new tag "Mood"
+  - new tags "TitleSort", "Mood"
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
 * static partition configuration
