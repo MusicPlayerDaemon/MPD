@@ -1,4 +1,6 @@
 ver 0.23.9 (not yet released)
+* decoder
+  - ffmpeg: support FFmpeg 5.1
 * output
   - pipewire: set app icon
 * improve iconv detection
