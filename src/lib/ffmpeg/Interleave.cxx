@@ -38,7 +38,11 @@ InterleaveFrame(const AVFrame &frame, FfmpegBuffer &buffer)
 	assert(frame.nb_samples > 0);
 
 	const auto format = AVSampleFormat(frame.format);
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(57, 25, 100)
+	const unsigned channels = frame.ch_layout.nb_channels;
+#else
 	const unsigned channels = frame.channels;
+#endif
 	const std::size_t n_frames = frame.nb_samples;
 
 	int plane_size;
