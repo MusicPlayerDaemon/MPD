@@ -19,8 +19,11 @@ ver 0.24 (not yet released)
 * remove Haiku support
 
 ver 0.23.9 (not yet released)
+* decoder
+  - ffmpeg: support FFmpeg 5.1
 * output
   - pipewire: set app icon
+* improve iconv detection
 
 ver 0.23.8 (2022/07/09)
 * storage
