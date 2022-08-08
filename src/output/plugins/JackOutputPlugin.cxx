@@ -693,12 +693,12 @@ JackOutput::WriteSamples(const float *src, size_t n_frames)
 std::size_t
 JackOutput::Play(std::span<const std::byte> _src)
 {
+	const size_t frame_size = audio_format.GetFrameSize();
+	assert(_src.size() % frame_size == 0);
+
 	const auto src = FromBytesStrict<const float>(_src);
 
 	pause = false;
-
-	const size_t frame_size = audio_format.GetFrameSize();
-	assert(src.size() % frame_size == 0);
 
 	const std::size_t n_frames = src.size() / audio_format.channels;
 
