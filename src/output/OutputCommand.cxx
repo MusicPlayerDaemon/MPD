@@ -28,13 +28,15 @@
 #include "MultipleOutputs.hxx"
 #include "Client.hxx"
 #include "mixer/MixerControl.hxx"
-#include "mixer/Volume.hxx"
+#include "mixer/Memento.hxx"
 #include "Idle.hxx"
 
 extern unsigned audio_output_state_version;
 
 bool
-audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
+audio_output_enable_index(MultipleOutputs &outputs,
+			  MixerMemento &mixer_memento,
+			  unsigned idx)
 {
 	if (idx >= outputs.Size())
 		return false;
@@ -46,7 +48,7 @@ audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
 	idle_add(IDLE_OUTPUT);
 
 	if (ao.GetMixer() != nullptr) {
-		InvalidateHardwareVolume();
+		mixer_memento.InvalidateHardwareVolume();
 		idle_add(IDLE_MIXER);
 	}
 
@@ -58,7 +60,9 @@ audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
 }
 
 bool
-audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
+audio_output_disable_index(MultipleOutputs &outputs,
+			   MixerMemento &mixer_memento,
+			   unsigned idx)
 {
 	if (idx >= outputs.Size())
 		return false;
@@ -72,7 +76,7 @@ audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
 	auto *mixer = ao.GetMixer();
 	if (mixer != nullptr) {
 		mixer_close(mixer);
-		InvalidateHardwareVolume();
+		mixer_memento.InvalidateHardwareVolume();
 		idle_add(IDLE_MIXER);
 	}
 
@@ -84,7 +88,9 @@ audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
 }
 
 bool
-audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx)
+audio_output_toggle_index(MultipleOutputs &outputs,
+			  MixerMemento &mixer_memento,
+			  unsigned idx)
 {
 	if (idx >= outputs.Size())
 		return false;
@@ -97,7 +103,7 @@ audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx)
 		auto *mixer = ao.GetMixer();
 		if (mixer != nullptr) {
 			mixer_close(mixer);
-			InvalidateHardwareVolume();
+			mixer_memento.InvalidateHardwareVolume();
 			idle_add(IDLE_MIXER);
 		}
 	}

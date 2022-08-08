@@ -17,11 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Volume.hxx"
+#include "Memento.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "Idle.hxx"
 #include "util/StringCompare.hxx"
-#include "system/PeriodClock.hxx"
 #include "io/BufferedOutputStream.hxx"
 
 #include <cassert>
@@ -30,22 +29,8 @@
 
 #define SW_VOLUME_STATE                         "sw_volume: "
 
-static unsigned volume_software_set = 100;
-
-/** the cached hardware mixer value; invalid if negative */
-static int last_hardware_volume = -1;
-/** the age of #last_hardware_volume */
-static PeriodClock hardware_volume_clock;
-
-void
-InvalidateHardwareVolume() noexcept
-{
-	/* flush the hardware volume cache */
-	last_hardware_volume = -1;
-}
-
 int
-volume_level_get(const MultipleOutputs &outputs) noexcept
+MixerMemento::GetVolume(const MultipleOutputs &outputs) noexcept
 {
 	if (last_hardware_volume >= 0 &&
 	    !hardware_volume_clock.CheckUpdate(std::chrono::seconds(1)))
@@ -56,8 +41,8 @@ volume_level_get(const MultipleOutputs &outputs) noexcept
 	return last_hardware_volume;
 }
 
-static bool
-software_volume_change(MultipleOutputs &outputs, unsigned volume)
+inline bool
+MixerMemento::SetSoftwareVolume(MultipleOutputs &outputs, unsigned volume)
 {
 	assert(volume <= 100);
 
@@ -67,8 +52,8 @@ software_volume_change(MultipleOutputs &outputs, unsigned volume)
 	return true;
 }
 
-static void
-hardware_volume_change(MultipleOutputs &outputs, unsigned volume)
+inline void
+MixerMemento::SetHardwareVolume(MultipleOutputs &outputs, unsigned volume)
 {
 	/* reset the cache */
 	last_hardware_volume = -1;
@@ -77,7 +62,7 @@ hardware_volume_change(MultipleOutputs &outputs, unsigned volume)
 }
 
 void
-volume_level_change(MultipleOutputs &outputs, unsigned volume)
+MixerMemento::SetVolume(MultipleOutputs &outputs, unsigned volume)
 {
 	assert(volume <= 100);
 
@@ -85,11 +70,11 @@ volume_level_change(MultipleOutputs &outputs, unsigned volume)
 
 	idle_add(IDLE_MIXER);
 
-	hardware_volume_change(outputs, volume);
+	SetHardwareVolume(outputs, volume);
 }
 
 bool
-read_sw_volume_state(const char *line, MultipleOutputs &outputs)
+MixerMemento::LoadSoftwareVolumeState(const char *line, MultipleOutputs &outputs)
 {
 	char *end = nullptr;
 	long int sv;
@@ -100,19 +85,13 @@ read_sw_volume_state(const char *line, MultipleOutputs &outputs)
 
 	sv = strtol(line, &end, 10);
 	if (*end == 0 && sv >= 0 && sv <= 100)
-		software_volume_change(outputs, sv);
+		SetSoftwareVolume(outputs, sv);
 
 	return true;
 }
 
 void
-save_sw_volume_state(BufferedOutputStream &os)
+MixerMemento::SaveSoftwareVolumeState(BufferedOutputStream &os) const
 {
 	os.Format(SW_VOLUME_STATE "%u\n", volume_software_set);
-}
-
-unsigned
-sw_volume_state_get_hash() noexcept
-{
-	return volume_software_set;
 }

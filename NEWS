@@ -5,6 +5,7 @@ ver 0.23.9 (not yet released)
   - ffmpeg: support FFmpeg 5.1
 * output
   - pipewire: set app icon
+* fix bogus volume levels with multiple partitions
 * improve iconv detection
 * macOS: fix macOS 10 build problem (0.23.8 regression)
 

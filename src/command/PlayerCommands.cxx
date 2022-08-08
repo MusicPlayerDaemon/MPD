@@ -25,7 +25,6 @@
 #include "SingleMode.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
-#include "mixer/Volume.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "IdleFlags.hxx"
@@ -131,7 +130,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 
 	const auto &playlist = partition.playlist;
 
-	const auto volume = volume_level_get(partition.outputs);
+	const auto volume = partition.mixer_memento.GetVolume(partition.outputs);
 	if (volume >= 0)
 		r.Fmt(FMT_STRING("volume: {}\n"), volume);
 
