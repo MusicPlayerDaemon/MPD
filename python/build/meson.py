@@ -115,5 +115,5 @@ class MesonProject(Project):
 
     def _build(self, toolchain):
         build = self.configure(toolchain)
-        subprocess.check_call(['ninja', 'install'],
+        subprocess.check_call(['ninja', '-v', 'install'],
                               cwd=build, env=toolchain.env)
