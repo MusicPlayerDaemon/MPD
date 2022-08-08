@@ -169,6 +169,15 @@ HttpdOutput::ReadPage() noexcept
 		unflushed_input = 0;
 
 		if (r.data() != b.data()) {
+			if (size == 0 && r.size() >= sizeof(buffer) / 2)
+				/* if the returned memory area is
+				   large (and nothing has been written
+				   to the stack buffer yet), copy
+				   right from the returned memory
+				   area, avoiding the copy into the
+				   buffer*/
+				return std::make_shared<Page>(r);
+
 			/* if the encoder did not write to the given
 			   buffer but instead returned its own buffer,
 			   we need to copy it so we have a contiguous
