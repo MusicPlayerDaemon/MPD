@@ -206,6 +206,11 @@ Plays audio CDs using libcdio. The URI has the form: "cdda://[DEVICE][/TRACK]". 
      - If the CD drive does not specify a byte order, MPD assumes it is the CPU's native byte order. This setting allows overriding this.
    * - **speed N**
      - Request CDParanoia cap the extraction speed to Nx normal CD audio rotation speed, keeping the drive quiet.
+   * - **mode disable|overlap|full**
+     - Set the paranoia mode; ``disable`` means no fixups, ``overlap``
+       performs overlapped reads, and ``full`` enables all options.
+   * - **skip yes|no**
+     - If set to ``no``, then never skip failed reads.
 
 curl
 ----
