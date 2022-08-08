@@ -45,6 +45,11 @@
 
 #include <cdio/cd_types.h>
 
+static constexpr Domain cdio_domain("cdio");
+
+static bool default_reverse_endian;
+static unsigned speed = 0;
+
 class CdioParanoiaInputStream final : public InputStream {
 	cdrom_drive_t *const drv;
 	CdIo_t *const cdio;
@@ -97,11 +102,6 @@ class CdioParanoiaInputStream final : public InputStream {
 		    void *ptr, size_t size) override;
 	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
 };
-
-static constexpr Domain cdio_domain("cdio");
-
-static bool default_reverse_endian;
-static unsigned speed = 0;
 
 static void
 input_cdio_init(EventLoop &, const ConfigBlock &block)
