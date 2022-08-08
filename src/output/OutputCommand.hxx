@@ -28,26 +28,33 @@
 #define MPD_OUTPUT_COMMAND_HXX
 
 class MultipleOutputs;
+class MixerMemento;
 
 /**
  * Enables an audio output.  Returns false if the specified output
  * does not exist.
  */
 bool
-audio_output_enable_index(MultipleOutputs &outputs, unsigned idx);
+audio_output_enable_index(MultipleOutputs &outputs,
+			  MixerMemento &mixer_memento,
+			  unsigned idx);
 
 /**
  * Disables an audio output.  Returns false if the specified output
  * does not exist.
  */
 bool
-audio_output_disable_index(MultipleOutputs &outputs, unsigned idx);
+audio_output_disable_index(MultipleOutputs &outputs,
+			   MixerMemento &mixer_memento,
+			   unsigned idx);
 
 /**
  * Toggles an audio output.  Returns false if the specified output
  * does not exist.
  */
 bool
-audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx);
+audio_output_toggle_index(MultipleOutputs &outputs,
+			  MixerMemento &mixer_memento,
+			  unsigned idx);
 
 #endif

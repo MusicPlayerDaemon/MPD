@@ -45,6 +45,14 @@
 
 #include <cdio/cd_types.h>
 
+static constexpr Domain cdio_domain("cdio");
+
+static bool default_reverse_endian;
+static unsigned speed = 0;
+
+/* Default to full paranoia, but allow skipping sectors. */
+static int mode_flags = PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP;
+
 class CdioParanoiaInputStream final : public InputStream {
 	cdrom_drive_t *const drv;
 	CdIo_t *const cdio;
@@ -65,9 +73,7 @@ class CdioParanoiaInputStream final : public InputStream {
 		 lsn_from(_lsn_from),
 		 buffer_lsn(-1)
 	{
-		/* Set reading mode for full paranoia, but allow
-		   skipping sectors. */
-		para.SetMode(PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
+		para.SetMode(mode_flags);
 
 		/* seek to beginning of the track */
 		para.Seek(lsn_from);
@@ -98,11 +104,6 @@ class CdioParanoiaInputStream final : public InputStream {
 	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
 };
 
-static constexpr Domain cdio_domain("cdio");
-
-static bool default_reverse_endian;
-static unsigned speed = 0;
-
 static void
 input_cdio_init(EventLoop &, const ConfigBlock &block)
 {
@@ -117,6 +118,26 @@ input_cdio_init(EventLoop &, const ConfigBlock &block)
 						 value);
 	}
 	speed = block.GetBlockValue("speed",0U);
+
+	if (const auto *param = block.GetBlockParam("mode")) {
+		param->With([](const char *s){
+			if (StringIsEqual(s, "disable"))
+				mode_flags = PARANOIA_MODE_DISABLE;
+			else if (StringIsEqual(s, "overlap"))
+				mode_flags = PARANOIA_MODE_OVERLAP;
+			else if (StringIsEqual(s, "full"))
+				mode_flags = PARANOIA_MODE_FULL;
+			else
+				throw std::invalid_argument{"Invalid paranoia mode"};
+		});
+	}
+
+	if (const auto *param = block.GetBlockParam("skip")) {
+		if (param->GetBoolValue())
+			mode_flags &= ~PARANOIA_MODE_NEVERSKIP;
+		else
+			mode_flags |= PARANOIA_MODE_NEVERSKIP;
+	}
 }
 
 struct CdioUri {

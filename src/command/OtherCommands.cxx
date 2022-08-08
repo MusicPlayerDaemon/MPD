@@ -33,7 +33,6 @@
 #include "TimePrint.hxx"
 #include "decoder/DecoderPrint.hxx"
 #include "ls.hxx"
-#include "mixer/Volume.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringAPI.hxx"
@@ -324,7 +323,7 @@ handle_getvol(Client &client, Request, Response &r)
 {
 	auto &partition = client.GetPartition();
 
-	const auto volume = volume_level_get(partition.outputs);
+	const auto volume = partition.mixer_memento.GetVolume(partition.outputs);
 	if (volume >= 0)
 		r.Fmt(FMT_STRING("volume: {}\n"), volume);
 
@@ -336,7 +335,9 @@ handle_setvol(Client &client, Request args, Response &)
 {
 	unsigned level = args.ParseUnsigned(0, 100);
 
-	volume_level_change(client.GetPartition().outputs, level);
+	auto &partition = client.GetPartition();
+	partition.mixer_memento.SetVolume(partition.outputs, level);
+	partition.EmitIdle(IDLE_MIXER);
 	return CommandResult::OK;
 }
 
@@ -345,9 +346,11 @@ handle_volume(Client &client, Request args, Response &r)
 {
 	int relative = args.ParseInt(0, -100, 100);
 
-	auto &outputs = client.GetPartition().outputs;
+	auto &partition = client.GetPartition();
+	auto &outputs = partition.outputs;
+	auto &mixer_memento = partition.mixer_memento;
 
-	const int old_volume = volume_level_get(outputs);
+	const int old_volume = mixer_memento.GetVolume(outputs);
 	if (old_volume < 0) {
 		r.Error(ACK_ERROR_SYSTEM, "No mixer");
 		return CommandResult::ERROR;
@@ -359,8 +362,10 @@ handle_volume(Client &client, Request args, Response &r)
 	else if (new_volume > 100)
 		new_volume = 100;
 
-	if (new_volume != old_volume)
-		volume_level_change(outputs, new_volume);
+	if (new_volume != old_volume) {
+		mixer_memento.SetVolume(outputs, new_volume);
+		partition.EmitIdle(IDLE_MIXER);
+	}
 
 	return CommandResult::OK;
 }

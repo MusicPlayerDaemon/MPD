@@ -24,7 +24,6 @@
 #include "config/PartitionConfig.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "song/DetachedSong.hxx"
-#include "mixer/Volume.hxx"
 #include "IdleFlags.hxx"
 #include "client/Listener.hxx"
 #include "client/Client.hxx"
@@ -220,7 +219,7 @@ Partition::OnBorderPause() noexcept
 void
 Partition::OnMixerVolumeChanged(Mixer &, int) noexcept
 {
-	InvalidateHardwareVolume();
+	mixer_memento.InvalidateHardwareVolume();
 
 	/* notify clients */
 	EmitIdle(IDLE_MIXER);

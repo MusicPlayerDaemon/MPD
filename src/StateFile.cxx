@@ -27,7 +27,6 @@
 #include "storage/StorageState.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "mixer/Volume.hxx"
 #include "SongLoader.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -47,7 +46,7 @@ StateFile::StateFile(StateFileConfig &&_config,
 void
 StateFile::RememberVersions() noexcept
 {
-	prev_volume_version = sw_volume_state_get_hash();
+	prev_volume_version = partition.mixer_memento.GetSoftwareVolumeStateHash();
 	prev_output_version = audio_output_state_get_version();
 	prev_playlist_version = playlist_state_get_hash(partition.playlist,
 							partition.pc);
@@ -59,7 +58,7 @@ StateFile::RememberVersions() noexcept
 bool
 StateFile::IsModified() const noexcept
 {
-	return prev_volume_version != sw_volume_state_get_hash() ||
+	return prev_volume_version != partition.mixer_memento.GetSoftwareVolumeStateHash() ||
 		prev_output_version != audio_output_state_get_version() ||
 		prev_playlist_version != playlist_state_get_hash(partition.playlist,
 								 partition.pc)
@@ -72,7 +71,7 @@ StateFile::IsModified() const noexcept
 inline void
 StateFile::Write(BufferedOutputStream &os)
 {
-	save_sw_volume_state(os);
+	partition.mixer_memento.SaveSoftwareVolumeState(os);
 	audio_output_state_save(os, partition.outputs);
 
 #ifdef ENABLE_DATABASE
@@ -125,7 +124,7 @@ try {
 
 	const char *line;
 	while ((line = file.ReadLine()) != nullptr) {
-		success = read_sw_volume_state(line, partition.outputs) ||
+		success = partition.mixer_memento.LoadSoftwareVolumeState(line, partition.outputs) ||
 			audio_output_state_read(line, partition.outputs) ||
 			playlist_state_restore(config, line, file, song_loader,
 					       partition.playlist,

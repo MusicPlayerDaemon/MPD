@@ -39,10 +39,15 @@ FfmpegFilter::FfmpegFilter(const AudioFormat &in_audio_format,
 	 buffer_sink(_buffer_sink),
 	 in_format(Ffmpeg::ToFfmpegSampleFormat(in_audio_format.format)),
 	 in_sample_rate(in_audio_format.sample_rate),
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(57, 25, 100)
 	 in_channels(in_audio_format.channels),
+#endif
 	 in_audio_frame_size(in_audio_format.GetFrameSize()),
 	 out_audio_frame_size(_out_audio_format.GetFrameSize())
 {
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(57, 25, 100)
+	av_channel_layout_default(&in_ch_layout, in_audio_format.channels);
+#endif
 }
 
 std::span<const std::byte>
@@ -53,7 +58,11 @@ FfmpegFilter::FilterPCM(std::span<const std::byte> src)
 	frame.Unref();
 	frame->format = in_format;
 	frame->sample_rate = in_sample_rate;
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(57, 25, 100)
+	frame->ch_layout = in_ch_layout;
+#else
 	frame->channels = in_channels;
+#endif
 	frame->nb_samples = src.size() / in_audio_frame_size;
 
 	frame.GetBuffer();

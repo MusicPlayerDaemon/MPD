@@ -19,11 +19,15 @@ ver 0.24 (not yet released)
 * remove Haiku support
 
 ver 0.23.9 (not yet released)
+* input
+  - cdio_paranoia: add options "mode" and "skip"
 * decoder
   - ffmpeg: support FFmpeg 5.1
 * output
   - pipewire: set app icon
+* fix bogus volume levels with multiple partitions
 * improve iconv detection
+* macOS: fix macOS 10 build problem (0.23.8 regression)
 
 ver 0.23.8 (2022/07/09)
 * storage

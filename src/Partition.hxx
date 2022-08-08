@@ -25,6 +25,7 @@
 #include "queue/Listener.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "mixer/Listener.hxx"
+#include "mixer/Memento.hxx"
 #include "player/Control.hxx"
 #include "player/Listener.hxx"
 #include "protocol/RangeArg.hxx"
@@ -78,6 +79,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	struct playlist playlist;
 
 	MultipleOutputs outputs;
+
+	MixerMemento mixer_memento;
 
 	PlayerControl pc;
 

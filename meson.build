@@ -354,7 +354,7 @@ sources = [
   'src/TagStream.cxx',
   'src/TagAny.cxx',
   'src/TimePrint.cxx',
-  'src/mixer/Volume.cxx',
+  'src/mixer/Memento.cxx',
   'src/PlaylistFile.cxx',
 ]
 

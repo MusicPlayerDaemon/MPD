@@ -35,7 +35,13 @@ class FfmpegFilter final : public Filter {
 
 	FfmpegBuffer interleave_buffer;
 
-	const int in_format, in_sample_rate, in_channels;
+	const int in_format, in_sample_rate;
+
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(57, 25, 100)
+	AVChannelLayout in_ch_layout;
+#else
+	const int in_channels;
+#endif
 
 	const size_t in_audio_frame_size;
 	const size_t out_audio_frame_size;

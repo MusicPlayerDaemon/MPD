@@ -33,7 +33,11 @@ handle_enableoutput(Client &client, Request args, Response &r)
 	assert(args.size() == 1);
 	unsigned device = args.ParseUnsigned(0);
 
-	if (!audio_output_enable_index(client.GetPartition().outputs, device)) {
+	auto &partition = client.GetPartition();
+
+	if (!audio_output_enable_index(partition.outputs,
+				       partition.mixer_memento,
+				       device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
@@ -47,7 +51,11 @@ handle_disableoutput(Client &client, Request args, Response &r)
 	assert(args.size() == 1);
 	unsigned device = args.ParseUnsigned(0);
 
-	if (!audio_output_disable_index(client.GetPartition().outputs, device)) {
+	auto &partition = client.GetPartition();
+
+	if (!audio_output_disable_index(partition.outputs,
+					partition.mixer_memento,
+					device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
@@ -61,7 +69,11 @@ handle_toggleoutput(Client &client, Request args, Response &r)
 	assert(args.size() == 1);
 	unsigned device = args.ParseUnsigned(0);
 
-	if (!audio_output_toggle_index(client.GetPartition().outputs, device)) {
+	auto &partition = client.GetPartition();
+
+	if (!audio_output_toggle_index(partition.outputs,
+					partition.mixer_memento,
+				       device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
