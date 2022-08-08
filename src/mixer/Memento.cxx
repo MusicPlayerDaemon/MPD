@@ -68,8 +68,6 @@ MixerMemento::SetVolume(MultipleOutputs &outputs, unsigned volume)
 
 	volume_software_set = volume;
 
-	idle_add(IDLE_MIXER);
-
 	SetHardwareVolume(outputs, volume);
 }
 

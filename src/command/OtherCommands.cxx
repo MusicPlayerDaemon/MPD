@@ -338,6 +338,7 @@ handle_setvol(Client &client, Request args, Response &)
 
 	auto &partition = client.GetPartition();
 	partition.mixer_memento.SetVolume(partition.outputs, level);
+	partition.EmitIdle(IDLE_MIXER);
 	return CommandResult::OK;
 }
 
@@ -362,8 +363,10 @@ handle_volume(Client &client, Request args, Response &r)
 	else if (new_volume > 100)
 		new_volume = 100;
 
-	if (new_volume != old_volume)
+	if (new_volume != old_volume) {
 		mixer_memento.SetVolume(outputs, new_volume);
+		partition.EmitIdle(IDLE_MIXER);
+	}
 
 	return CommandResult::OK;
 }

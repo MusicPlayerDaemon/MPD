@@ -49,6 +49,8 @@ public:
 
 	/**
 	 * Throws on error.
+	 *
+	 * Note: the caller is responsible for emitting #IDLE_MIXER.
 	 */
 	void SetVolume(MultipleOutputs &outputs, unsigned volume);
 
