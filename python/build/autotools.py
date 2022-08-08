@@ -49,10 +49,11 @@ class AutotoolsProject(MakeProject):
             'STRIP=' + toolchain.strip,
             '--host=' + toolchain.arch,
             '--prefix=' + toolchain.install_prefix,
-            '--enable-silent-rules',
+            '--disable-silent-rules',
         ] + self.configure_args
 
         try:
+            print(configure)
             subprocess.check_call(configure, cwd=build, env=toolchain.env)
         except subprocess.CalledProcessError:
             # dump config.log after a failed configure run

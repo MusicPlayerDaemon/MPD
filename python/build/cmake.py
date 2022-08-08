@@ -61,6 +61,7 @@ def configure(toolchain, src, build, args=()):
         '-GNinja',
     ] + cross_args + args
 
+    print(configure)
     subprocess.check_call(configure, env=toolchain.env, cwd=build)
 
 class CmakeProject(Project):
@@ -82,5 +83,5 @@ class CmakeProject(Project):
 
     def _build(self, toolchain):
         build = self.configure(toolchain)
-        subprocess.check_call(['ninja', 'install'],
+        subprocess.check_call(['ninja', '-v', 'install'],
                               cwd=build, env=toolchain.env)
