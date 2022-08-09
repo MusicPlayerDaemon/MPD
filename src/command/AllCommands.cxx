@@ -60,7 +60,7 @@
  * number of tags we can have.  Add one for the command, and one extra
  * to catch errors clients may send us
  */
-#define COMMAND_ARGV_MAX	(2+(TAG_NUM_OF_ITEM_TYPES*2))
+static constexpr std::size_t COMMAND_ARGV_MAX = 2 + TAG_NUM_OF_ITEM_TYPES * 2;
 
 /* if min: -1 don't check args *
  * if max: -1 no max args      */
