@@ -1,0 +1,244 @@
+/*
+ * Copyright 2010-2022 Max Kellermann <max.kellermann@gmail.com>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the
+ * distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+ * FOUNDATION OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#pragma once
+
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <initializer_list>
+#include <new>
+#include <span>
+#include <type_traits>
+#include <utility>
+
+/**
+ * An array with a maximum size known at compile time.  It keeps track
+ * of the actual length at runtime.
+ */
+template<class T, std::size_t max>
+class StaticVector {
+	using Storage = std::aligned_storage_t<sizeof(T), alignof(T)>;
+	using Array = std::array<Storage, max>;
+
+public:
+	using size_type = typename Array::size_type;
+	using value_type = T;
+	using reference = T &;
+	using const_reference =  const T &;
+	using pointer =  T *;
+	using const_pointer =  const T *;
+	using iterator = pointer;
+	using const_iterator = const_pointer;
+
+private:
+	size_type the_size = 0;
+	Array array;
+
+	static constexpr pointer Launder(Storage *storage) noexcept {
+		return std::launder(reinterpret_cast<pointer>(storage));
+	}
+
+	static constexpr const_pointer Launder(const Storage *storage) noexcept {
+		return std::launder(reinterpret_cast<const_pointer>(storage));
+	}
+
+public:
+	constexpr StaticVector() noexcept = default;
+
+	constexpr StaticVector(size_type _size, const_reference value)
+	{
+		if (_size > max)
+			throw std::bad_alloc{};
+
+		while (_size-- > 0)
+			push_back(value);
+	}
+
+	/**
+	 * Initialise the array with values from the iterator range.
+	 */
+	template<typename I>
+	constexpr StaticVector(I _begin, I _end)
+		:the_size(0)
+	{
+		for (I i = _begin; i != _end; ++i)
+			push_back(*i);
+	}
+
+	template<typename U>
+	constexpr StaticVector(std::initializer_list<U> init) noexcept
+		:the_size(init.size())
+	{
+		static_assert(init.size() <= max);
+
+		for (auto &i : init)
+			emplace_back(std::move(i));
+	}
+
+	constexpr ~StaticVector() noexcept {
+		clear();
+	}
+
+	constexpr operator std::span<const T>() const noexcept {
+		return {
+			Launder(array.data()),
+			the_size,
+		};
+	}
+
+	constexpr operator std::span<T>() noexcept {
+		return {
+			Launder(array.data()),
+			the_size,
+		};
+	}
+
+	constexpr size_type max_size() const noexcept {
+		return max;
+	}
+
+	constexpr size_type size() const noexcept {
+		return the_size;
+	}
+
+	constexpr bool empty() const noexcept {
+		return the_size == 0;
+	}
+
+	constexpr bool full() const noexcept {
+		return the_size == max;
+	}
+
+	constexpr void clear() noexcept {
+		if constexpr (std::is_trivially_destructible_v<T>) {
+			/* we don't need to call any destructor */
+			the_size = 0;
+		} else {
+			while (!empty()) {
+				back().~T();
+				--the_size;
+			}
+		}
+	}
+
+	/**
+	 * Returns one element.  No bounds checking.
+	 */
+	constexpr reference operator[](size_type i) noexcept {
+		assert(i < size());
+
+		return *Launder(&array[i]);
+	}
+
+	/**
+	 * Returns one constant element.  No bounds checking.
+	 */
+	constexpr const_reference operator[](size_type i) const noexcept {
+		assert(i < size());
+
+		return *Launder(&array[i]);
+	}
+
+	constexpr reference front() noexcept {
+		assert(!empty());
+
+		return *Launder(&array.front());
+	}
+
+	constexpr const_reference front() const noexcept {
+		assert(!empty());
+
+		return *Launder(&array.front());
+	}
+
+	constexpr reference back() noexcept {
+		assert(!empty());
+
+		return *Launder(&array[the_size - 1]);
+	}
+
+	constexpr const_reference back() const noexcept {
+		assert(!empty());
+
+		return *Launder(&array[the_size - 1]);
+	}
+
+	constexpr iterator begin() noexcept {
+		return Launder(&array.front());
+	}
+
+	constexpr const_iterator begin() const noexcept {
+		return Launder(&array.front());
+	}
+
+	constexpr iterator end() noexcept {
+		return std::next(begin(), the_size);
+	}
+
+	constexpr const_iterator end() const noexcept {
+		return std::next(begin(), the_size);
+	}
+
+	/**
+	 * Return address of start of data segment.
+	 */
+	constexpr pointer data() noexcept {
+		return Launder(array.data());
+	}
+
+	constexpr const_pointer data() const noexcept {
+		return Launder(array.data());
+	}
+
+	constexpr void push_back(const_reference value) {
+		if (full())
+			throw std::bad_alloc{};
+
+		::new(&array[the_size]) T(value);
+		++the_size;
+	}
+
+	constexpr void push_back(T &&value) {
+		if (full())
+			throw std::bad_alloc{};
+
+		::new(&array[the_size]) T(std::move(value));
+		++the_size;
+	}
+
+	template<typename... Args>
+	constexpr void emplace_back(Args&&... args) {
+		if (full())
+			throw std::bad_alloc{};
+
+		::new(&array[the_size]) T(std::forward<Args>(args)...);
+		++the_size;
+	}
+};
