@@ -409,14 +409,14 @@ command_process(Client &client, unsigned num, char *line) noexcept
 		StaticVector<const char *, COMMAND_ARGV_MAX> argv;
 
 		while (true) {
+			char *a = tokenizer.NextParam();
+			if (a == nullptr)
+				break;
+
 			if (argv.full()) {
 				r.Error(ACK_ERROR_ARG, "Too many arguments");
 				return CommandResult::ERROR;
 			}
-
-			char *a = tokenizer.NextParam();
-			if (a == nullptr)
-				break;
 
 			argv.push_back(a);
 		}
