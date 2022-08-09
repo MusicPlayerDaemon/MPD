@@ -421,7 +421,7 @@ command_process(Client &client, unsigned num, char *line) noexcept
 			argv[n_args++] = a;
 		}
 
-		Request args{argv, n_args};
+		Request args{{argv, n_args}};
 
 		/* look up and invoke the command handler */
 

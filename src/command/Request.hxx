@@ -34,8 +34,8 @@ class Request {
 	std::span<const char *const> args;
 
 public:
-	explicit constexpr Request(const char *const*argv, std::size_t n)
-		:args(argv, n) {}
+	explicit constexpr Request(std::span<const char *const> _args) noexcept
+		:args(_args) {}
 
 	constexpr bool empty() const noexcept {
 		return args.empty();
