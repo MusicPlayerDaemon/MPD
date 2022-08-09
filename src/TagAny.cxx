@@ -135,7 +135,7 @@ TagScanDatabase(Client &client, const char *uri, TagHandler &handler)
 
 	{
 		const auto absolute_uri = storage->MapUTF8(uri);
-		if (uri_has_scheme(absolute_uri.c_str()))
+		if (uri_has_scheme(absolute_uri))
 			return TagScanStream(absolute_uri.c_str(), handler);
 	}
 
