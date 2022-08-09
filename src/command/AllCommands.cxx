@@ -42,6 +42,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "util/Tokenizer.hxx"
+#include "util/StaticVector.hxx"
 #include "util/StringAPI.hxx"
 
 #ifdef ENABLE_SQLITE
@@ -402,14 +403,13 @@ command_process(Client &client, unsigned num, char *line) noexcept
 		return CommandResult::FINISH;
 	}
 
-	char *argv[COMMAND_ARGV_MAX];
-
 	try {
 		/* now parse the arguments (quoted or unquoted) */
 
-		std::size_t n_args = 0;
+		StaticVector<const char *, COMMAND_ARGV_MAX> argv;
+
 		while (true) {
-			if (n_args == COMMAND_ARGV_MAX) {
+			if (argv.full()) {
 				r.Error(ACK_ERROR_ARG, "Too many arguments");
 				return CommandResult::ERROR;
 			}
@@ -418,10 +418,10 @@ command_process(Client &client, unsigned num, char *line) noexcept
 			if (a == nullptr)
 				break;
 
-			argv[n_args++] = a;
+			argv.push_back(a);
 		}
 
-		Request args{{argv, n_args}};
+		const Request args{argv};
 
 		/* look up and invoke the command handler */
 
