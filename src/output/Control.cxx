@@ -276,7 +276,7 @@ AudioOutputControl::Open(std::unique_lock<Mutex> &lock,
 	if (open2 && output->mixer != nullptr) {
 		const ScopeUnlock unlock(mutex);
 		try {
-			mixer_open(output->mixer);
+			mixer_open(*output->mixer);
 		} catch (...) {
 			FmtError(output_domain,
 				 "Failed to open mixer for '{}': {}",
@@ -296,7 +296,7 @@ AudioOutputControl::CloseWait(std::unique_lock<Mutex> &lock) noexcept
 		return;
 
 	if (output->mixer != nullptr)
-		mixer_auto_close(output->mixer);
+		mixer_auto_close(*output->mixer);
 
 	assert(!open || !fail_timer.IsDefined());
 
@@ -360,7 +360,7 @@ AudioOutputControl::LockPauseAsync() noexcept
 		/* the device has no pause mode: close the mixer,
 		   unless its "global" flag is set (checked by
 		   mixer_auto_close()) */
-		mixer_auto_close(output->mixer);
+		mixer_auto_close(*output->mixer);
 
 	if (output)
 		output->Interrupt();
@@ -419,7 +419,7 @@ AudioOutputControl::LockRelease() noexcept
 		/* the device has no pause mode: close the mixer,
 		   unless its "global" flag is set (checked by
 		   mixer_auto_close()) */
-		mixer_auto_close(output->mixer);
+		mixer_auto_close(*output->mixer);
 
 	std::unique_lock<Mutex> lock(mutex);
 

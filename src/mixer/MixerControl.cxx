@@ -42,78 +42,71 @@ mixer_free(Mixer *mixer)
 
 	/* mixers with the "global" flag set might still be open at
 	   this point (see mixer_auto_close()) */
-	mixer_close(mixer);
+	mixer_close(*mixer);
 
 	delete mixer;
 }
 
 void
-mixer_open(Mixer *mixer)
+mixer_open(Mixer &mixer)
 {
-	assert(mixer != nullptr);
+	const std::scoped_lock<Mutex> protect(mixer.mutex);
 
-	const std::scoped_lock<Mutex> protect(mixer->mutex);
-
-	if (mixer->open)
+	if (mixer.open)
 		return;
 
 	try {
-		mixer->Open();
-		mixer->open = true;
-		mixer->failure = {};
+		mixer.Open();
+		mixer.open = true;
+		mixer.failure = {};
 	} catch (...) {
-		mixer->failure = std::current_exception();
+		mixer.failure = std::current_exception();
 		throw;
 	}
 }
 
 static void
-mixer_close_internal(Mixer *mixer)
+mixer_close_internal(Mixer &mixer)
 {
-	assert(mixer != nullptr);
-	assert(mixer->open);
+	assert(mixer.open);
 
-	mixer->Close();
-	mixer->open = false;
-	mixer->failure = {};
+	mixer.Close();
+	mixer.open = false;
+	mixer.failure = {};
 }
 
 void
-mixer_close(Mixer *mixer)
+mixer_close(Mixer &mixer)
 {
-	assert(mixer != nullptr);
+	const std::scoped_lock<Mutex> protect(mixer.mutex);
 
-	const std::scoped_lock<Mutex> protect(mixer->mutex);
-
-	if (mixer->open)
+	if (mixer.open)
 		mixer_close_internal(mixer);
 }
 
 void
-mixer_auto_close(Mixer *mixer)
+mixer_auto_close(Mixer &mixer)
 {
-	if (!mixer->IsGlobal())
+	if (!mixer.IsGlobal())
 		mixer_close(mixer);
 }
 
 int
-mixer_get_volume(Mixer *mixer)
+mixer_get_volume(Mixer &mixer)
 {
 	int volume;
 
-	assert(mixer != nullptr);
-
-	if (mixer->IsGlobal() && !mixer->failure)
+	if (mixer.IsGlobal() && !mixer.failure)
 		mixer_open(mixer);
 
-	const std::scoped_lock<Mutex> protect(mixer->mutex);
+	const std::scoped_lock<Mutex> protect(mixer.mutex);
 
-	if (mixer->open) {
+	if (mixer.open) {
 		try {
-			volume = mixer->GetVolume();
+			volume = mixer.GetVolume();
 		} catch (...) {
 			mixer_close_internal(mixer);
-			mixer->failure = std::current_exception();
+			mixer.failure = std::current_exception();
 			throw;
 		}
 	} else
@@ -123,18 +116,17 @@ mixer_get_volume(Mixer *mixer)
 }
 
 void
-mixer_set_volume(Mixer *mixer, unsigned volume)
+mixer_set_volume(Mixer &mixer, unsigned volume)
 {
-	assert(mixer != nullptr);
 	assert(volume <= 100);
 
-	if (mixer->IsGlobal() && !mixer->failure)
+	if (mixer.IsGlobal() && !mixer.failure)
 		mixer_open(mixer);
 
-	const std::scoped_lock<Mutex> protect(mixer->mutex);
+	const std::scoped_lock<Mutex> protect(mixer.mutex);
 
-	if (mixer->open)
-		mixer->SetVolume(volume);
-	else if (mixer->failure)
-		std::rethrow_exception(mixer->failure);
+	if (mixer.open)
+		mixer.SetVolume(volume);
+	else if (mixer.failure)
+		std::rethrow_exception(mixer.failure);
 }

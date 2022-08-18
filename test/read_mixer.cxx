@@ -57,10 +57,10 @@ try {
 				 mixer_listener,
 				 ConfigBlock());
 
-	mixer_open(mixer);
+	mixer_open(*mixer);
 
-	volume = mixer_get_volume(mixer);
-	mixer_close(mixer);
+	volume = mixer_get_volume(*mixer);
+	mixer_close(*mixer);
 	mixer_free(mixer);
 
 	assert(volume >= -1 && volume <= 100);

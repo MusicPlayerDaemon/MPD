@@ -48,28 +48,28 @@ mixer_free(Mixer *mixer);
  * Throws std::runtime_error on error.
  */
 void
-mixer_open(Mixer *mixer);
+mixer_open(Mixer &mixer);
 
 void
-mixer_close(Mixer *mixer);
+mixer_close(Mixer &mixer);
 
 /**
  * Close the mixer unless the plugin's "global" flag is set.  This is
  * called when the #AudioOutput is closed.
  */
 void
-mixer_auto_close(Mixer *mixer);
+mixer_auto_close(Mixer &mixer);
 
 /**
  * Throws std::runtime_error on error.
  */
 int
-mixer_get_volume(Mixer *mixer);
+mixer_get_volume(Mixer &mixer);
 
 /**
  * Throws std::runtime_error on error.
  */
 void
-mixer_set_volume(Mixer *mixer, unsigned volume);
+mixer_set_volume(Mixer &mixer, unsigned volume);
 
 #endif

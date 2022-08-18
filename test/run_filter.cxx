@@ -43,7 +43,7 @@
 #include <stdio.h>
 
 void
-mixer_set_volume([[maybe_unused]] Mixer *mixer,
+mixer_set_volume([[maybe_unused]] Mixer &mixer,
 		 [[maybe_unused]] unsigned volume)
 {
 }
