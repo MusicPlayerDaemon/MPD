@@ -92,7 +92,7 @@ mixer_close(Mixer *mixer)
 void
 mixer_auto_close(Mixer *mixer)
 {
-	if (!mixer->plugin.global)
+	if (!mixer->IsGlobal())
 		mixer_close(mixer);
 }
 
@@ -103,7 +103,7 @@ mixer_get_volume(Mixer *mixer)
 
 	assert(mixer != nullptr);
 
-	if (mixer->plugin.global && !mixer->failure)
+	if (mixer->IsGlobal() && !mixer->failure)
 		mixer_open(mixer);
 
 	const std::scoped_lock<Mutex> protect(mixer->mutex);
@@ -128,7 +128,7 @@ mixer_set_volume(Mixer *mixer, unsigned volume)
 	assert(mixer != nullptr);
 	assert(volume <= 100);
 
-	if (mixer->plugin.global && !mixer->failure)
+	if (mixer->IsGlobal() && !mixer->failure)
 		mixer_open(mixer);
 
 	const std::scoped_lock<Mutex> protect(mixer->mutex);
