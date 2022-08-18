@@ -591,12 +591,12 @@ MainConfigured(const CommandLineOptions &options,
 #ifdef ANDROID
 
 static void
-AndroidMain()
+AndroidMain(JNIEnv *env)
 {
 	CommandLineOptions options;
 	ConfigData raw_config;
 
-	const auto sdcard = Environment::getExternalStorageDirectory();
+	const auto sdcard = Environment::getExternalStorageDirectory(env);
 	if (!sdcard.IsNull()) {
 		const auto config_path =
 			sdcard / Path::FromFS("mpd.conf");
@@ -625,7 +625,7 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logL
 	AtScopeExit() { delete logListener; };
 
 	try {
-		AndroidMain();
+		AndroidMain(env);
 	} catch (...) {
 		LogError(std::current_exception());
 	}

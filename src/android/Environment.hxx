@@ -36,10 +36,10 @@ Deinitialise(JNIEnv *env) noexcept;
  */
 [[gnu::pure]]
 AllocatedPath
-getExternalStorageDirectory() noexcept;
+getExternalStorageDirectory(JNIEnv *env) noexcept;
 
 [[gnu::pure]]
 AllocatedPath
-getExternalStoragePublicDirectory(const char *type) noexcept;
+getExternalStoragePublicDirectory(JNIEnv *env, const char *type) noexcept;
 
 } // namespace Environment

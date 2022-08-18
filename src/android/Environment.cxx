@@ -51,10 +51,8 @@ Deinitialise(JNIEnv *env) noexcept
 }
 
 AllocatedPath
-getExternalStorageDirectory() noexcept
+getExternalStorageDirectory(JNIEnv *env) noexcept
 {
-	JNIEnv *env = Java::GetEnv();
-
 	jobject file =
 		env->CallStaticObjectMethod(cls,
 					    getExternalStorageDirectory_method);
@@ -65,13 +63,11 @@ getExternalStorageDirectory() noexcept
 }
 
 AllocatedPath
-getExternalStoragePublicDirectory(const char *type) noexcept
+getExternalStoragePublicDirectory(JNIEnv *env, const char *type) noexcept
 {
 	if (getExternalStoragePublicDirectory_method == nullptr)
 		/* needs API level 8 */
 		return nullptr;
-
-	JNIEnv *env = Java::GetEnv();
 
 	Java::String type2(env, type);
 	jobject file = env->CallStaticObjectMethod(cls,
