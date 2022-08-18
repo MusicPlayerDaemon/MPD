@@ -89,6 +89,16 @@ public:
 	String(JNIEnv *_env, const char *_value) noexcept
 		:LocalRef<jstring>(_env, _env->NewStringUTF(_value)) {}
 
+	/**
+	 * This constructor allows passing a nullptr value, which maps
+	 * to a "null" in Java.
+	 */
+	static String Optional(JNIEnv *_env, const char *_value) noexcept {
+		return _value != nullptr
+			? String{_env, _value}
+			: String{};
+	}
+
 	static StringUTFChars GetUTFChars(JNIEnv *env, jstring s) noexcept {
 		return {env, s, env->GetStringUTFChars(s, nullptr)};
 	}
