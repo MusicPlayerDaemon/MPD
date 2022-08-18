@@ -36,7 +36,9 @@ Installing on Android
 
 An experimental Android build is available on Google Play. After installing and launching it, :program:`MPD` will scan the music in your Music directory and you can control it as usual with a :program:`MPD` client.
 
-If you need to tweak the configuration, you can create a file called :file:`mpd.conf` on the data partition (the directory which is returned by Android's :dfn:`getExternalStorageDirectory()` API function). 
+If you need to tweak the configuration, you can create a file called
+:file:`mpd.conf` in MPD's data directory on the external storage
+(usually :file:`Android/data/org.musicpd/files/mpd.conf`).
 
 ALSA is not available on Android; only the :ref:`OpenSL ES
 <sles_output>` output plugin can be used for local playback.

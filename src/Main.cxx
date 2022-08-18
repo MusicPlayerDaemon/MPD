@@ -607,6 +607,17 @@ TryReadConfigFile(ConfigData &config, Path path)
 static void
 LoadConfigFile(JNIEnv *env, ConfigData &config)
 {
+	/* try loading mpd.conf from
+	   "Android/data/org.musicpd/files/mpd.conf" (the app specific
+	   data directory) first */
+	if (const auto dir = context->GetExternalFilesDir(env);
+	    !dir.IsNull() &&
+	    TryReadConfigFile(config, dir / Path::FromFS("mpd.conf")))
+		return;
+
+	/* if that fails, attempt to load "mpd.conf" from the root of
+	   the SD card (pre-0.23.9, ceases to work since Android
+	   12) */
 	if (const auto dir = Environment::getExternalStorageDirectory(env);
 	    !dir.IsNull())
 		TryReadConfigFile(config, dir / Path::FromFS("mpd.conf"));
