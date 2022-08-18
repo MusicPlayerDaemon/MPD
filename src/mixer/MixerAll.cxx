@@ -188,8 +188,8 @@ MultipleOutputs::SetSoftwareVolume(unsigned volume) noexcept
 		auto *mixer = ao->GetMixer();
 
 		if (mixer != nullptr &&
-		    (&mixer->plugin == &software_mixer_plugin ||
-		     &mixer->plugin == &null_mixer_plugin))
+		    (mixer->IsPlugin(software_mixer_plugin) ||
+		     mixer->IsPlugin(null_mixer_plugin)))
 			mixer_set_volume(mixer, volume);
 	}
 }

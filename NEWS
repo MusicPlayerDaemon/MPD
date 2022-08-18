@@ -23,6 +23,8 @@ ver 0.23.9 (not yet released)
   - cdio_paranoia: add options "mode" and "skip"
 * decoder
   - ffmpeg: support FFmpeg 5.1
+* filter
+  - replay gain: fix delayed volume display with handler=mixer
 * output
   - pipewire: set app icon
 * fix bogus volume levels with multiple partitions
