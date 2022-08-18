@@ -614,8 +614,11 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logL
 	Java::Init(env);
 	Java::Object::Initialise(env);
 	Java::File::Initialise(env);
+
 	Environment::Initialise(env);
 	AtScopeExit(env) { Environment::Deinitialise(env); };
+
+	Context::Initialise(env);
 
 	context = new Context(env, _context);
 	AtScopeExit() { delete context; };
