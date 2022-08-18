@@ -69,21 +69,22 @@ Mixer::_Close() noexcept
 int
 Mixer::LockGetVolume()
 {
-	if (IsGlobal() && !failure)
-		LockOpen();
-
 	const std::scoped_lock lock{mutex};
 
-	if (open) {
-		try {
-			return GetVolume();
-		} catch (...) {
-			_Close();
-			failure = std::current_exception();
-			throw;
-		}
-	} else
-		return -1;
+	if (!open) {
+		if (IsGlobal() && !failure)
+			_Open();
+		else
+			return -1;
+	}
+
+	try {
+		return GetVolume();
+	} catch (...) {
+		_Close();
+		failure = std::current_exception();
+		throw;
+	}
 }
 
 void
@@ -91,13 +92,16 @@ Mixer::LockSetVolume(unsigned volume)
 {
 	assert(volume <= 100);
 
-	if (IsGlobal() && !failure)
-		LockOpen();
-
 	const std::scoped_lock lock{mutex};
 
-	if (open)
-		SetVolume(volume);
-	else if (failure)
-		std::rethrow_exception(failure);
+	if (!open) {
+		if (failure)
+			std::rethrow_exception(failure);
+		else if (IsGlobal())
+			_Open();
+		else
+			return;
+	}
+
+	SetVolume(volume);
 }
