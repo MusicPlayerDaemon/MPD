@@ -72,17 +72,23 @@ public:
 	/**
 	 * Open mixer device
 	 *
+	 * Caller must lock the mutex.
+	 *
 	 * Throws std::runtime_error on error.
 	 */
 	virtual void Open() = 0;
 
 	/**
 	 * Close mixer device
+	 *
+	 * Caller must lock the mutex.
 	 */
 	virtual void Close() noexcept = 0;
 
 	/**
 	 * Reads the current volume.
+	 *
+	 * Caller must lock the mutex.
 	 *
 	 * Throws std::runtime_error on error.
 	 *
@@ -93,6 +99,8 @@ public:
 
 	/**
 	 * Sets the volume.
+	 *
+	 * Caller must lock the mutex.
 	 *
 	 * Throws std::runtime_error on error.
 	 *
