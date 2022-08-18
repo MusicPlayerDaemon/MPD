@@ -44,13 +44,12 @@ Context::Initialise(JNIEnv *env) noexcept
 }
 
 AllocatedPath
-Context::GetExternalFilesDir(JNIEnv *env, const char *_type) noexcept
+Context::GetExternalFilesDir(JNIEnv *env, const char *type) noexcept
 {
 	assert(_type != nullptr);
 
-	Java::String type{env, _type};
-
-	jobject file = env->CallObjectMethod(Get(), getExternalFilesDir_method, type.Get());
+	jobject file = env->CallObjectMethod(Get(), getExternalFilesDir_method,
+					     Java::String::Optional(env, type).Get());
 	if (Java::DiscardException(env) || file == nullptr)
 		return nullptr;
 
