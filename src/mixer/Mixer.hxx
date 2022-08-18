@@ -27,11 +27,14 @@
 class MixerListener;
 
 class Mixer {
-public:
 	const MixerPlugin &plugin;
 
+public:
+	/* this field needs to be public for the workaround in
+	   ReplayGainFilter::Update() - TODO eliminate this kludge */
 	MixerListener &listener;
 
+private:
 	/**
 	 * This mutex protects all of the mixer struct, including its
 	 * implementation, so plugins don't have to deal with that.
