@@ -98,6 +98,7 @@ MakeFifo(Path path, mode_t mode) noexcept
 /**
  * Wrapper for access() that uses #Path names.
  */
+[[gnu::pure]]
 static inline bool
 CheckAccess(Path path, int mode) noexcept
 {
@@ -109,6 +110,7 @@ CheckAccess(Path path, int mode) noexcept
 /**
  * Checks if #Path exists and is a regular file.
  */
+[[gnu::pure]]
 static inline bool
 FileExists(Path path, bool follow_symlinks = true) noexcept
 {
@@ -127,6 +129,7 @@ FileExists(Path path, bool follow_symlinks = true) noexcept
 /**
  * Checks if #Path exists and is a directory.
  */
+[[gnu::pure]]
 static inline bool
 DirectoryExists(Path path, bool follow_symlinks = true) noexcept
 {
@@ -144,6 +147,7 @@ DirectoryExists(Path path, bool follow_symlinks = true) noexcept
 /**
  * Checks if #Path exists.
  */
+[[gnu::pure]]
 static inline bool
 PathExists(Path path) noexcept
 {
