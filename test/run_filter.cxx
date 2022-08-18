@@ -42,12 +42,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void
-mixer_set_volume([[maybe_unused]] Mixer &mixer,
-		 [[maybe_unused]] unsigned volume)
-{
-}
-
 static std::unique_ptr<PreparedFilter>
 LoadFilter(const ConfigData &config, const char *name)
 {

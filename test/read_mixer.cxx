@@ -19,6 +19,7 @@
 
 #include "NullMixerListener.hxx"
 #include "mixer/Control.hxx"
+#include "mixer/Mixer.hxx"
 #include "mixer/plugins/AlsaMixerPlugin.hxx"
 #include "filter/Registry.hxx"
 #include "event/Loop.hxx"
@@ -57,10 +58,7 @@ try {
 				 mixer_listener,
 				 ConfigBlock());
 
-	mixer_open(*mixer);
-
-	volume = mixer_get_volume(*mixer);
-	mixer_close(*mixer);
+	volume = mixer->LockGetVolume();
 	mixer_free(mixer);
 
 	assert(volume >= -1 && volume <= 100);

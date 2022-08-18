@@ -17,12 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_MIXER_INTERNAL_HXX
-#define MPD_MIXER_INTERNAL_HXX
+#pragma once
 
 #include "MixerPlugin.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <exception>
 
@@ -69,6 +67,37 @@ public:
 	}
 
 	/**
+	 * Throws on error.
+	 */
+	void LockOpen();
+
+	void LockClose() noexcept;
+
+	/**
+	 * Close the mixer unless the plugin's "global" flag is set.
+	 * This is called when the #AudioOutput is closed.
+	 */
+	void LockAutoClose() noexcept {
+		if (!IsGlobal())
+			LockClose();
+	}
+
+	/**
+	 * Throws on error.
+	 */
+	int LockGetVolume();
+
+	/**
+	 * Throws on error.
+	 */
+	void LockSetVolume(unsigned volume);
+
+private:
+	void _Open();
+	void _Close() noexcept;
+
+protected:
+	/**
 	 * Open mixer device
 	 *
 	 * Caller must lock the mutex.
@@ -107,5 +136,3 @@ public:
 	 */
 	virtual void SetVolume(unsigned volume) = 0;
 };
-
-#endif

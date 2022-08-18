@@ -27,7 +27,7 @@
 #include "OutputCommand.hxx"
 #include "MultipleOutputs.hxx"
 #include "Client.hxx"
-#include "mixer/Control.hxx"
+#include "mixer/Mixer.hxx"
 #include "mixer/Memento.hxx"
 #include "Idle.hxx"
 
@@ -75,7 +75,7 @@ audio_output_disable_index(MultipleOutputs &outputs,
 
 	auto *mixer = ao.GetMixer();
 	if (mixer != nullptr) {
-		mixer_close(*mixer);
+		mixer->LockClose();
 		mixer_memento.InvalidateHardwareVolume();
 		idle_add(IDLE_MIXER);
 	}
@@ -102,7 +102,7 @@ audio_output_toggle_index(MultipleOutputs &outputs,
 	if (!enabled) {
 		auto *mixer = ao.GetMixer();
 		if (mixer != nullptr) {
-			mixer_close(*mixer);
+			mixer->LockClose();
 			mixer_memento.InvalidateHardwareVolume();
 			idle_add(IDLE_MIXER);
 		}

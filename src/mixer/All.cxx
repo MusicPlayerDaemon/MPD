@@ -45,7 +45,7 @@ output_mixer_get_volume(const AudioOutputControl &ao) noexcept
 		return -1;
 
 	try {
-		return mixer_get_volume(*mixer);
+		return mixer->LockGetVolume();
 	} catch (...) {
 		FmtError(mixer_domain,
 			 "Failed to read mixer for '{}': {}",
@@ -99,7 +99,7 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume)
 		return SetVolumeResult::DISABLED;
 
 	try {
-		mixer_set_volume(*mixer, volume);
+		mixer->LockSetVolume(volume);
 		return SetVolumeResult::OK;
 	} catch (...) {
 		FmtError(mixer_domain,
@@ -157,7 +157,7 @@ output_mixer_get_software_volume(const AudioOutputControl &ao) noexcept
 	if (mixer == nullptr || !mixer->IsPlugin(software_mixer_plugin))
 		return -1;
 
-	return mixer_get_volume(*mixer);
+	return mixer->LockGetVolume();
 }
 
 int
@@ -191,6 +191,6 @@ MultipleOutputs::SetSoftwareVolume(unsigned volume) noexcept
 		if (mixer != nullptr &&
 		    (mixer->IsPlugin(software_mixer_plugin) ||
 		     mixer->IsPlugin(null_mixer_plugin)))
-			mixer_set_volume(*mixer, volume);
+			mixer->LockSetVolume(volume);
 	}
 }
