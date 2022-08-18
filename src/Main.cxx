@@ -591,18 +591,24 @@ MainConfigured(const CommandLineOptions &options,
 #ifdef ANDROID
 
 static void
+LoadConfigFile(JNIEnv *env, ConfigData &config)
+{
+	if (const auto dir = Environment::getExternalStorageDirectory(env);
+	    !dir.IsNull()) {
+		const auto config_path =
+			dir / Path::FromFS("mpd.conf");
+		if (FileExists(config_path))
+			ReadConfigFile(config, config_path);
+	}
+}
+
+static void
 AndroidMain(JNIEnv *env)
 {
 	CommandLineOptions options;
 	ConfigData raw_config;
 
-	const auto sdcard = Environment::getExternalStorageDirectory(env);
-	if (!sdcard.IsNull()) {
-		const auto config_path =
-			sdcard / Path::FromFS("mpd.conf");
-		if (FileExists(config_path))
-			ReadConfigFile(raw_config, config_path);
-	}
+	LoadConfigFile(env, raw_config);
 
 	MainConfigured(options, raw_config);
 }
