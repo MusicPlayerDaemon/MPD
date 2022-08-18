@@ -23,6 +23,8 @@
 #include "ReplayGainInfo.hxx"
 #include "ReplayGainConfig.hxx"
 #include "mixer/MixerControl.hxx"
+#include "mixer/MixerInternal.hxx"
+#include "mixer/Listener.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Volume.hxx"
 #include "util/ConstBuffer.hxx"
@@ -171,9 +173,11 @@ ReplayGainFilter::Update()
 		try {
 			mixer_set_volume(mixer, _volume);
 
-			/* TODO: emit this idle event only for the
-			   current partition */
-			idle_add(IDLE_MIXER);
+			/* invoke the mixer's listener manually, just
+			   in case the mixer implementation didn't do
+			   that already (this depends on the
+			   implementation) */
+			mixer->listener.OnMixerVolumeChanged(*mixer, _volume);
 		} catch (...) {
 			LogError(std::current_exception(),
 				 "Failed to update hardware mixer");
