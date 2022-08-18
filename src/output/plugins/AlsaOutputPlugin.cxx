@@ -27,7 +27,7 @@
 #include "lib/alsa/Version.hxx"
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
-#include "mixer/MixerList.hxx"
+#include "mixer/plugins/AlsaMixerPlugin.hxx"
 #include "pcm/Export.hxx"
 #include "system/PeriodClock.hxx"
 #include "thread/Mutex.hxx"

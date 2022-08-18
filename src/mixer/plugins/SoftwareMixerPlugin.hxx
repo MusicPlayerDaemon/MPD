@@ -17,11 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SOFTWARE_MIXER_PLUGIN_HXX
-#define MPD_SOFTWARE_MIXER_PLUGIN_HXX
+#pragma once
 
+struct MixerPlugin;
 class Mixer;
 class Filter;
+
+extern const MixerPlugin software_mixer_plugin;
 
 /**
  * Attach a #VolumeFilter to this mixer.  The #VolumeFilter is the
@@ -31,5 +33,3 @@ class Filter;
  */
 void
 software_mixer_set_filter(Mixer &mixer, Filter *filter) noexcept;
-
-#endif

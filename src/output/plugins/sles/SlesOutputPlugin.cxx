@@ -27,7 +27,7 @@
 #include "thread/Cond.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
-#include "mixer/MixerList.hxx"
+#include "mixer/plugins/AndroidMixerPlugin.hxx"
 #include "Log.hxx"
 
 #include <SLES/OpenSLES.h>

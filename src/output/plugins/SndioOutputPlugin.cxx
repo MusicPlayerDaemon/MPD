@@ -18,8 +18,8 @@
  */
 
 #include "SndioOutputPlugin.hxx"
-#include "mixer/MixerList.hxx"
 #include "mixer/Listener.hxx"
+#include "mixer/plugins/SndioMixerPlugin.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 

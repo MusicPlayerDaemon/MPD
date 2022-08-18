@@ -23,7 +23,6 @@
 #include "lib/pulse/LockGuard.hxx"
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
-#include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
 #include "util/ScopeExit.hxx"
 

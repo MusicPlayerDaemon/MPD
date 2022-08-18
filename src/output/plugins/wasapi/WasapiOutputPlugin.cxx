@@ -27,7 +27,7 @@
 #include "output/OutputAPI.hxx"
 #include "lib/icu/Win32.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
-#include "mixer/MixerList.hxx"
+#include "mixer/plugins/WasapiMixerPlugin.hxx"
 #include "output/Error.hxx"
 #include "pcm/Export.hxx"
 #include "thread/Cond.hxx"

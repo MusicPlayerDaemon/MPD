@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "OSXMixerPlugin.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "output/plugins/OSXOutputPlugin.hxx"
 

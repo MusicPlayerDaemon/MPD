@@ -17,48 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "NullMixerPlugin.hxx"
-#include "mixer/MixerInternal.hxx"
+#pragma once
 
-class NullMixer final : public Mixer {
-	/**
-	 * The current volume in percent (0..100).
-	 */
-	unsigned volume;
+struct MixerPlugin;
 
-public:
-	explicit NullMixer(MixerListener &_listener)
-		:Mixer(null_mixer_plugin, _listener),
-		 volume(100)
-	{
-	}
-
-	/* virtual methods from class Mixer */
-	void Open() override {
-	}
-
-	void Close() noexcept override {
-	}
-
-	int GetVolume() override {
-		return volume;
-	}
-
-	void SetVolume(unsigned _volume) override {
-		volume = _volume;
-	}
-};
-
-static Mixer *
-null_mixer_init([[maybe_unused]] EventLoop &event_loop,
-		[[maybe_unused]] AudioOutput &ao,
-		MixerListener &listener,
-		[[maybe_unused]] const ConfigBlock &block)
-{
-	return new NullMixer(listener);
-}
-
-const MixerPlugin null_mixer_plugin = {
-	null_mixer_init,
-	true,
-};
+extern const MixerPlugin wasapi_mixer_plugin;

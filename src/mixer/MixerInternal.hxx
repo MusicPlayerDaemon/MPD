@@ -21,7 +21,6 @@
 #define MPD_MIXER_INTERNAL_HXX
 
 #include "MixerPlugin.hxx"
-#include "MixerList.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Compiler.h"
 

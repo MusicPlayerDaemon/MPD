@@ -17,12 +17,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PULSE_MIXER_PLUGIN_HXX
-#define MPD_PULSE_MIXER_PLUGIN_HXX
+#pragma once
 
+struct MixerPlugin;
 class PulseMixer;
 struct pa_context;
 struct pa_stream;
+
+extern const MixerPlugin pulse_mixer_plugin;
 
 void
 pulse_mixer_on_connect(PulseMixer &pm, pa_context *context);
@@ -32,5 +34,3 @@ pulse_mixer_on_disconnect(PulseMixer &pm);
 
 void
 pulse_mixer_on_change(PulseMixer &pm, pa_context *context, pa_stream *stream);
-
-#endif

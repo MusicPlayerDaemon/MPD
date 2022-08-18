@@ -19,6 +19,7 @@
 
 #undef NOUSER // COM needs the "MSG" typedef
 
+#include "WasapiMixerPlugin.hxx"
 #include "output/plugins/wasapi/ForMixer.hxx"
 #include "output/plugins/wasapi/AudioClient.hxx"
 #include "output/plugins/wasapi/Device.hxx"

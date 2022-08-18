@@ -19,7 +19,7 @@
 
 #include "NullMixerListener.hxx"
 #include "mixer/MixerControl.hxx"
-#include "mixer/MixerList.hxx"
+#include "mixer/plugins/AlsaMixerPlugin.hxx"
 #include "filter/Registry.hxx"
 #include "event/Loop.hxx"
 #include "config/Block.hxx"

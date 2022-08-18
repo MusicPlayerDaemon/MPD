@@ -20,7 +20,7 @@
 #include "WinmmOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "pcm/Buffer.hxx"
-#include "mixer/MixerList.hxx"
+#include "mixer/plugins/WinmmMixerPlugin.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"

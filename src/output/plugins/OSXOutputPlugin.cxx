@@ -24,7 +24,7 @@
 #include "apple/StringRef.hxx"
 #include "apple/Throw.hxx"
 #include "../OutputAPI.hxx"
-#include "mixer/MixerList.hxx"
+#include "mixer/plugins/OSXMixerPlugin.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"

@@ -19,7 +19,7 @@
 
 #include "OssOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "mixer/MixerList.hxx"
+#include "mixer/plugins/OssMixerPlugin.hxx"
 #include "pcm/Export.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "system/Error.hxx"
