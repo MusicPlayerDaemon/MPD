@@ -48,7 +48,7 @@ cue_next_quoted(std::string_view &src) noexcept
 	auto end = src.find('"');
 	if (end == src.npos)
 		/* syntax error - ignore it silently */
-		return std::exchange(src, nullptr);
+		return std::exchange(src, {});
 
 	auto value = src.substr(0, end);
 	src = src.substr(end + 1);
