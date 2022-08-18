@@ -42,7 +42,7 @@ mixer_new(EventLoop &event_loop, const MixerPlugin &plugin,
 	  const ConfigBlock &block);
 
 void
-mixer_free(Mixer *mixer);
+mixer_free(Mixer *mixer) noexcept;
 
 /**
  * Throws std::runtime_error on error.
@@ -51,14 +51,14 @@ void
 mixer_open(Mixer &mixer);
 
 void
-mixer_close(Mixer &mixer);
+mixer_close(Mixer &mixer) noexcept;
 
 /**
  * Close the mixer unless the plugin's "global" flag is set.  This is
  * called when the #AudioOutput is closed.
  */
 void
-mixer_auto_close(Mixer &mixer);
+mixer_auto_close(Mixer &mixer) noexcept;
 
 /**
  * Throws std::runtime_error on error.

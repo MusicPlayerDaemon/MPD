@@ -36,7 +36,7 @@ mixer_new(EventLoop &event_loop,
 }
 
 void
-mixer_free(Mixer *mixer)
+mixer_free(Mixer *mixer) noexcept
 {
 	assert(mixer != nullptr);
 
@@ -66,7 +66,7 @@ mixer_open(Mixer &mixer)
 }
 
 static void
-mixer_close_internal(Mixer &mixer)
+mixer_close_internal(Mixer &mixer) noexcept
 {
 	assert(mixer.open);
 
@@ -76,7 +76,7 @@ mixer_close_internal(Mixer &mixer)
 }
 
 void
-mixer_close(Mixer &mixer)
+mixer_close(Mixer &mixer) noexcept
 {
 	const std::scoped_lock<Mutex> protect(mixer.mutex);
 
@@ -85,7 +85,7 @@ mixer_close(Mixer &mixer)
 }
 
 void
-mixer_auto_close(Mixer &mixer)
+mixer_auto_close(Mixer &mixer) noexcept
 {
 	if (!mixer.IsGlobal())
 		mixer_close(mixer);
