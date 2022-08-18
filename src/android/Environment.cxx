@@ -25,13 +25,13 @@
 #include "fs/AllocatedPath.hxx"
 
 namespace Environment {
-	static Java::TrivialClass cls;
-	static jmethodID getExternalStorageDirectory_method;
-	static jmethodID getExternalStoragePublicDirectory_method;
-}
+
+static Java::TrivialClass cls;
+static jmethodID getExternalStorageDirectory_method;
+static jmethodID getExternalStoragePublicDirectory_method;
 
 void
-Environment::Initialise(JNIEnv *env) noexcept
+Initialise(JNIEnv *env) noexcept
 {
 	cls.Find(env, "android/os/Environment");
 
@@ -45,16 +45,14 @@ Environment::Initialise(JNIEnv *env) noexcept
 }
 
 void
-Environment::Deinitialise(JNIEnv *env) noexcept
+Deinitialise(JNIEnv *env) noexcept
 {
 	cls.Clear(env);
 }
 
 AllocatedPath
-Environment::getExternalStorageDirectory() noexcept
+getExternalStorageDirectory(JNIEnv *env) noexcept
 {
-	JNIEnv *env = Java::GetEnv();
-
 	jobject file =
 		env->CallStaticObjectMethod(cls,
 					    getExternalStorageDirectory_method);
@@ -65,20 +63,20 @@ Environment::getExternalStorageDirectory() noexcept
 }
 
 AllocatedPath
-Environment::getExternalStoragePublicDirectory(const char *type) noexcept
+getExternalStoragePublicDirectory(JNIEnv *env, const char *type) noexcept
 {
 	if (getExternalStoragePublicDirectory_method == nullptr)
 		/* needs API level 8 */
 		return nullptr;
 
-	JNIEnv *env = Java::GetEnv();
-
 	Java::String type2(env, type);
-	jobject file = env->CallStaticObjectMethod(Environment::cls,
-						   Environment::getExternalStoragePublicDirectory_method,
+	jobject file = env->CallStaticObjectMethod(cls,
+						   getExternalStoragePublicDirectory_method,
 						   type2.Get());
 	if (file == nullptr)
 		return nullptr;
 
 	return Java::File::ToAbsolutePath(env, file);
 }
+
+} // namespace Environment

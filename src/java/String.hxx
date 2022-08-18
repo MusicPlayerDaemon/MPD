@@ -92,6 +92,16 @@ public:
 
 	String(JNIEnv *_env, std::string_view _value) noexcept;
 
+	/**
+	 * This constructor allows passing a nullptr value, which maps
+	 * to a "null" in Java.
+	 */
+	static String Optional(JNIEnv *_env, const char *_value) noexcept {
+		return _value != nullptr
+			? String{_env, _value}
+			: String{};
+	}
+
 	static StringUTFChars GetUTFChars(JNIEnv *env, jstring s) noexcept {
 		return {env, s, env->GetStringUTFChars(s, nullptr)};
 	}

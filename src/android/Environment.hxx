@@ -17,27 +17,29 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ANDROID_ENVIRONMENT_HXX
-#define MPD_ANDROID_ENVIRONMENT_HXX
-
-#include "util/Compiler.h"
+#pragma once
 
 #include <jni.h>
 
 class AllocatedPath;
 
 namespace Environment {
-	void Initialise(JNIEnv *env) noexcept;
-	void Deinitialise(JNIEnv *env) noexcept;
 
-	/**
-	 * Determine the mount point of the external SD card.
-	 */
-	[[gnu::pure]]
-	AllocatedPath getExternalStorageDirectory() noexcept;
+void
+Initialise(JNIEnv *env) noexcept;
 
-	[[gnu::pure]]
-	AllocatedPath getExternalStoragePublicDirectory(const char *type) noexcept;
-}
+void
+Deinitialise(JNIEnv *env) noexcept;
 
-#endif
+/**
+ * Determine the mount point of the external SD card.
+ */
+[[gnu::pure]]
+AllocatedPath
+getExternalStorageDirectory(JNIEnv *env) noexcept;
+
+[[gnu::pure]]
+AllocatedPath
+getExternalStoragePublicDirectory(JNIEnv *env, const char *type) noexcept;
+
+} // namespace Environment

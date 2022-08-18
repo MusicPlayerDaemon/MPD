@@ -27,12 +27,21 @@ class AudioManager;
 
 class Context : public Java::GlobalObject {
 public:
+	/**
+	 * Global initialisation.  Looks up the methods of the
+	 * Context Java class.
+	 */
+	static void Initialise(JNIEnv *env) noexcept;
+
 	Context(JNIEnv *env, jobject obj) noexcept
 		:Java::GlobalObject(env, obj) {}
 
+	/**
+	 * @param type the subdirectory name; may be nullptr
+	 */
 	[[gnu::pure]]
 	AllocatedPath GetExternalFilesDir(JNIEnv *env,
-					  const char *type) noexcept;
+					  const char *type=nullptr) noexcept;
 
 	[[gnu::pure]]
 	AllocatedPath GetCacheDir(JNIEnv *env) const noexcept;

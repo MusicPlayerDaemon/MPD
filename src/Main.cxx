@@ -540,19 +540,46 @@ MainConfigured(const CommandLineOptions &options,
 
 #ifdef ANDROID
 
+/**
+ * Wrapper for ReadConfigFile() which returns false if the file was
+ * not found.
+ */
+static bool
+TryReadConfigFile(ConfigData &config, Path path)
+{
+	if (!FileExists(path))
+		return false;
+
+	ReadConfigFile(config, path);
+	return true;
+}
+
 static void
-AndroidMain()
+LoadConfigFile(JNIEnv *env, ConfigData &config)
+{
+	/* try loading mpd.conf from
+	   "Android/data/org.musicpd/files/mpd.conf" (the app specific
+	   data directory) first */
+	if (const auto dir = context->GetExternalFilesDir(env);
+	    !dir.IsNull() &&
+	    TryReadConfigFile(config, dir / Path::FromFS("mpd.conf")))
+		return;
+
+	/* if that fails, attempt to load "mpd.conf" from the root of
+	   the SD card (pre-0.23.9, ceases to work since Android
+	   12) */
+	if (const auto dir = Environment::getExternalStorageDirectory(env);
+	    !dir.IsNull())
+		TryReadConfigFile(config, dir / Path::FromFS("mpd.conf"));
+}
+
+static void
+AndroidMain(JNIEnv *env)
 {
 	CommandLineOptions options;
 	ConfigData raw_config;
 
-	const auto sdcard = Environment::getExternalStorageDirectory();
-	if (!sdcard.IsNull()) {
-		const auto config_path =
-			sdcard / Path::FromFS("mpd.conf");
-		if (FileExists(config_path))
-			ReadConfigFile(raw_config, config_path);
-	}
+	LoadConfigFile(env, raw_config);
 
 	MainConfigured(options, raw_config);
 }
@@ -564,8 +591,11 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logL
 	Java::Init(env);
 	Java::Object::Initialise(env);
 	Java::File::Initialise(env);
+
 	Environment::Initialise(env);
 	AtScopeExit(env) { Environment::Deinitialise(env); };
+
+	Context::Initialise(env);
 
 	context = new Context(env, _context);
 	AtScopeExit() { delete context; };
@@ -575,7 +605,7 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logL
 	AtScopeExit() { delete logListener; };
 
 	try {
-		AndroidMain();
+		AndroidMain(env);
 	} catch (...) {
 		LogError(std::current_exception());
 	}

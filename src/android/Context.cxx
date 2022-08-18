@@ -26,19 +26,30 @@
 
 #include "AudioManager.hxx"
 
+static jmethodID getExternalFilesDir_method,
+  getCacheDir_method,
+  getSystemService_method;
+
+void
+Context::Initialise(JNIEnv *env) noexcept
+{
+	Java::Class cls{env, "android/content/Context"};
+
+	getExternalFilesDir_method = env->GetMethodID(cls, "getExternalFilesDir",
+						      "(Ljava/lang/String;)Ljava/io/File;");
+	getCacheDir_method = env->GetMethodID(cls, "getCacheDir",
+					      "()Ljava/io/File;");
+	getSystemService_method = env->GetMethodID(cls, "getSystemService",
+						   "(Ljava/lang/String;)Ljava/lang/Object;");
+}
+
 AllocatedPath
-Context::GetExternalFilesDir(JNIEnv *env, const char *_type) noexcept
+Context::GetExternalFilesDir(JNIEnv *env, const char *type) noexcept
 {
 	assert(_type != nullptr);
 
-	Java::Class cls{env, env->GetObjectClass(Get())};
-	jmethodID method = env->GetMethodID(cls, "getExternalFilesDir",
-					    "(Ljava/lang/String;)Ljava/io/File;");
-	assert(method);
-
-	Java::String type{env, _type};
-
-	jobject file = env->CallObjectMethod(Get(), method, type.Get());
+	jobject file = env->CallObjectMethod(Get(), getExternalFilesDir_method,
+					     Java::String::Optional(env, type).Get());
 	if (Java::DiscardException(env) || file == nullptr)
 		return nullptr;
 
@@ -50,12 +61,7 @@ Context::GetCacheDir(JNIEnv *env) const noexcept
 {
 	assert(env != nullptr);
 
-	Java::Class cls(env, env->GetObjectClass(Get()));
-	jmethodID method = env->GetMethodID(cls, "getCacheDir",
-					    "()Ljava/io/File;");
-	assert(method);
-
-	jobject file = env->CallObjectMethod(Get(), method);
+	jobject file = env->CallObjectMethod(Get(), getCacheDir_method);
 	if (Java::DiscardException(env) || file == nullptr)
 		return nullptr;
 
@@ -67,13 +73,8 @@ Context::GetAudioManager(JNIEnv *env) noexcept
 {
 	assert(env != nullptr);
 
-	Java::Class cls(env, env->GetObjectClass(Get()));
-	jmethodID method = env->GetMethodID(cls, "getSystemService",
-					    "(Ljava/lang/String;)Ljava/lang/Object;");
-	assert(method);
-
 	Java::String name(env, "audio");
-	jobject am = env->CallObjectMethod(Get(), method, name.Get());
+	jobject am = env->CallObjectMethod(Get(), getSystemService_method, name.Get());
 	if (Java::DiscardException(env) || am == nullptr)
 		return nullptr;
 

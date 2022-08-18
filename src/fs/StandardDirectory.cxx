@@ -254,7 +254,8 @@ GetUserMusicDir() noexcept
 #elif defined(USE_XDG)
 	return GetUserDir("XDG_MUSIC_DIR");
 #elif defined(ANDROID)
-	return Environment::getExternalStoragePublicDirectory("Music");
+	return Environment::getExternalStoragePublicDirectory(Java::GetEnv(),
+							      "Music");
 #else
 	return nullptr;
 #endif
