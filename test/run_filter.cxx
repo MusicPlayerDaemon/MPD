@@ -27,7 +27,7 @@
 #include "pcm/AudioParser.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Volume.hxx"
-#include "mixer/MixerControl.hxx"
+#include "mixer/Control.hxx"
 #include "system/Error.hxx"
 #include "io/FileDescriptor.hxx"
 #include "util/StringBuffer.hxx"

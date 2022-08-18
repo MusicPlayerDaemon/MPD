@@ -18,7 +18,7 @@
  */
 
 #include "PipeWireMixerPlugin.hxx"
-#include "mixer/MixerInternal.hxx"
+#include "mixer/Mixer.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PipeWireOutputPlugin.hxx"
 

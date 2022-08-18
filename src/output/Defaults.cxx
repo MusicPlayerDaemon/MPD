@@ -19,7 +19,6 @@
 
 #include "Defaults.hxx"
 #include "config/Data.hxx"
-#include "mixer/MixerType.hxx"
 
 AudioOutputDefaults::AudioOutputDefaults(const ConfigData &config)
 	:normalize(config.GetBool(ConfigOption::VOLUME_NORMALIZATION, false)),

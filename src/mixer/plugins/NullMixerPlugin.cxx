@@ -18,7 +18,7 @@
  */
 
 #include "NullMixerPlugin.hxx"
-#include "mixer/MixerInternal.hxx"
+#include "mixer/Mixer.hxx"
 
 class NullMixer final : public Mixer {
 	/**

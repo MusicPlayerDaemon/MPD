@@ -17,7 +17,7 @@
  */
 
 #include "SndioMixerPlugin.hxx"
-#include "mixer/MixerInternal.hxx"
+#include "mixer/Mixer.hxx"
 #include "output/plugins/SndioOutputPlugin.hxx"
 
 class SndioMixer final : public Mixer {

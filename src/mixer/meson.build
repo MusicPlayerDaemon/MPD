@@ -4,9 +4,9 @@ subdir('plugins')
 
 mixer_glue = static_library(
   'mixer_glue',
-  'MixerControl.cxx',
-  'MixerType.cxx',
-  'MixerAll.cxx',
+  'Control.cxx',
+  'Type.cxx',
+  'All.cxx',
   include_directories: inc,
   dependencies: [
     log_dep,

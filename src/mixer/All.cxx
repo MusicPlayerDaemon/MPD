@@ -18,8 +18,8 @@
  */
 
 #include "output/MultipleOutputs.hxx"
-#include "MixerControl.hxx"
-#include "MixerInternal.hxx"
+#include "Control.hxx"
+#include "Mixer.hxx"
 #include "plugins/NullMixerPlugin.hxx"
 #include "plugins/SoftwareMixerPlugin.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"

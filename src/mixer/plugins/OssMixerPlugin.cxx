@@ -18,7 +18,7 @@
  */
 
 #include "OssMixerPlugin.hxx"
-#include "mixer/MixerInternal.hxx"
+#include "mixer/Mixer.hxx"
 #include "config/Block.hxx"
 #include "io/FileDescriptor.hxx"
 #include "system/Error.hxx"

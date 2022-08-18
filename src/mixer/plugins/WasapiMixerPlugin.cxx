@@ -23,7 +23,7 @@
 #include "output/plugins/wasapi/ForMixer.hxx"
 #include "output/plugins/wasapi/AudioClient.hxx"
 #include "output/plugins/wasapi/Device.hxx"
-#include "mixer/MixerInternal.hxx"
+#include "mixer/Mixer.hxx"
 #include "win32/ComPtr.hxx"
 #include "win32/ComWorker.hxx"
 #include "win32/HResult.hxx"

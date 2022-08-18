@@ -18,7 +18,7 @@
  */
 
 #include "OSXMixerPlugin.hxx"
-#include "mixer/MixerInternal.hxx"
+#include "mixer/Mixer.hxx"
 #include "output/plugins/OSXOutputPlugin.hxx"
 
 class OSXMixer final : public Mixer {

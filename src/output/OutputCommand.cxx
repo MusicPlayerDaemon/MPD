@@ -27,7 +27,7 @@
 #include "OutputCommand.hxx"
 #include "MultipleOutputs.hxx"
 #include "Client.hxx"
-#include "mixer/MixerControl.hxx"
+#include "mixer/Control.hxx"
 #include "mixer/Memento.hxx"
 #include "Idle.hxx"
 

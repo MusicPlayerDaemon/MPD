@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "MixerControl.hxx"
-#include "MixerInternal.hxx"
+#include "Control.hxx"
+#include "Mixer.hxx"
 
 #include <cassert>
 

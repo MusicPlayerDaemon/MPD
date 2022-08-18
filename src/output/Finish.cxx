@@ -19,7 +19,7 @@
 
 #include "Filtered.hxx"
 #include "Interface.hxx"
-#include "mixer/MixerControl.hxx"
+#include "mixer/Control.hxx"
 #include "filter/Prepared.hxx"
 
 FilteredAudioOutput::~FilteredAudioOutput()

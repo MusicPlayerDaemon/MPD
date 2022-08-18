@@ -22,7 +22,7 @@
 #include "Client.hxx"
 #include "Domain.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
-#include "mixer/MixerControl.hxx"
+#include "mixer/Control.hxx"
 #include "config/Block.hxx"
 #include "Log.hxx"
 

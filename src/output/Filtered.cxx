@@ -22,7 +22,7 @@
 #include "Domain.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
-#include "mixer/MixerInternal.hxx"
+#include "mixer/Mixer.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "util/RuntimeError.hxx"

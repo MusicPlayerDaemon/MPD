@@ -20,7 +20,7 @@
 #ifndef MPD_AUDIO_OUTPUT_DEFAULTS_HXX
 #define MPD_AUDIO_OUTPUT_DEFAULTS_HXX
 
-#include "mixer/MixerType.hxx"
+#include "mixer/Type.hxx"
 
 struct ConfigData;
 
