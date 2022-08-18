@@ -85,12 +85,12 @@ RemoveFile(Path path);
  * Wrapper for readlink() that uses #Path names.
  */
 AllocatedPath
-ReadLink(Path path);
+ReadLink(Path path) noexcept;
 
 #ifndef _WIN32
 
 static inline bool
-MakeFifo(Path path, mode_t mode)
+MakeFifo(Path path, mode_t mode) noexcept
 {
 	return mkfifo(path.c_str(), mode) == 0;
 }
@@ -99,7 +99,7 @@ MakeFifo(Path path, mode_t mode)
  * Wrapper for access() that uses #Path names.
  */
 static inline bool
-CheckAccess(Path path, int mode)
+CheckAccess(Path path, int mode) noexcept
 {
 	return access(path.c_str(), mode) == 0;
 }
@@ -110,7 +110,7 @@ CheckAccess(Path path, int mode)
  * Checks if #Path exists and is a regular file.
  */
 static inline bool
-FileExists(Path path, bool follow_symlinks = true)
+FileExists(Path path, bool follow_symlinks = true) noexcept
 {
 #ifdef _WIN32
 	(void)follow_symlinks;
@@ -128,7 +128,7 @@ FileExists(Path path, bool follow_symlinks = true)
  * Checks if #Path exists and is a directory.
  */
 static inline bool
-DirectoryExists(Path path, bool follow_symlinks = true)
+DirectoryExists(Path path, bool follow_symlinks = true) noexcept
 {
 #ifdef _WIN32
 	(void)follow_symlinks;
@@ -145,7 +145,7 @@ DirectoryExists(Path path, bool follow_symlinks = true)
  * Checks if #Path exists.
  */
 static inline bool
-PathExists(Path path)
+PathExists(Path path) noexcept
 {
 #ifdef _WIN32
 	return GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES;

@@ -40,7 +40,7 @@ RenameFile(Path oldpath, Path newpath)
 }
 
 AllocatedPath
-ReadLink(Path path)
+ReadLink(Path path) noexcept
 {
 #ifdef _WIN32
 	(void)path;
