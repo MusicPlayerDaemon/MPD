@@ -590,16 +590,26 @@ MainConfigured(const CommandLineOptions &options,
 
 #ifdef ANDROID
 
+/**
+ * Wrapper for ReadConfigFile() which returns false if the file was
+ * not found.
+ */
+static bool
+TryReadConfigFile(ConfigData &config, Path path)
+{
+	if (!FileExists(path))
+		return false;
+
+	ReadConfigFile(config, path);
+	return true;
+}
+
 static void
 LoadConfigFile(JNIEnv *env, ConfigData &config)
 {
 	if (const auto dir = Environment::getExternalStorageDirectory(env);
-	    !dir.IsNull()) {
-		const auto config_path =
-			dir / Path::FromFS("mpd.conf");
-		if (FileExists(config_path))
-			ReadConfigFile(config, config_path);
-	}
+	    !dir.IsNull())
+		TryReadConfigFile(config, dir / Path::FromFS("mpd.conf"));
 }
 
 static void
