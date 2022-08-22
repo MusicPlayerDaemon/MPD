@@ -31,7 +31,7 @@ set(CMAKE_CXX_FLAGS "{toolchain.cxxflags} {toolchain.cppflags}")
     __write_cmake_compiler(f, 'C', toolchain.cc)
     __write_cmake_compiler(f, 'CXX', toolchain.cxx)
 
-def configure(toolchain, src, build, args=()):
+def configure(toolchain, src, build, args=(), env=None):
     cross_args = []
 
     if toolchain.is_windows:
@@ -61,16 +61,23 @@ def configure(toolchain, src, build, args=()):
         '-GNinja',
     ] + cross_args + args
 
+    if env is None:
+        env = toolchain.env
+    else:
+        env = {**toolchain.env, **env}
+
     print(configure)
-    subprocess.check_call(configure, env=toolchain.env, cwd=build)
+    subprocess.check_call(configure, env=env, cwd=build)
 
 class CmakeProject(Project):
     def __init__(self, url, md5, installed, configure_args=[],
                  windows_configure_args=[],
+                 env=None,
                  **kwargs):
         Project.__init__(self, url, md5, installed, **kwargs)
         self.configure_args = configure_args
         self.windows_configure_args = windows_configure_args
+        self.env = env
 
     def configure(self, toolchain):
         src = self.unpack(toolchain)
@@ -78,7 +85,7 @@ class CmakeProject(Project):
         configure_args = self.configure_args
         if toolchain.is_windows:
             configure_args = configure_args + self.windows_configure_args
-        configure(toolchain, src, build, configure_args)
+        configure(toolchain, src, build, configure_args, self.env)
         return build
 
     def _build(self, toolchain):
