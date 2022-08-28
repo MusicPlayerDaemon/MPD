@@ -46,6 +46,7 @@
 #include "Instance.hxx"
 #include "IdleFlags.hxx"
 #include "Log.hxx"
+#include "Mapper.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "DatabaseCommands.hxx"
@@ -393,6 +394,10 @@ handle_config(Client &client, [[maybe_unused]] Request args, Response &r)
 		r.Fmt(FMT_STRING("music_directory: {}\n"), path);
 	}
 #endif
+
+	const auto spl_path = map_spl_path();
+	if (!spl_path.IsNull())
+		r.Fmt(FMT_STRING("playlist_directory: {}\n"), spl_path.ToUTF8());
 
 	return CommandResult::OK;
 }
