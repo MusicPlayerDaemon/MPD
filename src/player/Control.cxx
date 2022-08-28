@@ -20,7 +20,6 @@
 #include "Control.hxx"
 #include "Outputs.hxx"
 #include "Listener.hxx"
-#include "Idle.hxx"
 #include "song/DetachedSong.hxx"
 
 #include <algorithm>
@@ -91,7 +90,7 @@ PlayerControl::LockStop() noexcept
 	LockSynchronousCommand(PlayerCommand::CLOSE_AUDIO);
 	assert(next_song == nullptr);
 
-	idle_add(IDLE_PLAYER);
+	listener.OnPlayerStateChanged();
 }
 
 void
@@ -112,7 +111,7 @@ PlayerControl::Kill() noexcept
 	LockSynchronousCommand(PlayerCommand::EXIT);
 	thread.Join();
 
-	idle_add(IDLE_PLAYER);
+	listener.OnPlayerStateChanged();
 }
 
 void
@@ -120,7 +119,7 @@ PlayerControl::PauseLocked(std::unique_lock<Mutex> &lock) noexcept
 {
 	if (state != PlayerState::STOP) {
 		SynchronousCommand(lock, PlayerCommand::PAUSE);
-		idle_add(IDLE_PLAYER);
+		listener.OnPlayerStateChanged();
 	}
 }
 
@@ -304,7 +303,7 @@ PlayerControl::SetCrossFade(FloatDuration duration) noexcept
 {
 	cross_fade.duration = std::max(duration, FloatDuration::zero());
 
-	idle_add(IDLE_OPTIONS);
+	listener.OnPlayerOptionsChanged();
 }
 
 void
@@ -312,7 +311,7 @@ PlayerControl::SetMixRampDb(float _mixramp_db) noexcept
 {
 	cross_fade.mixramp_db = _mixramp_db;
 
-	idle_add(IDLE_OPTIONS);
+	listener.OnPlayerOptionsChanged();
 }
 
 void
@@ -320,5 +319,5 @@ PlayerControl::SetMixRampDelay(FloatDuration _mixramp_delay) noexcept
 {
 	cross_fade.mixramp_delay = _mixramp_delay;
 
-	idle_add(IDLE_OPTIONS);
+	listener.OnPlayerOptionsChanged();
 }

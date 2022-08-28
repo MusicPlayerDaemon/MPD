@@ -285,6 +285,7 @@ private:
 	void OnPlayerSync() noexcept override;
 	void OnPlayerTagModified() noexcept override;
 	void OnBorderPause() noexcept override;
+	void OnPlayerOptionsChanged() noexcept override;
 
 	/* virtual methods from class MixerListener */
 	void OnMixerVolumeChanged(Mixer &mixer, int volume) noexcept override;

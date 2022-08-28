@@ -195,6 +195,12 @@ Partition::OnPlayerStateChanged() noexcept
 }
 
 void
+Partition::OnPlayerOptionsChanged() noexcept
+{
+	EmitIdle(IDLE_OPTIONS);
+}
+
+void
 Partition::OnPlayerSync() noexcept
 {
 	EmitGlobalEvent(SYNC_WITH_PLAYER);

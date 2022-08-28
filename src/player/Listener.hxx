@@ -35,6 +35,12 @@ public:
 	virtual void OnPlayerStateChanged() noexcept = 0;
 
 	/**
+	 * Some options of the player has changed.  This maps to
+	 * #IDLE_OPTIONS.
+	 */
+	virtual void OnPlayerOptionsChanged() noexcept = 0;
+
+	/**
 	 * Must call playlist_sync().
 	 */
 	virtual void OnPlayerSync() noexcept = 0;
