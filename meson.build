@@ -468,6 +468,7 @@ basic = static_library(
   'basic',
   'src/ReplayGainMode.cxx',
   'src/SingleMode.cxx',
+  'src/ConsumeMode.cxx',
   include_directories: inc,
 )
 

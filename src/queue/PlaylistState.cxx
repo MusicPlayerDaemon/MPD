@@ -162,7 +162,7 @@ playlist_state_restore(const StateFileConfig &config,
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_SINGLE))) {
 			playlist.SetSingle(pc, SingleFromString(p));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CONSUME))) {
-			playlist.SetConsume(StringIsEqual(p, "1"));
+			playlist.SetConsume(ConsumeFromString(p));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CROSSFADE))) {
 			pc.SetCrossFade(FloatDuration(atoi(p)));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB))) {
@@ -243,6 +243,7 @@ playlist_state_get_hash(const playlist &playlist,
 		((int)playlist.queue.single << 25) ^
 		(playlist.queue.random << 27) ^
 		(playlist.queue.repeat << 28) ^
-		(playlist.queue.consume << 30) ^
+		/* note that this takes 2 bits */
+		((int)playlist.queue.consume << 29) ^
 		(playlist.queue.random << 31);
 }

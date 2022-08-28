@@ -21,6 +21,7 @@
 #define MPD_PLAYLIST_HXX
 
 #include "SingleMode.hxx"
+#include "ConsumeMode.hxx"
 #include "queue/Queue.hxx"
 #include "config.h"
 
@@ -369,11 +370,11 @@ public:
 
 	void SetSingle(PlayerControl &pc, SingleMode new_value) noexcept;
 
-	bool GetConsume() const noexcept {
+	ConsumeMode GetConsume() const noexcept {
 		return queue.consume;
 	}
 
-	void SetConsume(bool new_value) noexcept;
+	void SetConsume(ConsumeMode new_value) noexcept;
 
 private:
 	/**

@@ -26,6 +26,7 @@
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
 #include "song/DetachedSong.hxx"
+#include "Listener.hxx"
 #include "Log.hxx"
 
 void
@@ -178,8 +179,14 @@ playlist::PlayNext(PlayerControl &pc)
 	}
 
 	/* Consume mode removes each played songs. */
-	if (queue.consume)
+	if (queue.consume != ConsumeMode::OFF)
 		DeleteOrder(pc, old_current);
+
+	/* Disable consume mode after consuming one song in oneshot mode. */
+	if (queue.consume == ConsumeMode::ONE_SHOT) {
+		queue.consume = ConsumeMode::OFF;
+		listener.OnQueueOptionsChanged();
+	}
 }
 
 void

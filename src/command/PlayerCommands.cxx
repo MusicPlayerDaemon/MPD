@@ -22,6 +22,7 @@
 #include "Request.hxx"
 #include "queue/Playlist.hxx"
 #include "PlaylistPrint.hxx"
+#include "ConsumeMode.hxx"
 #include "SingleMode.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
@@ -146,7 +147,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 	      (unsigned)playlist.GetRepeat(),
 	      (unsigned)playlist.GetRandom(),
 	      SingleToString(playlist.GetSingle()),
-	      (unsigned)playlist.GetConsume(),
+	      ConsumeToString(playlist.GetConsume()),
 	      partition.name.c_str(),
 	      playlist.GetVersion(),
 	      playlist.GetLength(),
@@ -260,8 +261,8 @@ handle_single(Client &client, Request args, [[maybe_unused]] Response &r)
 CommandResult
 handle_consume(Client &client, Request args, [[maybe_unused]] Response &r)
 {
-	bool status = args.ParseBool(0);
-	client.GetPartition().SetConsume(status);
+	auto new_mode = ConsumeFromString(args.front());
+	client.GetPartition().SetConsume(new_mode);
 	return CommandResult::OK;
 }
 

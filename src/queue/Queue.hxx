@@ -23,6 +23,7 @@
 #include "util/Compiler.h"
 #include "IdTable.hxx"
 #include "SingleMode.hxx"
+#include "ConsumeMode.hxx"
 #include "util/LazyRandomEngine.hxx"
 
 #include <cassert>
@@ -96,7 +97,7 @@ struct Queue {
 	SingleMode single = SingleMode::OFF;
 
 	/** remove each played files. */
-	bool consume = false;
+	ConsumeMode consume = ConsumeMode::OFF;
 
 	/** play back songs in random order? */
 	bool random = false;

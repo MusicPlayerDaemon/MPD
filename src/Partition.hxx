@@ -31,6 +31,7 @@
 #include "protocol/RangeArg.hxx"
 #include "ReplayGainMode.hxx"
 #include "SingleMode.hxx"
+#include "ConsumeMode.hxx"
 #include "Chrono.hxx"
 #include "config.h"
 
@@ -218,7 +219,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.SetSingle(pc, new_value);
 	}
 
-	void SetConsume(bool new_value) noexcept {
+	void SetConsume(ConsumeMode new_value) noexcept {
 		playlist.SetConsume(new_value);
 	}
 
