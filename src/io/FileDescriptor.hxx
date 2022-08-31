@@ -244,6 +244,12 @@ public:
 	[[gnu::pure]]
 	off_t GetSize() const noexcept;
 
+#ifndef _WIN32
+	ssize_t ReadAt(off_t offset, void *buffer, std::size_t length) noexcept {
+		return ::pread(fd, buffer, length, offset);
+	}
+#endif
+
 	ssize_t Read(void *buffer, std::size_t length) noexcept {
 		return ::read(fd, buffer, length);
 	}
