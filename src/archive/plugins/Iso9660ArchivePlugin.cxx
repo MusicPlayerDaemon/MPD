@@ -166,7 +166,7 @@ class Iso9660InputStream final : public InputStream {
 			assert(fill <= data.size());
 			assert(position <= fill);
 
-			return {&data[position], &data[fill]};
+			return {data.data() + position, data.data() + fill};
 		}
 
 		void Consume(size_t nbytes) noexcept {
