@@ -158,12 +158,15 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 			    getenv("NOTIFY_SOCKET") != nullptr) {
 				/* if MPD was started as a systemd
 				   service, default to journal (which
-				   is connected to fd=2) */
+				   is connected to stdout&stderr) */
 				out_fd = STDOUT_FILENO;
 				return;
 			}
 #endif
-#ifndef HAVE_SYSLOG
+#ifdef _WIN32
+			/* default to stdout on Windows */
+			out_fd = STDOUT_FILENO;
+#elif !defined(HAVE_SYSLOG)
 			throw std::runtime_error("config parameter 'log_file' not found");
 #endif
 #ifdef HAVE_SYSLOG

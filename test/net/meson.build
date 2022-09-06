@@ -20,6 +20,7 @@ test(
     dependencies: [
       net_dep,
       fs_dep,
+      util_dep,
       gtest_dep,
     ],
   ),

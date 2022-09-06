@@ -18,6 +18,10 @@ ver 0.24 (not yet released)
 * static partition configuration
 * remove Haiku support
 
+ver 0.23.10 (not yet released)
+* Windows
+  - log to stdout by default, don't require "log_file" setting
+
 ver 0.23.9 (2022/08/18)
 * input
   - cdio_paranoia: add options "mode" and "skip"
