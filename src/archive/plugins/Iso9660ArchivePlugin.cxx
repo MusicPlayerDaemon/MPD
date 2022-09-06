@@ -166,7 +166,7 @@ class Iso9660InputStream final : public InputStream {
 			assert(fill <= data.size());
 			assert(position <= fill);
 
-			return {data.data() + position, data.data() + fill};
+			return std::span{data}.first(fill).subspan(position);
 		}
 
 		void Consume(size_t nbytes) noexcept {
