@@ -30,6 +30,7 @@ class MixerListener {
 public:
 	virtual void OnMixerVolumeChanged(Mixer &mixer,
 					  int volume) noexcept = 0;
+	virtual void OnMixerChanged() noexcept = 0;
 };
 
 #endif
