@@ -163,7 +163,10 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 				return;
 			}
 #endif
-#ifndef HAVE_SYSLOG
+#ifdef _WIN32
+			/* default to stdout on Windows */
+			out_fd = STDOUT_FILENO;
+#elif !defined(HAVE_SYSLOG)
 			throw std::runtime_error("config parameter 'log_file' not found");
 #endif
 #ifdef HAVE_SYSLOG
