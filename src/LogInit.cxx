@@ -158,7 +158,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 			    getenv("NOTIFY_SOCKET") != nullptr) {
 				/* if MPD was started as a systemd
 				   service, default to journal (which
-				   is connected to fd=2) */
+				   is connected to stdout&stderr) */
 				out_fd = STDOUT_FILENO;
 				return;
 			}
