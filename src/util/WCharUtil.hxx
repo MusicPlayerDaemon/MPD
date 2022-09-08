@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2011-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -114,6 +114,12 @@ constexpr bool
 IsAlphaNumericASCII(wchar_t ch) noexcept
 {
 	return IsAlphaASCII(ch) || IsDigitASCII(ch);
+}
+
+constexpr bool
+IsLowerAlphaNumericASCII(wchar_t ch) noexcept
+{
+	return IsLowerAlphaASCII(ch) || IsDigitASCII(ch);
 }
 
 /**
