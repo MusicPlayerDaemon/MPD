@@ -43,13 +43,15 @@ opus = AutotoolsProject(
 )
 
 flac = AutotoolsProject(
-    'http://downloads.xiph.org/releases/flac/flac-1.3.4.tar.xz',
-    '8ff0607e75a322dd7cd6ec48f4f225471404ae2730d0ea945127b1355155e737',
+    'http://downloads.xiph.org/releases/flac/flac-1.4.0.tar.xz',
+    'af41c0733c93c237c3e52f64dd87e3b0d9af38259f1c7d11e8cbf583c48c2506',
     'lib/libFLAC.a',
     [
         '--disable-shared', '--enable-static',
+        '--disable-stack-smash-protection',
         '--disable-xmms-plugin', '--disable-cpplibs',
         '--disable-doxygen-docs',
+        '--disable-programs',
     ],
     subdirs=['include', 'src/libFLAC'],
 )
