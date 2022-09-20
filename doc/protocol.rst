@@ -1599,6 +1599,7 @@ Reflection
     The following response attributes are available:
 
     - ``music_directory``: The absolute path of the music directory.
+    - ``playlist_directory``: The absolute path of the playlist directory.
 
 .. _command_commands:
 
