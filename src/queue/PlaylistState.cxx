@@ -92,7 +92,7 @@ playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_REPEAT "{}\n"),
 	       (unsigned)playlist.queue.repeat);
 	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_SINGLE "{}\n"),
-			  (int)playlist.queue.single);
+		   (unsigned)playlist.queue.single);
 	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CONSUME "{}\n"),
 	       (unsigned)playlist.queue.consume);
 	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CROSSFADE "{}\n"),
