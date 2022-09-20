@@ -169,8 +169,8 @@ static CommandResult
 handle_lsinfo_relative(Client &client, Response &r, const char *uri)
 {
 #ifdef ENABLE_DATABASE
-	CommandResult result = handle_lsinfo2(client, uri, r);
-	if (result != CommandResult::OK)
+	if (CommandResult result = handle_lsinfo2(client, uri, r);
+	    result != CommandResult::OK)
 		return result;
 #else
 	(void)client;
@@ -290,12 +290,10 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 		}
 	}
 
-	UpdateService *update = client.GetInstance().update;
-	if (update != nullptr)
+	if (auto *update = client.GetInstance().update)
 		return handle_update(r, *update, path, discard);
 
-	Database *db = client.GetInstance().GetDatabase();
-	if (db != nullptr)
+	if (auto *db = client.GetInstance().GetDatabase())
 		return handle_update(r, *db, path, discard);
 #else
 	(void)client;
@@ -388,15 +386,13 @@ handle_config(Client &client, [[maybe_unused]] Request args, Response &r)
 	}
 
 #ifdef ENABLE_DATABASE
-	const Storage *storage = client.GetStorage();
-	if (storage != nullptr) {
+	if (const Storage *storage = client.GetStorage()) {
 		const auto path = storage->MapUTF8("");
 		r.Fmt(FMT_STRING("music_directory: {}\n"), path);
 	}
 #endif
 
-	const auto spl_path = map_spl_path();
-	if (!spl_path.IsNull())
+	if (const auto spl_path = map_spl_path(); !spl_path.IsNull())
 		r.Fmt(FMT_STRING("playlist_directory: {}\n"), spl_path.ToUTF8());
 
 	return CommandResult::OK;
