@@ -27,9 +27,7 @@
 #include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
 #include "event/CoarseTimerEvent.hxx"
-
-#include <boost/intrusive/link_mode.hpp>
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <cstddef>
 #include <list>
@@ -50,10 +48,13 @@ class Storage;
 class BackgroundCommand;
 
 class Client final
-	: FullyBufferedSocket,
-	  public boost::intrusive::list_base_hook<boost::intrusive::tag<Partition>,
-						  boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
+	: FullyBufferedSocket
+{
+	friend struct ClientPerPartitionListHook;
+	friend class ClientList;
+
+	IntrusiveListHook list_siblings, partition_siblings;
+
 	CoarseTimerEvent timeout_event;
 
 	Partition *partition;
@@ -294,6 +295,9 @@ private:
 	/* callback for TimerEvent */
 	void OnTimeout() noexcept;
 };
+
+struct ClientPerPartitionListHook
+	: IntrusiveListMemberHookTraits<&Client::partition_siblings> {};
 
 void
 client_new(EventLoop &loop, Partition &partition,

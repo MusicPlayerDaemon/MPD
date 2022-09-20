@@ -21,13 +21,11 @@
 #define MPD_CLIENT_LIST_HXX
 
 #include "Client.hxx"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 class ClientList {
 	using List =
-		boost::intrusive::list<Client,
-				       boost::intrusive::constant_time_size<true>>;
+		IntrusiveList<Client, IntrusiveListMemberHookTraits<&Client::list_siblings>, true>;
 
 	const unsigned max_size;
 

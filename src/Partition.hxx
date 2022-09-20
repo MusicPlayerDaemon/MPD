@@ -29,13 +29,12 @@
 #include "player/Control.hxx"
 #include "player/Listener.hxx"
 #include "protocol/RangeArg.hxx"
+#include "util/IntrusiveList.hxx"
 #include "ReplayGainMode.hxx"
 #include "SingleMode.hxx"
 #include "ConsumeMode.hxx"
 #include "Chrono.hxx"
 #include "config.h"
-
-#include <boost/intrusive/list.hpp>
 
 #include <string>
 #include <memory>
@@ -47,6 +46,7 @@ class MultipleOutputs;
 class SongLoader;
 class ClientListener;
 class Client;
+struct ClientPerPartitionListHook;
 
 /**
  * A partition of the Music Player Daemon.  It is a separate unit with
@@ -65,10 +65,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	std::unique_ptr<ClientListener> listener;
 
-	boost::intrusive::list<Client,
-			       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::tag<Partition>,
-											    boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
-			       boost::intrusive::constant_time_size<false>> clients;
+	IntrusiveList<Client, ClientPerPartitionListHook, false> clients;
 
 	/**
 	 * Monitor for idle events local to this partition.
