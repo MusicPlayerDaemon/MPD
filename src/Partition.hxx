@@ -289,6 +289,7 @@ private:
 
 	/* virtual methods from class MixerListener */
 	void OnMixerVolumeChanged(Mixer &mixer, int volume) noexcept override;
+	void OnMixerChanged() noexcept override;
 
 	/* callback for #idle_monitor */
 	void OnIdleMonitor(unsigned mask) noexcept;

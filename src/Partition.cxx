@@ -232,6 +232,13 @@ Partition::OnMixerVolumeChanged(Mixer &, int) noexcept
 }
 
 void
+Partition::OnMixerChanged() noexcept
+{
+	/* notify clients */
+	EmitIdle(IDLE_MIXER);
+}
+
+void
 Partition::OnIdleMonitor(unsigned mask) noexcept
 {
 	/* send "idle" notifications to all subscribed

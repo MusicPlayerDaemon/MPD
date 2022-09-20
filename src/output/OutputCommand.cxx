@@ -29,6 +29,7 @@
 #include "Client.hxx"
 #include "mixer/Mixer.hxx"
 #include "mixer/Memento.hxx"
+#include "mixer/Listener.hxx"
 #include "Idle.hxx"
 
 extern unsigned audio_output_state_version;
@@ -47,9 +48,10 @@ audio_output_enable_index(MultipleOutputs &outputs,
 
 	idle_add(IDLE_OUTPUT);
 
-	if (ao.GetMixer() != nullptr) {
+	auto *mixer = ao.GetMixer();
+	if (mixer != nullptr) {
 		mixer_memento.InvalidateHardwareVolume();
-		idle_add(IDLE_MIXER);
+		mixer->listener.OnMixerChanged();
 	}
 
 	ao.GetClient().ApplyEnabled();
@@ -77,7 +79,7 @@ audio_output_disable_index(MultipleOutputs &outputs,
 	if (mixer != nullptr) {
 		mixer->LockClose();
 		mixer_memento.InvalidateHardwareVolume();
-		idle_add(IDLE_MIXER);
+		mixer->listener.OnMixerChanged();
 	}
 
 	ao.GetClient().ApplyEnabled();
@@ -104,7 +106,7 @@ audio_output_toggle_index(MultipleOutputs &outputs,
 		if (mixer != nullptr) {
 			mixer->LockClose();
 			mixer_memento.InvalidateHardwareVolume();
-			idle_add(IDLE_MIXER);
+			mixer->listener.OnMixerChanged();
 		}
 	}
 

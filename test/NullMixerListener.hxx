@@ -25,6 +25,7 @@
 class NullMixerListener : public MixerListener {
 public:
 	void OnMixerVolumeChanged(Mixer &, int) noexcept override {}
+	virtual void OnMixerChanged() noexcept override {}
 };
 
 #endif
