@@ -1,4 +1,6 @@
 ver 0.23.10 (not yet released)
+* encoder
+  - flac: fix failure when libFLAC is built without Ogg support
 * Windows
   - log to stdout by default, don't require "log_file" setting
 
