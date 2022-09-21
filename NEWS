@@ -11,6 +11,7 @@ ver 0.24 (not yet released)
   - wavpack: require libwavpack version 5
 * player
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly
+  - "one-shot" consume mode
 * tags
   - new tags "TitleSort", "Mood"
 * switch to C++20

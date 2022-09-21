@@ -23,6 +23,7 @@
 #include "player/Control.hxx"
 #include "song/DetachedSong.hxx"
 #include "SingleMode.hxx"
+#include "ConsumeMode.hxx"
 #include "Log.hxx"
 
 #include <cassert>
@@ -101,8 +102,13 @@ playlist::QueuedSongStarted(PlayerControl &pc) noexcept
 	current = queued;
 	queued = -1;
 
-	if (queue.consume)
+	if (queue.consume != ConsumeMode::OFF)
 		DeleteOrder(pc, old_current);
+
+	if (queue.consume == ConsumeMode::ONE_SHOT) {
+		queue.consume = ConsumeMode::OFF;
+		listener.OnQueueOptionsChanged();
+	}
 
 	listener.OnQueueSongStarted();
 
@@ -289,12 +295,13 @@ playlist::SetSingle(PlayerControl &pc, SingleMode status) noexcept
 }
 
 void
-playlist::SetConsume(bool status) noexcept
+playlist::SetConsume(ConsumeMode status) noexcept
 {
 	if (status == queue.consume)
 		return;
 
 	queue.consume = status;
+
 	listener.OnQueueOptionsChanged();
 }
 

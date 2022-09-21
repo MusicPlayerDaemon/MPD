@@ -54,11 +54,11 @@ Queue::GetNextOrder(unsigned _order) const noexcept
 {
 	assert(_order < length);
 
-	if (single != SingleMode::OFF && repeat && !consume)
+	if (single != SingleMode::OFF && repeat && consume == ConsumeMode::OFF )
 		return _order;
 	else if (_order + 1 < length)
 		return _order + 1;
-	else if (repeat && (_order > 0 || !consume))
+	else if (repeat && (_order > 0 || consume == ConsumeMode::OFF))
 		/* restart at first song */
 		return 0;
 	else
