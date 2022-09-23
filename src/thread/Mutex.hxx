@@ -10,10 +10,12 @@
 
 #include "CriticalSection.hxx"
 using Mutex = CriticalSection;
+using RecursiveMutex = CriticalSection;
 
 #else
 
 using Mutex = std::mutex;
+using RecursiveMutex = std::recursive_mutex;
 
 #endif
 
