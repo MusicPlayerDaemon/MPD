@@ -1600,6 +1600,7 @@ Reflection
 
     - ``music_directory``: The absolute path of the music directory.
     - ``playlist_directory``: The absolute path of the playlist directory.
+    - ``pcre``: Indicates pcre support.
 
 .. _command_commands:
 
