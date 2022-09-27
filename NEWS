@@ -4,6 +4,7 @@ ver 0.24 (not yet released)
   - filter "prio" (for "playlistfind"/"playlistsearch")
   - limit "player" idle events to the current partition
   - operator "starts_with"
+  - show PCRE support in "config" response
 * archive
   - add option to disable archive plugins in mpd.conf
 * decoder
