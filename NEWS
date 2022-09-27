@@ -3,6 +3,7 @@ ver 0.24 (not yet released)
   - "playlistfind"/"playlistsearch" have "sort" and "window" parameters
   - filter "prio" (for "playlistfind"/"playlistsearch")
   - limit "player" idle events to the current partition
+  - operator "starts_with"
 * archive
   - add option to disable archive plugins in mpd.conf
 * decoder
