@@ -35,11 +35,15 @@ StringFilter::MatchWithoutNegation(const char *s) const noexcept
 	if (fold_case) {
 		return substring
 			? fold_case.IsIn(s)
-			: fold_case == s;
+			: (starts_with
+				? fold_case.StartsWith(s)
+				: fold_case == s);
 	} else {
 		return substring
 			? StringFind(s, value.c_str()) != nullptr
-			: value == s;
+			: (starts_with
+				? StringIsEqual(s, value.c_str(), value.length())
+				: value == s);
 	}
 }
 

@@ -47,16 +47,21 @@ class StringFilter {
 	 */
 	bool substring;
 
+	/**
+	 * Search for substrings instead of matching the whole string?
+	 */
+	bool starts_with;
+
 	bool negated;
 
 public:
 	template<typename V>
-	StringFilter(V &&_value, bool _fold_case, bool _substring, bool _negated)
+	StringFilter(V &&_value, bool _fold_case, bool _substring, bool _starts_with, bool _negated)
 		:value(std::forward<V>(_value)),
 		 fold_case(_fold_case
 			   ? IcuCompare(value)
 			   : IcuCompare()),
-		 substring(_substring), negated(_negated) {}
+		 substring(_substring), starts_with(_starts_with), negated(_negated) {}
 
 	bool empty() const noexcept {
 		return value.empty();
@@ -98,7 +103,9 @@ public:
 			? (negated ? "!~" : "=~")
 			: (substring
 			   ? (negated ? "!contains" : "contains")
-			   : (negated ? "!=" : "=="));
+			   : (starts_with
+			      ? (negated ? "!starts_with" : "starts_with")
+			      : (negated ? "!=" : "==")));
 	}
 
 	[[gnu::pure]]

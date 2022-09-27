@@ -72,6 +72,9 @@ public:
 
 	[[gnu::pure]]
 	bool IsIn(const char *haystack) const noexcept;
+
+	[[gnu::pure]]
+	bool StartsWith(const char *haystack) const noexcept;
 };
 
 #endif
