@@ -41,6 +41,7 @@ class FlacEncoder final : public Encoder {
 
 	FLAC__StreamEncoder *const fse;
 	const unsigned compression;
+	const bool oggflac;
 
 	PcmBuffer expand_buffer;
 
@@ -127,7 +128,7 @@ flac_encoder_init(const ConfigBlock &block)
 }
 
 static void
-flac_encoder_setup(FLAC__StreamEncoder *fse, unsigned compression,
+flac_encoder_setup(FLAC__StreamEncoder *fse, unsigned compression, bool oggflac,
 		   const AudioFormat &audio_format)
 {
 	unsigned bits_per_sample;
@@ -162,7 +163,7 @@ flac_encoder_setup(FLAC__StreamEncoder *fse, unsigned compression,
 		throw FormatRuntimeError("error setting flac sample rate to %d",
 					 audio_format.sample_rate);
 
-	if (!FLAC__stream_encoder_set_ogg_serial_number(fse,
+	if (oggflac && !FLAC__stream_encoder_set_ogg_serial_number(fse,
 						  GenerateSerial()))
 		throw FormatRuntimeError("error setting ogg serial number");
 }
@@ -170,11 +171,12 @@ flac_encoder_setup(FLAC__StreamEncoder *fse, unsigned compression,
 FlacEncoder::FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse, unsigned _compression, bool _oggflac, bool _oggchaining)
 	:Encoder(_oggchaining),
 	 audio_format(_audio_format), fse(_fse),
-	 compression(_compression)
+	 compression(_compression),
+	 oggflac(_oggflac)
 {
 	/* this immediately outputs data through callback */
 
-	auto init_status = _oggflac ?
+	auto init_status = oggflac ?
 		FLAC__stream_encoder_init_ogg_stream(fse,
 						     nullptr, WriteCallback,
 						     nullptr, nullptr, nullptr,
@@ -213,7 +215,7 @@ PreparedFlacEncoder::Open(AudioFormat &audio_format)
 		throw std::runtime_error("FLAC__stream_encoder_new() failed");
 
 	try {
-		flac_encoder_setup(fse, compression, audio_format);
+		flac_encoder_setup(fse, compression, oggflac, audio_format);
 	} catch (...) {
 		FLAC__stream_encoder_delete(fse);
 		throw;
@@ -226,7 +228,7 @@ void
 FlacEncoder::SendTag(const Tag &tag)
 {
 	/* re-initialize encoder since flac_encoder_finish resets everything */
-	flac_encoder_setup(fse, compression, audio_format);
+	flac_encoder_setup(fse, compression, oggflac, audio_format);
 
 	FLAC__StreamMetadata *metadata = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
 	FLAC__StreamMetadata_VorbisComment_Entry entry;
