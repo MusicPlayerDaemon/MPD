@@ -123,6 +123,14 @@ public:
 		easy.SetVerifyPeer(value);
 	}
 
+	void SetProxyVerifyHost(bool value) {
+		easy.SetOption(CURLOPT_PROXY_SSL_VERIFYHOST, value ? 2L : 0L);
+	}
+
+	void SetProxyVerifyPeer(bool value) {
+		easy.SetOption(CURLOPT_PROXY_SSL_VERIFYPEER, value);
+	}
+
 	void SetNoBody(bool value=true) {
 		easy.SetNoBody(value);
 	}
