@@ -179,13 +179,13 @@ EventLoop::HandleTimers() noexcept
 }
 
 void
-EventLoop::AddDefer(DeferEvent &d) noexcept
+EventLoop::AddDefer(DeferEvent &e) noexcept
 {
 #ifdef HAVE_THREADED_EVENT_LOOP
 	assert(!IsAlive() || IsInside());
 #endif
 
-	defer.push_back(d);
+	defer.push_back(e);
 	again = true;
 }
 

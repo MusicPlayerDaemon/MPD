@@ -211,7 +211,7 @@ public:
 	/**
 	 * Schedule a call to DeferEvent::RunDeferred().
 	 */
-	void AddDefer(DeferEvent &d) noexcept;
+	void AddDefer(DeferEvent &e) noexcept;
 	void AddIdle(DeferEvent &e) noexcept;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
