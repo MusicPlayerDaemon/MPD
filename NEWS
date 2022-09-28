@@ -22,6 +22,8 @@ ver 0.24 (not yet released)
 * remove Haiku support
 
 ver 0.23.10 (not yet released)
+* decoder
+  - ffmpeg: fix libfmt 9 compiler warning
 * encoder
   - flac: fix failure when libFLAC is built without Ogg support
 * Windows

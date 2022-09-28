@@ -31,6 +31,7 @@
 #include "lib/ffmpeg/Format.hxx"
 #include "lib/ffmpeg/Codec.hxx"
 #include "lib/ffmpeg/SampleFormat.hxx"
+#include "lib/ffmpeg/LibFmt.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "FfmpegIo.hxx"
