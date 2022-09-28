@@ -296,7 +296,7 @@ EventLoop::Run() noexcept
 	};
 #endif
 
-	steady_clock_cache.flush();
+	FlushClockCaches();
 
 	do {
 		again = false;
@@ -341,7 +341,7 @@ EventLoop::Run() noexcept
 
 		Wait(timeout);
 
-		steady_clock_cache.flush();
+		FlushClockCaches();
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 		{
