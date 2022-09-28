@@ -1,12 +1,12 @@
 [wrap-file]
-directory = fmt-8.1.1
-source_url = https://github.com/fmtlib/fmt/archive/8.1.1.tar.gz
-source_filename = fmt-8.1.1.tar.gz
-source_hash = 3d794d3cf67633b34b2771eb9f073bde87e846e0d395d254df7b211ef1ec7346
-patch_filename = fmt_8.1.1-2_patch.zip
-patch_url = https://wrapdb.mesonbuild.com/v2/fmt_8.1.1-2/get_patch
-patch_hash = cd001046281330a8862591780a9ea71a1fa594edd0d015deb24e44680c9ea33b
-wrapdb_version = 8.1.1-2
+directory = fmt-9.0.0
+source_url = https://github.com/fmtlib/fmt/archive/9.0.0.tar.gz
+source_filename = fmt-9.0.0.tar.gz
+source_hash = 9a1e0e9e843a356d65c7604e2c8bf9402b50fe294c355de0095ebd42fb9bd2c5
+patch_filename = fmt_9.0.0-1_patch.zip
+patch_url = https://wrapdb.mesonbuild.com/v2/fmt_9.0.0-1/get_patch
+patch_hash = 5f12924065e0fe7ccae40593d256a082955c273cb2880b3e3de05df9d8d10697
+wrapdb_version = 9.0.0-1
 
 [provide]
 fmt = fmt_dep
