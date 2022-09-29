@@ -284,6 +284,7 @@ public:
 				  "<a:resourcetype/>"
 				  "<a:getcontenttype/>"
 				  "<a:getcontentlength/>"
+				  "<a:getlastmodified/>"
 				  "</a:prop>"
 				  "</a:propfind>");
 	}
