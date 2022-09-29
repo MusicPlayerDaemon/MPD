@@ -192,8 +192,7 @@ static std::chrono::system_clock::time_point
 ParseTimeStamp(const char *s)
 {
 	try {
-		// TODO: make this more robust
-		return ParseTimePoint(s, "%a, %d %b %Y %T");
+		return std::chrono::system_clock::from_time_t(curl_getdate(s, NULL));
 	} catch (...) {
 		return std::chrono::system_clock::time_point::min();
 	}
