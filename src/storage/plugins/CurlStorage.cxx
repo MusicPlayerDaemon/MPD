@@ -194,12 +194,7 @@ ParseStatus(const char *s, size_t length) noexcept
 static std::chrono::system_clock::time_point
 ParseTimeStamp(const char *s) noexcept
 {
-	try {
-		// TODO: make this more robust
-		return ParseTimePoint(s, "%a, %d %b %Y %T");
-	} catch (...) {
-		return std::chrono::system_clock::time_point::min();
-	}
+	return std::chrono::system_clock::from_time_t(curl_getdate(s, nullptr));
 }
 
 [[gnu::pure]]
