@@ -171,8 +171,9 @@ struct DavResponse {
 	}
 };
 
+[[gnu::pure]]
 static unsigned
-ParseStatus(const char *s)
+ParseStatus(const char *s) noexcept
 {
 	/* skip the "HTTP/1.1" prefix */
 	const char *space = std::strchr(s, ' ');
@@ -182,14 +183,16 @@ ParseStatus(const char *s)
 	return strtoul(space + 1, nullptr, 10);
 }
 
+[[gnu::pure]]
 static unsigned
-ParseStatus(const char *s, size_t length)
+ParseStatus(const char *s, size_t length) noexcept
 {
 	return ParseStatus(std::string(s, length).c_str());
 }
 
+[[gnu::pure]]
 static std::chrono::system_clock::time_point
-ParseTimeStamp(const char *s)
+ParseTimeStamp(const char *s) noexcept
 {
 	try {
 		// TODO: make this more robust
@@ -199,20 +202,23 @@ ParseTimeStamp(const char *s)
 	}
 }
 
+[[gnu::pure]]
 static std::chrono::system_clock::time_point
-ParseTimeStamp(const char *s, size_t length)
+ParseTimeStamp(const char *s, size_t length) noexcept
 {
 	return ParseTimeStamp(std::string(s, length).c_str());
 }
 
+[[gnu::pure]]
 static uint64_t
-ParseU64(const char *s)
+ParseU64(const char *s) noexcept
 {
 	return strtoull(s, nullptr, 10);
 }
 
+[[gnu::pure]]
 static uint64_t
-ParseU64(const char *s, size_t length)
+ParseU64(const char *s, size_t length) noexcept
 {
 	return ParseU64(std::string(s, length).c_str());
 }
