@@ -34,7 +34,6 @@
 #include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "time/Parser.hxx"
 #include "util/ASCII.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
