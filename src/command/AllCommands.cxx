@@ -184,7 +184,7 @@ static constexpr struct command commands[] = {
 	  handle_replay_gain_status },
 	{ "rescan", PERMISSION_CONTROL, 0, 1, handle_rescan },
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
-	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
+	{ "save", PERMISSION_CONTROL, 1, 2, handle_save },
 #ifdef ENABLE_DATABASE
 	{ "search", PERMISSION_READ, 1, -1, handle_search },
 	{ "searchadd", PERMISSION_ADD, 1, -1, handle_searchadd },

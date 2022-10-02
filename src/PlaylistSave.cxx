@@ -84,16 +84,25 @@ playlist_print_uri(BufferedOutputStream &os, const char *uri)
 }
 
 void
-spl_save_queue(const char *name_utf8, const Queue &queue)
+spl_save_queue(const char *name_utf8, PlaylistSaveMode save_mode, const Queue &queue)
 {
 	const auto path_fs = spl_map_to_fs(name_utf8);
 	assert(!path_fs.IsNull());
 
-	if (FileExists(path_fs))
-		throw PlaylistError(PlaylistResult::LIST_EXISTS,
-				    "Playlist already exists");
+	if (save_mode == PlaylistSaveMode::CREATE) {
+		if (FileExists(path_fs)) {
+			throw PlaylistError(PlaylistResult::LIST_EXISTS, "Playlist already exists");
+		}
+	}
+	else if (!FileExists(path_fs)) {
+		throw PlaylistError(PlaylistResult::NO_SUCH_LIST, "No such playlist");
+	}
 
-	FileOutputStream fos(path_fs);
+	FileOutputStream fos(path_fs,
+			     save_mode == PlaylistSaveMode::APPEND
+			     ? FileOutputStream::Mode::APPEND_EXISTING
+			     : FileOutputStream::Mode::CREATE);
+
 	BufferedOutputStream bos(fos);
 
 	for (unsigned i = 0; i < queue.GetLength(); i++)
@@ -106,7 +115,7 @@ spl_save_queue(const char *name_utf8, const Queue &queue)
 }
 
 void
-spl_save_playlist(const char *name_utf8, const playlist &playlist)
+spl_save_playlist(const char *name_utf8, PlaylistSaveMode save_mode, const playlist &playlist)
 {
-	spl_save_queue(name_utf8, playlist.queue);
+	spl_save_queue(name_utf8, save_mode, playlist.queue);
 }

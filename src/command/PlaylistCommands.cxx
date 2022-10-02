@@ -66,7 +66,22 @@ print_spl_list(Response &r, const PlaylistVector &list)
 CommandResult
 handle_save(Client &client, Request args, [[maybe_unused]] Response &r)
 {
-	spl_save_playlist(args.front(), client.GetPlaylist());
+	PlaylistSaveMode mode = PlaylistSaveMode::CREATE;
+
+	const char *mode_arg = args.GetOptional(1);
+	if (mode_arg != nullptr) {
+		if (StringIsEqual(mode_arg, "create"))
+			mode = PlaylistSaveMode::CREATE;
+		else if (StringIsEqual(mode_arg, "append"))
+			mode = PlaylistSaveMode::APPEND;
+		else if (StringIsEqual(mode_arg, "replace"))
+			mode = PlaylistSaveMode::REPLACE;
+		else
+			throw std::invalid_argument("Unrecognized save mode, expected one of 'create', 'append', 'replace'");
+	}
+
+	spl_save_playlist(args.front(), mode, client.GetPlaylist());
+
 	return CommandResult::OK;
 }
 
