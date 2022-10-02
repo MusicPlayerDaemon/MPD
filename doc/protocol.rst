@@ -1008,9 +1008,20 @@ remote playlists (absolute URI with a supported scheme).
 
 .. _command_save:
 
-:command:`save {NAME}`
+:command:`save {NAME} [MODE]`
     Saves the queue to
     `NAME.m3u` in the playlist directory.
+
+    ``MODE`` [#since_0_24]_
+        Optional argument. One of `create`, `append`, or `replace`.
+
+        `create`
+            The default. Create a new playlist.
+            Fail if a playlist with name ``NAME`` already exists.
+
+        `append`, `replace`
+            Append or replace an existing playlist.
+            Fail if a playlist with name ``NAME`` doesn\'t already exist.
 
 The music database
 ==================
