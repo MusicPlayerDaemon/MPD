@@ -904,7 +904,7 @@ PlayerControl::LockUpdateSongTag(DetachedSong &song,
 		   streams may change tags dynamically */
 		return;
 
-	song.SetTag(new_tag);
+	song.MergeTag(new_tag);
 
 	LockSetTaggedSong(song);
 
