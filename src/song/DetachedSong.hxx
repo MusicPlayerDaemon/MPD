@@ -212,6 +212,10 @@ public:
 		tag = std::move(other.tag);
 	}
 
+	void MergeTag(const Tag &_tag) noexcept {
+		tag = Tag::Merge(tag, _tag);
+	}
+
 	/**
 	 * Similar to the MoveTagFrom(), but move only the #TagItem
 	 * array.
