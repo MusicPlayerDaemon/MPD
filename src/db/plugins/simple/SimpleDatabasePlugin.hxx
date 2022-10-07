@@ -88,6 +88,10 @@ public:
 
 	void Save();
 
+	const AllocatedPath GetCachePath() noexcept {
+		return cache_path;
+	}
+
 	/**
 	 * Returns true if there is a valid database file on the disk.
 	 */

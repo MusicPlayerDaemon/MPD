@@ -23,6 +23,7 @@
 #include "FileCommands.hxx"
 #include "StorageCommands.hxx"
 #include "db/Uri.hxx"
+#include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "LocateUri.hxx"
 #include "song/DetachedSong.hxx"
@@ -389,6 +390,12 @@ handle_config(Client &client, [[maybe_unused]] Request args, Response &r)
 	if (const Storage *storage = client.GetStorage()) {
 		const auto path = storage->MapUTF8("");
 		r.Fmt(FMT_STRING("music_directory: {}\n"), path);
+	}
+
+	auto &instance = client.GetInstance();
+	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.GetDatabase())) {
+		if (const auto path = db->GetCachePath(); !path.IsNull())
+			r.Fmt(FMT_STRING("cache_directory: {}\n"), path.ToUTF8());
 	}
 #endif
 

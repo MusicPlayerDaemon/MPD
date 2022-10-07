@@ -1612,6 +1612,7 @@ Reflection
     The following response attributes are available:
 
     - ``music_directory``: The absolute path of the music directory.
+    - ``cache_directory``: The absolut path of the cache directory.
     - ``playlist_directory``: The absolute path of the playlist directory.
     - ``pcre``: Indicates pcre support.
 
