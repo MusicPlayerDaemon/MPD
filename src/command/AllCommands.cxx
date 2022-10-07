@@ -234,6 +234,12 @@ command_available([[maybe_unused]] const Partition &partition,
 		return neighbor_commands_available(partition.instance);
 #endif
 
+#ifdef ENABLE_DATABASE
+	if (StringIsEqual(cmd->cmd, "mount") ||
+		StringIsEqual(cmd->cmd, "unmount"))
+		return mount_commands_available(partition.instance);
+#endif
+
 	if (StringIsEqual(cmd->cmd, "save") ||
 	    StringIsEqual(cmd->cmd, "rm") ||
 	    StringIsEqual(cmd->cmd, "rename") ||

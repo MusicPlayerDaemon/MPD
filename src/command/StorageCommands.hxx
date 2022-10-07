@@ -22,6 +22,7 @@
 
 #include "CommandResult.hxx"
 
+struct Instance;
 class Client;
 class Storage;
 class Request;
@@ -41,5 +42,9 @@ handle_mount(Client &client, Request request, Response &response);
 
 CommandResult
 handle_unmount(Client &client, Request request, Response &response);
+
+[[gnu::pure]]
+bool
+mount_commands_available(Instance &instance) noexcept;
 
 #endif

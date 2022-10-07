@@ -275,3 +275,15 @@ handle_unmount(Client &client, Request args, Response &r)
 
 	return CommandResult::OK;
 }
+
+bool
+mount_commands_available(Instance &instance) noexcept
+{
+#ifdef ENABLE_DATABASE
+	if (auto *db = dynamic_cast<SimpleDatabase *>(instance.GetDatabase())) {
+		return db->HasCache();
+	}
+#endif
+
+	return false;
+}

@@ -86,6 +86,10 @@ public:
 		return *root;
 	}
 
+	bool HasCache() const noexcept {
+		return !cache_path.IsNull();
+	}
+
 	void Save();
 
 	/**
