@@ -5,6 +5,8 @@ ver 0.23.10 (not yet released)
   - ffmpeg: fix libfmt 9 compiler warning
 * encoder
   - flac: fix failure when libFLAC is built without Ogg support
+* output
+  - alsa: fix crash bug
 * Windows
   - log to stdout by default, don't require "log_file" setting
 
