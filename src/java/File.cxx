@@ -49,9 +49,6 @@ Java::File::Initialise(JNIEnv *env) noexcept
 AllocatedPath
 Java::File::ToAbsolutePath(JNIEnv *env, jobject _file) noexcept
 {
-	assert(env != nullptr);
-	assert(_file != nullptr);
-
 	LocalObject file(env, _file);
 
 	const jstring path = GetAbsolutePath(env, file);
