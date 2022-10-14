@@ -303,11 +303,6 @@ if curl_dep.found()
     include_directories: inc,
     dependencies: [
       curl_dep,
-
-      # Explicitly linking with zlib here works around a linker
-      # failure on Windows, because our Windows CURL build is
-      # statically linked and thus declares no dependency on zlib
-      zlib_dep,
     ],
   )
 

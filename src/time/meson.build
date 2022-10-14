@@ -1,6 +1,5 @@
 time = static_library(
   'time',
-  'Parser.cxx',
   'Convert.cxx',
   'ISO8601.cxx',
   'Math.cxx',

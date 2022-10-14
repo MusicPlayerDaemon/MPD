@@ -57,8 +57,8 @@ flac = AutotoolsProject(
 )
 
 zlib = ZlibProject(
-    'http://zlib.net/zlib-1.2.12.tar.xz',
-    '7db46b8d7726232a621befaab4a1c870f00a90805511c0e0090441dac57def18',
+    'http://zlib.net/zlib-1.2.13.tar.xz',
+    'd14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98',
     'lib/libz.a',
 )
 
@@ -114,16 +114,20 @@ libmodplug = AutotoolsProject(
 )
 
 libopenmpt = AutotoolsProject(
-    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.5.12+release.autotools.tar.gz',
-    '892aea7a599b5d21842bebf463b5aafdad5711be7008dd84401920c6234820af',
+    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.6.6+release.autotools.tar.gz',
+    '6ddb9e26a430620944891796fefb1bbb38bd9148f6cfc558810c0d3f269876c7',
     'lib/libopenmpt.a',
     [
         '--disable-shared', '--enable-static',
         '--disable-openmpt123',
+        '--disable-examples',
+        '--disable-tests',
+        '--disable-doxygen-doc',
         '--without-mpg123', '--without-ogg', '--without-vorbis', '--without-vorbisfile',
         '--without-portaudio', '--without-portaudiocpp', '--without-sndfile',
+        '--without-flac',
     ],
-    base='libopenmpt-0.5.12+release.autotools',
+    base='libopenmpt-0.6.6+release.autotools',
 )
 
 wildmidi = CmakeProject(
@@ -153,8 +157,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-5.1.tar.xz',
-    '55eb6aab5ee235550fa54a33eaf8bf1b4ec66c01453182b12f6a993d75698b03',
+    'http://ffmpeg.org/releases/ffmpeg-5.1.2.tar.xz',
+    '619e706d662c8420859832ddc259cd4d4096a48a2ce1eefd052db9e440eef3dc',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -389,8 +393,8 @@ openssl = OpenSSLProject(
 )
 
 curl = CmakeProject(
-    'https://curl.se/download/curl-7.84.0.tar.xz',
-    '2d118b43f547bfe5bae806d8d47b4e596ea5b25a6c1f080aef49fbcd817c5db8',
+    'https://curl.se/download/curl-7.85.0.tar.xz',
+    '88b54a6d4b9a48cb4d873c7056dcba997ddd5b7be5a2d537a4acb55c20b04be6',
     'lib/libcurl.a',
     [
         '-DBUILD_CURL_EXE=OFF',
@@ -424,8 +428,8 @@ curl = CmakeProject(
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-5.0.1.tar.gz',
-    '7ef445410b42f36b9bad426608b53ccb9ccca4101e545c383f564c11db672ca8',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-5.0.2.tar.gz',
+    '637e56643b19da9fba98f06847788c4dad308b723156a64748041035dcdf9bd3',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
@@ -436,7 +440,7 @@ libnfs = AutotoolsProject(
 
         '--disable-utils', '--disable-examples',
     ],
-    base='libnfs-libnfs-5.0.1',
+    base='libnfs-libnfs-5.0.2',
     autoreconf=True,
 )
 

@@ -34,7 +34,6 @@
 #include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "time/Parser.hxx"
 #include "util/ASCII.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/SpanCast.hxx"
@@ -173,8 +172,9 @@ struct DavResponse {
 	}
 };
 
+[[gnu::pure]]
 static unsigned
-ParseStatus(const char *s)
+ParseStatus(const char *s) noexcept
 {
 	/* skip the "HTTP/1.1" prefix */
 	const char *space = std::strchr(s, ' ');
@@ -184,37 +184,37 @@ ParseStatus(const char *s)
 	return strtoul(space + 1, nullptr, 10);
 }
 
+[[gnu::pure]]
 static unsigned
-ParseStatus(const char *s, size_t length)
+ParseStatus(const char *s, size_t length) noexcept
 {
 	return ParseStatus(std::string(s, length).c_str());
 }
 
+[[gnu::pure]]
 static std::chrono::system_clock::time_point
-ParseTimeStamp(const char *s)
+ParseTimeStamp(const char *s) noexcept
 {
-	try {
-		// TODO: make this more robust
-		return ParseTimePoint(s, "%a, %d %b %Y %T");
-	} catch (...) {
-		return std::chrono::system_clock::time_point::min();
-	}
+	return std::chrono::system_clock::from_time_t(curl_getdate(s, nullptr));
 }
 
+[[gnu::pure]]
 static std::chrono::system_clock::time_point
-ParseTimeStamp(const char *s, size_t length)
+ParseTimeStamp(const char *s, size_t length) noexcept
 {
 	return ParseTimeStamp(std::string(s, length).c_str());
 }
 
+[[gnu::pure]]
 static uint64_t
-ParseU64(const char *s)
+ParseU64(const char *s) noexcept
 {
 	return strtoull(s, nullptr, 10);
 }
 
+[[gnu::pure]]
 static uint64_t
-ParseU64(const char *s, size_t length)
+ParseU64(const char *s, size_t length) noexcept
 {
 	return ParseU64(std::string(s, length).c_str());
 }
@@ -280,6 +280,7 @@ public:
 				  "<a:resourcetype/>"
 				  "<a:getcontenttype/>"
 				  "<a:getcontentlength/>"
+				  "<a:getlastmodified/>"
 				  "</a:prop>"
 				  "</a:propfind>");
 	}

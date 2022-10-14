@@ -810,8 +810,12 @@ AlsaOutput::Open(AudioFormat &audio_format)
 				      fmt::format("Failed to open ALSA device \"{}\"",
 						  GetDevice()).c_str());
 
+	const char *pcm_name = snd_pcm_name(pcm);
+	if (pcm_name == nullptr)
+		pcm_name = "?";
+
 	FmtDebug(alsa_output_domain, "opened {} type={}",
-		 snd_pcm_name(pcm),
+		 pcm_name,
 		 snd_pcm_type_name(snd_pcm_type(pcm)));
 
 #ifdef ENABLE_DSD

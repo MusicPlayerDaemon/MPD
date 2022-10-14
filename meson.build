@@ -250,6 +250,14 @@ endif
 
 fmt_dep = dependency('fmt', fallback: ['fmt', 'fmt_dep'])
 
+if compiler.get_id() == 'clang' and compiler.version().version_compare('<15')
+  fmt_dep = declare_dependency(
+    dependencies: fmt_dep,
+    # suppress bogus clang 14 warning (the version in Android NDK r25b)
+    compile_args: ['-Wno-unused-local-typedef'],
+  )
+endif
+
 log = static_library(
   'log',
   'src/Log.cxx',
