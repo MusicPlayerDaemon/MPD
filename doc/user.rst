@@ -199,7 +199,7 @@ Compiling for Android
 You need:
 
 * Android SDK
-* `Android NDK r23 <https://developer.android.com/ndk/downloads>`_
+* `Android NDK r25b <https://developer.android.com/ndk/downloads>`_
 * `Meson 0.56.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * cmake
