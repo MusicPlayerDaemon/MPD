@@ -151,6 +151,9 @@ static const char *cacert;
 
 static bool verify_peer, verify_host;
 
+/** Connection settings */
+static long connect_timeout;
+
 static CurlInit *curl_init;
 
 static constexpr Domain curl_domain("curl");
@@ -374,6 +377,11 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	cacert = block.GetBlockValue("cacert");
 	verify_peer = block.GetBlockValue("verify_peer", default_verify);
 	verify_host = block.GetBlockValue("verify_host", default_verify);
+
+	constexpr unsigned default_connection_timeout = 10;
+	unsigned timeout = block.GetBlockValue("connect_timeout",
+					       default_connection_timeout);
+	connect_timeout = static_cast<long>(timeout);
 }
 
 static void
@@ -399,7 +407,7 @@ CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
 	request_headers.Append("Icy-Metadata: 1");
 
 	for (const auto &[key, header] : headers)
-		request_headers.Append((key + ":" + header).c_str());
+		request_headers.Append((key + ":" += header).c_str());
 }
 
 CurlInputStream::~CurlInputStream() noexcept
@@ -439,6 +447,7 @@ CurlInputStream::InitEasy()
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 	request->SetProxyVerifyPeer(verify_peer);
 	request->SetProxyVerifyHost(verify_host);
+	request->SetConnectTimeout(connect_timeout);
 }
 
 void
