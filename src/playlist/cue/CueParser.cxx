@@ -43,8 +43,6 @@ cue_next_word(std::string_view &src) noexcept
 static std::string_view
 cue_next_quoted(std::string_view &src) noexcept
 {
-	assert(src[-1] == '"');
-
 	auto end = src.find('"');
 	if (end == src.npos)
 		/* syntax error - ignore it silently */
