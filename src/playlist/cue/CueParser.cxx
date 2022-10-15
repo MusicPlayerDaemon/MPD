@@ -20,6 +20,7 @@
 #include "CueParser.hxx"
 #include "tag/ParseName.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringSplit.hxx"
 #include "util/StringStrip.hxx"
 
 #include <algorithm>
@@ -43,13 +44,12 @@ cue_next_word(std::string_view &src) noexcept
 static std::string_view
 cue_next_quoted(std::string_view &src) noexcept
 {
-	auto end = src.find('"');
-	if (end == src.npos)
+	auto [value, rest] = Split(src, '"');
+	if (rest.data() == nullptr)
 		/* syntax error - ignore it silently */
 		return std::exchange(src, {});
 
-	auto value = src.substr(0, end);
-	src = src.substr(end + 1);
+	src = rest;
 	return value;
 }
 
