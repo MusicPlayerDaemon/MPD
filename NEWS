@@ -8,6 +8,8 @@ ver 0.24 (not yet released)
   - show PCRE support in "config" response
 * archive
   - add option to disable archive plugins in mpd.conf
+* input
+  - curl: add "connect_timeout" configuration
 * decoder
   - hybrid_dsd: remove
   - opus: implement bitrate calculation

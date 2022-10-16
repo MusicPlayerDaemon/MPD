@@ -223,21 +223,31 @@ variables such as ``http_proxy`` or specified in :file:`~/.curlrc`
 will be in effect.
 
 .. list-table::
-   :widths: 20 80
+   :widths: 20 70 10
    :header-rows: 1
 
    * - Setting
      - Description
+     - Default
    * - **proxy**
      - Sets the address of the HTTP proxy server.
+     -
    * - **proxy_user, proxy_password**
      - Configures proxy authentication.
+     -
    * - **verify_peer yes|no**
      - Verify the peer's SSL certificate? `More information <http://curl.haxx.se/libcurl/c/CURLOPT_SSL_VERIFYPEER.html>`_.
+     - yes
    * - **verify_host yes|no**
      - Verify the certificate's name against host? `More information <http://curl.haxx.se/libcurl/c/CURLOPT_SSL_VERIFYHOST.html>`_.
+     - yes
    * - **cacert**
      - Set path to Certificate Authority (CA) bundle `More information <https://curl.se/libcurl/c/CURLOPT_CAINFO.html>`_.
+     -
+   * - **connect_timeout**
+     - Set the the connect phase timeout in seconds. "0" is `libcurl`'s default built-in connection timeout - 300 seconds.
+       `More information <https://curl.se/libcurl/c/CURLOPT_CONNECTTIMEOUT.html>`_.
+     - 10
 
 ffmpeg
 ------

@@ -31,7 +31,7 @@
 #include "Easy.hxx"
 #include "Version.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 namespace Curl {
 

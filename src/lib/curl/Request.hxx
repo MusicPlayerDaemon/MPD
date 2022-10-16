@@ -130,6 +130,10 @@ public:
 		easy.SetOption(CURLOPT_PROXY_SSL_VERIFYPEER, value);
 	}
 
+	void SetConnectTimeout(long timeout_seconds) {
+		easy.SetConnectTimeout(timeout_seconds);
+	}
+
 	void SetNoBody(bool value=true) {
 		easy.SetNoBody(value);
 	}
