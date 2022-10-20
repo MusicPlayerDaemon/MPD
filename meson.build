@@ -139,7 +139,10 @@ if get_option('buildtype') != 'debug'
 endif
 
 if get_option('fuzzer')
-  fuzzer_flags = ['-fsanitize=fuzzer']
+  fuzzer_flags = []
+  if get_option('libfuzzer')
+    fuzzer_flags += ['-fsanitize=fuzzer']
+  endif
   if get_option('b_sanitize') == 'none'
     fuzzer_flags += ['-fsanitize=address,undefined']
   endif
