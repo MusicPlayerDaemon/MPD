@@ -244,10 +244,36 @@ will be in effect.
    * - **cacert**
      - Set path to Certificate Authority (CA) bundle `More information <https://curl.se/libcurl/c/CURLOPT_CAINFO.html>`_.
      -
-   * - **connect_timeout**
+   * - **connect_timeout** [#since_0_24]_
      - Set the the connect phase timeout in seconds. "0" is `libcurl`'s default built-in connection timeout - 300 seconds.
        `More information <https://curl.se/libcurl/c/CURLOPT_CONNECTTIMEOUT.html>`_.
      - 10
+   * - **verbose yes|no** [#since_0_24]_
+     - Set the onoff parameter to 1 to make the library display a lot of verbose information.
+       `More information <https://curl.se/libcurl/c/CURLOPT_VERBOSE.html>`_.
+     - no
+   * - **low_speed_limit** [#since_0_24]_
+     - The average transfer speed in bytes per second that the transfer should be below during **low_speed_time** seconds for libcurl to consider it to be too slow and abort.
+       `More information <https://curl.se/libcurl/c/CURLOPT_LOW_SPEED_LIMIT.html>`_.
+     - 0 (disabled)
+   * - **low_speed_time** [#since_0_24]_
+     - The time in number seconds that the transfer speed should be below the **low_speed_limit** for the libcurl to consider it too slow and abort.
+       `More information <https://curl.se/libcurl/c/CURLOPT_LOW_SPEED_TIME.html>`_.
+     - 0 (disabled)
+   * - **tcp_keepalive yes|no** [#since_0_24]_
+     - If set to yes, TCP keepalive probes will be sent. The delay and frequency of these probes can be controlled by the **tcp_keepidle** and **tcp_keepintvl** options, provided the operating system supports them.
+       `More information <https://curl.se/libcurl/c/CURLOPT_TCP_KEEPALIVE.html>`_.
+     - no (disabled)
+   * - **tcp_keepidle** [#since_0_24]_
+     - Sets the delay, in seconds, that the operating system will wait while the connection is idle before sending keepalive probes. Not all operating systems support this option.
+       `More information <https://curl.se/libcurl/c/CURLOPT_TCP_KEEPIDLE.html>`_.
+     - 60
+   * - **tcp_keepintvl** [#since_0_24]_
+     - Sets the interval, in seconds, that the operating system will wait between sending keepalive probes. Not all operating systems support this option.
+       `More information <https://curl.se/libcurl/c/CURLOPT_TCP_KEEPINTVL.html>`_.
+     - 60
+
+Note: the ``low_speed`` and ``tcp_keep`` options may help solve network interruptions and connections dropped by server. Please refer to this curl issue for discussion: https://github.com/curl/curl/issues/8345
 
 ffmpeg
 ------
@@ -1405,3 +1431,7 @@ Allows to load music files from ZIP archives using `zziplib <http://zziplib.sour
 iso
 ---
 Allows to load music files from ISO 9660 images using `libcdio <https://www.gnu.org/software/libcdio/>`_.
+
+.. rubric:: Footnotes
+
+.. [#since_0_24] Since :program:`MPD` 0.24

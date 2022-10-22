@@ -154,6 +154,48 @@ static bool verify_peer, verify_host;
 /** Connection settings */
 static long connect_timeout;
 
+/**
+ * CURLOPT_VERBOSE - verbose mode
+ * DEFAULT 0, meaning disabled.
+ */
+static bool verbose = false;
+
+/**
+ * CURLOPT_LOW_SPEED_LIMIT - low speed limit in bytes per second
+ * DEFAULT 0, disabled
+ */
+static const unsigned default_low_speed_limit = 0;
+static long low_speed_limit = default_low_speed_limit;
+
+/**
+ * CURLOPT_LOW_SPEED_TIME - low speed limit time period in seconds
+ * DEFAULT 0, disabled
+ */
+static const unsigned default_low_speed_time = 0;
+static long low_speed_time = default_low_speed_time;
+
+/**
+ * CURLOPT_TCP_KEEPALIVE - TCP keep-alive probing
+ * DEFAULT false, disabled
+ */
+static const bool default_tcp_keepalive = false;
+static bool tcp_keepalive = default_tcp_keepalive;
+
+/**
+ * CURLOPT_TCP_KEEPIDLE - TCP keep-alive idle time wait in seconds
+ * DEFAULT 60 seconds
+ */
+static const unsigned default_tcp_keepidle = 60;
+static long tcp_keepidle = default_tcp_keepidle;
+
+/**
+ * CURLOPT_TCP_KEEPINTVL - TCP keep-alive interval in seconds
+ * DEFAULT 60 seconds
+ */
+static const unsigned default_tcp_keepintvl = 60;
+static long tcp_keepintvl = default_tcp_keepintvl;
+
+
 static CurlInit *curl_init;
 
 static constexpr Domain curl_domain("curl");
@@ -382,6 +424,18 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	unsigned timeout = block.GetBlockValue("connect_timeout",
 					       default_connection_timeout);
 	connect_timeout = static_cast<long>(timeout);
+
+	verbose = block.GetBlockValue("verbose",verbose);
+
+	low_speed_limit = block.GetBlockValue("low_speed_limit", default_low_speed_limit);
+
+	low_speed_time = block.GetBlockValue("low_speed_time", default_low_speed_time);
+
+	tcp_keepalive = block.GetBlockValue("tcp_keepalive",default_tcp_keepalive);
+
+	tcp_keepidle  = block.GetBlockValue("tcp_keepidle",default_tcp_keepidle);
+
+	tcp_keepintvl = block.GetBlockValue("tcp_keepintvl",default_tcp_keepintvl);
 }
 
 static void
@@ -448,6 +502,15 @@ CurlInputStream::InitEasy()
 	request->SetProxyVerifyPeer(verify_peer);
 	request->SetProxyVerifyHost(verify_host);
 	request->SetConnectTimeout(connect_timeout);
+
+	request->SetOption(CURLOPT_VERBOSE, verbose ? 1 : 0);
+
+	request->SetOption(CURLOPT_LOW_SPEED_LIMIT, low_speed_limit);
+	request->SetOption(CURLOPT_LOW_SPEED_TIME, low_speed_time);
+
+	request->SetOption(CURLOPT_TCP_KEEPALIVE, tcp_keepalive ? 1 : 0);
+	request->SetOption(CURLOPT_TCP_KEEPIDLE, tcp_keepidle);
+	request->SetOption(CURLOPT_TCP_KEEPINTVL, tcp_keepintvl);
 }
 
 void
