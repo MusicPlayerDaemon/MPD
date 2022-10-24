@@ -78,7 +78,7 @@ SocketDescriptor::Close() noexcept
 #endif
 
 SocketDescriptor
-SocketDescriptor::Accept() noexcept
+SocketDescriptor::Accept() const noexcept
 {
 #ifdef __linux__
 	int connection_fd = ::accept4(Get(), nullptr, nullptr, SOCK_CLOEXEC);
@@ -120,7 +120,7 @@ SocketDescriptor::AcceptNonBlock(StaticSocketAddress &address) const noexcept
 }
 
 bool
-SocketDescriptor::Connect(SocketAddress address) noexcept
+SocketDescriptor::Connect(SocketAddress address) const noexcept
 {
 	assert(address.IsDefined());
 
@@ -213,7 +213,7 @@ SocketDescriptor::CreateSocketPairNonBlock(int domain, int type, int protocol,
 #endif
 
 int
-SocketDescriptor::GetError() noexcept
+SocketDescriptor::GetError() const noexcept
 {
 	assert(IsDefined());
 
@@ -254,7 +254,7 @@ SocketDescriptor::GetPeerCredentials() const noexcept
 #ifdef _WIN32
 
 bool
-SocketDescriptor::SetNonBlocking() noexcept
+SocketDescriptor::SetNonBlocking() const noexcept
 {
 	u_long val = 1;
 	return ioctlsocket(fd, FIONBIO, &val) == 0;
@@ -264,7 +264,7 @@ SocketDescriptor::SetNonBlocking() noexcept
 
 bool
 SocketDescriptor::SetOption(int level, int name,
-			    const void *value, std::size_t size) noexcept
+			    const void *value, std::size_t size) const noexcept
 {
 	assert(IsDefined());
 
@@ -273,13 +273,13 @@ SocketDescriptor::SetOption(int level, int name,
 }
 
 bool
-SocketDescriptor::SetKeepAlive(bool value) noexcept
+SocketDescriptor::SetKeepAlive(bool value) const noexcept
 {
 	return SetBoolOption(SOL_SOCKET, SO_KEEPALIVE, value);
 }
 
 bool
-SocketDescriptor::SetReuseAddress(bool value) noexcept
+SocketDescriptor::SetReuseAddress(bool value) const noexcept
 {
 	return SetBoolOption(SOL_SOCKET, SO_REUSEADDR, value);
 }
@@ -287,50 +287,50 @@ SocketDescriptor::SetReuseAddress(bool value) noexcept
 #ifdef __linux__
 
 bool
-SocketDescriptor::SetReusePort(bool value) noexcept
+SocketDescriptor::SetReusePort(bool value) const noexcept
 {
 	return SetBoolOption(SOL_SOCKET, SO_REUSEPORT, value);
 }
 
 bool
-SocketDescriptor::SetFreeBind(bool value) noexcept
+SocketDescriptor::SetFreeBind(bool value) const noexcept
 {
 	return SetBoolOption(IPPROTO_IP, IP_FREEBIND, value);
 }
 
 bool
-SocketDescriptor::SetNoDelay(bool value) noexcept
+SocketDescriptor::SetNoDelay(bool value) const noexcept
 {
 	return SetBoolOption(IPPROTO_TCP, TCP_NODELAY, value);
 }
 
 bool
-SocketDescriptor::SetCork(bool value) noexcept
+SocketDescriptor::SetCork(bool value) const noexcept
 {
 	return SetBoolOption(IPPROTO_TCP, TCP_CORK, value);
 }
 
 bool
-SocketDescriptor::SetTcpDeferAccept(const int &seconds) noexcept
+SocketDescriptor::SetTcpDeferAccept(const int &seconds) const noexcept
 {
 	return SetOption(IPPROTO_TCP, TCP_DEFER_ACCEPT, &seconds, sizeof(seconds));
 }
 
 bool
-SocketDescriptor::SetTcpUserTimeout(const unsigned &milliseconds) noexcept
+SocketDescriptor::SetTcpUserTimeout(const unsigned &milliseconds) const noexcept
 {
 	return SetOption(IPPROTO_TCP, TCP_USER_TIMEOUT,
 			 &milliseconds, sizeof(milliseconds));
 }
 
 bool
-SocketDescriptor::SetV6Only(bool value) noexcept
+SocketDescriptor::SetV6Only(bool value) const noexcept
 {
 	return SetBoolOption(IPPROTO_IPV6, IPV6_V6ONLY, value);
 }
 
 bool
-SocketDescriptor::SetBindToDevice(const char *name) noexcept
+SocketDescriptor::SetBindToDevice(const char *name) const noexcept
 {
 	return SetOption(SOL_SOCKET, SO_BINDTODEVICE, name, strlen(name));
 }
@@ -338,7 +338,7 @@ SocketDescriptor::SetBindToDevice(const char *name) noexcept
 #ifdef TCP_FASTOPEN
 
 bool
-SocketDescriptor::SetTcpFastOpen(int qlen) noexcept
+SocketDescriptor::SetTcpFastOpen(int qlen) const noexcept
 {
 	return SetOption(SOL_TCP, TCP_FASTOPEN, &qlen, sizeof(qlen));
 }
@@ -346,7 +346,7 @@ SocketDescriptor::SetTcpFastOpen(int qlen) noexcept
 #endif
 
 bool
-SocketDescriptor::AddMembership(const IPv4Address &address) noexcept
+SocketDescriptor::AddMembership(const IPv4Address &address) const noexcept
 {
 	struct ip_mreq r{address.GetAddress(), IPv4Address(0).GetAddress()};
 	return setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
@@ -354,7 +354,7 @@ SocketDescriptor::AddMembership(const IPv4Address &address) noexcept
 }
 
 bool
-SocketDescriptor::AddMembership(const IPv6Address &address) noexcept
+SocketDescriptor::AddMembership(const IPv6Address &address) const noexcept
 {
 	struct ipv6_mreq r{address.GetAddress(), 0};
 	r.ipv6mr_interface = address.GetScopeId();
@@ -363,7 +363,7 @@ SocketDescriptor::AddMembership(const IPv6Address &address) noexcept
 }
 
 bool
-SocketDescriptor::AddMembership(SocketAddress address) noexcept
+SocketDescriptor::AddMembership(SocketAddress address) const noexcept
 {
 	switch (address.GetFamily()) {
 	case AF_INET:
@@ -381,7 +381,7 @@ SocketDescriptor::AddMembership(SocketAddress address) noexcept
 #endif
 
 bool
-SocketDescriptor::Bind(SocketAddress address) noexcept
+SocketDescriptor::Bind(SocketAddress address) const noexcept
 {
 	return bind(Get(), address.GetAddress(), address.GetSize()) == 0;
 }
@@ -389,7 +389,7 @@ SocketDescriptor::Bind(SocketAddress address) noexcept
 #ifdef __linux__
 
 bool
-SocketDescriptor::AutoBind() noexcept
+SocketDescriptor::AutoBind() const noexcept
 {
 	static constexpr sa_family_t family = AF_LOCAL;
 	return Bind(SocketAddress((const struct sockaddr *)&family,
@@ -399,7 +399,7 @@ SocketDescriptor::AutoBind() noexcept
 #endif
 
 bool
-SocketDescriptor::Listen(int backlog) noexcept
+SocketDescriptor::Listen(int backlog) const noexcept
 {
 	return listen(Get(), backlog) == 0;
 }
@@ -431,7 +431,7 @@ SocketDescriptor::GetPeerAddress() const noexcept
 }
 
 ssize_t
-SocketDescriptor::Read(void *buffer, std::size_t length) noexcept
+SocketDescriptor::Read(void *buffer, std::size_t length) const noexcept
 {
 	int flags = 0;
 #ifndef _WIN32
@@ -442,7 +442,7 @@ SocketDescriptor::Read(void *buffer, std::size_t length) noexcept
 }
 
 ssize_t
-SocketDescriptor::Write(const void *buffer, std::size_t length) noexcept
+SocketDescriptor::Write(const void *buffer, std::size_t length) const noexcept
 {
 	int flags = 0;
 #ifdef __linux__
@@ -496,7 +496,7 @@ SocketDescriptor::WaitWritable(int timeout_ms) const noexcept
 
 ssize_t
 SocketDescriptor::Read(void *buffer, std::size_t length,
-		       StaticSocketAddress &address) noexcept
+		       StaticSocketAddress &address) const noexcept
 {
 	int flags = 0;
 #ifndef _WIN32
@@ -514,7 +514,7 @@ SocketDescriptor::Read(void *buffer, std::size_t length,
 
 ssize_t
 SocketDescriptor::Write(const void *buffer, std::size_t length,
-			SocketAddress address) noexcept
+			SocketAddress address) const noexcept
 {
 	int flags = 0;
 #ifndef _WIN32
@@ -531,19 +531,19 @@ SocketDescriptor::Write(const void *buffer, std::size_t length,
 #ifndef _WIN32
 
 void
-SocketDescriptor::Shutdown() noexcept
+SocketDescriptor::Shutdown() const noexcept
 {
     shutdown(Get(), SHUT_RDWR);
 }
 
 void
-SocketDescriptor::ShutdownRead() noexcept
+SocketDescriptor::ShutdownRead() const noexcept
 {
     shutdown(Get(), SHUT_RD);
 }
 
 void
-SocketDescriptor::ShutdownWrite() noexcept
+SocketDescriptor::ShutdownWrite() const noexcept
 {
     shutdown(Get(), SHUT_WR);
 }

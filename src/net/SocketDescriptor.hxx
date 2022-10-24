@@ -118,7 +118,7 @@ public:
 	using FileDescriptor::CheckDuplicate;
 	using FileDescriptor::Close;
 #else
-	bool SetNonBlocking() noexcept;
+	bool SetNonBlocking() const noexcept;
 
 	/**
 	 * This method replaces FileDescriptor::Close(), using closesocket()
@@ -154,7 +154,8 @@ public:
 					     SocketDescriptor &b) noexcept;
 #endif
 
-	int GetError() noexcept;
+	[[gnu::pure]]
+	int GetError() const noexcept;
 
 	/**
 	 * @return the value size or 0 on error
@@ -172,62 +173,63 @@ public:
 #endif
 
 	bool SetOption(int level, int name,
-		       const void *value, std::size_t size) noexcept;
+		       const void *value, std::size_t size) const noexcept;
 
-	bool SetIntOption(int level, int name, const int &value) noexcept {
+	bool SetIntOption(int level, int name,
+			  const int &value) const noexcept {
 		return SetOption(level, name, &value, sizeof(value));
 	}
 
-	bool SetBoolOption(int level, int name, bool value) noexcept {
+	bool SetBoolOption(int level, int name, bool value) const noexcept {
 		return SetIntOption(level, name, value);
 	}
 
-	bool SetKeepAlive(bool value=true) noexcept;
-	bool SetReuseAddress(bool value=true) noexcept;
+	bool SetKeepAlive(bool value=true) const noexcept;
+	bool SetReuseAddress(bool value=true) const noexcept;
 
 #ifdef __linux__
-	bool SetReusePort(bool value=true) noexcept;
-	bool SetFreeBind(bool value=true) noexcept;
-	bool SetNoDelay(bool value=true) noexcept;
-	bool SetCork(bool value=true) noexcept;
+	bool SetReusePort(bool value=true) const noexcept;
+	bool SetFreeBind(bool value=true) const noexcept;
+	bool SetNoDelay(bool value=true) const noexcept;
+	bool SetCork(bool value=true) const noexcept;
 
-	bool SetTcpDeferAccept(const int &seconds) noexcept;
+	bool SetTcpDeferAccept(const int &seconds) const noexcept;
 
 	/**
 	 * Setter for TCP_USER_TIMEOUT.
 	 */
-	bool SetTcpUserTimeout(const unsigned &milliseconds) noexcept;
+	bool SetTcpUserTimeout(const unsigned &milliseconds) const noexcept;
 
-	bool SetV6Only(bool value) noexcept;
+	bool SetV6Only(bool value) const noexcept;
 
 	/**
 	 * Setter for SO_BINDTODEVICE.
 	 */
-	bool SetBindToDevice(const char *name) noexcept;
+	bool SetBindToDevice(const char *name) const noexcept;
 
-	bool SetTcpFastOpen(int qlen=16) noexcept;
+	bool SetTcpFastOpen(int qlen=16) const noexcept;
 
-	bool AddMembership(const IPv4Address &address) noexcept;
-	bool AddMembership(const IPv6Address &address) noexcept;
-	bool AddMembership(SocketAddress address) noexcept;
+	bool AddMembership(const IPv4Address &address) const noexcept;
+	bool AddMembership(const IPv6Address &address) const noexcept;
+	bool AddMembership(SocketAddress address) const noexcept;
 #endif
 
-	bool Bind(SocketAddress address) noexcept;
+	bool Bind(SocketAddress address) const noexcept;
 
 #ifdef __linux__
 	/**
 	 * Binds the socket to a unique abstract address.
 	 */
-	bool AutoBind() noexcept;
+	bool AutoBind() const noexcept;
 #endif
 
-	bool Listen(int backlog) noexcept;
+	bool Listen(int backlog) const noexcept;
 
-	SocketDescriptor Accept() noexcept;
+	SocketDescriptor Accept() const noexcept;
 	SocketDescriptor AcceptNonBlock() const noexcept;
 	SocketDescriptor AcceptNonBlock(StaticSocketAddress &address) const noexcept;
 
-	bool Connect(SocketAddress address) noexcept;
+	bool Connect(SocketAddress address) const noexcept;
 
 	[[gnu::pure]]
 	StaticSocketAddress GetLocalAddress() const noexcept;
@@ -235,8 +237,8 @@ public:
 	[[gnu::pure]]
 	StaticSocketAddress GetPeerAddress() const noexcept;
 
-	ssize_t Read(void *buffer, std::size_t length) noexcept;
-	ssize_t Write(const void *buffer, std::size_t length) noexcept;
+	ssize_t Read(void *buffer, std::size_t length) const noexcept;
+	ssize_t Write(const void *buffer, std::size_t length) const noexcept;
 
 #ifdef _WIN32
 	int WaitReadable(int timeout_ms) const noexcept;
@@ -251,18 +253,18 @@ public:
 	 * Receive a datagram and return the source address.
 	 */
 	ssize_t Read(void *buffer, std::size_t length,
-		     StaticSocketAddress &address) noexcept;
+		     StaticSocketAddress &address) const noexcept;
 
 	/**
 	 * Send a datagram to the specified address.
 	 */
 	ssize_t Write(const void *buffer, std::size_t length,
-		      SocketAddress address) noexcept;
+		      SocketAddress address) const noexcept;
 
 #ifndef _WIN32
-	void Shutdown() noexcept;
-	void ShutdownRead() noexcept;
-	void ShutdownWrite() noexcept;
+	void Shutdown() const noexcept;
+	void ShutdownRead() const noexcept;
+	void ShutdownWrite() const noexcept;
 #endif
 };
 
