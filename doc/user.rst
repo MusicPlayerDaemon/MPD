@@ -717,10 +717,10 @@ MPD enables MixRamp if:
 - Cross-fade is enabled
 - :ref:`mixrampdelay <command_mixrampdelay>` is set to a positive
   value, e.g.::
-    mpc mixrampdelay 1
+  mpc mixrampdelay 1
 - :ref:`mixrampdb <command_mixrampdb>` is set to a reasonable value,
   e.g.::
-    mpc mixrampdb -17
+  mpc mixrampdb -17
 - both songs have MixRamp tags (or ``mixramp_analyzer`` is enabled)
 - both songs have the same audio format (or :ref:`audio_output_format`
   is configured)
@@ -1312,7 +1312,7 @@ Where to start
 
 Make sure you have the latest :program:`MPD` version (via :code:`mpd --version`, not mpc version). All the time, bugs are found and fixed, and your problem might be a bug that is fixed already. Do not ask for help unless you have the latest :program:`MPD` version. The most common excuse is when your distribution ships an old :program:`MPD` version - in that case, please ask your distribution for help, and not the :program:`MPD` project.
 
-Check the log file. Configure :code:`log_level "verbose"` or pass :option:`--verbose` to mpd.
+Check the log file. Configure :code:`log_level "verbose"` or pass ``--verbose`` to mpd.
 
 Sometimes, it is helpful to run :program:`MPD` in a terminal and follow what happens. This is how to do it:
 
@@ -1405,7 +1405,7 @@ Your bug report should contain:
 
 * the output of :command:`mpd --version`
 * your configuration file (:file:`mpd.conf`)
-* relevant portions of the log file (:option:`--verbose`)
+* relevant portions of the log file (``--verbose``)
 * be clear about what you expect MPD to do, and what is actually happening
 
 .. _profiler:
