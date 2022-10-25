@@ -11,6 +11,12 @@ Music Player Daemon
    client
    protocol
 
+.. toctree::
+   :maxdepth: 1
+   :caption: man pages:
+
+   mpd.1
+   mpd.conf.5
 
 Indices and tables
 ==================
