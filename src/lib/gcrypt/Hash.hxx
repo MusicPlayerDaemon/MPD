@@ -36,7 +36,7 @@
 
 namespace Gcrypt {
 
-template<int algo, size_t size>
+template<int algo, std::size_t size>
 [[gnu::pure]]
 auto
 Hash(std::span<const std::byte> input) noexcept
