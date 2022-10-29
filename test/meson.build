@@ -303,6 +303,7 @@ if curl_dep.found()
     include_directories: inc,
     dependencies: [
       curl_dep,
+      fs_dep,
     ],
   )
 
