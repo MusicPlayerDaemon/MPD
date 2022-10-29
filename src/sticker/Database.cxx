@@ -13,6 +13,7 @@
 #include <cassert>
 #include <iterator>
 #include <array>
+#include <stdexcept>
 
 using namespace Sqlite;
 
@@ -27,6 +28,11 @@ enum sticker_sql {
 	STICKER_SQL_FIND_VALUE,
 	STICKER_SQL_FIND_LT,
 	STICKER_SQL_FIND_GT,
+	STICKER_SQL_DISTINCT_TYPE_URI,
+	STICKER_SQL_TRANSACTION_BEGIN,
+	STICKER_SQL_TRANSACTION_COMMIT,
+	STICKER_SQL_TRANSACTION_ROLLBACK,
+
 	STICKER_SQL_COUNT
 };
 
@@ -54,6 +60,18 @@ static constexpr auto sticker_sql = std::array {
 
 	//[STICKER_SQL_FIND_GT] =
 	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value>?",
+
+	//[STICKER_SQL_DISTINCT_TYPE_URI] =
+	"SELECT DISTINCT type,uri FROM sticker",
+
+	//[STICKER_SQL_TRANSACTION_BEGIN]
+	"BEGIN",
+
+	//[STICKER_SQL_TRANSACTION_COMMIT]
+	"COMMIT",
+
+	//[STICKER_SQL_TRANSACTION_ROLLBACK]
+	"ROLLBACK",
 };
 
 static constexpr const char sticker_sql_create[] =
@@ -330,4 +348,52 @@ StickerDatabase::Find(const char *type, const char *base_uri, const char *name,
 			     (const char*)sqlite3_column_text(s, 1),
 			     user_data);
 		});
+}
+
+std::list<StickerDatabase::StickerTypeUriPair>
+StickerDatabase::GetUniqueStickers()
+{
+	auto result = std::list<StickerTypeUriPair>{};
+	sqlite3_stmt *const s = stmt[STICKER_SQL_DISTINCT_TYPE_URI];
+	assert(s != nullptr);
+	AtScopeExit(s) {
+		sqlite3_reset(s);
+	};
+	ExecuteForEach(s, [&s, &result]() {
+		result.emplace_back((const char*)sqlite3_column_text(s, 0),
+				    (const char*)sqlite3_column_text(s, 1));
+	});
+	return result;
+}
+
+void
+StickerDatabase::BatchDeleteNoIdle(const std::list<StickerTypeUriPair> &stickers)
+{
+	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE];
+
+	sqlite3_stmt *const begin = stmt[STICKER_SQL_TRANSACTION_BEGIN];
+	sqlite3_stmt *const rollback = stmt[STICKER_SQL_TRANSACTION_ROLLBACK];
+	sqlite3_stmt *const commit = stmt[STICKER_SQL_TRANSACTION_COMMIT];
+
+	try {
+		ExecuteBusy(begin);
+
+		for (auto &sticker: stickers) {
+			AtScopeExit(s) {
+				sqlite3_reset(s);
+				sqlite3_clear_bindings(s);
+			};
+
+			BindAll(s, sticker.first.c_str(), sticker.second.c_str());
+
+			ExecuteCommand(s);
+		}
+
+		ExecuteBusy(commit);
+	} catch (...) {
+		// "If the transaction has already been rolled back automatically by the error response,
+		// then the ROLLBACK command will fail with an error, but no harm is caused by this."
+		ExecuteBusy(rollback);
+		std::throw_with_nested(std::runtime_error{"failed to batch-delete stickers"});
+	}
 }

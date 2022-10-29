@@ -32,13 +32,21 @@
 #ifdef ENABLE_SQLITE
 #include "sticker/Database.hxx"
 #include "sticker/SongSticker.hxx"
+#include "sticker/TagSticker.hxx"
+#include "sticker/CleanupService.hxx"
 #endif
+
 #endif
 
 Instance::Instance() = default;
 
 Instance::~Instance() noexcept
 {
+#ifdef ENABLE_SQLITE
+	if (sticker_cleanup)
+		sticker_cleanup.reset();
+#endif
+
 #ifdef ENABLE_DATABASE
 	delete update;
 
@@ -105,6 +113,11 @@ Instance::OnDatabaseModified() noexcept
 
 	for (auto &partition : partitions)
 		partition.DatabaseModified(*database);
+
+#ifdef ENABLE_SQLITE
+	if (sticker_database)
+		StartStickerCleanup();
+#endif
 }
 
 void
@@ -186,3 +199,56 @@ Instance::FlushCaches() noexcept
 	if (input_cache)
 		input_cache->Flush();
 }
+
+void
+Instance::OnPlaylistDeleted(const char *name) const noexcept
+{
+#ifdef ENABLE_SQLITE
+	/* if the playlist has stickers, remove theme */
+	if (HasStickerDatabase()) {
+		try {
+			sticker_database->Delete("playlist", name);
+		} catch (...) {
+		}
+	}
+#endif
+}
+
+#ifdef ENABLE_SQLITE
+
+void
+Instance::OnStickerCleanupDone(bool changed) noexcept
+{
+	assert(event_loop.IsInside());
+
+	sticker_cleanup.reset();
+
+	if (changed)
+		EmitIdle(IDLE_STICKER);
+
+	if (need_sticker_cleanup)
+		StartStickerCleanup();
+}
+
+void
+Instance::StartStickerCleanup()
+{
+	assert(sticker_database != nullptr);
+
+	if (sticker_cleanup) {
+		/* still runnning, start a new one when that one
+		   finishes*/
+		need_sticker_cleanup = true;
+		return;
+	}
+
+	need_sticker_cleanup = false;
+
+	sticker_cleanup =
+		std::make_unique<StickerCleanupService>(*this,
+							*sticker_database,
+							*database);
+	sticker_cleanup->Start();
+}
+
+#endif // ENABLE_SQLITE

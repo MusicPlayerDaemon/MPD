@@ -35,6 +35,9 @@ public:
 	 * Caller must lock the #db_mutex.
 	 */
 	bool erase(std::string_view name) noexcept;
+
+	[[nodiscard]]
+	bool exists(std::string_view name) const noexcept;
 };
 
 #endif /* SONGVEC_H */

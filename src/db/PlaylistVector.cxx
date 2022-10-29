@@ -48,3 +48,12 @@ PlaylistVector::erase(std::string_view name) noexcept
 	erase(i);
 	return true;
 }
+
+bool
+PlaylistVector::exists(std::string_view name) const noexcept
+{
+	assert(holding_db_lock());
+
+	return std::find_if(begin(), end(),
+			    PlaylistInfo::CompareName(name)) != end();
+}

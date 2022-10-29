@@ -1401,6 +1401,41 @@ Objects which may have stickers are addressed by their object
 type ("song" for song objects) and their URI (the path within
 the database for songs).
 
+.. note:: Since :program:`MPD` 0.24 stickers can also be attached to playlists,
+  some tag types, and :ref:`filter expressions <filter_syntax>`.
+  The following tag types are alloed: Title, Album, Artist, AlbumArtist, Genre,
+  Composer, Performer, Conductor, Work, Ensable, Location, and Label.
+
+.. list-table:: Sticker addressing
+   :widths: 10 45 45
+   :header-rows: 2
+
+   * - Type
+     - URI
+     - URI
+
+   * -
+     - get, set, delete, list, find
+     - find only
+
+   * - "song"
+     - File path within the database
+     - Directory path within the database to find a sticker on
+       all songs under this path recursively
+
+   * - "playlist"
+     - The playlist name of a stored playlist
+     - An empty string to find a sticker in all playlists
+
+   * - Tag type e.g. "Album"
+     - The tag value
+     - An empty string to find a sticker in all instances of the tag type
+
+   * - "filter"
+     - A :ref:`filter expression <filter_syntax>`.
+
+     - An empty string to find a sticker in all instances of the filter
+
 .. _command_sticker_get:
 
 :command:`sticker get {TYPE} {URI} {NAME}`
@@ -1440,6 +1475,43 @@ the database for songs).
 
     Other supported operators are:
     "``<``", "``>``"
+
+Examples:
+
+   .. code-block::
+
+     sitcker set song "path/to/song_1.mp3" "name_1" "value_1"
+     OK
+     sitcker set song "path/to/song_2.mp3" "name_1" "value_2"
+     OK
+     sticker get song "path/to/song_1.mp3" "name_1"
+     sticker: name_1=value_1
+     OK
+     sitcker find song "path" "name_1"
+     file: path/to/song_1.mp3
+     sticker: name_1=value_1
+     file: path/to/song_2.mp3
+     sticker: name_1=value_2
+     OK
+
+   .. code-block::
+
+    sticker set Album "Greatest Hits" "name_1" "value_1"
+    OK
+    sticker find Album "" name_1
+    Album: Greatest Hits
+    sticker: name_1=value_1
+    OK
+    stciker set filter "((album == 'Greatest Hits') AND (artist == 'Vera Lynn'))" name_1 value_1
+    OK
+    stciker set filter "((album == 'Greatest Hits') AND (artist == 'Johnny Chester'))" name_1 value_1
+    OK
+    sticker find filter "" name_1
+    filter: ((album == 'Greatest Hits') AND (artist == 'Johnny Chester'))
+    sticker: name_1=value_1
+    filter: ((album == 'Greatest Hits') AND (artist == 'Vera Lynn'))
+    sticker: name_1=value_1
+    OK
 
 Connection settings
 ===================

@@ -155,6 +155,9 @@ handle_rm([[maybe_unused]] Client &client, Request args, [[maybe_unused]] Respon
 	const char *const name = args.front();
 
 	spl_delete(name);
+
+	client.GetInstance().OnPlaylistDeleted(name);
+
 	return CommandResult::OK;
 }
 
