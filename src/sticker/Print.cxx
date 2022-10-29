@@ -23,11 +23,33 @@
 
 #include <fmt/format.h>
 
+/**
+ * The sticker name has to be escaped
+ * when printed in pair with its value i.e. name=value
+ * to allow for '=' character in the name
+ * and the client to split the name=value string
+ * on the first un-escaped '=' character.
+ */
+static std::string
+EscapeStickerName(std::string_view name)
+{
+	std::string result;
+	result.reserve(name.size() * 2);
+
+	for (char ch : name) {
+		if (ch == '=' || ch == '\\')
+			result.push_back('\\');
+		result.push_back(ch);
+	}
+
+	return result;
+}
+
 void
 sticker_print_value(Response &r,
 		    const char *name, const char *value)
 {
-	r.Fmt(FMT_STRING("sticker: {}={}\n"), name, value);
+	r.Fmt(FMT_STRING("sticker: {}={}\n"), EscapeStickerName(name), value);
 }
 
 void
