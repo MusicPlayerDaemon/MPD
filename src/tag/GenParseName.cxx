@@ -42,8 +42,16 @@ main(int argc, char **argv)
 	FILE *out = fopen(argv[1], "w");
 
 	std::map<std::string_view, TagType> names;
-	for (unsigned i = 0; i < unsigned(TAG_NUM_OF_ITEM_TYPES); ++i)
+	for (unsigned i = 0; i < unsigned(TAG_NUM_OF_ITEM_TYPES); ++i) {
+		if (tag_item_names[i] == nullptr) {
+			printf("**\n"
+			       "** Tag name missining at index %d\n"
+			       "** Update tag_item_names when updating enum TagType\n"
+			       "**\n", i);
+			exit(1);
+		}
 		names[tag_item_names[i]] = TagType(i);
+	}
 
 	fprintf(out,
 		"#include \"ParseName.hxx\"\n"
