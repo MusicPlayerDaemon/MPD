@@ -17,17 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STICKER_HXX
-#define MPD_STICKER_HXX
+#ifndef ALLOWEDTAGS_H
+#define ALLOWEDTAGS_H
 
-#include <map>
-#include <string>
-#include "util/Domain.hxx"
+#include <stdbool.h>
 
-static constexpr Domain sticker_domain("sticker");
+/**
+ * These are the tags that are allowed to have stickers.
+ *
+ * The size is TAG_NUM_OF_ITEM_TYPES
+ */
+extern const bool sticker_allowed_tags[];
 
-struct Sticker {
-	std::map<std::string, std::string> table;
-};
-
-#endif
+#endif //ALLOWEDTAGS_H

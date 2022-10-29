@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <memory>
+
 #include "config.h"
 #include "Instance.hxx"
 #include "Partition.hxx"
@@ -48,7 +50,10 @@
 #ifdef ENABLE_SQLITE
 #include "sticker/Database.hxx"
 #include "sticker/SongSticker.hxx"
+#include "sticker/TagSticker.hxx"
+#include "sticker/StickerCleanupService.hxx"
 #endif
+
 #endif
 
 Instance::Instance()
@@ -62,6 +67,11 @@ Instance::Instance()
 
 Instance::~Instance() noexcept
 {
+#ifdef ENABLE_SQLITE
+	if (sticker_cleanup)
+		sticker_cleanup.reset();
+#endif
+
 #ifdef ENABLE_DATABASE
 	delete update;
 
@@ -128,6 +138,15 @@ Instance::OnDatabaseModified() noexcept
 
 	for (auto &partition : partitions)
 		partition.DatabaseModified(*database);
+
+#ifdef ENABLE_SQLITE
+	if (sticker_database) {
+		// if a cleanup is already running
+		// it will be cancelled and joined when destructed
+		sticker_cleanup = std::make_unique<StickerCleanupService>(*this, *sticker_database, *database);
+		sticker_cleanup->Start();
+	}
+#endif
 }
 
 void
@@ -139,7 +158,8 @@ Instance::OnDatabaseSongRemoved(const char *uri) noexcept
 	/* if the song has a sticker, remove it */
 	if (HasStickerDatabase()) {
 		try {
-			sticker_song_delete(*sticker_database, uri);
+			if (sticker_song_delete(*sticker_database, uri))
+				EmitIdle(IDLE_STICKER);
 		} catch (...) {
 		}
 	}
@@ -209,3 +229,33 @@ Instance::FlushCaches() noexcept
 	if (input_cache)
 		input_cache->Flush();
 }
+
+void
+Instance::OnPlaylistDeleted(const char *name) const noexcept
+{
+#ifdef ENABLE_SQLITE
+	assert(sticker_database != nullptr);
+
+	/* if the playlist has stickers, remove theme */
+	if (HasStickerDatabase()) {
+		try {
+			sticker_database->Delete("playlist", name);
+		} catch (...) {
+		}
+	}
+#endif
+}
+
+#ifdef ENABLE_SQLITE
+void
+Instance::OnSickerCleanupDone(StickerCleanupService *service, bool changed) noexcept {
+
+	assert(event_loop.IsInside());
+
+	if (sticker_cleanup.get() == service)
+		sticker_cleanup.reset();
+
+	if (changed)
+		EmitIdle(IDLE_STICKER);
+}
+#endif // ENABLE_SQLITE

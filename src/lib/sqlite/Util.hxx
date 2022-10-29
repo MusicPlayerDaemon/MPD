@@ -173,6 +173,14 @@ ExecuteForEach(sqlite3_stmt *stmt, F &&f)
 	}
 }
 
+inline std::string
+ColumnToString(sqlite3_stmt *stmt, int column)
+{
+	auto text = (const char *) sqlite3_column_text(stmt, column);
+	auto bytes = static_cast<std::string::size_type>(sqlite3_column_bytes(stmt, column));
+	return {text, bytes};
+}
+
 } // namespace Sqlite
 
 #endif

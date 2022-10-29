@@ -25,6 +25,8 @@
 #include "Idle.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
+#include "thread/Mutex.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <cassert>
 #include <iterator>
@@ -43,6 +45,11 @@ enum sticker_sql {
 	STICKER_SQL_FIND_VALUE,
 	STICKER_SQL_FIND_LT,
 	STICKER_SQL_FIND_GT,
+	STICKER_SQL_DISTINCT_TYPE_URI,
+	STICKER_SQL_TRANSACTION_BEGIN,
+	STICKER_SQL_TRANSACTION_COMMIT,
+	STICKER_SQL_TRANSACTION_ROLLBACK,
+
 	STICKER_SQL_COUNT
 };
 
@@ -70,6 +77,18 @@ static constexpr auto sticker_sql = std::array {
 
 	//[STICKER_SQL_FIND_GT] =
 	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value>?",
+
+	//[STICKER_SQL_DISTINCT_TYPE_URI] =
+	"SELECT DISTINCT type,uri FROM sticker",
+
+	//[STICKER_SQL_TRANSACTION_BEGIN]
+	"BEGIN",
+
+	//[STICKER_SQL_TRANSACTION_COMMIT]
+	"COMMIT",
+
+	//[STICKER_SQL_TRANSACTION_ROLLBACK]
+	"ROLLBACK",
 };
 
 static constexpr const char sticker_sql_create[] =
@@ -121,11 +140,13 @@ StickerDatabase::~StickerDatabase() noexcept
 std::string
 StickerDatabase::LoadValue(const char *type, const char *uri, const char *name)
 {
-	sqlite3_stmt *const s = stmt[STICKER_SQL_GET];
-
 	assert(type != nullptr);
 	assert(uri != nullptr);
 	assert(name != nullptr);
+
+	const std::scoped_lock<Mutex> protect(mutex);
+
+	sqlite3_stmt *const s = stmt[STICKER_SQL_GET];
 
 	if (StringIsEmpty(name))
 		return {};
@@ -148,10 +169,12 @@ void
 StickerDatabase::ListValues(std::map<std::string, std::string> &table,
 			    const char *type, const char *uri)
 {
-	sqlite3_stmt *const s = stmt[STICKER_SQL_LIST];
-
 	assert(type != nullptr);
 	assert(uri != nullptr);
+
+	const std::scoped_lock<Mutex> protect(mutex);
+
+	sqlite3_stmt *const s = stmt[STICKER_SQL_LIST];
 
 	BindAll(s, type, uri);
 
@@ -171,13 +194,15 @@ bool
 StickerDatabase::UpdateValue(const char *type, const char *uri,
 			     const char *name, const char *value)
 {
-	sqlite3_stmt *const s = stmt[STICKER_SQL_UPDATE];
-
 	assert(type != nullptr);
 	assert(uri != nullptr);
 	assert(name != nullptr);
 	assert(*name != 0);
 	assert(value != nullptr);
+
+	const std::scoped_lock<Mutex> protect(mutex);
+
+	sqlite3_stmt *const s = stmt[STICKER_SQL_UPDATE];
 
 	BindAll(s, value, type, uri, name);
 
@@ -197,13 +222,15 @@ void
 StickerDatabase::InsertValue(const char *type, const char *uri,
 			     const char *name, const char *value)
 {
-	sqlite3_stmt *const s = stmt[STICKER_SQL_INSERT];
-
 	assert(type != nullptr);
 	assert(uri != nullptr);
 	assert(name != nullptr);
 	assert(*name != 0);
 	assert(value != nullptr);
+
+	const std::scoped_lock<Mutex> protect(mutex);
+
+	sqlite3_stmt *const s = stmt[STICKER_SQL_INSERT];
 
 	BindAll(s, type, uri, name, value);
 
@@ -235,10 +262,12 @@ StickerDatabase::StoreValue(const char *type, const char *uri,
 bool
 StickerDatabase::Delete(const char *type, const char *uri)
 {
-	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE];
-
 	assert(type != nullptr);
 	assert(uri != nullptr);
+
+	const std::scoped_lock<Mutex> protect(mutex);
+
+	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE];
 
 	BindAll(s, type, uri);
 
@@ -257,10 +286,12 @@ bool
 StickerDatabase::DeleteValue(const char *type, const char *uri,
 			     const char *name)
 {
-	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE_VALUE];
-
 	assert(type != nullptr);
 	assert(uri != nullptr);
+
+	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE_VALUE];
+
+	const std::scoped_lock<Mutex> protect(mutex);
 
 	BindAll(s, type, uri, name);
 
@@ -330,6 +361,8 @@ StickerDatabase::Find(const char *type, const char *base_uri, const char *name,
 {
 	assert(func != nullptr);
 
+	const std::scoped_lock<Mutex> protect(mutex);
+
 	sqlite3_stmt *const s = BindFind(type, base_uri, name, op, value);
 	assert(s != nullptr);
 
@@ -343,4 +376,54 @@ StickerDatabase::Find(const char *type, const char *base_uri, const char *name,
 			     (const char*)sqlite3_column_text(s, 1),
 			     user_data);
 		});
+}
+
+std::list<StickerDatabase::StickerTypeUriPair> StickerDatabase::GetUniqueStickers() {
+	const std::scoped_lock<Mutex> protect(mutex);
+
+	auto result = std::list<StickerTypeUriPair>{};
+	sqlite3_stmt *const s = stmt[STICKER_SQL_DISTINCT_TYPE_URI];
+	assert(s != nullptr);
+	AtScopeExit(s) {
+		sqlite3_reset(s);
+	};
+	ExecuteForEach(s, [&s, &result]() {
+		result.emplace_back(StickerTypeUriPair{ ColumnToString(s, 0), ColumnToString(s, 1) });
+	});
+	return result;
+}
+
+void
+StickerDatabase::BatchDeleteNoIdle(const std::list<StickerTypeUriPair>& stickers)
+{
+	const std::scoped_lock<Mutex> protect(mutex);
+
+	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE];
+
+	sqlite3_stmt *const begin = stmt[STICKER_SQL_TRANSACTION_BEGIN];
+	sqlite3_stmt *const rollback = stmt[STICKER_SQL_TRANSACTION_ROLLBACK];
+	sqlite3_stmt *const commit = stmt[STICKER_SQL_TRANSACTION_COMMIT];
+
+	try {
+		ExecuteBusy(begin);
+
+		for (auto &sticker: stickers) {
+			AtScopeExit(s) {
+				sqlite3_reset(s);
+				sqlite3_clear_bindings(s);
+			};
+
+			BindAll(s, sticker.first.c_str(), sticker.second.c_str());
+
+			ExecuteCommand(s);
+		}
+
+		ExecuteBusy(commit);
+	}
+	catch (std::runtime_error& e) {
+		// "If the transaction has already been rolled back automatically by the error response,
+		// then the ROLLBACK command will fail with an error, but no harm is caused by this."
+		ExecuteBusy(rollback);
+		std::throw_with_nested(FormatRuntimeError("failed to batch-delete stickers"));
+	}
 }

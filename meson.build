@@ -462,6 +462,9 @@ if sqlite_dep.found()
     'src/sticker/Database.cxx',
     'src/sticker/Print.cxx',
     'src/sticker/SongSticker.cxx',
+    'src/sticker/TagSticker.cxx',
+    'src/sticker/AllowedTags.c',
+    'src/sticker/StickerCleanupService.cxx',
   ]
 endif
 

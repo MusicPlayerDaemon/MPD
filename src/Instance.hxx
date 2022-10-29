@@ -41,6 +41,7 @@ class NeighborGlue;
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseListener.hxx"
 #include "db/Ptr.hxx"
+
 class Storage;
 class UpdateService;
 #ifdef ENABLE_INOTIFY
@@ -56,6 +57,7 @@ struct Partition;
 class StateFile;
 class RemoteTagCache;
 class StickerDatabase;
+class StickerCleanupService;
 class InputCacheManager;
 
 /**
@@ -141,6 +143,8 @@ struct Instance final
 
 #ifdef ENABLE_SQLITE
 	std::unique_ptr<StickerDatabase> sticker_database;
+
+	std::unique_ptr<StickerCleanupService> sticker_cleanup;
 #endif
 
 	Instance();
@@ -203,6 +207,8 @@ struct Instance final
 	bool HasStickerDatabase() const noexcept {
 		return sticker_database != nullptr;
 	}
+
+	void OnSickerCleanupDone(StickerCleanupService *service, bool changed) noexcept;
 #endif
 
 	void BeginShutdownUpdate() noexcept;
@@ -216,6 +222,8 @@ struct Instance final
 #endif
 
 	void FlushCaches() noexcept;
+
+	void OnPlaylistDeleted(const char *name) const noexcept;
 
 private:
 #ifdef ENABLE_DATABASE
