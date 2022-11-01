@@ -29,15 +29,16 @@ Tag::Clear() noexcept
 	duration = SignedSongTime::Negative();
 	has_playlist = false;
 
-	{
+	if (num_items > 0) {
+		assert(items != nullptr);
 		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (unsigned i = 0; i < num_items; ++i)
 			tag_pool_put_item(items[i]);
+		num_items = 0;
 	}
 
 	delete[] items;
 	items = nullptr;
-	num_items = 0;
 }
 
 Tag::Tag(const Tag &other) noexcept
