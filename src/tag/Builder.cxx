@@ -33,10 +33,9 @@
 TagBuilder::TagBuilder(const Tag &other) noexcept
 	:duration(other.duration), has_playlist(other.has_playlist)
 {
-	items.reserve(other.num_items);
-
 	const std::size_t n = other.num_items;
 	if (n > 0) {
+		items.reserve(other.num_items);
 		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (std::size_t i = 0; i != n; ++i)
 			items.push_back(tag_pool_dup_item(other.items[i]));
@@ -176,17 +175,17 @@ TagBuilder::Complement(const Tag &other) noexcept
 
 	has_playlist |= other.has_playlist;
 
-	/* build a table of tag types that were already present in
-	   this object, which will not be copied from #other */
-	std::array<bool, TAG_NUM_OF_ITEM_TYPES> present;
-	present.fill(false);
-	for (const TagItem *i : items)
-		present[i->type] = true;
-
-	items.reserve(items.size() + other.num_items);
-
 	const std::size_t n = other.num_items;
 	if (n > 0) {
+		/* build a table of tag types that were already present in
+		   this object, which will not be copied from #other */
+		std::array<bool, TAG_NUM_OF_ITEM_TYPES> present;
+		present.fill(false);
+		for (const TagItem *i : items)
+			present[i->type] = true;
+
+		items.reserve(items.size() + n);
+
 		const std::scoped_lock<Mutex> protect(tag_pool_lock);
 		for (std::size_t i = 0; i != n; ++i) {
 			TagItem *item = other.items[i];
