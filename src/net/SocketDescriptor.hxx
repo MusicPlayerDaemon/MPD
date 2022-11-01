@@ -198,8 +198,6 @@ public:
 	 */
 	bool SetTcpUserTimeout(const unsigned &milliseconds) noexcept;
 
-	bool SetV6Only(bool value) noexcept;
-
 	/**
 	 * Setter for SO_BINDTODEVICE.
 	 */
@@ -211,6 +209,8 @@ public:
 	bool AddMembership(const IPv6Address &address) noexcept;
 	bool AddMembership(SocketAddress address) noexcept;
 #endif
+
+	bool SetV6Only(bool value) noexcept;
 
 	bool Bind(SocketAddress address) noexcept;
 
