@@ -40,7 +40,8 @@ author = 'Max Kellermann'
 # The short X.Y version.
 with open('../meson.build') as f:
     import re
-    version = re.match(r".*version:\s*'([^']+)'", f.readline()).group(1)
+    version = re.match(r"project\([^\)]*\bversion:\s*'([^']+)'",
+                       f.read(4096)).group(1)
 # The full version, including alpha/beta/rc tags.
 #release = version + '~git'
 
