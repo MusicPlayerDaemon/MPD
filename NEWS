@@ -1,4 +1,6 @@
 ver 0.23.11 (not yet released)
+* Android/Windows
+  - update OpenSSL to 3.0.7
 
 ver 0.23.10 (2022/10/14)
 * storage
