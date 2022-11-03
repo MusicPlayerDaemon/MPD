@@ -19,6 +19,8 @@ LimitRTTIME=infinity
 # for io_uring
 LimitMEMLOCK=64M
 
+# Required in order for ProtectSystem= (and other sandboxing) to work
+PrivateUsers=yes
 # disallow writing to /usr, /bin, /sbin, ...
 ProtectSystem=yes
 
