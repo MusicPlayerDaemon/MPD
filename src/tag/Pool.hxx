@@ -25,19 +25,50 @@
 
 #include <string_view>
 
-extern Mutex tag_pool_lock;
-
 struct TagItem;
 
-[[nodiscard]]
-TagItem *
-tag_pool_get_item(TagType type, std::string_view value) noexcept;
+class LockedTagPool {
+public:
+	LockedTagPool() {
+		tag_pool_lock.lock();
+	}
 
-[[nodiscard]]
-TagItem *
-tag_pool_dup_item(TagItem *item) noexcept;
+	~LockedTagPool() {
+		tag_pool_lock.unlock();
+	}
 
-void
-tag_pool_put_item(TagItem *item) noexcept;
+	TagItem *
+	tag_pool_get_item(TagType type, std::string_view value) noexcept {
+		return _tag_pool_get_item(type, value);
+	}
+
+	[[nodiscard]]
+	TagItem *
+	tag_pool_dup_item(TagItem *item) noexcept {
+		return _tag_pool_dup_item(item);
+	}
+
+	void
+	tag_pool_put_item(TagItem *item) noexcept {
+		_tag_pool_put_item(item);
+	}
+
+private:
+	static Mutex tag_pool_lock;
+
+	[[nodiscard]]
+	static
+	TagItem *
+	_tag_pool_get_item(TagType type, std::string_view value) noexcept;
+
+	[[nodiscard]]
+	static
+	TagItem *
+	_tag_pool_dup_item(TagItem *item) noexcept;
+
+	static
+	void
+	_tag_pool_put_item(TagItem *item) noexcept;
+};
 
 #endif

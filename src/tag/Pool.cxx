@@ -29,7 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-Mutex tag_pool_lock;
+Mutex LockedTagPool::tag_pool_lock;
 
 static constexpr size_t NUM_SLOTS = 16127;
 
@@ -107,7 +107,7 @@ tag_value_slot_p(TagType type, const char *value) noexcept
 }
 
 TagItem *
-tag_pool_get_item(TagType type, std::string_view value) noexcept
+LockedTagPool::_tag_pool_get_item(TagType type, std::string_view value) noexcept
 {
 	auto slot_p = tag_value_slot_p(type, value);
 	for (auto slot = *slot_p; slot != nullptr; slot = slot->next) {
@@ -126,7 +126,7 @@ tag_pool_get_item(TagType type, std::string_view value) noexcept
 }
 
 TagItem *
-tag_pool_dup_item(TagItem *item) noexcept
+LockedTagPool::_tag_pool_dup_item(TagItem *item) noexcept
 {
 	TagPoolSlot *slot = tag_item_to_slot(item);
 
@@ -139,12 +139,12 @@ tag_pool_dup_item(TagItem *item) noexcept
 		/* the reference counter overflows above MAX_REF;
 		   obtain a reference to a different TagPoolSlot which
 		   isn't yet "full" */
-		return tag_pool_get_item(item->type, item->value);
+		return _tag_pool_get_item(item->type, item->value);
 	}
 }
 
 void
-tag_pool_put_item(TagItem *item) noexcept
+LockedTagPool::_tag_pool_put_item(TagItem *item) noexcept
 {
 	TagPoolSlot **slot_p, *slot;
 

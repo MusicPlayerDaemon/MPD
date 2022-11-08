@@ -36,9 +36,9 @@ TagBuilder::TagBuilder(const Tag &other) noexcept
 	const std::size_t n = other.num_items;
 	if (n > 0) {
 		items.reserve(other.num_items);
-		const std::scoped_lock<Mutex> protect(tag_pool_lock);
+		auto locked_pool = LockedTagPool();
 		for (std::size_t i = 0; i != n; ++i)
-			items.push_back(tag_pool_dup_item(other.items[i]));
+			items.push_back(locked_pool.tag_pool_dup_item(other.items[i]));
 	}
 }
 
@@ -70,9 +70,9 @@ TagBuilder::operator=(const TagBuilder &other) noexcept
 		items = other.items;
 
 		/* increment the tag pool refcounters */
-		const std::scoped_lock<Mutex> protect(tag_pool_lock);
+		auto locked_pool = LockedTagPool();
 		for (auto &i : items)
-			i = tag_pool_dup_item(i);
+			i = locked_pool.tag_pool_dup_item(i);
 	}
 
 	return *this;
@@ -186,11 +186,11 @@ TagBuilder::Complement(const Tag &other) noexcept
 
 		items.reserve(items.size() + n);
 
-		const std::scoped_lock<Mutex> protect(tag_pool_lock);
+		auto locked_pool = LockedTagPool();
 		for (std::size_t i = 0; i != n; ++i) {
 			TagItem *item = other.items[i];
 			if (!present[item->type])
-				items.push_back(tag_pool_dup_item(item));
+				items.push_back(locked_pool.tag_pool_dup_item(item));
 		}
 	}
 }
@@ -198,13 +198,7 @@ TagBuilder::Complement(const Tag &other) noexcept
 void
 TagBuilder::AddItemUnchecked(TagType type, std::string_view value) noexcept
 {
-	TagItem *i;
-
-	{
-		const std::scoped_lock<Mutex> protect(tag_pool_lock);
-		i = tag_pool_get_item(type, value);
-	}
-
+	TagItem *i = LockedTagPool().tag_pool_get_item(type, value);
 	items.push_back(i);
 }
 
@@ -250,9 +244,9 @@ TagBuilder::RemoveAll() noexcept
 		return;
 
 	{
-		const std::scoped_lock<Mutex> protect(tag_pool_lock);
+		auto locked_pool = LockedTagPool();
 		for (auto i : items)
-			tag_pool_put_item(i);
+			locked_pool.tag_pool_put_item(i);
 	}
 
 	items.clear();
@@ -268,12 +262,12 @@ TagBuilder::RemoveType(TagType type) noexcept
 
 	const auto begin = items.begin(), end = items.end();
 
-	const std::scoped_lock<Mutex> protect(tag_pool_lock);
+	auto locked_pool = LockedTagPool();
 	items.erase(std::remove_if(begin, end,
-				   [type](TagItem *item) {
+				   [type, locked_pool](TagItem *item) mutable {
 					   if (item->type != type)
 						   return false;
-					   tag_pool_put_item(item);
+					   locked_pool.tag_pool_put_item(item);
 					   return true;
 				   }),
 		    end);
