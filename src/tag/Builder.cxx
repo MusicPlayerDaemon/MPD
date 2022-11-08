@@ -261,8 +261,14 @@ TagBuilder::RemoveAll() noexcept
 void
 TagBuilder::RemoveType(TagType type) noexcept
 {
+	if (items.empty())
+		/* don't acquire the tag_pool_lock if we're not going
+		   to call tag_pool_put_item() anyway */
+		return;
+
 	const auto begin = items.begin(), end = items.end();
 
+	const std::scoped_lock<Mutex> protect(tag_pool_lock);
 	items.erase(std::remove_if(begin, end,
 				   [type](TagItem *item) {
 					   if (item->type != type)
