@@ -1,4 +1,6 @@
 ver 0.23.12 (not yet released)
+* tags
+  - fix crash bug due to race condition
 
 ver 0.23.11 (2022/11/28)
 * database
