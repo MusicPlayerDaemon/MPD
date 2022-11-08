@@ -38,7 +38,10 @@ author = 'Max Kellermann'
 # built documents.
 #
 # The short X.Y version.
-version = '0.24'
+with open('../meson.build') as f:
+    import re
+    version = re.match(r"project\([^\)]*\bversion:\s*'([^']+)'",
+                       f.read(4096)).group(1)
 # The full version, including alpha/beta/rc tags.
 release = version + '~git'
 
@@ -47,7 +50,7 @@ release = version + '~git'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

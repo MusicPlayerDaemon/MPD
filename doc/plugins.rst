@@ -219,8 +219,9 @@ Opens remote files or streams over HTTP using libcurl.
 
 Note that unless overridden by the below settings (e.g. by setting
 them to a blank value), general curl configuration from environment
-variables such as ``http_proxy`` or specified in :file:`~/.curlrc`
-will be in effect.
+variables such as ``http_proxy`` will be in effect.
+
+User name and password are read from an optional :file:`~/.netrc`, :file:`~/.curlrc` is not read.
 
 .. list-table::
    :widths: 20 70 10

@@ -43,8 +43,8 @@ opus = AutotoolsProject(
 )
 
 flac = AutotoolsProject(
-    'http://downloads.xiph.org/releases/flac/flac-1.4.0.tar.xz',
-    'af41c0733c93c237c3e52f64dd87e3b0d9af38259f1c7d11e8cbf583c48c2506',
+    'http://downloads.xiph.org/releases/flac/flac-1.4.2.tar.xz',
+    'e322d58a1f48d23d9dd38f432672865f6f79e73a6f9cc5a5f57fcaa83eb5a8e4',
     'lib/libFLAC.a',
     [
         '--disable-shared', '--enable-static',
@@ -387,14 +387,14 @@ ffmpeg = FfmpegProject(
 )
 
 openssl = OpenSSLProject(
-    'https://www.openssl.org/source/openssl-3.0.5.tar.gz',
-    'aa7d8d9bef71ad6525c55ba11e5f4397889ce49c2c9349dcea6d3e4f0b024a7a',
+    'https://www.openssl.org/source/openssl-3.0.7.tar.gz',
+    '83049d042a260e696f62406ac5c08bf706fd84383f945cf21bd61e9ed95c396e',
     'include/openssl/ossl_typ.h',
 )
 
 curl = CmakeProject(
-    'https://curl.se/download/curl-7.85.0.tar.xz',
-    '88b54a6d4b9a48cb4d873c7056dcba997ddd5b7be5a2d537a4acb55c20b04be6',
+    'https://curl.se/download/curl-7.86.0.tar.xz',
+    '2d61116e5f485581f6d59865377df4463f2e788677ac43222b496d4e49fb627b',
     'lib/libcurl.a',
     [
         '-DBUILD_CURL_EXE=OFF',
