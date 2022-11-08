@@ -17,6 +17,7 @@ if get_option('html_manual')
       'client.rst',
       'protocol.rst',
       'conf.py',
+      '_static/css/custom.css'
     ],
     command: [sphinx, '-q', '-b', 'html', '-d', '@OUTDIR@/doctrees', meson.current_source_dir(), '@OUTPUT@'],
     build_by_default: true,
