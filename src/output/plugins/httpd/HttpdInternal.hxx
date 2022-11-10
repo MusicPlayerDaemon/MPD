@@ -34,8 +34,7 @@
 #include "event/InjectEvent.hxx"
 #include "util/Cast.hxx"
 #include "util/Compiler.h"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <queue>
 #include <list>
@@ -139,8 +138,8 @@ private:
 	 * A linked list containing all clients which are currently
 	 * connected.
 	 */
-	boost::intrusive::list<HttpdClient,
-			       boost::intrusive::constant_time_size<true>> clients;
+	IntrusiveList<HttpdClient, IntrusiveListBaseHookTraits<HttpdClient>,
+		      true> clients;
 
 	/**
 	 * The maximum number of clients connected at the same time.
