@@ -1,8 +1,5 @@
 /*
  * Copyright 2020-2022 Max Kellermann <max.kellermann@gmail.com>
- * All rights reserved.
- *
- * author: Max Kellermann <mk@cm4all.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,6 +28,7 @@
  */
 
 #include "util/IntrusiveList.hxx"
+#include "util/SortList.hxx"
 
 #include <gtest/gtest.h>
 
@@ -200,4 +198,73 @@ TEST(IntrusiveList, AutoUnlink)
 
 	ASSERT_TRUE(a.is_linked());
 	ASSERT_TRUE(b.is_linked());
+}
+
+TEST(IntrusiveList, Merge)
+{
+	using Item = CharItem<IntrusiveListHook>;
+
+	const auto predicate = [](const Item &a, const Item &b){
+		return a.ch < b.ch;
+	};
+
+	Item items[]{'c', 'k', 'u'};
+
+	IntrusiveList<Item> list;
+	for (auto &i : items)
+		list.push_back(i);
+
+	IntrusiveList<Item> other_list;
+	Item other_items[]{'a', 'b', 'g', 'm', 'n', 'x', 'y', 'z'};
+	for (auto &i : other_items)
+		other_list.push_back(i);
+
+	MergeList(list, other_list, predicate);
+
+	ASSERT_EQ(ToString(list, list.begin(), 13), "abcgkmnuxyz_a");
+	ASSERT_TRUE(other_list.empty());
+
+	Item more_items[]{'a', 'o', 'p', 'q'};
+	for (auto &i : more_items)
+		other_list.push_back(i);
+
+	MergeList(list, other_list, predicate);
+
+	ASSERT_EQ(ToString(list, list.begin(), 17), "aabcgkmnopquxyz_a");
+	ASSERT_EQ(&*list.begin(), &other_items[0]);
+	ASSERT_EQ(&*std::next(list.begin()), &more_items[0]);
+}
+
+TEST(IntrusiveList, Sort)
+{
+	using Item = CharItem<IntrusiveListHook>;
+
+	const auto predicate = [](const Item &a, const Item &b){
+		return a.ch < b.ch;
+	};
+
+	Item items[]{'z', 'a', 'b', 'q', 'b', 'c', 't', 'm', 'y'};
+
+	IntrusiveList<Item> list;
+	SortList(list, predicate);
+	ASSERT_EQ(ToString(list, list.begin(), 2), "__");
+
+	list.push_back(items[0]);
+	SortList(list, predicate);
+	ASSERT_EQ(ToString(list, list.begin(), 3), "z_z");
+
+	list.push_back(items[1]);
+	SortList(list, predicate);
+	ASSERT_EQ(ToString(list, list.begin(), 4), "az_a");
+	SortList(list, predicate);
+	ASSERT_EQ(ToString(list, list.begin(), 4), "az_a");
+
+	list.clear();
+	for (auto &i : items)
+		list.push_back(i);
+
+	SortList(list, predicate);
+	ASSERT_EQ(ToString(list, list.begin(), 11), "abbcmqtyz_a");
+	ASSERT_EQ(&*std::next(list.begin(), 1), &items[2]);
+	ASSERT_EQ(&*std::next(list.begin(), 2), &items[4]);
 }
