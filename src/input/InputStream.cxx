@@ -159,13 +159,15 @@ InputStream::LockIsEOF() const noexcept
 void
 InputStream::InvokeOnReady() noexcept
 {
-	if (handler != nullptr)
-		handler->OnInputStreamReady();
+	auto h = handler;
+	if (h != nullptr)
+		h->OnInputStreamReady();
 }
 
 void
 InputStream::InvokeOnAvailable() noexcept
 {
-	if (handler != nullptr)
-		handler->OnInputStreamAvailable();
+	auto h = handler;
+	if (h != nullptr)
+		h->OnInputStreamAvailable();
 }
