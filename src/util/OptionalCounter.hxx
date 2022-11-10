@@ -44,6 +44,8 @@ public:
 	constexpr void reset() noexcept {}
 	constexpr auto &operator++() noexcept { return *this; }
 	constexpr auto &operator--() noexcept { return *this; }
+	constexpr auto &operator+=(std::size_t) noexcept { return *this; }
+	constexpr auto &operator-=(std::size_t) noexcept { return *this; }
 };
 
 template<>
@@ -69,6 +71,18 @@ public:
 		assert(value > 0);
 
 		--value;
+		return *this;
+	}
+
+	constexpr auto &operator+=(std::size_t n) noexcept {
+		value += n;
+		return *this;
+	}
+
+	constexpr auto &operator-=(std::size_t n) noexcept {
+		assert(value >= n);
+
+		value -= n;
 		return *this;
 	}
 };
