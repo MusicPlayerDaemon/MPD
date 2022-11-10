@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2022 Max Kellermann <max.kellermann@gmail.com>
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -42,6 +42,12 @@
 
 struct IntrusiveListNode {
 	IntrusiveListNode *next, *prev;
+
+	static constexpr void Connect(IntrusiveListNode &a,
+				      IntrusiveListNode &b) noexcept {
+		a.next = &b;
+		b.prev = &a;
+	}
 };
 
 class IntrusiveListHook {
@@ -59,8 +65,7 @@ public:
 	IntrusiveListHook &operator=(const IntrusiveListHook &) = delete;
 
 	void unlink() noexcept {
-		siblings.next->prev = siblings.prev;
-		siblings.prev->next = siblings.next;
+		IntrusiveListNode::Connect(*siblings.prev, *siblings.next);
 	}
 
 private:
@@ -493,10 +498,9 @@ public:
 		auto &existing_node = ToNode(*p);
 		auto &new_node = ToNode(t);
 
-		existing_node.prev->next = &new_node;
-		new_node.prev = existing_node.prev;
-		existing_node.prev = &new_node;
-		new_node.next = &existing_node;
+		IntrusiveListNode::Connect(*existing_node.prev,
+					   new_node);
+		IntrusiveListNode::Connect(new_node, existing_node);
 
 		++counter;
 	}
