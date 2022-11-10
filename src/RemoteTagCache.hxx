@@ -24,8 +24,8 @@
 #include "tag/Tag.hxx"
 #include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
+#include "util/IntrusiveList.hxx"
 
-#include <boost/intrusive/list.hpp>
 #include <boost/intrusive/unordered_set.hpp>
 
 #include <string>
@@ -46,7 +46,7 @@ class RemoteTagCache final {
 
 	struct Item final
 		: public boost::intrusive::unordered_set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-		  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+		  public IntrusiveListHook,
 		  RemoteTagHandler
 	{
 		RemoteTagCache &parent;
@@ -89,8 +89,7 @@ class RemoteTagCache final {
 		};
 	};
 
-	typedef boost::intrusive::list<Item,
-				       boost::intrusive::constant_time_size<false>> ItemList;
+	using ItemList = IntrusiveList<Item>;
 
 	/**
 	 * These items have been resolved completely (successful or
