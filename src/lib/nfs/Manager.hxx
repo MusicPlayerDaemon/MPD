@@ -22,9 +22,9 @@
 
 #include "Connection.hxx"
 #include "event/IdleEvent.hxx"
+#include "util/IntrusiveForwardList.hxx"
 
 #include <boost/intrusive/set.hpp>
-#include <boost/intrusive/slist.hpp>
 
 /**
  * A manager for NFS connections.  Handles multiple connections to
@@ -38,7 +38,7 @@ class NfsManager final {
 
 	class ManagedConnection final
 		: public NfsConnection,
-		  public boost::intrusive::slist_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+		  public IntrusiveForwardListHook,
 		  public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 		NfsManager &manager;
 
@@ -77,7 +77,7 @@ class NfsManager final {
 
 	Map connections;
 
-	typedef boost::intrusive::slist<ManagedConnection> List;
+	using List = IntrusiveForwardList<ManagedConnection>;
 
 	/**
 	 * A list of "garbage" connection objects.  Their destruction
