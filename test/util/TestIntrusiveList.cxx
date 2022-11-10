@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2020-2022 Max Kellermann <max.kellermann@gmail.com>
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -84,6 +84,60 @@ TEST(IntrusiveList, Basic)
 	ASSERT_EQ(i, list.end());
 	--i;
 	ASSERT_EQ(&*i, &c);
+	--i;
+	ASSERT_EQ(&*i, &a);
+	ASSERT_EQ(i, list.begin());
+	--i;
+	ASSERT_EQ(i, list.end());
+
+	IntrusiveList<Item> other_list;
+	Item d, e, f, g;
+	other_list.push_back(d);
+	other_list.push_back(e);
+	other_list.push_back(f);
+	other_list.push_back(g);
+
+	list.splice(std::next(list.begin()), other_list,
+		    other_list.iterator_to(e),
+		    other_list.iterator_to(g), 2);
+
+	i = other_list.begin();
+	ASSERT_EQ(&*i, &d);
+	++i;
+	ASSERT_EQ(&*i, &g);
+	++i;
+	ASSERT_EQ(i, other_list.end());
+	++i;
+	ASSERT_EQ(&*i, &d);
+	--i;
+	ASSERT_EQ(i, other_list.end());
+	--i;
+	ASSERT_EQ(&*i, &g);
+	--i;
+	ASSERT_EQ(&*i, &d);
+	ASSERT_EQ(i, other_list.begin());
+
+	i = list.begin();
+	ASSERT_EQ(&*i, &a);
+	++i;
+	ASSERT_EQ(&*i, &e);
+	++i;
+	ASSERT_EQ(&*i, &f);
+	++i;
+	ASSERT_EQ(&*i, &c);
+	++i;
+	ASSERT_EQ(i, list.end());
+	++i;
+	ASSERT_EQ(&*i, &a);
+
+	--i;
+	ASSERT_EQ(i, list.end());
+	--i;
+	ASSERT_EQ(&*i, &c);
+	--i;
+	ASSERT_EQ(&*i, &f);
+	--i;
+	ASSERT_EQ(&*i, &e);
 	--i;
 	ASSERT_EQ(&*i, &a);
 	ASSERT_EQ(i, list.begin());

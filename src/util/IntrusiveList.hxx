@@ -526,4 +526,40 @@ public:
 
 		++counter;
 	}
+
+	/**
+	 * Move the given range of items of the given list to this one
+	 * before the given position.
+	 */
+	void splice(iterator position, IntrusiveList &from,
+		    iterator _begin, iterator _end, size_type n) noexcept {
+		if (_begin == _end)
+			return;
+
+		auto &next_node = ToNode(*position);
+		auto &prev_node = ToNode(*std::prev(position));
+
+		auto &first_node = ToNode(*_begin);
+		auto &before_first_node = ToNode(*std::prev(_begin));
+		auto &last_node = ToNode(*std::prev(_end));
+		auto &after_last_node = ToNode(*_end);
+
+		/* remove from the other list */
+		IntrusiveListNode::Connect(before_first_node, after_last_node);
+		from.counter -= n;
+
+		/* insert into this list */
+		IntrusiveListNode::Connect(prev_node, first_node);
+		IntrusiveListNode::Connect(last_node, next_node);
+		counter += n;
+	}
+
+	/**
+	 * Move all items of the given list to this one before the
+	 * given position.
+	 */
+	void splice(iterator position, IntrusiveList &from) noexcept {
+		spice(position, from, from.begin(), from.end(),
+		      constant_time_size ? size() : 1);
+	}
 };
