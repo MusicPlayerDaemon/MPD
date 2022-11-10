@@ -21,8 +21,7 @@
 #define MPD_INPUT_CACHE_LEASE_HXX
 
 #include "Item.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <utility>
 
@@ -30,7 +29,7 @@
  * A lease for an #InputCacheItem.
  */
 class InputCacheLease
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>
+	: public IntrusiveListHook
 {
 	InputCacheItem *item = nullptr;
 

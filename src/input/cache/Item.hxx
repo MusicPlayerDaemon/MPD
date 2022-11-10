@@ -22,8 +22,8 @@
 
 #include "input/BufferingInputStream.hxx"
 #include "thread/Mutex.hxx"
+#include "util/IntrusiveList.hxx"
 
-#include <boost/intrusive/list.hpp>
 #include <boost/intrusive/set_hook.hpp>
 
 #include <string>
@@ -39,15 +39,12 @@ class InputCacheLease;
  */
 class InputCacheItem final
 	: public BufferingInputStream,
-	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>,
+	  public AutoUnlinkIntrusiveListHook,
 	  public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>
 {
 	const std::string uri;
 
-	using LeaseList =
-		boost::intrusive::list<InputCacheLease,
-				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
-				       boost::intrusive::constant_time_size<false>>;
+	using LeaseList = IntrusiveList<InputCacheLease>;
 
 	LeaseList leases;
 	LeaseList::iterator next_lease = leases.end();

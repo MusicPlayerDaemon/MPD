@@ -21,9 +21,9 @@
 #define MPD_INPUT_CACHE_MANAGER_HXX
 
 #include "thread/Mutex.hxx"
+#include "util/IntrusiveList.hxx"
 
 #include <boost/intrusive/set.hpp>
-#include <boost/intrusive/list.hpp>
 
 class InputStream;
 class InputCacheItem;
@@ -55,9 +55,7 @@ class InputCacheManager {
 				const InputCacheItem &b) const noexcept;
 	};
 
-	boost::intrusive::list<InputCacheItem,
-			       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>>,
-			       boost::intrusive::constant_time_size<false>> items_by_time;
+	IntrusiveList<InputCacheItem> items_by_time;
 
 	using UriMap =
 		boost::intrusive::set<InputCacheItem,
