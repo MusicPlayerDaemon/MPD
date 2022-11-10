@@ -20,14 +20,15 @@
 #ifndef MPD_NFS_CANCELLABLE_HXX
 #define MPD_NFS_CANCELLABLE_HXX
 
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <algorithm>
 #include <cassert>
 
 template<typename T>
 class CancellablePointer
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
+	: public IntrusiveListHook
+{
 public:
 	typedef T *pointer;
 	typedef T &reference;
@@ -69,8 +70,7 @@ public:
 	typedef typename CT::const_reference const_reference;
 
 private:
-	typedef boost::intrusive::list<CT,
-				       boost::intrusive::constant_time_size<false>> List;
+	using List = IntrusiveList<CT>;
 	typedef typename List::iterator iterator;
 	typedef typename List::const_iterator const_iterator;
 	List list;
