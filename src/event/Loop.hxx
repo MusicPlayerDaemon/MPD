@@ -33,8 +33,6 @@
 #include "WakeFD.hxx"
 #include "thread/Id.hxx"
 #include "thread/Mutex.hxx"
-
-#include <boost/intrusive/list.hpp>
 #endif
 
 #include <atomic>
@@ -80,10 +78,7 @@ class EventLoop final
 #ifdef HAVE_THREADED_EVENT_LOOP
 	Mutex mutex;
 
-	using InjectList =
-		boost::intrusive::list<InjectEvent,
-				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<>>,
-				       boost::intrusive::constant_time_size<false>>;
+	using InjectList = IntrusiveList<InjectEvent>;
 	InjectList inject;
 #endif
 

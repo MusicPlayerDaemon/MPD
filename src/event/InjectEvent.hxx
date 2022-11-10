@@ -21,8 +21,7 @@
 #define MPD_INJECT_EVENT_HXX
 
 #include "util/BindMethod.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 class EventLoop;
 
@@ -31,8 +30,7 @@ class EventLoop;
  *
  * This class is thread-safe.
  */
-class InjectEvent final
-	: public boost::intrusive::list_base_hook<>
+class InjectEvent final : public SafeLinkIntrusiveListHook
 {
 	friend class EventLoop;
 
