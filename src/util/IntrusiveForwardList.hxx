@@ -152,6 +152,11 @@ class IntrusiveForwardList {
 	}
 
 public:
+	using value_type = T;
+	using reference = T &;
+	using const_reference = const T &;
+	using pointer = T *;
+	using const_pointer = const T *;
 	using size_type = std::size_t;
 
 	IntrusiveForwardList() = default;
@@ -202,11 +207,11 @@ public:
 		}
 	}
 
-	const T &front() const noexcept {
+	const_reference front() const noexcept {
 		return *Cast(head.next);
 	}
 
-	T &front() noexcept {
+	reference front() noexcept {
 		return *Cast(head.next);
 	}
 
@@ -243,11 +248,11 @@ public:
 			return !(*this == other);
 		}
 
-		constexpr T &operator*() const noexcept {
+		constexpr reference operator*() const noexcept {
 			return *Cast(cursor);
 		}
 
-		constexpr T *operator->() const noexcept {
+		constexpr pointer operator->() const noexcept {
 			return Cast(cursor);
 		}
 
@@ -297,11 +302,11 @@ public:
 			return !(*this == other);
 		}
 
-		constexpr const T &operator*() const noexcept {
+		constexpr reference operator*() const noexcept {
 			return *Cast(cursor);
 		}
 
-		constexpr const T *operator->() const noexcept {
+		constexpr pointer operator->() const noexcept {
 			return Cast(cursor);
 		}
 
@@ -315,14 +320,14 @@ public:
 		return {head.next};
 	}
 
-	void push_front(T &t) noexcept {
+	void push_front(reference t) noexcept {
 		auto &new_node = ToNode(t);
 		new_node.next = head.next;
 		head.next = &new_node;
 		++counter;
 	}
 
-	static iterator insert_after(iterator pos, T &t) noexcept {
+	static iterator insert_after(iterator pos, reference t) noexcept {
 		// no counter update in this static method
 		static_assert(!constant_time_size);
 

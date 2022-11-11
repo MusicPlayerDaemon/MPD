@@ -227,6 +227,11 @@ class IntrusiveList {
 	}
 
 public:
+	using value_type = T;
+	using reference = T &;
+	using const_reference = const T &;
+	using pointer = T *;
+	using const_pointer = const T *;
 	using size_type = std::size_t;
 
 	constexpr IntrusiveList() noexcept = default;
@@ -327,11 +332,11 @@ public:
 		}
 	}
 
-	const T &front() const noexcept {
+	const_reference front() const noexcept {
 		return *Cast(head.next);
 	}
 
-	T &front() noexcept {
+	reference front() noexcept {
 		return *Cast(head.next);
 	}
 
@@ -348,7 +353,7 @@ public:
 		disposer(&i);
 	}
 
-	T &back() noexcept {
+	reference back() noexcept {
 		return *Cast(head.prev);
 	}
 
@@ -385,11 +390,11 @@ public:
 			return !(*this == other);
 		}
 
-		constexpr T &operator*() const noexcept {
+		constexpr reference operator*() const noexcept {
 			return *Cast(cursor);
 		}
 
-		constexpr T *operator->() const noexcept {
+		constexpr pointer operator->() const noexcept {
 			return Cast(cursor);
 		}
 
@@ -418,7 +423,7 @@ public:
 		return {&head};
 	}
 
-	static constexpr iterator iterator_to(T &t) noexcept {
+	static constexpr iterator iterator_to(reference t) noexcept {
 		return {&ToNode(t)};
 	}
 
@@ -450,11 +455,11 @@ public:
 			return !(*this == other);
 		}
 
-		constexpr const T &operator*() const noexcept {
+		constexpr reference operator*() const noexcept {
 			return *Cast(cursor);
 		}
 
-		constexpr const T *operator->() const noexcept {
+		constexpr pointer operator->() const noexcept {
 			return Cast(cursor);
 		}
 
@@ -483,7 +488,7 @@ public:
 		return {&head};
 	}
 
-	static constexpr iterator iterator_to(const T &t) noexcept {
+	static constexpr const_iterator iterator_to(const_reference t) noexcept {
 		return {&ToNode(t)};
 	}
 
@@ -501,15 +506,15 @@ public:
 		return result;
 	}
 
-	void push_front(T &t) noexcept {
+	void push_front(reference t) noexcept {
 		insert(begin(), t);
 	}
 
-	void push_back(T &t) noexcept {
+	void push_back(reference t) noexcept {
 		insert(end(), t);
 	}
 
-	void insert(iterator p, T &t) noexcept {
+	void insert(iterator p, reference t) noexcept {
 		static_assert(!constant_time_size ||
 			      !HookTraits::IsAutoUnlink(),
 			      "Can't use auto-unlink hooks with constant_time_size");
