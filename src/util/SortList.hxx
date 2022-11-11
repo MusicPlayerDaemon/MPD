@@ -43,7 +43,7 @@
 template<typename List>
 constexpr void
 MergeList(List &dest, List &src,
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(__APPLE__)
 	  /* Android NDK r25b has no std::predicate */
 	  std::predicate<typename List::const_reference, typename List::const_reference>
 #endif
@@ -89,7 +89,7 @@ MergeList(List &dest, List &src,
 template<typename List>
 constexpr void
 SortList(List &list,
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(__APPLE__)
 	 /* Android NDK r25b has no std::predicate */
 	 std::predicate<typename List::const_reference, typename List::const_reference>
 #endif
