@@ -21,6 +21,7 @@
 #define MPD_DIRECTORY_HXX
 
 #include "Ptr.hxx"
+#include "Song.hxx" // TODO eliminate this include, forward-declare only
 #include "db/Visitor.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/Ptr.hxx"
