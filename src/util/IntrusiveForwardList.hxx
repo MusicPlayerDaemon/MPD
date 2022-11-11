@@ -42,7 +42,7 @@
 #include <utility>
 
 struct IntrusiveForwardListNode {
-	IntrusiveForwardListNode *next = nullptr;
+	IntrusiveForwardListNode *next;
 };
 
 struct IntrusiveForwardListHook {
@@ -122,7 +122,7 @@ template<typename T,
 	 typename HookTraits=IntrusiveForwardListBaseHookTraits<T>,
 	 bool constant_time_size=false>
 class IntrusiveForwardList {
-	IntrusiveForwardListNode head;
+	IntrusiveForwardListNode head{nullptr};
 
 	[[no_unique_address]]
 	OptionalCounter<constant_time_size> counter;
