@@ -30,8 +30,7 @@ static constexpr Domain remote_tag_cache_domain("remote_tag_cache");
 RemoteTagCache::RemoteTagCache(EventLoop &event_loop,
 			       RemoteTagCacheHandler &_handler) noexcept
 	:handler(_handler),
-	 defer_invoke_handler(event_loop, BIND_THIS_METHOD(InvokeHandlers)),
-	 map(typename KeyMap::bucket_traits(&buckets.front(), buckets.size()))
+	 defer_invoke_handler(event_loop, BIND_THIS_METHOD(InvokeHandlers))
 {
 }
 
@@ -45,11 +44,10 @@ RemoteTagCache::Lookup(const std::string &uri) noexcept
 {
 	std::unique_lock<Mutex> lock(mutex);
 
-	KeyMap::insert_commit_data hint;
-	auto [tag, value] = map.insert_check(uri, Item::Hash(), Item::Equal(), hint);
+	auto [tag, value] = map.insert_check(uri);
 	if (value) {
 		auto item = new Item(*this, uri);
-		map.insert_commit(*item, hint);
+		map.insert(tag, *item);
 		waiting_list.push_back(*item);
 		lock.unlock();
 
