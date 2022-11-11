@@ -6,6 +6,7 @@ test(
     'TestDivideString.cxx',
     'TestException.cxx',
     'TestIntrusiveForwardList.cxx',
+    'TestIntrusiveHashSet.cxx',
     'TestIntrusiveList.cxx',
     'TestMimeType.cxx',
     'TestSplitString.cxx',
