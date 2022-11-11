@@ -559,7 +559,7 @@ public:
 	 * given position.
 	 */
 	void splice(iterator position, IntrusiveList &from) noexcept {
-		spice(position, from, from.begin(), from.end(),
-		      constant_time_size ? size() : 1);
+		splice(position, from, from.begin(), from.end(),
+		       from.constant_time_size ? from.size() : 1);
 	}
 };
