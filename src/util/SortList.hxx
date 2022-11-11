@@ -43,7 +43,11 @@
 template<typename List>
 constexpr void
 MergeList(List &dest, List &src,
-	  std::predicate<typename List::const_reference, typename List::const_reference> auto p) noexcept
+#ifndef ANDROID
+	  /* Android NDK r25b has no std::predicate */
+	  std::predicate<typename List::const_reference, typename List::const_reference>
+#endif
+	  auto p) noexcept
 {
 	const auto dest_end = dest.end(), src_end = src.end();
 
@@ -85,7 +89,11 @@ MergeList(List &dest, List &src,
 template<typename List>
 constexpr void
 SortList(List &list,
-	 std::predicate<typename List::const_reference, typename List::const_reference> auto p) noexcept
+#ifndef ANDROID
+	 /* Android NDK r25b has no std::predicate */
+	 std::predicate<typename List::const_reference, typename List::const_reference>
+#endif
+	 auto p) noexcept
 {
 	using std::swap;
 
