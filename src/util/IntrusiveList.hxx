@@ -536,6 +536,17 @@ public:
 	}
 
 	/**
+	 * Move one item of the given list to this one before the
+	 * given position.
+	 */
+	void splice(iterator position,
+		    IntrusiveList &from, iterator i) noexcept {
+		auto &item = *i;
+		from.erase(i);
+		insert(position, item);
+	}
+
+	/**
 	 * Move the given range of items of the given list to this one
 	 * before the given position.
 	 */
