@@ -34,199 +34,156 @@
 
 #include <gtest/gtest.h>
 
+#include <string>
+
+namespace {
+
+template<typename Hook>
+struct CharItem final : Hook {
+	char ch;
+
+	constexpr CharItem(char _ch) noexcept:ch(_ch) {}
+
+	template<std::size_t size>
+	static auto MakeArray(const char (&src)[size]) noexcept {
+		std::array<CharItem, size - 1> result;
+		for (std::size_t i = 0; i < result.size(); ++i)
+			result[i].ch = src[i];
+		return result;
+	}
+};
+
+template<typename Hook>
+static std::string
+ToString(const IntrusiveList<CharItem<Hook>> &list,
+	 typename IntrusiveList<CharItem<Hook>>::const_iterator it,
+	 std::size_t n) noexcept
+{
+	std::string result;
+	for (std::size_t i = 0; i < n; ++i, ++it)
+		result.push_back(it == list.end() ? '_' : it->ch);
+	return result;
+}
+
+template<typename Hook>
+static std::string
+ToStringReverse(const IntrusiveList<CharItem<Hook>> &list,
+		typename IntrusiveList<CharItem<Hook>>::const_iterator it,
+		std::size_t n) noexcept
+{
+	std::string result;
+	for (std::size_t i = 0; i < n; ++i, --it)
+		result.push_back(it == list.end() ? '_' : it->ch);
+	return result;
+}
+
+} // anonymous namespace
+
 TEST(IntrusiveList, Basic)
 {
-	struct Item final : IntrusiveListHook {};
+	using Item = CharItem<IntrusiveListHook>;
 
-	Item a, b, c;
+	Item items[]{'a', 'b', 'c'};
 
 	IntrusiveList<Item> list;
+	for (auto &i : items)
+		list.push_back(i);
 
-	list.push_back(b);
-	list.push_back(c);
-	list.push_front(a);
+	ASSERT_EQ(ToString(list, list.begin(), 5), "abc_a");
+	ASSERT_EQ(ToStringReverse(list, list.begin(), 5), "a_cba");
 
-	auto i = list.begin();
-	ASSERT_EQ(&*i, &a);
-	++i;
-	ASSERT_EQ(&*i, &b);
-	++i;
-	ASSERT_EQ(&*i, &c);
-	++i;
-	ASSERT_EQ(i, list.end());
-	++i;
-	ASSERT_EQ(&*i, &a);
+	items[1].unlink();
 
-	--i;
-	ASSERT_EQ(i, list.end());
-	--i;
-	ASSERT_EQ(&*i, &c);
-	--i;
-	ASSERT_EQ(&*i, &b);
-	--i;
-	ASSERT_EQ(&*i, &a);
-	ASSERT_EQ(i, list.begin());
-	--i;
-	ASSERT_EQ(i, list.end());
-
-	b.unlink();
-
-	i = list.begin();
-	ASSERT_EQ(&*i, &a);
-	++i;
-	ASSERT_EQ(&*i, &c);
-	++i;
-	ASSERT_EQ(i, list.end());
-	++i;
-	ASSERT_EQ(&*i, &a);
-
-	--i;
-	ASSERT_EQ(i, list.end());
-	--i;
-	ASSERT_EQ(&*i, &c);
-	--i;
-	ASSERT_EQ(&*i, &a);
-	ASSERT_EQ(i, list.begin());
-	--i;
-	ASSERT_EQ(i, list.end());
+	ASSERT_EQ(ToString(list, list.begin(), 4), "ac_a");
+	ASSERT_EQ(ToStringReverse(list, list.begin(), 4), "a_ca");
 
 	IntrusiveList<Item> other_list;
-	Item d, e, f, g;
-	other_list.push_back(d);
-	other_list.push_back(e);
-	other_list.push_back(f);
-	other_list.push_back(g);
+	Item other_items[]{'d', 'e', 'f', 'g'};
+	for (auto &i : other_items)
+		other_list.push_back(i);
 
 	list.splice(std::next(list.begin()), other_list,
-		    other_list.iterator_to(e),
-		    other_list.iterator_to(g), 2);
+		    other_list.iterator_to(other_items[1]),
+		    other_list.iterator_to(other_items[3]), 2);
 
-	i = other_list.begin();
-	ASSERT_EQ(&*i, &d);
-	++i;
-	ASSERT_EQ(&*i, &g);
-	++i;
-	ASSERT_EQ(i, other_list.end());
-	++i;
-	ASSERT_EQ(&*i, &d);
-	--i;
-	ASSERT_EQ(i, other_list.end());
-	--i;
-	ASSERT_EQ(&*i, &g);
-	--i;
-	ASSERT_EQ(&*i, &d);
-	ASSERT_EQ(i, other_list.begin());
+	ASSERT_EQ(ToString(other_list, other_list.begin(), 4), "dg_d");
+	ASSERT_EQ(ToStringReverse(other_list, other_list.begin(), 4), "d_gd");
 
-	i = list.begin();
-	ASSERT_EQ(&*i, &a);
-	++i;
-	ASSERT_EQ(&*i, &e);
-	++i;
-	ASSERT_EQ(&*i, &f);
-	++i;
-	ASSERT_EQ(&*i, &c);
-	++i;
-	ASSERT_EQ(i, list.end());
-	++i;
-	ASSERT_EQ(&*i, &a);
-
-	--i;
-	ASSERT_EQ(i, list.end());
-	--i;
-	ASSERT_EQ(&*i, &c);
-	--i;
-	ASSERT_EQ(&*i, &f);
-	--i;
-	ASSERT_EQ(&*i, &e);
-	--i;
-	ASSERT_EQ(&*i, &a);
-	ASSERT_EQ(i, list.begin());
-	--i;
-	ASSERT_EQ(i, list.end());
+	ASSERT_EQ(ToString(list, list.begin(), 6), "aefc_a");
+	ASSERT_EQ(ToStringReverse(list, list.begin(), 6), "a_cfea");
 }
 
 TEST(IntrusiveList, SafeLink)
 {
-	struct Item final : SafeLinkIntrusiveListHook {};
+	using Item = CharItem<SafeLinkIntrusiveListHook>;
 
-	Item a, b, c;
+	Item items[]{'a', 'b', 'c'};
 
-	ASSERT_FALSE(a.is_linked());
-	ASSERT_FALSE(b.is_linked());
-	ASSERT_FALSE(c.is_linked());
+	for (const auto &i : items)
+		ASSERT_FALSE(i.is_linked());
 
 	IntrusiveList<Item> list;
 
-	list.push_back(b);
-	list.push_back(c);
-	list.push_front(a);
+	list.push_back(items[1]);
+	list.push_back(items[2]);
+	list.push_front(items[0]);
 
-	ASSERT_TRUE(a.is_linked());
-	ASSERT_TRUE(b.is_linked());
-	ASSERT_TRUE(c.is_linked());
+	for (const auto &i : items)
+		ASSERT_TRUE(i.is_linked());
 
-	auto i = list.begin();
-	ASSERT_EQ(&*i, &a);
-	++i;
-	ASSERT_EQ(&*i, &b);
-	++i;
-	ASSERT_EQ(&*i, &c);
-	++i;
-	ASSERT_EQ(i, list.end());
+	ASSERT_EQ(ToString(list, list.begin(), 5), "abc_a");
+	ASSERT_EQ(ToStringReverse(list, list.begin(), 5), "a_cba");
 
-	b.unlink();
+	items[1].unlink();
 
-	ASSERT_TRUE(a.is_linked());
-	ASSERT_FALSE(b.is_linked());
-	ASSERT_TRUE(c.is_linked());
+	ASSERT_TRUE(items[0].is_linked());
+	ASSERT_FALSE(items[1].is_linked());
+	ASSERT_TRUE(items[2].is_linked());
 
-	i = list.begin();
-	ASSERT_EQ(&*i, &a);
-	++i;
-	ASSERT_EQ(&*i, &c);
-	++i;
-	ASSERT_EQ(i, list.end());
+	ASSERT_EQ(ToString(list, list.begin(), 4), "ac_a");
+	ASSERT_EQ(ToStringReverse(list, list.begin(), 4), "a_ca");
 
-	list.erase(list.iterator_to(a));
+	list.erase(list.iterator_to(items[0]));
 
-	ASSERT_FALSE(a.is_linked());
-	ASSERT_FALSE(b.is_linked());
-	ASSERT_TRUE(c.is_linked());
+	ASSERT_FALSE(items[0].is_linked());
+	ASSERT_FALSE(items[1].is_linked());
+	ASSERT_TRUE(items[2].is_linked());
 
-	i = list.begin();
-	ASSERT_EQ(&*i, &c);
-	++i;
-	ASSERT_EQ(i, list.end());
+	ASSERT_EQ(ToString(list, list.begin(), 3), "c_c");
+	ASSERT_EQ(ToStringReverse(list, list.begin(), 3), "c_c");
 
 	list.clear();
 
-	ASSERT_FALSE(a.is_linked());
-	ASSERT_FALSE(b.is_linked());
-	ASSERT_FALSE(c.is_linked());
+	ASSERT_FALSE(items[0].is_linked());
+	ASSERT_FALSE(items[1].is_linked());
+	ASSERT_FALSE(items[2].is_linked());
+
+	ASSERT_EQ(ToString(list, list.begin(), 2), "__");
+	ASSERT_EQ(ToStringReverse(list, list.begin(), 2), "__");
 
 	{
 		IntrusiveList<Item> list2;
-		list2.push_back(a);
-		ASSERT_TRUE(a.is_linked());
+		list2.push_back(items[0]);
+		ASSERT_TRUE(items[0].is_linked());
 	}
 
-	ASSERT_FALSE(a.is_linked());
+	ASSERT_FALSE(items[0].is_linked());
 }
 
 TEST(IntrusiveList, AutoUnlink)
 {
-	struct Item final : AutoUnlinkIntrusiveListHook {};
+	using Item = CharItem<AutoUnlinkIntrusiveListHook>;
 
-	Item a;
+	Item a{'a'};
 	ASSERT_FALSE(a.is_linked());
 
 	IntrusiveList<Item> list;
 
-	Item b;
+	Item b{'b'};
 	ASSERT_FALSE(b.is_linked());
 
 	{
-		Item c;
+		Item c{'c'};
 
 		list.push_back(a);
 		list.push_back(b);
@@ -236,22 +193,10 @@ TEST(IntrusiveList, AutoUnlink)
 		ASSERT_TRUE(b.is_linked());
 		ASSERT_TRUE(c.is_linked());
 
-		auto i = list.begin();
-		ASSERT_EQ(&*i, &a);
-		++i;
-		ASSERT_EQ(&*i, &b);
-		++i;
-		ASSERT_EQ(&*i, &c);
-		++i;
-		ASSERT_EQ(i, list.end());
+		ASSERT_EQ(ToString(list, list.begin(), 5), "abc_a");
 	}
 
-	auto i = list.begin();
-	ASSERT_EQ(&*i, &a);
-	++i;
-	ASSERT_EQ(&*i, &b);
-	++i;
-	ASSERT_EQ(i, list.end());
+	ASSERT_EQ(ToString(list, list.begin(), 5), "ab_ab");
 
 	ASSERT_TRUE(a.is_linked());
 	ASSERT_TRUE(b.is_linked());
