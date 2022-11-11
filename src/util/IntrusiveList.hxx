@@ -270,6 +270,12 @@ public:
 			a.head.prev->next = &a.head;
 
 			b.head = {&b.head, &b.head};
+		} else if (b.empty()) {
+			b.head = a.head;
+			b.head.next->prev = &b.head;
+			b.head.prev->next = &b.head;
+
+			a.head = {&a.head, &a.head};
 		} else {
 			swap(a.head, b.head);
 
