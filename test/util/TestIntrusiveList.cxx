@@ -54,6 +54,20 @@ TEST(IntrusiveList, Basic)
 	ASSERT_EQ(&*i, &c);
 	++i;
 	ASSERT_EQ(i, list.end());
+	++i;
+	ASSERT_EQ(&*i, &a);
+
+	--i;
+	ASSERT_EQ(i, list.end());
+	--i;
+	ASSERT_EQ(&*i, &c);
+	--i;
+	ASSERT_EQ(&*i, &b);
+	--i;
+	ASSERT_EQ(&*i, &a);
+	ASSERT_EQ(i, list.begin());
+	--i;
+	ASSERT_EQ(i, list.end());
 
 	b.unlink();
 
@@ -62,6 +76,18 @@ TEST(IntrusiveList, Basic)
 	++i;
 	ASSERT_EQ(&*i, &c);
 	++i;
+	ASSERT_EQ(i, list.end());
+	++i;
+	ASSERT_EQ(&*i, &a);
+
+	--i;
+	ASSERT_EQ(i, list.end());
+	--i;
+	ASSERT_EQ(&*i, &c);
+	--i;
+	ASSERT_EQ(&*i, &a);
+	ASSERT_EQ(i, list.begin());
+	--i;
 	ASSERT_EQ(i, list.end());
 }
 
