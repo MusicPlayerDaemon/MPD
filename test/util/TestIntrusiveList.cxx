@@ -41,14 +41,6 @@ struct CharItem final : Hook {
 	char ch;
 
 	constexpr CharItem(char _ch) noexcept:ch(_ch) {}
-
-	template<std::size_t size>
-	static auto MakeArray(const char (&src)[size]) noexcept {
-		std::array<CharItem, size - 1> result;
-		for (std::size_t i = 0; i < result.size(); ++i)
-			result[i].ch = src[i];
-		return result;
-	}
 };
 
 template<typename Hook>
