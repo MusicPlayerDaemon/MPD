@@ -1,8 +1,5 @@
 /*
- * Copyright 2022 Max Kellermann <max.kellermann@gmail.com>
- * All rights reserved.
- *
- * author: Max Kellermann <mk@cm4all.com>
+ * Copyright 2020-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -560,6 +557,6 @@ public:
 	 */
 	void splice(iterator position, IntrusiveList &from) noexcept {
 		splice(position, from, from.begin(), from.end(),
-		       from.constant_time_size ? from.size() : 1);
+		       constant_time_size ? from.size() : 1);
 	}
 };
