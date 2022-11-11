@@ -5,6 +5,7 @@ test(
     'TestCircularBuffer.cxx',
     'TestDivideString.cxx',
     'TestException.cxx',
+    'TestIntrusiveForwardList.cxx',
     'TestIntrusiveList.cxx',
     'TestMimeType.cxx',
     'TestSplitString.cxx',
