@@ -31,4 +31,3 @@ storage_glue_dep = declare_dependency(
     storage_plugins_dep,
   ],
 )
-

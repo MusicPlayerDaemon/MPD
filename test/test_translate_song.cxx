@@ -14,6 +14,7 @@
 #include "ls.hxx"
 #include "Log.hxx"
 #include "db/DatabaseSong.hxx"
+#include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/plugins/LocalStorage.hxx"
 #include "Mapper.hxx"
@@ -34,6 +35,13 @@ bool
 uri_supported_scheme(const char *uri) noexcept
 {
 	return strncmp(uri, "http://", 7) == 0;
+}
+
+const StoragePlugin *
+GetStoragePluginByUri(const char *) noexcept
+{
+	// dummy symbol
+	return nullptr;
 }
 
 static constexpr auto music_directory = PATH_LITERAL("/music");
