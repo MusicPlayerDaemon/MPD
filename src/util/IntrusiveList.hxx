@@ -30,6 +30,7 @@
 #pragma once
 
 #include "Cast.hxx"
+#include "IntrusiveHookMode.hxx"
 #include "MemberPointer.hxx"
 #include "OptionalCounter.hxx"
 
@@ -47,6 +48,7 @@ struct IntrusiveListNode {
 	}
 };
 
+template<IntrusiveHookMode _mode=IntrusiveHookMode::NORMAL>
 class IntrusiveListHook {
 	template<typename T> friend struct IntrusiveListBaseHookTraits;
 	template<auto member> friend struct IntrusiveListMemberHookTraits;
@@ -56,13 +58,33 @@ protected:
 	IntrusiveListNode siblings;
 
 public:
-	IntrusiveListHook() noexcept = default;
+	static constexpr IntrusiveHookMode mode = _mode;
+
+	IntrusiveListHook() noexcept {
+		if constexpr (mode >= IntrusiveHookMode::TRACK)
+			siblings.next = nullptr;
+	}
+
+	~IntrusiveListHook() noexcept {
+		if constexpr (mode >= IntrusiveHookMode::AUTO_UNLINK)
+			if (is_linked())
+				unlink();
+	}
 
 	IntrusiveListHook(const IntrusiveListHook &) = delete;
 	IntrusiveListHook &operator=(const IntrusiveListHook &) = delete;
 
 	void unlink() noexcept {
 		IntrusiveListNode::Connect(*siblings.prev, *siblings.next);
+
+		if constexpr (mode >= IntrusiveHookMode::TRACK)
+			siblings.next = nullptr;
+	}
+
+	bool is_linked() const noexcept {
+		static_assert(mode >= IntrusiveHookMode::TRACK);
+
+		return siblings.next != nullptr;
 	}
 
 private:
@@ -75,52 +97,27 @@ private:
 	}
 };
 
-/**
- * A variant of #IntrusiveListHook which keeps track of whether it is
- * currently in a list.
- */
-class SafeLinkIntrusiveListHook : public IntrusiveListHook {
-public:
-	SafeLinkIntrusiveListHook() noexcept {
-		siblings.next = nullptr;
-	}
-
-	void unlink() noexcept {
-		IntrusiveListHook::unlink();
-		siblings.next = nullptr;
-	}
-
-	bool is_linked() const noexcept {
-		return siblings.next != nullptr;
-	}
-};
+using SafeLinkIntrusiveListHook =
+	IntrusiveListHook<IntrusiveHookMode::TRACK>;
+using AutoUnlinkIntrusiveListHook =
+	IntrusiveListHook<IntrusiveHookMode::AUTO_UNLINK>;
 
 /**
- * A variant of #IntrusiveListHook which auto-unlinks itself from the
- * list upon destruction.  As a side effect, it has an is_linked()
- * method.
- */
-class AutoUnlinkIntrusiveListHook : public SafeLinkIntrusiveListHook {
-public:
-	~AutoUnlinkIntrusiveListHook() noexcept {
-		if (is_linked())
-			unlink();
-	}
-};
-
-/**
- * Detect the hook type; this is important because
- * SafeLinkIntrusiveListHook::unlink() needs to clear the "next"
- * pointer.  This is a template to postpone the type checks, to allow
+ * Detect the hook type which is embedded in the given type as a base
+ * class.  This is a template to postpone the type checks, to allow
  * forward-declared types.
  */
 template<typename U>
 struct IntrusiveListHookDetection {
-	static_assert(std::is_base_of_v<IntrusiveListHook, U>);
-
-	using type = std::conditional_t<std::is_base_of_v<SafeLinkIntrusiveListHook, U>,
-					SafeLinkIntrusiveListHook,
-					IntrusiveListHook>;
+	/* TODO can this be simplified somehow, without checking for
+	   all possible enum values? */
+	using type = std::conditional_t<std::is_base_of_v<IntrusiveListHook<IntrusiveHookMode::NORMAL>, U>,
+					IntrusiveListHook<IntrusiveHookMode::NORMAL>,
+					std::conditional_t<std::is_base_of_v<IntrusiveListHook<IntrusiveHookMode::TRACK>, U>,
+							   IntrusiveListHook<IntrusiveHookMode::TRACK>,
+							   std::conditional_t<std::is_base_of_v<IntrusiveListHook<IntrusiveHookMode::AUTO_UNLINK>, U>,
+									      IntrusiveListHook<IntrusiveHookMode::AUTO_UNLINK>,
+									      void>>>;
 };
 
 /**
@@ -130,10 +127,6 @@ template<typename T>
 struct IntrusiveListBaseHookTraits {
 	template<typename U>
 	using Hook = typename IntrusiveListHookDetection<U>::type;
-
-	static constexpr bool IsAutoUnlink() noexcept {
-		return std::is_base_of_v<AutoUnlinkIntrusiveListHook, T>;
-	}
 
 	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
 		auto *hook = &Hook<T>::Cast(*node);
@@ -152,14 +145,12 @@ template<auto member>
 struct IntrusiveListMemberHookTraits {
 	using T = MemberPointerContainerType<decltype(member)>;
 	using _Hook = MemberPointerType<decltype(member)>;
-	using Hook = typename IntrusiveListHookDetection<_Hook>::type;
 
-	static constexpr bool IsAutoUnlink() noexcept {
-		return std::is_base_of_v<AutoUnlinkIntrusiveListHook, _Hook>;
-	}
+	template<typename Dummy>
+	using Hook = _Hook;
 
 	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
-		auto &hook = Hook::Cast(*node);
+		auto &hook = Hook<T>::Cast(*node);
 		return &ContainerCast(hook, member);
 	}
 
@@ -176,13 +167,14 @@ template<typename T,
 	 typename HookTraits=IntrusiveListBaseHookTraits<T>,
 	 bool constant_time_size=false>
 class IntrusiveList {
-	template<typename U>
-	using Hook = typename IntrusiveListHookDetection<U>::type;
-
 	IntrusiveListNode head{&head, &head};
 
 	[[no_unique_address]]
 	OptionalCounter<constant_time_size> counter;
+
+	static constexpr auto GetHookMode() noexcept {
+		return HookTraits::template Hook<T>::mode;
+	}
 
 	static constexpr T *Cast(IntrusiveListNode *node) noexcept {
 		return HookTraits::Cast(node);
@@ -234,7 +226,7 @@ public:
 	}
 
 	~IntrusiveList() noexcept {
-		if constexpr (std::is_base_of_v<SafeLinkIntrusiveListHook, T>)
+		if constexpr (GetHookMode() >= IntrusiveHookMode::TRACK)
 			clear();
 	}
 
@@ -283,7 +275,7 @@ public:
 	}
 
 	void clear() noexcept {
-		if constexpr (std::is_base_of_v<SafeLinkIntrusiveListHook, T>) {
+		if constexpr (GetHookMode() >= IntrusiveHookMode::TRACK) {
 			/* for SafeLinkIntrusiveListHook, we need to
 			   remove each item manually, or else its
 			   is_linked() method will not work */
@@ -504,7 +496,7 @@ public:
 
 	void insert(iterator p, reference t) noexcept {
 		static_assert(!constant_time_size ||
-			      !HookTraits::IsAutoUnlink(),
+			      GetHookMode() < IntrusiveHookMode::AUTO_UNLINK,
 			      "Can't use auto-unlink hooks with constant_time_size");
 
 		auto &existing_node = ToNode(*p);

@@ -39,7 +39,7 @@ class ArchiveFile;
  * A song file inside the configured music directory.  Internal
  * #SimpleDatabase class.
  */
-struct Song : IntrusiveListHook {
+struct Song : IntrusiveListHook<> {
 	/* Note: the #IntrusiveListHook is protected with the global
 	   #db_mutex.  Read access in the update thread does not need
 	   protection. */

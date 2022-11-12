@@ -51,7 +51,7 @@ static constexpr unsigned DEVICE_PLAYLIST = -3;
 
 class SongFilter;
 
-struct Directory : IntrusiveListHook {
+struct Directory : IntrusiveListHook<> {
 	/* Note: the #IntrusiveListHook is protected with the global
 	   #db_mutex.  Read access in the update thread does not need
 	   protection. */

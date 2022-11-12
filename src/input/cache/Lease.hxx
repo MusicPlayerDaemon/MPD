@@ -29,7 +29,7 @@
  * A lease for an #InputCacheItem.
  */
 class InputCacheLease
-	: public IntrusiveListHook
+	: public IntrusiveListHook<>
 {
 	InputCacheItem *item = nullptr;
 

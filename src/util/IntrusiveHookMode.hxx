@@ -1,8 +1,5 @@
 /*
- * Copyright 2020-2022 CM4all GmbH
- * All rights reserved.
- *
- * author: Max Kellermann <mk@cm4all.com>
+ * Copyright 2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,59 +29,28 @@
 
 #pragma once
 
-#include "Operation.hxx"
-#include "util/IntrusiveList.hxx"
+/**
+ * Specifies the mode in which a hook for intrusive containers
+ * operates.  This is meant to be used as a template argument to the
+ * hook class (e.g. #IntrusiveListHook).
+ */
+enum class IntrusiveHookMode {
+	/**
+	 * No implicit initialization.
+	 */
+	NORMAL,
 
-#include <cassert>
-#include <utility>
+	/**
+	 * Keep track of whether the item is currently linked, allows
+	 * using method is_linked().  This requires implicit
+	 * initialization and requires iterating all items when
+	 * deleting them which adds a considerable amount of overhead.
+	 */
+	TRACK,
 
-namespace Uring {
-
-class CancellableOperation
-	: public IntrusiveListHook<IntrusiveHookMode::NORMAL>
-{
-	Operation *operation;
-
-public:
-	CancellableOperation(Operation &_operation) noexcept
-		:operation(&_operation)
-	{
-		assert(operation->cancellable == nullptr);
-		operation->cancellable = this;
-	}
-
-	~CancellableOperation() noexcept {
-		assert(operation == nullptr);
-	}
-
-	void Cancel(Operation &_operation) noexcept {
-		(void)_operation;
-		assert(operation == &_operation);
-
-		operation = nullptr;
-
-		// TODO: io_uring_prep_cancel()
-	}
-
-	void Replace(Operation &old_operation,
-		     Operation &new_operation) noexcept {
-		assert(operation == &old_operation);
-		assert(old_operation.cancellable == this);
-
-		old_operation.cancellable = nullptr;
-		operation = &new_operation;
-		new_operation.cancellable = this;
-	}
-
-	void OnUringCompletion(int res) noexcept {
-		if (operation == nullptr)
-			return;
-
-		assert(operation->cancellable == this);
-		operation->cancellable = nullptr;
-
-		std::exchange(operation, nullptr)->OnUringCompletion(res);
-	}
+	/**
+	 * Automatically unlinks the item in the destructor.  This
+	 * implies #TRACK and adds code to the destructor.
+	 */
+	AUTO_UNLINK,
 };
-
-} // namespace Uring

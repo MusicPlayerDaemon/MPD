@@ -34,7 +34,7 @@ class HttpdOutput;
 
 class HttpdClient final
 	: BufferedSocket,
-	  public IntrusiveListHook
+	  public IntrusiveListHook<>
 {
 	/**
 	 * The httpd output object this client is connected to.

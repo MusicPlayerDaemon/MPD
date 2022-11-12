@@ -27,7 +27,7 @@
 
 template<typename T>
 class CancellablePointer
-	: public IntrusiveListHook
+	: public IntrusiveListHook<>
 {
 public:
 	typedef T *pointer;

@@ -79,7 +79,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	};
 
 	class Downloader final
-		: public IntrusiveListHook, CurlResponseHandler
+		: public IntrusiveListHook<>, CurlResponseHandler
 	{
 		InjectEvent defer_start_event;
 

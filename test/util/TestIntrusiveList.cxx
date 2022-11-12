@@ -36,17 +36,17 @@
 
 namespace {
 
-template<typename Hook>
-struct CharItem final : Hook {
+template<IntrusiveHookMode mode>
+struct CharItem final : IntrusiveListHook<mode> {
 	char ch;
 
 	constexpr CharItem(char _ch) noexcept:ch(_ch) {}
 };
 
-template<typename Hook>
+template<IntrusiveHookMode mode>
 static std::string
-ToString(const IntrusiveList<CharItem<Hook>> &list,
-	 typename IntrusiveList<CharItem<Hook>>::const_iterator it,
+ToString(const IntrusiveList<CharItem<mode>> &list,
+	 typename IntrusiveList<CharItem<mode>>::const_iterator it,
 	 std::size_t n) noexcept
 {
 	std::string result;
@@ -55,10 +55,10 @@ ToString(const IntrusiveList<CharItem<Hook>> &list,
 	return result;
 }
 
-template<typename Hook>
+template<IntrusiveHookMode mode>
 static std::string
-ToStringReverse(const IntrusiveList<CharItem<Hook>> &list,
-		typename IntrusiveList<CharItem<Hook>>::const_iterator it,
+ToStringReverse(const IntrusiveList<CharItem<mode>> &list,
+		typename IntrusiveList<CharItem<mode>>::const_iterator it,
 		std::size_t n) noexcept
 {
 	std::string result;
@@ -71,7 +71,7 @@ ToStringReverse(const IntrusiveList<CharItem<Hook>> &list,
 
 TEST(IntrusiveList, Basic)
 {
-	using Item = CharItem<IntrusiveListHook>;
+	using Item = CharItem<IntrusiveHookMode::NORMAL>;
 
 	Item items[]{'a', 'b', 'c'};
 
@@ -103,9 +103,9 @@ TEST(IntrusiveList, Basic)
 	ASSERT_EQ(ToStringReverse(list, list.begin(), 6), "a_cfea");
 }
 
-TEST(IntrusiveList, SafeLink)
+TEST(IntrusiveList, Track)
 {
-	using Item = CharItem<SafeLinkIntrusiveListHook>;
+	using Item = CharItem<IntrusiveHookMode::TRACK>;
 
 	Item items[]{'a', 'b', 'c'};
 
@@ -162,7 +162,7 @@ TEST(IntrusiveList, SafeLink)
 
 TEST(IntrusiveList, AutoUnlink)
 {
-	using Item = CharItem<AutoUnlinkIntrusiveListHook>;
+	using Item = CharItem<IntrusiveHookMode::AUTO_UNLINK>;
 
 	Item a{'a'};
 	ASSERT_FALSE(a.is_linked());
@@ -194,7 +194,7 @@ TEST(IntrusiveList, AutoUnlink)
 
 TEST(IntrusiveList, Merge)
 {
-	using Item = CharItem<IntrusiveListHook>;
+	using Item = CharItem<IntrusiveHookMode::NORMAL>;
 
 	const auto predicate = [](const Item &a, const Item &b){
 		return a.ch < b.ch;
@@ -229,7 +229,7 @@ TEST(IntrusiveList, Merge)
 
 TEST(IntrusiveList, Sort)
 {
-	using Item = CharItem<IntrusiveListHook>;
+	using Item = CharItem<IntrusiveHookMode::NORMAL>;
 
 	const auto predicate = [](const Item &a, const Item &b){
 		return a.ch < b.ch;

@@ -40,7 +40,9 @@ class EventLoop;
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
  */
-class SocketEvent final : IntrusiveListHook, public EventPollBackendEvents
+class SocketEvent final
+	: IntrusiveListHook<IntrusiveHookMode::NORMAL>,
+	  public EventPollBackendEvents
 {
 	friend class EventLoop;
 	friend struct IntrusiveListBaseHookTraits<SocketEvent>;

@@ -53,7 +53,7 @@ class Client final
 	friend struct ClientPerPartitionListHook;
 	friend class ClientList;
 
-	IntrusiveListHook list_siblings, partition_siblings;
+	IntrusiveListHook<> list_siblings, partition_siblings;
 
 	CoarseTimerEvent timeout_event;
 

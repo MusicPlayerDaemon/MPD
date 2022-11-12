@@ -33,7 +33,7 @@ struct SnapcastTime;
 class SnapcastOutput;
 class UniqueSocketDescriptor;
 
-class SnapcastClient final : BufferedSocket, public IntrusiveListHook
+class SnapcastClient final : BufferedSocket, public IntrusiveListHook<>
 {
 	SnapcastOutput &output;
 

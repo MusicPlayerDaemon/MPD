@@ -46,7 +46,7 @@ class RemoteTagCache final {
 
 	struct Item final
 		: public boost::intrusive::unordered_set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-		  public IntrusiveListHook,
+		  public IntrusiveListHook<>,
 		  RemoteTagHandler
 	{
 		RemoteTagCache &parent;
