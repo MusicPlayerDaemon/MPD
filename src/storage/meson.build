@@ -17,7 +17,6 @@ storage_glue = static_library(
   'CompositeStorage.cxx',
   'MemoryDirectoryReader.cxx',
   'Configured.cxx',
-  'StorageState.cxx',
   include_directories: inc,
   dependencies: [
     boost_dep,
