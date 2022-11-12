@@ -140,17 +140,8 @@ struct IntrusiveListBaseHookTraits {
 		return static_cast<T *>(hook);
 	}
 
-	static constexpr const T *Cast(const IntrusiveListNode *node) noexcept {
-		const auto *hook = &Hook<T>::Cast(*node);
-		return static_cast<const T *>(hook);
-	}
-
 	static constexpr auto &ToHook(T &t) noexcept {
 		return static_cast<Hook<T> &>(t);
-	}
-
-	static constexpr const auto &ToHook(const T &t) noexcept {
-		return static_cast<const Hook<T> &>(t);
 	}
 };
 
@@ -172,16 +163,7 @@ struct IntrusiveListMemberHookTraits {
 		return &ContainerCast(hook, member);
 	}
 
-	static constexpr const T *Cast(const IntrusiveListNode *node) noexcept {
-		const auto &hook = Hook::Cast(*node);
-		return &ContainerCast(hook, member);
-	}
-
 	static constexpr auto &ToHook(T &t) noexcept {
-		return t.*member;
-	}
-
-	static constexpr const auto &ToHook(const T &t) noexcept {
 		return t.*member;
 	}
 };
@@ -207,7 +189,7 @@ class IntrusiveList {
 	}
 
 	static constexpr const T *Cast(const IntrusiveListNode *node) noexcept {
-		return HookTraits::Cast(node);
+		return HookTraits::Cast(const_cast<IntrusiveListNode *>(node));
 	}
 
 	static constexpr auto &ToHook(T &t) noexcept {
