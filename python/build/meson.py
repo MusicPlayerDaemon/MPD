@@ -82,8 +82,8 @@ endian = '{endian}'
 def configure(toolchain, src, build, args=()):
     cross_file = make_cross_file(toolchain)
     configure = [
-        'meson',
-        src, build,
+        'meson', 'setup',
+        build, src,
 
         '--prefix', toolchain.install_prefix,
 

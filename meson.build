@@ -392,6 +392,7 @@ endif
 
 if enable_database
   sources += [
+    'src/storage/StorageState.cxx',
     'src/queue/PlaylistUpdate.cxx',
     'src/command/StorageCommands.cxx',
     'src/command/DatabaseCommands.cxx',
