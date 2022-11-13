@@ -1,8 +1,5 @@
 /*
- * Copyright 2007-2022 CM4all GmbH
- * All rights reserved.
- *
- * author: Max Kellermann <mk@cm4all.com>
+ * Copyright 2020-2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,54 +27,39 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Loop.hxx"
-#include "FineTimerEvent.hxx"
+#pragma once
 
-#ifdef NO_BOOST
-#include <algorithm>
-#endif
+#include "IntrusiveList.hxx"
 
-constexpr bool
-TimerList::Compare::operator()(const FineTimerEvent &a,
-			       const FineTimerEvent &b) const noexcept
+/**
+ * A variant of #IntrusiveList which is sorted automatically.  There
+ * are obvious scalability problems with this approach, so use with
+ * care.
+ */
+template<typename T, typename Compare=typename T::Compare,
+	 typename HookTraits=IntrusiveListBaseHookTraits<T>,
+	 bool constant_time_size=false>
+class IntrusiveSortedList
+	: public IntrusiveList<T, HookTraits, constant_time_size>
 {
-	return a.due < b.due;
-}
+	using Base = IntrusiveList<T, HookTraits, constant_time_size>;
 
-TimerList::TimerList() = default;
+	[[no_unique_address]]
+	Compare compare;
 
-TimerList::~TimerList() noexcept
-{
-	assert(timers.empty());
-}
+public:
+	constexpr IntrusiveSortedList() noexcept = default;
+	IntrusiveSortedList(IntrusiveSortedList &&src) noexcept = default;
 
-void
-TimerList::Insert(FineTimerEvent &t) noexcept
-{
-	timers.insert(t);
-}
+	using typename Base::reference;
+	using Base::begin;
+	using Base::end;
 
-Event::Duration
-TimerList::Run(const Event::TimePoint now) noexcept
-{
-	while (true) {
-		auto i = timers.begin();
-		if (i == timers.end())
-			break;
+	void insert(reference item) noexcept {
+		auto position = std::find_if(begin(), end(), [this, &item](const auto &other){
+			return !compare(other, item);
+		});
 
-		auto &t = *i;
-		const auto timeout = t.due - now;
-		if (timeout > timeout.zero())
-			return timeout;
-
-#ifdef NO_BOOST
-		t.Cancel();
-#else
-		timers.erase(i);
-#endif
-
-		t.Run();
+		Base::insert(position, item);
 	}
-
-	return Event::Duration(-1);
-}
+};
