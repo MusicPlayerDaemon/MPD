@@ -96,7 +96,7 @@ struct IntrusiveHashSetMemberHookTraits {
  * embedded with a compile-time fixed size in this object.
  */
 template<typename T, std::size_t table_size,
-	 typename Hash=T::Hash, typename Equal=T::Equal,
+	 typename Hash=typename T::Hash, typename Equal=typename T::Equal,
 	 typename HookTraits=IntrusiveHashSetBaseHookTraits<T>,
 	 bool constant_time_size=false>
 class IntrusiveHashSet {
