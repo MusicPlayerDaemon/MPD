@@ -17,38 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "CaseFold.hxx"
-#include "config.h"
-
-#ifdef HAVE_ICU_CASE_FOLD
-
-#include "util/AllocatedString.hxx"
-
-#ifdef HAVE_ICU
 #include "FoldCase.hxx"
-#include "Util.hxx"
 #include "util/AllocatedArray.hxx"
-#include "util/SpanCast.hxx"
-#endif
 
-AllocatedString
-IcuCaseFold(std::string_view src) noexcept
-try {
-#ifdef HAVE_ICU
-	auto u = UCharFromUTF8(src);
-	if (u.data() == nullptr)
-		return {src};
+#include <unicode/ucol.h>
+#include <unicode/ustring.h>
 
-	auto folded = IcuFoldCase(ToStringView(std::span{u}));
-	if (folded == nullptr)
-		return {src};
+AllocatedArray<UChar>
+IcuFoldCase(std::basic_string_view<UChar> src) noexcept
+{
+	AllocatedArray<UChar> dest(src.size() * 2U);
 
-	return UCharToUTF8(ToStringView(std::span{folded}));
-#else
-#error not implemented
-#endif
-} catch (...) {
-	return {src};
+	UErrorCode error_code = U_ZERO_ERROR;
+	auto length = u_strFoldCase(dest.data(), dest.size(),
+				    src.data(), src.size(),
+				    U_FOLD_CASE_DEFAULT,
+				    &error_code);
+	if (U_FAILURE(error_code))
+		return nullptr;
+
+	dest.SetSize(length);
+	return dest;
 }
-
-#endif /* HAVE_ICU_CASE_FOLD */

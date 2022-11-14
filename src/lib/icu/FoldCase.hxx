@@ -17,38 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "CaseFold.hxx"
-#include "config.h"
+#pragma once
 
-#ifdef HAVE_ICU_CASE_FOLD
+#include <unicode/umachine.h>
 
-#include "util/AllocatedString.hxx"
+#include <string_view>
 
-#ifdef HAVE_ICU
-#include "FoldCase.hxx"
-#include "Util.hxx"
-#include "util/AllocatedArray.hxx"
-#include "util/SpanCast.hxx"
-#endif
+template<class T> class AllocatedArray;
 
-AllocatedString
-IcuCaseFold(std::string_view src) noexcept
-try {
-#ifdef HAVE_ICU
-	auto u = UCharFromUTF8(src);
-	if (u.data() == nullptr)
-		return {src};
-
-	auto folded = IcuFoldCase(ToStringView(std::span{u}));
-	if (folded == nullptr)
-		return {src};
-
-	return UCharToUTF8(ToStringView(std::span{folded}));
-#else
-#error not implemented
-#endif
-} catch (...) {
-	return {src};
-}
-
-#endif /* HAVE_ICU_CASE_FOLD */
+/**
+ * @return the normalized string (or nullptr on error)
+ */
+[[gnu::pure]]
+AllocatedArray<UChar>
+IcuFoldCase(std::basic_string_view<UChar> src) noexcept;

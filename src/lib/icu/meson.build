@@ -15,8 +15,9 @@ endif
 iconv_dep = []
 if icu_dep.found()
   icu_sources += [
-    'Util.cxx',
     'Init.cxx',
+    'Util.cxx',
+    'FoldCase.cxx',
   ]
 else
   if meson.version().version_compare('>= 0.60')
