@@ -38,7 +38,7 @@
 
 #ifdef HAVE_ICU
 
-IcuConverter::~IcuConverter()
+IcuConverter::~IcuConverter() noexcept
 {
 	ucnv_close(converter);
 }

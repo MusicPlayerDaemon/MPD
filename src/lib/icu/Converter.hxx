@@ -65,9 +65,9 @@ class IcuConverter {
 
 public:
 #ifdef HAVE_ICU
-	~IcuConverter();
+	~IcuConverter() noexcept;
 #elif defined(HAVE_ICONV)
-	~IcuConverter() {
+	~IcuConverter() noexcept {
 		iconv_close(to_utf8);
 		iconv_close(from_utf8);
 	}
