@@ -27,6 +27,7 @@
 #ifdef HAVE_ICU
 #include "Util.hxx"
 #include "util/AllocatedArray.hxx"
+#include "util/SpanCast.hxx"
 
 #include <unicode/ucol.h>
 #include <unicode/ustring.h>
@@ -57,7 +58,7 @@ try {
 		return {src};
 
 	folded.SetSize(folded_length);
-	return UCharToUTF8(std::basic_string_view{folded.data(), folded.size()});
+	return UCharToUTF8(ToStringView(std::span{folded}));
 
 #else
 #error not implemented
