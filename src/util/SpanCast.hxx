@@ -96,3 +96,17 @@ ToStringView(std::span<const std::byte> s) noexcept
 {
 	return ToStringView(FromBytesStrict<const char>(s));
 }
+
+template<typename T>
+constexpr std::basic_string_view<T>
+ToStringView(std::span<const T> s) noexcept
+{
+	return {s.data(), s.size()};
+}
+
+template<typename T>
+constexpr std::basic_string_view<T>
+ToStringView(std::span<T> s) noexcept
+{
+	return {s.data(), s.size()};
+}
