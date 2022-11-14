@@ -18,6 +18,7 @@ if icu_dep.found()
     'Init.cxx',
     'Util.cxx',
     'FoldCase.cxx',
+    'Normalize.cxx',
   ]
 else
   if meson.version().version_compare('>= 0.60')
