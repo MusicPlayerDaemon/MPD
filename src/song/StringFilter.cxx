@@ -33,17 +33,31 @@ StringFilter::MatchWithoutNegation(const char *s) const noexcept
 #endif
 
 	if (fold_case) {
-		return substring
-			? fold_case.IsIn(s)
-			: (starts_with
-				? fold_case.StartsWith(s)
-				: fold_case == s);
+		switch (position) {
+		case Position::FULL:
+			break;
+
+		case Position::ANYWHERE:
+			return fold_case.IsIn(s);
+
+		case Position::PREFIX:
+			return fold_case.StartsWith(s);
+		}
+
+		return fold_case == s;
 	} else {
-		return substring
-			? StringFind(s, value.c_str()) != nullptr
-			: (starts_with
-				? StringIsEqual(s, value.c_str(), value.length())
-				: value == s);
+		switch (position) {
+		case Position::FULL:
+			break;
+
+		case Position::ANYWHERE:
+			return StringFind(s, value.c_str()) != nullptr;
+
+		case Position::PREFIX:
+			return StringIsEqual(s, value.c_str(), value.length());
+		}
+
+		return value == s;
 	}
 }
 

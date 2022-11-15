@@ -90,8 +90,12 @@ SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
 {
 	/* for compatibility with MPD 0.20 and older, "fold_case" also
 	   switches on "substring" */
+	const auto position = fold_case
+		? StringFilter::Position::ANYWHERE
+		: StringFilter::Position::FULL;
+
 	and_filter.AddItem(std::make_unique<TagSongFilter>(tag,
-							   StringFilter(value, fold_case, fold_case, false, false)));
+							   StringFilter(value, fold_case, position, false)));
 }
 
 /* this destructor exists here just so it won't get inlined */
@@ -209,25 +213,41 @@ ParseStringFilter(const char *&s, bool fold_case)
 	if (auto after_contains = StringAfterPrefixIgnoreCase(s, "contains ")) {
 		s = StripLeft(after_contains);
 		auto value = ExpectQuoted(s);
-		return {std::move(value), fold_case, true, false, false};
+		return {
+			std::move(value), fold_case,
+			StringFilter::Position::ANYWHERE,
+			false,
+		};
 	}
 
 	if (auto after_not_contains = StringAfterPrefixIgnoreCase(s, "!contains ")) {
 		s = StripLeft(after_not_contains);
 		auto value = ExpectQuoted(s);
-		return {std::move(value), fold_case, true, false, true};
+		return {
+			std::move(value), fold_case,
+			StringFilter::Position::ANYWHERE,
+			true,
+		};
 	}
 
 	if (auto after_starts_with = StringAfterPrefixIgnoreCase(s, "starts_with ")) {
 		s = StripLeft(after_starts_with);
 		auto value = ExpectQuoted(s);
-		return {std::move(value), fold_case, false, true, false};
+		return {
+			std::move(value), fold_case,
+			StringFilter::Position::PREFIX,
+			false,
+		};
 	}
 
 	if (auto after_not_starts_with = StringAfterPrefixIgnoreCase(s, "!starts_with ")) {
 		s = StripLeft(after_not_starts_with);
 		auto value = ExpectQuoted(s);
-		return {std::move(value), fold_case, false, true, true};
+		return {
+			std::move(value), fold_case,
+			StringFilter::Position::PREFIX,
+			true,
+		};
 	}
 
 	bool negated = false;
@@ -237,7 +257,11 @@ ParseStringFilter(const char *&s, bool fold_case)
 		negated = s[0] == '!';
 		s = StripLeft(s + 2);
 		auto value = ExpectQuoted(s);
-		StringFilter f(std::move(value), fold_case, false, false, negated);
+		StringFilter f{
+			std::move(value), fold_case,
+			StringFilter::Position::FULL,
+			negated,
+		};
 		f.SetRegex(std::make_shared<UniqueRegex>(f.GetValue().c_str(),
 							 false, false,
 							 fold_case));
@@ -253,7 +277,11 @@ ParseStringFilter(const char *&s, bool fold_case)
 	s = StripLeft(s + 2);
 	auto value = ExpectQuoted(s);
 
-	return {std::move(value), fold_case, false, false, negated};
+	return {
+		std::move(value), fold_case,
+		StringFilter::Position::FULL,
+		negated,
+	};
 }
 
 ISongFilterPtr
@@ -399,11 +427,14 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 	case LOCATE_TAG_FILE_TYPE:
 		/* for compatibility with MPD 0.20 and older,
 		   "fold_case" also switches on "substring" */
-		and_filter.AddItem(std::make_unique<UriSongFilter>(StringFilter(value,
-										fold_case,
-										fold_case,
-										false,
-										false)));
+		and_filter.AddItem(std::make_unique<UriSongFilter>(StringFilter{
+					value,
+					fold_case,
+					fold_case
+					? StringFilter::Position::ANYWHERE
+					: StringFilter::Position::FULL,
+					false,
+				}));
 		break;
 
 	default:
@@ -412,12 +443,14 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 
 		/* for compatibility with MPD 0.20 and older,
 		   "fold_case" also switches on "substring" */
-		and_filter.AddItem(std::make_unique<TagSongFilter>(TagType(tag),
-								   StringFilter(value,
-										fold_case,
-										fold_case,
-										false,
-										false)));
+		and_filter.AddItem(std::make_unique<TagSongFilter>(TagType(tag), StringFilter{
+					value,
+					fold_case,
+					fold_case
+					? StringFilter::Position::ANYWHERE
+					: StringFilter::Position::FULL,
+					false,
+				}));
 		break;
 	}
 }

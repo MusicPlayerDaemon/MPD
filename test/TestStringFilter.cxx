@@ -36,7 +36,7 @@ protected:
 
 TEST_F(StringFilterTest, ASCII)
 {
-	const StringFilter f{"needle", false, false, false, false};
+	const StringFilter f{"needle", false, StringFilter::Position::FULL, false};
 
 	EXPECT_TRUE(f.Match("needle"));
 	EXPECT_FALSE(f.Match("nëedle"));
@@ -53,7 +53,7 @@ TEST_F(StringFilterTest, ASCII)
 
 TEST_F(StringFilterTest, Negated)
 {
-	const StringFilter f{"needle", false, false, false, true};
+	const StringFilter f{"needle", false, StringFilter::Position::FULL, true};
 
 	EXPECT_FALSE(f.Match("needle"));
 	EXPECT_TRUE(f.Match("Needle"));
@@ -66,7 +66,7 @@ TEST_F(StringFilterTest, Negated)
 
 TEST_F(StringFilterTest, StartsWith)
 {
-	const StringFilter f{"needle", false, false, true, false};
+	const StringFilter f{"needle", false, StringFilter::Position::PREFIX, false};
 
 	EXPECT_TRUE(f.Match("needle"));
 	EXPECT_FALSE(f.Match("Needle"));
@@ -80,7 +80,7 @@ TEST_F(StringFilterTest, StartsWith)
 
 TEST_F(StringFilterTest, IsIn)
 {
-	const StringFilter f{"needle", false, true, false, false};
+	const StringFilter f{"needle", false, StringFilter::Position::ANYWHERE, false};
 
 	EXPECT_TRUE(f.Match("needle"));
 	EXPECT_FALSE(f.Match("Needle"));
@@ -94,7 +94,7 @@ TEST_F(StringFilterTest, IsIn)
 
 TEST_F(StringFilterTest, Latin)
 {
-	const StringFilter f{"nëedlé", false, false, false, false};
+	const StringFilter f{"nëedlé", false, StringFilter::Position::FULL, false};
 
 	EXPECT_TRUE(f.Match("nëedlé"));
 #if defined(HAVE_ICU) || defined(_WIN32)
@@ -117,7 +117,7 @@ TEST_F(StringFilterTest, Latin)
 
 TEST_F(StringFilterTest, Normalize)
 {
-	const StringFilter f{"1①H", true, false, false, false};
+	const StringFilter f{"1①H", true, StringFilter::Position::FULL, false};
 
 	EXPECT_TRUE(f.Match("1①H"));
 	EXPECT_TRUE(f.Match("¹₁H"));
@@ -127,17 +127,17 @@ TEST_F(StringFilterTest, Normalize)
 
 #ifndef _WIN32
 	// fails with Windows CompareStringEx()
-	EXPECT_TRUE(StringFilter("ǆ", true, false, false, false).Match("dž"));
+	EXPECT_TRUE(StringFilter("ǆ", true, StringFilter::Position::FULL, false).Match("dž"));
 #endif
 
-	EXPECT_TRUE(StringFilter("\u212b", true, false, false, false).Match("\u0041\u030a"));
-	EXPECT_TRUE(StringFilter("\u212b", true, false, false, false).Match("\u00c5"));
+	EXPECT_TRUE(StringFilter("\u212b", true, StringFilter::Position::FULL, false).Match("\u0041\u030a"));
+	EXPECT_TRUE(StringFilter("\u212b", true, StringFilter::Position::FULL, false).Match("\u00c5"));
 
-	EXPECT_TRUE(StringFilter("\u1e69", true, false, false, false).Match("\u0073\u0323\u0307"));
+	EXPECT_TRUE(StringFilter("\u1e69", true, StringFilter::Position::FULL, false).Match("\u0073\u0323\u0307"));
 
 #ifndef _WIN32
 	// fails with Windows CompareStringEx()
-	EXPECT_TRUE(StringFilter("\u1e69", true, false, false, false).Match("\u0073\u0307\u0323"));
+	EXPECT_TRUE(StringFilter("\u1e69", true, StringFilter::Position::FULL, false).Match("\u0073\u0307\u0323"));
 #endif
 }
 
@@ -147,7 +147,7 @@ TEST_F(StringFilterTest, Normalize)
 
 TEST_F(StringFilterTest, Transliterate)
 {
-	const StringFilter f{"'", true, false, false, false};
+	const StringFilter f{"'", true, StringFilter::Position::FULL, false};
 
 	EXPECT_TRUE(f.Match("’"));
 	EXPECT_FALSE(f.Match("\""));
@@ -157,7 +157,7 @@ TEST_F(StringFilterTest, Transliterate)
 
 TEST_F(StringFilterTest, FoldCase)
 {
-	const StringFilter f{"nëedlé", true, false, false, false};
+	const StringFilter f{"nëedlé", true, StringFilter::Position::FULL, false};
 
 	EXPECT_TRUE(f.Match("nëedlé"));
 #if defined(HAVE_ICU) || defined(_WIN32)

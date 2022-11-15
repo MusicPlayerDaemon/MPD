@@ -44,8 +44,10 @@ InvokeFilter(const TagSongFilter &f, const Tag &tag) noexcept
 
 TEST_F(TagSongFilterTest, Basic)
 {
-	const TagSongFilter f(TAG_TITLE,
-			      StringFilter("needle", false, false, false, false));
+	const TagSongFilter f{
+		TAG_TITLE,
+		{"needle", false, StringFilter::Position::FULL, false},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "needle")));
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "foo", TAG_TITLE, "needle")));
@@ -65,8 +67,10 @@ TEST_F(TagSongFilterTest, Basic)
  */
 TEST_F(TagSongFilterTest, Empty)
 {
-	const TagSongFilter f(TAG_TITLE,
-			      StringFilter("", false, false, false, false));
+	const TagSongFilter f{
+		TAG_TITLE,
+		{"", false, StringFilter::Position::FULL, false},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag()));
 
@@ -76,8 +80,10 @@ TEST_F(TagSongFilterTest, Empty)
 
 TEST_F(TagSongFilterTest, Substring)
 {
-	const TagSongFilter f(TAG_TITLE,
-			      StringFilter("needle", false, true, false, false));
+	const TagSongFilter f{
+		TAG_TITLE,
+		{"needle", false, StringFilter::Position::ANYWHERE, false},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "needle")));
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "needleBAR")));
@@ -90,8 +96,10 @@ TEST_F(TagSongFilterTest, Substring)
 
 TEST_F(TagSongFilterTest, Startswith)
 {
-	const TagSongFilter f(TAG_TITLE,
-			      StringFilter("needle", false, false, true, false));
+	const TagSongFilter f{
+		TAG_TITLE,
+		{"needle", false, StringFilter::Position::PREFIX, false},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "needle")));
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "needleBAR")));
@@ -104,8 +112,10 @@ TEST_F(TagSongFilterTest, Startswith)
 
 TEST_F(TagSongFilterTest, Negated)
 {
-	const TagSongFilter f(TAG_TITLE,
-			      StringFilter("needle", false, false, false, true));
+	const TagSongFilter f{
+		TAG_TITLE,
+		{"needle", false, StringFilter::Position::FULL, true},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag()));
 	EXPECT_FALSE(InvokeFilter(f, MakeTag(TAG_TITLE, "needle")));
@@ -117,8 +127,10 @@ TEST_F(TagSongFilterTest, Negated)
  */
 TEST_F(TagSongFilterTest, EmptyNegated)
 {
-	const TagSongFilter f(TAG_TITLE,
-			      StringFilter("", false, false, false, true));
+	const TagSongFilter f{
+		TAG_TITLE,
+		{"", false, StringFilter::Position::FULL, true},
+	};
 
 	EXPECT_FALSE(InvokeFilter(f, MakeTag()));
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "foo")));
@@ -129,8 +141,10 @@ TEST_F(TagSongFilterTest, EmptyNegated)
  */
 TEST_F(TagSongFilterTest, MultiNegated)
 {
-	const TagSongFilter f(TAG_TITLE,
-			      StringFilter("needle", false, false, false, true));
+	const TagSongFilter f{
+		TAG_TITLE,
+		{"needle", false, StringFilter::Position::FULL, true},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "foo", TAG_TITLE, "bar")));
 	EXPECT_FALSE(InvokeFilter(f, MakeTag(TAG_TITLE, "needle", TAG_TITLE, "bar")));
@@ -143,8 +157,10 @@ TEST_F(TagSongFilterTest, MultiNegated)
  */
 TEST_F(TagSongFilterTest, Fallback)
 {
-	const TagSongFilter f(TAG_ALBUM_ARTIST,
-			      StringFilter("needle", false, false, false, false));
+	const TagSongFilter f{
+		TAG_ALBUM_ARTIST,
+		{"needle", false, StringFilter::Position::FULL, false},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_ALBUM_ARTIST, "needle")));
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_ARTIST, "needle")));
@@ -163,8 +179,10 @@ TEST_F(TagSongFilterTest, Fallback)
  */
 TEST_F(TagSongFilterTest, EmptyFallback)
 {
-	const TagSongFilter f(TAG_ALBUM_ARTIST,
-			      StringFilter("", false, false, false, false));
+	const TagSongFilter f{
+		TAG_ALBUM_ARTIST,
+		{"", false, StringFilter::Position::FULL, false},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag()));
 
@@ -177,8 +195,10 @@ TEST_F(TagSongFilterTest, EmptyFallback)
  */
 TEST_F(TagSongFilterTest, NegatedFallback)
 {
-	const TagSongFilter f(TAG_ALBUM_ARTIST,
-			      StringFilter("needle", false, false, false, true));
+	const TagSongFilter f{
+		TAG_ALBUM_ARTIST,
+		{"needle", false, StringFilter::Position::FULL, true},
+	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag()));
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_ALBUM_ARTIST, "foo")));

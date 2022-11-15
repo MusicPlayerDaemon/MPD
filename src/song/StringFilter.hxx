@@ -27,10 +27,24 @@
 #include "lib/pcre/UniqueRegex.hxx"
 #endif
 
+#include <cstdint>
 #include <string>
 #include <memory>
 
 class StringFilter {
+public:
+	enum class Position : uint_least8_t {
+		/** compare the whole haystack */
+		FULL,
+
+		/** find the phrase anywhere in the haystack */
+		ANYWHERE,
+
+		/** check if the haystack starts with the given prefix */
+		PREFIX,
+	};
+
+private:
 	std::string value;
 
 	/**
@@ -42,26 +56,19 @@ class StringFilter {
 	std::shared_ptr<UniqueRegex> regex;
 #endif
 
-	/**
-	 * Search for substrings instead of matching the whole string?
-	 */
-	bool substring;
-
-	/**
-	 * Search for substrings instead of matching the whole string?
-	 */
-	bool starts_with;
+	Position position;
 
 	bool negated;
 
 public:
 	template<typename V>
-	StringFilter(V &&_value, bool _fold_case, bool _substring, bool _starts_with, bool _negated)
+	StringFilter(V &&_value, bool _fold_case, Position _position, bool _negated)
 		:value(std::forward<V>(_value)),
 		 fold_case(_fold_case
 			   ? IcuCompare(value)
 			   : IcuCompare()),
-		 substring(_substring), starts_with(_starts_with), negated(_negated) {}
+		 position(_position),
+		 negated(_negated) {}
 
 	bool empty() const noexcept {
 		return value.empty();
@@ -102,11 +109,16 @@ public:
 		if (IsRegex())
 			return negated ? "!~" : "=~";
 
-		if (substring)
+		switch (position) {
+		case Position::FULL:
+			break;
+
+		case Position::ANYWHERE:
 			return negated ? "!contains" : "contains";
 
-		if (starts_with)
+		case Position::PREFIX:
 			return negated ? "!starts_with" : "starts_with";
+		}
 
 		return negated ? "!=" : "==";
 	}
