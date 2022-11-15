@@ -22,6 +22,7 @@
 #include <unicode/utrans.h>
 
 #include <utility> // for std::exchange()
+#include <string_view>
 
 template<class T> class AllocatedArray;
 
