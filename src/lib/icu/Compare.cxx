@@ -107,7 +107,7 @@ IcuCompare::IsIn(const char *haystack) const noexcept
 	/* poor man's strcasestr() */
 	for (const size_t length = strlen(needle.c_str());
 	     *haystack != 0; ++haystack)
-		if (strncasecmp(haystack, needle.c_str(), length) == 0)
+		if (StringIsEqualIgnoreCase(haystack, needle.c_str(), length))
 			return true;
 
 	return false;
