@@ -199,6 +199,7 @@ test(
   'TestSongFilter',
   executable(
     'TestSongFilter',
+    'TestStringFilter.cxx',
     'TestTagSongFilter.cxx',
     include_directories: inc,
     dependencies: [
