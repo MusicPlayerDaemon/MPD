@@ -72,6 +72,7 @@ IcuCollateFinish() noexcept
 	assert(collator != nullptr);
 
 	ucol_close(collator);
+	collator = nullptr;
 }
 
 #endif
