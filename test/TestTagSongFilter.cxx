@@ -21,8 +21,20 @@
 #include "song/TagSongFilter.hxx"
 #include "song/LightSong.hxx"
 #include "tag/Type.h"
+#include "lib/icu/Init.hxx"
 
 #include <gtest/gtest.h>
+
+class TagSongFilterTest : public ::testing::Test {
+protected:
+	void SetUp() override {
+		IcuInit();
+	}
+
+	void TearDown() override {
+		IcuFinish();
+	}
+};
 
 static bool
 InvokeFilter(const TagSongFilter &f, const Tag &tag) noexcept
@@ -30,7 +42,7 @@ InvokeFilter(const TagSongFilter &f, const Tag &tag) noexcept
 	return f.Match(LightSong("dummy", tag));
 }
 
-TEST(TagSongFilter, Basic)
+TEST_F(TagSongFilterTest, Basic)
 {
 	const TagSongFilter f(TAG_TITLE,
 			      StringFilter("needle", false, false, false, false));
@@ -51,7 +63,7 @@ TEST(TagSongFilter, Basic)
  * Test with empty string.  This matches tags where the given tag type
  * does not exist.
  */
-TEST(TagSongFilter, Empty)
+TEST_F(TagSongFilterTest, Empty)
 {
 	const TagSongFilter f(TAG_TITLE,
 			      StringFilter("", false, false, false, false));
@@ -62,7 +74,7 @@ TEST(TagSongFilter, Empty)
 	EXPECT_FALSE(InvokeFilter(f, MakeTag(TAG_TITLE, "foo", TAG_TITLE, "bar")));
 }
 
-TEST(TagSongFilter, Substring)
+TEST_F(TagSongFilterTest, Substring)
 {
 	const TagSongFilter f(TAG_TITLE,
 			      StringFilter("needle", false, true, false, false));
@@ -76,7 +88,7 @@ TEST(TagSongFilter, Substring)
 	EXPECT_FALSE(InvokeFilter(f, MakeTag(TAG_TITLE, "eedle")));
 }
 
-TEST(TagSongFilter, Startswith)
+TEST_F(TagSongFilterTest, Startswith)
 {
 	const TagSongFilter f(TAG_TITLE,
 			      StringFilter("needle", false, false, true, false));
@@ -90,7 +102,7 @@ TEST(TagSongFilter, Startswith)
 	EXPECT_FALSE(InvokeFilter(f, MakeTag(TAG_TITLE, "eedle")));
 }
 
-TEST(TagSongFilter, Negated)
+TEST_F(TagSongFilterTest, Negated)
 {
 	const TagSongFilter f(TAG_TITLE,
 			      StringFilter("needle", false, false, false, true));
@@ -103,7 +115,7 @@ TEST(TagSongFilter, Negated)
 /**
  * Combine the "Empty" and "Negated" tests.
  */
-TEST(TagSongFilter, EmptyNegated)
+TEST_F(TagSongFilterTest, EmptyNegated)
 {
 	const TagSongFilter f(TAG_TITLE,
 			      StringFilter("", false, false, false, true));
@@ -115,7 +127,7 @@ TEST(TagSongFilter, EmptyNegated)
 /**
  * Negation with multiple tag values.
  */
-TEST(TagSongFilter, MultiNegated)
+TEST_F(TagSongFilterTest, MultiNegated)
 {
 	const TagSongFilter f(TAG_TITLE,
 			      StringFilter("needle", false, false, false, true));
@@ -129,7 +141,7 @@ TEST(TagSongFilter, MultiNegated)
  * Check whether fallback tags work, e.g. AlbumArtist falls back to
  * just Artist if there is no AlbumArtist.
  */
-TEST(TagSongFilter, Fallback)
+TEST_F(TagSongFilterTest, Fallback)
 {
 	const TagSongFilter f(TAG_ALBUM_ARTIST,
 			      StringFilter("needle", false, false, false, false));
@@ -149,7 +161,7 @@ TEST(TagSongFilter, Fallback)
 /**
  * Combine the "Empty" and "Fallback" tests.
  */
-TEST(TagSongFilter, EmptyFallback)
+TEST_F(TagSongFilterTest, EmptyFallback)
 {
 	const TagSongFilter f(TAG_ALBUM_ARTIST,
 			      StringFilter("", false, false, false, false));
@@ -163,7 +175,7 @@ TEST(TagSongFilter, EmptyFallback)
 /**
  * Combine the "Negated" and "Fallback" tests.
  */
-TEST(TagSongFilter, NegatedFallback)
+TEST_F(TagSongFilterTest, NegatedFallback)
 {
 	const TagSongFilter f(TAG_ALBUM_ARTIST,
 			      StringFilter("needle", false, false, false, true));
