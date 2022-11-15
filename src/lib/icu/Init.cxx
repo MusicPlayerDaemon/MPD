@@ -19,6 +19,7 @@
 
 #include "Init.hxx"
 #include "Collate.hxx"
+#include "Canonicalize.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <unicode/uclean.h>
@@ -33,11 +34,13 @@ IcuInit()
 					 u_errorName(code));
 
 	IcuCollateInit();
+	IcuCanonicalizeInit();
 }
 
 void
 IcuFinish() noexcept
 {
+	IcuCanonicalizeFinish();
 	IcuCollateFinish();
 
 	u_cleanup();

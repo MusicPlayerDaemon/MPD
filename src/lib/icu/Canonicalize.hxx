@@ -29,6 +29,15 @@
 class AllocatedString;
 
 /**
+ * Throws on error.
+ */
+void
+IcuCanonicalizeInit();
+
+void
+IcuCanonicalizeFinish() noexcept;
+
+/**
  * Transform the given string to "canonical" form to allow fuzzy
  * string comparisons.  The full set of features (if ICU is being
  * used):

@@ -237,6 +237,7 @@ of:
 The :command:`find` commands are case sensitive, while
 :command:`search` and related commands ignore case.  The latter also
 applies `Unicode normalization <https://unicode.org/reports/tr15/>`__
+and converts all punctuation to ASCII equivalents
 if MPD was compiled with `ICU <https://icu.unicode.org/>`__ support.
 
 Prior to MPD 0.21, the syntax looked like this::

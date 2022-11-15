@@ -143,6 +143,18 @@ TEST_F(StringFilterTest, Normalize)
 
 #endif
 
+#ifdef HAVE_ICU
+
+TEST_F(StringFilterTest, Transliterate)
+{
+	const StringFilter f{"'", true, false, false, false};
+
+	EXPECT_TRUE(f.Match("’"));
+	EXPECT_FALSE(f.Match("\""));
+}
+
+#endif
+
 TEST_F(StringFilterTest, FoldCase)
 {
 	const StringFilter f{"nëedlé", true, false, false, false};
