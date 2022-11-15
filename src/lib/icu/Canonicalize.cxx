@@ -25,7 +25,7 @@
 #include "util/AllocatedString.hxx"
 
 #ifdef HAVE_ICU
-#include "FoldCase.hxx"
+#include "Normalize.hxx"
 #include "Util.hxx"
 #include "util/AllocatedArray.hxx"
 #include "util/SpanCast.hxx"
@@ -39,10 +39,11 @@ try {
 	if (u.data() == nullptr)
 		return {src};
 
-	if (fold_case)
-		if (auto folded = IcuFoldCase(ToStringView(std::span{u}));
-		    folded != nullptr)
-			u = std::move(folded);
+	if (auto n = fold_case
+	    ? IcuNormalizeCaseFold(ToStringView(std::span{u}))
+	    : IcuNormalize(ToStringView(std::span{u}));
+	    n != nullptr)
+		u = std::move(n);
 
 	return UCharToUTF8(ToStringView(std::span{u}));
 #else

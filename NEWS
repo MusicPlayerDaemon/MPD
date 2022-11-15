@@ -6,6 +6,7 @@ ver 0.24 (not yet released)
   - limit "player" idle events to the current partition
   - operator "starts_with"
   - show PCRE support in "config" response
+  - apply Unicode normalization to case-insensitive filter expressions
 * archive
   - add option to disable archive plugins in mpd.conf
 * input

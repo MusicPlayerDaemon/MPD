@@ -97,6 +97,10 @@ TEST_F(StringFilterTest, Latin)
 	const StringFilter f{"nëedlé", false, false, false, false};
 
 	EXPECT_TRUE(f.Match("nëedlé"));
+#if defined(HAVE_ICU) || defined(_WIN32)
+	EXPECT_TRUE(f.Match("nëedl\u00e9"));
+	// TODO EXPECT_TRUE(f.Match("nëedl\u0065\u0301"));
+#endif
 	EXPECT_FALSE(f.Match("NËEDLÉ"));
 	EXPECT_FALSE(f.Match("needlé"));
 	EXPECT_FALSE(f.Match("néedlé"));
@@ -109,13 +113,47 @@ TEST_F(StringFilterTest, Latin)
 	EXPECT_FALSE(f.Match("FOOnëedleBAR"));
 }
 
+#if defined(HAVE_ICU) || defined(_WIN32)
+
+TEST_F(StringFilterTest, Normalize)
+{
+	const StringFilter f{"1①H", true, false, false, false};
+
+	EXPECT_TRUE(f.Match("1①H"));
+	EXPECT_TRUE(f.Match("¹₁H"));
+	EXPECT_TRUE(f.Match("①1ℌ"));
+	EXPECT_TRUE(f.Match("①1ℍ"));
+	EXPECT_FALSE(f.Match("21H"));
+
+#ifndef _WIN32
+	// fails with Windows CompareStringEx()
+	EXPECT_TRUE(StringFilter("ǆ", true, false, false, false).Match("dž"));
+#endif
+
+	EXPECT_TRUE(StringFilter("\u212b", true, false, false, false).Match("\u0041\u030a"));
+	EXPECT_TRUE(StringFilter("\u212b", true, false, false, false).Match("\u00c5"));
+
+	EXPECT_TRUE(StringFilter("\u1e69", true, false, false, false).Match("\u0073\u0323\u0307"));
+
+#ifndef _WIN32
+	// fails with Windows CompareStringEx()
+	EXPECT_TRUE(StringFilter("\u1e69", true, false, false, false).Match("\u0073\u0307\u0323"));
+#endif
+}
+
+#endif
+
 TEST_F(StringFilterTest, FoldCase)
 {
 	const StringFilter f{"nëedlé", true, false, false, false};
 
 	EXPECT_TRUE(f.Match("nëedlé"));
 #if defined(HAVE_ICU) || defined(_WIN32)
+	EXPECT_TRUE(f.Match("nëedl\u00e9"));
+	EXPECT_TRUE(f.Match("nëedl\u0065\u0301"));
 	EXPECT_TRUE(f.Match("NËEDLÉ"));
+	EXPECT_TRUE(f.Match("NËEDL\u00c9"));
+	EXPECT_TRUE(f.Match("NËEDL\u0045\u0301"));
 #endif
 	EXPECT_FALSE(f.Match("needlé"));
 	EXPECT_FALSE(f.Match("néedlé"));
