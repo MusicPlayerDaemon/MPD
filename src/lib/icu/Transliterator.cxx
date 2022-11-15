@@ -24,12 +24,14 @@
 #include <stdexcept>
 
 static UTransliterator *
-OpenTransliterator(const UChar *id, const UChar *rules)
+OpenTransliterator(std::basic_string_view<UChar> id,
+		   std::basic_string_view<UChar> rules)
 {
 	UErrorCode error_code = U_ZERO_ERROR;
 
-	UTransliterator *t = utrans_openU(id, -1, UTRANS_FORWARD,
-					  rules, -1,
+	UTransliterator *t = utrans_openU(id.data(), id.size(),
+					  UTRANS_FORWARD,
+					  rules.data(), rules.size(),
 					  nullptr, &error_code);
 	if (t == nullptr)
 	       throw std::runtime_error(u_errorName(error_code));
@@ -37,7 +39,8 @@ OpenTransliterator(const UChar *id, const UChar *rules)
 	return t;
 }
 
-IcuTransliterator::IcuTransliterator(const UChar *id, const UChar *rules)
+IcuTransliterator::IcuTransliterator(std::basic_string_view<UChar> id,
+				     std::basic_string_view<UChar> rules)
 	:transliterator(OpenTransliterator(id, rules))
 {
 }

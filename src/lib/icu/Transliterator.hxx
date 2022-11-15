@@ -41,7 +41,8 @@ public:
 	/**
 	 * Throws on error.
 	 */
-	IcuTransliterator(const UChar *id, const UChar *rules);
+	IcuTransliterator(std::basic_string_view<UChar> id,
+			  std::basic_string_view<UChar> rules);
 
 	~IcuTransliterator() noexcept {
 		if (transliterator != nullptr)
