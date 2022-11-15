@@ -2,7 +2,7 @@ icu_dep = dependency('icu-i18n', version: '>= 50', required: get_option('icu'))
 conf.set('HAVE_ICU', icu_dep.found())
 
 icu_sources = [
-  'CaseFold.cxx',
+  'Canonicalize.cxx',
   'Compare.cxx',
   'Collate.cxx',
   'Converter.cxx',

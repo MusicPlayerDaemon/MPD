@@ -17,38 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "CaseFold.hxx"
+#pragma once
+
 #include "config.h"
 
-#ifdef HAVE_ICU_CASE_FOLD
-
-#include "util/AllocatedString.hxx"
-
 #ifdef HAVE_ICU
-#include "FoldCase.hxx"
-#include "Util.hxx"
-#include "util/AllocatedArray.hxx"
-#include "util/SpanCast.hxx"
-#endif
+#define HAVE_ICU_CANONICALIZE
 
+#include <string_view>
+
+class AllocatedString;
+
+/**
+ * Transform the given string to "canonical" form to allow fuzzy
+ * string comparisons.  The full set of features (if ICU is being
+ * used):
+ *
+ * - case folding (optional)
+ */
 AllocatedString
-IcuCaseFold(std::string_view src) noexcept
-try {
-#ifdef HAVE_ICU
-	auto u = UCharFromUTF8(src);
-	if (u.data() == nullptr)
-		return {src};
+IcuCanonicalize(std::string_view src, bool fold_case) noexcept;
 
-	auto folded = IcuFoldCase(ToStringView(std::span{u}));
-	if (folded == nullptr)
-		return {src};
-
-	return UCharToUTF8(ToStringView(std::span{folded}));
-#else
-#error not implemented
 #endif
-} catch (...) {
-	return {src};
-}
-
-#endif /* HAVE_ICU_CASE_FOLD */

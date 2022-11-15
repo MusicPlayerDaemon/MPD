@@ -18,7 +18,7 @@
  */
 
 #include "Compare.hxx"
-#include "CaseFold.hxx"
+#include "Canonicalize.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "config.h"
@@ -28,10 +28,10 @@
 #include <windows.h>
 #endif
 
-#ifdef HAVE_ICU_CASE_FOLD
+#ifdef HAVE_ICU_CANONICALIZE
 
 IcuCompare::IcuCompare(std::string_view _needle) noexcept
-	:needle(IcuCaseFold(_needle)) {}
+	:needle(IcuCanonicalize(_needle, true)) {}
 
 #elif defined(_WIN32)
 
@@ -54,8 +54,8 @@ IcuCompare::IcuCompare(std::string_view _needle) noexcept
 bool
 IcuCompare::operator==(const char *haystack) const noexcept
 {
-#ifdef HAVE_ICU_CASE_FOLD
-	return StringIsEqual(IcuCaseFold(haystack).c_str(), needle.c_str());
+#ifdef HAVE_ICU_CANONICALIZE
+	return StringIsEqual(IcuCanonicalize(haystack, true).c_str(), needle.c_str());
 #elif defined(_WIN32)
 	if (needle == nullptr)
 		/* the MultiByteToWideChar() call in the constructor
@@ -80,8 +80,8 @@ IcuCompare::operator==(const char *haystack) const noexcept
 bool
 IcuCompare::IsIn(const char *haystack) const noexcept
 {
-#ifdef HAVE_ICU_CASE_FOLD
-	return StringFind(IcuCaseFold(haystack).c_str(),
+#ifdef HAVE_ICU_CANONICALIZE
+	return StringFind(IcuCanonicalize(haystack, true).c_str(),
 			  needle.c_str()) != nullptr;
 #elif defined(_WIN32)
 	if (needle == nullptr)
@@ -117,8 +117,9 @@ IcuCompare::IsIn(const char *haystack) const noexcept
 bool
 IcuCompare::StartsWith(const char *haystack) const noexcept
 {
-#ifdef HAVE_ICU_CASE_FOLD
-	return StringStartsWith(IcuCaseFold(haystack).c_str(), needle);
+#ifdef HAVE_ICU_CANONICALIZE
+	return StringStartsWith(IcuCanonicalize(haystack, true).c_str(),
+				needle);
 #elif defined(_WIN32)
 	if (needle == nullptr)
 		/* the MultiByteToWideChar() call in the constructor

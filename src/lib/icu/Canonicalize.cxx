@@ -17,21 +17,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ICU_CASE_FOLD_HXX
-#define MPD_ICU_CASE_FOLD_HXX
-
+#include "Canonicalize.hxx"
 #include "config.h"
 
+#ifdef HAVE_ICU_CANONICALIZE
+
+#include "util/AllocatedString.hxx"
+
 #ifdef HAVE_ICU
-#define HAVE_ICU_CASE_FOLD
-
-#include <string_view>
-
-class AllocatedString;
+#include "FoldCase.hxx"
+#include "Util.hxx"
+#include "util/AllocatedArray.hxx"
+#include "util/SpanCast.hxx"
+#endif
 
 AllocatedString
-IcuCaseFold(std::string_view src) noexcept;
+IcuCanonicalize(std::string_view src, bool fold_case) noexcept
+try {
+#ifdef HAVE_ICU
+	auto u = UCharFromUTF8(src);
+	if (u.data() == nullptr)
+		return {src};
 
-#endif
+	if (fold_case)
+		if (auto folded = IcuFoldCase(ToStringView(std::span{u}));
+		    folded != nullptr)
+			u = std::move(folded);
 
+	return UCharToUTF8(ToStringView(std::span{u}));
+#else
+#error not implemented
 #endif
+} catch (...) {
+	return {src};
+}
+
+#endif /* HAVE_ICU_CANONICALIZE */
