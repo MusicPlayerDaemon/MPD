@@ -99,13 +99,16 @@ public:
 	}
 
 	const char *GetOperator() const noexcept {
-		return IsRegex()
-			? (negated ? "!~" : "=~")
-			: (substring
-			   ? (negated ? "!contains" : "contains")
-			   : (starts_with
-			      ? (negated ? "!starts_with" : "starts_with")
-			      : (negated ? "!=" : "==")));
+		if (IsRegex())
+			return negated ? "!~" : "=~";
+
+		if (substring)
+			return negated ? "!contains" : "contains";
+
+		if (starts_with)
+			return negated ? "!starts_with" : "starts_with";
+
+		return negated ? "!=" : "==";
 	}
 
 	[[gnu::pure]]
