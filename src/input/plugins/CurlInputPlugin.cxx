@@ -353,7 +353,7 @@ CurlInputStream::OnData(std::span<const std::byte> data)
 		throw CurlResponseHandler::Pause{};
 	}
 
-	AppendToBuffer(data.data(), data.size());
+	AppendToBuffer(data);
 }
 
 void

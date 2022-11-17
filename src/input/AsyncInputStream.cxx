@@ -217,23 +217,28 @@ AsyncInputStream::CommitWriteBuffer(size_t nbytes) noexcept
 }
 
 void
-AsyncInputStream::AppendToBuffer(const void *data, size_t append_size) noexcept
+AsyncInputStream::AppendToBuffer(std::span<const std::byte> src) noexcept
 {
 	auto w = buffer.Write();
 	assert(!w.empty());
 
-	size_t nbytes = std::min(w.size(), append_size);
-	memcpy(w.data(), data, nbytes);
-	buffer.Append(nbytes);
+	std::span<const std::byte> second{};
 
-	const size_t remaining = append_size - nbytes;
-	if (remaining > 0) {
+	if (w.size() < src.size()) {
+		second = src.subspan(w.size());
+		src = src.first(w.size());
+	}
+
+	std::copy(src.begin(), src.end(), w.begin());
+	buffer.Append(src.size());
+
+	if (!second.empty()) {
 		w = buffer.Write();
 		assert(!w.empty());
-		assert(w.size() >= remaining);
+		assert(w.size() >= second.size());
 
-		memcpy(w.data(), (const std::byte *)data + nbytes, remaining);
-		buffer.Append(remaining);
+		std::copy(second.begin(), second.end(), w.begin());
+		buffer.Append(second.size());
 	}
 
 	if (!IsReady())

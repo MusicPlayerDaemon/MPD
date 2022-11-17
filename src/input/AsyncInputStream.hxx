@@ -139,7 +139,7 @@ protected:
 	 * Append data to the buffer.  The size must fit into the
 	 * buffer; see GetBufferSpace().
 	 */
-	void AppendToBuffer(const void *data, size_t append_size) noexcept;
+	void AppendToBuffer(std::span<const std::byte> src) noexcept;
 
 	/**
 	 * Implement code here that will resume the stream after it

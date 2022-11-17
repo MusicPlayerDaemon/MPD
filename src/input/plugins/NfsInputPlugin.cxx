@@ -164,7 +164,8 @@ NfsInputStream::OnNfsFileRead(std::span<const std::byte> src) noexcept
 	const std::scoped_lock<Mutex> protect(mutex);
 	assert(!IsBufferFull());
 	assert(IsBufferFull() == (GetBufferSpace() == 0));
-	AppendToBuffer(src.data(), src.size());
+
+	AppendToBuffer(src);
 
 	next_offset += src.size();
 
