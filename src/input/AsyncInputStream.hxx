@@ -25,6 +25,7 @@
 #include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
 
+#include <cstddef>
 #include <exception>
 
 /**
@@ -41,9 +42,9 @@ class AsyncInputStream : public InputStream {
 	InjectEvent deferred_resume;
 	InjectEvent deferred_seek;
 
-	HugeArray<uint8_t> allocation;
+	HugeArray<std::byte> allocation;
 
-	CircularBuffer<uint8_t> buffer;
+	CircularBuffer<std::byte> buffer;
 	const size_t resume_at;
 
 	bool open = true;
@@ -128,7 +129,7 @@ protected:
 		return buffer.GetSpace();
 	}
 
-	CircularBuffer<uint8_t>::Range PrepareWriteBuffer() noexcept {
+	auto PrepareWriteBuffer() noexcept {
 		return buffer.Write();
 	}
 

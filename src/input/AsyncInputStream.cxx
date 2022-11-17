@@ -181,7 +181,7 @@ AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
 	CondInputStreamHandler cond_handler;
 
 	/* wait for data */
-	CircularBuffer<uint8_t>::Range r;
+	CircularBuffer<std::byte>::Range r;
 	while (true) {
 		Check();
 
@@ -232,7 +232,7 @@ AsyncInputStream::AppendToBuffer(const void *data, size_t append_size) noexcept
 		assert(!w.empty());
 		assert(w.size() >= remaining);
 
-		memcpy(w.data(), (const uint8_t *)data + nbytes, remaining);
+		memcpy(w.data(), (const std::byte *)data + nbytes, remaining);
 		buffer.Append(remaining);
 	}
 
