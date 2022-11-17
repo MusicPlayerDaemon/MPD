@@ -71,7 +71,7 @@ protected:
 private:
 	/* virtual methods from NfsFileReader */
 	void OnNfsFileOpen(uint64_t size) noexcept override;
-	void OnNfsFileRead(const void *data, size_t size) noexcept override;
+	void OnNfsFileRead(std::span<const std::byte> src) noexcept override;
 	void OnNfsFileError(std::exception_ptr &&e) noexcept override;
 };
 
@@ -159,14 +159,14 @@ NfsInputStream::OnNfsFileOpen(uint64_t _size) noexcept
 }
 
 void
-NfsInputStream::OnNfsFileRead(const void *data, size_t data_size) noexcept
+NfsInputStream::OnNfsFileRead(std::span<const std::byte> src) noexcept
 {
 	const std::scoped_lock<Mutex> protect(mutex);
 	assert(!IsBufferFull());
 	assert(IsBufferFull() == (GetBufferSpace() == 0));
-	AppendToBuffer(data, data_size);
+	AppendToBuffer(src.data(), src.size());
 
-	next_offset += data_size;
+	next_offset += src.size();
 
 	DoRead();
 }

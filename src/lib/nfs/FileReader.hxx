@@ -28,6 +28,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <exception>
+#include <span>
 #include <string>
 
 #include <sys/stat.h>
@@ -125,7 +126,7 @@ protected:
 	 *
 	 * This method will be called from within the I/O thread.
 	 */
-	virtual void OnNfsFileRead(const void *data, size_t size) noexcept = 0;
+	virtual void OnNfsFileRead(std::span<const std::byte> src) noexcept = 0;
 
 	/**
 	 * An error has occurred, which can be either while waiting

@@ -239,7 +239,10 @@ NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 		break;
 
 	case State::READ:
-		OnNfsFileRead(data, status);
+		OnNfsFileRead({
+				static_cast<const std::byte *>(data),
+				static_cast<std::size_t>(status),
+			});
 		break;
 	}
 }
