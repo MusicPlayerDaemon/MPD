@@ -73,7 +73,8 @@ storage_state_save(BufferedOutputStream &os, const Instance &instance)
 }
 
 bool
-storage_state_restore(const char *line, LineReader &file, Instance &instance)
+storage_state_restore(const char *line, LineReader &file,
+		      Instance &instance) noexcept
 {
 	if (!StringStartsWith(line, MOUNT_STATE_BEGIN))
 		return false;
@@ -144,7 +145,7 @@ storage_state_restore(const char *line, LineReader &file, Instance &instance)
 }
 
 unsigned
-storage_state_get_hash(const Instance &instance)
+storage_state_get_hash(const Instance &instance) noexcept
 {
 	if (instance.storage == nullptr)
 		return 0;
