@@ -143,8 +143,21 @@ public:
 	using const_pointer = const T *;
 	using size_type = std::size_t;
 
+	using hasher = Hash;
+	using key_equal = Equal;
+
 	[[nodiscard]]
 	IntrusiveHashSet() noexcept = default;
+
+	[[nodiscard]]
+	constexpr const hasher &hash_function() const noexcept {
+		return hash;
+	}
+
+	[[nodiscard]]
+	constexpr const key_equal key_eq() const noexcept {
+		return equal;
+	}
 
 	[[nodiscard]]
 	constexpr bool empty() noexcept {
