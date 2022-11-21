@@ -245,6 +245,18 @@ public:
 		return table.front().end();
 	}
 
+	constexpr void for_each(auto &&f) {
+		for (auto &bucket : table)
+			for (auto &i : bucket)
+				f(i);
+	}
+
+	constexpr void for_each(auto &&f) const {
+		for (const auto &bucket : table)
+			for (const auto &i : bucket)
+				f(i);
+	}
+
 private:
 	template<typename K>
 	[[gnu::pure]]
