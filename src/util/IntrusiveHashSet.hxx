@@ -224,6 +224,13 @@ public:
 		return GetSlot(*i).erase(i);
 	}
 
+	constexpr slot_iterator erase_and_dispose(slot_iterator i,
+						  auto &&disposer) noexcept {
+		auto result = erase(i);
+		disposer(&*i);
+		return result;
+	}
+
 	[[nodiscard]] [[gnu::pure]]
 	constexpr slot_iterator find(const auto &key) noexcept {
 		auto &slot = GetSlot(key);
