@@ -194,6 +194,13 @@ public:
 		counter.reset();
 	}
 
+	void remove_and_dispose_if(auto &&pred, auto &&disposer) noexcept {
+		static_assert(!constant_time_size, "Not yet implemented");
+
+		for (auto &bucket : table)
+			bucket.remove_and_dispose_if(pred, disposer);
+	}
+
 	[[nodiscard]]
 	static constexpr slot_iterator iterator_to(reference item) noexcept {
 		return Slot::iterator_to(item);
