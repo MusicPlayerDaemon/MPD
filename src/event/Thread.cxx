@@ -45,7 +45,7 @@ EventThread::Stop() noexcept
 		assert(event_loop.IsAlive());
 		event_loop.SetAlive(false);
 
-		event_loop.Break();
+		event_loop.InjectBreak();
 		thread.Join();
 	}
 }
