@@ -188,7 +188,12 @@ EventLoop::AddDefer(DeferEvent &e) noexcept
 #endif
 
 	defer.push_back(e);
+
+#ifdef HAVE_THREADED_EVENT_LOOP
+	/* setting this flag here is only relevant if we've been
+	   called by a DeferEvent */
 	again = true;
+#endif
 }
 
 void
@@ -197,7 +202,12 @@ EventLoop::AddIdle(DeferEvent &e) noexcept
 	assert(IsInside());
 
 	idle.push_back(e);
+
+#ifdef HAVE_THREADED_EVENT_LOOP
+	/* setting this flag here is only relevant if we've been
+	   called by a DeferEvent */
 	again = true;
+#endif
 }
 
 void
