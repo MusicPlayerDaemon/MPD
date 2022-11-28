@@ -144,6 +144,38 @@ GetStandardDir(int folder_id) noexcept
 
 #ifdef USE_XDG
 
+[[gnu::pure]]
+static Path
+GetEnvPath(const char *name) noexcept
+{
+	if (const char *value = getenv(name); IsValidPathString(value))
+		return Path::FromFS(value);
+
+	return nullptr;
+}
+
+[[gnu::pure]]
+static Path
+GetAbsoluteEnvPath(const char *name) noexcept
+{
+	if (const auto path = GetEnvPath(name);
+	    path != nullptr && path.IsAbsolute())
+		return path;
+
+	return nullptr;
+}
+
+[[gnu::pure]]
+static Path
+GetExistingEnvDirectory(const char *name) noexcept
+{
+	if (const auto path = GetAbsoluteEnvPath(name);
+	    path != nullptr && DirectoryExists(path))
+		return path;
+
+	return nullptr;
+}
+
 static bool
 ParseConfigLine(std::string_view line, std::string_view dir_name,
 		AllocatedPath &result_dir) noexcept
@@ -235,9 +267,9 @@ GetUserConfigDir() noexcept
 	return GetStandardDir(CSIDL_LOCAL_APPDATA);
 #elif defined(USE_XDG)
 	// Check for $XDG_CONFIG_HOME
-	if (const auto config_home = getenv("XDG_CONFIG_HOME");
-	    IsValidPathString(config_home) && IsValidDir(config_home))
-		return AllocatedPath::FromFS(config_home);
+	if (const auto path = GetExistingEnvDirectory("XDG_CONFIG_HOME");
+	    path != nullptr)
+		return AllocatedPath{path};
 
 	// Check for $HOME/.config
 	if (const auto home = GetHomeDir(); !home.IsNull()) {
@@ -272,9 +304,9 @@ GetUserCacheDir() noexcept
 {
 #ifdef USE_XDG
 	// Check for $XDG_CACHE_HOME
-	if (const auto cache_home = getenv("XDG_CACHE_HOME");
-	    IsValidPathString(cache_home) && IsValidDir(cache_home))
-		return AllocatedPath::FromFS(cache_home);
+	if (const auto path = GetExistingEnvDirectory("XDG_CACHE_HOME");
+	    path != nullptr)
+		return AllocatedPath{path};
 
 	// Check for $HOME/.cache
 	if (const auto home = GetHomeDir(); !home.IsNull())
@@ -312,10 +344,12 @@ AllocatedPath
 GetUserRuntimeDir() noexcept
 {
 #ifdef USE_XDG
-	return SafePathFromFS(getenv("XDG_RUNTIME_DIR"));
-#else
-	return nullptr;
+	if (const auto path = GetExistingEnvDirectory("XDG_RUNTIME_DIR");
+	    path != nullptr)
+		return AllocatedPath{path};
 #endif
+
+	return nullptr;
 }
 
 AllocatedPath
