@@ -136,8 +136,6 @@ static AllocatedPath GetStandardDir(int folder_id)
 
 #ifdef USE_XDG
 
-static constexpr std::string_view home_prefix = "$HOME/"sv;
-
 static bool
 ParseConfigLine(std::string_view line, std::string_view dir_name,
 		AllocatedPath &result_dir)
@@ -166,7 +164,7 @@ ParseConfigLine(std::string_view line, std::string_view dir_name,
 	const bool quoted = SkipPrefix(line, "\""sv);
 
 	// check if path is relative to $HOME
-	const bool home_relative = SkipPrefix(line, home_prefix);
+	const bool home_relative = SkipPrefix(line, "$HOME"sv);
 
 	// find end of the string
 	std::string_view path_view;
