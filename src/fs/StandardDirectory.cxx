@@ -60,6 +60,8 @@
 static constexpr Path app_filename = Path::FromFS(APP_FILENAME);
 #endif
 
+using std::string_view_literals::operator""sv;
+
 #if !defined(_WIN32) && !defined(ANDROID)
 class PasswdEntry
 {
@@ -134,49 +136,42 @@ static AllocatedPath GetStandardDir(int folder_id)
 
 #ifdef USE_XDG
 
-static const char home_prefix[] = "$HOME/";
+static constexpr std::string_view home_prefix = "$HOME/"sv;
 
 static bool
-ParseConfigLine(const char *line, const char *dir_name,
+ParseConfigLine(std::string_view line, std::string_view dir_name,
 		AllocatedPath &result_dir)
 {
 	// strip leading white space
 	line = StripLeft(line);
 
 	// check for end-of-line or comment
-	if (*line == '\0' || *line == '#')
+	if (line.empty() || line.front() == '#')
 		return false;
 
 	// check if current setting is for requested dir
-	if (!StringStartsWith(line, dir_name))
+	if (!SkipPrefix(line, dir_name))
 		return false;
-	line += strlen(dir_name);
 
 	// strip equals sign and spaces around it
 	line = StripLeft(line);
-	if (*line != '=')
+	if (!SkipPrefix(line, "="sv))
 		return false;
-	++line;
 	line = StripLeft(line);
 
+	if (line.empty())
+		return true;
+
 	// check if path is quoted
-	bool quoted = false;
-	if (*line == '"') {
-		++line;
-		quoted = true;
-	}
+	const bool quoted = SkipPrefix(line, "\""sv);
 
 	// check if path is relative to $HOME
-	bool home_relative = false;
-	if (StringStartsWith(line, home_prefix)) {
-		line += strlen(home_prefix);
-		home_relative = true;
-	}
+	const bool home_relative = SkipPrefix(line, home_prefix);
 
 	// find end of the string
 	std::string_view path_view;
 	if (quoted) {
-		const auto [pv, rest] = SplitLast(std::string_view{line}, '"');
+		const auto [pv, rest] = SplitLast(line, '"');
 		if (rest.data() == nullptr)
 			return true;
 
