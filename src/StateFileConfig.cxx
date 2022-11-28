@@ -32,7 +32,7 @@ StateFileConfig::StateFileConfig(const ConfigData &config)
 {
 #ifdef ANDROID
 	if (path.IsNull()) {
-		const auto cache_dir = GetUserCacheDir();
+		const auto cache_dir = GetAppCacheDir();
 		if (cache_dir.IsNull())
 			return;
 

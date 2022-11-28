@@ -25,10 +25,17 @@ ver 0.24 (not yet released)
 * static partition configuration
 * remove Haiku support
 
-ver 0.23.11 (not yet released)
+ver 0.23.11 (2022/11/28)
+* database
+  - simple: move default database to ~/.cache/mpd/db from ~/.cache/mpd.db
+  - simple: default "cache_directory" to ~/.cache/mpd/mounts
 * macOS: fix build failure "no archive members specified"
+* Windows
+  - fix crash bug (stack buffer overflow) after I/O errors
+  - fix path traversal bug because backslash was allowed in playlist names
 * Android/Windows
   - update OpenSSL to 3.0.7
+  - re-enable CURL's verbose error strings
 
 ver 0.23.10 (2022/10/14)
 * storage

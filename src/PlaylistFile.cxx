@@ -82,6 +82,9 @@ spl_valid_name(const char *name_utf8)
 	 */
 
 	return std::strchr(name_utf8, '/') == nullptr &&
+#ifdef _WIN32
+		std::strchr(name_utf8, '\\') == nullptr &&
+#endif
 		std::strchr(name_utf8, '\n') == nullptr &&
 		std::strchr(name_utf8, '\r') == nullptr;
 }

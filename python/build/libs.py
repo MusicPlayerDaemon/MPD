@@ -399,7 +399,6 @@ curl = CmakeProject(
     [
         '-DBUILD_CURL_EXE=OFF',
         '-DBUILD_SHARED_LIBS=OFF',
-        '-DCURL_DISABLE_VERBOSE_STRINGS=ON',
         '-DCURL_DISABLE_LDAP=ON',
         '-DCURL_DISABLE_TELNET=ON',
         '-DCURL_DISABLE_DICT=ON',

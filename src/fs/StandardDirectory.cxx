@@ -53,6 +53,12 @@
 #include "Main.hxx"
 #endif
 
+#ifdef USE_XDG
+#include "Version.h" // for PACKAGE_NAME
+#define APP_FILENAME PATH_LITERAL(PACKAGE_NAME)
+static constexpr Path app_filename = Path::FromFS(APP_FILENAME);
+#endif
+
 #if !defined(_WIN32) && !defined(ANDROID)
 class PasswdEntry
 {
@@ -285,6 +291,24 @@ GetUserCacheDir() noexcept
 }
 
 AllocatedPath
+GetAppCacheDir() noexcept
+{
+#ifdef USE_XDG
+	if (const auto user_dir = GetUserCacheDir(); !user_dir.IsNull()) {
+		auto dir = user_dir / app_filename;
+		CreateDirectoryNoThrow(dir);
+		return dir;
+	}
+
+	return nullptr;
+#elif defined(ANDROID)
+	return context->GetCacheDir(Java::GetEnv());
+#else
+	return nullptr;
+#endif
+}
+
+AllocatedPath
 GetUserRuntimeDir() noexcept
 {
 #ifdef USE_XDG
@@ -297,7 +321,7 @@ GetUserRuntimeDir() noexcept
 AllocatedPath
 GetAppRuntimeDir() noexcept
 {
-#ifdef __linux__
+#if defined(__linux__) && !defined(ANDROID)
 	/* systemd specific; see systemd.exec(5) */
 	if (const char *runtime_directory = getenv("RUNTIME_DIRECTORY"))
 		if (auto dir = Split(std::string_view{runtime_directory}, ':').first;
@@ -307,8 +331,8 @@ GetAppRuntimeDir() noexcept
 
 #ifdef USE_XDG
 	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
-		auto dir = user_dir / Path::FromFS("mpd");
-		mkdir(dir.c_str(), 0700);
+		auto dir = user_dir / app_filename;
+		CreateDirectoryNoThrow(dir);
 		return dir;
 	}
 #endif

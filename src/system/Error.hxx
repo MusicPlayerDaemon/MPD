@@ -91,8 +91,11 @@ FormatLastError(DWORD code, const char *fmt, Args&&... args) noexcept
 {
 	char buffer[512];
 	const auto end = buffer + sizeof(buffer);
-	size_t length = snprintf(buffer, sizeof(buffer) - 128,
+	constexpr std::size_t max_prefix = sizeof(buffer) - 128;
+	size_t length = snprintf(buffer, max_prefix,
 				 fmt, std::forward<Args>(args)...);
+	if (length >= max_prefix)
+		length = max_prefix - 1;
 	char *p = buffer + length;
 	*p++ = ':';
 	*p++ = ' ';

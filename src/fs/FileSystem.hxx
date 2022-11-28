@@ -67,6 +67,16 @@ StatFile(Path file, struct stat &buf, bool follow_symlinks = true)
 
 #endif
 
+static inline bool
+CreateDirectoryNoThrow(Path path) noexcept
+{
+#ifdef _WIN32
+	return CreateDirectory(path.c_str(), nullptr);
+#else
+	return mkdir(path.c_str(), 0777);
+#endif
+}
+
 /**
  * Truncate a file that exists already.  Throws std::system_error on
  * error.
