@@ -44,6 +44,13 @@ AllocatedPath
 GetUserCacheDir() noexcept;
 
 /**
+ * Obtains cache directory for this application.
+ */
+[[gnu::const]]
+AllocatedPath
+GetAppCacheDir() noexcept;
+
+/**
  * Obtains the runtime directory for the current user.
  */
 [[gnu::const]]

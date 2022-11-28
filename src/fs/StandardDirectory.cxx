@@ -291,6 +291,24 @@ GetUserCacheDir() noexcept
 }
 
 AllocatedPath
+GetAppCacheDir() noexcept
+{
+#ifdef USE_XDG
+	if (const auto user_dir = GetUserCacheDir(); !user_dir.IsNull()) {
+		auto dir = user_dir / app_filename;
+		CreateDirectoryNoThrow(dir);
+		return dir;
+	}
+
+	return nullptr;
+#elif defined(ANDROID)
+	return context->GetCacheDir(Java::GetEnv());
+#else
+	return nullptr;
+#endif
+}
+
+AllocatedPath
 GetUserRuntimeDir() noexcept
 {
 #ifdef USE_XDG
