@@ -53,6 +53,12 @@
 #include "Main.hxx"
 #endif
 
+#ifdef USE_XDG
+#include "Version.h" // for PACKAGE_NAME
+#define APP_FILENAME PATH_LITERAL(PACKAGE_NAME)
+static constexpr Path app_filename = Path::FromFS(APP_FILENAME);
+#endif
+
 #if !defined(_WIN32) && !defined(ANDROID)
 class PasswdEntry
 {
@@ -307,7 +313,7 @@ GetAppRuntimeDir() noexcept
 
 #ifdef USE_XDG
 	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
-		auto dir = user_dir / Path::FromFS("mpd");
+		auto dir = user_dir / app_filename;
 		mkdir(dir.c_str(), 0777);
 		return dir;
 	}
