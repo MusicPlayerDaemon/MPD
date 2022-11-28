@@ -8,6 +8,7 @@ ver 0.23.11 (not yet released)
   - fix path traversal bug because backslash was allowed in playlist names
 * Android/Windows
   - update OpenSSL to 3.0.7
+  - re-enable CURL's verbose error strings
 
 ver 0.23.10 (2022/10/14)
 * storage
