@@ -32,6 +32,9 @@
 #include "util/StringBuffer.hxx"
 
 #include <fmt/core.h>
+#if FMT_VERSION <= 80000
+#include <fmt/format.h> // for the fmt::buffer::flush() implementation
+#endif
 
 template<std::size_t size>
 [[nodiscard]] [[gnu::pure]]
