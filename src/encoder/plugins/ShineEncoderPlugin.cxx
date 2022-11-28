@@ -20,8 +20,8 @@
 #include "ShineEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/DynamicFifoBuffer.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/SpanCast.hxx"
 
 extern "C"
@@ -121,11 +121,11 @@ SetupShine(shine_config_t config, AudioFormat &audio_format)
 		audio_format.channels == 2 ? PCM_STEREO : PCM_MONO;
 
 	if (shine_check_config(config.wave.samplerate, config.mpeg.bitr) < 0)
-		throw FormatRuntimeError("error configuring shine. "
-					 "samplerate %d and bitrate %d configuration"
-					 " not supported.",
-					 config.wave.samplerate,
-					 config.mpeg.bitr);
+		throw FmtRuntimeError("error configuring shine. "
+				      "samplerate {} and bitrate {} configuration"
+				      " not supported.",
+				      config.wave.samplerate,
+				      config.mpeg.bitr);
 
 	auto shine = shine_initialise(&config);
 	if (!shine)

@@ -21,8 +21,8 @@
 #include "../EncoderAPI.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Buffer.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/DynamicFifoBuffer.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Serial.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringUtil.hxx"
@@ -147,25 +147,25 @@ flac_encoder_setup(FLAC__StreamEncoder *fse, unsigned compression, bool oggflac,
 	}
 
 	if (!FLAC__stream_encoder_set_compression_level(fse, compression))
-		throw FormatRuntimeError("error setting flac compression to %d",
-					 compression);
+		throw FmtRuntimeError("error setting flac compression to {}",
+				      compression);
 
 	if (!FLAC__stream_encoder_set_channels(fse, audio_format.channels))
-		throw FormatRuntimeError("error setting flac channels num to %d",
-					 audio_format.channels);
+		throw FmtRuntimeError("error setting flac channels num to {}",
+				      audio_format.channels);
 
 	if (!FLAC__stream_encoder_set_bits_per_sample(fse, bits_per_sample))
-		throw FormatRuntimeError("error setting flac bit format to %d",
-					 bits_per_sample);
+		throw FmtRuntimeError("error setting flac bit format to {}",
+				      bits_per_sample);
 
 	if (!FLAC__stream_encoder_set_sample_rate(fse,
 						  audio_format.sample_rate))
-		throw FormatRuntimeError("error setting flac sample rate to %d",
-					 audio_format.sample_rate);
+		throw FmtRuntimeError("error setting flac sample rate to {}",
+				      audio_format.sample_rate);
 
 	if (oggflac && !FLAC__stream_encoder_set_ogg_serial_number(fse,
 						  GenerateSerial()))
-		throw FormatRuntimeError("error setting ogg serial number");
+		throw std::runtime_error{"error setting ogg serial number"};
 }
 
 FlacEncoder::FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse, unsigned _compression, bool _oggflac, bool _oggchaining)
@@ -188,8 +188,8 @@ FlacEncoder::FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse, u
 						 this);
 
 	if (init_status != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
-		throw FormatRuntimeError("failed to initialize encoder: %s\n",
-					 FLAC__StreamEncoderInitStatusString[init_status]);
+		throw FmtRuntimeError("failed to initialize encoder: {}",
+				      FLAC__StreamEncoderInitStatusString[init_status]);
 }
 
 Encoder *
@@ -250,8 +250,8 @@ FlacEncoder::SendTag(const Tag &tag)
 	FLAC__metadata_object_delete(metadata);
 
 	if (init_status != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
-		throw FormatRuntimeError("failed to initialize encoder: %s\n",
-					 FLAC__StreamEncoderInitStatusString[init_status]);
+		throw FmtRuntimeError("failed to initialize encoder: {}",
+				      FLAC__StreamEncoderInitStatusString[init_status]);
 }
 
 template<typename T>

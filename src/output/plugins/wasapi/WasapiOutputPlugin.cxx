@@ -27,6 +27,7 @@
 #include "output/OutputAPI.hxx"
 #include "lib/icu/Win32.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "mixer/plugins/WasapiMixerPlugin.hxx"
 #include "output/Error.hxx"
 #include "pcm/Export.hxx"
@@ -36,7 +37,6 @@
 #include "thread/Thread.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
 #include "win32/Com.hxx"
@@ -806,8 +806,8 @@ WasapiOutput::ChooseDevice()
 		if (!SafeSilenceTry([this, &id]() { id = std::stoul(device_config); })) {
 			device = SearchDevice(*enumerator, device_config);
 			if (!device)
-				throw FormatRuntimeError("Device '%s' not found",
-							 device_config.c_str());
+				throw FmtRuntimeError("Device '{}' not found",
+						      device_config);
 		} else
 			device = GetDevice(*enumerator, id);
 	} else {

@@ -26,7 +26,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/StandardDirectory.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 DatabasePtr
 CreateConfiguredDatabase(const ConfigData &config,
@@ -37,8 +37,8 @@ CreateConfiguredDatabase(const ConfigData &config,
 	const auto *path = config.GetParam(ConfigOption::DB_FILE);
 
 	if (param != nullptr && path != nullptr)
-		throw FormatRuntimeError("Found both 'database' (line %d) and 'db_file' (line %d) setting",
-					 param->line, path->line);
+		throw FmtRuntimeError("Found both 'database' (line {}) and 'db_file' (line }) setting",
+				      param->line, path->line);
 
 	if (param != nullptr) {
 		param->SetUsed();

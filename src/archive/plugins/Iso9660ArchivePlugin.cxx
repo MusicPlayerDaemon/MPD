@@ -27,7 +27,8 @@
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UTF8.hxx"
 
@@ -46,8 +47,8 @@ struct Iso9660 {
 	explicit Iso9660(Path path)
 		:iso(iso9660_open(path.c_str())) {
 		if (iso == nullptr)
-			throw FormatRuntimeError("Failed to open ISO9660 file %s",
-						 path.c_str());
+			throw FmtRuntimeError("Failed to open ISO9660 file {}",
+					      path);
 	}
 
 	~Iso9660() noexcept {
@@ -238,8 +239,8 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 {
 	auto statbuf = iso9660_ifs_stat_translate(iso->iso, pathname);
 	if (statbuf == nullptr)
-		throw FormatRuntimeError("not found in the ISO file: %s",
-					 pathname);
+		throw FmtRuntimeError("not found in the ISO file: {}",
+				      pathname);
 
 	const lsn_t lsn = statbuf->lsn;
 	const offset_type size = statbuf->size;

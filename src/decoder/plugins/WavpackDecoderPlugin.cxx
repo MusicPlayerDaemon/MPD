@@ -24,10 +24,11 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "fs/Path.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Math.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <wavpack/wavpack.h>
 
@@ -54,8 +55,8 @@ WavpackOpenInput(Path path, int flags, int norm_offset)
 	auto *wpc = WavpackOpenFileInput(path.c_str(), error,
 					 flags, norm_offset);
 	if (wpc == nullptr)
-		throw FormatRuntimeError("failed to open WavPack file \"%s\": %s",
-					 path.c_str(), error);
+		throw FmtRuntimeError("failed to open WavPack file \"{}\": {}",
+				      path, error);
 
 	return wpc;
 }
@@ -72,8 +73,8 @@ WavpackOpenInput(const WavpackStreamReader64 &reader, void *wv_id, void *wvc_id,
 					     wv_id, wvc_id, error,
 					     flags, norm_offset);
 	if (wpc == nullptr)
-		throw FormatRuntimeError("failed to open WavPack stream: %s",
-					 error);
+		throw FmtRuntimeError("failed to open WavPack stream: {}",
+				      error);
 
 	return wpc;
 }

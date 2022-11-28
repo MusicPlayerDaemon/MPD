@@ -22,7 +22,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/StandardDirectory.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringSplit.hxx"
 
 #include <cassert>
@@ -40,7 +40,7 @@ GetHome(const char *user)
 {
 	AllocatedPath result = GetHomeDir(user);
 	if (result.IsNull())
-		throw FormatRuntimeError("no such user: %s", user);
+		throw FmtRuntimeError("no such user: {}", user);
 
 	return result;
 }
@@ -107,7 +107,7 @@ ParsePath(const char *path)
 				/ AllocatedPath::FromUTF8Throw(rest);
 		}
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
-		throw FormatRuntimeError("not an absolute path: %s", path);
+		throw FmtRuntimeError("not an absolute path: {}", path);
 	} else {
 #endif
 		return AllocatedPath::FromUTF8Throw(path);

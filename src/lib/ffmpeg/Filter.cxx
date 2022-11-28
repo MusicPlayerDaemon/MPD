@@ -21,7 +21,7 @@
 #include "ChannelLayout.hxx"
 #include "SampleFormat.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <cinttypes>
 
@@ -34,7 +34,7 @@ RequireFilterByName(const char *name)
 {
 	const auto *filter = avfilter_get_by_name(name);
 	if (filter == nullptr)
-		throw FormatRuntimeError("No such FFmpeg filter: '%s'", name);
+		throw FmtRuntimeError("No such FFmpeg filter: '{}'", name);
 
 	return *filter;
 }

@@ -24,7 +24,7 @@
 #include "config/Data.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "fs/CheckFile.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/UriExtract.hxx"
 
 static std::unique_ptr<Storage>
@@ -32,7 +32,7 @@ CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)
 {
 	auto storage = CreateStorageURI(event_loop, uri);
 	if (storage == nullptr)
-		throw FormatRuntimeError("Unrecognized storage URI: %s", uri);
+		throw FmtRuntimeError("Unrecognized storage URI: {}", uri);
 
 	return storage;
 }

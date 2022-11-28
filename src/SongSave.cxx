@@ -23,6 +23,7 @@
 #include "song/DetachedSong.hxx"
 #include "TagSave.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "io/LineReader.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "tag/ParseName.hxx"
@@ -32,7 +33,6 @@
 #include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/StringStrip.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/NumberParser.hxx"
 
 #include <stdlib.h>
@@ -97,9 +97,8 @@ song_load(LineReader &file, const char *uri,
 	while ((line = file.ReadLine()) != nullptr &&
 	       !StringIsEqual(line, SONG_END)) {
 		char *colon = std::strchr(line, ':');
-		if (colon == nullptr || colon == line) {
-			throw FormatRuntimeError("unknown line in db: %s", line);
-		}
+		if (colon == nullptr || colon == line)
+			throw FmtRuntimeError("unknown line in db: {}", line);
 
 		*colon++ = 0;
 		const char *value = StripLeft(colon);
@@ -134,7 +133,7 @@ song_load(LineReader &file, const char *uri,
 			song.SetStartTime(SongTime::FromMS(start_ms));
 			song.SetEndTime(SongTime::FromMS(end_ms));
 		} else {
-			throw FormatRuntimeError("unknown line in db: %s", line);
+			throw FmtRuntimeError("unknown line in db: {}", line);
 		}
 	}
 

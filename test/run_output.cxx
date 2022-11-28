@@ -21,6 +21,7 @@
 #include "output/Registry.hxx"
 #include "output/OutputPlugin.hxx"
 #include "ConfigGlue.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "event/Thread.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
@@ -29,7 +30,6 @@
 #include "cmdline/OptionDef.hxx"
 #include "cmdline/OptionParser.hxx"
 #include "util/StringBuffer.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/PrintException.hxx"
@@ -95,8 +95,8 @@ LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,
 	const auto *block = config.FindBlock(ConfigBlockOption::AUDIO_OUTPUT,
 					     "name", name);
 	if (block == nullptr)
-		throw FormatRuntimeError("No such configured audio output: %s",
-					 name);
+		throw FmtRuntimeError("No such configured audio output: {}",
+				      name);
 
 	const char *plugin_name = block->GetBlockValue("type");
 	if (plugin_name == nullptr)
@@ -104,8 +104,8 @@ LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,
 
 	const auto *plugin = AudioOutputPlugin_get(plugin_name);
 	if (plugin == nullptr)
-		throw FormatRuntimeError("No such audio output plugin: %s",
-					 plugin_name);
+		throw FmtRuntimeError("No such audio output plugin: {}",
+				      plugin_name);
 
 	return std::unique_ptr<AudioOutput>(ao_plugin_init(event_loop, *plugin,
 							   *block));

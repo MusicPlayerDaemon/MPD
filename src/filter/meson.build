@@ -17,6 +17,9 @@ filter_glue = static_library(
   'LoadOne.cxx',
   'LoadChain.cxx',
   include_directories: inc,
+  dependencies: [
+    fmt_dep,
+  ],
 )
 
 filter_glue_dep = declare_dependency(

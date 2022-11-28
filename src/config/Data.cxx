@@ -20,7 +20,7 @@
 #include "Data.hxx"
 #include "Parser.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
 #include <stdlib.h>
@@ -157,8 +157,8 @@ ConfigData::FindBlock(ConfigBlockOption option,
 	for (const auto &block : GetBlockList(option)) {
 		const char *value2 = block.GetBlockValue(key);
 		if (value2 == nullptr)
-			throw FormatRuntimeError("block without '%s' in line %d",
-						 key, block.line);
+			throw FmtRuntimeError("block without '{}' in line {}",
+					      key, block.line);
 
 		if (StringIsEqual(value2, value))
 			return &block;

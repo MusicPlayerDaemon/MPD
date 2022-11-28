@@ -24,7 +24,7 @@
 #include "Info.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <stdexcept>
 
@@ -38,8 +38,8 @@ CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
 {
 	const NeighborPlugin *plugin = GetNeighborPluginByName(plugin_name);
 	if (plugin == nullptr)
-		throw FormatRuntimeError("No such neighbor plugin: %s",
-					 plugin_name);
+		throw FmtRuntimeError("No such neighbor plugin: {}",
+				      plugin_name);
 
 	return plugin->create(loop, listener, block);
 }
@@ -72,8 +72,8 @@ NeighborGlue::Open()
 			for (auto k = explorers.begin(); k != i; ++k)
 				k->explorer->Close();
 
-			std::throw_with_nested(FormatRuntimeError("Failed to open neighblor plugin '%s'",
-								  i->name.c_str()));
+			std::throw_with_nested(FmtRuntimeError("Failed to open neighblor plugin '{}'",
+							       i->name));
 		}
 	}
 }

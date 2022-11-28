@@ -19,6 +19,7 @@
 
 #include "ConfigGlue.hxx"
 #include "ReadFrames.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "filter/LoadOne.hxx"
@@ -31,7 +32,6 @@
 #include "system/Error.hxx"
 #include "io/FileDescriptor.hxx"
 #include "util/StringBuffer.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/PrintException.hxx"
 
 #include <cassert>
@@ -48,8 +48,8 @@ LoadFilter(const ConfigData &config, const char *name)
 	const auto *param = config.FindBlock(ConfigBlockOption::AUDIO_FILTER,
 					     "name", name);
 	if (param == nullptr)
-		throw FormatRuntimeError("No such configured filter: %s",
-					 name);
+		throw FmtRuntimeError("No such configured filter: {}",
+				      name);
 
 	return filter_configured_new(*param);
 }

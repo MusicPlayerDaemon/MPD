@@ -22,7 +22,7 @@
 #include "Domain.hxx"
 #include "Parser.hxx"
 #include "pcm/AudioParser.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "Log.hxx"
 #include "MusicChunk.hxx"
 
@@ -38,8 +38,8 @@ GetBufferChunks(const ConfigData &config)
 		buffer_size = param->With([](const char *s){
 			size_t result = ParseSize(s, KILOBYTE);
 			if (result <= 0)
-				throw FormatRuntimeError("buffer size \"%s\" is not a "
-							 "positive integer", s);
+				throw FmtRuntimeError("buffer size \"{}\" is not a "
+						      "positive integer", s);
 
 			if (result < MIN_BUFFER_SIZE) {
 				FmtWarning(config_domain, "buffer size {} is too small, using {} bytes instead",
@@ -53,8 +53,8 @@ GetBufferChunks(const ConfigData &config)
 
 	unsigned buffer_chunks = buffer_size / CHUNK_SIZE;
 	if (buffer_chunks >= 1 << 15)
-		throw FormatRuntimeError("buffer size \"%lu\" is too big",
-					 (unsigned long)buffer_size);
+		throw FmtRuntimeError("buffer size \"{}\" is too big",
+				      buffer_size);
 
 	return buffer_chunks;
 }

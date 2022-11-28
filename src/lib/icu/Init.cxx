@@ -21,7 +21,6 @@
 #include "Collate.hxx"
 #include "Canonicalize.hxx"
 #include "Error.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <unicode/uclean.h>
 

@@ -20,13 +20,13 @@
 #include "DatabaseSave.hxx"
 #include "db/DatabaseLock.hxx"
 #include "DirectorySave.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "io/LineReader.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Settings.hxx"
 #include "fs/Charset.hxx"
 #include "util/StringCompare.hxx"
-#include "util/RuntimeError.hxx"
 #include "Version.h"
 
 #include <fmt/format.h>
@@ -102,21 +102,21 @@ db_load_internal(LineReader &file, Directory &music_root)
 			const char *const old_charset = GetFSCharset();
 			if (*old_charset != 0
 			    && strcmp(new_charset, old_charset) != 0)
-				throw FormatRuntimeError("Existing database has charset "
-							 "\"%s\" instead of \"%s\"; "
-							 "discarding database file",
-							 new_charset, old_charset);
+				throw FmtRuntimeError("Existing database has charset "
+						      "\"{}\" instead of \"{}\"; "
+						      "discarding database file",
+						      new_charset, old_charset);
 		} else if ((p = StringAfterPrefix(line, DB_TAG_PREFIX))) {
 			const char *name = p;
 			TagType tag = tag_name_parse(name);
 			if (tag == TAG_NUM_OF_ITEM_TYPES)
-				throw FormatRuntimeError("Unrecognized tag '%s', "
-							 "discarding database file",
-							 name);
+				throw FmtRuntimeError("Unrecognized tag '{}', "
+						      "discarding database file",
+						      name);
 
 			tags[tag] = true;
 		} else {
-			throw FormatRuntimeError("Malformed line: %s", line);
+			throw FmtRuntimeError("Malformed line: {}", line);
 		}
 	}
 

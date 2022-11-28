@@ -35,6 +35,9 @@ encoder_glue = static_library(
   'ToOutputStream.cxx',
   'EncoderList.cxx',
   include_directories: inc,
+  dependencies: [
+    fmt_dep,
+  ],
 )
 
 encoder_glue_dep = declare_dependency(

@@ -23,8 +23,9 @@
 #include "filter/Prepared.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "pcm/Mix.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "thread/Mutex.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <string.h>
 
@@ -198,8 +199,8 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 		if (!pcm_mix(cross_fade_dither, dest, data.data(), data.size(),
 			     in_audio_format.format,
 			     mix_ratio))
-			throw FormatRuntimeError("Cannot cross-fade format %s",
-						 sample_format_to_string(in_audio_format.format));
+			throw FmtRuntimeError("Cannot cross-fade format {}",
+					      in_audio_format.format);
 
 		data = {(const std::byte *)dest, other_data.size()};
 	}

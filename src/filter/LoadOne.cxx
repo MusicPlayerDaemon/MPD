@@ -22,7 +22,7 @@
 #include "Registry.hxx"
 #include "Prepared.hxx"
 #include "config/Block.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 std::unique_ptr<PreparedFilter>
 filter_configured_new(const ConfigBlock &block)
@@ -33,8 +33,8 @@ filter_configured_new(const ConfigBlock &block)
 
 	const auto *plugin = filter_plugin_by_name(plugin_name);
 	if (plugin == nullptr)
-		throw FormatRuntimeError("No such filter plugin: %s",
-					 plugin_name);
+		throw FmtRuntimeError("No such filter plugin: {}",
+				      plugin_name);
 
 	return plugin->init(block);
 }

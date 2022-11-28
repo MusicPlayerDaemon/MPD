@@ -19,7 +19,7 @@
 
 #include "OpenALOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <unistd.h>
 
@@ -126,14 +126,14 @@ OpenALOutput::SetupContext()
 {
 	device = alcOpenDevice(device_name);
 	if (device == nullptr)
-		throw FormatRuntimeError("Error opening OpenAL device \"%s\"",
-					 device_name);
+		throw FmtRuntimeError("Error opening OpenAL device \"{}\"",
+				      device_name);
 
 	context = alcCreateContext(device, nullptr);
 	if (context == nullptr) {
 		alcCloseDevice(device);
-		throw FormatRuntimeError("Error creating context for \"%s\"",
-					 device_name);
+		throw FmtRuntimeError("Error creating context for \"{}\"",
+				      device_name);
 	}
 }
 

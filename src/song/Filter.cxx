@@ -29,8 +29,8 @@
 #include "pcm/AudioParser.hxx"
 #include "tag/ParseName.hxx"
 #include "time/ISO8601.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/CharUtil.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringStrip.hxx"
 #include "util/ASCII.hxx"
@@ -160,8 +160,7 @@ ExpectFilterType(const char *&s)
 
 	const auto type = locate_parse_type(name.c_str());
 	if (type == TAG_NUM_OF_ITEM_TYPES)
-		throw FormatRuntimeError("Unknown filter type: %s",
-					 name.c_str());
+		throw FmtRuntimeError("Unknown filter type: {}", name);
 
 	return type;
 }

@@ -19,8 +19,8 @@
 
 #include "LibsamplerateResampler.hxx"
 #include "config/Block.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/ASCII.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/SpanCast.hxx"
 #include "Log.hxx"
@@ -69,8 +69,8 @@ pcm_resample_lsr_global_init(const ConfigBlock &block)
 {
 	const char *converter = block.GetBlockValue("type", "2");
 	if (!lsr_parse_converter(converter))
-		throw FormatRuntimeError("unknown samplerate converter '%s'",
-					 converter);
+		throw FmtRuntimeError("unknown samplerate converter '{}'",
+				      converter);
 
 	FmtDebug(libsamplerate_domain,
 		 "libsamplerate converter '{}'",
@@ -93,8 +93,8 @@ LibsampleratePcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 	int src_error;
 	state = src_new(lsr_converter, channels, &src_error);
 	if (!state)
-		throw FormatRuntimeError("libsamplerate initialization has failed: %s",
-					 src_strerror(src_error));
+		throw FmtRuntimeError("libsamplerate initialization has failed: {}",
+				      src_strerror(src_error));
 
 	memset(&data, 0, sizeof(data));
 
@@ -138,8 +138,8 @@ LibsampleratePcmResampler::Resample2(std::span<const float> src)
 
 	int result = src_process(state, &data);
 	if (result != 0)
-		throw FormatRuntimeError("libsamplerate has failed: %s",
-					 src_strerror(result));
+		throw FmtRuntimeError("libsamplerate has failed: {}",
+				      src_strerror(result));
 
 	return {data.data_out, size_t(data.output_frames_gen * channels)};
 }

@@ -21,12 +21,12 @@
 #include "../OutputAPI.hxx"
 #include "../Timer.hxx"
 #include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/FileInfo.hxx"
 #include "lib/fmt/SystemError.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 #include "open.h"
 
@@ -37,7 +37,6 @@
 
 class FifoOutput final : AudioOutput {
 	const AllocatedPath path;
-	std::string path_utf8;
 
 	int input = -1;
 	int output = -1;
@@ -83,8 +82,6 @@ FifoOutput::FifoOutput(const ConfigBlock &block)
 {
 	if (path.IsNull())
 		throw std::runtime_error("No \"path\" parameter specified");
-
-	path_utf8 = path.ToUTF8();
 
 	OpenFifo();
 }
@@ -147,8 +144,8 @@ FifoOutput::Check()
 	}
 
 	if (!S_ISFIFO(st.st_mode))
-		throw FormatRuntimeError("\"%s\" already exists, but is not a FIFO",
-					 path_utf8.c_str());
+		throw FmtRuntimeError("\"{}\" already exists, but is not a FIFO",
+				      path);
 }
 
 inline void

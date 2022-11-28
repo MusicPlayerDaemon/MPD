@@ -25,8 +25,8 @@
 #include "config/Block.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <cassert>
 #include <stdexcept>
@@ -80,8 +80,8 @@ input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 				 plugin->name, e.what());
 			continue;
 		} catch (...) {
-			std::throw_with_nested(FormatRuntimeError("Failed to initialize input plugin '%s'",
-								  plugin->name));
+			std::throw_with_nested(FmtRuntimeError("Failed to initialize input plugin '{}'",
+							       plugin->name));
 		}
 	}
 }

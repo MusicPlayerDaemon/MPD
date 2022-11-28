@@ -18,11 +18,11 @@
  */
 
 #include "DatabaseGlue.hxx"
+#include "DatabasePlugin.hxx"
 #include "Interface.hxx"
 #include "Registry.hxx"
-#include "util/RuntimeError.hxx"
 #include "config/Block.hxx"
-#include "DatabasePlugin.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 DatabasePtr
 DatabaseGlobalInit(EventLoop &main_event_loop,
@@ -35,14 +35,14 @@ DatabaseGlobalInit(EventLoop &main_event_loop,
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
 	if (plugin == nullptr)
-		throw FormatRuntimeError("No such database plugin: %s",
-					 plugin_name);
+		throw FmtRuntimeError("No such database plugin: {}",
+				      plugin_name);
 
 	try {
 		return plugin->create(main_event_loop, io_event_loop,
 				      listener, block);
 	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("Failed to initialize database plugin '%s'",
-							  plugin_name));
+		std::throw_with_nested(FmtRuntimeError("Failed to initialize database plugin '{}'",
+						       plugin_name));
 	}
 }

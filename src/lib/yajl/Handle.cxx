@@ -28,7 +28,7 @@
  */
 
 #include "Handle.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringStrip.hxx"
 
@@ -60,8 +60,8 @@ Handle::ThrowError()
 		yajl_free_error(handle, str);
 	};
 
-	throw FormatRuntimeError("Failed to parse JSON: %s",
-				 StripErrorMessage((char *)str));
+	throw FmtRuntimeError("Failed to parse JSON: {}",
+			      StripErrorMessage((char *)str));
 }
 
 } // namespace Yajl

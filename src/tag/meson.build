@@ -58,6 +58,7 @@ tag = static_library(
   tag_sources,
   include_directories: inc,
   dependencies: [
+    fmt_dep,
     libid3tag_dep,
   ],
 )

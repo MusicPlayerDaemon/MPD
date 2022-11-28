@@ -20,6 +20,7 @@
 #include "AlsaMixerPlugin.hxx"
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/Error.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/ToBuffer.hxx"
 #include "mixer/Mixer.hxx"
 #include "mixer/Listener.hxx"
@@ -30,7 +31,6 @@
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"
 #include "util/Math.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 extern "C" {
@@ -279,7 +279,7 @@ AlsaMixer::Setup()
 
 	elem = alsa_mixer_lookup_elem(handle, control, index);
 	if (elem == nullptr)
-		throw FormatRuntimeError("no such mixer control: %s", control);
+		throw FmtRuntimeError("no such mixer control: {}", control);
 
 	snd_mixer_elem_set_callback_private(elem, this);
 	snd_mixer_elem_set_callback(elem, ElemCallback);

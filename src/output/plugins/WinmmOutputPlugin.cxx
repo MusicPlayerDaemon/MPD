@@ -21,8 +21,8 @@
 #include "../OutputAPI.hxx"
 #include "pcm/Buffer.hxx"
 #include "mixer/plugins/WinmmMixerPlugin.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
 #include <array>
@@ -91,7 +91,7 @@ MakeWaveOutError(MMRESULT result, const char *prefix)
 	char buffer[256];
 	if (waveOutGetErrorTextA(result, buffer,
 				 std::size(buffer)) == MMSYSERR_NOERROR)
-		return FormatRuntimeError("%s: %s", prefix, buffer);
+		return FmtRuntimeError("{}: {}", prefix, buffer);
 	else
 		return std::runtime_error(prefix);
 }
@@ -122,8 +122,8 @@ get_device_id(const char *device_name)
 	UINT id = strtoul(device_name, &endptr, 0);
 	if (endptr > device_name && *endptr == 0) {
 		if (id >= numdevs)
-			throw FormatRuntimeError("device \"%s\" is not found",
-						 device_name);
+			throw FmtRuntimeError("device \"{}\" is not found",
+					      device_name);
 
 		return id;
 	}
@@ -143,7 +143,7 @@ get_device_id(const char *device_name)
 			return i;
 	}
 
-	throw FormatRuntimeError("device \"%s\" is not found", device_name);
+	throw FmtRuntimeError("device \"{}\" is not found", device_name);
 }
 
 WinmmOutput::WinmmOutput(const ConfigBlock &block)

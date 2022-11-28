@@ -19,6 +19,7 @@
 
 #include "ServerSocket.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "net/IPv4Address.hxx"
 #include "net/IPv6Address.hxx"
 #include "net/StaticSocketAddress.hxx"
@@ -31,7 +32,6 @@
 #include "net/ToString.hxx"
 #include "event/SocketEvent.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -255,8 +255,8 @@ ServerSocket::Open()
 				const auto address_string = i.ToString();
 
 				try {
-					std::throw_with_nested(FormatRuntimeError("Failed to bind to '%s'",
-										  address_string.c_str()));
+					std::throw_with_nested(FmtRuntimeError("Failed to bind to '{}'",
+									       address_string));
 				} catch (...) {
 					last_error = std::current_exception();
 				}

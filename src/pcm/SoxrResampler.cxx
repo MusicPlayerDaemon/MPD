@@ -20,7 +20,7 @@
 #include "SoxrResampler.hxx"
 #include "AudioFormat.hxx"
 #include "config/Block.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -100,18 +100,17 @@ SoxrParsePrecision(unsigned value) {
 	case 32:
 		break;
 	default:
-		throw FormatInvalidArgument(
-			"soxr converter invalid precision : %d [16|20|24|28|32]", value);
+		throw FmtInvalidArgument("soxr converter invalid precision: {} [16|20|24|28|32]",
+					 value);
 	}
 	return value;
 }
 
 static double
 SoxrParsePhaseResponse(unsigned value) {
-	if (value > 100) {
-		throw FormatInvalidArgument(
-			"soxr converter invalid phase_respons : %d (0-100)", value);
-	}
+	if (value > 100)
+		throw FmtInvalidArgument("soxr converter invalid phase_respons : {} (0-100)",
+					 value);
 
 	return double(value);
 }
@@ -120,15 +119,13 @@ static double
 SoxrParsePassbandEnd(const char *svalue) {
 	char *endptr;
 	double value = strtod(svalue, &endptr);
-	if (svalue == endptr || *endptr != 0) {
-		throw FormatInvalidArgument(
-			"soxr converter passband_end value not a number: %s", svalue);
-	}
+	if (svalue == endptr || *endptr != 0)
+		throw FmtInvalidArgument("soxr converter passband_end value not a number: {}",
+					 svalue);
 
-	if (value < 1 || value > 100) {
-		throw FormatInvalidArgument(
-			"soxr converter invalid passband_end : %s (1-100%%)", svalue);
-	}
+	if (value < 1 || value > 100)
+		throw FmtInvalidArgument("soxr converter invalid passband_end: {} (1-100%)",
+					 svalue);
 
 	return value / 100.0;
 }
@@ -137,15 +134,13 @@ static double
 SoxrParseStopbandBegin(const char *svalue) {
 	char *endptr;
 	double value = strtod(svalue, &endptr);
-	if (svalue == endptr || *endptr != 0) {
-		throw FormatInvalidArgument(
-			"soxr converter stopband_begin value not a number: %s", svalue);
-	}
+	if (svalue == endptr || *endptr != 0)
+		throw FmtInvalidArgument("soxr converter stopband_begin value not a number: {}",
+					 svalue);
 
-	if (value < 100 || value > 199) {
-		throw FormatInvalidArgument(
-			"soxr converter invalid stopband_begin : %s (100-150%%)", svalue);
-	}
+	if (value < 100 || value > 199)
+		throw FmtInvalidArgument("soxr converter invalid stopband_begin: {} (100-150%)",
+					 svalue);
 
 	return value / 100.0;
 }
@@ -155,14 +150,13 @@ SoxrParseAttenuation(const char *svalue) {
 	char *endptr;
 	double value = strtod(svalue, &endptr);
 	if (svalue == endptr || *endptr != 0) {
-		throw FormatInvalidArgument(
-			"soxr converter attenuation value not a number: %s", svalue);
+		throw FmtInvalidArgument("soxr converter attenuation value not a number: {}",
+					 svalue);
 	}
 
-	if (value < 0 || value > 30) {
-		throw FormatInvalidArgument(
-			"soxr converter invalid attenuation : %s (0-30dB))", svalue);
-	}
+	if (value < 0 || value > 30)
+		throw FmtInvalidArgument("soxr converter invalid attenuation: {} (0-30dB))",
+					 svalue);
 
 	return 1 / std::pow(10, value / 10.0);
 }
@@ -176,8 +170,8 @@ pcm_resample_soxr_global_init(const ConfigBlock &block)
 
 	if (recipe == SOXR_INVALID_RECIPE) {
 		assert(quality_string != nullptr);
-		throw FormatRuntimeError("unknown quality setting '%s' in line %d",
-					 quality_string, block.line);
+		throw FmtRuntimeError("unknown quality setting '{}' in line {}",
+				      quality_string, block.line);
 	} else if (recipe == SOXR_CUSTOM_RECIPE) {
 		// used to preset possible internal flags, like SOXR_RESET_ON_CLEAR
 		soxr_quality = soxr_quality_spec(SOXR_DEFAULT_RECIPE, 0);
@@ -222,8 +216,8 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 			   af.channels, &e,
 			   p_soxr_io, &soxr_quality, &soxr_runtime);
 	if (soxr == nullptr)
-		throw FormatRuntimeError("soxr initialization has failed: %s",
-					 e);
+		throw FmtRuntimeError("soxr initialization has failed: {}",
+				      e);
 
 	FmtDebug(soxr_domain, "soxr engine '{}'", soxr_engine(soxr));
 	if (soxr_use_custom_recipe)
@@ -284,7 +278,7 @@ SoxrPcmResampler::Resample(std::span<const std::byte> src)
 	soxr_error_t e = soxr_process(soxr, src.data(), n_frames, &i_done,
 				      output_buffer, o_frames, &o_done);
 	if (e != nullptr)
-		throw FormatRuntimeError("soxr error: %s", e);
+		throw FmtRuntimeError("soxr error: {}", e);
 
 	return { (const std::byte *)output_buffer, o_done * frame_size };
 }
@@ -301,7 +295,7 @@ SoxrPcmResampler::Flush()
 	soxr_error_t e = soxr_process(soxr, nullptr, 0, nullptr,
 				      output_buffer, o_frames, &o_done);
 	if (e != nullptr)
-		throw FormatRuntimeError("soxr error: %s", e);
+		throw FmtRuntimeError("soxr error: {}", e);
 
 	if (o_done == 0)
 		/* flush complete */

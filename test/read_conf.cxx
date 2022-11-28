@@ -20,10 +20,10 @@
 #include "config/Data.hxx"
 #include "config/Param.hxx"
 #include "config/File.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "util/PrintException.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,14 +40,14 @@ try {
 
 	const auto option = ParseConfigOptionName(name);
 	if (option == ConfigOption::MAX)
-		throw FormatRuntimeError("Unknown setting: %s", name);
+		throw FmtRuntimeError("Unknown setting: {}", name);
 
 	ConfigData config;
 	ReadConfigFile(config, config_path);
 
 	const auto *param = config.GetParam(option);
 	if (param == nullptr)
-		throw FormatRuntimeError("No such setting: %s", name);
+		throw FmtRuntimeError("No such setting: {}", name);
 
 	printf("%s\n", param->value.c_str());
 	return EXIT_SUCCESS;

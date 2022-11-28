@@ -59,7 +59,6 @@
 #include "config/Domain.hxx"
 #include "config/Parser.hxx"
 #include "config/PartitionConfig.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 
 #ifdef ENABLE_DAEMON

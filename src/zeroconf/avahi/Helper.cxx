@@ -22,7 +22,7 @@
 #include "lib/avahi/ErrorHandler.hxx"
 #include "lib/avahi/Publisher.hxx"
 #include "lib/avahi/Service.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <avahi-common/domain.h>
@@ -56,8 +56,8 @@ AvahiInit(EventLoop &event_loop, const char *service_name,
 	  const char *service_type, unsigned port)
 {
 	if (!avahi_is_valid_service_name(service_name))
-		throw FormatRuntimeError("Invalid zeroconf_name \"%s\"",
-					 service_name);
+		throw FmtRuntimeError("Invalid zeroconf_name \"{}\"",
+				      service_name);
 
 	auto client = shared_avahi_client.lock();
 	if (!client)

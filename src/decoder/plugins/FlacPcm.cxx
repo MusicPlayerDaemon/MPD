@@ -20,7 +20,7 @@
 #include "FlacPcm.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "lib/xiph/FlacAudioFormat.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <cassert>
 
@@ -30,8 +30,8 @@ FlacPcmImport::Open(unsigned sample_rate, unsigned bits_per_sample,
 {
 	auto sample_format = FlacSampleFormat(bits_per_sample);
 	if (sample_format == SampleFormat::UNDEFINED)
-		throw FormatRuntimeError("Unsupported FLAC bit depth: %u",
-					 bits_per_sample);
+		throw FmtRuntimeError("Unsupported FLAC bit depth: {}",
+				      bits_per_sample);
 
 	audio_format = CheckAudioFormat(sample_rate, sample_format, channels);
 }

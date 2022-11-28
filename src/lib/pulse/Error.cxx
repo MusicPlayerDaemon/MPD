@@ -18,7 +18,6 @@
  */
 
 #include "Error.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <pulse/context.h>
 #include <pulse/error.h>

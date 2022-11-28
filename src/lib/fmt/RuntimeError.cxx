@@ -1,8 +1,5 @@
 /*
- * Copyright 2007-2022 CM4all GmbH
- * All rights reserved.
- *
- * author: Max Kellermann <mk@cm4all.com>
+ * Copyright 2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,18 +27,19 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Error.hxx"
-#include "lib/fmt/RuntimeError.hxx"
+#include "RuntimeError.hxx"
+#include "ToBuffer.hxx"
 
-void
-ODBus::Error::Throw(const char *prefix) const
+std::runtime_error
+VFmtRuntimeError(fmt::string_view format_str, fmt::format_args args) noexcept
 {
-	throw FmtRuntimeError("{}: {}", prefix, GetMessage());
+	const auto msg = VFmtBuffer<512>(format_str, args);
+	return std::runtime_error{msg};
 }
 
-void
-ODBus::Error::CheckThrow(const char *prefix) const
+std::invalid_argument
+VFmtInvalidArgument(fmt::string_view format_str, fmt::format_args args) noexcept
 {
-	if (*this)
-		Throw(prefix);
+	const auto msg = VFmtBuffer<512>(format_str, args);
+	return std::invalid_argument{msg};
 }

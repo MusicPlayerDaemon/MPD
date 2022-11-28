@@ -19,7 +19,8 @@
 
 #include "ChannelsConverter.hxx"
 #include "PcmChannels.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/SpanCast.hxx"
 
 #include <cassert>
@@ -38,8 +39,8 @@ PcmChannelsConverter::Open(SampleFormat _format,
 		break;
 
 	default:
-		throw FormatRuntimeError("PCM channel conversion for %s is not implemented",
-					 sample_format_to_string(_format));
+		throw FmtRuntimeError("PCM channel conversion for {} is not implemented",
+				      _format);
 	}
 
 	format = _format;

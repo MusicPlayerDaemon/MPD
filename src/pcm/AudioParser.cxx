@@ -24,7 +24,7 @@
 
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <cassert>
 
@@ -46,7 +46,7 @@ ParseSampleRate(const char *src, bool mask, const char **endptr_r)
 	if (endptr == src) {
 		throw std::invalid_argument("Failed to parse the sample rate");
 	} else if (!audio_valid_sample_rate(value))
-		throw FormatInvalidArgument("Invalid sample rate: %lu", value);
+		throw FmtInvalidArgument("Invalid sample rate: {}", value);
 
 	*endptr_r = endptr;
 	return value;
@@ -100,8 +100,7 @@ ParseSampleFormat(const char *src, bool mask, const char **endptr_r)
 		break;
 
 	default:
-		throw FormatInvalidArgument("Invalid sample format: %lu",
-					    value);
+		throw FmtInvalidArgument("Invalid sample format: {}", value);
 	}
 
 	assert(audio_valid_sample_format(sample_format));
@@ -125,8 +124,7 @@ ParseChannelCount(const char *src, bool mask, const char **endptr_r)
 	if (endptr == src)
 		throw std::invalid_argument("Failed to parse the channel count");
 	else if (!audio_valid_channel_count(value))
-		throw FormatInvalidArgument("Invalid channel count: %u",
-					    value);
+		throw FmtInvalidArgument("Invalid channel count: {}", value);
 
 	*endptr_r = endptr;
 	return value;
@@ -152,8 +150,8 @@ ParseAudioFormat(const char *src, bool mask)
 			src = endptr + 1;
 			dest.channels = ParseChannelCount(src, mask, &src);
 			if (*src != 0)
-				throw FormatInvalidArgument("Extra data after channel count: %s",
-							    src);
+				throw FmtInvalidArgument("Extra data after channel count: {}",
+							 src);
 
 			return dest;
 		}
@@ -178,8 +176,8 @@ ParseAudioFormat(const char *src, bool mask)
 	dest.channels = ParseChannelCount(src, mask, &src);
 
 	if (*src != 0)
-		throw FormatInvalidArgument("Extra data after channel count: %s",
-					    src);
+		throw FmtInvalidArgument("Extra data after channel count: {}",
+					 src);
 
 	assert(mask
 	       ? dest.IsMaskValid()

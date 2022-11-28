@@ -21,11 +21,10 @@
 #include "../InputStream.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileInfo.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "io/FileReader.hxx"
 #include "io/FileDescriptor.hxx"
-#include "util/RuntimeError.hxx"
-
-#include <cinttypes> // for PRIu64 (PRIoffset)
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -63,8 +62,7 @@ OpenFileInputStream(Path path, Mutex &mutex)
 	const FileInfo info = reader.GetFileInfo();
 
 	if (!info.IsRegular())
-		throw FormatRuntimeError("Not a regular file: %s",
-					 path.c_str());
+		throw FmtRuntimeError("Not a regular file: {}", path);
 
 #ifdef POSIX_FADV_SEQUENTIAL
 	posix_fadvise(reader.GetFD().Get(), (off_t)0, info.GetSize(),
@@ -100,9 +98,9 @@ FileInputStream::Read(std::unique_lock<Mutex> &,
 	}
 
 	if (nbytes == 0 && !IsEOF())
-		throw FormatRuntimeError("Unexpected end of file %s"
-					 " at %" PRIoffset " of %" PRIoffset,
-					 GetURI(), GetOffset(), GetSize());
+		throw FmtRuntimeError("Unexpected end of file {}"
+				      " at {} of {}",
+				      GetURI(), GetOffset(), GetSize());
 
 	offset += nbytes;
 	return nbytes;

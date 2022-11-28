@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,40 +27,49 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RUNTIME_ERROR_HXX
-#define RUNTIME_ERROR_HXX
+#pragma once
+
+#include <fmt/core.h>
+#if FMT_VERSION >= 80000 && FMT_VERSION < 90000
+#include <fmt/format.h>
+#endif
 
 #include <stdexcept> // IWYU pragma: export
-#include <utility>
 
-#include <stdio.h>
+[[nodiscard]] [[gnu::pure]]
+std::runtime_error
+VFmtRuntimeError(fmt::string_view format_str, fmt::format_args args) noexcept;
 
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic push
-// TODO: fix this warning properly
-#pragma GCC diagnostic ignored "-Wformat-security"
-#endif
-
-template<typename... Args>
-static inline std::runtime_error
-FormatRuntimeError(const char *fmt, Args&&... args) noexcept
+template<typename S, typename... Args>
+[[nodiscard]] [[gnu::pure]]
+auto
+FmtRuntimeError(const S &format_str, Args&&... args) noexcept
 {
-	char buffer[1024];
-	snprintf(buffer, sizeof(buffer), fmt, std::forward<Args>(args)...);
-	return std::runtime_error(buffer);
+#if FMT_VERSION >= 90000
+	return VFmtRuntimeError(format_str,
+				fmt::make_format_args(args...));
+#else
+	return VFmtRuntimeError(fmt::to_string_view(format_str),
+				fmt::make_args_checked<Args...>(format_str,
+								args...));
+#endif
 }
 
-template<typename... Args>
-inline std::invalid_argument
-FormatInvalidArgument(const char *fmt, Args&&... args) noexcept
+[[nodiscard]] [[gnu::pure]]
+std::invalid_argument
+VFmtInvalidArgument(fmt::string_view format_str, fmt::format_args args) noexcept;
+
+template<typename S, typename... Args>
+[[nodiscard]] [[gnu::pure]]
+auto
+FmtInvalidArgument(const S &format_str, Args&&... args) noexcept
 {
-	char buffer[1024];
-	snprintf(buffer, sizeof(buffer), fmt, std::forward<Args>(args)...);
-	return std::invalid_argument(buffer);
+#if FMT_VERSION >= 90000
+	return VFmtInvalidArgument(format_str,
+				fmt::make_format_args(args...));
+#else
+	return VFmtInvalidArgument(fmt::to_string_view(format_str),
+				fmt::make_args_checked<Args...>(format_str,
+								args...));
+#endif
 }
-
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-
-#endif

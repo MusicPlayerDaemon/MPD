@@ -25,7 +25,7 @@
 #include "apple/Throw.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/plugins/OSXMixerPlugin.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"
 #include "pcm/Export.hxx"
@@ -247,8 +247,8 @@ osx_output_parse_channel_map(const char *device_name,
 
 	while (*channel_map_str) {
 		if (inserted_channels >= num_channels)
-			throw FormatRuntimeError("%s: channel map contains more than %u entries or trailing garbage",
-						 device_name, num_channels);
+			throw FmtRuntimeError("{}: channel map contains more than {} entries or trailing garbage",
+					      device_name, num_channels);
 
 		if (!want_number && *channel_map_str == ',') {
 			++channel_map_str;
@@ -262,8 +262,8 @@ osx_output_parse_channel_map(const char *device_name,
 			char *endptr;
 			channel_map[inserted_channels] = strtol(channel_map_str, &endptr, 10);
 			if (channel_map[inserted_channels] < -1)
-				throw FormatRuntimeError("%s: channel map value %d not allowed (must be -1 or greater)",
-							 device_name, channel_map[inserted_channels]);
+				throw FmtRuntimeError("{}: channel map value {} not allowed (must be -1 or greater)",
+						      device_name, channel_map[inserted_channels]);
 
 			channel_map_str = endptr;
 			want_number = false;
@@ -275,13 +275,13 @@ osx_output_parse_channel_map(const char *device_name,
 			continue;
 		}
 
-		throw FormatRuntimeError("%s: invalid character '%c' in channel map",
-					 device_name, *channel_map_str);
+		throw FmtRuntimeError("{}: invalid character '{}' in channel map",
+				      device_name, *channel_map_str);
 	}
 
 	if (inserted_channels < num_channels)
-		throw FormatRuntimeError("%s: channel map contains less than %u entries",
-					 device_name, num_channels);
+		throw FmtRuntimeError("{}: channel map contains less than {} entries",
+				      device_name, num_channels);
 }
 
 static UInt32
@@ -453,8 +453,8 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 						 sizeof(output_format),
 						 &output_format);
 		if (err != noErr)
-			throw FormatRuntimeError("Failed to change the stream format: %d",
-						 err);
+			throw FmtRuntimeError("Failed to change the stream format: {}",
+					      err);
 	}
 
 	return output_format.mSampleRate;
@@ -582,8 +582,7 @@ FindAudioDeviceByName(const char *name)
 			return id;
 	}
 
-	throw FormatRuntimeError("Found no audio device with name '%s' ",
-				 name);
+	throw FmtRuntimeError("Found no audio device names '{}'", name);
 }
 
 static void

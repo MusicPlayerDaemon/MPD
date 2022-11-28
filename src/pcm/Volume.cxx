@@ -20,7 +20,8 @@
 #include "Volume.hxx"
 #include "Silence.hxx"
 #include "Traits.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/TransformN.hxx"
 
 #include "Dither.cxx" // including the .cxx file to get inlined templates
@@ -154,8 +155,8 @@ PcmVolume::Open(SampleFormat _format, bool allow_convert)
 
 	switch (_format) {
 	case SampleFormat::UNDEFINED:
-		throw FormatRuntimeError("Software volume for %s is not implemented",
-					 sample_format_to_string(_format));
+		throw FmtRuntimeError("Software volume for {} is not implemented",
+				      _format);
 
 	case SampleFormat::S8:
 		break;

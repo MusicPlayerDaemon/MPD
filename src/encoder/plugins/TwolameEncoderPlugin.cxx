@@ -20,8 +20,8 @@
 #include "TwolameEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/NumberParser.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/SpanCast.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -96,9 +96,9 @@ PreparedTwolameEncoder::PreparedTwolameEncoder(const ConfigBlock &block)
 		quality = float(ParseDouble(value, &endptr));
 
 		if (*endptr != '\0' || quality < -1.0f || quality > 10.0f)
-			throw FormatRuntimeError("quality \"%s\" is not a number in the "
-						 "range -1 to 10",
-						 value);
+			throw FmtRuntimeError("quality \"{}\" is not a number in the "
+					      "range -1 to 10",
+					      value);
 
 		if (block.GetBlockValue("bitrate") != nullptr)
 			throw std::runtime_error("quality and bitrate are both defined");

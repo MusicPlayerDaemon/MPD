@@ -18,7 +18,7 @@
  */
 
 #include "Error.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 extern "C" {
 #include <libavutil/error.h>
@@ -37,5 +37,5 @@ MakeFfmpegError(int errnum, const char *prefix)
 {
 	char msg[256];
 	av_strerror(errnum, msg, sizeof(msg));
-	return FormatRuntimeError("%s: %s", prefix, msg);
+	return FmtRuntimeError("{}: {}", prefix, msg);
 }

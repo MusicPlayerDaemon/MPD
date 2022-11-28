@@ -27,7 +27,6 @@
 #include "lib/upnp/Error.hxx"
 #include "Directory.hxx"
 #include "util/NumberParser.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringFormat.hxx"
 

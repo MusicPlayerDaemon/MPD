@@ -19,11 +19,11 @@
 
 #include "PlaylistDatabase.hxx"
 #include "db/PlaylistVector.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "io/LineReader.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/StringStrip.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <fmt/format.h>
 
@@ -55,8 +55,7 @@ playlist_metadata_load(LineReader &file, PlaylistVector &pv, const char *name)
 	       std::strcmp(line, "playlist_end") != 0) {
 		colon = std::strchr(line, ':');
 		if (colon == nullptr || colon == line)
-			throw FormatRuntimeError("unknown line in db: %s",
-						 line);
+			throw FmtRuntimeError("unknown line in db: {}", line);
 
 		*colon++ = 0;
 		value = StripLeft(colon);
@@ -64,8 +63,7 @@ playlist_metadata_load(LineReader &file, PlaylistVector &pv, const char *name)
 		if (std::strcmp(line, "mtime") == 0)
 			pm.mtime = std::chrono::system_clock::from_time_t(strtol(value, nullptr, 10));
 		else
-			throw FormatRuntimeError("unknown line in db: %s",
-						 line);
+			throw FmtRuntimeError("unknown line in db: {}", line);
 	}
 
 	pv.UpdateOrInsert(std::move(pm));

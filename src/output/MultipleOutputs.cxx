@@ -27,7 +27,7 @@
 #include "config/Block.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
 #include <cassert>
@@ -62,8 +62,8 @@ try {
 				mixer_listener);
 } catch (...) {
 	if (block.line > 0)
-		std::throw_with_nested(FormatRuntimeError("Failed to configure output in line %i",
-							  block.line));
+		std::throw_with_nested(FmtRuntimeError("Failed to configure output in line {}",
+						       block.line));
 	else
 		throw;
 }
@@ -99,9 +99,9 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 						client, block, defaults,
 						&filter_factory);
 		if (HasName(output->GetName()))
-			throw FormatRuntimeError("output devices with identical "
-						 "names: %s",
-						 output->GetName().c_str());
+			throw FmtRuntimeError("output devices with identical "
+					      "names: {}",
+					      output->GetName());
 
 		outputs.emplace_back(std::move(output));
 	});

@@ -20,11 +20,11 @@
 #include "OssMixerPlugin.hxx"
 #include "mixer/Mixer.hxx"
 #include "config/Block.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "io/FileDescriptor.hxx"
 #include "lib/fmt/SystemError.hxx"
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <cassert>
@@ -91,8 +91,8 @@ OssMixer::Configure(const ConfigBlock &block)
 	if (control != NULL) {
 		volume_control = oss_find_mixer(control);
 		if (volume_control < 0)
-			throw FormatRuntimeError("no such mixer control: %s",
-						 control);
+			throw FmtRuntimeError("no such mixer control: {}",
+					      control);
 	} else
 		volume_control = SOUND_MIXER_PCM;
 }

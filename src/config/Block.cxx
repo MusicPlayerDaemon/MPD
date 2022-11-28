@@ -21,15 +21,15 @@
 #include "Parser.hxx"
 #include "Path.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <stdlib.h>
 
 void
 BlockParam::ThrowWithNested() const
 {
-	std::throw_with_nested(FormatRuntimeError("Error in setting \"%s\" on line %i",
-						  name.c_str(), line));
+	std::throw_with_nested(FmtRuntimeError("Error in setting \"{}\" on line {}",
+					       name, line));
 }
 
 int
@@ -39,7 +39,7 @@ BlockParam::GetIntValue() const
 	char *endptr;
 	long value2 = strtol(s, &endptr, 0);
 	if (endptr == s || *endptr != 0)
-		throw FormatRuntimeError("Not a valid number in line %i", line);
+		throw FmtRuntimeError("Not a valid number in line {}", line);
 
 	return value2;
 }
@@ -147,6 +147,6 @@ ConfigBlock::GetBlockValue(const char *name, bool default_value) const
 void
 ConfigBlock::ThrowWithNested() const
 {
-	std::throw_with_nested(FormatRuntimeError("Error in block on line %i",
-						  line));
+	std::throw_with_nested(FmtRuntimeError("Error in block on line {}",
+					       line));
 }

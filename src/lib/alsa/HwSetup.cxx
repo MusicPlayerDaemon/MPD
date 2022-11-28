@@ -22,9 +22,9 @@
 #include "Format.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/ToBuffer.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "Log.hxx"
 #include "config.h"
@@ -224,8 +224,8 @@ SetupHw(snd_pcm_t *pcm,
 						     requested_sample_rate));
 
 	if (output_sample_rate == 0)
-		throw FormatRuntimeError("Failed to configure sample rate %u Hz",
-					 audio_format.sample_rate);
+		throw FmtRuntimeError("Failed to configure sample rate {} Hz",
+				      audio_format.sample_rate);
 
 	if (output_sample_rate != requested_sample_rate)
 		audio_format.sample_rate = params.CalcInputSampleRate(output_sample_rate);

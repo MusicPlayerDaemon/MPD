@@ -18,13 +18,13 @@
  */
 
 #include "PulseMixerPlugin.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "lib/pulse/LogError.hxx"
 #include "lib/pulse/LockGuard.hxx"
 #include "mixer/Mixer.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
 #include "util/NumberParser.hxx"
-#include "util/RuntimeError.hxx"
 #include "config/Block.hxx"
 
 #include <pulse/context.h>
@@ -177,9 +177,9 @@ parse_volume_scale_factor(const char *value) {
 	float factor = ParseFloat(value, &endptr);
 
 	if (endptr == value || *endptr != '\0' || factor < 0.5f || factor > 5.0f)
-		throw FormatRuntimeError("\"%s\" is not a number in the "
-					 "range 0.5 to 5.0",
-					 value);
+		throw FmtRuntimeError("\"{}\" is not a number in the "
+				      "range 0.5 to 5.0",
+				      value);
 
 	return factor;
 }

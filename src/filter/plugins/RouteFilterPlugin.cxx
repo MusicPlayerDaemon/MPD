@@ -47,8 +47,8 @@
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Buffer.hxx"
 #include "pcm/Silence.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringStrip.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <array>
 #include <cstdint>
@@ -159,8 +159,8 @@ PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
 			throw std::runtime_error("Malformed 'routes' specification");
 
 		if (source >= MAX_CHANNELS)
-			throw FormatRuntimeError("Invalid source channel number: %u",
-						 source);
+			throw FmtRuntimeError("Invalid source channel number: {}",
+					      source);
 
 		if (source >= min_input_channels)
 			min_input_channels = source + 1;
@@ -173,8 +173,8 @@ PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
 			throw std::runtime_error("Malformed 'routes' specification");
 
 		if (dest >= MAX_CHANNELS)
-			throw FormatRuntimeError("Invalid destination channel number: %u",
-						 dest);
+			throw FmtRuntimeError("Invalid destination channel number: {}",
+					      dest);
 
 		if (dest >= min_output_channels)
 			min_output_channels = dest + 1;

@@ -27,6 +27,7 @@
 #include "config/Net.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketUtil.hxx"
@@ -35,7 +36,6 @@
 #include "fs/StandardDirectory.hxx"
 #include "fs/XDG.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <sys/stat.h>
 
@@ -129,9 +129,9 @@ listen_global_init(const ConfigData &config, ClientListener &listener)
 			ServerSocketAddGeneric(listener, param.value.c_str(),
 					       port);
 		} catch (...) {
-			std::throw_with_nested(FormatRuntimeError("Failed to listen on %s (line %i)",
-								  param.value.c_str(),
-								  param.line));
+			std::throw_with_nested(FmtRuntimeError("Failed to listen on {} (line {})",
+							       param.value,
+							       param.line));
 		}
 	}
 
@@ -146,7 +146,8 @@ listen_global_init(const ConfigData &config, ClientListener &listener)
 		try {
 			listener.AddPort(port);
 		} catch (...) {
-			std::throw_with_nested(FormatRuntimeError("Failed to listen on *:%d: ", port));
+			std::throw_with_nested(FmtRuntimeError("Failed to listen on *:{}",
+							       port));
 		}
 	}
 

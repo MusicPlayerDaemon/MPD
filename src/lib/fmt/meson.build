@@ -10,6 +10,7 @@ endif
 
 fmt = static_library(
   'fmt',
+  'RuntimeError.cxx',
   'SystemError.cxx',
   include_directories: inc,
   dependencies: libfmt,

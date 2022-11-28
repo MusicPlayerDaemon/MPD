@@ -20,7 +20,6 @@
 #include "NonBlock.hxx"
 #include "Error.hxx"
 #include "event/MultiSocketMonitor.hxx"
-#include "util/RuntimeError.hxx"
 
 Event::Duration
 AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)

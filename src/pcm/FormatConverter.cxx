@@ -19,7 +19,8 @@
 
 #include "FormatConverter.hxx"
 #include "PcmFormat.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <cassert>
 
@@ -36,9 +37,8 @@ PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format)
 
 	case SampleFormat::S8:
 	case SampleFormat::DSD:
-		throw FormatRuntimeError("PCM conversion from %s to %s is not implemented",
-					 sample_format_to_string(_src_format),
-					 sample_format_to_string(_dest_format));
+		throw FmtRuntimeError("PCM conversion from {} to {} is not implemented",
+				      _src_format, _dest_format);
 
 	case SampleFormat::S16:
 	case SampleFormat::S24_P32:

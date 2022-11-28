@@ -19,8 +19,7 @@
 
 #include "QobuzErrorParser.hxx"
 #include "lib/yajl/Callbacks.hxx"
-#include "util/RuntimeError.hxx"
-
+#include "lib/fmt/RuntimeError.hxx"
 
 using std::string_view_literals::operator""sv;
 
@@ -46,7 +45,7 @@ QobuzErrorParser::QobuzErrorParser(unsigned _status,
 {
 	auto i = headers.find("content-type");
 	if (i == headers.end() || i->second.find("/json") == i->second.npos)
-		throw FormatRuntimeError("Status %u from Qobuz", status);
+		throw FmtRuntimeError("Status {} from Qobuz", status);
 }
 
 void
@@ -55,10 +54,9 @@ QobuzErrorParser::OnEnd()
 	YajlResponseParser::OnEnd();
 
 	if (!message.empty())
-		throw FormatRuntimeError("Error from Qobuz: %s",
-					 message.c_str());
+		throw FmtRuntimeError("Error from Qobuz: {}", message);
 	else
-		throw FormatRuntimeError("Status %u from Qobuz", status);
+		throw FmtRuntimeError("Status {} from Qobuz", status);
 }
 
 inline bool

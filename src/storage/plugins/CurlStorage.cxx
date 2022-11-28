@@ -30,12 +30,12 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Escape.hxx"
 #include "lib/expat/ExpatParser.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "fs/Traits.hxx"
 #include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hxx"
@@ -302,8 +302,8 @@ private:
 	/* virtual methods from CurlResponseHandler */
 	void OnHeaders(unsigned status, Curl::Headers &&headers) final {
 		if (status != 207)
-			throw FormatRuntimeError("Status %d from WebDAV server; expected \"207 Multi-Status\"",
-						 status);
+			throw FmtRuntimeError("Status {} from WebDAV server; expected \"207 Multi-Status\"",
+					      status);
 
 		if (!IsXmlContentType(headers))
 			throw std::runtime_error("Unexpected Content-Type from WebDAV server");

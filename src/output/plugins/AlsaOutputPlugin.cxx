@@ -25,6 +25,7 @@
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/PeriodBuffer.hxx"
 #include "lib/alsa/Version.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/ToBuffer.hxx"
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
@@ -34,7 +35,6 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Manual.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/InjectEvent.hxx"
@@ -846,8 +846,8 @@ AlsaOutput::Open(AudioFormat &audio_format)
 			   );
 	} catch (...) {
 		snd_pcm_close(pcm);
-		std::throw_with_nested(FormatRuntimeError("Error opening ALSA device \"%s\"",
-							  GetDevice()));
+		std::throw_with_nested(FmtRuntimeError("Error opening ALSA device \"{}\"",
+						       GetDevice()));
 	}
 
 	work_around_drain_bug = MaybeDmix(pcm) &&

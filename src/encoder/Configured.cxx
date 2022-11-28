@@ -21,8 +21,8 @@
 #include "EncoderList.hxx"
 #include "EncoderPlugin.hxx"
 #include "config/Block.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
-#include "util/RuntimeError.hxx"
 
 static const EncoderPlugin &
 GetConfiguredEncoderPlugin(const ConfigBlock &block, bool shout_legacy)
@@ -43,7 +43,7 @@ GetConfiguredEncoderPlugin(const ConfigBlock &block, bool shout_legacy)
 
 	const auto plugin = encoder_plugin_get(name);
 	if (plugin == nullptr)
-		throw FormatRuntimeError("No such encoder: %s", name);
+		throw FmtRuntimeError("No such encoder: {}", name);
 
 	return *plugin;
 }

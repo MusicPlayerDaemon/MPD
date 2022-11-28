@@ -28,9 +28,9 @@
 #include "../MemorySongEnumerator.hxx"
 #include "lib/xiph/FlacMetadataChain.hxx"
 #include "lib/xiph/FlacMetadataIterator.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <FLAC/metadata.h>
 
@@ -67,8 +67,8 @@ flac_playlist_open_stream(InputStreamPtr &&is)
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(*is))
-		throw FormatRuntimeError("Failed to read FLAC metadata: %s",
-					 chain.GetStatusString());
+		throw FmtRuntimeError("Failed to read FLAC metadata: {}",
+				      chain.GetStatusString());
 
 	FlacMetadataIterator iterator((FLAC__Metadata_Chain *)chain);
 

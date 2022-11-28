@@ -22,8 +22,8 @@
 #include "ParseName.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/ASCII.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringStrip.hxx"
@@ -59,8 +59,8 @@ TagLoadConfig(const ConfigData &config)
 
 		const auto type = tag_name_parse_i(name);
 		if (type == TAG_NUM_OF_ITEM_TYPES)
-			throw FormatRuntimeError("error parsing metadata item \"%s\"",
-						 name);
+			throw FmtRuntimeError("error parsing metadata item \"{}\"",
+					      name);
 
 		if (plus)
 			global_tag_mask.Set(type);

@@ -26,10 +26,10 @@
 #include "io/LineReader.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "time/ChronoUtil.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "util/NumberParser.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <fmt/format.h>
 
@@ -126,8 +126,7 @@ static Directory *
 directory_load_subdir(LineReader &file, Directory &parent, std::string_view name)
 {
 	if (parent.FindChild(name) != nullptr)
-		throw FormatRuntimeError("Duplicate subdirectory '%.*s'",
-					 int(name.size()), name.data());
+		throw FmtRuntimeError("Duplicate subdirectory '{}'", name);
 
 	Directory *directory = parent.CreateChild(name);
 
@@ -141,7 +140,7 @@ directory_load_subdir(LineReader &file, Directory &parent, std::string_view name
 				break;
 
 			if (!ParseLine(*directory, line))
-				throw FormatRuntimeError("Malformed line: %s", line);
+				throw FmtRuntimeError("Malformed line: {}", line);
 		}
 
 		directory_load(file, *directory);
@@ -167,7 +166,8 @@ directory_load(LineReader &file, Directory &directory)
 			const char *name = p;
 
 			if (directory.FindSong(name) != nullptr)
-				throw FormatRuntimeError("Duplicate song '%s'", name);
+				throw FmtRuntimeError("Duplicate song '{}'",
+						      name);
 
 			std::string target;
 			auto detached_song = song_load(file, name,
@@ -182,7 +182,7 @@ directory_load(LineReader &file, Directory &directory)
 			const char *name = p;
 			playlist_metadata_load(file, directory.playlists, name);
 		} else {
-			throw FormatRuntimeError("Malformed line: %s", line);
+			throw FmtRuntimeError("Malformed line: {}", line);
 		}
 	}
 }

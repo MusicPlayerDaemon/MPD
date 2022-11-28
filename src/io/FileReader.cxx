@@ -62,7 +62,7 @@ FileReader::Read(void *data, std::size_t size)
 
 	DWORD nbytes;
 	if (!ReadFile(handle, data, size, &nbytes, nullptr))
-		throw FmtLastError("Failed to read from %s", path);
+		throw FmtLastError("Failed to read from {}", path);
 
 	return nbytes;
 }

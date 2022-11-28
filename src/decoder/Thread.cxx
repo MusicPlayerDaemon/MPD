@@ -29,11 +29,11 @@
 #include "input/InputStream.hxx"
 #include "input/Registry.hxx"
 #include "DecoderList.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "system/Error.hxx"
 #include "util/MimeType.hxx"
 #include "util/UriExtract.hxx"
 #include "util/UriUtil.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
@@ -455,8 +455,8 @@ try {
 	if (!allocated.empty())
 		error_uri = allocated.c_str();
 
-	std::throw_with_nested(FormatRuntimeError("Failed to decode %s",
-						  error_uri));
+	std::throw_with_nested(FmtRuntimeError("Failed to decode {}",
+					       error_uri));
 }
 
 /**
@@ -521,7 +521,7 @@ decoder_run_song(DecoderControl &dc,
 		if (!allocated.empty())
 			error_uri = allocated.c_str();
 
-		throw FormatRuntimeError("Failed to decode %s", error_uri);
+		throw FmtRuntimeError("Failed to decode {}", error_uri);
 	}
 
 	dc.client_cond.notify_one();

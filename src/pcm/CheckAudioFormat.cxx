@@ -19,30 +19,30 @@
 
 #include "CheckAudioFormat.hxx"
 #include "AudioFormat.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 void
 CheckSampleRate(unsigned long sample_rate)
 {
 	if (!audio_valid_sample_rate(sample_rate))
-		throw FormatRuntimeError("Invalid sample rate: %lu",
-					 sample_rate);
+		throw FmtRuntimeError("Invalid sample rate: {}",
+				      sample_rate);
 }
 
 void
 CheckSampleFormat(SampleFormat sample_format)
 {
 	if (!audio_valid_sample_format(sample_format))
-		throw FormatRuntimeError("Invalid sample format: %u",
-					 unsigned(sample_format));
+		throw FmtRuntimeError("Invalid sample format: {}",
+				      unsigned(sample_format));
 }
 
 void
 CheckChannelCount(unsigned channels)
 {
 	if (!audio_valid_channel_count(channels))
-		throw FormatRuntimeError("Invalid channel count: %u",
-					 channels);
+		throw FmtRuntimeError("Invalid channel count: {}",
+				      channels);
 }
 
 AudioFormat

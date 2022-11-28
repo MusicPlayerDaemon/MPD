@@ -24,12 +24,12 @@
 #include "Domain.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
 #include "thread/Name.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <cassert>
@@ -145,8 +145,8 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 					output->prepared_other_replay_gain_filter.get(),
 					*output->prepared_filter);
 		} catch (...) {
-			std::throw_with_nested(FormatRuntimeError("Failed to open filter for %s",
-								  GetLogName()));
+			std::throw_with_nested(FmtRuntimeError("Failed to open filter for {}",
+							       GetLogName()));
 		}
 
 		try {

@@ -18,7 +18,7 @@
  */
 
 #include "Parser.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
 
@@ -36,7 +36,7 @@ ParseBool(const char *value)
 	if (StringArrayContainsCase(f, value))
 		return false;
 
-	throw FormatRuntimeError(R"(Not a valid boolean ("yes" or "no"): "%s")", value);
+	throw FmtRuntimeError(R"(Not a valid boolean ("yes" or "no"): "{}")", value);
 }
 
 long

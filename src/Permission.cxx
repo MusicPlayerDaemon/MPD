@@ -22,11 +22,11 @@
 #include "config/Param.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "net/AddressInfo.hxx"
 #include "net/Resolver.hxx"
 #include "net/ToString.hxx"
 #include "util/IterableSplitString.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringSplit.hxx"
 
 #include <cassert>
@@ -68,8 +68,7 @@ ParsePermission(std::string_view s)
 		if (s == i->name)
 			return i->value;
 
-	throw FormatRuntimeError("unknown permission \"%.*s\"",
-				 int(s.size()), s.data());
+	throw FmtRuntimeError("unknown permission \"{}\"", s);
 }
 
 static unsigned
@@ -103,8 +102,8 @@ initPermissions(const ConfigData &config)
 			const auto [password, permissions] =
 				Split(value, PERMISSION_PASSWORD_CHAR);
 			if (permissions.data() == nullptr)
-				throw FormatRuntimeError("\"%c\" not found in password string",
-							 PERMISSION_PASSWORD_CHAR);
+				throw FmtRuntimeError("\"{}\" not found in password string",
+						      PERMISSION_PASSWORD_CHAR);
 
 			permission_passwords.emplace(password,
 						     parsePermissions(permissions));

@@ -33,7 +33,7 @@
 #include "Resolver.hxx"
 #include "AddressInfo.hxx"
 #include "HostParser.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/CharUtil.hxx"
 
 #ifdef _WIN32
@@ -54,11 +54,17 @@ Resolve(const char *node, const char *service,
 {
 	struct addrinfo *ai;
 	int error = getaddrinfo(node, service, hints, &ai);
-	if (error != 0)
-		throw FormatRuntimeError("Failed to resolve '%s':'%s': %s",
-					 node == nullptr ? "" : node,
-					 service == nullptr ? "" : service,
-					 gai_strerror(error));
+	if (error != 0) {
+#ifdef _WIN32
+		const char *msg = gai_strerrorA(error);
+#else
+		const char *msg = gai_strerror(error);
+#endif
+		throw FmtRuntimeError("Failed to resolve '{}':'{}': {}",
+				      node == nullptr ? "" : node,
+				      service == nullptr ? "" : service,
+				      msg);
+	}
 
 	return AddressInfoList(ai);
 }
@@ -89,7 +95,7 @@ FindAndResolveInterfaceName(char *host, size_t size)
 
 	const unsigned i = if_nametoindex(interface);
 	if (i == 0)
-		throw FormatRuntimeError("No such interface: %s", interface);
+		throw FmtRuntimeError("No such interface: {}", interface);
 
 	sprintf(interface, "%u", i);
 }

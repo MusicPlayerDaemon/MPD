@@ -30,6 +30,7 @@ pcm_basic = static_library(
   include_directories: inc,
   dependencies: [
     util_dep,
+    fmt_dep,
   ],
 )
 

@@ -25,17 +25,17 @@
 #include "song/DetachedSong.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "lib/icu/Converter.hxx"
 #ifdef HAVE_SIDPLAYFP
 #include "io/FileReader.hxx"
-#include "util/RuntimeError.hxx"
 #endif
 #include "util/StringFormat.hxx"
 #include "util/Domain.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #ifdef HAVE_SIDPLAYFP
@@ -88,10 +88,7 @@ static void loadRom(const Path rom_path, uint8_t *dump)
 {
 	FileReader romDump(rom_path);
 	if (romDump.Read(dump, rom_size) != rom_size)
-	{
-		throw FormatRuntimeError
-			("Could not load rom dump '%s'", rom_path.c_str());
-	}
+		throw FmtRuntimeError("Could not load rom dump '{}'", rom_path);
 }
 #endif
 
@@ -108,8 +105,8 @@ sidplay_load_songlength_db(const Path path)
 	bool error = db->open(path.c_str()) < 0;
 #endif
 	if (error)
-		throw FormatRuntimeError("unable to read songlengths file %s: %s",
-					 path.c_str(), db->error());
+		throw FmtRuntimeError("unable to read songlengths file {}: {}",
+				      path, db->error());
 
 	return db;
 }

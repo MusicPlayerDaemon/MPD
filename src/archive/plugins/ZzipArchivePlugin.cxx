@@ -26,16 +26,15 @@
 #include "../ArchiveFile.hxx"
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "fs/Path.hxx"
 #include "lib/fmt/SystemError.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/UTF8.hxx"
 
 #include <zzip/zzip.h>
 
 #include <utility>
-
-#include <cinttypes> /* for PRIoffset (PRIu64) */
 
 struct ZzipDir {
 	ZZIP_DIR *const dir;
@@ -43,8 +42,8 @@ struct ZzipDir {
 	explicit ZzipDir(Path path)
 		:dir(zzip_dir_open(path.c_str(), nullptr)) {
 		if (dir == nullptr)
-			throw FormatRuntimeError("Failed to open ZIP file %s",
-						 path.c_str());
+			throw FmtRuntimeError("Failed to open ZIP file {}",
+					      path);
 	}
 
 	~ZzipDir() noexcept {
@@ -140,9 +139,9 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 					      pathname);
 
 		default:
-			throw FormatRuntimeError("Failed to open '%s' in ZIP file: %s",
-						 pathname,
-						 zzip_strerror(error));
+			throw FmtRuntimeError("Failed to open '{}' in ZIP file: {}",
+					      pathname,
+					      zzip_strerror(error));
 		}
 	}
 
@@ -161,9 +160,8 @@ ZzipInputStream::Read(std::unique_lock<Mutex> &, void *ptr, size_t read_size)
 		throw std::runtime_error("zzip_file_read() has failed");
 
 	if (nbytes == 0 && !IsEOF())
-		throw FormatRuntimeError("Unexpected end of file %s"
-					 " at %" PRIoffset " of %" PRIoffset,
-					 GetURI(), GetOffset(), GetSize());
+		throw FmtRuntimeError("Unexpected end of file {} at {} of {}",
+				      GetURI(), GetOffset(), GetSize());
 
 	offset = zzip_tell(file);
 	return nbytes;

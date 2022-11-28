@@ -21,10 +21,10 @@
 #include "MikmodDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "tag/Handler.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 #include "Version.h"
 
@@ -111,8 +111,8 @@ mikmod_decoder_init(const ConfigBlock &block)
 	mikmod_loop = block.GetBlockValue("loop", false);
 	mikmod_sample_rate = block.GetPositiveValue("sample_rate", 44100U);
 	if (!audio_valid_sample_rate(mikmod_sample_rate))
-		throw FormatRuntimeError("Invalid sample rate in line %d: %u",
-					 block.line, mikmod_sample_rate);
+		throw FmtRuntimeError("Invalid sample rate in line {}: {}",
+				      block.line, mikmod_sample_rate);
 
 	md_device = 0;
 	md_reverb = 0;

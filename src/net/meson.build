@@ -49,6 +49,9 @@ net = static_library(
   'SocketDescriptor.cxx',
   'SocketError.cxx',
   include_directories: inc,
+  dependencies: [
+    fmt_dep,
+  ],
 )
 
 net_dep = declare_dependency(

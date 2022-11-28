@@ -19,12 +19,12 @@
 
 #include "VorbisEncoderPlugin.hxx"
 #include "OggEncoder.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "lib/xiph/VorbisComment.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "config/Domain.hxx"
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <vorbis/vorbisenc.h>
 
@@ -88,9 +88,9 @@ PreparedVorbisEncoder::PreparedVorbisEncoder(const ConfigBlock &block)
 		quality = ParseDouble(value, &endptr);
 
 		if (*endptr != '\0' || quality < -1.0f || quality > 10.0f)
-			throw FormatRuntimeError("quality \"%s\" is not a number in the "
-						 "range -1 to 10",
-						 value);
+			throw FmtRuntimeError("quality \"{}\" is not a number in the "
+					      "range -1 to 10",
+					      value);
 
 		if (block.GetBlockValue("bitrate") != nullptr)
 			throw std::runtime_error("quality and bitrate are both defined");

@@ -24,6 +24,7 @@
 #include "OpusTags.hxx"
 #include "lib/xiph/OggPacket.hxx"
 #include "lib/xiph/OggFind.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "../DecoderAPI.hxx"
 #include "decoder/Reader.hxx"
 #include "input/Reader.hxx"
@@ -31,7 +32,6 @@
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
 #include "input/InputStream.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <opus.h>
@@ -206,8 +206,8 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	assert(IsInitialized() == (output_buffer != nullptr));
 
 	if (IsInitialized() && channels != previous_channels)
-		throw FormatRuntimeError("Next stream has different channels (%u -> %u)",
-					 previous_channels, channels);
+		throw FmtRuntimeError("Next stream has different channels ({} -> {})",
+				      previous_channels, channels);
 
 	/* TODO: parse attributes from the OpusHead (sample rate,
 	   channels, ...) */
@@ -216,8 +216,8 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	opus_decoder = opus_decoder_create(opus_sample_rate, channels,
 					   &opus_error);
 	if (opus_decoder == nullptr)
-		throw FormatRuntimeError("libopus error: %s",
-					 opus_strerror(opus_error));
+		throw FmtRuntimeError("libopus error: {}",
+				      opus_strerror(opus_error));
 
 	if (IsInitialized()) {
 		/* decoder was already initialized by the previous
@@ -318,8 +318,8 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 				  0);
 	if (gcc_unlikely(nframes <= 0)) {
 		if (nframes < 0)
-			throw FormatRuntimeError("libopus error: %s",
-						 opus_strerror(nframes));
+			throw FmtRuntimeError("libopus error: {}",
+					      opus_strerror(nframes));
 		else
 			return;
 	}

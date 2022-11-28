@@ -37,9 +37,9 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "tag/ParseName.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/RecursiveMap.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
 #include "event/SocketEvent.hxx"
 #include "event/IdleEvent.hxx"
@@ -507,9 +507,9 @@ ProxyDatabase::Connect()
 		if (mpd_connection_cmp_server_version(connection, 0, 20, 0) < 0) {
 			const unsigned *version =
 				mpd_connection_get_server_version(connection);
-			throw FormatRuntimeError("Connect to MPD %u.%u.%u, but this "
-						 "plugin requires at least version 0.20",
-						 version[0], version[1], version[2]);
+			throw FmtRuntimeError("Connect to MPD {}.{}.{}, but this "
+					      "plugin requires at least version 0.20",
+					      version[0], version[1], version[2]);
 		}
 
 		if (!password.empty() &&
@@ -521,8 +521,8 @@ ProxyDatabase::Connect()
 
 		std::throw_with_nested(host.empty()
 				       ? std::runtime_error("Failed to connect to remote MPD")
-				       : FormatRuntimeError("Failed to connect to remote MPD '%s'",
-							    host.c_str()));
+				       : FmtRuntimeError("Failed to connect to remote MPD '{}'",
+							 host));
 	}
 
 	mpd_connection_set_keepalive(connection, keepalive);

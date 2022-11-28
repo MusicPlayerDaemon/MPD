@@ -20,9 +20,9 @@
 #include "config.h"
 #include "Daemon.hxx"
 #include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/SystemError.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/RuntimeError.hxx"
 
 #ifndef _WIN32
 #include "PidFile.hxx"
@@ -217,7 +217,7 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 	if (user) {
 		struct passwd *pwd = getpwnam(user);
 		if (pwd == nullptr)
-			throw FormatRuntimeError("no such user \"%s\"", user);
+			throw FmtRuntimeError("no such user \"{}\"", user);
 
 		user_uid = pwd->pw_uid;
 		user_gid = pwd->pw_gid;
@@ -231,8 +231,7 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 	if (group) {
 		struct group *grp = getgrnam(group);
 		if (grp == nullptr)
-			throw FormatRuntimeError("no such group \"%s\"",
-						 group);
+			throw FmtRuntimeError("no such group \"{}\"", group);
 		user_gid = grp->gr_gid;
 		had_group = true;
 	}

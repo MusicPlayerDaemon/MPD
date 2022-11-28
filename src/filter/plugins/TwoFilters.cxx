@@ -19,7 +19,8 @@
 
 #include "TwoFilters.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringBuffer.hxx"
 
 std::span<const std::byte>
@@ -50,9 +51,8 @@ PreparedTwoFilters::Open(AudioFormat &audio_format)
 	auto b = second->Open(b_in_format);
 
 	if (b_in_format != a_out_format)
-		throw FormatRuntimeError("Audio format not supported by filter '%s': %s",
-					 second_name.c_str(),
-					 ToString(a_out_format).c_str());
+		throw FmtRuntimeError("Audio format not supported by filter '{}': {}",
+				      second_name, a_out_format);
 
 	return std::make_unique<TwoFilters>(std::move(a),
 					    std::move(b));

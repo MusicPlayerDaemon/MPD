@@ -19,10 +19,10 @@
 
 #include "AoOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "thread/SafeSingleton.hxx"
 #include "system/Error.hxx"
 #include "util/IterableSplitString.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringSplit.hxx"
@@ -121,8 +121,8 @@ AoOutput::AoOutput(const ConfigBlock &block)
 		driver = ao_driver_id(value);
 
 	if (driver < 0)
-		throw FormatRuntimeError("\"%s\" is not a valid ao driver",
-					 value);
+		throw FmtRuntimeError("\"{}\" is not a valid ao driver",
+				      value);
 
 	ao_info *ai = ao_driver_info(driver);
 	if (ai == nullptr)
@@ -136,8 +136,8 @@ AoOutput::AoOutput(const ConfigBlock &block)
 		for (const std::string_view i : IterableSplitString(value, ';')) {
 			const auto [n, v] = Split(Strip(i), '=');
 			if (n.empty() || v.data() == nullptr)
-				throw FormatRuntimeError("problems parsing option \"%.*s\"",
-							 int(i.size()), i.data());
+				throw FmtRuntimeError("problems parsing option \"{}\"",
+						      i);
 
 			ao_append_option(&options, std::string{n}.c_str(),
 					 std::string{v}.c_str());

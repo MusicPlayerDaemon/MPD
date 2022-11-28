@@ -21,7 +21,7 @@
 #include "../OutputAPI.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/Configured.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringAPI.hxx"
@@ -105,8 +105,8 @@ require_block_string(const ConfigBlock &block, const char *name)
 {
 	const char *value = block.GetBlockValue(name);
 	if (value == nullptr)
-		throw FormatRuntimeError("no \"%s\" defined for shout device defined "
-					 "at line %d\n", name, block.line);
+		throw FmtRuntimeError("no \"{}\" defined for shout device defined "
+				      "at line {}\n", name, block.line);
 
 	return value;
 }
@@ -140,8 +140,8 @@ ParseShoutTls(const char *value)
 	else if (StringIsEqual(value, "rfc2817"))
 		return SHOUT_TLS_RFC2817;
 	else
-		throw FormatRuntimeError("invalid shout TLS option \"%s\"",
-					 value);
+		throw FmtRuntimeError("invalid shout TLS option \"{}\"",
+				      value);
 }
 
 #endif
@@ -163,17 +163,17 @@ ParseShoutProtocol(const char *value, const char *mime_type)
 
 	if (StringIsEqual(value, "shoutcast")) {
 		if (!StringIsEqual(mime_type, "audio/mpeg"))
-			throw FormatRuntimeError("you cannot stream \"%s\" to shoutcast, use mp3",
-						 mime_type);
+			throw FmtRuntimeError("you cannot stream \"{}\" to shoutcast, use mp3",
+					      mime_type);
 		return SHOUT_PROTOCOL_ICY;
 	} else if (StringIsEqual(value, "icecast1"))
 		return SHOUT_PROTOCOL_XAUDIOCAST;
 	else if (StringIsEqual(value, "icecast2"))
 		return SHOUT_PROTOCOL_HTTP;
 	else
-		throw FormatRuntimeError("shout protocol \"%s\" is not \"shoutcast\" or "
-					 "\"icecast1\"or \"icecast2\"",
-					 value);
+		throw FmtRuntimeError("shout protocol \"{}\" is not \"shoutcast\" or "
+				      "\"icecast1\"or \"icecast2\"",
+				      value);
 }
 
 inline
@@ -309,16 +309,16 @@ HandleShoutError(shout_t *shout_conn, int err)
 
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
-		throw FormatRuntimeError("Lost shout connection to %s:%i: %s",
-					 shout_get_host(shout_conn),
-					 shout_get_port(shout_conn),
-					 shout_get_error(shout_conn));
+		throw FmtRuntimeError("Lost shout connection to {}:{}: {}",
+				      shout_get_host(shout_conn),
+				      shout_get_port(shout_conn),
+				      shout_get_error(shout_conn));
 
 	default:
-		throw FormatRuntimeError("connection to %s:%i error: %s",
-					 shout_get_host(shout_conn),
-					 shout_get_port(shout_conn),
-					 shout_get_error(shout_conn));
+		throw FmtRuntimeError("connection to {}:{} error: {}",
+				      shout_get_host(shout_conn),
+				      shout_get_port(shout_conn),
+				      shout_get_error(shout_conn));
 	}
 }
 
@@ -381,10 +381,10 @@ ShoutOpen(shout_t *shout_conn)
 		break;
 
 	default:
-		throw FormatRuntimeError("problem opening connection to shout server %s:%i: %s",
-					 shout_get_host(shout_conn),
-					 shout_get_port(shout_conn),
-					 shout_get_error(shout_conn));
+		throw FmtRuntimeError("problem opening connection to shout server {}:{}: {}",
+				      shout_get_host(shout_conn),
+				      shout_get_port(shout_conn),
+				      shout_get_error(shout_conn));
 	}
 }
 

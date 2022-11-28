@@ -23,6 +23,7 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "lib/dbus/Glue.hxx"
 #include "lib/dbus/AsyncRequest.hxx"
 #include "lib/dbus/Message.hxx"
@@ -38,7 +39,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/Domain.hxx"
 #include "util/StringCompare.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -180,8 +180,8 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 		});
 
 		if (dbus_path.empty())
-			throw FormatRuntimeError("No such UDisks2 object: %s",
-						 id.c_str());
+			throw FmtRuntimeError("No such UDisks2 object: {}",
+					      id);
 
 		if (!mount_point.empty()) {
 			/* already mounted: don't attempt to mount

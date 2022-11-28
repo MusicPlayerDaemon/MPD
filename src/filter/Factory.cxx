@@ -22,7 +22,7 @@
 #include "Prepared.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 std::unique_ptr<PreparedFilter>
 FilterFactory::MakeFilter(const char *name)
@@ -30,8 +30,8 @@ FilterFactory::MakeFilter(const char *name)
 	const auto *cfg = config.FindBlock(ConfigBlockOption::AUDIO_FILTER,
 					   "name", name);
 	if (cfg == nullptr)
-		throw FormatRuntimeError("Filter template not found: %s",
-					 name);
+		throw FmtRuntimeError("Filter template not found: {}",
+				      name);
 
 	cfg->SetUsed();
 

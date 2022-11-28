@@ -23,7 +23,7 @@
 #include "config/Option.hxx"
 #include "config/Block.hxx"
 #include "config/Param.hxx"
-#include "util/RuntimeError.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "config.h"
 
 #ifdef ENABLE_LIBSAMPLERATE
@@ -122,8 +122,8 @@ GetResamplerConfig(const ConfigData &config, ConfigBlock &buffer)
 		return MigrateResamplerConfig(old_param, buffer);
 
 	if (old_param != nullptr)
-		throw FormatRuntimeError("Cannot use both 'resampler' (line %d) and 'samplerate_converter' (line %d)",
-					 block->line, old_param->line);
+		throw FmtRuntimeError("Cannot use both 'resampler' (line {}) and 'samplerate_converter' (line {})",
+				      block->line, old_param->line);
 
 	block->SetUsed();
 	return block;
@@ -137,8 +137,8 @@ pcm_resampler_global_init(const ConfigData &config)
 
 	const char *plugin_name = block->GetBlockValue("plugin");
 	if (plugin_name == nullptr)
-		throw FormatRuntimeError("'plugin' missing in line %d",
-					 block->line);
+		throw FmtRuntimeError("'plugin' missing in line {}",
+				      block->line);
 
 	if (strcmp(plugin_name, "internal") == 0) {
 		selected_resampler = SelectedResampler::FALLBACK;
@@ -153,8 +153,8 @@ pcm_resampler_global_init(const ConfigData &config)
 		pcm_resample_lsr_global_init(*block);
 #endif
 	} else {
-		throw FormatRuntimeError("No such resampler plugin: %s",
-					 plugin_name);
+		throw FmtRuntimeError("No such resampler plugin: {}",
+				      plugin_name);
 	}
 }
 

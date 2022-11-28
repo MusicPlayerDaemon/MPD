@@ -23,6 +23,7 @@
 #include "OutputAPI.hxx"
 #include "Defaults.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "pcm/AudioParser.hxx"
 #include "mixer/Type.hxx"
 #include "mixer/Control.hxx"
@@ -36,7 +37,6 @@
 #include "filter/plugins/TwoFilters.hxx"
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "filter/plugins/NormalizeFilterPlugin.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringFormat.hxx"
 #include "Log.hxx"
@@ -282,7 +282,8 @@ audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 
 		plugin = AudioOutputPlugin_get(p);
 		if (plugin == nullptr)
-			throw FormatRuntimeError("No such audio output plugin: %s", p);
+			throw FmtRuntimeError("No such audio output plugin: {}",
+					      p);
 	} else {
 		LogWarning(output_domain,
 			   "No 'audio_output' defined in config file");

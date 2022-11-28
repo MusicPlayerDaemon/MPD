@@ -23,11 +23,11 @@
 
 #include "CdioParanoiaInputPlugin.hxx"
 #include "lib/cdio/Paranoia.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "util/TruncateString.hxx"
 #include "util/StringCompare.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/ScopeExit.hxx"
@@ -114,8 +114,8 @@ input_cdio_init(EventLoop &, const ConfigBlock &block)
 		else if (strcmp(value, "big_endian") == 0)
 			default_reverse_endian = IsLittleEndian();
 		else
-			throw FormatRuntimeError("Unrecognized 'default_byte_order' setting: %s",
-						 value);
+			throw FmtRuntimeError("Unrecognized 'default_byte_order' setting: {}",
+					      value);
 	}
 	speed = block.GetBlockValue("speed",0U);
 
@@ -263,8 +263,8 @@ input_cdio_open(const char *uri,
 	default:
 		cdio_cddap_close_no_free_cdio(drv);
 		cdio_destroy(cdio);
-		throw FormatRuntimeError("Drive returns unknown data type %d",
-					 be);
+		throw FmtRuntimeError("Drive returns unknown data type {}",
+				      be);
 	}
 
 	lsn_t lsn_from, lsn_to;
@@ -287,8 +287,8 @@ CdioParanoiaInputStream::Seek(std::unique_lock<Mutex> &,
 			      offset_type new_offset)
 {
 	if (new_offset > size)
-		throw FormatRuntimeError("Invalid offset to seek %ld (%ld)",
-					 (long int)new_offset, (long int)size);
+		throw FmtRuntimeError("Invalid offset to seek {} ({})",
+				      new_offset, size);
 
 	/* simple case */
 	if (new_offset == offset)

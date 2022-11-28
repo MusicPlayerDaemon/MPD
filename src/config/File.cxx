@@ -23,12 +23,12 @@
 #include "Block.hxx"
 #include "Templates.hxx"
 #include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "system/Error.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringAPI.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/List.hxx"
 #include "fs/Path.hxx"
@@ -70,8 +70,8 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 
 	const BlockParam *bp = block.GetBlockParam(name);
 	if (bp != nullptr)
-		throw FormatRuntimeError("\"%s\" is duplicate, first defined on line %i",
-					 name, bp->line);
+		throw FmtRuntimeError("\"{}\" is duplicate, first defined on line {}",
+				      name, bp->line);
 
 	block.AddBlockParam(name, value, line);
 }
@@ -123,10 +123,10 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 
 	if (!option.repeatable)
 		if (const auto *block = config_data.GetBlock(o))
-			throw FormatRuntimeError("config parameter \"%s\" is first defined "
-						 "on line %d and redefined on line %u\n",
-						 name, block->line,
-						 reader.GetLineNumber());
+			throw FmtRuntimeError("config parameter \"{}\" is first defined "
+					      "on line {} and redefined on line {}",
+					      name, block->line,
+					      reader.GetLineNumber());
 
 	/* now parse the block or the value */
 
@@ -227,8 +227,8 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 			ReadConfigBlock(config_data, reader, name, bo,
 					tokenizer);
 		} else {
-			throw FormatRuntimeError("unrecognized parameter: %s\n",
-						 name);
+			throw FmtRuntimeError("unrecognized parameter: {}",
+					      name);
 		}
 	}
 }
@@ -247,9 +247,8 @@ ReadConfigFile(ConfigData &config_data, Path path)
 	try {
 		ReadConfigFile(config_data, reader, path.GetDirectoryName());
 	} catch (...) {
-		const std::string path_utf8 = path.ToUTF8();
-		std::throw_with_nested(FormatRuntimeError("Error in %s line %u",
-							  path_utf8.c_str(),
-							  reader.GetLineNumber()));
+		std::throw_with_nested(FmtRuntimeError("Error in {} line {}",
+						       path,
+						       reader.GetLineNumber()));
 	}
 }

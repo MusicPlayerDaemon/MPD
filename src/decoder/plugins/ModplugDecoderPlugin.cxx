@@ -22,8 +22,8 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Handler.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
-#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #ifdef _WIN32
@@ -56,14 +56,14 @@ modplug_decoder_init(const ConfigBlock &block)
 	} else if (strcmp(modplug_resampling_mode_value, "fir") == 0) {
 		modplug_resampling_mode = MODPLUG_RESAMPLE_FIR;
 	} else {
-		throw FormatRuntimeError("Invalid resampling mode in line %d: %s",
-				block.line, modplug_resampling_mode_value);
+		throw FmtRuntimeError("Invalid resampling mode in line {}: {}",
+				      block.line, modplug_resampling_mode_value);
 	}
 
 	modplug_loop_count = block.GetBlockValue("loop_count", 0);
 	if (modplug_loop_count < -1)
-		throw FormatRuntimeError("Invalid loop count in line %d: %i",
-					 block.line, modplug_loop_count);
+		throw FmtRuntimeError("Invalid loop count in line {}: {}",
+				      block.line, modplug_loop_count);
 
 	return true;
 }

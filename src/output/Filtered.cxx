@@ -22,10 +22,10 @@
 #include "Domain.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "mixer/Mixer.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringBuffer.hxx"
 #include "Log.hxx"
 
@@ -59,8 +59,8 @@ FilteredAudioOutput::Enable()
 	try {
 		output->Enable();
 	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("Failed to enable output %s",
-							  GetLogName()));
+		std::throw_with_nested(FmtRuntimeError("Failed to enable output {}",
+						       GetLogName()));
 	}
 }
 
@@ -76,8 +76,8 @@ FilteredAudioOutput::ConfigureConvertFilter()
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
 	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("Failed to convert for %s",
-							  GetLogName()));
+		std::throw_with_nested(FmtRuntimeError("Failed to convert for {}",
+						       GetLogName()));
 	}
 }
 
@@ -89,8 +89,8 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	try {
 		output->Open(out_audio_format);
 	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("Failed to open %s",
-							  GetLogName()));
+		std::throw_with_nested(FmtRuntimeError("Failed to open {}",
+						       GetLogName()));
 	}
 
 	FmtDebug(output_domain,

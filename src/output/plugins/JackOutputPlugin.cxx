@@ -22,10 +22,10 @@
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
 #include "output/Features.h"
+#include "lib/fmt/RuntimeError.hxx"
 #include "thread/Mutex.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/IterableSplitString.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/SpanCast.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -123,8 +123,8 @@ private:
 
 	void Shutdown(const char *reason) noexcept {
 		const std::scoped_lock<Mutex> lock(mutex);
-		error = std::make_exception_ptr(FormatRuntimeError("JACK connection shutdown: %s",
-								   reason));
+		error = std::make_exception_ptr(FmtRuntimeError("JACK connection shutdown: {}",
+								reason));
 	}
 
 	static void OnShutdown(jack_status_t, const char *reason,
@@ -416,8 +416,8 @@ JackOutput::Connect()
 	jack_status_t status;
 	client = jack_client_open(name, options, &status, server_name);
 	if (client == nullptr)
-		throw FormatRuntimeError("Failed to connect to JACK server, status=%d",
-					 status);
+		throw FmtRuntimeError("Failed to connect to JACK server, status={}",
+				      (unsigned)status);
 
 	jack_set_process_callback(client, Process, this);
 	jack_on_info_shutdown(client, OnShutdown, this);
@@ -430,8 +430,8 @@ JackOutput::Connect()
 					      portflags, 0);
 		if (ports[i] == nullptr) {
 			Disconnect();
-			throw FormatRuntimeError("Cannot register output port \"%s\"",
-						 source_ports[i].c_str());
+			throw FmtRuntimeError("Cannot register output port \"{}\"",
+					      source_ports[i]);
 		}
 	}
 }
@@ -590,8 +590,8 @@ JackOutput::Start()
 				       dports[i]);
 		if (ret != 0) {
 			Stop();
-			throw FormatRuntimeError("Not a valid JACK port: %s",
-						 dports[i]);
+			throw FmtRuntimeError("Not a valid JACK port: {}",
+					      dports[i]);
 		}
 	}
 
@@ -604,8 +604,8 @@ JackOutput::Start()
 				   duplicate_port);
 		if (ret != 0) {
 			Stop();
-			throw FormatRuntimeError("Not a valid JACK port: %s",
-						 duplicate_port);
+			throw FmtRuntimeError("Not a valid JACK port: {}",
+					      duplicate_port);
 		}
 	}
 }
