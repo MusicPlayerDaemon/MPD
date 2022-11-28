@@ -2,6 +2,7 @@ ver 0.23.11 (not yet released)
 * macOS: fix build failure "no archive members specified"
 * Windows
   - fix crash bug (stack buffer overflow) after I/O errors
+  - fix path traversal bug because backslash was allowed in playlist names
 * Android/Windows
   - update OpenSSL to 3.0.7
 
