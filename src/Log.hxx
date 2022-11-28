@@ -23,7 +23,7 @@
 #include "LogLevel.hxx"
 
 #include <fmt/core.h>
-#if FMT_VERSION < 70000 || FMT_VERSION >= 80000
+#if FMT_VERSION >= 80000
 #include <fmt/format.h>
 #endif
 
@@ -48,14 +48,10 @@ LogFmt(LogLevel level, const Domain &domain,
 #if FMT_VERSION >= 90000
 	return LogVFmt(level, domain, format_str,
 		       fmt::make_format_args(args...));
-#elif FMT_VERSION >= 70000
+#else
 	return LogVFmt(level, domain, fmt::to_string_view(format_str),
 		       fmt::make_args_checked<Args...>(format_str,
 						       args...));
-#else
-	/* expensive fallback for older libfmt versions */
-	const auto result = fmt::format(format_str, args...);
-	return Log(level, domain, result);
 #endif
 }
 

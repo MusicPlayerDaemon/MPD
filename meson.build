@@ -248,7 +248,7 @@ if boost_dep.version() == '1.67'
   warning('Your Boost version 1.67 is known to be buggy, and the MPD build will fail. Please upgrade to Boost 1.68 or later.')
 endif
 
-fmt_dep = dependency('fmt', fallback: ['fmt', 'fmt_dep'])
+fmt_dep = dependency('fmt', version: '>= 7', fallback: ['fmt', 'fmt_dep'])
 
 if compiler.get_id() == 'clang' and compiler.version().version_compare('<15')
   fmt_dep = declare_dependency(

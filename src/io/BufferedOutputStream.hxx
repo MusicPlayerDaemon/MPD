@@ -34,7 +34,7 @@
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <fmt/core.h>
-#if FMT_VERSION < 70000 || FMT_VERSION >= 80000
+#if FMT_VERSION >= 80000
 #include <fmt/format.h>
 #endif
 
@@ -104,14 +104,10 @@ public:
 #if FMT_VERSION >= 90000
 		VFmt(format_str,
 		     fmt::make_format_args(args...));
-#elif FMT_VERSION >= 70000
+#else
 		VFmt(fmt::to_string_view(format_str),
 		     fmt::make_args_checked<Args...>(format_str,
 						     args...));
-#else
-		/* expensive fallback for older libfmt versions */
-		const auto result = fmt::format(format_str, args...);
-		Write(result.data(), result.size());
 #endif
 	}
 
