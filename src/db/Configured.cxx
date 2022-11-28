@@ -24,6 +24,7 @@
 #include "config/Param.hxx"
 #include "config/Block.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -62,6 +63,19 @@ CreateConfiguredDatabase(const ConfigData &config,
 
 		ConfigBlock block;
 		block.AddBlockParam("path", std::move(db_file_utf8), -1);
+
+		{
+			const auto mounts_dir = cache_dir
+				/ Path::FromFS(PATH_LITERAL("mounts"));
+			CreateDirectoryNoThrow(mounts_dir);
+
+			if (auto mounts_dir_utf8 = mounts_dir.ToUTF8();
+			    !mounts_dir_utf8.empty())
+				block.AddBlockParam("cache_directory",
+						    std::move(mounts_dir_utf8),
+						    -1);
+		}
+
 		return DatabaseGlobalInit(main_event_loop, io_event_loop,
 					  listener, block);
 	}

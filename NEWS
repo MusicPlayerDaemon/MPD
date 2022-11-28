@@ -1,6 +1,7 @@
 ver 0.23.11 (not yet released)
 * database
   - simple: move default database to ~/.cache/mpd/db from ~/.cache/mpd.db
+  - simple: default "cache_directory" to ~/.cache/mpd/mounts
 * macOS: fix build failure "no archive members specified"
 * Windows
   - fix crash bug (stack buffer overflow) after I/O errors
