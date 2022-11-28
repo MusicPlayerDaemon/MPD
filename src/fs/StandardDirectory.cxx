@@ -110,18 +110,21 @@ IsValidPathString(PathTraitsFS::const_pointer path) noexcept
 
 [[gnu::pure]]
 static inline bool
-IsValidDir(PathTraitsFS::const_pointer dir) noexcept
+IsValidDir(Path path) noexcept
 {
-	return PathTraitsFS::IsAbsolute(dir) &&
-	       DirectoryExists(Path::FromFS(dir));
+	return path.IsAbsolute() && DirectoryExists(path);
 }
 
 [[gnu::pure]]
 static inline AllocatedPath
 SafePathFromFS(PathTraitsFS::const_pointer dir) noexcept
 {
-	if (IsValidPathString(dir) && IsValidDir(dir))
-		return AllocatedPath::FromFS(dir);
+	if (!IsValidPathString(dir))
+		return nullptr;
+
+	if (const Path path = Path::FromFS(dir); IsValidDir(path))
+		return AllocatedPath{path};
+
 	return nullptr;
 }
 #endif
@@ -233,7 +236,7 @@ ParseConfigLine(std::string_view line, std::string_view dir_name,
 		result = home / result;
 	}
 
-	if (IsValidDir(result.c_str())) {
+	if (IsValidDir(result)) {
 		result_dir = std::move(result);
 		return true;
 	}
@@ -274,7 +277,7 @@ GetUserConfigDir() noexcept
 	// Check for $HOME/.config
 	if (const auto home = GetHomeDir(); !home.IsNull()) {
 		auto fallback = home / Path::FromFS(".config");
-		if (IsValidDir(fallback.c_str()))
+		if (IsValidDir(fallback))
 			return fallback;
 	}
 
@@ -311,7 +314,7 @@ GetUserCacheDir() noexcept
 	// Check for $HOME/.cache
 	if (const auto home = GetHomeDir(); !home.IsNull())
 		if (auto fallback = home / Path::FromFS(".cache");
-		    IsValidDir(fallback.c_str()))
+		    IsValidDir(fallback))
 			return fallback;
 
 	return nullptr;
@@ -406,9 +409,8 @@ AllocatedPath
 GetHomeDir() noexcept
 {
 #ifndef ANDROID
-	if (const auto home = getenv("HOME");
-	    IsValidPathString(home) && IsValidDir(home))
-		return AllocatedPath::FromFS(home);
+	if (const auto home = GetExistingEnvDirectory("HOME"); home != nullptr)
+		return AllocatedPath{home};
 
 	if (PasswdEntry pw; pw.ReadByUid(getuid()))
 		return SafePathFromFS(pw->pw_dir);
