@@ -51,11 +51,11 @@ CreateConfiguredDatabase(const ConfigData &config,
 	} else {
 		/* if there is no override, use the cache directory */
 
-		const AllocatedPath cache_dir = GetUserCacheDir();
+		const AllocatedPath cache_dir = GetAppCacheDir();
 		if (cache_dir.IsNull())
 			return nullptr;
 
-		const auto db_file = cache_dir / Path::FromFS(PATH_LITERAL("mpd.db"));
+		const auto db_file = cache_dir / Path::FromFS(PATH_LITERAL("db"));
 		auto db_file_utf8 = db_file.ToUTF8();
 		if (db_file_utf8.empty())
 			return nullptr;
