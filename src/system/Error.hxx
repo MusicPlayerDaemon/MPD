@@ -32,8 +32,6 @@
 #include <system_error> // IWYU pragma: export
 #include <utility>
 
-#include <stdio.h>
-
 template<typename... Args>
 static inline std::system_error
 FormatSystemError(std::error_code code, const char *fmt,
@@ -47,8 +45,7 @@ FormatSystemError(std::error_code code, const char *fmt,
 #ifdef _WIN32
 
 #include <errhandlingapi.h> // for GetLastError()
-#include <windef.h> // for HWND (needed by winbase.h)
-#include <winbase.h> // for FormatMessageA()
+#include <winerror.h>
 
 /**
  * Returns the error_category to be used to wrap WIN32 GetLastError()
@@ -85,40 +82,9 @@ MakeLastError(const char *msg) noexcept
 	return MakeLastError(GetLastError(), msg);
 }
 
-template<typename... Args>
-static inline std::system_error
-FormatLastError(DWORD code, const char *fmt, Args&&... args) noexcept
-{
-	char buffer[512];
-	const auto end = buffer + sizeof(buffer);
-	constexpr std::size_t max_prefix = sizeof(buffer) - 128;
-	size_t length = snprintf(buffer, max_prefix,
-				 fmt, std::forward<Args>(args)...);
-	if (length >= max_prefix)
-		length = max_prefix - 1;
-	char *p = buffer + length;
-	*p++ = ':';
-	*p++ = ' ';
-
-	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
-		       FORMAT_MESSAGE_IGNORE_INSERTS,
-		       nullptr, code, 0, p, end - p, nullptr);
-	return MakeLastError(code, buffer);
-}
-
-template<typename... Args>
-static inline std::system_error
-FormatLastError(const char *fmt, Args&&... args) noexcept
-{
-	return FormatLastError(GetLastError(), fmt,
-			       std::forward<Args>(args)...);
-}
-
 #endif /* _WIN32 */
 
 #include <cerrno> // IWYU pragma: export
-
-#include <string.h>
 
 /**
  * Returns the error_category to be used to wrap errno values.  The
@@ -154,35 +120,6 @@ static inline std::system_error
 MakeErrno(const char *msg) noexcept
 {
 	return MakeErrno(errno, msg);
-}
-
-template<typename... Args>
-static inline std::system_error
-FormatErrno(int code, const char *fmt, Args&&... args) noexcept
-{
-	char buffer[512];
-	snprintf(buffer, sizeof(buffer),
-		 fmt, std::forward<Args>(args)...);
-	return MakeErrno(code, buffer);
-}
-
-template<typename... Args>
-static inline std::system_error
-FormatErrno(const char *fmt, Args&&... args) noexcept
-{
-	return FormatErrno(errno, fmt, std::forward<Args>(args)...);
-}
-
-template<typename... Args>
-static inline std::system_error
-FormatFileNotFound(const char *fmt, Args&&... args) noexcept
-{
-#ifdef _WIN32
-	return FormatLastError(ERROR_FILE_NOT_FOUND, fmt,
-			       std::forward<Args>(args)...);
-#else
-	return FormatErrno(ENOENT, fmt, std::forward<Args>(args)...);
-#endif
 }
 
 [[gnu::pure]]

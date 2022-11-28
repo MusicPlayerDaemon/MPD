@@ -20,7 +20,8 @@
 #include "FileSystem.hxx"
 #include "AllocatedPath.hxx"
 #include "Limits.hxx"
-#include "system/Error.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "system/FmtError.hxx"
 
 #ifdef _WIN32
 #include <handleapi.h> // for CloseHandle()
@@ -73,13 +74,13 @@ TruncateFile(Path path)
 			      TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL,
 			      nullptr);
 	if (h == INVALID_HANDLE_VALUE)
-		throw FormatLastError("Failed to truncate %s", path.c_str());
+		throw FmtLastError("Failed to truncate {}", path);
 
 	CloseHandle(h);
 #else
 	UniqueFileDescriptor fd;
 	if (!fd.Open(path.c_str(), O_WRONLY|O_TRUNC))
-		throw FormatErrno("Failed to truncate %s", path.c_str());
+		throw FmtErrno("Failed to truncate {}", path);
 #endif
 }
 
@@ -88,9 +89,9 @@ RemoveFile(Path path)
 {
 #ifdef _WIN32
 	if (!DeleteFile(path.c_str()))
-		throw FormatLastError("Failed to delete %s", path.c_str());
+		throw FmtLastError("Failed to delete {}", path);
 #else
 	if (unlink(path.c_str()) < 0)
-		throw FormatErrno("Failed to delete %s", path.c_str());
+		throw FmtErrno("Failed to delete {}", path);
 #endif
 }

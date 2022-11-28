@@ -21,6 +21,7 @@
 #include "LogInit.hxx"
 #include "LogBackend.hxx"
 #include "Log.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "config/Param.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
@@ -29,7 +30,7 @@
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
-#include "system/Error.hxx"
+#include "system/FmtError.hxx"
 
 #include <cassert>
 
@@ -82,10 +83,8 @@ log_init_file(int line)
 		throw FormatRuntimeError("failed to open log file \"%s\" (config line %d)",
 					 out_path_utf8.c_str(), line);
 #else
-		int e = errno;
-		const std::string out_path_utf8 = out_path.ToUTF8();
-		throw FormatErrno(e, "failed to open log file \"%s\" (config line %d)",
-				  out_path_utf8.c_str(), line);
+		throw FmtErrno("failed to open log file \"{}\" (config line {})",
+			       out_path, line);
 #endif
 	}
 
@@ -242,10 +241,9 @@ cycle_log_files() noexcept
 
 	fd = open_log_file();
 	if (fd < 0) {
-		const std::string out_path_utf8 = out_path.ToUTF8();
 		FmtError(log_domain,
 			 "error re-opening log file: {}",
-			 out_path_utf8);
+			 out_path);
 		return -1;
 	}
 

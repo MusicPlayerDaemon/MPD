@@ -136,8 +136,8 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 		const auto error = (zzip_error_t)zzip_error(dir->dir);
 		switch (error) {
 		case ZZIP_ENOENT:
-			throw FormatFileNotFound("Failed to open '%s' in ZIP file",
-						 pathname);
+			throw FmtFileNotFound("Failed to open '{}' in ZIP file",
+					      pathname);
 
 		default:
 			throw FormatRuntimeError("Failed to open '%s' in ZIP file: %s",

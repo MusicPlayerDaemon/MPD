@@ -33,12 +33,14 @@
 #include "DatabaseSave.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/DatabaseError.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "fs/io/TextFile.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "io/FileOutputStream.hxx"
 #include "fs/FileInfo.hxx"
 #include "config/Block.hxx"
 #include "fs/FileSystem.hxx"
+#include "system/FmtError.hxx"
 #include "util/CharUtil.hxx"
 #include "util/Domain.hxx"
 #include "util/RecursiveMap.hxx"
@@ -119,12 +121,8 @@ SimpleDatabase::Check() const
 
 #ifndef _WIN32
 		/* Check if we can write to the directory */
-		if (!CheckAccess(dirPath, X_OK | W_OK)) {
-			const int e = errno;
-			const std::string dirPath_utf8 = dirPath.ToUTF8();
-			throw FormatErrno(e, "Can't create db file in \"%s\"",
-					  dirPath_utf8.c_str());
-		}
+		if (!CheckAccess(dirPath, X_OK | W_OK))
+			throw FmtErrno("Can't create db file in \"{}\"", dirPath);
 #endif
 
 		return;
@@ -139,8 +137,8 @@ SimpleDatabase::Check() const
 #ifndef _WIN32
 	/* And check that we can write to it */
 	if (!CheckAccess(path, R_OK | W_OK))
-		throw FormatErrno("Can't open db file \"%s\" for reading/writing",
-				  path_utf8.c_str());
+		throw FmtErrno("Can't open db file \"{}\" for reading/writing",
+			       path);
 #endif
 }
 

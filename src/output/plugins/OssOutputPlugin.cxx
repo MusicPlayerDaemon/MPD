@@ -22,7 +22,7 @@
 #include "mixer/plugins/OssMixerPlugin.hxx"
 #include "pcm/Export.hxx"
 #include "io/UniqueFileDescriptor.hxx"
-#include "system/Error.hxx"
+#include "system/FmtError.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/Manual.hxx"
@@ -643,7 +643,7 @@ try {
 	assert(!fd.IsDefined());
 
 	if (!fd.Open(device, O_WRONLY))
-		throw FormatErrno("Error opening OSS device \"%s\"", device);
+		throw FmtErrno("Error opening OSS device \"{}\"", device);
 
 	OssIoctlExact(fd, SNDCTL_DSP_CHANNELS, effective_channels,
 		      "Failed to set channel count");
@@ -660,7 +660,7 @@ void
 OssOutput::Open(AudioFormat &_audio_format)
 try {
 	if (!fd.Open(device, O_WRONLY))
-		throw FormatErrno("Error opening OSS device \"%s\"", device);
+		throw FmtErrno("Error opening OSS device \"{}\"", device);
 
 	SetupOrDop(_audio_format);
 } catch (...) {
@@ -698,7 +698,7 @@ OssOutput::Play(std::span<const std::byte> src)
 			return pcm_export->CalcInputSize(ret);
 
 		if (ret < 0 && errno != EINTR)
-			throw FormatErrno("Write error on %s", device);
+			throw FmtErrno("Write error on {}", device);
 	}
 }
 

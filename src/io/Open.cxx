@@ -29,7 +29,7 @@
 
 #include "Open.hxx"
 #include "UniqueFileDescriptor.hxx"
-#include "system/Error.hxx"
+#include "system/FmtError.hxx"
 
 #include <fcntl.h>
 
@@ -38,7 +38,7 @@ OpenReadOnly(const char *path, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(path, O_RDONLY|flags))
-		throw FormatErrno("Failed to open '%s'", path);
+		throw FmtErrno("Failed to open '{}'", path);
 
 	return fd;
 }
@@ -48,7 +48,7 @@ OpenWriteOnly(const char *path, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(path, O_WRONLY|flags))
-		throw FormatErrno("Failed to open '%s'", path);
+		throw FmtErrno("Failed to open '{}'", path);
 
 	return fd;
 }
@@ -60,7 +60,7 @@ OpenDirectory(const char *path, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(path, O_DIRECTORY|O_RDONLY|flags))
-		throw FormatErrno("Failed to open '%s'", path);
+		throw FmtErrno("Failed to open '{}'", path);
 
 	return fd;
 }
@@ -74,7 +74,7 @@ OpenPath(const char *path, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(path, O_PATH|flags))
-		throw FormatErrno("Failed to open '%s'", path);
+		throw FmtErrno("Failed to open '{}'", path);
 
 	return fd;
 }
@@ -84,7 +84,7 @@ OpenPath(FileDescriptor directory, const char *name, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(directory, name, O_PATH|flags))
-		throw FormatErrno("Failed to open '%s'", name);
+		throw FmtErrno("Failed to open '{}'", name);
 
 	return fd;
 }
@@ -94,7 +94,7 @@ OpenReadOnly(FileDescriptor directory, const char *name, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(directory, name, O_RDONLY|flags))
-		throw FormatErrno("Failed to open '%s'", name);
+		throw FmtErrno("Failed to open '{}'", name);
 
 	return fd;
 }
@@ -104,7 +104,7 @@ OpenWriteOnly(FileDescriptor directory, const char *name, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(directory, name, O_WRONLY|flags))
-		throw FormatErrno("Failed to open '%s'", name);
+		throw FmtErrno("Failed to open '{}'", name);
 
 	return fd;
 }
@@ -114,7 +114,7 @@ OpenDirectory(FileDescriptor directory, const char *name, int flags)
 {
 	UniqueFileDescriptor fd;
 	if (!fd.Open(directory, name, O_DIRECTORY|O_RDONLY|flags))
-		throw FormatErrno("Failed to open '%s'", name);
+		throw FmtErrno("Failed to open '{}'", name);
 
 	return fd;
 }

@@ -22,6 +22,7 @@
 #include "Param.hxx"
 #include "Block.hxx"
 #include "Templates.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "system/Error.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringStrip.hxx"
@@ -236,9 +237,8 @@ void
 ReadConfigFile(ConfigData &config_data, Path path)
 {
 	assert(!path.IsNull());
-	const std::string path_utf8 = path.ToUTF8();
 
-	FmtDebug(config_file_domain, "loading file {}", path_utf8);
+	FmtDebug(config_file_domain, "loading file {}", path);
 
 	FileReader file(path);
 
@@ -247,6 +247,7 @@ ReadConfigFile(ConfigData &config_data, Path path)
 	try {
 		ReadConfigFile(config_data, reader, path.GetDirectoryName());
 	} catch (...) {
+		const std::string path_utf8 = path.ToUTF8();
 		std::throw_with_nested(FormatRuntimeError("Error in %s line %u",
 							  path_utf8.c_str(),
 							  reader.GetLineNumber()));

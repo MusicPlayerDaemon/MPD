@@ -21,7 +21,7 @@
 #include "mixer/Mixer.hxx"
 #include "config/Block.hxx"
 #include "io/FileDescriptor.hxx"
-#include "system/Error.hxx"
+#include "system/FmtError.hxx"
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
@@ -119,7 +119,7 @@ OssMixer::Open()
 {
 	device_fd.OpenReadOnly(device);
 	if (!device_fd.IsDefined())
-		throw FormatErrno("failed to open %s", device);
+		throw FmtErrno("failed to open {}", device);
 
 	try {
 		if (control) {
@@ -129,8 +129,8 @@ OssMixer::Open()
 				throw MakeErrno("READ_DEVMASK failed");
 
 			if (((1 << volume_control) & devmask) == 0)
-				throw FormatErrno("mixer control \"%s\" not usable",
-						  control);
+				throw FmtErrno("mixer control \"{}\" not usable",
+					       control);
 		}
 	} catch (...) {
 		Close();

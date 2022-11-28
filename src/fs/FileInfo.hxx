@@ -21,7 +21,8 @@
 #define MPD_FS_FILE_INFO_HXX
 
 #include "Path.hxx"
-#include "system/Error.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "system/FmtError.hxx"
 
 #ifdef _WIN32
 #include "time/FileTime.hxx"
@@ -49,11 +50,9 @@ public:
 	FileInfo(Path path, bool follow_symlinks=true) {
 		if (!GetFileInfo(path, *this, follow_symlinks)) {
 #ifdef _WIN32
-			throw FormatLastError("Failed to access %s",
-					      path.ToUTF8().c_str());
+			throw FmtLastError("Failed to access {}", path);
 #else
-			throw FormatErrno("Failed to access %s",
-					  path.ToUTF8().c_str());
+			throw FmtErrno("Failed to access {}", path);
 #endif
 		}
 	}

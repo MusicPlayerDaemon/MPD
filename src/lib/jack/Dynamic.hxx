@@ -118,7 +118,7 @@ LoadJackLibrary()
 
 	auto libjack = LoadLibraryA(LIBJACK);
 	if (!libjack)
-		throw FormatLastError("Failed to load " LIBJACK ".dll");
+		throw MakeLastError("Failed to load " LIBJACK ".dll");
 
 	GetFunction(libjack, "jack_set_error_function", _jack_set_error_function);
 	GetFunction(libjack, "jack_set_info_function", _jack_set_info_function);

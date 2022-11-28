@@ -18,7 +18,8 @@
  */
 
 #include "DirectoryReader.hxx"
-#include "system/Error.hxx"
+#include "lib/fmt/PathFormatter.hxx"
+#include "system/FmtError.hxx"
 
 #ifdef _WIN32
 
@@ -28,7 +29,7 @@ DirectoryReader::DirectoryReader(Path dir)
 	:handle(FindFirstFile(MakeWildcardPath(dir.c_str()), &data))
 {
 	if (handle == INVALID_HANDLE_VALUE)
-		throw FormatLastError("Failed to open %s", dir.c_str());
+		throw FmtLastError("Failed to open {}", dir);
 }
 
 #else
@@ -37,7 +38,7 @@ DirectoryReader::DirectoryReader(Path dir)
 	:dirp(opendir(dir.c_str()))
 {
 	if (dirp == nullptr)
-		throw FormatErrno("Failed to open %s", dir.c_str());
+		throw FmtErrno("Failed to open {}", dir);
 }
 
 #endif

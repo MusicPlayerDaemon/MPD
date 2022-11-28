@@ -20,9 +20,10 @@
 #ifndef MPD_PID_FILE_HXX
 #define MPD_PID_FILE_HXX
 
+#include "lib/fmt/PathFormatter.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "system/Error.hxx"
+#include "system/FmtError.hxx"
 
 #include <cassert>
 
@@ -40,11 +41,9 @@ public:
 			return;
 
 		fd = OpenFile(path, O_WRONLY|O_CREAT|O_TRUNC, 0666).Steal();
-		if (fd < 0) {
-			const std::string utf8 = path.ToUTF8();
-			throw FormatErrno("Failed to create pid file \"%s\"",
-					  utf8.c_str());
-		}
+		if (fd < 0)
+			throw FmtErrno("Failed to create pid file \"{}\"",
+				       path);
 	}
 
 	PidFile(const PidFile &) = delete;

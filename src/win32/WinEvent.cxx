@@ -24,5 +24,5 @@ WinEvent::WinEvent()
 	:event(CreateEventW(nullptr, false, false, nullptr))
 {
 	if (!event)
-		throw FormatLastError("Error creating events");
+		throw MakeLastError("Error creating events");
 }

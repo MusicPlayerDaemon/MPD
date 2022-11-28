@@ -19,7 +19,7 @@
 
 #include "PipeOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "system/Error.hxx"
+#include "system/FmtError.hxx"
 
 #include <string>
 #include <stdexcept>
@@ -61,7 +61,7 @@ PipeOutput::Open([[maybe_unused]] AudioFormat &audio_format)
 {
 	fh = popen(cmd.c_str(), "w");
 	if (fh == nullptr)
-		throw FormatErrno("Error opening pipe \"%s\"", cmd.c_str());
+		throw FmtErrno("Error opening pipe \"{}\"", cmd);
 }
 
 std::size_t

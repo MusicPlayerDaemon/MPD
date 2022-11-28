@@ -20,7 +20,7 @@
 #include "SolarisOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "io/FileDescriptor.hxx"
-#include "system/Error.hxx"
+#include "system/FmtError.hxx"
 
 #include <cerrno>
 
@@ -100,8 +100,7 @@ SolarisOutput::Open(AudioFormat &audio_format)
 	/* open the device in non-blocking mode */
 
 	if (!fd.Open(device, O_WRONLY|O_NONBLOCK))
-		throw FormatErrno("Failed to open %s",
-				  device);
+		throw FmtErrno("Failed to open {}", device);
 
 	/* restore blocking mode */
 
