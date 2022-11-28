@@ -248,15 +248,7 @@ if boost_dep.version() == '1.67'
   warning('Your Boost version 1.67 is known to be buggy, and the MPD build will fail. Please upgrade to Boost 1.68 or later.')
 endif
 
-fmt_dep = dependency('fmt', version: '>= 7', fallback: ['fmt', 'fmt_dep'])
-
-if compiler.get_id() == 'clang' and compiler.version().version_compare('<15')
-  fmt_dep = declare_dependency(
-    dependencies: fmt_dep,
-    # suppress bogus clang 14 warning (the version in Android NDK r25b)
-    compile_args: ['-Wno-unused-local-typedef'],
-  )
-endif
+subdir('src/lib/fmt')
 
 log = static_library(
   'log',
