@@ -145,7 +145,7 @@ GetStandardDir(int folder_id) noexcept
 
 #endif
 
-#ifdef USE_XDG
+#if !defined(_WIN32) && !defined(ANDROID)
 
 [[gnu::pure]]
 static Path
@@ -178,6 +178,10 @@ GetExistingEnvDirectory(const char *name) noexcept
 
 	return nullptr;
 }
+
+#endif
+
+#ifdef USE_XDG
 
 static bool
 ParseConfigLine(std::string_view line, std::string_view dir_name,
