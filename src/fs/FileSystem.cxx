@@ -22,6 +22,12 @@
 #include "Limits.hxx"
 #include "system/Error.hxx"
 
+#ifdef _WIN32
+#include <handleapi.h> // for CloseHandle()
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <winbase.h> // for MoveFileEx()
+#endif
+
 #include <cerrno>
 
 #include <fcntl.h>

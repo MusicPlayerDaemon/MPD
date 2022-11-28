@@ -24,6 +24,12 @@
 #include "java/Global.hxx"
 #endif
 
+#ifdef _WIN32
+#include <synchapi.h> // for WaitForSingleObject()
+#include <windef.h> // for HWND (needed by winbase.h)
+#include <winbase.h> // for INFINITE
+#endif
+
 void
 Thread::Start()
 {

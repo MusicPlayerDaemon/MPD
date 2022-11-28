@@ -22,6 +22,8 @@
 
 #ifdef _WIN32
 
+#include <handleapi.h> // for INVALID_HANDLE_VALUE
+
 DirectoryReader::DirectoryReader(Path dir)
 	:handle(FindFirstFile(MakeWildcardPath(dir.c_str()), &data))
 {
