@@ -42,7 +42,7 @@ auto
 VFmtBuffer(fmt::string_view format_str, fmt::format_args args) noexcept
 {
 	StringBuffer<size> buffer;
-	auto [p, _] = fmt::vformat_to_n(buffer.data(), buffer.capacity() - 1,
+	auto [p, _] = fmt::vformat_to_n(buffer.begin(), buffer.capacity() - 1,
 					format_str, args);
 	*p = 0;
 	return buffer;
