@@ -1,6 +1,5 @@
 system_sources = [
   'EventPipe.cxx',
-  'FmtError.cxx',
 ]
 
 if host_machine.system() == 'linux'

@@ -30,7 +30,7 @@
 #include "FileReader.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "fs/FileInfo.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 #include "io/Open.hxx"
 
 #include <cassert>

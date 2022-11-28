@@ -20,7 +20,7 @@
 #include "SolarisOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "io/FileDescriptor.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 
 #include <cerrno>
 

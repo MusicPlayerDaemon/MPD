@@ -22,7 +22,7 @@
 #include "mixer/plugins/OssMixerPlugin.hxx"
 #include "pcm/Export.hxx"
 #include "io/UniqueFileDescriptor.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/Manual.hxx"

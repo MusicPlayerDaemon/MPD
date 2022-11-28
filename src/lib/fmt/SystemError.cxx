@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "FmtError.hxx"
-#include "lib/fmt/ToBuffer.hxx"
+#include "SystemError.hxx"
+#include "ToBuffer.hxx"
 
 #include <array>
 

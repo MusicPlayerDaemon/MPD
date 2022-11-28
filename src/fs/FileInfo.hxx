@@ -22,7 +22,7 @@
 
 #include "Path.hxx"
 #include "lib/fmt/PathFormatter.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 
 #ifdef _WIN32
 #include "time/FileTime.hxx"

@@ -31,7 +31,7 @@
  */
 
 #include "InotifyEvent.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 
 #include <array>

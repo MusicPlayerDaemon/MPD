@@ -27,7 +27,7 @@
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/UTF8.hxx"
 

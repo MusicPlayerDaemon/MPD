@@ -21,7 +21,7 @@
 #include "mixer/Mixer.hxx"
 #include "config/Block.hxx"
 #include "io/FileDescriptor.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"

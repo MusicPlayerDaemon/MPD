@@ -40,7 +40,7 @@
 #include "fs/FileInfo.hxx"
 #include "config/Block.hxx"
 #include "fs/FileSystem.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 #include "util/CharUtil.hxx"
 #include "util/Domain.hxx"
 #include "util/RecursiveMap.hxx"

@@ -23,7 +23,7 @@
 #include "lib/fmt/PathFormatter.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 
 #include <cassert>
 

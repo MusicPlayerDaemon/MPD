@@ -21,7 +21,7 @@
 #include "../AsyncInputStream.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 #include "io/Open.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "io/uring/ReadOperation.hxx"

@@ -30,7 +30,7 @@
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 
 #include <cassert>
 

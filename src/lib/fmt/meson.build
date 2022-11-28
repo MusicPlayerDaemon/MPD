@@ -8,6 +8,14 @@ if compiler.get_id() == 'clang' and compiler.version().version_compare('<15')
   )
 endif
 
+fmt = static_library(
+  'fmt',
+  'SystemError.cxx',
+  include_directories: inc,
+  dependencies: libfmt,
+)
+
 fmt_dep = declare_dependency(
+  link_with: fmt,
   dependencies: libfmt,
 )

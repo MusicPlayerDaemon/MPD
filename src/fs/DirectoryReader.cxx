@@ -19,7 +19,7 @@
 
 #include "DirectoryReader.hxx"
 #include "lib/fmt/PathFormatter.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 
 #ifdef _WIN32
 

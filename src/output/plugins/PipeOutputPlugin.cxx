@@ -19,7 +19,7 @@
 
 #include "PipeOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 
 #include <string>
 #include <stdexcept>

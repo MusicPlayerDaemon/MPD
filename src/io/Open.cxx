@@ -29,7 +29,7 @@
 
 #include "Open.hxx"
 #include "UniqueFileDescriptor.hxx"
-#include "system/FmtError.hxx"
+#include "lib/fmt/SystemError.hxx"
 
 #include <fcntl.h>
 
