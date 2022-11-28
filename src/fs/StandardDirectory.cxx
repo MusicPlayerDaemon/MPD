@@ -72,9 +72,9 @@ class PasswdEntry
 
 	passwd *result{nullptr};
 public:
-	PasswdEntry() = default;
+	PasswdEntry() noexcept = default;
 
-	bool ReadByName(const char *name) {
+	bool ReadByName(const char *name) noexcept {
 #ifdef HAVE_GETPWNAM_R
 		getpwnam_r(name, &pw, buf.data(), buf.size(), &result);
 #else
@@ -83,7 +83,7 @@ public:
 		return result != nullptr;
 	}
 
-	bool ReadByUid(uid_t uid) {
+	bool ReadByUid(uid_t uid) noexcept {
 #ifdef HAVE_GETPWUID_R
 		getpwuid_r(uid, &pw, buf.data(), buf.size(), &result);
 #else
@@ -92,7 +92,7 @@ public:
 		return result != nullptr;
 	}
 
-	const passwd *operator->() {
+	const passwd *operator->() noexcept {
 		assert(result != nullptr);
 		return result;
 	}
@@ -100,21 +100,25 @@ public:
 #endif
 
 #ifndef ANDROID
+
+[[gnu::pure]]
 static inline bool
-IsValidPathString(PathTraitsFS::const_pointer path)
+IsValidPathString(PathTraitsFS::const_pointer path) noexcept
 {
 	return path != nullptr && *path != '\0';
 }
 
+[[gnu::pure]]
 static inline bool
-IsValidDir(PathTraitsFS::const_pointer dir)
+IsValidDir(PathTraitsFS::const_pointer dir) noexcept
 {
 	return PathTraitsFS::IsAbsolute(dir) &&
 	       DirectoryExists(Path::FromFS(dir));
 }
 
+[[gnu::pure]]
 static inline AllocatedPath
-SafePathFromFS(PathTraitsFS::const_pointer dir)
+SafePathFromFS(PathTraitsFS::const_pointer dir) noexcept
 {
 	if (IsValidPathString(dir) && IsValidDir(dir))
 		return AllocatedPath::FromFS(dir);
@@ -123,7 +127,10 @@ SafePathFromFS(PathTraitsFS::const_pointer dir)
 #endif
 
 #ifdef _WIN32
-static AllocatedPath GetStandardDir(int folder_id)
+
+[[gnu::pure]]
+static AllocatedPath
+GetStandardDir(int folder_id) noexcept
 {
 	std::array<PathTraitsFS::value_type, MAX_PATH> dir;
 	auto ret = SHGetFolderPath(nullptr, folder_id | CSIDL_FLAG_DONT_VERIFY,
@@ -132,13 +139,14 @@ static AllocatedPath GetStandardDir(int folder_id)
 		return nullptr;
 	return SafePathFromFS(dir.data());
 }
+
 #endif
 
 #ifdef USE_XDG
 
 static bool
 ParseConfigLine(std::string_view line, std::string_view dir_name,
-		AllocatedPath &result_dir)
+		AllocatedPath &result_dir) noexcept
 {
 	// strip leading white space
 	line = StripLeft(line);
@@ -248,7 +256,7 @@ AllocatedPath
 GetUserMusicDir() noexcept
 {
 #if defined(_WIN32)
-	return GetStandardDir(CSIDL_MYMUSIC);	
+	return GetStandardDir(CSIDL_MYMUSIC);
 #elif defined(USE_XDG)
 	return GetUserDir("XDG_MUSIC_DIR");
 #elif defined(ANDROID)
