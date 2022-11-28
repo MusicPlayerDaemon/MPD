@@ -21,13 +21,13 @@
 
 #include "ContentDirectoryService.hxx"
 #include "Device.hxx"
+#include "Error.hxx"
 #include "UniqueIxml.hxx"
 #ifdef USING_PUPNP
 #	include "ixmlwrap.hxx"
 #endif
 #include "Action.hxx"
 #include "util/IterableSplitString.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/UriRelative.hxx"
 #include "util/UriUtil.hxx"
 
@@ -70,8 +70,7 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 				   m_serviceType.c_str(),
 				   nullptr /*devUDN*/, request.get(), &_response);
 	if (code != UPNP_E_SUCCESS)
-		throw FormatRuntimeError("UpnpSendAction() failed: %s",
-					 UpnpGetErrorMessage(code));
+		throw Upnp::MakeError(code, "UpnpSendAction() failed");
 
 	UniqueIxmlDocument response(_response);
 
@@ -85,8 +84,8 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 				   "GetSearchCapabilities", {}, responseData, &errcode,
 				   errdesc);
 	if (code != UPNP_E_SUCCESS)
-		throw FormatRuntimeError("UpnpSendAction() failed: %s",
-					 UpnpGetErrorMessage(code));
+		throw Upnp::MakeError(code, "UpnpSendAction() failed");
+
 	const char *s{nullptr};
 	for (auto &entry : responseData) {
 		if (entry.first == "SearchCaps") {

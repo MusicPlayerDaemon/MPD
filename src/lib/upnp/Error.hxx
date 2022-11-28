@@ -17,53 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Init.hxx"
-#include "Compat.hxx"
-#include "Error.hxx"
-#include "thread/Mutex.hxx"
+#pragma once
 
 #include <upnptools.h>
-#ifdef USING_PUPNP
-#	include <ixml.h>
-#endif
 
-#include <cassert>
+#include <system_error>
 
-static Mutex upnp_init_mutex;
-static unsigned upnp_ref;
+namespace Upnp {
 
-static void
-DoInit(const char* iface)
+class ErrorCategory final : public std::error_category {
+public:
+	const char *name() const noexcept override {
+		return "libupnp";
+	}
+
+	std::string message(int condition) const override {
+		return UpnpGetErrorMessage(condition);
+	}
+};
+
+inline ErrorCategory error_category;
+
+inline std::system_error
+MakeError(int error, const char *msg) noexcept
 {
-	if (auto code = UpnpInit2(iface, 0); code != UPNP_E_SUCCESS)
-		throw Upnp::MakeError(code, "UpnpInit() failed");
-
-	UpnpSetMaxContentLength(2000*1024);
-
-#ifdef USING_PUPNP
-	// Servers sometimes make error (e.g.: minidlna returns bad utf-8)
-	ixmlRelaxParser(1);
-#endif
+	return std::system_error(error, error_category, msg);
 }
 
-void
-UpnpGlobalInit(const char* iface)
-{
-	const std::scoped_lock<Mutex> protect(upnp_init_mutex);
-
-	if (upnp_ref == 0)
-		DoInit(iface);
-
-	++upnp_ref;
-}
-
-void
-UpnpGlobalFinish() noexcept
-{
-	const std::scoped_lock<Mutex> protect(upnp_init_mutex);
-
-	assert(upnp_ref > 0);
-
-	if (--upnp_ref == 0)
-		UpnpFinish();
-}
+} // namespace Upnp

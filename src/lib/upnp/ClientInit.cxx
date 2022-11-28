@@ -19,9 +19,9 @@
 
 #include "ClientInit.hxx"
 #include "Init.hxx"
+#include "Error.hxx"
 #include "Callback.hxx"
 #include "thread/Mutex.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <upnptools.h>
 
@@ -52,8 +52,7 @@ DoInit()
 	auto code = UpnpRegisterClient(UpnpClientCallback, nullptr,
 				       &upnp_client_handle);
 	if (code != UPNP_E_SUCCESS)
-		throw FormatRuntimeError("UpnpRegisterClient() failed: %s",
-					 UpnpGetErrorMessage(code));
+		throw Upnp::MakeError(code, "UpnpRegisterClient() failed");
 }
 
 UpnpClient_Handle

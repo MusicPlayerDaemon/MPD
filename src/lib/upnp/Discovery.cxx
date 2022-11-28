@@ -20,12 +20,12 @@
 #include "Discovery.hxx"
 #include "ContentDirectoryService.hxx"
 #include "Log.hxx"
+#include "Error.hxx"
 #include "lib/curl/Global.hxx"
 #include "event/Call.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/SpanCast.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <upnptools.h>
 
@@ -296,14 +296,12 @@ UPnPDeviceDirectory::Search()
 	int code = UpnpSearchAsync(handle, search_timeout,
 				   ContentDirectorySType, GetUpnpCookie());
 	if (code != UPNP_E_SUCCESS)
-		throw FormatRuntimeError("UpnpSearchAsync() failed: %s",
-					 UpnpGetErrorMessage(code));
+		throw Upnp::MakeError(code, "UpnpSearchAsync() failed");
 
 	code = UpnpSearchAsync(handle, search_timeout,
 			       MediaServerDType, GetUpnpCookie());
 	if (code != UPNP_E_SUCCESS)
-		throw FormatRuntimeError("UpnpSearchAsync() failed: %s",
-					 UpnpGetErrorMessage(code));
+		throw Upnp::MakeError(code, "UpnpSearchAsync() failed");
 }
 
 std::vector<ContentDirectoryService>
