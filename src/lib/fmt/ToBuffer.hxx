@@ -27,43 +27,35 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "FmtError.hxx"
-#include "lib/fmt/ToBuffer.hxx"
+#pragma once
 
-#include <array>
+#include "util/StringBuffer.hxx"
 
-std::system_error
-VFmtSystemError(std::error_code code,
-		fmt::string_view format_str, fmt::format_args args) noexcept
+#include <fmt/core.h>
+
+template<std::size_t size>
+[[nodiscard]] [[gnu::pure]]
+auto
+VFmtBuffer(fmt::string_view format_str, fmt::format_args args) noexcept
 {
-	const auto msg = VFmtBuffer<512>(format_str, args);
-	return std::system_error{code, msg};
-}
-
-#ifdef _WIN32
-
-#include <windef.h> // for HWND (needed by winbase.h)
-#include <winbase.h> // for FormatMessageA()
-
-std::system_error
-VFmtLastError(DWORD code,
-	      fmt::string_view format_str, fmt::format_args args) noexcept
-{
-	std::array<char, 512> buffer;
-	const auto end = buffer.data() + buffer.size();
-
-	constexpr std::size_t max_prefix = sizeof(buffer) - 128;
-	auto [p, _] = fmt::vformat_to_n(buffer.data(),
-					buffer.size() - max_prefix,
+	StringBuffer<size> buffer;
+	auto [p, _] = fmt::vformat_to_n(buffer.data(), buffer.capacity() - 1,
 					format_str, args);
-	*p++ = ':';
-	*p++ = ' ';
-
-	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
-		       FORMAT_MESSAGE_IGNORE_INSERTS,
-		       nullptr, code, 0, p, end - p, nullptr);
-
-	return MakeLastError(code, buffer.data());
+	*p = 0;
+	return buffer;
 }
 
-#endif // _WIN32
+template<std::size_t size, typename S, typename... Args>
+[[nodiscard]] [[gnu::pure]]
+auto
+FmtBuffer(const S &format_str, Args&&... args) noexcept
+{
+#if FMT_VERSION >= 90000
+	return VFmtBuffer(format_str,
+			  fmt::make_format_args(args...));
+#else
+	return VFmtBuffer(fmt::to_string_view(format_str),
+			  fmt::make_args_checked<Args...>(format_str,
+							  args...));
+#endif
+}
