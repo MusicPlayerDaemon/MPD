@@ -297,7 +297,7 @@ GetUserRuntimeDir() noexcept
 AllocatedPath
 GetAppRuntimeDir() noexcept
 {
-#ifdef __linux__
+#if defined(__linux__) && !defined(ANDROID)
 	/* systemd specific; see systemd.exec(5) */
 	if (const char *runtime_directory = getenv("RUNTIME_DIRECTORY"))
 		if (auto dir = StringView{runtime_directory}.Split(':').first;
