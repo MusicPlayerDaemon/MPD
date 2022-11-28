@@ -39,6 +39,7 @@
 #endif
 
 #ifdef USE_XDG
+#include "util/StringSplit.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringCompare.hxx"
 #include "fs/io/TextFile.hxx"
@@ -136,7 +137,8 @@ static AllocatedPath GetStandardDir(int folder_id)
 static const char home_prefix[] = "$HOME/";
 
 static bool
-ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
+ParseConfigLine(const char *line, const char *dir_name,
+		AllocatedPath &result_dir)
 {
 	// strip leading white space
 	line = StripLeft(line);
@@ -171,34 +173,31 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 		home_relative = true;
 	}
 
-
-	char *line_end;
 	// find end of the string
+	std::string_view path_view;
 	if (quoted) {
-		line_end = std::strrchr(line, '"');
-		if (line_end == nullptr)
+		const auto [pv, rest] = SplitLast(std::string_view{line}, '"');
+		if (rest.data() == nullptr)
 			return true;
+
+		path_view = pv;
 	} else {
-		line_end = StripRight(line, line + strlen(line));
+		path_view = line;
+		path_view = StripRight(path_view);
 	}
 
 	// check for empty result
-	if (line == line_end)
+	if (path_view.empty())
 		return true;
 
-	*line_end = 0;
-
 	// build the result path
-	const auto path_fs = Path::FromFS(line);
+	auto result = AllocatedPath::FromFS(path_view);
 
-	AllocatedPath result = nullptr;
 	if (home_relative) {
 		auto home = GetHomeDir();
 		if (home.IsNull())
 			return true;
-		result = home / path_fs;
-	} else {
-		result = AllocatedPath(path_fs);
+		result = home / result;
 	}
 
 	if (IsValidDir(result.c_str())) {
