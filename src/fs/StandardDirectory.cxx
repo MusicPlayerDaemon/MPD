@@ -314,7 +314,7 @@ GetAppRuntimeDir() noexcept
 #ifdef USE_XDG
 	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
 		auto dir = user_dir / app_filename;
-		mkdir(dir.c_str(), 0777);
+		CreateDirectoryNoThrow(dir);
 		return dir;
 	}
 #endif
