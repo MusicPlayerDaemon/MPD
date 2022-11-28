@@ -1,4 +1,4 @@
-ver 0.23.11 (not yet released)
+ver 0.23.11 (2022/11/28)
 * database
   - simple: move default database to ~/.cache/mpd/db from ~/.cache/mpd.db
   - simple: default "cache_directory" to ~/.cache/mpd/mounts
