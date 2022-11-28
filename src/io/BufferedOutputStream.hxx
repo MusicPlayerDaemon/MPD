@@ -34,7 +34,7 @@
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <fmt/core.h>
-#if FMT_VERSION >= 80000
+#if FMT_VERSION >= 80000 && FMT_VERSION < 90000
 #include <fmt/format.h>
 #endif
 
