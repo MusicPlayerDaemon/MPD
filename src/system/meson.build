@@ -1,6 +1,5 @@
 system_sources = [
   'EventPipe.cxx',
-  'Clock.cxx',
 ]
 
 if host_machine.system() == 'linux'
@@ -9,6 +8,12 @@ if host_machine.system() == 'linux'
     'EventFD.cxx',
     'SignalFD.cxx',
     'EpollFD.cxx',
+  ]
+endif
+
+if host_machine.system() == 'windows'
+  system_sources += [
+    'Clock.cxx',
   ]
 endif
 
