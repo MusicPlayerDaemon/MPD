@@ -23,7 +23,6 @@
 #include "Callback.hxx"
 #include "event/Loop.hxx"
 #include "net/SocketDescriptor.hxx"
-#include "util/RuntimeError.hxx"
 
 extern "C" {
 #include <nfsc/libnfs.h>
@@ -48,8 +47,7 @@ NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 
 	int result = nfs_stat64_async(ctx, path, Callback, this);
 	if (result < 0)
-		throw FormatRuntimeError("nfs_stat64_async() failed: %s",
-					 nfs_get_error(ctx));
+		throw NfsClientError(ctx, "nfs_stat64_async() failed");
 }
 
 inline void
@@ -60,8 +58,7 @@ NfsConnection::CancellableCallback::Lstat(nfs_context *ctx,
 
 	int result = nfs_lstat64_async(ctx, path, Callback, this);
 	if (result < 0)
-		throw FormatRuntimeError("nfs_lstat64_async() failed: %s",
-					 nfs_get_error(ctx));
+		throw NfsClientError(ctx, "nfs_lstat64_async() failed");
 }
 
 inline void
@@ -72,8 +69,7 @@ NfsConnection::CancellableCallback::OpenDirectory(nfs_context *ctx,
 
 	int result = nfs_opendir_async(ctx, path, Callback, this);
 	if (result < 0)
-		throw FormatRuntimeError("nfs_opendir_async() failed: %s",
-					 nfs_get_error(ctx));
+		throw NfsClientError(ctx, "nfs_opendir_async() failed");
 }
 
 inline void
@@ -85,8 +81,7 @@ NfsConnection::CancellableCallback::Open(nfs_context *ctx,
 	int result = nfs_open_async(ctx, path, flags,
 				    Callback, this);
 	if (result < 0)
-		throw FormatRuntimeError("nfs_open_async() failed: %s",
-					 nfs_get_error(ctx));
+		throw NfsClientError(ctx, "nfs_open_async() failed");
 }
 
 inline void
@@ -97,8 +92,7 @@ NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 
 	int result = nfs_fstat_async(ctx, fh, Callback, this);
 	if (result < 0)
-		throw FormatRuntimeError("nfs_fstat_async() failed: %s",
-					 nfs_get_error(ctx));
+		throw NfsClientError(ctx, "nfs_fstat_async() failed");
 }
 
 inline void
@@ -109,8 +103,7 @@ NfsConnection::CancellableCallback::Read(nfs_context *ctx, struct nfsfh *fh,
 
 	int result = nfs_pread_async(ctx, fh, offset, size, Callback, this);
 	if (result < 0)
-		throw FormatRuntimeError("nfs_pread_async() failed: %s",
-					 nfs_get_error(ctx));
+		throw NfsClientError(ctx, "nfs_pread_async() failed");
 }
 
 inline void
@@ -150,7 +143,7 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 
 		if (err >= 0)
 			cb.OnNfsCallback((unsigned)err, data);
-		else
+		else 
 			cb.OnNfsError(std::make_exception_ptr(NfsClientError(-err, (const char *)data)));
 	} else {
 		if (open) {
@@ -512,8 +505,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 	} else if (result < 0) {
 		/* the connection has failed */
 
-		auto e = FormatRuntimeError("NFS connection has failed: %s",
-					    nfs_get_error(context));
+		auto e = NfsClientError(context, "NFS connection has failed");
 		BroadcastError(std::make_exception_ptr(e));
 
 		DestroyContext();
@@ -522,10 +514,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		   after the connection broke, but autoreconnect was
 		   disabled - nfs_service() returns 0 */
 
-		const char *msg = nfs_get_error(context);
-		if (msg == nullptr)
-			msg = "<unknown>";
-		auto e = FormatRuntimeError("NFS socket disappeared: %s", msg);
+		auto e = NfsClientError(context, "NFS socket disappeared");
 
 		BroadcastError(std::make_exception_ptr(e));
 
@@ -556,8 +545,7 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 	mount_timeout_event.Cancel();
 
 	if (status < 0) {
-		auto e = FormatRuntimeError("nfs_mount_async() failed: %s",
-					    nfs_get_error(context));
+		auto e = NfsClientError(context, "nfs_mount_async() failed");
 		postponed_mount_error = std::make_exception_ptr(e);
 		return;
 	}
@@ -595,8 +583,7 @@ NfsConnection::MountInternal()
 
 	if (nfs_mount_async(context, server.c_str(), export_name.c_str(),
 			    MountCallback, this) != 0) {
-		auto e = FormatRuntimeError("nfs_mount_async() failed: %s",
-					    nfs_get_error(context));
+		auto e = NfsClientError(context, "nfs_mount_async() failed");
 		nfs_destroy_context(context);
 		context = nullptr;
 		throw e;
