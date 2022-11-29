@@ -36,6 +36,8 @@
 #include <fmt/format.h>
 #endif
 
+#include <type_traits>
+
 [[nodiscard]] [[gnu::pure]]
 std::system_error
 VFmtSystemError(std::error_code code,
@@ -92,6 +94,7 @@ FmtLastError(const S &format_str, Args&&... args) noexcept
 #endif // _WIN32
 
 template<typename S, typename... Args>
+requires(std::is_convertible_v<S, fmt::string_view>)
 [[nodiscard]] [[gnu::pure]]
 std::system_error
 FmtErrno(int code, const S &format_str, Args&&... args) noexcept
@@ -101,6 +104,7 @@ FmtErrno(int code, const S &format_str, Args&&... args) noexcept
 }
 
 template<typename S, typename... Args>
+requires(std::is_convertible_v<S, fmt::string_view>)
 [[nodiscard]] [[gnu::pure]]
 std::system_error
 FmtErrno(const S &format_str, Args&&... args) noexcept
@@ -109,6 +113,7 @@ FmtErrno(const S &format_str, Args&&... args) noexcept
 }
 
 template<typename S, typename... Args>
+requires(std::is_convertible_v<S, fmt::string_view>)
 [[nodiscard]] [[gnu::pure]]
 std::system_error
 FmtFileNotFound(const S &format_str, Args&&... args) noexcept
