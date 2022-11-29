@@ -46,6 +46,7 @@ mixer_plugins = static_library(
   mixer_plugins_sources,
   include_directories: inc,
   dependencies: [
+    mixer_api_dep,
     alsa_dep,
     pulse_dep,
     libsndio_dep,

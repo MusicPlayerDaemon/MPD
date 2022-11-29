@@ -622,7 +622,7 @@ if alsa_dep.found()
     'read_mixer.cxx',
     include_directories: inc,
     dependencies: [
-      mixer_glue_dep,
+      mixer_plugins_dep,
     ],
   )
 endif
