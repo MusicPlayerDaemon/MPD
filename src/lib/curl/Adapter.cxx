@@ -31,7 +31,6 @@
 #include "Easy.hxx"
 #include "Handler.hxx"
 #include "util/CharUtil.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringSplit.hxx"
 #include "util/StringStrip.hxx"
 
@@ -98,8 +97,8 @@ CurlResponseHandlerAdapter::Done(CURLcode result) noexcept
 			StripRight(error_buffer);
 			const char *msg = error_buffer;
 			if (*msg == 0)
-				msg = curl_easy_strerror(result);
-			throw FormatRuntimeError("CURL failed: %s", msg);
+				msg = "CURL failed";
+			throw Curl::MakeError(result, msg);
 		}
 
 		FinishBody();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2018 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2022 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,44 +27,31 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Init.hxx"
-#include "Global.hxx"
-#include "Error.hxx"
-#include "event/Call.hxx"
-#include "thread/Mutex.hxx"
+#pragma once
 
-#include <cassert>
+#include <curl/curl.h>
 
-Mutex CurlInit::mutex;
-unsigned CurlInit::ref;
-CurlGlobal *CurlInit::instance;
+#include <system_error>
 
-CurlInit::CurlInit(EventLoop &event_loop)
-{
-	const std::scoped_lock<Mutex> protect(mutex);
-	if (++ref > 1) {
-		assert(&event_loop == &instance->GetEventLoop());
-		return;
+namespace Curl {
+
+class ErrorCategory final : public std::error_category {
+public:
+	const char *name() const noexcept override {
+		return "curl";
 	}
 
-	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
-	if (code != CURLE_OK)
-		throw Curl::MakeError(code, "CURL initialization failed");
+	std::string message(int condition) const override {
+		return curl_easy_strerror(static_cast<CURLcode>(condition));
+	}
+};
 
-	assert(instance == nullptr);
-	instance = new CurlGlobal(event_loop);
-}
+inline ErrorCategory error_category;
 
-CurlInit::~CurlInit() noexcept
+inline std::system_error
+MakeError(CURLcode code, const char *msg) noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
-	if (--ref > 0)
-		return;
-
-	BlockingCall(instance->GetEventLoop(), [](){
-			delete instance;
-			instance = nullptr;
-		});
-
-	curl_global_cleanup();
+	return std::system_error(static_cast<int>(code), error_category, msg);
 }
+
+} // namespace Curl

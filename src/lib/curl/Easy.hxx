@@ -30,6 +30,7 @@
 #ifndef CURL_EASY_HXX
 #define CURL_EASY_HXX
 
+#include "Error.hxx"
 #include "String.hxx"
 
 #include <curl/curl.h>
@@ -92,7 +93,7 @@ public:
 	void SetOption(CURLoption option, T value) {
 		CURLcode code = curl_easy_setopt(handle, option, value);
 		if (code != CURLE_OK)
-			throw std::runtime_error(curl_easy_strerror(code));
+			throw Curl::MakeError(code, "Failed to set option");
 	}
 
 	void SetPrivate(void *pointer) {
@@ -209,7 +210,7 @@ public:
 	void Perform() {
 		CURLcode code = curl_easy_perform(handle);
 		if (code != CURLE_OK)
-			throw std::runtime_error(curl_easy_strerror(code));
+			throw Curl::MakeError(code, "CURL failed");
 	}
 
 	bool Unpause() noexcept {
