@@ -22,7 +22,7 @@
 #include "config.h"
 
 #ifdef ENABLE_CURL
-#include "lib/curl/Error.hxx"
+#include "lib/curl/HttpStatusError.hxx"
 #endif
 
 #ifdef ENABLE_NFS

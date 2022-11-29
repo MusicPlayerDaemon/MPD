@@ -18,7 +18,7 @@
  */
 
 #include "CurlInputPlugin.hxx"
-#include "lib/curl/Error.hxx"
+#include "lib/curl/HttpStatusError.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Request.hxx"
