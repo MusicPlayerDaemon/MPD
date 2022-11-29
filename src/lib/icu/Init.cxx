@@ -20,6 +20,7 @@
 #include "Init.hxx"
 #include "Collate.hxx"
 #include "Canonicalize.hxx"
+#include "Error.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <unicode/uclean.h>
@@ -30,8 +31,7 @@ IcuInit()
 	UErrorCode code = U_ZERO_ERROR;
 	u_init(&code);
 	if (U_FAILURE(code))
-		throw FormatRuntimeError("u_init() failed: %s",
-					 u_errorName(code));
+		throw ICU::MakeError(code, "u_init() failed");
 
 	IcuCollateInit();
 	IcuCanonicalizeInit();

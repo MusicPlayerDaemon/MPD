@@ -18,6 +18,7 @@
  */
 
 #include "Util.hxx"
+#include "Error.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/AllocatedArray.hxx"
 
@@ -25,7 +26,6 @@
 
 #include <cassert>
 #include <memory>
-#include <stdexcept>
 
 #include <string.h>
 
@@ -41,7 +41,8 @@ UCharFromUTF8(std::string_view src)
 		      src.data(), src.size(),
 		      &error_code);
 	if (U_FAILURE(error_code))
-		throw std::runtime_error(u_errorName(error_code));
+		throw ICU::MakeError(error_code,
+				     "Conversion from UTF-8 failed");
 
 	dest.SetSize(dest_length);
 	return dest;
@@ -61,7 +62,8 @@ UCharToUTF8(std::basic_string_view<UChar> src)
 		    src.data(), src.size(),
 		    &error_code);
 	if (U_FAILURE(error_code))
-		throw std::runtime_error(u_errorName(error_code));
+		throw ICU::MakeError(error_code,
+				     "Conversion to UTF-8 failed");
 
 	dest[dest_length] = 0;
 	return AllocatedString::Donate(dest.release());

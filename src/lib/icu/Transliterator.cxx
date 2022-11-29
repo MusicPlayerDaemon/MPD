@@ -18,6 +18,7 @@
  */
 
 #include "Transliterator.hxx"
+#include "Error.hxx"
 #include "util/AllocatedArray.hxx"
 
 #include <algorithm> // for std::copy()
@@ -34,7 +35,7 @@ OpenTransliterator(std::basic_string_view<UChar> id,
 					  rules.data(), rules.size(),
 					  nullptr, &error_code);
 	if (t == nullptr)
-	       throw std::runtime_error(u_errorName(error_code));
+		throw ICU::MakeError(error_code, "utrans_openU() failed");
 
 	return t;
 }

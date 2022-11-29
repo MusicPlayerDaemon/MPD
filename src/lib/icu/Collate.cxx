@@ -22,8 +22,8 @@
 #include "config.h"
 
 #ifdef HAVE_ICU
+#include "Error.hxx"
 #include "Util.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <unicode/ucol.h>
 #include <unicode/ustring.h>
@@ -62,8 +62,7 @@ IcuCollateInit()
 	UErrorCode code = U_ZERO_ERROR;
 	collator = ucol_open("", &code);
 	if (collator == nullptr)
-		throw FormatRuntimeError("ucol_open() failed: %s",
-					 u_errorName(code));
+		throw ICU::MakeError(code, "ucol_open() failed");
 }
 
 void
