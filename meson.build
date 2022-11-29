@@ -403,6 +403,8 @@ subdir('src/win32')
 
 subdir('src/apple')
 
+subdir('src/pcm')
+
 subdir('src/lib/dbus')
 subdir('src/lib/icu')
 subdir('src/lib/smbclient')
@@ -432,7 +434,6 @@ subdir('src/zeroconf')
 subdir('src/fs')
 subdir('src/config')
 subdir('src/tag')
-subdir('src/pcm')
 subdir('src/neighbor')
 subdir('src/input')
 subdir('src/archive')

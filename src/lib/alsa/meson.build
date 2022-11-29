@@ -21,6 +21,7 @@ alsa = static_library(
   include_directories: inc,
   dependencies: [
     libasound_dep,
+    pcm_basic_dep,
     log_dep,
   ],
 )
