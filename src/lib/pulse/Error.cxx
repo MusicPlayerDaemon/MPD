@@ -23,9 +23,20 @@
 #include <pulse/context.h>
 #include <pulse/error.h>
 
-std::runtime_error
-MakePulseError(pa_context *context, const char *prefix) noexcept
+namespace Pulse {
+
+std::string
+ErrorCategory::message(int condition) const
 {
-	const int e = pa_context_errno(context);
-	return FormatRuntimeError("%s: %s", prefix, pa_strerror(e));
+	return pa_strerror(condition);
 }
+
+ErrorCategory error_category;
+
+std::system_error
+MakeError(pa_context *context, const char *msg) noexcept
+{
+	return MakeError(pa_context_errno(context), msg);
+}
+
+} // namespace Pulse

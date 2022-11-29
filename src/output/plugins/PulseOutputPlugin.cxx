@@ -368,8 +368,8 @@ PulseOutput::Connect()
 
 	if (pa_context_connect(context, server,
 			       (pa_context_flags_t)0, nullptr) < 0)
-		throw MakePulseError(context,
-				     "pa_context_connect() has failed");
+		throw Pulse::MakeError(context,
+				       "pa_context_connect() has failed");
 }
 
 void
@@ -501,8 +501,8 @@ PulseOutput::WaitConnection()
 		case PA_CONTEXT_FAILED:
 			/* failure */
 			{
-				auto e = MakePulseError(context,
-							"failed to connect");
+				auto e = Pulse::MakeError(context,
+							  "failed to connect");
 				DeleteContext();
 				throw e;
 			}
@@ -603,8 +603,8 @@ PulseOutput::SetupStream(const pa_sample_spec &ss)
 				   PA_CHANNEL_MAP_WAVEEX);
 	stream = pa_stream_new(context, name, &ss, &chan_map);
 	if (stream == nullptr)
-		throw MakePulseError(context,
-				     "pa_stream_new() has failed");
+		throw Pulse::MakeError(context,
+				       "pa_stream_new() has failed");
 
 	pa_stream_set_suspended_callback(stream,
 					 pulse_output_stream_suspended_cb,
@@ -682,8 +682,8 @@ PulseOutput::Open(AudioFormat &audio_format)
 				       nullptr, nullptr) < 0) {
 		DeleteStream();
 
-		throw MakePulseError(context,
-				     "pa_stream_connect_playback() has failed");
+		throw Pulse::MakeError(context,
+				       "pa_stream_connect_playback() has failed");
 	}
 
 	interrupted = false;
@@ -729,8 +729,8 @@ PulseOutput::WaitStream()
 		case PA_STREAM_FAILED:
 		case PA_STREAM_TERMINATED:
 		case PA_STREAM_UNCONNECTED:
-			throw MakePulseError(context,
-					     "failed to connect the stream");
+			throw Pulse::MakeError(context,
+					       "failed to connect the stream");
 
 		case PA_STREAM_CREATING:
 			if (interrupted)
@@ -752,12 +752,12 @@ PulseOutput::StreamPause(bool _pause)
 	pa_operation *o = pa_stream_cork(stream, _pause,
 					 pulse_output_stream_success_cb, this);
 	if (o == nullptr)
-		throw MakePulseError(context,
-				     "pa_stream_cork() has failed");
+		throw Pulse::MakeError(context,
+				       "pa_stream_cork() has failed");
 
 	if (!pulse_wait_for_operation(mainloop, o))
-		throw MakePulseError(context,
-				     "pa_stream_cork() has failed");
+		throw Pulse::MakeError(context,
+				       "pa_stream_cork() has failed");
 }
 
 std::chrono::steady_clock::duration
@@ -819,7 +819,7 @@ PulseOutput::Play(std::span<const std::byte> src)
 	int result = pa_stream_write(stream, src.data(), src.size(), nullptr,
 				     0, PA_SEEK_RELATIVE);
 	if (result < 0)
-		throw MakePulseError(context, "pa_stream_write() failed");
+		throw Pulse::MakeError(context, "pa_stream_write() failed");
 
 	return src.size();
 }
@@ -838,7 +838,7 @@ PulseOutput::Drain()
 		pa_stream_drain(stream,
 				pulse_output_stream_success_cb, this);
 	if (o == nullptr)
-		throw MakePulseError(context, "pa_stream_drain() failed");
+		throw Pulse::MakeError(context, "pa_stream_drain() failed");
 
 	pulse_wait_for_operation(mainloop, o);
 }

@@ -17,14 +17,34 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PULSE_ERROR_HXX
-#define MPD_PULSE_ERROR_HXX
+#pragma once
 
-#include <stdexcept>
+#include <system_error>
 
 struct pa_context;
 
-std::runtime_error
-MakePulseError(pa_context *context, const char *prefix) noexcept;
+namespace Pulse {
 
-#endif
+class ErrorCategory final : public std::error_category {
+public:
+	const char *name() const noexcept override {
+		return "pulse";
+	}
+
+	std::string message(int condition) const override;
+};
+
+extern ErrorCategory error_category;
+
+[[nodiscard]] [[gnu::pure]]
+inline std::system_error
+MakeError(int error, const char *msg) noexcept
+{
+	return std::system_error(error, error_category, msg);
+}
+
+[[nodiscard]] [[gnu::pure]]
+std::system_error
+MakeError(pa_context *context, const char *msg) noexcept;
+
+} // namespace Pulse
