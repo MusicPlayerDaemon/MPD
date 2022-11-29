@@ -392,6 +392,7 @@ if enable_database
 endif
 
 subdir('src/util')
+subdir('src/cmdline')
 subdir('src/time')
 subdir('src/io')
 subdir('src/io/uring')
@@ -529,6 +530,7 @@ mpd = build_target(
   target_type: target_type,
   include_directories: inc,
   dependencies: [
+    cmdline_dep,
     basic_dep,
     config_dep,
     dbus_dep,

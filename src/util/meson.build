@@ -22,7 +22,6 @@ util = static_library(
   'PeakBuffer.cxx',
   'PrintException.cxx',
   'SparseBuffer.cxx',
-  'OptionParser.cxx',
   'ByteReverse.cxx',
   'format.c',
   'BitReverse.cxx',

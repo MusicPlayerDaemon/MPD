@@ -35,8 +35,8 @@
 #include "fs/NarrowPath.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "io/StdioOutputStream.hxx"
-#include "util/OptionDef.hxx"
-#include "util/OptionParser.hxx"
+#include "cmdline/OptionDef.hxx"
+#include "cmdline/OptionParser.hxx"
 #include "util/PrintException.hxx"
 
 #ifdef ENABLE_ARCHIVE

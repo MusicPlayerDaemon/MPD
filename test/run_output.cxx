@@ -26,8 +26,8 @@
 #include "fs/NarrowPath.hxx"
 #include "pcm/AudioParser.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "util/OptionDef.hxx"
-#include "util/OptionParser.hxx"
+#include "cmdline/OptionDef.hxx"
+#include "cmdline/OptionParser.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
@@ -106,8 +106,6 @@ LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,
 	if (plugin == nullptr)
 		throw FormatRuntimeError("No such audio output plugin: %s",
 					 plugin_name);
-#include "util/OptionDef.hxx"
-#include "util/OptionParser.hxx"
 
 	return std::unique_ptr<AudioOutput>(ao_plugin_init(event_loop, *plugin,
 							   *block));

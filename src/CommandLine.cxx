@@ -39,9 +39,9 @@
 #include "fs/StandardDirectory.hxx"
 #include "event/Features.h"
 #include "io/uring/Features.h"
+#include "cmdline/OptionDef.hxx"
+#include "cmdline/OptionParser.hxx"
 #include "util/Domain.hxx"
-#include "util/OptionDef.hxx"
-#include "util/OptionParser.hxx"
 #include "Version.h"
 
 #ifdef _WIN32
