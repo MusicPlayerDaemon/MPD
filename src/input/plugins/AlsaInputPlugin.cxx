@@ -28,6 +28,7 @@
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/Error.hxx"
 #include "lib/alsa/Format.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "../AsyncInputStream.hxx"
 #include "event/Call.hxx"
 #include "config/Block.hxx"
@@ -420,8 +421,8 @@ AlsaInputStream::OpenDevice(const SourceSpec &spec)
 				SND_PCM_STREAM_CAPTURE,
 				SND_PCM_NONBLOCK | global_config.mode)) < 0)
 		throw Alsa::MakeError(err,
-				      fmt::format("Failed to open device {}",
-						  spec.GetDeviceName()).c_str());
+				      FmtBuffer<256>("Failed to open device {}",
+						     spec.GetDeviceName()));
 
 	try {
 		ConfigureCapture(spec.GetAudioFormat());

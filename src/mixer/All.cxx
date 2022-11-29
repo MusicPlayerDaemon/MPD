@@ -23,6 +23,7 @@
 #include "plugins/NullMixerPlugin.hxx"
 #include "plugins/SoftwareMixerPlugin.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "pcm/Volume.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -105,8 +106,8 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume)
 		FmtError(mixer_domain,
 			 "Failed to set mixer for '{}': {}",
 			 ao.GetName(), std::current_exception());
-		std::throw_with_nested(std::runtime_error(fmt::format("Failed to set mixer for '{}'",
-								      ao.GetName())));
+		std::throw_with_nested(std::runtime_error(FmtBuffer<256>("Failed to set mixer for '{}'",
+									 ao.GetName())));
 	}
 }
 

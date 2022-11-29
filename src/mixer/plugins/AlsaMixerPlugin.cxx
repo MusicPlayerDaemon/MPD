@@ -20,6 +20,7 @@
 #include "AlsaMixerPlugin.hxx"
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/Error.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "mixer/Mixer.hxx"
 #include "mixer/Listener.hxx"
 #include "output/OutputAPI.hxx"
@@ -267,8 +268,8 @@ AlsaMixer::Setup()
 
 	if ((err = snd_mixer_attach(handle, device)) < 0)
 		throw Alsa::MakeError(err,
-				      fmt::format("failed to attach to {}",
-						  device).c_str());
+				      FmtBuffer<256>("failed to attach to {}",
+						     device));
 
 	if ((err = snd_mixer_selem_register(handle, nullptr, nullptr)) < 0)
 		throw Alsa::MakeError(err, "snd_mixer_selem_register() failed");

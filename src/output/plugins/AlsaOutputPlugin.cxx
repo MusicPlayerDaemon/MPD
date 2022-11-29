@@ -25,6 +25,7 @@
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/PeriodBuffer.hxx"
 #include "lib/alsa/Version.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
 #include "mixer/plugins/AlsaMixerPlugin.hxx"
@@ -807,8 +808,8 @@ AlsaOutput::Open(AudioFormat &audio_format)
 			       SND_PCM_STREAM_PLAYBACK, mode);
 	if (err < 0)
 		throw Alsa::MakeError(err,
-				      fmt::format("Failed to open ALSA device \"{}\"",
-						  GetDevice()).c_str());
+				      FmtBuffer<256>("Failed to open ALSA device \"{}\"",
+						     GetDevice()));
 
 	const char *pcm_name = snd_pcm_name(pcm);
 	if (pcm_name == nullptr)

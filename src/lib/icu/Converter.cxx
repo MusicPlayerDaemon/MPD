@@ -19,6 +19,7 @@
 
 #include "Converter.hxx"
 #include "util/AllocatedString.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "config.h"
 
 #include <fmt/format.h>
@@ -33,7 +34,7 @@
 #include "util/AllocatedArray.hxx"
 #include <unicode/ucnv.h>
 #elif defined(HAVE_ICONV)
-#include "system/Error.hxx"
+#include "lib/fmt/SystemError.hxx"
 #endif
 
 #ifdef HAVE_ICU
@@ -54,8 +55,8 @@ IcuConverter::Create(const char *charset)
 	UErrorCode code = U_ZERO_ERROR;
 	UConverter *converter = ucnv_open(charset, &code);
 	if (converter == nullptr)
-		throw std::runtime_error(fmt::format(FMT_STRING("Failed to initialize charset '{}': {}"),
-						     charset, u_errorName(code)));
+		throw std::runtime_error(FmtBuffer<256>(FMT_STRING("Failed to initialize charset '{}': {}"),
+							charset, u_errorName(code)));
 
 	return std::unique_ptr<IcuConverter>(new IcuConverter(converter));
 #elif defined(HAVE_ICONV)
@@ -67,8 +68,8 @@ IcuConverter::Create(const char *charset)
 			iconv_close(to);
 		if (from != (iconv_t)-1)
 			iconv_close(from);
-		throw MakeErrno(e, fmt::format(FMT_STRING("Failed to initialize charset '{}'"),
-					       charset).c_str());
+		throw FmtErrno(e, FMT_STRING("Failed to initialize charset '{}'"),
+			       charset);
 	}
 
 	return std::unique_ptr<IcuConverter>(new IcuConverter(to, from));
@@ -119,8 +120,8 @@ IcuConverter::ToUTF8(std::string_view s) const
 		       &source, source + s.size(),
 		       nullptr, true, &code);
 	if (code != U_ZERO_ERROR)
-		throw std::runtime_error(fmt::format(FMT_STRING("Failed to convert to Unicode: {}"),
-						     u_errorName(code)));
+		throw std::runtime_error(FmtBuffer<256>(FMT_STRING("Failed to convert to Unicode: {}"),
+							u_errorName(code)));
 
 	const size_t target_length = target - buffer;
 	return UCharToUTF8({buffer, target_length});
@@ -149,8 +150,8 @@ IcuConverter::FromUTF8(std::string_view s) const
 			 nullptr, true, &code);
 
 	if (code != U_ZERO_ERROR)
-		throw std::runtime_error(fmt::format(FMT_STRING("Failed to convert from Unicode: {}"),
-						     u_errorName(code)));
+		throw std::runtime_error(FmtBuffer<256>(FMT_STRING("Failed to convert from Unicode: {}"),
+							u_errorName(code)));
 
 	return {{buffer, size_t(target - buffer)}};
 
