@@ -32,7 +32,7 @@
 #include "util/StringBuffer.hxx"
 
 #include <fmt/core.h>
-#if FMT_VERSION <= 80000
+#if FMT_VERSION < 90000
 #include <fmt/format.h> // for the fmt::buffer::flush() implementation
 #endif
 
