@@ -155,12 +155,12 @@ public:
 	}
 
 	[[nodiscard]]
-	constexpr const key_equal key_eq() const noexcept {
+	constexpr const key_equal &key_eq() const noexcept {
 		return equal;
 	}
 
 	[[nodiscard]]
-	constexpr bool empty() noexcept {
+	constexpr bool empty() const noexcept {
 		if constexpr (constant_time_size)
 			return size() == 0;
 		else
@@ -170,7 +170,7 @@ public:
 	}
 
 	[[nodiscard]]
-	constexpr size_type size() noexcept {
+	constexpr size_type size() const noexcept {
 		if constexpr (constant_time_size)
 			return counter;
 		else

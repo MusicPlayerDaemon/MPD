@@ -41,18 +41,18 @@ struct IntItem final : IntrusiveHashSetHook<IntrusiveHookMode::TRACK> {
 	IntItem(int _value) noexcept:value(_value) {}
 
 	struct Hash {
-		constexpr std::size_t operator()(const IntItem &i) noexcept {
+		constexpr std::size_t operator()(const IntItem &i) const noexcept {
 			return i.value;
 		}
 
-		constexpr std::size_t operator()(int i) noexcept {
+		constexpr std::size_t operator()(int i) const noexcept {
 			return i;
 		}
 	};
 
 	struct Equal {
 		constexpr bool operator()(const IntItem &a,
-					  const IntItem &b) noexcept {
+					  const IntItem &b) const noexcept {
 			return a.value == b.value;
 		}
 	};
