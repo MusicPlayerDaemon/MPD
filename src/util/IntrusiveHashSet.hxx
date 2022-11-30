@@ -259,6 +259,23 @@ public:
 		return end();
 	}
 
+	/**
+	 * Like find(), but returns an item that matches the given
+	 * predicate.  This is useful if the container can contain
+	 * multiple items that compare equal (according to #Equal, but
+	 * not according to #pred).
+	 */
+	[[nodiscard]] [[gnu::pure]]
+	constexpr bucket_iterator find_if(const auto &key,
+					  auto &&pred) noexcept {
+		auto &bucket = GetBucket(key);
+		for (auto &i : bucket)
+			if (equal(key, i) && pred(i))
+				return bucket.iterator_to(i);
+
+		return end();
+	}
+
 	constexpr bucket_iterator end() noexcept {
 		return table.front().end();
 	}
