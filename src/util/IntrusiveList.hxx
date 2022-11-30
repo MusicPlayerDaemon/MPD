@@ -189,7 +189,7 @@ class IntrusiveList {
 	}
 
 	static constexpr const auto &ToHook(const T &t) noexcept {
-		return HookTraits::ToHook(t);
+		return HookTraits::ToHook(const_cast<T &>(t));
 	}
 
 	static constexpr IntrusiveListNode &ToNode(T &t) noexcept {
