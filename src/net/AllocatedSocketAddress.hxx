@@ -176,6 +176,14 @@ public:
 	}
 
 	/**
+	 * Does the address family support port numbers?
+	 */
+	[[gnu::pure]]
+	bool HasPort() const noexcept {
+		return ((SocketAddress)*this).HasPort();
+	}
+
+	/**
 	 * Extract the port number.  Returns 0 if not applicable.
 	 */
 	[[gnu::pure]]

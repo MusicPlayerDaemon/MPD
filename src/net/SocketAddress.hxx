@@ -164,6 +164,15 @@ public:
 	IPv4Address UnmapV4() const noexcept;
 
 	/**
+	 * Does the address family support port numbers?
+	 */
+	[[gnu::pure]]
+	bool HasPort() const noexcept {
+		return !IsNull() &&
+			(GetFamily() == AF_INET || GetFamily() == AF_INET6);
+	}
+
+	/**
 	 * Extract the port number.  Returns 0 if not applicable.
 	 */
 	[[gnu::pure]]
