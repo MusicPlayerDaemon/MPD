@@ -134,6 +134,7 @@ class IntrusiveHashSet {
 	std::array<Bucket, table_size> table;
 
 	using bucket_iterator = typename Bucket::iterator;
+	using const_bucket_iterator = typename Bucket::const_iterator;
 
 public:
 	using value_type = T;
@@ -248,7 +249,21 @@ public:
 		return end();
 	}
 
+	[[nodiscard]] [[gnu::pure]]
+	constexpr const_bucket_iterator find(const auto &key) const noexcept {
+		auto &bucket = GetBucket(key);
+		for (auto &i : bucket)
+			if (equal(key, i))
+				return bucket.iterator_to(i);
+
+		return end();
+	}
+
 	constexpr bucket_iterator end() noexcept {
+		return table.front().end();
+	}
+
+	constexpr const_bucket_iterator end() const noexcept {
 		return table.front().end();
 	}
 
@@ -269,6 +284,14 @@ private:
 	[[gnu::pure]]
 	[[nodiscard]]
 	constexpr auto &GetBucket(K &&key) noexcept {
+		const auto h = hash(std::forward<K>(key));
+		return table[h % table_size];
+	}
+
+	template<typename K>
+	[[gnu::pure]]
+	[[nodiscard]]
+	constexpr const auto &GetBucket(K &&key) const noexcept {
 		const auto h = hash(std::forward<K>(key));
 		return table[h % table_size];
 	}
