@@ -382,6 +382,12 @@ public:
 			return *this;
 		}
 
+		auto operator++(int) noexcept {
+			auto old = *this;
+			cursor = cursor->next;
+			return old;
+		}
+
 		auto &operator--() noexcept {
 			cursor = cursor->prev;
 			return *this;
@@ -445,6 +451,12 @@ public:
 		auto &operator++() noexcept {
 			cursor = cursor->next;
 			return *this;
+		}
+
+		auto operator++(int) noexcept {
+			auto old = *this;
+			cursor = cursor->next;
+			return old;
 		}
 
 		auto &operator--() noexcept {
