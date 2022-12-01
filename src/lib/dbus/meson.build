@@ -25,6 +25,7 @@ dbus = static_library(
   'Watch.cxx',
   include_directories: inc,
   dependencies: [
+    fmt_dep,
     dbus_dep,
   ],
 )
