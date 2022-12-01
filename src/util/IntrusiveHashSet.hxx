@@ -66,9 +66,6 @@ struct IntrusiveHashSetBaseHookTraits {
 	template<typename U>
 	using Hook = typename IntrusiveHashSetHookDetection<U>::type;
 
-	using ListHookTraits =
-		IntrusiveListMemberHookTraits<&T::intrusive_hash_set_siblings>;
-
 	static constexpr T *Cast(Hook<T> *node) noexcept {
 		return static_cast<T *>(node);
 	}
