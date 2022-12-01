@@ -291,6 +291,40 @@ public:
 		return end();
 	}
 
+	/**
+	 * Like find_if(), but while traversing the bucket linked
+	 * list, remove and dispose expired items.
+	 *
+	 * @param expired_pred returns true if an item is expired; it
+	 * will be removed and disposed
+	 *
+	 * @param disposer function which will be called for items
+	 * that were removed (because they are expired)
+	 *
+	 * @param match_pred returns true if the desired item was
+	 * found
+	 */
+	[[nodiscard]] [[gnu::pure]]
+	constexpr bucket_iterator expire_find_if(const auto &key,
+						 Predicate<const_reference> auto expired_pred,
+						 Disposer<value_type> auto disposer,
+						 Predicate<const_reference> auto match_pred) noexcept {
+		auto &bucket = GetBucket(key);
+
+		for (auto i = bucket.begin(), e = bucket.end(); i != e;) {
+			if (!equal(key, *i))
+				++i;
+			else if (expired_pred(*i))
+				i = erase_and_dispose(i, disposer);
+			else if (match_pred(*i))
+				return i;
+			else
+				++i;
+		}
+
+		return end();
+	}
+
 	constexpr bucket_iterator end() noexcept {
 		return table.front().end();
 	}
