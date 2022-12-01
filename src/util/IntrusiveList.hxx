@@ -296,8 +296,13 @@ public:
 		}
 	}
 
-	void remove_and_dispose_if(Predicate<const_reference> auto pred,
-				   Disposer<value_type> auto dispose) noexcept {
+	/**
+	 * @return the number of removed items
+	 */
+	std::size_t remove_and_dispose_if(Predicate<const_reference> auto pred,
+					  Disposer<value_type> auto dispose) noexcept {
+		std::size_t result = 0;
+
 		auto *n = head.next;
 
 		while (n != &head) {
@@ -308,8 +313,11 @@ public:
 				ToHook(*i).unlink();
 				--counter;
 				dispose(i);
+				++result;
 			}
 		}
+
+		return result;
 	}
 
 	const_reference front() const noexcept {
