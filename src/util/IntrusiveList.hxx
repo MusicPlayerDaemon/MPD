@@ -30,6 +30,7 @@
 #pragma once
 
 #include "Cast.hxx"
+#include "Concepts.hxx"
 #include "IntrusiveHookMode.hxx"
 #include "MemberPointer.hxx"
 #include "OptionalCounter.hxx"
@@ -287,8 +288,7 @@ public:
 		}
 	}
 
-	template<typename D>
-	void clear_and_dispose(D &&disposer) noexcept {
+	void clear_and_dispose(Disposer<value_type> auto disposer) noexcept {
 		while (!empty()) {
 			auto *item = &front();
 			pop_front();
@@ -296,8 +296,8 @@ public:
 		}
 	}
 
-	template<typename P, typename D>
-	void remove_and_dispose_if(P &&pred, D &&dispose) noexcept {
+	void remove_and_dispose_if(Predicate<const_reference> auto pred,
+				   Disposer<value_type> auto dispose) noexcept {
 		auto *n = head.next;
 
 		while (n != &head) {
@@ -325,8 +325,7 @@ public:
 		--counter;
 	}
 
-	template<typename D>
-	void pop_front_and_dispose(D &&disposer) noexcept {
+	void pop_front_and_dispose(Disposer<value_type> auto disposer) noexcept {
 		auto &i = front();
 		ToHook(i).unlink();
 		--counter;
@@ -479,8 +478,8 @@ public:
 		return result;
 	}
 
-	template<typename D>
-	iterator erase_and_dispose(iterator i, D &&disposer) noexcept {
+	iterator erase_and_dispose(iterator i,
+				   Disposer<value_type> auto disposer) noexcept {
 		auto result = erase(i);
 		disposer(&*i);
 		return result;

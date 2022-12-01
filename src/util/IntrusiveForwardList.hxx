@@ -33,6 +33,7 @@
 #pragma once
 
 #include "Cast.hxx"
+#include "Concepts.hxx"
 #include "MemberPointer.hxx"
 #include "OptionalCounter.hxx"
 #include "ShallowCopy.hxx"
@@ -198,8 +199,7 @@ public:
 		counter.reset();
 	}
 
-	template<typename D>
-	void clear_and_dispose(D &&disposer) noexcept {
+	void clear_and_dispose(Disposer<value_type> auto disposer) noexcept {
 		while (!empty()) {
 			auto *item = &front();
 			pop_front();

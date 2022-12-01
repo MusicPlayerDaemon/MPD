@@ -29,6 +29,7 @@
 
 #pragma once
 
+#include "Concepts.hxx"
 #include "IntrusiveList.hxx"
 
 #include <algorithm> // for std::all_of()
@@ -192,15 +193,15 @@ public:
 		counter.reset();
 	}
 
-	template<typename D>
-	constexpr void clear_and_dispose(D &&disposer) noexcept {
+	constexpr void clear_and_dispose(Disposer<value_type> auto disposer) noexcept {
 		for (auto &i : table)
 			i.clear_and_dispose(disposer);
 
 		counter.reset();
 	}
 
-	void remove_and_dispose_if(auto &&pred, auto &&disposer) noexcept {
+	void remove_and_dispose_if(Predicate<const_reference> auto pred,
+				   Disposer<value_type> auto disposer) noexcept {
 		static_assert(!constant_time_size, "Not yet implemented");
 
 		for (auto &bucket : table)
@@ -238,7 +239,7 @@ public:
 	}
 
 	constexpr bucket_iterator erase_and_dispose(bucket_iterator i,
-						    auto &&disposer) noexcept {
+						    Disposer<value_type> auto disposer) noexcept {
 		auto result = erase(i);
 		disposer(&*i);
 		return result;
@@ -272,7 +273,7 @@ public:
 	 */
 	[[nodiscard]] [[gnu::pure]]
 	constexpr bucket_iterator find_if(const auto &key,
-					  auto &&pred) noexcept {
+					  Disposer<value_type> auto pred) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
 			if (equal(key, i) && pred(i))
