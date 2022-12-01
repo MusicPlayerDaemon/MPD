@@ -214,7 +214,9 @@ public:
 		static_assert(!constant_time_size, "Not yet implemented");
 
 		auto &bucket = GetBucket(key);
-		bucket.remove_and_dispose_if(pred, disposer);
+		bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
+			return equal(key, item) && pred(item);
+		}, disposer);
 	}
 
 	[[nodiscard]]
