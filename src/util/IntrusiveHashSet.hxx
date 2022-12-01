@@ -202,19 +202,15 @@ public:
 
 	void remove_and_dispose_if(Predicate<const_reference> auto pred,
 				   Disposer<value_type> auto disposer) noexcept {
-		static_assert(!constant_time_size, "Not yet implemented");
-
 		for (auto &bucket : table)
-			bucket.remove_and_dispose_if(pred, disposer);
+			counter -= bucket.remove_and_dispose_if(pred, disposer);
 	}
 
 	constexpr void remove_and_dispose_if(const auto &key,
 					     Predicate<const_reference> auto pred,
 					     Disposer<value_type> auto disposer) noexcept {
-		static_assert(!constant_time_size, "Not yet implemented");
-
 		auto &bucket = GetBucket(key);
-		bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
+		counter -= bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
 			return equal(key, item) && pred(item);
 		}, disposer);
 	}
