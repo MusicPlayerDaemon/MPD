@@ -85,6 +85,14 @@ struct IntrusiveHashSetMemberHookTraits {
 
 	template<typename Dummy>
 	using Hook = _Hook;
+
+	static constexpr T *Cast(Hook<T> *node) noexcept {
+		return &ContainerCast(*node, member);
+	}
+
+	static constexpr auto &ToHook(T &t) noexcept {
+		return t.*member;
+	}
 };
 
 /**
