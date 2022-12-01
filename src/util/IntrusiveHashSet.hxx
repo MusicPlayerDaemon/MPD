@@ -208,6 +208,15 @@ public:
 			bucket.remove_and_dispose_if(pred, disposer);
 	}
 
+	constexpr void remove_and_dispose_if(const auto &key,
+					     Predicate<const_reference> auto pred,
+					     Disposer<value_type> auto disposer) noexcept {
+		static_assert(!constant_time_size, "Not yet implemented");
+
+		auto &bucket = GetBucket(key);
+		bucket.remove_and_dispose_if(pred, disposer);
+	}
+
 	[[nodiscard]]
 	static constexpr bucket_iterator iterator_to(reference item) noexcept {
 		return Bucket::iterator_to(item);
