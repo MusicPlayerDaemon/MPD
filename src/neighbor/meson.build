@@ -19,6 +19,9 @@ neighbor_glue = static_library(
   'Glue.cxx',
   'Registry.cxx',
   include_directories: inc,
+  dependencies: [
+    fmt_dep,
+  ],
 )
 
 neighbor_glue_dep = declare_dependency(
