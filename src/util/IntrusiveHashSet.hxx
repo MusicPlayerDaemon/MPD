@@ -280,7 +280,7 @@ public:
 	 */
 	[[nodiscard]] [[gnu::pure]]
 	constexpr bucket_iterator find_if(const auto &key,
-					  Disposer<value_type> auto pred) noexcept {
+					  Predicate<const_reference> auto pred) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
 			if (equal(key, i) && pred(i))
