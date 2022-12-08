@@ -26,6 +26,9 @@ on:
       - master
       - v0.23.x
 
+permissions:
+  contents: read #  to fetch code (actions/checkout)
+
 jobs:
   build-linux:
     strategy:
