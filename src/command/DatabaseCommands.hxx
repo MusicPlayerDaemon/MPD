@@ -48,6 +48,9 @@ CommandResult
 handle_searchaddpl(Client &client, Request request, Response &response);
 
 CommandResult
+handle_searchcount(Client &client, Request request, Response &response);
+
+CommandResult
 handle_count(Client &client, Request request, Response &response);
 
 CommandResult

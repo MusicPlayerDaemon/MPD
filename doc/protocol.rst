@@ -1286,6 +1286,16 @@ The music database
     The ``position`` parameter specifies where the songs will be
     inserted. [#since_0_23_4]_
 
+.. _command_searchcount:
+
+:command:`searchcount {FILTER} [group {GROUPTYPE}]`
+    Count the number of songs and their total playtime in
+    the database matching ``FILTER`` (see
+    :ref:`Filters <filter_syntax>`).
+
+    Parameters have the same meaning as for :ref:`count <command_search>`
+    except the search is not case sensitive.
+
 .. _command_update:
 
 :command:`update [URI]`
