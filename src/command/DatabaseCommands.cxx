@@ -231,8 +231,8 @@ handle_searchaddpl(Client &client, Request args, Response &)
 	return CommandResult::OK;
 }
 
-CommandResult
-handle_count(Client &client, Request args, Response &r)
+static CommandResult
+handle_count_internal(Client &client, Request args, Response &r, bool fold_case)
 {
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
 	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "group")) {
@@ -251,7 +251,7 @@ handle_count(Client &client, Request args, Response &r)
 	SongFilter filter;
 	if (!args.empty()) {
 		try {
-			filter.Parse(args, false);
+			filter.Parse(args, fold_case);
 		} catch (...) {
 			r.Error(ACK_ERROR_ARG,
 				GetFullMessage(std::current_exception()).c_str());
@@ -263,6 +263,18 @@ handle_count(Client &client, Request args, Response &r)
 
 	PrintSongCount(r, client.GetPartition(), "", &filter, group);
 	return CommandResult::OK;
+}
+
+CommandResult
+handle_count(Client &client, Request args, Response &r)
+{
+	return handle_count_internal(client, args, r, false);
+}
+
+CommandResult
+handle_searchcount(Client &client, Request args, Response &r)
+{
+	return handle_count_internal(client, args, r, true);
 }
 
 CommandResult
