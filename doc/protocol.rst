@@ -1293,7 +1293,7 @@ The music database
     the database matching ``FILTER`` (see
     :ref:`Filters <filter_syntax>`).
 
-    Parameters have the same meaning as for :ref:`count <command_search>`
+    Parameters have the same meaning as for :ref:`count <command_count>`
     except the search is not case sensitive.
 
 .. _command_update:
