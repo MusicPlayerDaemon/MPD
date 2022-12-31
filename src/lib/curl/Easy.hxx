@@ -186,10 +186,6 @@ public:
 		SetOption(CURLOPT_POSTFIELDSIZE, (long)size);
 	}
 
-	void SetHttpPost(const struct curl_httppost *post) {
-		SetOption(CURLOPT_HTTPPOST, post);
-	}
-
 	template<typename T>
 	bool GetInfo(CURLINFO info, T value_r) const noexcept {
 		return ::curl_easy_getinfo(handle, info, value_r) == CURLE_OK;
