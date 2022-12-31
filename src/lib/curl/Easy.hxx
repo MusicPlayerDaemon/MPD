@@ -199,10 +199,10 @@ public:
 	 * Returns the response body's size, or -1 if that is unknown.
 	 */
 	[[gnu::pure]]
-	int64_t GetContentLength() const noexcept {
-		double value;
-		return GetInfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD, &value)
-			? (int64_t)value
+	curl_off_t GetContentLength() const noexcept {
+		curl_off_t value;
+		return GetInfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &value)
+			? value
 			: -1;
 	}
 
