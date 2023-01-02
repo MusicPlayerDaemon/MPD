@@ -42,6 +42,8 @@
 #include "io/UniqueFileDescriptor.hxx"
 #endif
 
+#include <cstdint>
+
 class Path;
 class FileInfo;
 
