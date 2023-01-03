@@ -35,6 +35,7 @@
 #include "Iter.hxx"
 #include "Values.hxx"
 
+#include <cstdint>
 #include <stdexcept>
 
 namespace ODBus {
