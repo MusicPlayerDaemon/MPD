@@ -27,7 +27,11 @@
 #include "util/IntrusiveList.hxx"
 #include "util/IntrusiveHashSet.hxx"
 
+#include <array>
+#include <functional>
+#include <memory>
 #include <string>
+#include <utility>
 
 class RemoteTagCacheHandler;
 
