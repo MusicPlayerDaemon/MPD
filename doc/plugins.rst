@@ -531,6 +531,8 @@ Module player based on `libopenmpt <https://lib.openmpt.org>`_.
      - Sets the amount of volume ramping done by the libopenmpt mixer. The default value is -1, which indicates a recommended default value. The meaningful value range is [-1..10]. A value of 0 completely disables volume ramping. This might cause clicks in sound output. Higher values imply slower/softer volume ramps.
    * - **sync_samples yes|no**
      - Syncs sample playback when seeking. Defaults to yes.
+   * - **at_end fadeout|stop**
+     - Chooses the behaviour when the end of song is reached. "fadeout": Fades the module out for a short while. "stop": will immediately stop playing and MPD will play next track.
    * - **emulate_amiga yes|no**
      - Enables the Amiga resampler for Amiga modules. This emulates the sound characteristics of the Paula chip and overrides the selected interpolation filter. Non-Amiga module formats are not affected by this setting. Defaults to yes.
    * - **emulate_amiga_type**

@@ -42,6 +42,7 @@ static int openmpt_interpolation_filter;
 static bool openmpt_override_mptm_interp_filter;
 static int openmpt_volume_ramping;
 static bool openmpt_sync_samples;
+static std::string_view openmpt_at_end;
 static bool openmpt_emulate_amiga;
 #ifdef HAVE_LIBOPENMPT_VERSION_0_5
 static std::string_view openmpt_emulate_amiga_type;
@@ -56,6 +57,7 @@ openmpt_decoder_init(const ConfigBlock &block)
 	openmpt_override_mptm_interp_filter = block.GetBlockValue("override_mptm_interp_filter", false);
 	openmpt_volume_ramping = block.GetBlockValue("volume_ramping", -1);
 	openmpt_sync_samples = block.GetBlockValue("sync_samples", true);
+	openmpt_at_end = block.GetBlockValue("at_end", "fadeout");
 	openmpt_emulate_amiga = block.GetBlockValue("emulate_amiga", true);
 #ifdef HAVE_LIBOPENMPT_VERSION_0_5
 	openmpt_emulate_amiga_type = block.GetBlockValue("emulate_amiga_type", "auto");
@@ -92,9 +94,11 @@ mod_decode(DecoderClient &client, InputStream &is)
 	mod.ctl_set_boolean("seek.sync_samples", openmpt_sync_samples);
 	mod.ctl_set_boolean("render.resampler.emulate_amiga", openmpt_emulate_amiga);
 	mod.ctl_set_text("render.resampler.emulate_amiga_type", openmpt_emulate_amiga_type);
+	mod.ctl_set_text("play.at_end", openmpt_at_end);
 #else
 	mod.ctl_set("seek.sync_samples", std::to_string((unsigned)openmpt_sync_samples));
 	mod.ctl_set("render.resampler.emulate_amiga", std::to_string((unsigned)openmpt_emulate_amiga));
+	mod.ctl_set("play.at_end", std::to_string((unsigned)openmpt_at_end));
 #endif
 
 	static constexpr unsigned channels = 2;
