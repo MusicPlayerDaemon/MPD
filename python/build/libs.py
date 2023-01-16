@@ -450,7 +450,7 @@ jack = JackProject(
 )
 
 boost = BoostProject(
-    'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.bz2',
-    '1e19565d82e43bc59209a168f5ac899d3ba471d55c7610c677d4ccf2c9c500c0',
+    'https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2',
+    '71feeed900fbccca04a3b4f2f84a7c217186f28a940ed8b7ed4725986baf99fa',
     'include/boost/version.hpp',
 )
