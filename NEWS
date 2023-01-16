@@ -1,4 +1,6 @@
 ver 0.23.12 (not yet released)
+* input
+  - curl: require CURL 7.55.0 or later
 * tags
   - fix crash bug due to race condition
 * fix build failures with GCC 13
