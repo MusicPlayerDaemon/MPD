@@ -27,9 +27,16 @@ ver 0.24 (not yet released)
 * remove Haiku support
 * require libfmt 7 or later
 
-ver 0.23.12 (not yet released)
+ver 0.23.12 (2023/01/17)
+* input
+  - curl: require CURL 7.55.0 or later
+* decoder
+  - mad: fix integer underflow with very small files
 * tags
   - fix crash bug due to race condition
+* output
+  - pipewire: adjust to PipeWire 0.3.64 API change
+* fix build failures with GCC 13
 
 ver 0.23.11 (2022/11/28)
 * database

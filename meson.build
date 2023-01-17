@@ -204,7 +204,6 @@ enable_daemon = not is_windows and not is_android and get_option('daemon')
 conf.set('ENABLE_DAEMON', enable_daemon)
 
 conf.set('HAVE_GETPWNAM_R', compiler.has_function('getpwnam_r'))
-conf.set('HAVE_GETPWUID_R', compiler.has_function('getpwuid_r'))
 conf.set('HAVE_INITGROUPS', compiler.has_function('initgroups'))
 conf.set('HAVE_FNMATCH', compiler.has_function('fnmatch'))
 

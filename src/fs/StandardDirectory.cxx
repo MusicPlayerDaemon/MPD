@@ -34,7 +34,6 @@
 #include <shlobj.h>
 #else
 #include <stdlib.h>
-#include <unistd.h>
 #include <pwd.h>
 #endif
 
@@ -83,16 +82,7 @@ public:
 		return result != nullptr;
 	}
 
-	bool ReadByUid(uid_t uid) noexcept {
-#ifdef HAVE_GETPWUID_R
-		getpwuid_r(uid, &pw, buf.data(), buf.size(), &result);
-#else
-		result = getpwuid(uid);
-#endif
-		return result != nullptr;
-	}
-
-	const passwd *operator->() noexcept {
+	const passwd *operator->() {
 		assert(result != nullptr);
 		return result;
 	}
@@ -415,10 +405,8 @@ GetHomeDir() noexcept
 #ifndef ANDROID
 	if (const auto home = GetExistingEnvDirectory("HOME"); home != nullptr)
 		return AllocatedPath{home};
-
-	if (PasswdEntry pw; pw.ReadByUid(getuid()))
-		return SafePathFromFS(pw->pw_dir);
 #endif
+
 	return nullptr;
 }
 

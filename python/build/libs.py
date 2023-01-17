@@ -393,8 +393,8 @@ openssl = OpenSSLProject(
 )
 
 curl = CmakeProject(
-    'https://curl.se/download/curl-7.86.0.tar.xz',
-    '2d61116e5f485581f6d59865377df4463f2e788677ac43222b496d4e49fb627b',
+    'https://curl.se/download/curl-7.87.0.tar.xz',
+    'ee5f1a1955b0ed413435ef79db28b834ea5f0fb7c8cfb1ce47175cc3bee08fff',
     'lib/libcurl.a',
     [
         '-DBUILD_CURL_EXE=OFF',
@@ -450,7 +450,7 @@ jack = JackProject(
 )
 
 boost = BoostProject(
-    'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.bz2',
-    '1e19565d82e43bc59209a168f5ac899d3ba471d55c7610c677d4ccf2c9c500c0',
+    'https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2',
+    '71feeed900fbccca04a3b4f2f84a7c217186f28a940ed8b7ed4725986baf99fa',
     'include/boost/version.hpp',
 )
