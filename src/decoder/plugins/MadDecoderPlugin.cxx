@@ -798,6 +798,8 @@ MadDecoder::UpdateTimerNextFrame() noexcept
 DecoderCommand
 MadDecoder::SubmitPCM(size_t i, size_t pcm_length) noexcept
 {
+	assert(i <= pcm_length);
+
 	size_t num_samples = pcm_length - i;
 
 	mad_fixed_to_24_buffer(output_buffer, synth.pcm,
