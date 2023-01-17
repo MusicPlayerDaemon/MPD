@@ -34,7 +34,6 @@
 #include <shlobj.h>
 #else
 #include <stdlib.h>
-#include <unistd.h>
 #include <pwd.h>
 #endif
 
@@ -76,15 +75,6 @@ public:
 		getpwnam_r(name, &pw, buf.data(), buf.size(), &result);
 #else
 		result = getpwnam(name);
-#endif
-		return result != nullptr;
-	}
-
-	bool ReadByUid(uid_t uid) {
-#ifdef HAVE_GETPWUID_R
-		getpwuid_r(uid, &pw, buf.data(), buf.size(), &result);
-#else
-		result = getpwuid(uid);
 #endif
 		return result != nullptr;
 	}
@@ -375,10 +365,8 @@ GetHomeDir() noexcept
 	if (const auto home = getenv("HOME");
 	    IsValidPathString(home) && IsValidDir(home))
 		return AllocatedPath::FromFS(home);
-
-	if (PasswdEntry pw; pw.ReadByUid(getuid()))
-		return SafePathFromFS(pw->pw_dir);
 #endif
+
 	return nullptr;
 }
 
