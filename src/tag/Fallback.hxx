@@ -49,6 +49,14 @@ ApplyTagFallback(TagType type, F &&f) noexcept
 		/* fall back to "Album" if no "AlbumSort" was found */
 		return f(TAG_ALBUM);
 
+	if (type == TAG_TITLE_SORT)
+		/* fall back to "Title" if no "TitleSort" was found */
+		return f(TAG_TITLE);
+
+	if (type == TAG_COMPOSERSORT)
+		/* fall back to "Composer" if no "ComposerSort" was found */
+		return f(TAG_COMPOSER);
+
 	return false;
 }
 

@@ -796,8 +796,9 @@ Whenever possible, ids should be used.
     ``sort`` sorts the result by the specified tag.  The sort is
     descending if the tag is prefixed with a minus ('-').  Only the
     first tag value will be used, if multiple of the same type exist.
-    To sort by "Artist", "Album" or "AlbumArtist", you should specify
-    "ArtistSort", "AlbumSort" or "AlbumArtistSort" instead.  These
+    To sort by "Title", "Artist", "Album", "AlbumArtist" or "Composer",
+    you should specify "TitleSort", "ArtistSort", "AlbumSort",
+    "AlbumArtistSort" or "ComposerSort" instead.  These
     will automatically fall back to the former if "\*Sort" doesn't
     exist.  "AlbumArtist" falls back to just "Artist".  The type
     "Last-Modified" can sort by file modification time, and "prio"
