@@ -1,6 +1,8 @@
 ver 0.23.12 (not yet released)
 * input
   - curl: require CURL 7.55.0 or later
+* decoder
+  - mad: fix integer underflow with very small files
 * tags
   - fix crash bug due to race condition
 * output

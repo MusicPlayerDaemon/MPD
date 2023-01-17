@@ -843,7 +843,7 @@ MadDecoder::SynthAndSubmit() noexcept
 	size_t pcm_length = synth.pcm.length;
 	if (drop_end_samples &&
 	    current_frame == max_frames - drop_end_frames - 1) {
-		if (drop_end_samples >= pcm_length)
+		if (i + drop_end_samples >= pcm_length)
 			return DecoderCommand::STOP;
 
 		pcm_length -= drop_end_samples;
