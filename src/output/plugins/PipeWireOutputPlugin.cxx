@@ -28,6 +28,7 @@
 #include "system/Error.hxx"
 #include "util/BitReverse.hxx"
 #include "util/Domain.hxx"
+#include "util/RingBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
@@ -51,8 +52,6 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-
-#include <boost/lockfree/spsc_queue.hpp>
 
 #include <algorithm>
 #include <array>
@@ -81,8 +80,8 @@ class PipeWireOutput final : AudioOutput {
 	/**
 	 * This buffer passes PCM data from Play() to Process().
 	 */
-	using RingBuffer = boost::lockfree::spsc_queue<std::byte>;
-	RingBuffer *ring_buffer;
+	using RingBuffer = ::RingBuffer<std::byte>;
+	RingBuffer ring_buffer;
 
 	uint32_t target_id = PW_ID_ANY;
 
@@ -572,9 +571,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	interrupted = false;
 
 	/* allocate a ring buffer of 0.5 seconds */
-	const std::size_t ring_buffer_size =
-		frame_size * (audio_format.sample_rate / 2);
-	ring_buffer = new RingBuffer(ring_buffer_size);
+	ring_buffer = RingBuffer{frame_size * (audio_format.sample_rate / 2)};
 
 	const struct spa_pod *params[1];
 
@@ -626,7 +623,7 @@ PipeWireOutput::Close() noexcept
 		stream = nullptr;
 	}
 
-	delete ring_buffer;
+	ring_buffer = {};
 }
 
 inline void
@@ -774,25 +771,17 @@ PipeWireOutput::Process() noexcept
 	if (dest == nullptr)
 		return;
 
-	std::size_t max_frames = d.maxsize / frame_size;
+	std::size_t chunk_size = frame_size;
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
 	if (use_dsd && dsd_interleave > 1) {
 		/* make sure we don't get partial interleave frames */
-		std::size_t interleave_size = frame_size * dsd_interleave;
-		std::size_t available_bytes = ring_buffer->read_available();
-		std::size_t available_interleaves =
-			available_bytes / interleave_size;
-		std::size_t available_frames =
-			available_interleaves * dsd_interleave;
-		if (max_frames > available_frames)
-			max_frames = available_frames;
+		chunk_size *= dsd_interleave;
 	}
 #endif
 
-	const std::size_t max_size = max_frames * frame_size;
-	size_t nbytes = ring_buffer->pop(dest, max_size);
-	assert(nbytes % frame_size == 0);
+	size_t nbytes = ring_buffer.ReadFramesTo({dest, d.maxsize}, chunk_size);
+	assert(nbytes % chunk_size == 0);
 	if (nbytes == 0) {
 		if (drain_requested) {
 			pw_stream_flush(stream, true);
@@ -800,8 +789,9 @@ PipeWireOutput::Process() noexcept
 		}
 
 		/* buffer underrun: generate some silence */
-		PcmSilence({dest, max_size}, sample_format);
-		nbytes = max_size;
+		std::size_t max_chunks = d.maxsize / chunk_size;
+		nbytes = max_chunks * chunk_size;
+		PcmSilence({dest, nbytes}, sample_format);
 
 		LogWarning(pipewire_output_domain, "Decoder is too slow; playing silence to avoid xrun");
 	}
@@ -846,7 +836,7 @@ PipeWireOutput::Play(std::span<const std::byte> src)
 		CheckThrowError();
 
 		std::size_t bytes_written =
-			ring_buffer->push(src.data(), src.size());
+			ring_buffer.WriteFrom(src);
 		if (bytes_written > 0) {
 			drained = false;
 			return bytes_written;
@@ -902,7 +892,7 @@ PipeWireOutput::Cancel() noexcept
 		return;
 
 	/* clear MPD's ring buffer */
-	ring_buffer->reset();
+	ring_buffer.Clear();
 
 	/* clear libpipewire's buffer */
 	pw_stream_flush(stream, false);
