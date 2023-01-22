@@ -9,6 +9,7 @@ test(
     'TestIntrusiveHashSet.cxx',
     'TestIntrusiveList.cxx',
     'TestMimeType.cxx',
+    'TestRingBuffer.cxx',
     'TestSplitString.cxx',
     'TestStringStrip.cxx',
     'TestTemplateString.cxx',
