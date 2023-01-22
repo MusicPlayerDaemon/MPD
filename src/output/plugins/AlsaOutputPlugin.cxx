@@ -40,6 +40,7 @@
 #include "event/InjectEvent.hxx"
 #include "event/FineTimerEvent.hxx"
 #include "event/Call.hxx"
+#include "util/RingBuffer.hxx"
 #include "Log.hxx"
 
 #ifdef ENABLE_DSD
@@ -47,8 +48,6 @@
 #endif
 
 #include <alsa/asoundlib.h>
-
-#include <boost/lockfree/spsc_queue.hpp>
 
 #include <string>
 #include <forward_list>
@@ -231,7 +230,8 @@ class AlsaOutput final
 	/**
 	 * For copying data from OutputThread to IOThread.
 	 */
-	boost::lockfree::spsc_queue<std::byte> *ring_buffer;
+	using RingBuffer = ::RingBuffer<std::byte>;
+	RingBuffer ring_buffer;
 
 	Alsa::PeriodBuffer period_buffer;
 
@@ -879,7 +879,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	interrupted = false;
 
 	size_t period_size = period_frames * out_frame_size;
-	ring_buffer = new boost::lockfree::spsc_queue<std::byte>(period_size * 4);
+	ring_buffer = RingBuffer{period_size * 4};
 
 	period_buffer.Allocate(period_frames, out_frame_size);
 
@@ -962,8 +962,7 @@ AlsaOutput::CopyRingToPeriodBuffer() noexcept
 	if (period_buffer.IsFull())
 		return false;
 
-	size_t nbytes = ring_buffer->pop(period_buffer.GetTail(),
-					 period_buffer.GetSpaceBytes());
+	size_t nbytes = ring_buffer.ReadTo({period_buffer.GetTail(), period_buffer.GetSpaceBytes()});
 	if (nbytes == 0)
 		return false;
 
@@ -1003,7 +1002,7 @@ AlsaOutput::DrainInternal()
 		   buffers and instead, fill the period buffer with
 		   silence */
 		in_stop_dsd_silence = false;
-		ring_buffer->reset();
+		ring_buffer.Clear();
 		period_buffer.Clear();
 		period_buffer.FillWithSilence(silence, out_frame_size);
 	}
@@ -1109,7 +1108,7 @@ AlsaOutput::CancelInternal() noexcept
 
 	pcm_export->Reset();
 	period_buffer.Clear();
-	ring_buffer->reset();
+	ring_buffer.Clear();
 
 	active = false;
 	waiting = false;
@@ -1133,7 +1132,7 @@ AlsaOutput::Cancel() noexcept
 
 		pcm_export->Reset();
 		assert(period_buffer.IsCleared());
-		ring_buffer->reset();
+		ring_buffer.Clear();
 
 		return;
 	}
@@ -1176,7 +1175,7 @@ AlsaOutput::Close() noexcept
 		});
 
 	period_buffer.Free();
-	delete ring_buffer;
+	ring_buffer = {};
 	snd_pcm_close(pcm);
 	delete[] silence;
 }
@@ -1198,7 +1197,7 @@ AlsaOutput::LockWaitWriteAvailable()
 			   here */
 			throw AudioOutputInterrupted{};
 
-		size_t write_available = ring_buffer->write_available();
+		size_t write_available = ring_buffer.WriteAvailable();
 		if (write_available >= min_available) {
 			/* reserve room for one extra block, just in
 			   case PcmExport::Export() has some partial
@@ -1239,7 +1238,7 @@ AlsaOutput::Play(std::span<const std::byte> src)
 	if (e.empty())
 		return src.size();
 
-	size_t bytes_written = ring_buffer->push(e.data(), e.size());
+	size_t bytes_written = ring_buffer.WriteFrom(e);
 	assert(bytes_written == e.size());
 	(void)bytes_written;
 
