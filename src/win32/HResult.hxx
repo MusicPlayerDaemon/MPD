@@ -52,7 +52,4 @@ MakeHResultError(HRESULT result, const char *msg) noexcept
 				 msg);
 }
 
-gcc_printf(2, 3) std::system_error
-FormatHResultError(HRESULT result, const char *fmt, ...) noexcept;
-
 #endif

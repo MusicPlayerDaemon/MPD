@@ -26,9 +26,7 @@
 #include "system/Error.hxx"
 
 #include <cassert>
-#include <cstdarg>
 #include <cstdio>
-#include <memory>
 
 #include <combaseapi.h> // needed by audiopolicy.h if COM_NO_WINDOWS_H is defined
 #include <audiopolicy.h>
@@ -91,23 +89,4 @@ HResultCategory::message(int Errcode) const
 	int size = snprintf(buffer, sizeof(buffer), "0x%1x", Errcode);
 	assert(2 <= size && size <= 10);
 	return std::string(buffer, size);
-}
-
-std::system_error
-FormatHResultError(HRESULT result, const char *fmt, ...) noexcept
-{
-	std::va_list args1, args2;
-	va_start(args1, fmt);
-	va_copy(args2, args1);
-
-	const int size = vsnprintf(nullptr, 0, fmt, args1);
-	va_end(args1);
-	assert(size >= 0);
-
-	auto buffer = std::make_unique<char[]>(size + 1);
-	vsprintf(buffer.get(), fmt, args2);
-	va_end(args2);
-
-	return std::system_error(std::error_code(result, hresult_category()),
-				 std::string(buffer.get(), size));
 }
