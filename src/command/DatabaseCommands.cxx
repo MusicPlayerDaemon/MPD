@@ -41,6 +41,8 @@
 #include <memory>
 #include <vector>
 
+#include <limits.h> // for UINT_MAX
+
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
