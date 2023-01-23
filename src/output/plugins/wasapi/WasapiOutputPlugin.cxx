@@ -187,9 +187,9 @@ class WasapiOutputThread {
 
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
 
-	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) std::atomic<Status> status =
+	alignas(std::hardware_destructive_interference_size) std::atomic<Status> status =
 		Status::PAUSE;
-	alignas(BOOST_LOCKFREE_CACHELINE_BYTES) struct {
+	alignas(std::hardware_destructive_interference_size) struct {
 		std::atomic_bool occur = false;
 		std::exception_ptr ptr = nullptr;
 	} error;
