@@ -37,6 +37,7 @@
 #include "thread/Thread.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
+#include "util/RingBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
 #include "win32/Com.hxx"
@@ -46,8 +47,6 @@
 #include "win32/WinEvent.hxx"
 #include "Log.hxx"
 #include "config.h"
-
-#include <boost/lockfree/spsc_queue.hpp>
 
 #include <algorithm>
 #include <cinttypes>
@@ -193,7 +192,8 @@ class WasapiOutputThread {
 		std::atomic_bool occur = false;
 		std::exception_ptr ptr = nullptr;
 	} error;
-	boost::lockfree::spsc_queue<BYTE> spsc_buffer;
+
+	RingBuffer<std::byte> ring_buffer;
 
 public:
 	WasapiOutputThread(IAudioClient &_client,
@@ -203,7 +203,7 @@ public:
 		:client(_client),
 		 render_client(std::move(_render_client)), frame_size(_frame_size),
 		 buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
-		 spsc_buffer(_buffer_size_in_frames * 4 * _frame_size)
+		 ring_buffer(_buffer_size_in_frames * 4 * _frame_size)
 	{
 		SetEventHandle(client, event.handle());
 		thread.Start();
@@ -230,9 +230,7 @@ public:
 	std::size_t Push(std::span<const std::byte> input) noexcept {
 		empty.store(false);
 
-		std::size_t consumed =
-			spsc_buffer.push((const BYTE *)input.data(),
-					 input.size());
+		std::size_t consumed = ring_buffer.WriteFrom(input);
 
 		if (!playing) {
 			playing = true;
@@ -439,7 +437,7 @@ try {
 		event.Wait();
 
 		if (cancel.load()) {
-			spsc_buffer.consume_all([](auto &&) {});
+			ring_buffer.Discard();
 			cancel.store(false);
 			empty.store(true);
 			InterruptWaiter();
@@ -498,8 +496,9 @@ try {
 		}
 
 		const UINT32 write_size = write_in_frames * frame_size;
-		UINT32 new_data_size = 0;
-		new_data_size = spsc_buffer.pop(data, write_size);
+		std::span w{data, write_size};
+
+		const std::size_t new_data_size = ring_buffer.ReadTo(std::as_writable_bytes(w));
 		if (new_data_size == 0)
 			empty.store(true);
 
