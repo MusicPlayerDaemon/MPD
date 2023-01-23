@@ -23,7 +23,6 @@
 #endif
 
 #include "HResult.hxx"
-#include "system/Error.hxx"
 
 #include <cassert>
 #include <cstdio>
