@@ -22,24 +22,17 @@
 
 #include "Connection.hxx"
 #include "event/IdleEvent.hxx"
-#include "util/IntrusiveForwardList.hxx"
-
-#include <boost/intrusive/set.hpp>
+#include "util/IntrusiveList.hxx"
 
 /**
  * A manager for NFS connections.  Handles multiple connections to
  * multiple NFS servers.
  */
 class NfsManager final {
-	struct LookupKey {
-		const char *server;
-		const char *export_name;
-	};
-
 	class ManagedConnection final
 		: public NfsConnection,
-		  public IntrusiveForwardListHook,
-		  public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
+		  public IntrusiveListHook<>
+	{
 		NfsManager &manager;
 
 	public:
@@ -54,30 +47,9 @@ class NfsManager final {
 		void OnNfsConnectionError(std::exception_ptr &&e) noexcept override;
 	};
 
-	struct Compare {
-		[[gnu::pure]]
-		bool operator()(const LookupKey a,
-				const ManagedConnection &b) const noexcept;
+	using List = IntrusiveList<ManagedConnection>;
 
-		[[gnu::pure]]
-		bool operator()(const ManagedConnection &a,
-				const LookupKey b) const noexcept;
-
-		[[gnu::pure]]
-		bool operator()(const ManagedConnection &a,
-				const ManagedConnection &b) const noexcept;
-	};
-
-	/**
-	 * Maps server and export_name to #ManagedConnection.
-	 */
-	typedef boost::intrusive::set<ManagedConnection,
-				      boost::intrusive::compare<Compare>,
-				      boost::intrusive::constant_time_size<false>> Map;
-
-	Map connections;
-
-	using List = IntrusiveForwardList<ManagedConnection>;
+	List connections;
 
 	/**
 	 * A list of "garbage" connection objects.  Their destruction

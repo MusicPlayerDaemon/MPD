@@ -22,9 +22,8 @@
 #include "event/Loop.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/Domain.hxx"
+#include "util/StringAPI.hxx"
 #include "Log.hxx"
-
-#include <string.h>
 
 static constexpr Domain nfs_domain("nfs");
 
@@ -38,42 +37,6 @@ NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e) noex
 	   (i.e. NfsConnection::OnSocketReady()) can still use this
 	   object */
 	manager.ScheduleDelete(*this);
-}
-
-inline bool
-NfsManager::Compare::operator()(const LookupKey a,
-				const ManagedConnection &b) const noexcept
-{
-	int result = strcmp(a.server, b.GetServer());
-	if (result != 0)
-		return result < 0;
-
-	result = strcmp(a.export_name, b.GetExportName());
-	return result < 0;
-}
-
-inline bool
-NfsManager::Compare::operator()(const ManagedConnection &a,
-				const LookupKey b) const noexcept
-{
-	int result = strcmp(a.GetServer(), b.server);
-	if (result != 0)
-		return result < 0;
-
-	result = strcmp(a.GetExportName(), b.export_name);
-	return result < 0;
-}
-
-inline bool
-NfsManager::Compare::operator()(const ManagedConnection &a,
-				const ManagedConnection &b) const noexcept
-{
-	int result = strcmp(a.GetServer(), b.GetServer());
-	if (result != 0)
-		return result < 0;
-
-	result = strcmp(a.GetExportName(), b.GetExportName());
-	return result < 0;
 }
 
 NfsManager::~NfsManager() noexcept
@@ -92,17 +55,15 @@ NfsManager::GetConnection(const char *server, const char *export_name) noexcept
 	assert(export_name != nullptr);
 	assert(GetEventLoop().IsInside());
 
-	Map::insert_commit_data hint;
-	auto result = connections.insert_check(LookupKey{server, export_name},
-					       Compare(), hint);
-	if (result.second) {
-		auto c = new ManagedConnection(*this, GetEventLoop(),
-					       server, export_name);
-		connections.insert_commit(*c, hint);
-		return *c;
-	} else {
-		return *result.first;
-	}
+	for (auto &c : connections)
+		if (StringIsEqual(server, c.GetServer()) &&
+		    StringIsEqual(export_name, c.GetExportName()))
+			return c;
+
+	auto c = new ManagedConnection(*this, GetEventLoop(),
+				       server, export_name);
+	connections.push_front(*c);
+	return *c;
 }
 
 void
