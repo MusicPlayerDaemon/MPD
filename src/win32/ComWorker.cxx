@@ -28,15 +28,18 @@ COMWorker::Work() noexcept
 {
 	SetThreadName("COM Worker");
 	COM com;
-	while (true) {
-		if (!running_flag.test_and_set()) {
-			return;
-		}
-		while (!spsc_buffer.empty()) {
-			std::function<void()> function;
-			spsc_buffer.pop(function);
+
+	std::unique_lock lock{mutex};
+	while (running_flag) {
+		while (!queue.empty()) {
+			auto function = std::move(queue.front());
+			queue.pop();
+
+			lock.unlock();
 			function();
+			lock.lock();
 		}
-		event.Wait(200);
+
+		cond.wait(lock);
 	}
 }

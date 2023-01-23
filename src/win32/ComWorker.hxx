@@ -20,19 +20,23 @@
 #ifndef MPD_WIN32_COM_WORKER_HXX
 #define MPD_WIN32_COM_WORKER_HXX
 
-#include "WinEvent.hxx"
+#include "thread/Cond.hxx"
 #include "thread/Future.hxx"
+#include "thread/Mutex.hxx"
 #include "thread/Thread.hxx"
 
-#include <boost/lockfree/spsc_queue.hpp>
+#include <functional>
+#include <queue>
 
 // Worker thread for all COM operation
 class COMWorker {
-	Thread thread{BIND_THIS_METHOD(Work)};
+	Mutex mutex;
+	Cond cond;
 
-	boost::lockfree::spsc_queue<std::function<void()>> spsc_buffer{32};
-	std::atomic_flag running_flag = true;
-	WinEvent event{};
+	std::queue<std::function<void()>> queue;
+	bool running_flag = true;
+
+	Thread thread{BIND_THIS_METHOD(Work)};
 
 public:
 	COMWorker() {
@@ -70,13 +74,15 @@ public:
 
 private:
 	void Finish() noexcept {
-		running_flag.clear();
-		event.Set();
+		const std::scoped_lock lock{mutex};
+		running_flag = false;
+		cond.notify_one();
 	}
 
 	void Push(const std::function<void()> &function) {
-		spsc_buffer.push(function);
-		event.Set();
+		const std::scoped_lock lock{mutex};
+		queue.push(function);
+		cond.notify_one();
 	}
 
 	void Work() noexcept;
