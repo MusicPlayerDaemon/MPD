@@ -21,7 +21,7 @@
 
 CacheInputStream::CacheInputStream(InputCacheLease _lease,
 				   Mutex &_mutex) noexcept
-	:InputStream(_lease->GetUri(), _mutex),
+	:InputStream(_lease->GetUri().c_str(), _mutex),
 	 InputCacheLease(std::move(_lease))
 {
 	const auto &i = GetCacheItem();

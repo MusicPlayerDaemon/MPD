@@ -21,9 +21,8 @@
 #define MPD_INPUT_CACHE_MANAGER_HXX
 
 #include "thread/Mutex.hxx"
+#include "util/IntrusiveHashSet.hxx"
 #include "util/IntrusiveList.hxx"
-
-#include <boost/intrusive/set.hpp>
 
 class InputStream;
 class InputCacheItem;
@@ -41,13 +40,21 @@ class InputCacheManager {
 
 	size_t total_size = 0;
 
-	struct ItemCompare {
+	struct ItemHash {
 		[[gnu::pure]]
-		bool operator()(const InputCacheItem &a,
-				const char *b) const noexcept;
+		std::size_t operator()(std::string_view uri) const noexcept;
 
 		[[gnu::pure]]
-		bool operator()(const char *a,
+		std::size_t operator()(const InputCacheItem &item) const noexcept;
+	};
+
+	struct ItemEqual {
+		[[gnu::pure]]
+		bool operator()(const InputCacheItem &a,
+				std::string_view b) const noexcept;
+
+		[[gnu::pure]]
+		bool operator()(std::string_view a,
 				const InputCacheItem &b) const noexcept;
 
 		[[gnu::pure]]
@@ -58,10 +65,7 @@ class InputCacheManager {
 	IntrusiveList<InputCacheItem> items_by_time;
 
 	using UriMap =
-		boost::intrusive::set<InputCacheItem,
-				      boost::intrusive::base_hook<boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
-				      boost::intrusive::compare<ItemCompare>,
-				      boost::intrusive::constant_time_size<false>>;
+		IntrusiveHashSet<InputCacheItem, 127, ItemHash, ItemEqual>;
 
 	UriMap items_by_uri;
 

@@ -27,25 +27,37 @@
 
 #include <string.h>
 
-inline bool
-InputCacheManager::ItemCompare::operator()(const InputCacheItem &a,
-					   const char *b) const noexcept
+inline std::size_t
+InputCacheManager::ItemHash::operator()(std::string_view uri) const noexcept
 {
-	return strcmp(a.GetUri(), b) < 0;
+	return std::hash<std::string_view>{}(uri);
+}
+
+inline std::size_t
+InputCacheManager::ItemHash::operator()(const InputCacheItem &item) const noexcept
+{
+	return std::hash<std::string_view>{}(item.GetUri());
 }
 
 inline bool
-InputCacheManager::ItemCompare::operator()(const char *a,
-					   const InputCacheItem &b) const noexcept
+InputCacheManager::ItemEqual::operator()(const InputCacheItem &a,
+					 std::string_view b) const noexcept
 {
-	return strcmp(a, b.GetUri()) < 0;
+	return a.GetUri() == b;
 }
 
 inline bool
-InputCacheManager::ItemCompare::operator()(const InputCacheItem &a,
-					   const InputCacheItem &b) const noexcept
+InputCacheManager::ItemEqual::operator()(std::string_view a,
+					 const InputCacheItem &b) const noexcept
 {
-	return strcmp(a.GetUri(), b.GetUri()) < 0;
+	return a == b.GetUri();
+}
+
+inline bool
+InputCacheManager::ItemEqual::operator()(const InputCacheItem &a,
+					 const InputCacheItem &b) const noexcept
+{
+	return a.GetUri() == b.GetUri();
 }
 
 InputCacheManager::InputCacheManager(const InputCacheConfig &config) noexcept
@@ -97,8 +109,7 @@ InputCacheManager::Get(const char *uri, bool create)
 	if (!PathTraitsUTF8::IsAbsolute(uri))
 		return {};
 
-	auto iter = items_by_uri.find(uri, items_by_uri.key_comp());
-	if (iter != items_by_uri.end()) {
+	if (auto iter = items_by_uri.find(uri); iter != items_by_uri.end()) {
 		auto &item = *iter;
 
 		/* refresh */

@@ -23,8 +23,7 @@
 #include "input/BufferingInputStream.hxx"
 #include "thread/Mutex.hxx"
 #include "util/IntrusiveList.hxx"
-
-#include <boost/intrusive/set_hook.hpp>
+#include "util/IntrusiveHashSet.hxx"
 
 #include <string>
 
@@ -40,7 +39,7 @@ class InputCacheLease;
 class InputCacheItem final
 	: public BufferingInputStream,
 	  public AutoUnlinkIntrusiveListHook,
-	  public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>
+	  public IntrusiveHashSetHook<>
 {
 	const std::string uri;
 
@@ -53,8 +52,8 @@ public:
 	explicit InputCacheItem(InputStreamPtr _input) noexcept;
 	~InputCacheItem() noexcept;
 
-	const char *GetUri() const noexcept {
-		return uri.c_str();
+	const std::string &GetUri() const noexcept {
+		return uri;
 	}
 
 	using BufferingInputStream::size;
