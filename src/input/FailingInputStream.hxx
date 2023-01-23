@@ -33,10 +33,11 @@ class FailingInputStream final : public InputStream {
 	const std::exception_ptr error;
 
 public:
-	explicit FailingInputStream(const char *_uri,
+	template<typename U>
+	explicit FailingInputStream(U &&_uri,
 				    const std::exception_ptr _error,
 				    Mutex &_mutex) noexcept
-		:InputStream(_uri, _mutex), error(_error) {
+		:InputStream(std::forward<U>(_uri), _mutex), error(_error) {
 		SetReady();
 	}
 
