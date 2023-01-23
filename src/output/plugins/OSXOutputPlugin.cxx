@@ -627,7 +627,7 @@ osx_render(void *vdata,
 {
 	OSXOutput *od = (OSXOutput *) vdata;
 
-	int count = in_number_frames * od->asbd.mBytesPerFrame;
+	std::size_t count = in_number_frames * od->asbd.mBytesPerFrame;
 	buffer_list->mBuffers[0].mDataByteSize =
 		od->ring_buffer->pop((uint8_t *)buffer_list->mBuffers[0].mData,
 				     count);
