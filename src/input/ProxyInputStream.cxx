@@ -23,7 +23,7 @@
 #include <utility>
 
 ProxyInputStream::ProxyInputStream(InputStreamPtr _input) noexcept
-	:InputStream(_input->GetURI(), _input->mutex),
+	:InputStream(_input->GetUriView(), _input->mutex),
 	 input(std::move(_input))
 {
 	assert(input);

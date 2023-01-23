@@ -22,7 +22,7 @@
 #include <string.h>
 
 BufferedInputStream::BufferedInputStream(InputStreamPtr _input)
-	:InputStream(_input->GetURI(), _input->mutex),
+	:InputStream(_input->GetUriView(), _input->mutex),
 	 BufferingInputStream(std::move(_input))
 {
 	assert(IsEligible(GetInput()));

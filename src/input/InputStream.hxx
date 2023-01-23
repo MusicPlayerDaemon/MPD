@@ -159,6 +159,10 @@ public:
 		return uri.c_str();
 	}
 
+	std::string_view GetUriView() const noexcept {
+		return uri;
+	}
+
 	/**
 	 * Check for errors that may have occurred in the I/O thread.
 	 * Throws std::runtime_error on error.
