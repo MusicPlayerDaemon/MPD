@@ -33,6 +33,7 @@
 #include "thread/Cond.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/CharUtil.hxx"
+#include "util/RingBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/StringFormat.hxx"
@@ -42,7 +43,6 @@
 #include <AudioUnit/AudioUnit.h>
 #include <AudioToolbox/AudioToolbox.h>
 #include <CoreServices/CoreServices.h>
-#include <boost/lockfree/spsc_queue.hpp>
 
 #include <memory>
 #include <span>
@@ -105,7 +105,8 @@ struct OSXOutput final : AudioOutput {
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
 
-	boost::lockfree::spsc_queue<std::byte> *ring_buffer;
+	using RingBuffer = ::RingBuffer<std::byte>;
+	RingBuffer ring_buffer;
 
 	OSXOutput(const ConfigBlock &block);
 
@@ -628,8 +629,7 @@ osx_render(void *vdata,
 
 	int count = in_number_frames * od->asbd.mBytesPerFrame;
 	buffer_list->mBuffers[0].mDataByteSize =
-		od->ring_buffer->pop((std::byte *)buffer_list->mBuffers[0].mData,
-				     count);
+		od->ring_buffer.ReadTo({(std::byte *)buffer_list->mBuffers[0].mData, count});
 	return noErr;
 }
 
@@ -687,7 +687,7 @@ OSXOutput::Close() noexcept
 	if (started)
 		AudioOutputUnitStop(au);
 	AudioUnitUninitialize(au);
-	delete ring_buffer;
+	ring_buffer = {};
 }
 
 void
@@ -772,7 +772,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetOutputFrameSize() * asbd.mSampleRate / 1000);
 	}
 #endif
-	ring_buffer = new boost::lockfree::spsc_queue<std::byte>(ring_buffer_size);
+	ring_buffer = RingBuffer{ring_buffer_size};
 
 	pause = false;
 	started = false;
@@ -793,7 +793,7 @@ OSXOutput::Play(std::span<const std::byte> input)
 	}
 #endif
 
-	size_t bytes_written = ring_buffer->push(input.data(), input.size());
+	size_t bytes_written = ring_buffer->WriteFrom(input);
 
 	if (!started) {
 		OSStatus status = AudioOutputUnitStart(au);
@@ -814,7 +814,7 @@ OSXOutput::Play(std::span<const std::byte> input)
 std::chrono::steady_clock::duration
 OSXOutput::Delay() const noexcept
 {
-	return ring_buffer->write_available() && !pause
+	return !ring_buffer.IsFull() && !pause
 		? std::chrono::steady_clock::duration::zero()
 		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
 }
@@ -839,7 +839,7 @@ OSXOutput::Cancel() noexcept
 		started = false;
 	}
 
-	ring_buffer->reset();
+	ring_buffer.Clear();
 #ifdef ENABLE_DSD
 	pcm_export->Reset();
 #endif
