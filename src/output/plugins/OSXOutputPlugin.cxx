@@ -793,7 +793,7 @@ OSXOutput::Play(std::span<const std::byte> input)
 	}
 #endif
 
-	size_t bytes_written = ring_buffer->WriteFrom(input);
+	size_t bytes_written = ring_buffer.WriteFrom(input);
 
 	if (!started) {
 		OSStatus status = AudioOutputUnitStart(au);
