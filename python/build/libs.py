@@ -8,7 +8,6 @@ from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
 from build.openssl import OpenSSLProject
-from build.boost import BoostProject
 from build.jack import JackProject
 
 libmpdclient = MesonProject(
@@ -447,10 +446,4 @@ jack = JackProject(
     'https://github.com/jackaudio/jack2/archive/v1.9.17.tar.gz',
     '38f674bbc57852a8eb3d9faa1f96a0912d26f7d5df14c11005ad499c8ae352f2',
     'lib/pkgconfig/jack.pc',
-)
-
-boost = BoostProject(
-    'https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2',
-    '71feeed900fbccca04a3b4f2f84a7c217186f28a940ed8b7ed4725986baf99fa',
-    'include/boost/version.hpp',
 )

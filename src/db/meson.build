@@ -53,7 +53,6 @@ db_glue = static_library(
   db_glue_sources,
   include_directories: inc,
   dependencies: [
-    boost_dep,
     fmt_dep,
     log_dep,
   ],

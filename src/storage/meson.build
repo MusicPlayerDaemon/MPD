@@ -19,7 +19,6 @@ storage_glue = static_library(
   'Configured.cxx',
   include_directories: inc,
   dependencies: [
-    boost_dep,
     log_dep,
   ],
 )

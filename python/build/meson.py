@@ -96,9 +96,6 @@ def configure(toolchain, src, build, args=()):
 
     env = toolchain.env.copy()
 
-    # Meson 0.54 requires the BOOST_ROOT environment variable
-    env['BOOST_ROOT'] = toolchain.install_prefix
-
     subprocess.check_call(configure, env=env)
 
 class MesonProject(Project):

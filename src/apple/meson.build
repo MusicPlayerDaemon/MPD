@@ -5,9 +5,6 @@ endif
 
 audiounit_dep = declare_dependency(
   link_args: ['-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreServices'],
-  dependencies: [
-    boost_dep,
-  ],
 )
 
 apple = static_library(

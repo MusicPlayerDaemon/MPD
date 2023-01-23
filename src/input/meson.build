@@ -10,9 +10,6 @@ input_api = static_library(
   'ProxyInputStream.cxx',
   'LastInputStream.cxx',
   include_directories: inc,
-  dependencies: [
-    boost_dep,
-  ],
 )
 
 input_api_dep = declare_dependency(
@@ -44,7 +41,6 @@ input_glue = static_library(
   'cache/Stream.cxx',
   include_directories: inc,
   dependencies: [
-    boost_dep,
     log_dep,
   ],
 )

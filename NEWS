@@ -25,6 +25,7 @@ ver 0.24 (not yet released)
   - GCC 10 or clang 11 (or newer) recommended
 * static partition configuration
 * remove Haiku support
+* remove Boost dependency
 * require libfmt 7 or later
 
 ver 0.23.12 (2023/01/17)

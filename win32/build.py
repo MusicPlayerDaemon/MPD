@@ -106,7 +106,6 @@ thirdparty_libs = [
     curl,
     libnfs,
     jack,
-    boost,
 ]
 
 # build the third-party libraries

@@ -60,7 +60,6 @@ In any case, you need:
 * a C++20 compiler (e.g. GCC 10 or clang 11)
 * `Meson 0.56.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
-* Boost 1.58
 * pkg-config 
 
 Each plugin usually needs a codec library, which you also need to
@@ -95,7 +94,6 @@ For example, the following installs a fairly complete list of build dependencies
       libsqlite3-dev \
       libsystemd-dev \
       libgtest-dev \
-      libboost-dev \
       libicu-dev \
       libchromaprint-dev \
       libgcrypt20-dev

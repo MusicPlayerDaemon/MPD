@@ -160,7 +160,6 @@ thirdparty_libs = [
     openssl,
     curl,
     libnfs,
-    boost,
 ]
 
 # build the third-party libraries
