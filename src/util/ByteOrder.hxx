@@ -329,14 +329,6 @@ public:
 			(uint32_t(c) << 8) | uint32_t(d);
 	}
 
-	PackedBE32 &operator=(uint32_t new_value) noexcept {
-		d = uint8_t(new_value);
-		c = uint8_t(new_value >> 8);
-		b = uint8_t(new_value >> 16);
-		a = uint8_t(new_value >> 24);
-		return *this;
-	}
-
 	/**
 	 * Reads the raw, big-endian value.
 	 */
