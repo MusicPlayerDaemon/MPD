@@ -12,6 +12,7 @@ ver 0.24 (not yet released)
   - add option to disable archive plugins in mpd.conf
 * input
   - curl: add "connect_timeout" configuration
+  - curl: fix busy loop after connection failed
 * decoder
   - hybrid_dsd: remove
   - opus: implement bitrate calculation

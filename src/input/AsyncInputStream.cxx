@@ -102,9 +102,17 @@ AsyncInputStream::Seek(std::unique_lock<Mutex> &lock,
 	assert(IsReady());
 	assert(seek_state == SeekState::NONE);
 
-	if (new_offset == offset)
-		/* no-op */
+	if (new_offset == offset) {
+		/* no-op, but if the stream is not open anymore (maybe
+		   because it has failed), nothing can be read, so we
+		   should check for errors here instead of pretending
+		   everything's fine */
+
+		if (!open)
+			Check();
+
 		return;
+	}
 
 	if (!IsSeekable())
 		throw std::runtime_error("Not seekable");
