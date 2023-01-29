@@ -157,6 +157,8 @@ EventLoop::Insert(FineTimerEvent &t) noexcept
 	again = true;
 }
 
+#endif // NO_FINE_TIMER_EVENT
+
 /**
  * Determines which timeout will happen earlier; either one may be
  * negative to specify "no timeout at all".
@@ -168,8 +170,6 @@ GetEarlierTimeout(Event::Duration a, Event::Duration b) noexcept
 		? a
 		: b;
 }
-
-#endif // NO_FINE_TIMER_EVENT
 
 inline Event::Duration
 EventLoop::HandleTimers() noexcept
