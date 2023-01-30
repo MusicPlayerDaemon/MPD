@@ -41,6 +41,14 @@ struct IntrusiveHashSetHook {
 	using SiblingsHook = IntrusiveListHook<mode>;
 
 	SiblingsHook intrusive_hash_set_siblings;
+
+	void unlink() noexcept {
+		intrusive_hash_set_siblings.unlink();
+	}
+
+	bool is_linked() const noexcept {
+		return intrusive_hash_set_siblings.is_linked();
+	}
 };
 
 /**
