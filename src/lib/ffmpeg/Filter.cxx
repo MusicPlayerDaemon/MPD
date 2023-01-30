@@ -82,7 +82,7 @@ MakeAudioBufferSource(AudioFormat &audio_format,
 	}
 
 	char abuffer_args[256];
-	sprintf(abuffer_args,
+	snprintf(abuffer_args, sizeof(abuffer_args),
 		"sample_rate=%u:sample_fmt=%s:channel_layout=0x%" PRIx64 ":time_base=1/%u",
 		audio_format.sample_rate,
 		av_get_sample_fmt_name(src_format),
@@ -120,7 +120,7 @@ MakeAformat(AudioFormat &audio_format,
 	}
 
 	char args[256];
-	sprintf(args,
+	snprintf(args, sizeof(args),
 		"sample_rates=%u:sample_fmts=%s:channel_layouts=0x%" PRIx64,
 		audio_format.sample_rate,
 		av_get_sample_fmt_name(dest_format),

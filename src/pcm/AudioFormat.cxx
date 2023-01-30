@@ -47,30 +47,34 @@ ToString(const AudioFormat af) noexcept
 {
 	StringBuffer<24> buffer;
 	char *p = buffer.data();
+	size_t available = buffer.capacity();
+	size_t used = 0;
 
 	if (af.format == SampleFormat::DSD && af.sample_rate > 0 &&
 	    af.sample_rate % 44100 == 0) {
 		/* use shortcuts such as "dsd64" which implies the
 		   sample rate */
-		p += sprintf(p, "dsd%u:", af.sample_rate * 8 / 44100);
+		used = snprintf(p, available, "dsd%u:", af.sample_rate * 8 / 44100);
+		p += used;
+		available -= used;
 	} else {
 		const char *sample_format = af.format != SampleFormat::UNDEFINED
 			? sample_format_to_string(af.format)
 			: "*";
 
 		if (af.sample_rate > 0)
-			p += sprintf(p, "%u:%s:", af.sample_rate,
+			used = snprintf(p, available, "%u:%s:", af.sample_rate,
 				     sample_format);
 		else
-			p += sprintf(p, "*:%s:", sample_format);
+			used = snprintf(p, available, "*:%s:", sample_format);
+		p += used;
+		available -= used;
 	}
 
 	if (af.channels > 0)
-		p += sprintf(p, "%u", af.channels);
-	else {
-		*p++ = '*';
-		*p = 0;
-	}
+		p += snprintf(p, available, "%u", af.channels);
+	else
+		p += snprintf(p, available, "%s", "*");
 
 	return buffer;
 }

@@ -38,7 +38,7 @@ StartToString(const MixRampArray &a) noexcept
 			continue;
 
 		char buffer[64];
-		sprintf(buffer, "%.2f %.2f;", i.volume, i.time.count());
+		snprintf(buffer, sizeof(buffer), "%.2f %.2f;", i.volume, i.time.count());
 		last = i;
 
 		s.append(buffer);
@@ -58,7 +58,7 @@ EndToString(const MixRampArray &a, FloatDuration total_time) noexcept
 			continue;
 
 		char buffer[64];
-		sprintf(buffer, "%.2f %.2f;",
+		snprintf(buffer, sizeof(buffer), "%.2f %.2f;",
 			i.volume, (total_time - i.time).count());
 		last = i;
 

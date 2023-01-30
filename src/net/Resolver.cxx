@@ -97,7 +97,8 @@ FindAndResolveInterfaceName(char *host, size_t size)
 	if (i == 0)
 		throw FmtRuntimeError("No such interface: {}", interface);
 
-	sprintf(interface, "%u", i);
+	size_t available = size - (percent - host);
+	snprintf(interface, available, "%u", i);
 }
 
 #endif
