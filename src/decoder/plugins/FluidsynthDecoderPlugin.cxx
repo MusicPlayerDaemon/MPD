@@ -21,6 +21,7 @@
 #include "../DecoderAPI.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "fs/Path.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -29,6 +30,8 @@
 static constexpr Domain fluidsynth_domain("fluidsynth");
 
 static unsigned sample_rate;
+static double gain = 0.0;
+static bool gain_set = false;
 static const char *soundfont_path;
 
 /**
@@ -83,6 +86,17 @@ fluidsynth_init(const ConfigBlock &block)
 	soundfont_path = block.GetBlockValue("soundfont",
 					     "/usr/share/sounds/sf2/FluidR3_GM.sf2");
 
+	char *endptr;
+	const char *svalue = block.GetBlockValue("gain");
+	if (svalue != nullptr) {
+		gain = strtod(svalue, &endptr);
+		if (svalue == endptr || *endptr != 0) {
+			throw FmtRuntimeError(
+					"fluidsynth decoder gain value not a number: {}", svalue);
+		}
+		gain_set = true;
+	}
+
 	fluid_set_log_function(LAST_LOG_LEVEL,
 			       fluidsynth_mpd_log_function, nullptr);
 
@@ -93,6 +107,7 @@ static void
 fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 {
 	char setting_sample_rate[] = "synth.sample-rate";
+	char setting_gain[] = "synth.gain";
 	/*
 	char setting_verbose[] = "synth.verbose";
 	char setting_yes[] = "yes";
@@ -109,6 +124,9 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 		return;
 
 	fluid_settings_setnum(settings, setting_sample_rate, sample_rate);
+	if (gain_set) {
+		fluid_settings_setnum(settings, setting_gain, gain);
+	}
 
 	/*
 	fluid_settings_setstr(settings, setting_verbose, setting_yes);
