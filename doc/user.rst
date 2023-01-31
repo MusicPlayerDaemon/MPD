@@ -992,11 +992,15 @@ Or you can use the :command:`prlimit` program from the util-linux package:
 
 The systemd service file shipped with :program:`MPD` comes with this setting.
 
-This works only if the Linux kernel was compiled with :makevar:`CONFIG_RT_GROUP_SCHED` disabled. Use the following command to check this option for your current kernel:
+This works only if the Linux kernel was compiled with :makevar:`CONFIG_RT_GROUP_SCHED` disabled. Use the following command(s) to check this option for your current kernel:
 
-.. code-block:: none
+.. code-block:: sh
 
     zgrep ^CONFIG_RT_GROUP_SCHED /proc/config.gz
+    # OR
+    grep ^CONFIG_RT_GROUP_SCHED /boot/config
+    # OR
+    grep ^CONFIG_RT_GROUP_SCHED /boot/config-$(uname -r)
 
 You can verify whether the real-time scheduler is active with the ps command:
 
