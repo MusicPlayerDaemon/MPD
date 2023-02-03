@@ -35,11 +35,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if defined(__OpenBSD__) || defined(__NetBSD__)
-# include <soundcard.h>
-#else /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
-# include <sys/soundcard.h>
-#endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
+#include <sys/soundcard.h>
 
 #define VOLUME_MIXER_OSS_DEFAULT		"/dev/mixer"
 
