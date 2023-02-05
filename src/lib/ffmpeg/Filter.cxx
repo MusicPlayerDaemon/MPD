@@ -22,6 +22,7 @@
 #include "SampleFormat.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 
 #include <cinttypes>
 
@@ -80,10 +81,9 @@ MakeAudioBufferSource(AudioFormat &audio_format,
 			break;
 		}
 	}
-
-	char abuffer_args[256];
-	sprintf(abuffer_args,
-		"sample_rate=%u:sample_fmt=%s:channel_layout=0x%" PRIx64 ":time_base=1/%u",
+	
+	StringBuffer abuffer_args = FmtBuffer<256>(
+		"sample_rate={0:d}:sample_fmt={1}:channel_layout={2:#x}:time_base=1/{3:d}",
 		audio_format.sample_rate,
 		av_get_sample_fmt_name(src_format),
 		ToFfmpegChannelLayout(audio_format.channels),
@@ -119,15 +119,14 @@ MakeAformat(AudioFormat &audio_format,
 		}
 	}
 
-	char args[256];
-	sprintf(args,
-		"sample_rates=%u:sample_fmts=%s:channel_layouts=0x%" PRIx64,
+	StringBuffer args = FmtBuffer<256>(
+		"sample_rates={0:d}:sample_fmts={1}:channel_layouts={2:#x}",
 		audio_format.sample_rate,
 		av_get_sample_fmt_name(dest_format),
 		ToFfmpegChannelLayout(audio_format.channels));
 
 	return CreateFilter(RequireFilterByName("aformat"), "aformat",
-			    args, nullptr, graph_ctx);
+			    args.data(), nullptr, graph_ctx);
 }
 
 AVFilterContext &

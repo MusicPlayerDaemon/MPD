@@ -19,6 +19,7 @@
 
 #include "AudioFormat.hxx"
 #include "util/StringBuffer.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 
 #include <cassert>
 
@@ -47,30 +48,32 @@ ToString(const AudioFormat af) noexcept
 {
 	StringBuffer<24> buffer;
 	char *p = buffer.data();
+	StringBuffer<24> wp;
 
 	if (af.format == SampleFormat::DSD && af.sample_rate > 0 &&
 	    af.sample_rate % 44100 == 0) {
 		/* use shortcuts such as "dsd64" which implies the
 		   sample rate */
-		p += sprintf(p, "dsd%u:", af.sample_rate * 8 / 44100);
+		wp = FmtBuffer<24>("dsd:{d}", af.sample_rate * 8 / 44100);
 	} else {
 		const char *sample_format = af.format != SampleFormat::UNDEFINED
 			? sample_format_to_string(af.format)
 			: "*";
 
 		if (af.sample_rate > 0)
-			p += sprintf(p, "%u:%s:", af.sample_rate,
-				     sample_format);
+			wp = FmtBuffer<24>("{0}:{1}:", af.sample_rate, sample_format);
 		else
-			p += sprintf(p, "*:%s:", sample_format);
+			wp = FmtBuffer<24>("*:{}:", sample_format);
 	}
+	strcpy(p, wp);
+	p += strlen(wp);
 
 	if (af.channels > 0)
-		p += sprintf(p, "%u", af.channels);
+		wp = FmtBuffer<24>("{}", af.channels);
 	else {
-		*p++ = '*';
-		*p = 0;
+		wp = FmtBuffer<24>("{}", "*");
 	}
+	strcpy(p, wp);
 
 	return buffer;
 }

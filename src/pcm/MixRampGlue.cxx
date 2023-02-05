@@ -24,6 +24,7 @@
 #include "MusicChunk.hxx"
 #include "util/Compiler.h"
 #include "util/SpanCast.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 
 #include <stdio.h>
 
@@ -37,8 +38,7 @@ StartToString(const MixRampArray &a) noexcept
 		if (i.time < FloatDuration{} || i == last)
 			continue;
 
-		char buffer[64];
-		sprintf(buffer, "%.2f %.2f;", i.volume, i.time.count());
+		StringBuffer buffer = FmtBuffer<64>("{0} {1};", i.volume, i.time.count());
 		last = i;
 
 		s.append(buffer);
@@ -57,8 +57,7 @@ EndToString(const MixRampArray &a, FloatDuration total_time) noexcept
 		if (i.time < FloatDuration{} || i == last)
 			continue;
 
-		char buffer[64];
-		sprintf(buffer, "%.2f %.2f;",
+		StringBuffer buffer = FmtBuffer<64>("{0} {1};",
 			i.volume, (total_time - i.time).count());
 		last = i;
 

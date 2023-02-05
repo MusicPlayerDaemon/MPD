@@ -34,6 +34,7 @@
 #include "AddressInfo.hxx"
 #include "HostParser.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "util/CharUtil.hxx"
 
 #ifdef _WIN32
@@ -96,8 +97,9 @@ FindAndResolveInterfaceName(char *host, size_t size)
 	const unsigned i = if_nametoindex(interface);
 	if (i == 0)
 		throw FmtRuntimeError("No such interface: {}", interface);
-
-	sprintf(interface, "%u", i);
+	
+	StringBuffer ifx = FmtBuffer<64>("{d}", i);
+	strcpy(interface, ifx);
 }
 
 #endif
