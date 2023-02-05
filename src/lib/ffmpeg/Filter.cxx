@@ -22,8 +22,7 @@
 #include "SampleFormat.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "lib/fmt/RuntimeError.hxx"
-
-#include <cinttypes>
+#include "lib/fmt/ToBuffer.hxx"
 
 #include <stdio.h>
 
@@ -81,9 +80,8 @@ MakeAudioBufferSource(AudioFormat &audio_format,
 		}
 	}
 
-	char abuffer_args[256];
-	sprintf(abuffer_args,
-		"sample_rate=%u:sample_fmt=%s:channel_layout=0x%" PRIx64 ":time_base=1/%u",
+	const auto abuffer_args = FmtBuffer<256>(
+		"sample_rate={}:sample_fmt={}:channel_layout={:#x}:time_base=1/{}",
 		audio_format.sample_rate,
 		av_get_sample_fmt_name(src_format),
 		ToFfmpegChannelLayout(audio_format.channels),
@@ -119,9 +117,8 @@ MakeAformat(AudioFormat &audio_format,
 		}
 	}
 
-	char args[256];
-	sprintf(args,
-		"sample_rates=%u:sample_fmts=%s:channel_layouts=0x%" PRIx64,
+	const auto args = FmtBuffer<256>(
+		"sample_rates={}:sample_fmts={}:channel_layouts={:#x}",
 		audio_format.sample_rate,
 		av_get_sample_fmt_name(dest_format),
 		ToFfmpegChannelLayout(audio_format.channels));

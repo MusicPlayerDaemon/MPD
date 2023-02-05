@@ -24,6 +24,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "lib/fmt/SystemError.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 
 #include <cassert>
 
@@ -71,10 +72,9 @@ public:
 		if (fd < 0)
 			return;
 
-		char buffer[64];
-		sprintf(buffer, "%lu\n", (unsigned long)pid);
+		const auto s = FmtBuffer<64>("{}\n", pid);
 
-		write(fd, buffer, strlen(buffer));
+		write(fd, s.c_str(), strlen(s.c_str()));
 		close(fd);
 	}
 
