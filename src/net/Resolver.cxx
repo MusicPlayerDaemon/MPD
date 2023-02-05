@@ -98,7 +98,7 @@ FindAndResolveInterfaceName(char *host, size_t size)
 	if (i == 0)
 		throw FmtRuntimeError("No such interface: {}", interface);
 	
-	StringBuffer ifx = FmtBuffer<64>("{d}", i);
+	StringBuffer ifx = FmtBuffer<64>("{0:d}", i);
 	strcpy(interface, ifx);
 }
 
