@@ -54,7 +54,7 @@ ToString(const AudioFormat af) noexcept
 	    af.sample_rate % 44100 == 0) {
 		/* use shortcuts such as "dsd64" which implies the
 		   sample rate */
-		wp = FmtBuffer<24>("dsd:{0:d}", af.sample_rate * 8 / 44100);
+		wp = FmtBuffer<24>("dsd:{0:d}:", af.sample_rate * 8 / 44100);
 	} else {
 		const char *sample_format = af.format != SampleFormat::UNDEFINED
 			? sample_format_to_string(af.format)
