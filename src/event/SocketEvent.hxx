@@ -110,6 +110,10 @@ public:
 		return scheduled_flags;
 	}
 
+	unsigned GetReadyFlags() const noexcept {
+		return ready_flags;
+	}
+
 	void SetReadyFlags(unsigned flags) noexcept {
 		ready_flags = flags;
 	}
