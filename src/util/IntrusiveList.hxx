@@ -283,8 +283,18 @@ public:
 	}
 
 	void clear_and_dispose(Disposer<value_type> auto disposer) noexcept {
-		while (!empty()) {
-			disposer(&pop_front());
+		bool is_empty = empty();
+
+		while (!is_empty) {
+			auto *item = &pop_front();
+
+			/* by checking empty() before invoking the
+			   disposer, it is possible for the disposer
+			   to destroy this IntrusiveList in the last
+			   call */
+			is_empty = empty();
+
+			disposer(item);
 		}
 	}
 
