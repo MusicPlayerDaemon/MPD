@@ -16,6 +16,17 @@ libmpdclient = MesonProject(
     'lib/libmpdclient.a',
 )
 
+libsamplerate = CmakeProject(
+    'https://github.com/libsndfile/libsamplerate/releases/download/0.2.2/libsamplerate-0.2.2.tar.xz',
+    '97c010fc25156c33cddc272c1935afab',
+    'lib/libsamplerate.a',
+    [
+        '-DBUILD_SHARED_LIBS=OFF',
+        '-DINSTALL_DOCS=OFF',
+        '-DINSTALL_CMAKE_PACKAGE_MODULE=OFF',
+    ],
+)
+
 libogg = CmakeProject(
     'http://downloads.xiph.org/releases/ogg/libogg-1.3.5.tar.xz',
     'c4d91be36fc8e54deae7575241e03f4211eb102afb3fc0775fbbc1b740016705',
