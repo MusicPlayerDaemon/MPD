@@ -106,6 +106,7 @@ thirdparty_libs = [
     curl,
     libnfs,
     jack,
+    libsamplerate,
 ]
 
 # build the third-party libraries

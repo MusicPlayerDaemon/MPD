@@ -25,6 +25,8 @@ ver 0.24 (not yet released)
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
 * static partition configuration
+* Windows
+  - build with libsamplerate
 * remove Haiku support
 * remove Boost dependency
 * require libfmt 7 or later
