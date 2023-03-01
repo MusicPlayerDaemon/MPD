@@ -42,6 +42,10 @@ OPTIONS
 
   Print messages to stderr.
 
+.. option:: --systemd
+
+  Used on Linux only so MPD can reliably detect whether it was started as a systemd service. Users shouldn't use this switch on the command line.
+
 .. option:: --verbose
 
   Verbose logging.
