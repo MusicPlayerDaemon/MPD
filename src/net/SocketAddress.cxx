@@ -129,8 +129,6 @@ SocketAddress::GetPort() const noexcept
 	}
 }
 
-#ifdef __cpp_lib_span
-
 static std::span<const std::byte>
 GetSteadyPart(const struct sockaddr_in &address) noexcept
 {
@@ -149,11 +147,7 @@ GetSteadyPart(const struct sockaddr_in6 &address) noexcept
 	};
 }
 
-#endif // __cpp_lib_span
-
 #endif // HAVE_TCP
-
-#ifdef __cpp_lib_span
 
 std::span<const std::byte>
 SocketAddress::GetSteadyPart() const noexcept
@@ -179,5 +173,3 @@ SocketAddress::GetSteadyPart() const noexcept
 		return {};
 	}
 }
-
-#endif
