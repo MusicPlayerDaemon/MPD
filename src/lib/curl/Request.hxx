@@ -101,6 +101,15 @@ public:
 		return easy.Get();
 	}
 
+	/**
+	 * Provide access to the underlying #CurlEasy instance, which
+	 * allows the caller to configure options prior to submitting
+	 * this request.
+	 */
+	auto &GetEasy() noexcept {
+		return easy;
+	}
+
 	template<typename T>
 	void SetOption(CURLoption option, T value) {
 		easy.SetOption(option, value);
