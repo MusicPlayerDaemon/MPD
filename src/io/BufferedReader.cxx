@@ -31,6 +31,7 @@
 #include "Reader.hxx"
 #include "util/TextFile.hxx"
 
+#include <algorithm> // for std::copy_n()
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
