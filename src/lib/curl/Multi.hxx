@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Max Kellermann <max.kellermann@gmail.com>
+ * Copyright 2011-2023 Max Kellermann <max.kellermann@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,15 +27,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CURL_MULTI_HXX
-#define CURL_MULTI_HXX
+#pragma once
 
 #include <curl/curl.h>
 
 #include <chrono>
-#include <utility>
 #include <stdexcept>
-#include <cstddef>
+#include <utility>
 
 /**
  * An OO wrapper for a "CURLM*" (a libCURL "multi" handle).
@@ -101,7 +99,7 @@ public:
 			throw std::runtime_error(curl_multi_strerror(code));
 	}
 
-	CURLMsg *InfoRead() {
+	CURLMsg *InfoRead() noexcept {
 		int msgs_in_queue;
 		return curl_multi_info_read(handle, &msgs_in_queue);
 	}
@@ -127,5 +125,3 @@ public:
 		return Wait(timeout.count());
 	}
 };
-
-#endif
