@@ -55,6 +55,7 @@ db_glue = static_library(
   dependencies: [
     fmt_dep,
     log_dep,
+    fs_glue_dep,
   ],
 )
 

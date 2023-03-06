@@ -9,7 +9,7 @@
 #include "config/Block.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
-#include "fs/StandardDirectory.hxx"
+#include "fs/glue/StandardDirectory.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 
 DatabasePtr

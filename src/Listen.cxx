@@ -17,7 +17,7 @@
 #include "net/SocketUtil.hxx"
 #include "system/Error.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/StandardDirectory.hxx"
+#include "fs/glue/StandardDirectory.hxx"
 #include "fs/XDG.hxx"
 #include "util/Domain.hxx"
 

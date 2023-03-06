@@ -5,7 +5,7 @@
 #include "Data.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
-#include "fs/StandardDirectory.hxx"
+#include "fs/glue/StandardDirectory.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringSplit.hxx"
 

@@ -6,8 +6,9 @@
 #endif
 
 #include "StandardDirectory.hxx"
-#include "FileSystem.hxx"
-#include "XDG.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
+#include "fs/XDG.hxx"
 #include "config.h"
 #include "util/StringSplit.hxx"
 

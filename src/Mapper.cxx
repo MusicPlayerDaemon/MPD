@@ -8,7 +8,7 @@
 #include "config.h"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/CheckFile.hxx"
+#include "fs/glue/CheckFile.hxx"
 #include "util/StringCompare.hxx"
 
 #ifdef ENABLE_DATABASE

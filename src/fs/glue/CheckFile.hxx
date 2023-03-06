@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_FS_CHECK_FILE_HXX
-#define MPD_FS_CHECK_FILE_HXX
+#pragma once
 
 class Path;
 
@@ -12,5 +11,3 @@ class Path;
  */
 void
 CheckDirectoryReadable(Path path_fs);
-
-#endif

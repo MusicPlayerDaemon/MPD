@@ -10,8 +10,6 @@ fs_sources = [
   'NarrowPath.cxx',
   'FileSystem.cxx',
   'List.cxx',
-  'StandardDirectory.cxx',
-  'CheckFile.cxx',
   'LookupFile.cxx',
   'DirectoryReader.cxx',
   'io/TextFile.cxx',
@@ -29,7 +27,6 @@ fs = static_library(
   include_directories: inc,
   dependencies: [
     zlib_dep,
-    log_dep,
   ],
 )
 

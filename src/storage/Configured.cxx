@@ -6,8 +6,9 @@
 #include "StorageInterface.hxx"
 #include "plugins/LocalStorage.hxx"
 #include "config/Data.hxx"
-#include "fs/StandardDirectory.hxx"
-#include "fs/CheckFile.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/glue/StandardDirectory.hxx"
+#include "fs/glue/CheckFile.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/UriExtract.hxx"
 

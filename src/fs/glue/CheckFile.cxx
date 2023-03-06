@@ -5,10 +5,10 @@
 #include "Log.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "config/Domain.hxx"
-#include "FileInfo.hxx"
-#include "Path.hxx"
-#include "AllocatedPath.hxx"
-#include "DirectoryReader.hxx"
+#include "fs/FileInfo.hxx"
+#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/DirectoryReader.hxx"
 #include "system/Error.hxx"
 
 void

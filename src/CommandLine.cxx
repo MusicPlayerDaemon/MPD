@@ -20,7 +20,7 @@
 #include "fs/NarrowPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
-#include "fs/StandardDirectory.hxx"
+#include "fs/glue/StandardDirectory.hxx"
 #include "event/Features.h"
 #include "io/uring/Features.h"
 #include "cmdline/OptionDef.hxx"

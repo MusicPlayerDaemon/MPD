@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_FS_STANDARD_DIRECTORY_HXX
-#define MPD_FS_STANDARD_DIRECTORY_HXX
+#pragma once
 
-#include "AllocatedPath.hxx"
+class AllocatedPath;
 
 /**
  * Obtains configuration directory for the current user.
@@ -81,7 +80,5 @@ GetHomeDir() noexcept;
 [[gnu::pure]]
 AllocatedPath
 GetHomeDir(const char *user_name) noexcept;
-
-#endif
 
 #endif
