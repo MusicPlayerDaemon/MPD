@@ -12,7 +12,8 @@
 #include "Directory.hxx"
 #include "util/NumberParser.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/StringFormat.hxx"
+
+#include <fmt/format.h>
 
 #include <algorithm>
 
@@ -44,9 +45,9 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				 "Filter", "*",
 				 "SortCriteria", "",
 				 "StartingIndex",
-				 StringFormat<32>("%u", offset).c_str(),
+				 fmt::format_int{offset}.c_str(),
 				 "RequestedCount",
-				 StringFormat<32>("%u", count).c_str());
+				 fmt::format_int{count}.c_str());
 	if (request == nullptr)
 		throw std::runtime_error("UpnpMakeAction() failed");
 
@@ -76,8 +77,9 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 		{"BrowseFlag", "BrowseDirectChildren"},
 		{"Filter", "*"},
 		{"SortCriteria", ""},
-		{"StartingIndex", StringFormat<32>("%u", offset).c_str()},
-		{"RequestedCount", StringFormat<32>("%u", count).c_str()}};
+		{"StartingIndex", fmt::format_int{offset}.c_str(),
+		{"RequestedCount", fmt::format_int{count).c_str()},
+	};
 	std::vector<std::pair<std::string, std::string>> responseData;
 	int errcode;
 	std::string errdesc;
@@ -134,7 +136,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 							    "Filter", "*",
 							    "SortCriteria", "",
 							    "StartingIndex",
-							    StringFormat<32>("%u", offset).c_str(),
+							    fmt::format_int{offset}.c_str(),
 							    "RequestedCount", "0")); // Setting a value here gets twonky into fits
 		if (!request)
 			throw std::runtime_error("UpnpMakeAction() failed");
@@ -170,7 +172,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 			{"SearchCriteria", ss},
 			{"Filter", "*"},
 			{"SortCriteria", ""},
-			{"StartingIndex", StringFormat<32>("%u", offset).c_str()},
+			{"StartingIndex", fmt::format_int{offset}.c_str()},
 			{"RequestedCount", "0"}};
 		std::vector<std::pair<std::string, std::string>> responseData;
 		int errcode;
