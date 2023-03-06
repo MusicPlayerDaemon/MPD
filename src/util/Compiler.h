@@ -47,7 +47,7 @@
 #define CLANG_CHECK_VERSION(major, minor) \
 	(CLANG_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
 
-#if CLANG_OR_GCC_VERSION(4,0)
+#ifdef __GNUC__
 
 /* GCC 4.x */
 
@@ -67,10 +67,8 @@
 
 #endif
 
-#if GCC_CHECK_VERSION(7,0)
+#ifdef __GNUC__
 #define gcc_fallthrough __attribute__((fallthrough))
-#elif CLANG_CHECK_VERSION(10,0) && defined(__cplusplus)
-#define gcc_fallthrough [[fallthrough]]
 #else
 #define gcc_fallthrough
 #endif
@@ -78,7 +76,7 @@
 #ifndef __cplusplus
 /* plain C99 has "restrict" */
 #define gcc_restrict restrict
-#elif CLANG_OR_GCC_VERSION(4,0)
+#elif defined(__GNUC__)
 /* "__restrict__" is a GCC extension for C++ */
 #define gcc_restrict __restrict__
 #else
