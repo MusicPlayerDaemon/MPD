@@ -66,10 +66,6 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 	}
 }
 
-#if defined(_WIN32) && GCC_CHECK_VERSION(4,6)
-#pragma GCC diagnostic pop
-#endif
-
 CommandResult
 handle_listfiles_storage(Response &r, Storage &storage, const char *uri)
 {
