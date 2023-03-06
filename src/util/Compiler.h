@@ -52,7 +52,6 @@
 /* GCC 4.x */
 
 #define gcc_malloc __attribute__((malloc))
-#define gcc_printf(a,b) __attribute__((format(printf, a, b)))
 #define gcc_pure __attribute__((pure))
 
 #define gcc_visibility_default __attribute__((visibility("default")))
@@ -62,7 +61,6 @@
 /* generic C compiler */
 
 #define gcc_malloc
-#define gcc_printf(a,b)
 #define gcc_pure
 
 #define gcc_visibility_default
