@@ -6,7 +6,7 @@
 
 #include "util/ReusableArray.hxx"
 
-#include <cstdint>
+#include <cstddef>
 
 /**
  * Manager for a temporary buffer which grows as needed.  We could
@@ -14,7 +14,7 @@
  * would put too much stress on the allocator.
  */
 class PcmBuffer {
-	ReusableArray<uint8_t, 8192> buffer;
+	ReusableArray<std::byte, 8192> buffer;
 
 public:
 	void Clear() noexcept {
