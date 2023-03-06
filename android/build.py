@@ -100,6 +100,7 @@ class AndroidNdkToolchain:
         common_flags += ' -fvisibility=hidden -fdata-sections -ffunction-sections'
 
         self.ar = os.path.join(llvm_bin, 'llvm-ar')
+        self.arflags = 'rcs'
         self.ranlib = os.path.join(llvm_bin, 'llvm-ranlib')
         self.nm = os.path.join(llvm_bin, 'llvm-nm')
         self.strip = os.path.join(llvm_bin, 'llvm-strip')

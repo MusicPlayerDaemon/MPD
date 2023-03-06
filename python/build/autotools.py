@@ -45,6 +45,7 @@ class AutotoolsProject(MakeProject):
             'LDFLAGS=' + toolchain.ldflags + ' ' + self.ldflags,
             'LIBS=' + toolchain.libs + ' ' + self.libs,
             'AR=' + toolchain.ar,
+            'ARFLAGS=' + toolchain.arflags,
             'RANLIB=' + toolchain.ranlib,
             'STRIP=' + toolchain.strip,
             '--host=' + toolchain.arch,

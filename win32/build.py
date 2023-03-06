@@ -48,6 +48,7 @@ class CrossGccToolchain:
         self.cc = os.path.join(toolchain_bin, arch + '-gcc')
         self.cxx = os.path.join(toolchain_bin, arch + '-g++')
         self.ar = os.path.join(toolchain_bin, arch + '-ar')
+        self.arflags = 'rcs'
         self.ranlib = os.path.join(toolchain_bin, arch + '-ranlib')
         self.nm = os.path.join(toolchain_bin, arch + '-nm')
         self.strip = os.path.join(toolchain_bin, arch + '-strip')
