@@ -482,7 +482,10 @@ MainConfigured(const CommandLineOptions &options,
 #ifndef ANDROID
 	setup_log_output();
 
-	const ScopeSignalHandlersInit signal_handlers_init(instance);
+	const ScopeSignalHandlersInit signal_handlers_init{
+		instance,
+		options.daemon,
+	};
 #endif
 
 	instance.io_thread.Start();

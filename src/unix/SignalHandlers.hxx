@@ -23,15 +23,15 @@
 struct Instance;
 
 void
-SignalHandlersInit(Instance &instance);
+SignalHandlersInit(Instance &instance, bool daemon);
 
 void
 SignalHandlersFinish() noexcept;
 
 class ScopeSignalHandlersInit {
 public:
-	ScopeSignalHandlersInit(Instance &instance) {
-		SignalHandlersInit(instance);
+	ScopeSignalHandlersInit(Instance &instance, bool daemon) {
+		SignalHandlersInit(instance, daemon);
 	}
 
 	~ScopeSignalHandlersInit() noexcept {
