@@ -6,16 +6,6 @@
 #include <system_error> // IWYU pragma: export
 #include <utility>
 
-template<typename... Args>
-static inline std::system_error
-FormatSystemError(std::error_code code, const char *fmt,
-		  Args&&... args) noexcept
-{
-	char buffer[1024];
-	snprintf(buffer, sizeof(buffer), fmt, std::forward<Args>(args)...);
-	return std::system_error(code, buffer);
-}
-
 #ifdef _WIN32
 
 #include <errhandlingapi.h> // for GetLastError()
