@@ -202,10 +202,16 @@ handle_playlistmove([[maybe_unused]] Client &client,
 		    Request args, [[maybe_unused]] Response &r)
 {
 	const char *const name = args.front();
-	unsigned from = args.ParseUnsigned(1);
+
+	RangeArg from = args.ParseRange(1);
+	if (from.IsOpenEnded()) {
+		r.Error(ACK_ERROR_ARG, "Open-ended range not supported");
+		return CommandResult::ERROR;
+	}
+
 	unsigned to = args.ParseUnsigned(2);
 
-	if (from == to)
+	if (from.IsEmpty() || from.start == to)
 		/* this doesn't check whether the playlist exists, but
 		   what the hell.. */
 		return CommandResult::OK;

@@ -59,7 +59,7 @@ public:
 	void Insert(std::size_t i, const char *uri);
 	void Insert(std::size_t i, const DetachedSong &song);
 
-	void MoveIndex(unsigned src, unsigned dest);
+	void MoveIndex(RangeArg src, unsigned dest);
 	void RemoveIndex(unsigned i);
 	void RemoveRange(RangeArg range);
 

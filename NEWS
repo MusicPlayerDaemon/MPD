@@ -2,6 +2,7 @@ ver 0.24 (not yet released)
 * protocol
   - new command "searchcount" (case-insensitive "count")
   - "playlistfind"/"playlistsearch" have "sort" and "window" parameters
+  - allow range in "playlistmove"
   - "save" can append to or replace an existing playlist
   - filter "prio" (for "playlistfind"/"playlistsearch")
   - limit "player" idle events to the current partition

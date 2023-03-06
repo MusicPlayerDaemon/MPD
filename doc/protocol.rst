@@ -994,8 +994,9 @@ remote playlists (absolute URI with a supported scheme).
 
 .. _command_playlistmove:
 
-:command:`playlistmove {NAME} {FROM} {TO}`
-    Moves the song at position ``FROM`` in
+:command:`playlistmove {NAME} [{FROM} | {START:END}] {TO}`
+    Moves the song at position ``FROM`` or range of songs
+    at ``START:END`` [#since_0_24]_ in
     the playlist `NAME.m3u` to the
     position ``TO``.
 

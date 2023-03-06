@@ -296,18 +296,41 @@ PlaylistFileEditor::Insert(std::size_t i, const DetachedSong &song)
 	Insert(i, uri);
 }
 
-void
-PlaylistFileEditor::MoveIndex(unsigned src, unsigned dest)
+static PlaylistFileContents
+CutRange(PlaylistFileContents &src, RangeArg range) noexcept
 {
-	if (src >= contents.size() || dest >= contents.size())
+	PlaylistFileContents dest;
+	dest.reserve(range.Count());
+
+	const auto begin = std::next(src.begin(), range.start);
+	const auto end = std::next(src.begin(), range.end);
+
+	for (auto i = begin;  i != end; ++i)
+		dest.emplace_back(std::move(*i));
+
+	src.erase(begin, end);
+
+	return dest;
+}
+
+static void
+InsertRange(PlaylistFileContents &dest, PlaylistFileContents::iterator pos,
+	    PlaylistFileContents &&src) noexcept
+{
+	dest.reserve(dest.size() + src.size());
+
+	for (auto &i : src)
+		pos = std::next(dest.emplace(pos, std::move(i)));
+}
+
+void
+PlaylistFileEditor::MoveIndex(RangeArg src, unsigned dest)
+{
+	if (src.end > contents.size() || dest > contents.size() - src.Count())
 		throw PlaylistError(PlaylistResult::BAD_RANGE, "Bad range");
 
-	const auto src_i = std::next(contents.begin(), src);
-	auto value = std::move(*src_i);
-	contents.erase(src_i);
-
-	const auto dest_i = std::next(contents.begin(), dest);
-	contents.insert(dest_i, std::move(value));
+	auto tmp = CutRange(contents, src);
+	InsertRange(contents, std::next(contents.begin(), dest), std::move(tmp));
 }
 
 void
