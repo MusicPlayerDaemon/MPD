@@ -105,7 +105,6 @@ thirdparty_libs = [
     ffmpeg,
     curl,
     libnfs,
-    jack,
     libsamplerate,
 ]
 

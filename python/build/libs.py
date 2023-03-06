@@ -8,7 +8,6 @@ from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
 from build.openssl import OpenSSLProject
-from build.jack import JackProject
 
 libmpdclient = MesonProject(
     'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.20.tar.xz',
@@ -451,10 +450,4 @@ libnfs = AutotoolsProject(
     ],
     base='libnfs-libnfs-5.0.2',
     autoreconf=True,
-)
-
-jack = JackProject(
-    'https://github.com/jackaudio/jack2/archive/v1.9.17.tar.gz',
-    '38f674bbc57852a8eb3d9faa1f96a0912d26f7d5df14c11005ad499c8ae352f2',
-    'lib/pkgconfig/jack.pc',
 )

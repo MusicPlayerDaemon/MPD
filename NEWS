@@ -29,6 +29,7 @@ ver 0.24 (not yet released)
 * static partition configuration
 * Windows
   - build with libsamplerate
+  - remove JACK DLL support
 * remove Haiku support
 * remove Boost dependency
 * require libfmt 7 or later
