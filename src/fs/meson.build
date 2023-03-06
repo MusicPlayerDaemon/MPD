@@ -28,6 +28,7 @@ fs = static_library(
     shlwapi_dep,
     system_dep,
     icu_dep,
+    fmt_dep,
   ],
 )
 

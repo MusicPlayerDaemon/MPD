@@ -5,7 +5,7 @@
 #include "config/Data.hxx"
 
 #ifdef ANDROID
-#include "fs/StandardDirectory.hxx"
+#include "fs/glue/StandardDirectory.hxx"
 #endif
 
 StateFileConfig::StateFileConfig(const ConfigData &config)

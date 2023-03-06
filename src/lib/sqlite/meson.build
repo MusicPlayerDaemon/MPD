@@ -18,6 +18,7 @@ sqlite = static_library(
   include_directories: inc,
   dependencies: [
     sqlite_dep,
+    fmt_dep,
   ],
 )
 

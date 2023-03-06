@@ -39,6 +39,7 @@ executable(
   include_directories: inc,
   dependencies: [
     config_dep,
+    fmt_dep,
   ],
 )
 
@@ -254,6 +255,7 @@ if enable_database
     '../src/TagSave.cxx',
     include_directories: inc,
     dependencies: [
+      fmt_dep,
       pcm_basic_dep,
       song_dep,
       fs_dep,
@@ -383,6 +385,7 @@ executable(
   '../src/TagFile.cxx',
   include_directories: inc,
   dependencies: [
+    fmt_dep,
     playlist_glue_dep,
     input_glue_dep,
     archive_glue_dep,
@@ -446,6 +449,7 @@ executable(
   '../src/TagSave.cxx',
   include_directories: inc,
   dependencies: [
+      fmt_dep,
     decoder_glue_dep,
     input_glue_dep,
     archive_glue_dep,

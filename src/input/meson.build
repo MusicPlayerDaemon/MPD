@@ -10,6 +10,9 @@ input_api = static_library(
   'ProxyInputStream.cxx',
   'LastInputStream.cxx',
   include_directories: inc,
+  dependencies: [
+    thread_dep,
+  ],
 )
 
 input_api_dep = declare_dependency(

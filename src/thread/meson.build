@@ -21,4 +21,7 @@ thread = static_library(
 
 thread_dep = declare_dependency(
   link_with: thread,
+  dependencies: [
+    fmt_dep,
+  ],
 )
