@@ -4,7 +4,6 @@
 #ifndef BUFFERED_OUTPUT_STREAM_HXX
 #define BUFFERED_OUTPUT_STREAM_HXX
 
-#include "util/Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <fmt/core.h>
@@ -64,12 +63,6 @@ public:
 	 * Write a null-terminated string.
 	 */
 	void Write(const char *p);
-
-	/**
-	 * Write a printf-style formatted string.
-	 */
-	gcc_printf(2,3)
-	void Format(const char *fmt, ...);
 
 	void VFmt(fmt::string_view format_str, fmt::format_args args);
 
