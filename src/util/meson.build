@@ -11,7 +11,6 @@ util = static_library(
   'WStringCompare.cxx',
   'DivideString.cxx',
   'SplitString.cxx',
-  'FormatString.cxx',
   'Tokenizer.cxx',
   'UriExtract.cxx',
   'UriQueryParser.cxx',
