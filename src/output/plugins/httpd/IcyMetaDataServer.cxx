@@ -3,57 +3,55 @@
 
 #include "IcyMetaDataServer.hxx"
 #include "tag/Tag.hxx"
-#include "util/FormatString.hxx"
-#include "util/AllocatedString.hxx"
 #include "util/TruncateString.hxx"
+
+#include <fmt/core.h>
 
 #include <iterator>
 
-#include <string.h>
-
-AllocatedString
+std::string
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint) noexcept
 {
-	return FormatString("HTTP/1.1 200 OK\r\n"
-			    "icy-notice1:<BR>This stream requires an audio player!<BR>\r\n" /* TODO */
-			    "icy-notice2:MPD - The music player daemon<BR>\r\n"
-			    "icy-name: %s\r\n"             /* TODO */
-			    "icy-genre: %s\r\n"            /* TODO */
-			    "icy-url: %s\r\n"              /* TODO */
-			    "icy-pub:1\r\n"
-			    "icy-metaint:%d\r\n"
-			    /* TODO "icy-br:%d\r\n" */
-			    "Content-Type: %s\r\n"
-			    "Connection: close\r\n"
-			    "Pragma: no-cache\r\n"
-			    "Cache-Control: no-cache, no-store\r\n"
-			    "Access-Control-Allow-Origin: *\r\n"
-			    "\r\n",
-			    name,
-			    genre,
-			    url,
-			    metaint,
-			    /* bitrate, */
-			    content_type);
+	return fmt::format("HTTP/1.1 200 OK\r\n"
+			   "icy-notice1:<BR>This stream requires an audio player!<BR>\r\n" /* TODO */
+			   "icy-notice2:MPD - The music player daemon<BR>\r\n"
+			   "icy-name: {}\r\n"             /* TODO */
+			   "icy-genre: {}\r\n"            /* TODO */
+			   "icy-url: {}\r\n"              /* TODO */
+			   "icy-pub:1\r\n"
+			   "icy-metaint:%d\r\n"
+			   /* TODO "icy-br:%d\r\n" */
+			   "Content-Type: {}\r\n"
+			   "Connection: close\r\n"
+			   "Pragma: no-cache\r\n"
+			   "Cache-Control: no-cache, no-store\r\n"
+			   "Access-Control-Allow-Origin: *\r\n"
+			   "\r\n",
+			   name,
+			   genre,
+			   url,
+			   metaint,
+			   /* bitrate, */
+			   content_type);
 }
 
-static AllocatedString
+static std::string
 icy_server_metadata_string(const char *stream_title,
 			   const char* stream_url) noexcept
 {
 	// The leading n is a placeholder for the length information
-	auto icy_metadata = FormatString("nStreamTitle='%s';"
-					 "StreamUrl='%s';"
-					 /* pad 15 spaces just in case
-					    the length needs to be
-					    rounded up */
-					 "               ",
-					 stream_title,
-					 stream_url);
+	auto icy_metadata = fmt::format("nStreamTitle='{}';"
+					"StreamUrl='{}';"
+					/* pad 15 spaces just in case
+					   the length needs to be
+					   rounded up */
+					"               ",
+					stream_title,
+					stream_url);
 
-	size_t meta_length = strlen(icy_metadata.c_str());
+	size_t meta_length = icy_metadata.length();
 
 	meta_length--; // subtract placeholder
 
@@ -62,7 +60,7 @@ icy_server_metadata_string(const char *stream_title,
 	icy_metadata[0] = meta_length;
 
 	if (meta_length > 255)
-		return nullptr;
+		return {};
 
 	return icy_metadata;
 }
@@ -95,8 +93,8 @@ icy_server_metadata_page(const Tag &tag, const TagType *types) noexcept
 
 	const auto icy_string = icy_server_metadata_string(stream_title, "");
 
-	if (icy_string == nullptr)
+	if (icy_string.empty())
 		return nullptr;
 
-	return std::make_shared<Page>(std::span{(const std::byte *)icy_string.c_str(), uint8_t(icy_string[0]) * 16U + 1U});
+	return std::make_shared<Page>(std::span{(const std::byte *)icy_string.data(), uint8_t(icy_string[0]) * 16U + 1U});
 }

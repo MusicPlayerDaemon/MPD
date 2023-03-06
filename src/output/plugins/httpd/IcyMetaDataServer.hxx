@@ -7,12 +7,12 @@
 #include "Page.hxx"
 
 #include <cstdint>
+#include <string>
 
 enum TagType : uint8_t;
 struct Tag;
-class AllocatedString;
 
-AllocatedString
+std::string
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint) noexcept;
