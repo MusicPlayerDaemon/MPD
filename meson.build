@@ -425,6 +425,7 @@ subdir('src/lib/crypto')
 subdir('src/zeroconf')
 
 subdir('src/fs')
+subdir('src/fs/io')
 subdir('src/fs/glue')
 subdir('src/config')
 subdir('src/tag')

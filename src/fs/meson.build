@@ -12,7 +12,6 @@ fs_sources = [
   'List.cxx',
   'LookupFile.cxx',
   'DirectoryReader.cxx',
-  'io/TextFile.cxx',
 ]
 
 if is_windows
@@ -26,7 +25,6 @@ fs = static_library(
   fs_sources,
   include_directories: inc,
   dependencies: [
-    zlib_dep,
     shlwapi_dep,
     system_dep,
     icu_dep,
@@ -36,6 +34,5 @@ fs = static_library(
 fs_dep = declare_dependency(
   link_with: fs,
   dependencies: [
-    io_dep,
   ],
 )

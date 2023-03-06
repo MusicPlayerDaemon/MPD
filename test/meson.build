@@ -177,6 +177,7 @@ if zlib_dep.found()
     include_directories: inc,
     dependencies: [
       fs_dep,
+      zlib_dep,
     ],
   )
 endif
