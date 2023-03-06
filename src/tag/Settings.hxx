@@ -5,7 +5,6 @@
 #define MPD_TAG_SETTINGS_HXX
 
 #include "Mask.hxx"
-#include "Type.h"
 
 extern TagMask global_tag_mask;
 

@@ -5,12 +5,13 @@
 #define MPD_DATABASE_INTERFACE_HXX
 
 #include "Visitor.hxx"
-#include "tag/Type.h"
 
 #include <chrono>
+#include <cstdint>
 #include <span>
 #include <string>
 
+enum TagType : uint8_t;
 struct DatabasePlugin;
 struct DatabaseStats;
 struct DatabaseSelection;

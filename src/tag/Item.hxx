@@ -4,7 +4,9 @@
 #ifndef MPD_TAG_ITEM_HXX
 #define MPD_TAG_ITEM_HXX
 
-#include "Type.h"
+#include <cstdint>
+
+enum TagType : uint8_t;
 
 /**
  * One tag value.  It is a mapping of #TagType to am arbitrary string

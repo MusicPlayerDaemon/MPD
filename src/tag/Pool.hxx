@@ -4,10 +4,12 @@
 #ifndef MPD_TAG_POOL_HXX
 #define MPD_TAG_POOL_HXX
 
-#include "Type.h"
 #include "thread/Mutex.hxx"
 
+#include <cstdint>
 #include <string_view>
+
+enum TagType : uint8_t;
 
 extern Mutex tag_pool_lock;
 

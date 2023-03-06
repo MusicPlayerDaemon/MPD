@@ -4,11 +4,11 @@
 #ifndef MPD_DB_UNIQUE_TAGS_HXX
 #define MPD_DB_UNIQUE_TAGS_HXX
 
-#include "tag/Type.h"
-
+#include <cstdint>
 #include <span>
 #include <string>
 
+enum TagType : uint8_t;
 class Database;
 struct DatabaseSelection;
 template<typename Key> class RecursiveMap;

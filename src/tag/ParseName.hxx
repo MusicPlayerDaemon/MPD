@@ -4,9 +4,10 @@
 #ifndef MPD_TAG_PARSE_NAME_HXX
 #define MPD_TAG_PARSE_NAME_HXX
 
-#include "Type.h"
-
+#include <cstdint>
 #include <string_view>
+
+enum TagType : uint8_t;
 
 /**
  * Parse the string, and convert it into a #TagType.  Returns

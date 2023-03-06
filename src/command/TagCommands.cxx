@@ -6,6 +6,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "tag/ParseName.hxx"
+#include "tag/Type.h"
 #include "queue/Playlist.hxx"
 
 #include <fmt/format.h>

@@ -8,6 +8,7 @@
 #include "client/Response.hxx"
 #include "TagPrint.hxx"
 #include "tag/ParseName.hxx"
+#include "tag/Type.h"
 #include "util/StringAPI.hxx"
 
 CommandResult

@@ -4,9 +4,9 @@
 #ifndef MPD_TAG_MASK_HXX
 #define MPD_TAG_MASK_HXX
 
-#include "Type.h"
-
 #include <cstdint>
+
+enum TagType : uint8_t;
 
 class TagMask {
 	typedef uint_least32_t mask_t;

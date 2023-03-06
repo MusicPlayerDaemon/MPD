@@ -5,8 +5,10 @@
 #define MPD_ICY_META_DATA_SERVER_HXX
 
 #include "Page.hxx"
-#include "tag/Type.h"
 
+#include <cstdint>
+
+enum TagType : uint8_t;
 struct Tag;
 class AllocatedString;
 

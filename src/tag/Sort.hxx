@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "Type.h"
+#include <cstdint>
 
+enum TagType : uint8_t;
 struct Tag;
 
 [[gnu::pure]]

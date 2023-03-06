@@ -4,14 +4,15 @@
 #ifndef MPD_TAG_HANDLER_HXX
 #define MPD_TAG_HANDLER_HXX
 
-#include "Type.h"
 #include "Chrono.hxx"
 #include "util/Compiler.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <span>
 #include <string_view>
 
+enum TagType : uint8_t;
 struct AudioFormat;
 class TagBuilder;
 
