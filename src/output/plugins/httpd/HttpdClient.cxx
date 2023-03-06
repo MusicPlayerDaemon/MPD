@@ -11,10 +11,10 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "Log.hxx"
 
+#include <fmt/core.h>
+
 #include <cassert>
 #include <cstring>
-
-#include <stdio.h>
 
 HttpdClient::~HttpdClient() noexcept
 {
@@ -119,7 +119,6 @@ HttpdClient::HandleLine(const char *line) noexcept
 bool
 HttpdClient::SendResponse() noexcept
 {
-	char buffer[1024];
 	std::string allocated;
 	const char *response;
 
@@ -140,16 +139,15 @@ HttpdClient::SendResponse() noexcept
 						   metaint);
 		response = allocated.c_str();
 	} else { /* revert to a normal HTTP request */
-		snprintf(buffer, sizeof(buffer),
-			 "HTTP/1.1 200 OK\r\n"
-			 "Content-Type: %s\r\n"
-			 "Connection: close\r\n"
-			 "Pragma: no-cache\r\n"
-			 "Cache-Control: no-cache, no-store\r\n"
-			 "Access-Control-Allow-Origin: *\r\n"
-			 "\r\n",
-			 httpd.content_type);
-		response = buffer;
+		allocated = fmt::format("HTTP/1.1 200 OK\r\n"
+					"Content-Type: {}\r\n"
+					"Connection: close\r\n"
+					"Pragma: no-cache\r\n"
+					"Cache-Control: no-cache, no-store\r\n"
+					"Access-Control-Allow-Origin: *\r\n"
+					"\r\n",
+					httpd.content_type);
+		response = allocated.c_str();
 	}
 
 	ssize_t nbytes = GetSocket().Write(response, strlen(response));
