@@ -1,4 +1,5 @@
-import os.path, subprocess, sys
+import os
+import subprocess
 import platform
 
 from build.project import Project
