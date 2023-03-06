@@ -22,6 +22,8 @@ ver 0.24 (not yet released)
   - "one-shot" consume mode
 * tags
   - new tags "TitleSort", "Mood"
+* output
+  - pipewire: map tags "Date" and "Comment"
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
 * static partition configuration

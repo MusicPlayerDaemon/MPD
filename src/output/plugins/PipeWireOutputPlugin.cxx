@@ -945,6 +945,8 @@ PipeWireOutput::SendTag(const Tag &tag)
 	} tag_map[] = {
 		{ TAG_ARTIST, PW_KEY_MEDIA_ARTIST },
 		{ TAG_TITLE, PW_KEY_MEDIA_TITLE },
+		{ TAG_DATE, PW_KEY_MEDIA_DATE },
+		{ TAG_COMMENT, PW_KEY_MEDIA_COMMENT },
 	};
 
 	struct spa_dict_item items[1 + std::size(tag_map)];
