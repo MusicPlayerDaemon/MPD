@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PCM_DSD_HXX
-#define MPD_PCM_DSD_HXX
+#pragma once
 
 #include "Buffer.hxx"
 #include "Dsd2Pcm.hxx"
@@ -24,10 +23,8 @@ public:
 	}
 
 	std::span<const float> ToFloat(unsigned channels,
-				       std::span<const uint8_t> src) noexcept;
+				       std::span<const std::byte> src) noexcept;
 
 	std::span<const int32_t> ToS24(unsigned channels,
-				       std::span<const uint8_t> src) noexcept;
+				       std::span<const std::byte> src) noexcept;
 };
-
-#endif

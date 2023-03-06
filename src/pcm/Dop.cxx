@@ -8,15 +8,15 @@
 #include <functional>
 
 static constexpr uint32_t
-pcm_two_dsd_to_dop_marker1(uint8_t a, uint8_t b) noexcept
+pcm_two_dsd_to_dop_marker1(std::byte a, std::byte b) noexcept
 {
-	return 0xff050000 | (a << 8) | b;
+	return 0xff050000 | (static_cast<uint32_t>(a) << 8) | static_cast<uint32_t>(b);
 }
 
 static constexpr uint32_t
-pcm_two_dsd_to_dop_marker2(uint8_t a, uint8_t b) noexcept
+pcm_two_dsd_to_dop_marker2(std::byte a, std::byte b) noexcept
 {
-	return 0xfffa0000 | (a << 8) | b;
+	return 0xfffa0000 | (static_cast<uint32_t>(a) << 8) | static_cast<uint32_t>(b);
 }
 
 /**
@@ -25,7 +25,7 @@ pcm_two_dsd_to_dop_marker2(uint8_t a, uint8_t b) noexcept
  * in the destination buffer, one for each marker
  */
 static void
-DsdToDop(uint32_t *dest, const uint8_t *src,
+DsdToDop(uint32_t *dest, const std::byte *src,
 	 size_t num_dop_quads, unsigned channels) noexcept
 {
 	for (size_t i = num_dop_quads; i > 0; --i) {
@@ -72,7 +72,7 @@ DsdToDopConverter::Open(unsigned _channels) noexcept
 }
 
 std::span<const uint32_t>
-DsdToDopConverter::Convert(std::span<const uint8_t> src) noexcept
+DsdToDopConverter::Convert(std::span<const std::byte> src) noexcept
 {
 	return rest_buffer.Process<uint32_t>(buffer, src, 2 * channels,
 					     [this](auto && arg1, auto && arg2, auto && arg3) { return DsdToDop(arg1, arg2, arg3, channels); });

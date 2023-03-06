@@ -258,15 +258,15 @@ PcmExport::Export(std::span<const std::byte> data) noexcept
 		break;
 
 	case DsdMode::U16:
-		data = std::as_bytes(dsd16_converter.Convert(FromBytesStrict<const uint8_t>(data)));
+		data = std::as_bytes(dsd16_converter.Convert(data));
 		break;
 
 	case DsdMode::U32:
-		data = std::as_bytes(dsd32_converter.Convert(FromBytesStrict<const uint8_t>(data)));
+		data = std::as_bytes(dsd32_converter.Convert(data));
 		break;
 
 	case DsdMode::DOP:
-		data = std::as_bytes(dop_converter.Convert(FromBytesStrict<const uint8_t>(data)));
+		data = std::as_bytes(dop_converter.Convert(data));
 		break;
 	}
 #endif

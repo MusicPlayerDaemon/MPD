@@ -143,7 +143,7 @@ struct SampleTraits<SampleFormat::FLOAT> {
 
 template<>
 struct SampleTraits<SampleFormat::DSD> {
-	typedef uint8_t value_type;
+	typedef std::byte value_type;
 	typedef value_type *pointer;
 	typedef const value_type *const_pointer;
 
@@ -154,5 +154,5 @@ struct SampleTraits<SampleFormat::DSD> {
 	 * and a high energy 1.0584 MHz tone which should be filtered
 	 * out completely by any playback system --> silence
 	 */
-	static constexpr value_type SILENCE = 0x69;
+	static constexpr value_type SILENCE{0x69};
 };

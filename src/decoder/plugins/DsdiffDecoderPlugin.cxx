@@ -335,10 +335,10 @@ dsdiff_read_metadata(DecoderClient *client, InputStream &is,
 }
 
 static void
-bit_reverse_buffer(uint8_t *p, uint8_t *end)
+bit_reverse_buffer(std::byte *p, std::byte *end)
 {
 	for (; p < end; ++p)
-		*p = bit_reverse(*p);
+		*p = BitReverse(*p);
 }
 
 static offset_type
@@ -358,7 +358,7 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 	const unsigned kbit_rate = channels * sample_rate / 1000;
 	const offset_type start_offset = is.GetOffset();
 
-	uint8_t buffer[8192];
+	std::byte buffer[8192];
 
 	const size_t sample_size = sizeof(buffer[0]);
 	const size_t frame_size = channels * sample_size;

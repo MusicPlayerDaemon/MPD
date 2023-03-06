@@ -7,7 +7,7 @@
  * Construct a 16 bit integer from two bytes.
  */
 static constexpr uint16_t
-Construct16(uint8_t a, uint8_t b) noexcept
+Construct16(std::byte a, std::byte b) noexcept
 {
 	/* "a" is the oldest byte, which must be in the most
 	   significant byte */
@@ -16,13 +16,13 @@ Construct16(uint8_t a, uint8_t b) noexcept
 }
 
 static constexpr uint16_t
-Dsd8To16Sample(const uint8_t *src, unsigned channels) noexcept
+Dsd8To16Sample(const std::byte *src, unsigned channels) noexcept
 {
 	return Construct16(src[0], src[channels]);
 }
 
 static void
-Dsd8To16(uint16_t *dest, const uint8_t *src,
+Dsd8To16(uint16_t *dest, const std::byte *src,
 	 size_t out_frames, unsigned channels) noexcept
 {
 	for (size_t i = 0; i < out_frames; ++i) {
@@ -42,7 +42,7 @@ Dsd16Converter::Open(unsigned _channels) noexcept
 }
 
 std::span<const uint16_t>
-Dsd16Converter::Convert(std::span<const uint8_t> src) noexcept
+Dsd16Converter::Convert(std::span<const std::byte> src) noexcept
 {
 	return rest_buffer.Process<uint16_t>(buffer, src, channels,
 					     [this](auto && arg1, auto && arg2, auto && arg3) { return Dsd8To16(arg1, arg2, arg3, channels); });

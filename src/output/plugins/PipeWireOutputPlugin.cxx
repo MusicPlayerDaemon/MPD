@@ -709,16 +709,10 @@ Interleave(std::byte *data, std::byte *end,
 }
 
 static void
-BitReverse(uint8_t *data, std::size_t n) noexcept
-{
-	while (n-- > 0)
-		*data = bit_reverse(*data);
-}
-
-static void
 BitReverse(std::byte *data, std::size_t n) noexcept
 {
-	BitReverse((uint8_t *)data, n);
+	while (n-- > 0)
+		*data = BitReverse(*data);
 }
 
 static void

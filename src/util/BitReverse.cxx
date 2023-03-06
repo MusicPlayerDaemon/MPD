@@ -8,7 +8,7 @@ GenerateBitReverseTable() noexcept
 {
 	BitReverseTable table{};
 	for (unsigned i = 0; i < 256; ++i)
-		table.data[i] = BitReverseMultiplyModulus(i);
+		table.data[i] = BitReverseMultiplyModulus(static_cast<std::byte>(i));
 	return table;
 }
 

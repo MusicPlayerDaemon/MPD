@@ -100,10 +100,9 @@ PcmConvert::Convert(std::span<const std::byte> buffer)
 {
 #ifdef ENABLE_DSD
 	if (src_format.format == SampleFormat::DSD) {
-		auto s = FromBytesStrict<const uint8_t>(buffer);
 		auto d = dsd2pcm_float
-			? std::as_bytes(dsd.ToFloat(src_format.channels, s))
-			: std::as_bytes(dsd.ToS24(src_format.channels, s));
+			? std::as_bytes(dsd.ToFloat(src_format.channels, buffer))
+			: std::as_bytes(dsd.ToS24(src_format.channels, buffer));
 		if (d.data() == nullptr)
 			throw std::runtime_error("DSD to PCM conversion failed");
 

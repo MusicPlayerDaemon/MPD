@@ -7,7 +7,7 @@
 #include <cassert>
 
 std::span<const float>
-PcmDsd::ToFloat(unsigned channels, std::span<const uint8_t> src) noexcept
+PcmDsd::ToFloat(unsigned channels, std::span<const std::byte> src) noexcept
 {
 	assert(!src.empty());
 	assert(src.size() % channels == 0);
@@ -22,7 +22,7 @@ PcmDsd::ToFloat(unsigned channels, std::span<const uint8_t> src) noexcept
 }
 
 std::span<const int32_t>
-PcmDsd::ToS24(unsigned channels, std::span<const uint8_t> src) noexcept
+PcmDsd::ToS24(unsigned channels, std::span<const std::byte> src) noexcept
 {
 	assert(!src.empty());
 	assert(src.size() % channels == 0);

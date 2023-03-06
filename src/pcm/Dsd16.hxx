@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PCM_DSD_16_HXX
-#define MPD_PCM_DSD_16_HXX
+#pragma once
 
 #include "Buffer.hxx"
 #include "RestBuffer.hxx"
@@ -18,7 +17,7 @@ class Dsd16Converter {
 
 	PcmBuffer buffer;
 
-	PcmRestBuffer<uint8_t, 2> rest_buffer;
+	PcmRestBuffer<std::byte, 2> rest_buffer;
 
 public:
 	void Open(unsigned _channels) noexcept;
@@ -41,7 +40,5 @@ public:
 		return GetInputBlockSize();
 	}
 
-	std::span<const uint16_t> Convert(std::span<const uint8_t> src) noexcept;
+	std::span<const uint16_t> Convert(std::span<const std::byte> src) noexcept;
 };
-
-#endif
