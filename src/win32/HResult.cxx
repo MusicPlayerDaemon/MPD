@@ -8,8 +8,9 @@
 
 #include "HResult.hxx"
 
+#include <fmt/core.h>
+
 #include <cassert>
-#include <cstdio>
 
 #include <combaseapi.h> // needed by audiopolicy.h if COM_NO_WINDOWS_H is defined
 #include <audiopolicy.h>
@@ -69,7 +70,5 @@ HResultCategory::message(int Errcode) const
 	if (!msg.empty())
 		return std::string(msg);
 
-	int size = snprintf(buffer, sizeof(buffer), "0x%1x", Errcode);
-	assert(2 <= size && size <= 10);
-	return std::string(buffer, size);
+	return fmt::format("{:#x}", Errcode);
 }

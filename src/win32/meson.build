@@ -10,6 +10,9 @@ win32 = static_library(
   'PropVariant.cxx',
   'WinEvent.cxx',
   include_directories: inc,
+  dependencies: [
+    fmt_dep,
+  ],
 )
 
 win32_dep = declare_dependency(
