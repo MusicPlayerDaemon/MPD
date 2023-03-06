@@ -352,12 +352,16 @@ ParseCommandLine(int argc, char **argv, CommandLineOptions &options,
 			break;
 
 		case OPTION_NO_DAEMON:
+#ifdef ENABLE_DAEMON
 			options.daemon = false;
+#endif
 			break;
 
 #ifdef __linux__
 		case OPTION_SYSTEMD:
+#ifdef ENABLE_DAEMON
 			options.daemon = false;
+#endif
 			options.systemd = true;
 			break;
 #endif
