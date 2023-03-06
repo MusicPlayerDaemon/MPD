@@ -64,17 +64,8 @@ Square(double x) noexcept
 static double
 SquareHypot(ReplayGainAnalyzer::Frame f) noexcept
 {
-#if GCC_OLDER_THAN(10,0)
-	/* GCC 8 doesn't have std::transform_reduce() */
-	double sum = 0;
-	for (const auto &i : f)
-		sum += Square(i);
-	return sum;
-#else
-	/* proper C++17 */
 	return std::transform_reduce(f.begin(), f.end(), 0.,
 				     std::plus<double>{}, Square);
-#endif
 }
 
 /*
@@ -86,18 +77,11 @@ SquareHypot(ReplayGainAnalyzer::Frame f) noexcept
 static double
 CalcStereoRMS(std::span<const ReplayGainAnalyzer::Frame> src) noexcept
 {
-#if GCC_OLDER_THAN(10,0)
-	/* GCC 8 doesn't have std::transform_reduce() */
-	double sum = 0;
-	for (const auto &i : src)
-		sum += SquareHypot(i);
-#else
 	/* proper C++17 */
 	double sum = std::transform_reduce(src.begin(), src.end(),
 					   1e-16,
 					   std::plus<double>{},
 					   SquareHypot);
-#endif
 
 	return 10 * std::log10(sum / src.size()) + 90.0 - 3.0;
 }
@@ -287,16 +271,8 @@ template<std::size_t size>
 static float
 FindHistogramPercentile95(const std::array<uint_least32_t, size> &histogram) noexcept
 {
-#if GCC_OLDER_THAN(10,0)
-	/* GCC 8 doesn't have std::reduce() */
-	uint_fast32_t total_windows = 0;
-	for (const auto &i : histogram)
-		total_windows += i;
-#else
-	/* proper C++17 */
 	const uint_fast32_t total_windows =
 		std::reduce(histogram.begin(), histogram.end());
-#endif
 
 	uint_fast32_t loud_count = 0;
 	std::size_t i = histogram.size();
