@@ -272,38 +272,38 @@ Latin1ToUTF8(const char *gcc_restrict src, char *gcc_restrict buffer,
 char *
 UnicodeToUTF8(unsigned ch, char *q) noexcept
 {
-  if (gcc_likely(ch < 0x80)) {
-    *q++ = (char)ch;
-  } else if (gcc_likely(ch < 0x800)) {
-    *q++ = MakeLeading1(ch >> 6);
-    *q++ = MakeContinuation(ch);
-  } else if (ch < 0x10000) {
-    *q++ = MakeLeading2(ch >> 12);
-    *q++ = MakeContinuation(ch >> 6);
-    *q++ = MakeContinuation(ch);
-  } else if (ch < 0x200000) {
-    *q++ = MakeLeading3(ch >> 18);
-    *q++ = MakeContinuation(ch >> 12);
-    *q++ = MakeContinuation(ch >> 6);
-    *q++ = MakeContinuation(ch);
-  } else if (ch < 0x4000000) {
-    *q++ = MakeLeading4(ch >> 24);
-    *q++ = MakeContinuation(ch >> 18);
-    *q++ = MakeContinuation(ch >> 12);
-    *q++ = MakeContinuation(ch >> 6);
-    *q++ = MakeContinuation(ch);
-  } else if (ch < 0x80000000) {
-    *q++ = MakeLeading5(ch >> 30);
-    *q++ = MakeContinuation(ch >> 24);
-    *q++ = MakeContinuation(ch >> 18);
-    *q++ = MakeContinuation(ch >> 12);
-    *q++ = MakeContinuation(ch >> 6);
-    *q++ = MakeContinuation(ch);
-  } else {
-    // error
-  }
+	if (gcc_likely(ch < 0x80)) {
+		*q++ = (char)ch;
+	} else if (gcc_likely(ch < 0x800)) {
+		*q++ = MakeLeading1(ch >> 6);
+		*q++ = MakeContinuation(ch);
+	} else if (ch < 0x10000) {
+		*q++ = MakeLeading2(ch >> 12);
+		*q++ = MakeContinuation(ch >> 6);
+		*q++ = MakeContinuation(ch);
+	} else if (ch < 0x200000) {
+		*q++ = MakeLeading3(ch >> 18);
+		*q++ = MakeContinuation(ch >> 12);
+		*q++ = MakeContinuation(ch >> 6);
+		*q++ = MakeContinuation(ch);
+	} else if (ch < 0x4000000) {
+		*q++ = MakeLeading4(ch >> 24);
+		*q++ = MakeContinuation(ch >> 18);
+		*q++ = MakeContinuation(ch >> 12);
+		*q++ = MakeContinuation(ch >> 6);
+		*q++ = MakeContinuation(ch);
+	} else if (ch < 0x80000000) {
+		*q++ = MakeLeading5(ch >> 30);
+		*q++ = MakeContinuation(ch >> 24);
+		*q++ = MakeContinuation(ch >> 18);
+		*q++ = MakeContinuation(ch >> 12);
+		*q++ = MakeContinuation(ch >> 6);
+		*q++ = MakeContinuation(ch);
+	} else {
+		// error
+	}
 
-  return q;
+	return q;
 }
 
 std::size_t
