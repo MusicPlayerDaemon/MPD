@@ -939,26 +939,25 @@ PipeWireOutput::SendTag(const Tag &tag)
 {
 	CheckThrowError();
 
-	struct spa_dict_item items[3];
-	uint32_t n_items=0;
+	static constexpr struct {
+		TagType mpd;
+		const char *pipewire;
+	} tag_map[] = {
+		{ TAG_ARTIST, PW_KEY_MEDIA_ARTIST },
+		{ TAG_TITLE, PW_KEY_MEDIA_TITLE },
+	};
 
-	const char *artist, *title;
+	struct spa_dict_item items[1 + std::size(tag_map)];
+	uint32_t n_items=0;
 
 	char *medianame = FormatTag(tag, "%artist% - %title%");
 	AtScopeExit(medianame) { free(medianame); };
 
 	items[n_items++] = SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_NAME, medianame);
 
-	artist = tag.GetValue(TAG_ARTIST);
-	title = tag.GetValue(TAG_TITLE);
-
-	if (artist != nullptr) {
-		items[n_items++] = SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_ARTIST, artist);
-	}
-
-	if (title != nullptr) {
-		items[n_items++] = SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_TITLE, title);
-	}
+	for (const auto &i : tag_map)
+		if (const char *value = tag.GetValue(i.mpd))
+			items[n_items++] = SPA_DICT_ITEM_INIT(i.pipewire, value);
 
 	struct spa_dict dict = SPA_DICT_INIT(items, n_items);
 
