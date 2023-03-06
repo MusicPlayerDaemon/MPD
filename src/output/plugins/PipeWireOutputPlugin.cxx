@@ -963,6 +963,8 @@ PipeWireOutput::SendTag(const Tag &tag)
 
 	struct spa_dict dict = SPA_DICT_INIT(items.data(), (uint32_t)items.size());
 
+	const PipeWire::ThreadLoopLock lock(thread_loop);
+
 	auto rc = pw_stream_update_properties(stream, &dict);
 	if (rc < 0)
 		LogWarning(pipewire_output_domain, "Error updating properties");

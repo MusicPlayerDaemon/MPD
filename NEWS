@@ -23,6 +23,7 @@ ver 0.24 (not yet released)
 * tags
   - new tags "TitleSort", "Mood"
 * output
+  - pipewire: fix corruption bug due to missing lock
   - pipewire: map tags "Date" and "Comment"
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
