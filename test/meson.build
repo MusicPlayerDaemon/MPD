@@ -147,6 +147,7 @@ executable(
   include_directories: inc,
   dependencies: [
     fs_dep,
+    io_dep,
   ],
 )
 
