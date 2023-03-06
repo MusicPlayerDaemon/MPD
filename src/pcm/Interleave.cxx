@@ -6,8 +6,8 @@
 #include <string.h>
 
 static void
-GenericPcmInterleave(uint8_t *gcc_restrict dest,
-		     std::span<const uint8_t *const> src,
+GenericPcmInterleave(std::byte *gcc_restrict dest,
+		     std::span<const std::byte *const> src,
 		     size_t n_frames, size_t sample_size) noexcept
 {
 	for (size_t frame = 0; frame < n_frames; ++frame) {
@@ -88,8 +88,8 @@ PcmInterleave(void *gcc_restrict dest,
 		break;
 
 	default:
-		GenericPcmInterleave((uint8_t *)dest,
-				     {(const uint8_t *const*)src.data(), src.size()},
+		GenericPcmInterleave((std::byte *)dest,
+				     {(const std::byte *const*)src.data(), src.size()},
 				     n_frames, sample_size);
 	}
 }
