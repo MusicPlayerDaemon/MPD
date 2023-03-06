@@ -27,21 +27,6 @@
 	 GCC_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
 
 /**
- * Are we building with clang (any version) or at least the specified
- * gcc version?
- */
-#define CLANG_OR_GCC_VERSION(major, minor) \
-	(CLANG_VERSION > 0 || GCC_CHECK_VERSION(major, minor))
-
-/**
- * Are we building with gcc (not clang or any other compiler) and a
- * version older than the specified one?
- */
-#define GCC_OLDER_THAN(major, minor) \
-	(GCC_VERSION > 0 && CLANG_VERSION == 0 && \
-	 GCC_VERSION < GCC_MAKE_VERSION(major, minor, 0))
-
-/**
  * Are we building with the specified version of clang or newer?
  */
 #define CLANG_CHECK_VERSION(major, minor) \
