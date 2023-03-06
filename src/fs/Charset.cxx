@@ -28,6 +28,7 @@ SetFSCharset(const char *charset)
 	assert(charset != nullptr);
 	assert(fs_converter == nullptr);
 
+	fs_charset = charset;
 	fs_converter = IcuConverter::Create(charset);
 	assert(fs_converter != nullptr);
 }
