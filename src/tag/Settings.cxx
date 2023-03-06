@@ -2,6 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "Settings.hxx"
-#include "Type.h"
+#include "Type.hxx"
 
 TagMask global_tag_mask = TagMask::All() & ~TagMask(TAG_COMMENT);

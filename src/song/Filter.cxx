@@ -12,7 +12,7 @@
 #include "PrioritySongFilter.hxx"
 #include "pcm/AudioParser.hxx"
 #include "tag/ParseName.hxx"
-#include "tag/Type.h"
+#include "tag/Type.hxx"
 #include "time/ISO8601.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/CharUtil.hxx"

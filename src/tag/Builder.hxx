@@ -4,7 +4,7 @@
 #ifndef MPD_TAG_BUILDER_HXX
 #define MPD_TAG_BUILDER_HXX
 
-#include "Type.h"
+#include "Type.hxx"
 #include "Chrono.hxx"
 
 #include <memory>

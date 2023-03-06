@@ -5,6 +5,7 @@
 #define MPD_TAG_PARSE_NAME_HXX
 
 #include <cstdint>
+
 #include <string_view>
 
 enum TagType : uint8_t;

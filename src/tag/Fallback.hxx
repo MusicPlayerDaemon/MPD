@@ -4,7 +4,7 @@
 #ifndef MPD_TAG_FALLBACK_HXX
 #define MPD_TAG_FALLBACK_HXX
 
-#include "Type.h"
+#include "Type.hxx"
 
 #include <utility>
 

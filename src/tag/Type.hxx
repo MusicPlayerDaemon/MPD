@@ -1,24 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_TAG_TYPE_H
-#define MPD_TAG_TYPE_H
+#pragma once
 
-#ifdef __cplusplus
 #include <cstdint>
-#endif
 
 /**
  * Codes for the type of a tag item.
  */
-enum TagType
-#ifdef __cplusplus
-/* the size of this enum is 1 byte; this is only relevant for C++
-   code; the only C sources including this header don't use instances
-   of this enum, they only refer to the integer values */
-: uint8_t
-#endif
-	{
+enum TagType : uint8_t {
 	TAG_ARTIST,
 	TAG_ARTIST_SORT,
 	TAG_ALBUM,
@@ -56,5 +46,3 @@ enum TagType
 
 	TAG_NUM_OF_ITEM_TYPES
 };
-
-#endif

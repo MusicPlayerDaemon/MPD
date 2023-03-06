@@ -4,7 +4,7 @@
 #ifndef MPD_TAG_TABLE_HXX
 #define MPD_TAG_TABLE_HXX
 
-#include "Type.h"
+#include "Type.hxx"
 
 #include <string_view>
 

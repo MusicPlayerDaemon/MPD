@@ -4,7 +4,7 @@
 #ifndef MPD_TAG_HXX
 #define MPD_TAG_HXX
 
-#include "Type.h" // IWYU pragma: export
+#include "Type.hxx" // IWYU pragma: export
 #include "Item.hxx" // IWYU pragma: export
 #include "Chrono.hxx"
 #include "util/DereferenceIterator.hxx"

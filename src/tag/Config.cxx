@@ -4,7 +4,7 @@
 #include "Config.hxx"
 #include "Settings.hxx"
 #include "ParseName.hxx"
-#include "Type.h"
+#include "Type.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "lib/fmt/RuntimeError.hxx"

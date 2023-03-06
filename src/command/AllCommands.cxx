@@ -20,7 +20,7 @@
 #include "FingerprintCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
-#include "tag/Type.h"
+#include "tag/Type.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "client/Client.hxx"

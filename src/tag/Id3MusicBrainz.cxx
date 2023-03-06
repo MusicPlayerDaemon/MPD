@@ -3,7 +3,7 @@
 
 #include "Id3MusicBrainz.hxx"
 #include "Table.hxx"
-#include "Type.h"
+#include "Type.hxx"
 
 const struct tag_table musicbrainz_txxx_tags[] = {
 	{ "ALBUMARTISTSORT", TAG_ALBUM_ARTIST_SORT },

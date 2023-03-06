@@ -4,7 +4,7 @@
 #pragma once
 
 #include "protocol/RangeArg.hxx"
-#include "tag/Type.h"
+#include "tag/Type.hxx"
 
 struct Queue;
 class SongFilter;

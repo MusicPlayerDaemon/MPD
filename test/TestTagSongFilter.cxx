@@ -4,7 +4,7 @@
 #include "MakeTag.hxx"
 #include "song/TagSongFilter.hxx"
 #include "song/LightSong.hxx"
-#include "tag/Type.h"
+#include "tag/Type.hxx"
 #include "lib/icu/Init.hxx"
 
 #include <gtest/gtest.h>

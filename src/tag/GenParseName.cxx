@@ -31,7 +31,7 @@ main(int argc, char **argv)
 
 	fprintf(out,
 		"#include \"ParseName.hxx\"\n"
-		"#include \"Type.h\"\n"
+		"#include \"Type.hxx\"\n"
 		"\n"
 		"#include <assert.h>\n"
 		"#include <string.h>\n"

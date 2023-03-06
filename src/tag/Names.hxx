@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Type.h"
+#include "Type.hxx"
 
 #include <array>
 

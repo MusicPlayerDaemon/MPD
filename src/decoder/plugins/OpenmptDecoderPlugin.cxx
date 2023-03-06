@@ -7,7 +7,7 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Handler.hxx"
-#include "tag/Type.h"
+#include "tag/Type.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
