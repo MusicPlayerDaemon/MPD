@@ -157,8 +157,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-5.1.2.tar.xz',
-    '619e706d662c8420859832ddc259cd4d4096a48a2ce1eefd052db9e440eef3dc',
+    'http://ffmpeg.org/releases/ffmpeg-6.0.tar.xz',
+    '57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -583,6 +583,7 @@ ffmpeg = FfmpegProject(
         '--disable-bsf=av1_frame_merge',
         '--disable-bsf=av1_frame_split',
         '--disable-bsf=av1_metadata',
+        '--disable-bsf=dts2pts',
         '--disable-bsf=h264_metadata',
         '--disable-bsf=h264_mp4toannexb',
         '--disable-bsf=h264_redundant_pps',
