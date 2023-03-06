@@ -4,8 +4,7 @@
 
 #include "UniqueRegex.hxx"
 #include "Error.hxx"
-
-#include <stdio.h>
+#include "lib/fmt/ToBuffer.hxx"
 
 void
 UniqueRegex::Compile(const char *pattern, bool anchored, bool capture,
@@ -28,9 +27,8 @@ UniqueRegex::Compile(const char *pattern, bool anchored, bool capture,
 			     &error_number, &error_offset,
 			     nullptr);
 	if (re == nullptr) {
-		char msg[256];
-		snprintf(msg, sizeof(msg), "Error in regex at offset %zu",
-			 error_offset);
+		const auto msg = FmtBuffer<256>("Error in regex at offset {}",
+						error_offset);
 		throw Pcre::MakeError(error_number, msg);
 	}
 
