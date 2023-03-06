@@ -4,7 +4,6 @@
 #include "Charset.hxx"
 #include "Features.hxx"
 #include "Domain.hxx"
-#include "Log.hxx"
 #include "lib/icu/Converter.hxx"
 #include "util/AllocatedString.hxx"
 #include "config.h"
@@ -31,9 +30,6 @@ SetFSCharset(const char *charset)
 
 	fs_converter = IcuConverter::Create(charset);
 	assert(fs_converter != nullptr);
-
-	FmtDebug(path_domain,
-		 "SetFSCharset: fs charset is {}", fs_charset);
 }
 
 #endif
