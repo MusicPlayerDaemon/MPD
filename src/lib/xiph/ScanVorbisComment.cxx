@@ -3,6 +3,7 @@
 
 #include "ScanVorbisComment.hxx"
 #include "XiphTags.hxx"
+#include "tag/Names.hxx"
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
 #include "tag/VorbisComment.hxx"

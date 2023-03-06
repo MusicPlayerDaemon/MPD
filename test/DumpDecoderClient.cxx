@@ -4,6 +4,7 @@
 #include "DumpDecoderClient.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
+#include "tag/Names.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/Compiler.h"
 

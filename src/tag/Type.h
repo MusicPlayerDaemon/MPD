@@ -57,10 +57,4 @@ enum TagType
 	TAG_NUM_OF_ITEM_TYPES
 };
 
-/**
- * An array of strings, which map the #TagType to its machine
- * readable name (specific to the MPD protocol).
- */
-extern const char *const tag_item_names[];
-
 #endif

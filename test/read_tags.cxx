@@ -10,6 +10,7 @@
 #include "input/InputStream.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
+#include "tag/Names.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "pcm/AudioFormat.hxx"

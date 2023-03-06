@@ -1,7 +1,7 @@
 generate_parse_name = executable(
   'GenParseName',
   'GenParseName.cxx',
-  'Names.c',
+  'Names.cxx',
   native: true,
 )
 
@@ -22,7 +22,7 @@ tag_sources = [
   'Config.cxx',
   'ParseName.cxx',
   parse_name_cxx,
-  'Names.c',
+  'Names.cxx',
   'FixString.cxx',
   'Pool.cxx',
   'Table.cxx',

@@ -4,6 +4,7 @@
 #include "TagSongFilter.hxx"
 #include "Escape.hxx"
 #include "LightSong.hxx"
+#include "tag/Names.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Fallback.hxx"
 

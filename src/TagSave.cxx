@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "TagSave.hxx"
+#include "tag/Names.hxx"
 #include "tag/Tag.hxx"
 #include "io/BufferedOutputStream.hxx"
 

@@ -5,6 +5,7 @@
 #include "OggEncoder.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/xiph/VorbisComment.hxx"
+#include "tag/Names.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "config/Domain.hxx"
 #include "util/StringUtil.hxx"

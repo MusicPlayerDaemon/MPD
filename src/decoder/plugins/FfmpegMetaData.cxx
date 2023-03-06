@@ -5,6 +5,7 @@
 #define __STDC_CONSTANT_MACROS
 
 #include "FfmpegMetaData.hxx"
+#include "tag/Names.hxx"
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Id3MusicBrainz.hxx"

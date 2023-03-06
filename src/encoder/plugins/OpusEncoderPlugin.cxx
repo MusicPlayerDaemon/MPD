@@ -3,6 +3,7 @@
 
 #include "OpusEncoderPlugin.hxx"
 #include "OggEncoder.hxx"
+#include "tag/Names.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/StringUtil.hxx"

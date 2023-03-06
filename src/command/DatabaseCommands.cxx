@@ -13,6 +13,7 @@
 #include "protocol/RangeArg.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
+#include "tag/Names.hxx"
 #include "tag/ParseName.hxx"
 #include "util/Exception.hxx"
 #include "util/StringAPI.hxx"

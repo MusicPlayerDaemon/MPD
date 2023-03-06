@@ -3,6 +3,7 @@
 
 #include "FlacEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
+#include "tag/Names.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Buffer.hxx"
 #include "lib/fmt/RuntimeError.hxx"

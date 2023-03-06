@@ -7,6 +7,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "io/LineReader.hxx"
+#include "tag/Names.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Settings.hxx"
 #include "fs/Charset.hxx"

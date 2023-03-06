@@ -8,6 +8,7 @@
 #include "SongLoader.hxx"
 #include "client/Client.hxx"
 #include "tag/Builder.hxx"
+#include "tag/Names.hxx"
 #include "tag/Tag.hxx"
 #include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"

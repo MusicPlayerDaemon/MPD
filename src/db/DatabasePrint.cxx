@@ -8,6 +8,7 @@
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "song/LightSong.hxx"
+#include "tag/Names.hxx"
 #include "tag/Tag.hxx"
 #include "LightDirectory.hxx"
 #include "PlaylistInfo.hxx"

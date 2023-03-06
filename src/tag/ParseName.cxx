@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "ParseName.hxx"
+#include "Names.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
 
