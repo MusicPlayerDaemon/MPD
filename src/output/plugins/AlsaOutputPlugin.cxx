@@ -908,9 +908,8 @@ AlsaOutput::Recover(int err) noexcept
 		if (err == -EAGAIN)
 			return 0;
 		/* fall-through to snd_pcm_prepare: */
-#if CLANG_OR_GCC_VERSION(7,0)
 		[[fallthrough]];
-#endif
+
 	case SND_PCM_STATE_OPEN:
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:

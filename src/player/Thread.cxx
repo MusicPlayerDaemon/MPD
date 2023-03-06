@@ -30,7 +30,6 @@
 #include "CrossFade.hxx"
 #include "pcm/MixRampGlue.hxx"
 #include "tag/Tag.hxx"
-#include "util/Compiler.h"
 #include "util/Domain.hxx"
 #include "thread/Name.hxx"
 #include "Log.hxx"
@@ -1279,9 +1278,7 @@ try {
 			}
 
 			/* fall through */
-#if CLANG_OR_GCC_VERSION(7,0)
 			[[fallthrough]];
-#endif
 
 		case PlayerCommand::PAUSE:
 			next_song.reset();
