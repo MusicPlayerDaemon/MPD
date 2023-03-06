@@ -13,9 +13,10 @@
 #include <avahi-common/malloc.h>
 #include <avahi-common/alternative.h>
 
+#include <fmt/core.h>
+
 #include <cassert>
 
-#include <stdio.h>
 #include <unistd.h>
 
 namespace Avahi {
@@ -31,11 +32,9 @@ namespace Avahi {
  * AVAHI_BROWSER_NEW.
  */
 static std::string
-MakePidName(const char *prefix)
+MakePidName(const char *prefix) noexcept
 {
-	char buffer[256];
-	snprintf(buffer, sizeof(buffer), "%s[%u]", prefix, (unsigned)getpid());
-	return buffer;
+	return fmt::format("{}[{}]", prefix, getpid());
 }
 
 Publisher::Publisher(Client &_client, const char *_name,
