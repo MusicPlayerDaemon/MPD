@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PCM_TRAITS_HXX
-#define MPD_PCM_TRAITS_HXX
+#pragma once
 
 #include "SampleFormat.hxx"
 
@@ -150,7 +149,10 @@ struct SampleTraits<SampleFormat::DSD> {
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 
+	/* 0x69 = 01101001
+	 * This pattern "on repeat" makes a low energy 352.8 kHz tone
+	 * and a high energy 1.0584 MHz tone which should be filtered
+	 * out completely by any playback system --> silence
+	 */
 	static constexpr value_type SILENCE = 0x69;
 };
-
-#endif

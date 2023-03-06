@@ -172,14 +172,9 @@ void
 Dsd2Pcm::Reset() noexcept
 {
 	/* my favorite silence pattern */
-	fifo.fill(0x69);
+	fifo.fill(SampleTraits<SampleFormat::DSD>::SILENCE);
 
 	fifopos = 0;
-	/* 0x69 = 01101001
-	 * This pattern "on repeat" makes a low energy 352.8 kHz tone
-	 * and a high energy 1.0584 MHz tone which should be filtered
-	 * out completely by any playback system --> silence
-	 */
 }
 
 inline void
