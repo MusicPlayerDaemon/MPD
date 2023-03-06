@@ -30,6 +30,7 @@
 #include "util/Domain.hxx"
 #include "util/RingBuffer.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StaticVector.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 #include "tag/Format.hxx"
@@ -949,19 +950,18 @@ PipeWireOutput::SendTag(const Tag &tag)
 		{ TAG_COMMENT, PW_KEY_MEDIA_COMMENT },
 	};
 
-	struct spa_dict_item items[1 + std::size(tag_map)];
-	uint32_t n_items=0;
+	StaticVector<spa_dict_item, 1 + std::size(tag_map)> items;
 
 	char *medianame = FormatTag(tag, "%artist% - %title%");
 	AtScopeExit(medianame) { free(medianame); };
 
-	items[n_items++] = SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_NAME, medianame);
+	items.push_back(SPA_DICT_ITEM_INIT(PW_KEY_MEDIA_NAME, medianame));
 
 	for (const auto &i : tag_map)
 		if (const char *value = tag.GetValue(i.mpd))
-			items[n_items++] = SPA_DICT_ITEM_INIT(i.pipewire, value);
+			items.push_back(SPA_DICT_ITEM_INIT(i.pipewire, value));
 
-	struct spa_dict dict = SPA_DICT_INIT(items, n_items);
+	struct spa_dict dict = SPA_DICT_INIT(items.data(), (uint32_t)items.size());
 
 	auto rc = pw_stream_update_properties(stream, &dict);
 	if (rc < 0)
