@@ -19,8 +19,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include <stdio.h>
-
 class ShoutConfig {
 	const char *const host;
 	const char *const mount;
@@ -417,15 +415,15 @@ ShoutOutput::Pause()
 	return true;
 }
 
-static void
-shout_tag_to_metadata(const Tag &tag, char *dest, size_t size) noexcept
+static std::string
+shout_tag_to_metadata(const Tag &tag) noexcept
 {
 	const char *artist = tag.GetValue(TAG_ARTIST);
 	const char *title = tag.GetValue(TAG_TITLE);
 
-	snprintf(dest, size, "%s - %s",
-		 artist != nullptr ? artist : "",
-		 title != nullptr ? title : "");
+	return fmt::format("{} - {}",
+			   artist != nullptr ? artist : "",
+			   title != nullptr ? title : "");
 }
 
 void
@@ -443,10 +441,9 @@ ShoutOutput::SendTag(const Tag &tag)
 		const auto meta = shout_metadata_new();
 		AtScopeExit(meta) { shout_metadata_free(meta); };
 
-		char song[1024];
-		shout_tag_to_metadata(tag, song, sizeof(song));
+		const auto song = shout_tag_to_metadata(tag);
 
-		if (SHOUTERR_SUCCESS != shout_metadata_add(meta, "song", song) ||
+		if (SHOUTERR_SUCCESS != shout_metadata_add(meta, "song", song.c_str()) ||
 #ifdef SHOUT_FORMAT_TEXT
 		    /* since libshout 2.4.6 */
 		    SHOUTERR_SUCCESS != shout_set_metadata_utf8(shout_conn, meta)
