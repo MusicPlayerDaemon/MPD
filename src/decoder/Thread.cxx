@@ -148,7 +148,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	return bridge.dc.state != DecoderState::START;
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 decoder_check_plugin_mime(const DecoderPlugin &plugin,
 			  const InputStream &is) noexcept
@@ -160,7 +160,7 @@ decoder_check_plugin_mime(const DecoderPlugin &plugin,
 		plugin.SupportsMimeType(GetMimeTypeBase(mime_type));
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 decoder_check_plugin_suffix(const DecoderPlugin &plugin,
 			    std::string_view suffix) noexcept
@@ -170,7 +170,7 @@ decoder_check_plugin_suffix(const DecoderPlugin &plugin,
 	return !suffix.empty() && plugin.SupportsSuffix(suffix);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 decoder_check_plugin(const DecoderPlugin &plugin, const InputStream &is,
 		     std::string_view suffix) noexcept
@@ -449,7 +449,7 @@ try {
  * are only kept as a cache to be displayed by the client; they shall
  * not be sent to the output.
  */
-gcc_pure
+[[gnu::pure]]
 static bool
 SongHasVolatileTags(const DetachedSong &song) noexcept
 {

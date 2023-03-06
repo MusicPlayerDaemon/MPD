@@ -5,7 +5,7 @@
 #include "FileInfo.hxx"
 #include "system/Error.hxx"
 
-gcc_pure
+[[gnu::pure]]
 static PathTraitsFS::pointer
 FindSlash(PathTraitsFS::pointer p, size_t i) noexcept
 {

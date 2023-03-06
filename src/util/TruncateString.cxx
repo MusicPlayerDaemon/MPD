@@ -2,6 +2,7 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "TruncateString.hxx"
+#include "Compiler.h"
 
 #include <algorithm>
 

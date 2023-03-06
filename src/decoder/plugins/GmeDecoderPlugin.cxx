@@ -61,7 +61,7 @@ gme_plugin_init([[maybe_unused]] const ConfigBlock &block)
 	return true;
 }
 
-gcc_pure
+[[gnu::pure]]
 static unsigned
 ParseSubtuneName(const char *base) noexcept
 {

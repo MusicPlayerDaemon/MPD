@@ -2,7 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "Serial.hxx"
-#include "Compiler.h"
 
 #include <atomic>
 #include <chrono>
@@ -13,7 +12,7 @@ int
 GenerateSerial() noexcept
 {
 	unsigned serial = ++next_serial;
-	if (gcc_unlikely(serial < 16)) {
+	if (serial < 16) [[unlikely]] {
 		/* first-time initialization: seed with a clock value,
 		   which is random enough for our use */
 

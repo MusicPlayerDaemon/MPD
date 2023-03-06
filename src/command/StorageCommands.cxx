@@ -22,7 +22,7 @@
 
 #include <memory>
 
-gcc_pure
+[[gnu::pure]]
 static bool
 skip_path(const char *name_utf8) noexcept
 {

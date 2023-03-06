@@ -4,8 +4,6 @@
 #ifndef MPD_PCM_RESAMPLER_HXX
 #define MPD_PCM_RESAMPLER_HXX
 
-#include "util/Compiler.h"
-
 #include <cstddef>
 #include <span>
 

@@ -228,7 +228,7 @@ AlsaMixer::~AlsaMixer()
 	snd_config_update_free_global();
 }
 
-gcc_pure
+[[gnu::pure]]
 static snd_mixer_elem_t *
 alsa_mixer_lookup_elem(snd_mixer_t *handle,
 		       const char *name, unsigned idx) noexcept

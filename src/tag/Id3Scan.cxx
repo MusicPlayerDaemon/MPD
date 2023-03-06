@@ -55,7 +55,7 @@
 #define ID3_FRAME_MOOD "TMOO"
 #endif
 
-gcc_pure
+[[gnu::pure]]
 static Id3String
 tag_id3_getstring(const struct id3_frame *frame, unsigned i) noexcept
 {
@@ -186,7 +186,7 @@ tag_id3_import_comment(const struct id3_tag *tag, const char *id, TagType type,
  * Parse a TXXX name, and convert it to a TagType enum value.
  * Returns TAG_NUM_OF_ITEM_TYPES if the TXXX name is not understood.
  */
-gcc_pure
+[[gnu::pure]]
 static TagType
 tag_id3_parse_txxx_name(const char *name) noexcept
 {

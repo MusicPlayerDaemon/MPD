@@ -4,8 +4,6 @@
 #ifndef STRING_UTIL_HXX
 #define STRING_UTIL_HXX
 
-#include "Compiler.h"
-
 #include <cstddef>
 #include <string_view>
 
@@ -17,7 +15,7 @@
  * case-insensitive for ASCII characters
  * @return true if found
  */
-gcc_pure
+[[gnu::pure]]
 bool
 StringArrayContainsCase(const char *const*haystack,
 			std::string_view needle) noexcept;

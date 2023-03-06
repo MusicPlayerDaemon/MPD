@@ -203,7 +203,7 @@ ParseU64(const char *s, size_t length) noexcept
 	return ParseU64(std::string(s, length).c_str());
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsXmlContentType(const char *content_type) noexcept
 {
@@ -211,7 +211,7 @@ IsXmlContentType(const char *content_type) noexcept
 		StringStartsWith(content_type, "application/xml");
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsXmlContentType(const Curl::Headers &headers) noexcept
 {
@@ -456,7 +456,7 @@ CurlStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follow)
 	return HttpGetInfoOperation(*curl, uri.c_str()).Perform();
 }
 
-gcc_pure
+[[gnu::pure]]
 static std::string_view
 UriPathOrSlash(const char *uri) noexcept
 {
@@ -494,7 +494,7 @@ private:
 	 * Convert a "href" attribute (which may be an absolute URI)
 	 * to the base file name.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	std::string_view HrefToEscapedName(const char *href) const noexcept {
 		std::string_view path = uri_get_path(href);
 		if (path.data() == nullptr)

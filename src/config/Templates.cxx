@@ -89,7 +89,7 @@ static constexpr unsigned n_config_block_templates =
 static_assert(n_config_block_templates == unsigned(ConfigBlockOption::MAX),
 	      "Wrong number of config_block_templates");
 
-gcc_pure
+[[gnu::pure]]
 static inline unsigned
 ParseConfigTemplateName(const ConfigTemplate templates[], unsigned count,
 			const char *name) noexcept

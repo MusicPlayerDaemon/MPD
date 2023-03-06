@@ -4,8 +4,6 @@
 #ifndef MPD_CONFIG_PARAM_HXX
 #define MPD_CONFIG_PARAM_HXX
 
-#include "util/Compiler.h"
-
 #include <string>
 
 class AllocatedPath;

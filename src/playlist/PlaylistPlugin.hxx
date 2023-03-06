@@ -6,7 +6,6 @@
 
 #include "input/Ptr.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <string_view>
 
@@ -104,19 +103,19 @@ struct PlaylistPlugin {
 	/**
 	 * Does the plugin announce the specified URI scheme?
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	bool SupportsScheme(std::string_view scheme) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified file name suffix?
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	bool SupportsSuffix(std::string_view suffix) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified MIME type?
 	 */
-	gcc_pure gcc_nonnull_all
+	[[gnu::pure]]
 	bool SupportsMimeType(std::string_view mime_type) const noexcept;
 };
 

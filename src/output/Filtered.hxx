@@ -146,13 +146,13 @@ public:
 	/**
 	 * Does the plugin support enabling/disabling a device?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool SupportsEnableDisable() const noexcept;
 
 	/**
 	 * Does the plugin support pausing a device?
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool SupportsPause() const noexcept;
 
 	std::map<std::string, std::string> GetAttributes() const noexcept;
@@ -204,7 +204,7 @@ public:
 
 	void Interrupt() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	std::chrono::steady_clock::duration Delay() noexcept;
 
 	void SendTag(const Tag &tag);

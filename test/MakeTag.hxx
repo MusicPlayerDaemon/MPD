@@ -3,7 +3,6 @@
 
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
-#include "util/Compiler.h"
 
 inline void
 BuildTag([[maybe_unused]] TagBuilder &tag) noexcept

@@ -149,7 +149,7 @@ struct SidplayContainerPath {
 	unsigned track;
 };
 
-gcc_pure
+[[gnu::pure]]
 static unsigned
 ParseSubtuneName(const char *base) noexcept
 {
@@ -458,7 +458,7 @@ Windows1252ToUTF8(const char *s) noexcept
 	return t;
 }
 
-gcc_pure
+[[gnu::pure]]
 static AllocatedString
 GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 {
@@ -475,7 +475,7 @@ GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 	return Windows1252ToUTF8(s);
 }
 
-gcc_pure
+[[gnu::pure]]
 static AllocatedString
 GetDateString(const SidTuneInfo &info) noexcept
 {

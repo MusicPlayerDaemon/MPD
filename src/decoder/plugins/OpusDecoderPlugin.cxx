@@ -33,15 +33,15 @@ constexpr opus_int32 opus_sample_rate = 48000;
  */
 constexpr unsigned opus_output_buffer_frames = opus_sample_rate / 4;
 
-gcc_pure
-bool
+[[gnu::pure]]
+static bool
 IsOpusHead(const ogg_packet &packet) noexcept
 {
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusHead", 8) == 0;
 }
 
-gcc_pure
-bool
+[[gnu::pure]]
+static bool
 IsOpusTags(const ogg_packet &packet) noexcept
 {
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusTags", 8) == 0;
@@ -50,7 +50,7 @@ IsOpusTags(const ogg_packet &packet) noexcept
 /**
  * Convert an EBU R128 value to ReplayGain.
  */
-constexpr float
+static constexpr float
 EbuR128ToReplayGain(float ebu_r128) noexcept
 {
 	/* add 5dB to compensate for the different reference levels
@@ -58,7 +58,7 @@ EbuR128ToReplayGain(float ebu_r128) noexcept
 	return ebu_r128 + 5;
 }
 
-bool
+static bool
 mpd_opus_init([[maybe_unused]] const ConfigBlock &block)
 {
 	LogDebug(opus_domain, opus_get_version_string());
@@ -300,7 +300,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 				  packet.bytes,
 				  output_buffer, opus_output_buffer_frames,
 				  0);
-	if (gcc_unlikely(nframes <= 0)) {
+	if (nframes <= 0) [[unlikely]] {
 		if (nframes < 0)
 			throw FmtRuntimeError("libopus error: {}",
 					      opus_strerror(nframes));

@@ -48,8 +48,7 @@ static constexpr struct {
 	{ SOXR_INVALID_RECIPE, nullptr }
 };
 
-gcc_const
-static const char *
+static constexpr const char *
 soxr_quality_name(unsigned long recipe) noexcept
 {
 	for (const auto *i = soxr_quality_table;; ++i) {
@@ -60,7 +59,7 @@ soxr_quality_name(unsigned long recipe) noexcept
 	}
 }
 
-gcc_pure
+[[gnu::pure]]
 static unsigned long
 soxr_parse_quality(const char *quality) noexcept
 {

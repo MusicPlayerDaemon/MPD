@@ -5,7 +5,6 @@
 #define MPD_PCM_MIX_HXX
 
 #include "SampleFormat.hxx"
-#include "util/Compiler.h"
 
 #include <cstddef>
 

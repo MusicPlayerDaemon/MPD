@@ -272,9 +272,9 @@ Latin1ToUTF8(const char *gcc_restrict src, char *gcc_restrict buffer,
 char *
 UnicodeToUTF8(unsigned ch, char *q) noexcept
 {
-	if (gcc_likely(ch < 0x80)) {
+	if (ch < 0x80) [[likely]] {
 		*q++ = (char)ch;
-	} else if (gcc_likely(ch < 0x800)) {
+	} else if (ch < 0x800) [[likely]] {
 		*q++ = MakeLeading1(ch >> 6);
 		*q++ = MakeContinuation(ch);
 	} else if (ch < 0x10000) {

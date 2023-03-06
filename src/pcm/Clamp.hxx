@@ -4,8 +4,6 @@
 #ifndef MPD_PCM_UTILS_H
 #define MPD_PCM_UTILS_H
 
-#include "util/Compiler.h"
-
 #include <cstdint>
 #include <limits>
 
@@ -26,10 +24,10 @@ PcmClamp(typename Traits::long_type x) noexcept
 	static_assert(Traits::MIN >= limits::min(), "out of range");
 	static_assert(Traits::MAX <= limits::max(), "out of range");
 
-	if (gcc_unlikely(x < Traits::MIN))
+	if (x < Traits::MIN) [[unlikely]]
 		return T(Traits::MIN);
 
-	if (gcc_unlikely(x > Traits::MAX))
+	if (x > Traits::MAX) [[unlikely]]
 		return T(Traits::MAX);
 
 	return T(x);

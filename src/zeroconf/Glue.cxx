@@ -8,7 +8,6 @@
 #include "Listen.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-#include "util/Compiler.h"
 
 #ifdef HAVE_AVAHI
 #include "avahi/Helper.hxx"

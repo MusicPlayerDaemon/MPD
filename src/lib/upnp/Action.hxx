@@ -4,8 +4,6 @@
 #ifndef MPD_UPNP_ACTION_HXX
 #define MPD_UPNP_ACTION_HXX
 
-#include "util/Compiler.h"
-
 #include <upnptools.h>
 
 static constexpr unsigned

@@ -17,7 +17,7 @@
 /**
  * Does the #DecoderPlugin support either the suffix or the MIME type?
  */
-gcc_pure
+[[gnu::pure]]
 static bool
 CheckDecoderPlugin(const DecoderPlugin &plugin,
 		   std::string_view suffix, std::string_view mime) noexcept

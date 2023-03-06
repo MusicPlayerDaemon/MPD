@@ -16,7 +16,7 @@
 
 static constexpr Domain mixer_domain("mixer");
 
-gcc_pure
+[[gnu::pure]]
 static int
 output_mixer_get_volume(const AudioOutputControl &ao) noexcept
 {

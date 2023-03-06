@@ -59,7 +59,7 @@ flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
 		ScanVorbisComment(ToStringView(comment->comments[i]), handler);
 }
 
-gcc_pure
+[[gnu::pure]]
 static inline SongTime
 flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info) noexcept
 {

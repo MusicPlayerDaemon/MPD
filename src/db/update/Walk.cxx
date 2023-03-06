@@ -215,14 +215,14 @@ try {
 }
 
 /* we don't look at files with newlines in their name */
-gcc_pure
+[[gnu::pure]]
 static bool
 skip_path(const char *name_utf8) noexcept
 {
 	return std::strchr(name_utf8, '\n') != nullptr;
 }
 
-gcc_pure
+[[gnu::pure]]
 bool
 UpdateWalk::SkipSymlink(const Directory *directory,
 			std::string_view utf8_name) const noexcept

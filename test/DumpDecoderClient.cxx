@@ -6,7 +6,6 @@
 #include "input/InputStream.hxx"
 #include "tag/Names.hxx"
 #include "util/StringBuffer.hxx"
-#include "util/Compiler.h"
 
 #include <unistd.h>
 #include <stdio.h>

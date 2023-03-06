@@ -128,7 +128,7 @@ sndfile_duration(const SF_INFO &info)
 	return SongTime::FromScale<uint64_t>(info.frames, info.samplerate);
 }
 
-gcc_pure
+[[gnu::pure]]
 static SampleFormat
 sndfile_sample_format(const SF_INFO &info) noexcept
 {

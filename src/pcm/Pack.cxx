@@ -43,8 +43,7 @@ ConstructS24(uint8_t low, uint8_t mid, uint8_t high) noexcept
 /**
  * Read a packed signed little-endian 24 bit integer.
  */
-gcc_pure
-static int32_t
+static constexpr int32_t
 ReadS24LE(const uint8_t *src) noexcept
 {
 	return ConstructS24(src[0], src[1], src[2]);
@@ -53,8 +52,7 @@ ReadS24LE(const uint8_t *src) noexcept
 /**
  * Read a packed signed big-endian 24 bit integer.
  */
-gcc_pure
-static int32_t
+static constexpr int32_t
 ReadS24BE(const uint8_t *src) noexcept
 {
 	return ConstructS24(src[2], src[1], src[0]);
@@ -63,7 +61,7 @@ ReadS24BE(const uint8_t *src) noexcept
 /**
  * Read a packed signed native-endian 24 bit integer.
  */
-gcc_pure
+[[gnu::pure]]
 static int32_t
 ReadS24(const uint8_t *src) noexcept
 {

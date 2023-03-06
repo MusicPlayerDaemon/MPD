@@ -47,7 +47,7 @@ Song::GetURI() const noexcept
 /**
  * Path name traversal of a #Directory.
  */
-gcc_pure
+[[gnu::pure]]
 static const Directory *
 FindTargetDirectory(const Directory &base, std::string_view path) noexcept
 {
@@ -69,7 +69,7 @@ FindTargetDirectory(const Directory &base, std::string_view path) noexcept
 /**
  * Path name traversal of a #Song.
  */
-gcc_pure
+[[gnu::pure]]
 static const Song *
 FindTargetSong(const Directory &_directory, std::string_view target) noexcept
 {

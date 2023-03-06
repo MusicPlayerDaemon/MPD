@@ -193,7 +193,7 @@ Directory::FindSong(std::string_view name_utf8) const noexcept
 	return nullptr;
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 directory_cmp(const Directory &a, const Directory &b) noexcept
 {

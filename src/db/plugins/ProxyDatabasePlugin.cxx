@@ -16,7 +16,6 @@
 #include "song/UriSongFilter.hxx"
 #include "song/BaseSongFilter.hxx"
 #include "song/TagSongFilter.hxx"
-#include "util/Compiler.h"
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
@@ -265,7 +264,7 @@ ProxySong::ProxySong(const mpd_song *song)
 	tag_builder.Commit(tag2);
 }
 
-gcc_const
+[[gnu::const]]
 static enum mpd_tag_type
 Convert(TagType tag_type) noexcept
 {
@@ -694,7 +693,7 @@ Visit(struct mpd_connection *connection,
 		      visit_directory, visit_song, visit_playlist);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 Match(const SongFilter *filter, const LightSong &song) noexcept
 {
@@ -864,7 +863,7 @@ try {
 	throw;
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsFilterSupported(const ISongFilter &f) noexcept
 {
@@ -890,7 +889,7 @@ IsFilterSupported(const ISongFilter &f) noexcept
 		return false;
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsFilterFullySupported(const SongFilter &filter,
 		       const struct mpd_connection *connection) noexcept
@@ -908,7 +907,7 @@ IsFilterFullySupported(const SongFilter &filter,
 			   [](const auto &item) { return IsFilterSupported(*item); });
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsFilterFullySupported(const SongFilter *filter,
 		       const struct mpd_connection *connection) noexcept
@@ -917,7 +916,7 @@ IsFilterFullySupported(const SongFilter *filter,
 		IsFilterFullySupported(*filter, connection);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsSortSupported(TagType tag_type,
 		const struct mpd_connection *connection) noexcept
@@ -939,7 +938,7 @@ IsSortSupported(TagType tag_type,
 	return Convert(tag_type) != MPD_TAG_COUNT;
 }
 
-gcc_pure
+[[gnu::pure]]
 static DatabaseSelection
 CheckSelection(DatabaseSelection selection,
 	       struct mpd_connection *connection) noexcept

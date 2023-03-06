@@ -2,7 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "Main.hxx"
-#include "util/Compiler.h"
 #include "Instance.hxx"
 #include "system/Error.hxx"
 #include "Log.hxx"

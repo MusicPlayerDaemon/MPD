@@ -6,7 +6,6 @@
 
 #include "song/DetachedSong.hxx"
 #include "tag/Builder.hxx"
-#include "util/Compiler.h"
 
 #include <memory>
 #include <string>
@@ -108,7 +107,7 @@ public:
 	std::unique_ptr<DetachedSong> Get() noexcept;
 
 private:
-	gcc_pure
+	[[gnu::pure]]
 	TagBuilder *GetCurrentTag() noexcept;
 
 	/**

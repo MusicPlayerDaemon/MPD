@@ -60,7 +60,7 @@ compare_tag_item(const Tag &a, const Tag &b, TagType type) noexcept
 }
 
 /* Only used for sorting/searchin a songvec, not general purpose compares */
-gcc_pure
+[[gnu::pure]]
 static bool
 song_cmp(const Song &a, const Song &b) noexcept
 {

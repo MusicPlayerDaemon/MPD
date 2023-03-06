@@ -124,7 +124,7 @@ private:
 	 * Determine the number of frames guaranteed to be available
 	 * on all channels.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	jack_nframes_t GetAvailable() const noexcept;
 
 	void Process(jack_nframes_t nframes);

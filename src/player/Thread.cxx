@@ -237,7 +237,7 @@ private:
 	 * Note: this function does not check if the decoder is already
 	 * finished.
 	 */
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	bool IsDecoderAtCurrentSong() const noexcept {
 		assert(pipe != nullptr);
 
@@ -249,7 +249,7 @@ private:
 	 * decoding it, or has finished doing it), and the player hasn't
 	 * switched to that song yet.
 	 */
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	bool IsDecoderAtNextSong() const noexcept {
 		return dc.pipe != nullptr && !IsDecoderAtCurrentSong();
 	}

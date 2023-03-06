@@ -7,7 +7,6 @@
 #include "ObjectManager.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringAPI.hxx"
-#include "util/Compiler.h"
 
 #include <functional>
 #include <stdexcept>
@@ -15,7 +14,7 @@
 namespace UDisks2 {
 
 template<typename I>
-gcc_pure
+[[gnu::pure]]
 static const char *
 CheckString(I &&i) noexcept
 {
@@ -26,7 +25,7 @@ CheckString(I &&i) noexcept
 }
 
 template<typename I>
-gcc_pure
+[[gnu::pure]]
 static std::string_view
 CheckRecursedByteArrayToString(I &&i) noexcept
 {
@@ -38,7 +37,7 @@ CheckRecursedByteArrayToString(I &&i) noexcept
 }
 
 template<typename I>
-gcc_pure
+[[gnu::pure]]
 static std::string_view
 CheckByteArrayToString(I &&i) noexcept
 {
@@ -49,7 +48,7 @@ CheckByteArrayToString(I &&i) noexcept
 }
 
 template<typename I>
-gcc_pure
+[[gnu::pure]]
 static std::string_view
 CheckByteArrayArrayFrontToString(I &&i) noexcept
 {

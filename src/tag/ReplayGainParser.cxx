@@ -43,7 +43,7 @@ ParseReplayGainTag(ReplayGainInfo &info,
 		const char *name;
 		const char *value;
 
-		gcc_pure
+		[[gnu::pure]]
 		const char *operator[](const char *n) const noexcept {
 			return StringEqualsCaseASCII(name, n)
 				? value
@@ -60,7 +60,7 @@ ParseReplayGainVorbis(ReplayGainInfo &info, std::string_view entry) noexcept
 	struct VorbisCommentEntry {
 		std::string_view entry;
 
-		gcc_pure
+		[[gnu::pure]]
 		const char *operator[](std::string_view n) const noexcept {
 			return GetVorbisCommentValue(entry, n).data();
 		}

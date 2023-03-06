@@ -20,7 +20,7 @@ ConfigData::Clear()
 }
 
 template<typename T>
-gcc_pure
+[[gnu::pure]]
 static auto
 FindLast(const std::forward_list<T> &list)
 {

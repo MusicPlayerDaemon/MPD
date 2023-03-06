@@ -204,7 +204,7 @@ static constexpr struct command commands[] = {
 
 static constexpr unsigned num_commands = std::size(commands);
 
-gcc_pure
+[[gnu::pure]]
 static bool
 command_available([[maybe_unused]] const Partition &partition,
 		  [[maybe_unused]] const struct command *cmd) noexcept
@@ -290,7 +290,7 @@ command_init() noexcept
 #endif
 }
 
-gcc_pure
+[[gnu::pure]]
 static const struct command *
 command_lookup(const char *name) noexcept
 {

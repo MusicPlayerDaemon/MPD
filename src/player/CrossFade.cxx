@@ -22,7 +22,7 @@ CrossFadeSettings::CanCrossFadeSong(SignedSongTime total_time) const noexcept
 		duration < std::chrono::duration_cast<FloatDuration>(total_time);
 }
 
-gcc_pure
+[[gnu::pure]]
 static FloatDuration
 mixramp_interpolate(const char *ramp_list, float required_db) noexcept
 {

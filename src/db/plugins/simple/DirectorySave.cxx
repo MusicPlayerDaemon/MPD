@@ -25,7 +25,7 @@
 #define DIRECTORY_BEGIN "begin: "
 #define DIRECTORY_END "end: "
 
-gcc_const
+[[gnu::const]]
 static const char *
 DeviceToTypeString(unsigned device) noexcept
 {
@@ -44,7 +44,7 @@ DeviceToTypeString(unsigned device) noexcept
 	}
 }
 
-gcc_pure
+[[gnu::pure]]
 static unsigned
 ParseTypeString(const char *type) noexcept
 {

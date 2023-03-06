@@ -5,7 +5,6 @@
 #define MPD_PLAYLIST_STREAM_HXX
 
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 
 #include <memory>
 
@@ -18,11 +17,10 @@ class Path;
  * @param path the path of the playlist file
  * @return a playlist, or nullptr on error
  */
-gcc_nonnull_all
 std::unique_ptr<SongEnumerator>
 playlist_open_path(Path path, Mutex &mutex);
 
-gcc_nonnull_all
+[[gnu::nonnull]]
 std::unique_ptr<SongEnumerator>
 playlist_open_remote(const char *uri, Mutex &mutex);
 

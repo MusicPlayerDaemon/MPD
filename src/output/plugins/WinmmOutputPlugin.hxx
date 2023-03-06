@@ -8,8 +8,6 @@
 
 #ifdef ENABLE_WINMM_OUTPUT
 
-#include "util/Compiler.h"
-
 #include <windef.h>
 #include <mmsystem.h>
 
@@ -17,7 +15,7 @@ class WinmmOutput;
 
 extern const struct AudioOutputPlugin winmm_output_plugin;
 
-gcc_pure
+[[gnu::pure]]
 HWAVEOUT
 winmm_output_get_handle(WinmmOutput &output);
 

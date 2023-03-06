@@ -36,7 +36,7 @@ InputStream::SetReady() noexcept
  * seeking in a HTTP file requires opening a new connection with a new
  * HTTP request.
  */
-gcc_pure
+[[gnu::pure]]
 static bool
 ExpensiveSeeking(const char *uri) noexcept
 {

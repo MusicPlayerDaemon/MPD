@@ -50,7 +50,7 @@ static constexpr unsigned DECODERDELAY = 529;
 
 static constexpr Domain mad_domain("mad");
 
-gcc_const
+[[gnu::const]]
 static SongTime
 ToSongTime(mad_timer_t t) noexcept
 {
@@ -135,10 +135,10 @@ private:
 	void ParseId3(size_t tagsize, Tag *tag) noexcept;
 	MadDecoderAction DecodeNextFrame(bool skip, Tag *tag) noexcept;
 
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	offset_type ThisFrameOffset() const noexcept;
 
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	offset_type RestIncludingThisFrame() const noexcept;
 
 	/**
@@ -157,7 +157,7 @@ private:
 		times = new mad_timer_t[max_frames];
 	}
 
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	size_t TimeToFrame(SongTime t) const noexcept;
 
 	/**

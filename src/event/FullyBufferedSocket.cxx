@@ -3,7 +3,6 @@
 
 #include "FullyBufferedSocket.hxx"
 #include "net/SocketError.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 
@@ -13,7 +12,7 @@ FullyBufferedSocket::ssize_t
 FullyBufferedSocket::DirectWrite(const void *data, size_t length) noexcept
 {
 	const auto nbytes = GetSocket().Write((const char *)data, length);
-	if (gcc_unlikely(nbytes < 0)) {
+	if (nbytes < 0) [[unlikely]] {
 		const auto code = GetSocketError();
 		if (IsSocketErrorSendWouldBlock(code))
 			return 0;
@@ -43,7 +42,7 @@ FullyBufferedSocket::Flush() noexcept
 	}
 
 	auto nbytes = DirectWrite(data.data(), data.size());
-	if (gcc_unlikely(nbytes <= 0))
+	if (nbytes <= 0) [[unlikely]]
 		return nbytes == 0;
 
 	output.Consume(nbytes);

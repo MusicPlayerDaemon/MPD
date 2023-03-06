@@ -12,7 +12,7 @@
 #include <string.h>
 
 struct StringLess {
-	gcc_pure
+	[[gnu::pure]]
 	bool operator()(const char *a, const char *b) const noexcept {
 		return strcmp(a, b) < 0;
 	}

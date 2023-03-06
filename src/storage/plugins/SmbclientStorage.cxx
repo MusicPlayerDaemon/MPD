@@ -133,7 +133,7 @@ SmbclientStorage::OpenDirectory(std::string_view uri_utf8)
 							  handle);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 SkipNameFS(PathTraitsFS::const_pointer name) noexcept
 {

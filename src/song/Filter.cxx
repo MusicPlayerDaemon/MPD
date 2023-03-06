@@ -45,7 +45,7 @@ enum {
 /**
  * @return #TAG_NUM_OF_ITEM_TYPES on error
  */
-gcc_pure
+[[gnu::pure]]
 static unsigned
 locate_parse_type(const char *str) noexcept
 {

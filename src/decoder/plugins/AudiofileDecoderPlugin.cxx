@@ -48,7 +48,7 @@ struct AudioFileInputStream {
 	}
 };
 
-gcc_pure
+[[gnu::pure]]
 static SongTime
 audiofile_get_duration(AFfilehandle fh) noexcept
 {
@@ -124,7 +124,7 @@ setup_virtual_fops(AudioFileInputStream &afis) noexcept
 	return vf;
 }
 
-gcc_const
+[[gnu::const]]
 static SampleFormat
 audiofile_bits_to_sample_format(int bits) noexcept
 {

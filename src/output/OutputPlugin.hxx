@@ -4,8 +4,6 @@
 #ifndef MPD_OUTPUT_PLUGIN_HXX
 #define MPD_OUTPUT_PLUGIN_HXX
 
-#include "util/Compiler.h"
-
 struct ConfigBlock;
 class AudioOutput;
 struct MixerPlugin;
@@ -54,7 +52,7 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 		: false;
 }
 
-gcc_malloc gcc_returns_nonnull
+[[gnu::malloc]] [[gnu::returns_nonnull]]
 AudioOutput *
 ao_plugin_init(EventLoop &event_loop,
 	       const AudioOutputPlugin &plugin,

@@ -101,7 +101,7 @@ GetChromaprintCommand::DecodeStream(InputStream &input_stream,
 	plugin.StreamDecode(*this, input_stream);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 decoder_check_plugin_mime(const DecoderPlugin &plugin,
 			  const InputStream &is) noexcept
@@ -113,7 +113,7 @@ decoder_check_plugin_mime(const DecoderPlugin &plugin,
 		plugin.SupportsMimeType(GetMimeTypeBase(mime_type));
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 decoder_check_plugin_suffix(const DecoderPlugin &plugin,
 			    std::string_view suffix) noexcept
@@ -123,7 +123,7 @@ decoder_check_plugin_suffix(const DecoderPlugin &plugin,
 	return !suffix.empty() && plugin.SupportsSuffix(suffix);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 decoder_check_plugin(const DecoderPlugin &plugin, const InputStream &is,
 		     std::string_view suffix) noexcept

@@ -17,7 +17,6 @@
 #include "event/ServerSocket.hxx"
 #include "event/InjectEvent.hxx"
 #include "util/Cast.hxx"
-#include "util/Compiler.h"
 #include "util/IntrusiveList.hxx"
 
 #include <queue>
@@ -173,7 +172,7 @@ public:
 	 *
 	 * Caller must lock the mutex.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool HasClients() const noexcept {
 		return !clients.empty();
 	}
@@ -181,7 +180,7 @@ public:
 	/**
 	 * Check whether there is at least one client.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	bool LockHasClients() const noexcept {
 		const std::scoped_lock<Mutex> protect(mutex);
 		return HasClients();
@@ -205,7 +204,7 @@ public:
 	 */
 	void SendHeader(HttpdClient &client) const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 
 	/**

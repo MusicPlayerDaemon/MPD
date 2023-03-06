@@ -48,7 +48,7 @@ software_mixer_init([[maybe_unused]] EventLoop &event_loop,
 	return new SoftwareMixer(listener);
 }
 
-gcc_const
+[[gnu::const]]
 static unsigned
 PercentVolumeToSoftwareVolume(unsigned volume) noexcept
 {

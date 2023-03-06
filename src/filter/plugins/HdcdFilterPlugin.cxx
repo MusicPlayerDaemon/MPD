@@ -12,7 +12,7 @@
 
 static constexpr const char *hdcd_graph = "hdcd";
 
-gcc_pure
+[[gnu::pure]]
 static bool
 MaybeHdcd(const AudioFormat &audio_format) noexcept
 {

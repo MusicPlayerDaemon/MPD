@@ -72,7 +72,7 @@ private:
 
 	std::size_t Play(std::span<const std::byte> src) override;
 
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	bool HasDynamicPath() const noexcept {
 		return !format_path.empty();
 	}

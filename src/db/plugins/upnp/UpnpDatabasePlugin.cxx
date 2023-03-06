@@ -563,7 +563,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	}
 }
 
-gcc_const
+[[gnu::const]]
 static DatabaseSelection
 CheckSelection(DatabaseSelection selection) noexcept
 {

@@ -71,7 +71,7 @@ IsValidAttributeNameChar(char ch) noexcept
 	return IsAlphaNumericASCII(ch) || ch == '_';
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsValidAttributeName(const char *s) noexcept
 {

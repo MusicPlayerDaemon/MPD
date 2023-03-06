@@ -2,7 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "Interface.hxx"
-#include "util/Compiler.h"
 
 #include <stdexcept>
 

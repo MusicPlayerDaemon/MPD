@@ -44,7 +44,7 @@ IsValidPartitionChar(char ch)
 	return IsAlphaNumericASCII(ch) || ch == '-' || ch == '_';
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsValidPartitionName(const char *name) noexcept
 {
@@ -56,7 +56,7 @@ IsValidPartitionName(const char *name) noexcept
 	return true;
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 HasPartitionNamed(Instance &instance, const char *name) noexcept
 {

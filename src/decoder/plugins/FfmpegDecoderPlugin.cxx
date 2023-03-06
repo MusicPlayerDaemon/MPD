@@ -88,14 +88,14 @@ ffmpeg_finish() noexcept
 	av_dict_free(&avformat_options);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsAudio(const AVStream &stream) noexcept
 {
 	return stream.codecpar->codec_type == AVMEDIA_TYPE_AUDIO;
 }
 
-gcc_pure
+[[gnu::pure]]
 static int
 ffmpeg_find_audio_stream(const AVFormatContext &format_context) noexcept
 {
@@ -106,7 +106,7 @@ ffmpeg_find_audio_stream(const AVFormatContext &format_context) noexcept
 	return -1;
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsPicture(const AVStream &stream) noexcept
 {
@@ -165,7 +165,7 @@ start_time_fallback(const AVStream &stream)
  * Convert AVPacket::pts to a stream-relative time stamp (still in
  * AVStream::time_base units).  Returns a negative value on error.
  */
-gcc_pure
+[[gnu::pure]]
 static int64_t
 StreamRelativePts(const AVPacket &packet, const AVStream &stream) noexcept
 {
@@ -181,7 +181,7 @@ StreamRelativePts(const AVPacket &packet, const AVStream &stream) noexcept
  * Convert a non-negative stream-relative time stamp in
  * AVStream::time_base units to a PCM frame number.
  */
-gcc_pure
+[[gnu::pure]]
 static uint64_t
 PtsToPcmFrame(uint64_t pts, const AVStream &stream,
 	      const AVCodecContext &codec_context) noexcept
@@ -323,7 +323,7 @@ ffmpeg_send_packet(DecoderClient &client, InputStream *is,
 	return cmd;
 }
 
-gcc_const
+[[gnu::const]]
 static SampleFormat
 ffmpeg_sample_format(enum AVSampleFormat sample_fmt) noexcept
 {

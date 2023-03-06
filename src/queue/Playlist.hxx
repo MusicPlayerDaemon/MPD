@@ -96,17 +96,17 @@ struct playlist {
 		return queue.PositionToId(position);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	int GetCurrentPosition() const noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	int GetNextPosition() const noexcept;
 
 	/**
 	 * Returns the song object which is currently queued.  Returns
 	 * none if there is none (yet?) or if MPD isn't playing.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	const DetachedSong *GetQueuedSong() const noexcept;
 
 	/**

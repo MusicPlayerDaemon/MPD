@@ -4,8 +4,6 @@
 #ifndef REUSABLE_ARRAY_HXX
 #define REUSABLE_ARRAY_HXX
 
-#include "Compiler.h"
-
 #include <cstddef>
 #include <utility>
 
@@ -59,7 +57,7 @@ public:
 	 */
 	[[gnu::malloc]] [[gnu::returns_nonnull]]
 	T *Get(size_t size) {
-		if (gcc_unlikely(size > capacity)) {
+		if (size > capacity) [[unlikely]] {
 			/* too small: grow */
 			delete[] buffer;
 

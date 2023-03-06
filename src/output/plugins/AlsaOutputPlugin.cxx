@@ -246,7 +246,7 @@ public:
 
 	using MultiSocketMonitor::GetEventLoop;
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetDevice() const noexcept {
 		return device.empty() ? default_device : device.c_str();
 	}
@@ -292,13 +292,13 @@ private:
 #endif
 			);
 
-	gcc_pure
+	[[gnu::pure]]
 	bool LockIsActive() const noexcept {
 		const std::scoped_lock<Mutex> lock(mutex);
 		return active;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool LockIsActiveAndNotWaiting() const noexcept {
 		const std::scoped_lock<Mutex> lock(mutex);
 		return active && !waiting;
@@ -654,7 +654,7 @@ MaybeDmix(snd_pcm_type_t type)
 	return type == SND_PCM_TYPE_DMIX || type == SND_PCM_TYPE_PLUG;
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 MaybeDmix(snd_pcm_t *pcm) noexcept
 {

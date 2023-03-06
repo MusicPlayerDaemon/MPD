@@ -248,7 +248,7 @@ SimpleDatabase::ReturnSong([[maybe_unused]] const LightSong *song) const noexcep
 	}
 }
 
-gcc_const
+[[gnu::const]]
 static DatabaseSelection
 CheckSelection(DatabaseSelection selection) noexcept
 {

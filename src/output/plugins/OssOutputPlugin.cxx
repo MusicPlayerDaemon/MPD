@@ -372,8 +372,7 @@ oss_setup_sample_rate(FileDescriptor fd, AudioFormat &audio_format,
  * Convert a MPD sample format to its OSS counterpart.  Returns
  * AFMT_QUERY if there is no direct counterpart.
  */
-gcc_const
-static int
+static constexpr int
 sample_format_to_oss(SampleFormat format) noexcept
 {
 	switch (format) {
@@ -411,8 +410,7 @@ sample_format_to_oss(SampleFormat format) noexcept
  * Convert an OSS sample format to its MPD counterpart.  Returns
  * SampleFormat::UNDEFINED if there is no direct counterpart.
  */
-gcc_const
-static SampleFormat
+static constexpr SampleFormat
 sample_format_from_oss(int format) noexcept
 {
 	switch (format) {

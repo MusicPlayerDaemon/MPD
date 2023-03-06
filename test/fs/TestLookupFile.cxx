@@ -1,5 +1,4 @@
 #include "fs/LookupFile.hxx"
-#include "util/Compiler.h"
 
 #include <gtest/gtest.h>
 

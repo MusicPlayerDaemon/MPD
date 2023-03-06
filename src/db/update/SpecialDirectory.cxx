@@ -7,7 +7,7 @@
 #include "playlist/PlaylistRegistry.hxx"
 #include "fs/Traits.hxx"
 
-gcc_pure
+[[gnu::pure]]
 static bool
 HaveArchivePluginForFilename(const char *filename) noexcept
 {
@@ -21,7 +21,7 @@ HaveArchivePluginForFilename(const char *filename) noexcept
 #endif
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 HaveContainerPluginForFilename(const char *filename) noexcept
 {
@@ -31,7 +31,7 @@ HaveContainerPluginForFilename(const char *filename) noexcept
 		decoder_plugins_supports_suffix(suffix);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 HavePlaylistPluginForFilename(const char *filename) noexcept
 {

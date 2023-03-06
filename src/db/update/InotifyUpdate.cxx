@@ -14,7 +14,6 @@
 #include "fs/FileInfo.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Compiler.h"
 #include "Log.hxx"
 
 #include <cassert>
@@ -61,10 +60,10 @@ struct WatchDirectory {
 
 	void LoadExcludeList(Path directory_path) noexcept;
 
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	unsigned GetDepth() const noexcept;
 
-	[[nodiscard]] gcc_pure
+	[[nodiscard]] [[gnu::pure]]
 	AllocatedPath GetUriFS() const noexcept;
 };
 
@@ -137,7 +136,7 @@ WatchDirectory::GetUriFS() const noexcept
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
-gcc_pure
+[[gnu::pure]]
 static bool
 SkipFilename(Path name) noexcept
 {
@@ -210,7 +209,7 @@ try {
 	LogError(std::current_exception());
 }
 
-gcc_pure
+[[gnu::pure]]
 unsigned
 WatchDirectory::GetDepth() const noexcept
 {

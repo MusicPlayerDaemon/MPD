@@ -4,8 +4,6 @@
 #ifndef MPD_ID_TABLE_HXX
 #define MPD_ID_TABLE_HXX
 
-#include "util/Compiler.h"
-
 #include <cassert>
 
 /**

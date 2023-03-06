@@ -4,8 +4,6 @@
 #ifndef MPD_STORAGE_REGISTRY_HXX
 #define MPD_STORAGE_REGISTRY_HXX
 
-#include "util/Compiler.h"
-
 #include <memory>
 
 struct StoragePlugin;
@@ -18,15 +16,15 @@ class EventLoop;
  */
 extern const StoragePlugin *const storage_plugins[];
 
-gcc_nonnull_all gcc_pure
+[[gnu::nonnull]] [[gnu::pure]]
 const StoragePlugin *
 GetStoragePluginByName(const char *name) noexcept;
 
-gcc_nonnull_all gcc_pure
+[[gnu::nonnull]] [[gnu::pure]]
 const StoragePlugin *
 GetStoragePluginByUri(const char *uri) noexcept;
 
-gcc_nonnull_all
+[[gnu::nonnull]]
 std::unique_ptr<Storage>
 CreateStorageURI(EventLoop &event_loop, const char *uri);
 

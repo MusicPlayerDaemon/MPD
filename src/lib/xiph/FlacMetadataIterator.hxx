@@ -4,8 +4,6 @@
 #ifndef MPD_FLAC_METADATA_ITERATOR_HXX
 #define MPD_FLAC_METADATA_ITERATOR_HXX
 
-#include "util/Compiler.h"
-
 #include <FLAC/metadata.h>
 
 class FlacMetadataIterator {
@@ -31,7 +29,7 @@ public:
 		return ::FLAC__metadata_iterator_next(iterator);
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	FLAC__StreamMetadata *GetBlock() noexcept {
 		return ::FLAC__metadata_iterator_get_block(iterator);
 	}

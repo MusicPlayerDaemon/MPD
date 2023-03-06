@@ -3,7 +3,6 @@
 
 #include "BufferedSocket.hxx"
 #include "net/SocketError.hxx"
-#include "util/Compiler.h"
 
 #include <stdexcept>
 
@@ -11,7 +10,7 @@ BufferedSocket::ssize_t
 BufferedSocket::DirectRead(void *data, size_t length) noexcept
 {
 	const auto nbytes = GetSocket().Read((char *)data, length);
-	if (gcc_likely(nbytes > 0))
+	if (nbytes > 0) [[likely]]
 		return nbytes;
 
 	if (nbytes == 0) {
@@ -86,7 +85,7 @@ BufferedSocket::OnSocketReady(unsigned flags) noexcept
 {
 	assert(IsDefined());
 
-	if (gcc_unlikely(flags & (SocketEvent::ERROR|SocketEvent::HANGUP))) {
+	if (flags & (SocketEvent::ERROR|SocketEvent::HANGUP)) [[unlikely]] {
 		OnSocketClosed();
 		return;
 	}

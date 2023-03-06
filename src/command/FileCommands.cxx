@@ -34,14 +34,14 @@
 #include <cassert>
 #include <array>
 
-gcc_pure
+[[gnu::pure]]
 static bool
 SkipNameFS(PathTraitsFS::const_pointer name_fs) noexcept
 {
 	return PathTraitsFS::IsSpecialFilename(name_fs);
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 skip_path(Path name_fs) noexcept
 {
@@ -87,7 +87,7 @@ handle_listfiles_local(Response &r, Path path_fs)
 #pragma GCC diagnostic pop
 #endif
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsValidName(const std::string_view s) noexcept
 {
@@ -99,7 +99,7 @@ IsValidName(const std::string_view s) noexcept
 	});
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsValidValue(const std::string_view s) noexcept
 {

@@ -4,8 +4,6 @@
 #ifndef MPD_STORAGE_LOCAL_HXX
 #define MPD_STORAGE_LOCAL_HXX
 
-#include "util/Compiler.h"
-
 #include <memory>
 
 struct StoragePlugin;
@@ -14,7 +12,6 @@ class Path;
 
 extern const StoragePlugin local_storage_plugin;
 
-gcc_nonnull_all
 std::unique_ptr<Storage>
 CreateLocalStorage(Path base_fs);
 

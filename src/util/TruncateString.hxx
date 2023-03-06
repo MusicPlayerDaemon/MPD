@@ -4,8 +4,6 @@
 #ifndef TRUNCATE_STRING_HXX
 #define TRUNCATE_STRING_HXX
 
-#include "Compiler.h"
-
 #include <cstddef>
 
 /**
@@ -16,7 +14,7 @@
  * terminator)
  * @return a pointer to the null terminator
  */
-gcc_nonnull_all
+[[gnu::nonnull]]
 char *
 CopyTruncateString(char *dest, const char *src, size_t size) noexcept;
 

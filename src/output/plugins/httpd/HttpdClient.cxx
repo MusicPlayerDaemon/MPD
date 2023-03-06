@@ -153,7 +153,7 @@ HttpdClient::SendResponse() noexcept
 	}
 
 	ssize_t nbytes = GetSocket().Write(response, strlen(response));
-	if (gcc_unlikely(nbytes < 0)) {
+	if (nbytes < 0) [[unlikely]] {
 		const SocketErrorMessage msg;
 		FmtWarning(httpd_output_domain,
 			   "failed to write to client: {}",

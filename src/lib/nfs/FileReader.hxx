@@ -7,7 +7,6 @@
 #include "Lease.hxx"
 #include "Callback.hxx"
 #include "event/InjectEvent.hxx"
-#include "util/Compiler.h"
 
 #include <cstddef>
 #include <cstdint>

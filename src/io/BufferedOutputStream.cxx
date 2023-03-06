@@ -67,7 +67,7 @@ BufferedOutputStream::Format(const char *fmt, ...)
 	std::size_t size = vsnprintf((char *)r.data(), r.size(), fmt, ap);
 	va_end(ap);
 
-	if (gcc_unlikely(size >= r.size())) {
+	if (size >= r.size()) [[unlikely]] {
 		/* buffer was not large enough; flush it and try
 		   again */
 
@@ -75,7 +75,7 @@ BufferedOutputStream::Format(const char *fmt, ...)
 
 		r = buffer.Write();
 
-		if (gcc_unlikely(size >= r.size())) {
+		if (size >= r.size()) [[unlikely]] {
 			/* still not enough space: grow the buffer and
 			   try again */
 			++size;

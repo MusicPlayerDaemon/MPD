@@ -17,7 +17,7 @@
 
 using std::string_view_literals::operator""sv;
 
-gcc_pure
+[[gnu::pure]]
 static TagType
 ParseOpusTagName(std::string_view name) noexcept
 {

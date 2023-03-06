@@ -5,7 +5,6 @@
 #define MPD_TAG_HANDLER_HXX
 
 #include "Chrono.hxx"
-#include "util/Compiler.h"
 
 #include <cstddef>
 #include <cstdint>

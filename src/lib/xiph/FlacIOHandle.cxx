@@ -3,7 +3,6 @@
 
 #include "FlacIOHandle.hxx"
 #include "Log.hxx"
-#include "util/Compiler.h"
 #include "system/Error.hxx"
 
 #include <cerrno>

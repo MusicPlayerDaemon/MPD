@@ -6,7 +6,6 @@
 
 #include "Page.hxx"
 #include "event/BufferedSocket.hxx"
-#include "util/Compiler.h"
 #include "util/IntrusiveList.hxx"
 
 #include <cstddef>
@@ -156,7 +155,7 @@ public:
 	 */
 	bool SendResponse() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	ssize_t GetBytesTillMetaData() const noexcept;
 
 	ssize_t TryWritePage(const Page &page, size_t position) noexcept;

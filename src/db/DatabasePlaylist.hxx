@@ -4,14 +4,11 @@
 #ifndef MPD_DATABASE_PLAYLIST_HXX
 #define MPD_DATABASE_PLAYLIST_HXX
 
-#include "util/Compiler.h"
-
 class Database;
 class Storage;
 struct DatabaseSelection;
 class PlaylistFileEditor;
 
-gcc_nonnull(3)
 void
 search_add_to_playlist(const Database &db, const Storage *storage,
 		       const char *playlist_path_utf8,

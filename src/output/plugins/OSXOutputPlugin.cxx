@@ -525,7 +525,7 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog) noexcept
 	}
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 IsAudioDeviceName(AudioDeviceID id, const char *expected_name) noexcept
 {

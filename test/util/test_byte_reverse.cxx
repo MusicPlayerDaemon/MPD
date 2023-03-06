@@ -2,7 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "util/ByteReverse.hxx"
-#include "util/Compiler.h"
 
 #include <gtest/gtest.h>
 

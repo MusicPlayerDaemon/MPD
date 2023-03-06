@@ -4,8 +4,6 @@
 #ifndef SHARED_PIPE_CONSUMER_HXX
 #define SHARED_PIPE_CONSUMER_HXX
 
-#include "util/Compiler.h"
-
 #include <cassert>
 
 struct MusicChunk;
@@ -67,7 +65,7 @@ public:
 		consumed = true;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool IsConsumed(const MusicChunk &_chunk) const noexcept;
 
 	void ClearTail([[maybe_unused]] const MusicChunk &_chunk) noexcept {

@@ -12,7 +12,6 @@
 #include "filter/FilterPlugin.hxx"
 #include "filter/NullFilter.hxx"
 #include "filter/Prepared.hxx"
-#include "util/Compiler.h"
 
 class PreparedNullFilter final : public PreparedFilter {
 public:

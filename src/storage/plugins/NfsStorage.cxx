@@ -288,7 +288,7 @@ NfsStorage::GetInfo(std::string_view uri_utf8, bool follow)
 	return operation.GetInfo();
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 SkipNameFS(PathTraitsFS::const_pointer name) noexcept
 {

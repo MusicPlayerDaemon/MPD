@@ -21,7 +21,7 @@
 
 #include <functional>
 
-gcc_pure
+[[gnu::pure]]
 static const char *
 ApplyBaseFlag(const char *uri, bool base) noexcept
 {
