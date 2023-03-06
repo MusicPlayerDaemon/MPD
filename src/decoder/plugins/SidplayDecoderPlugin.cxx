@@ -15,7 +15,6 @@
 #ifdef HAVE_SIDPLAYFP
 #include "io/FileReader.hxx"
 #endif
-#include "util/StringFormat.hxx"
 #include "util/Domain.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
@@ -37,6 +36,8 @@
 #include <sidplay/utils/SidTuneMod.h>
 #include <sidplay/utils/SidDatabase.h>
 #endif
+
+#include <fmt/format.h>
 
 #include <iterator>
 #include <memory>
@@ -510,8 +511,8 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 
 	if (n_tracks > 1) {
 		const auto tag_title =
-			StringFormat<1024>("%s (%u/%u)",
-					   album.c_str(), track, n_tracks);
+			fmt::format("{} ({}/{})",
+				    album.c_str(), track, n_tracks);
 		handler.OnTag(TAG_TITLE, tag_title.c_str());
 	} else
 		handler.OnTag(TAG_TITLE, album.c_str());
@@ -532,7 +533,7 @@ ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
 		handler.OnTag(TAG_DATE, date.c_str());
 
 	/* track */
-	handler.OnTag(TAG_TRACK, StringFormat<16>("%u", track).c_str());
+	handler.OnTag(TAG_TRACK, fmt::format_int{track}.c_str());
 }
 
 static bool
@@ -611,7 +612,7 @@ sidplay_container_scan(Path path_fs)
 		/* Construct container/tune path names, eg.
 		   Delta.sid/tune_001.sid */
 		tail = list.emplace_after(tail,
-					  StringFormat<32>(SUBTUNE_PREFIX "%03u.sid", i),
+					  fmt::format(SUBTUNE_PREFIX "{:03}.sid", i),
 					  tag_builder.Commit());
 	}
 

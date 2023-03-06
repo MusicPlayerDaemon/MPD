@@ -4,7 +4,7 @@
 #include "FileOutputStream.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/SystemError.hxx"
-#include "util/StringFormat.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 
 #ifdef _WIN32
 #include <tchar.h>
@@ -282,7 +282,7 @@ try {
 
 		/* hard-link the temporary file to the final path */
 		if (linkat(AT_FDCWD,
-			   StringFormat<64>("/proc/self/fd/%d", fd.Get()),
+			   FmtBuffer<64>("/proc/self/fd/{}", fd.Get()),
 			   directory_fd.Get(), path.c_str(),
 			   AT_SYMLINK_FOLLOW) < 0)
 			throw FmtErrno("Failed to commit {}", path);

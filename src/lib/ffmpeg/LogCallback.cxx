@@ -6,8 +6,8 @@
 
 #include "LogCallback.hxx"
 #include "Domain.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "util/Domain.hxx"
-#include "util/StringFormat.hxx"
 #include "Log.hxx"
 
 extern "C" {
@@ -40,9 +40,9 @@ FfmpegLogCallback(void *ptr, int level, const char *fmt, std::va_list vl)
 
 	if (cls != nullptr) {
 		const auto domain =
-			StringFormat<64>("%s/%s",
-					 ffmpeg_domain.GetName(),
-					 cls->item_name(ptr));
+			FmtBuffer<64>("{}/{}",
+				      ffmpeg_domain.GetName(),
+				      cls->item_name(ptr));
 		const Domain d(domain);
 
 		char msg[1024];

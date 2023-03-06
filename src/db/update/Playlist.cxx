@@ -17,8 +17,9 @@
 #include "storage/FileInfo.hxx"
 #include "storage/StorageInterface.hxx"
 #include "fs/Traits.hxx"
-#include "util/StringFormat.hxx"
 #include "Log.hxx"
+
+#include <fmt/core.h>
 
 inline void
 UpdateWalk::UpdatePlaylistFile(Directory &directory,
@@ -41,8 +42,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 			   the virtual directory (DEVICE_PLAYLIST) to
 			   the containing directory */
 			: "../" + db_song->filename;
-		db_song->filename = StringFormat<64>("track%04u",
-						     ++track);
+		db_song->filename = fmt::format("track{:04}", ++track);
 
 		{
 			const ScopeDatabaseLock protect;

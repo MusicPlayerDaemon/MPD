@@ -15,6 +15,7 @@
 #include "lib/curl/Escape.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
@@ -22,7 +23,6 @@
 #include "util/ASCII.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
-#include "util/StringFormat.hxx"
 #include "util/StringSplit.hxx"
 #include "util/UriExtract.hxx"
 
@@ -252,7 +252,7 @@ public:
 		   username/password are specified */
 		request.SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
-		request_headers.Append(StringFormat<40>("depth: %u", depth));
+		request_headers.Append(FmtBuffer<40>("depth: {}", depth));
 		request_headers.Append("content-type: text/xml");
 
 		request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());

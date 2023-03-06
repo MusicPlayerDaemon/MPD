@@ -10,6 +10,7 @@
 #include "../OutputAPI.hxx"
 #include "mixer/plugins/OSXMixerPlugin.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"
 #include "pcm/Export.hxx"
@@ -20,7 +21,6 @@
 #include "util/RingBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
-#include "util/StringFormat.hxx"
 #include "Log.hxx"
 
 #include <CoreAudio/CoreAudio.h>
@@ -42,20 +42,20 @@
 
 static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
 
-static StringBuffer<64>
-StreamDescriptionToString(const AudioStreamBasicDescription desc)
+static auto
+StreamDescriptionToString(const AudioStreamBasicDescription desc) noexcept
 {
 	// Only convert the lpcm formats (nothing else supported / used by MPD)
 	assert(desc.mFormatID == kAudioFormatLinearPCM);
 
-	return StringFormat<64>("%u channel %s %sinterleaved %u-bit %s %s (%uHz)",
-				desc.mChannelsPerFrame,
-				(desc.mFormatFlags & kAudioFormatFlagIsNonMixable) ? "" : "mixable",
-				(desc.mFormatFlags & kAudioFormatFlagIsNonInterleaved) ? "non-" : "",
-				desc.mBitsPerChannel,
-				(desc.mFormatFlags & kAudioFormatFlagIsFloat) ? "Float" : "SInt",
-				(desc.mFormatFlags & kAudioFormatFlagIsBigEndian) ? "BE" : "LE",
-				(UInt32)desc.mSampleRate);
+	return FmtBuffer<256>("{} channel {} {}interleaved {}-bit {} {} ({}Hz)",
+			      desc.mChannelsPerFrame,
+			      (desc.mFormatFlags & kAudioFormatFlagIsNonMixable) ? "" : "mixable",
+			      (desc.mFormatFlags & kAudioFormatFlagIsNonInterleaved) ? "non-" : "",
+			      desc.mBitsPerChannel,
+			      (desc.mFormatFlags & kAudioFormatFlagIsFloat) ? "Float" : "SInt",
+			      (desc.mFormatFlags & kAudioFormatFlagIsBigEndian) ? "BE" : "LE",
+			      desc.mSampleRate);
 }
 
 

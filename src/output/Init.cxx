@@ -22,8 +22,9 @@
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "filter/plugins/NormalizeFilterPlugin.hxx"
 #include "util/StringAPI.hxx"
-#include "util/StringFormat.hxx"
 #include "Log.hxx"
+
+#include <fmt/core.h>
 
 #include <cassert>
 #include <stdexcept>
@@ -153,7 +154,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 		config_audio_format.Clear();
 	}
 
-	log_name = StringFormat<256>("\"%s\" (%s)", name, plugin_name);
+	log_name = fmt::format("\"{}\" ({})", name, plugin_name);
 
 	/* create the normalization filter (if configured) */
 

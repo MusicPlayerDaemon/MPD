@@ -17,7 +17,7 @@
 #endif
 
 #ifdef HAVE_THREAD_NAME
-#include "util/StringFormat.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #endif
 
 static inline void
@@ -42,10 +42,10 @@ SetThreadName(const char *name) noexcept
 
 template<typename... Args>
 static inline void
-FormatThreadName(const char *fmt, [[maybe_unused]] Args&&... args) noexcept
+FmtThreadName(const char *fmt, [[maybe_unused]] Args&&... args) noexcept
 {
 #ifdef HAVE_THREAD_NAME
-	SetThreadName(StringFormat<16>(fmt, args...));
+	SetThreadName(FmtBuffer<16>(fmt, args...));
 #else
 	(void)fmt;
 #endif

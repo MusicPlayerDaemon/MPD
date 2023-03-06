@@ -51,7 +51,7 @@ ThreadInputStream::Start()
 inline void
 ThreadInputStream::ThreadFunc() noexcept
 {
-	FormatThreadName("input:%s", plugin);
+	FmtThreadName("input:{}", plugin);
 
 	std::unique_lock<Mutex> lock(mutex);
 

@@ -16,10 +16,10 @@
 #include "config/Block.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringFormat.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -32,6 +32,8 @@
 #include "util/UriExtract.hxx"
 #include "util/UriQueryParser.hxx"
 #endif
+
+#include <fmt/format.h>
 
 #include <cassert>
 #include <cinttypes>
@@ -261,8 +263,8 @@ CurlInputStream::OnHeaders(unsigned status,
 
 	if (status < 200 || status >= 300)
 		throw HttpStatusError(status,
-				      StringFormat<40>("got HTTP status %u",
-						       status).c_str());
+				      FmtBuffer<40>("got HTTP status {}",
+						    status).c_str());
 
 	const std::scoped_lock<Mutex> protect(mutex);
 
@@ -475,8 +477,8 @@ CurlInputStream::InitEasy()
 
 	if (proxy_user != nullptr && proxy_password != nullptr)
 		request->SetOption(CURLOPT_PROXYUSERPWD,
-				   StringFormat<1024>("%s:%s", proxy_user,
-						      proxy_password).c_str());
+				   FmtBuffer<1024>("{}:{}", proxy_user,
+						   proxy_password).c_str());
 
 	if (cacert != nullptr)
 		request->SetOption(CURLOPT_CAINFO, cacert);
@@ -532,8 +534,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 
 	if (offset > 0)
 		request->SetOption(CURLOPT_RANGE,
-				   StringFormat<40>("%" PRIoffset "-",
-						    offset).c_str());
+				   fmt::format_int{offset}.c_str());
 
 	StartRequest();
 }

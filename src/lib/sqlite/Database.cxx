@@ -3,7 +3,7 @@
 
 #include "Database.hxx"
 #include "Error.hxx"
-#include "util/StringFormat.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 
 namespace Sqlite {
 
@@ -12,8 +12,8 @@ Database::Database(const char *path)
 	int result = sqlite3_open(path, &db);
 	if (result != SQLITE_OK)
 		throw SqliteError(db, result,
-				  StringFormat<1024>("Failed to open sqlite database '%s'",
-						     path));
+				  FmtBuffer<1024>("Failed to open sqlite database '{}'",
+						  path));
 }
 
 } // namespace Sqlite

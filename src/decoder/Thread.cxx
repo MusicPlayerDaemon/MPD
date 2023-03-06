@@ -54,7 +54,7 @@ DecoderUriDecode(const DecoderPlugin &plugin,
 	{
 		const ScopeUnlock unlock(bridge.dc.mutex);
 
-		FormatThreadName("decoder:%s", plugin.name);
+		FmtThreadName("decoder:{}", plugin.name);
 
 		plugin.UriDecode(bridge, uri);
 
@@ -98,7 +98,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	{
 		const ScopeUnlock unlock(bridge.dc.mutex);
 
-		FormatThreadName("decoder:%s", plugin.name);
+		FmtThreadName("decoder:{}", plugin.name);
 
 		plugin.StreamDecode(bridge, input_stream);
 
@@ -135,7 +135,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	{
 		const ScopeUnlock unlock(bridge.dc.mutex);
 
-		FormatThreadName("decoder:%s", plugin.name);
+		FmtThreadName("decoder:{}", plugin.name);
 
 		plugin.FileDecode(bridge, path);
 

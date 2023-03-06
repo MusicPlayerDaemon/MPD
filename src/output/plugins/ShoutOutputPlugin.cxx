@@ -9,10 +9,11 @@
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringAPI.hxx"
-#include "util/StringFormat.hxx"
 #include "Log.hxx"
 
 #include <shout/shout.h>
+
+#include <fmt/format.h>
 
 #include <cassert>
 #include <memory>
@@ -99,10 +100,10 @@ static void
 ShoutSetAudioInfo(shout_t *shout_conn, const AudioFormat &audio_format)
 {
 	shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS,
-			     StringFormat<11>("%u", audio_format.channels));
+			     fmt::format_int{static_cast<unsigned>(audio_format.channels)}.c_str());
 
 	shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE,
-			     StringFormat<11>("%u", audio_format.sample_rate));
+			     fmt::format_int{audio_format.sample_rate}.c_str());
 }
 
 #ifdef SHOUT_TLS

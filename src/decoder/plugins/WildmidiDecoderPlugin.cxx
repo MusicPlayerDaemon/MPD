@@ -5,11 +5,12 @@
 #include "../DecoderAPI.hxx"
 #include "tag/Handler.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/StringFormat.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
+#include "lib/fmt/ToBuffer.hxx"
+#include "lib/fmt/PathFormatter.hxx"
 #include "PluginUnavailable.hxx"
 
 #ifdef _WIN32
@@ -31,11 +32,9 @@ wildmidi_init(const ConfigBlock &block)
 		block.GetPath("config_file",
 			      "/etc/timidity/timidity.cfg");
 
-	if (!FileExists(path)) {
-		const auto utf8 = path.ToUTF8();
-		throw PluginUnavailable(StringFormat<1024>("configuration file does not exist: %s",
-							   utf8.c_str()));
-	}
+	if (!FileExists(path))
+		throw PluginUnavailable{FmtBuffer<1024>("configuration file does not exist: {}",
+							path)};
 
 #ifdef LIBWILDMIDI_VERSION
 	/* WildMidi_ClearError() requires libwildmidi 0.4 */
