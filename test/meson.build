@@ -66,6 +66,7 @@ test(
     include_directories: inc,
     dependencies: [
       gtest_dep,
+      fmt_dep,
     ],
   ),
   protocol: 'gtest',

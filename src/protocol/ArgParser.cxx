@@ -5,17 +5,15 @@
 #include "RangeArg.hxx"
 #include "Ack.hxx"
 #include "Chrono.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "util/NumberParser.hxx"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 static inline ProtocolError
 MakeArgError(const char *msg, const char *value) noexcept
 {
-	char buffer[256];
-	snprintf(buffer, sizeof(buffer), "%s: %s", msg, value);
-	return {ACK_ERROR_ARG, buffer};
+	return {ACK_ERROR_ARG, FmtBuffer<256>("{}: {}", msg, value)};
 }
 
 uint32_t
