@@ -8,8 +8,9 @@ struct AudioOutputPlugin;
 
 extern const AudioOutputPlugin *const audio_output_plugins[];
 
+[[gnu::pure]]
 const AudioOutputPlugin *
-GetAudioOutputPluginByName(const char *name);
+GetAudioOutputPluginByName(const char *name) noexcept;
 
 #define audio_output_plugins_for_each(plugin) \
 	for (const AudioOutputPlugin *plugin, \
