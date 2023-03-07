@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-constexpr const EncoderPlugin *encoder_plugins[] = {
+constinit const EncoderPlugin *const encoder_plugins[] = {
 	&null_encoder_plugin,
 #ifdef ENABLE_VORBISENC
 	&vorbis_encoder_plugin,

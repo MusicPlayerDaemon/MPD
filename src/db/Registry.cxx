@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-constexpr const DatabasePlugin *database_plugins[] = {
+constinit const DatabasePlugin *const database_plugins[] = {
 	&simple_db_plugin,
 #ifdef ENABLE_LIBMPDCLIENT
 	&proxy_db_plugin,

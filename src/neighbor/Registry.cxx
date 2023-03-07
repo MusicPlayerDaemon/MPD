@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-constexpr const NeighborPlugin *neighbor_plugins[] = {
+constinit const NeighborPlugin *const neighbor_plugins[] = {
 #ifdef ENABLE_SMBCLIENT
 	&smbclient_neighbor_plugin,
 #endif

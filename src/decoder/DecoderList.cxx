@@ -39,7 +39,7 @@
 
 #include <string.h>
 
-constexpr const struct DecoderPlugin *decoder_plugins[] = {
+constinit const struct DecoderPlugin *const decoder_plugins[] = {
 #ifdef ENABLE_MAD
 	&mad_decoder_plugin,
 #endif

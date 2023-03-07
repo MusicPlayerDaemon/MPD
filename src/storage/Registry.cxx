@@ -13,7 +13,7 @@
 
 #include <string.h>
 
-constexpr const StoragePlugin *storage_plugins[] = {
+constinit const StoragePlugin *const storage_plugins[] = {
 	&local_storage_plugin,
 #ifdef ENABLE_SMBCLIENT
 	&smbclient_storage_plugin,
