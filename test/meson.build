@@ -615,7 +615,7 @@ executable(
   'run_output.cxx',
   include_directories: inc,
   dependencies: [
-    output_glue_dep,
+    output_registry_dep,
     encoder_glue_dep,
     event_dep,
     cmdline_dep,
