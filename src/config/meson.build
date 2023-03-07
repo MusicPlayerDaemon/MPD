@@ -17,6 +17,7 @@ config = static_library(
     fmt_dep,
     fs_dep,
     fs_glue_dep,
+    io_fs_dep,
   ],
 )
 

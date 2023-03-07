@@ -4,7 +4,7 @@ fs_io = static_library(
   include_directories: inc,
   dependencies: [
     fs_dep,
-    io_dep,
+    io_fs_dep,
     system_dep,
     zlib_dep,
   ],

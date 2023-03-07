@@ -149,7 +149,7 @@ executable(
   include_directories: inc,
   dependencies: [
     fs_dep,
-    io_dep,
+    io_fs_dep,
   ],
 )
 
@@ -180,6 +180,7 @@ if zlib_dep.found()
     include_directories: inc,
     dependencies: [
       fs_dep,
+      io_fs_dep,
       zlib_dep,
     ],
   )

@@ -386,6 +386,8 @@ endif
 subdir('src/util')
 subdir('src/cmdline')
 subdir('src/time')
+subdir('src/lib/icu')
+subdir('src/fs')
 subdir('src/io')
 subdir('src/io/uring')
 subdir('src/system')
@@ -399,7 +401,6 @@ subdir('src/apple')
 subdir('src/pcm')
 
 subdir('src/lib/dbus')
-subdir('src/lib/icu')
 subdir('src/lib/smbclient')
 subdir('src/lib/zlib')
 
@@ -424,7 +425,6 @@ subdir('src/lib/crypto')
 
 subdir('src/zeroconf')
 
-subdir('src/fs')
 subdir('src/fs/io')
 subdir('src/fs/glue')
 subdir('src/config')

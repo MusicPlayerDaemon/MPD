@@ -26,7 +26,6 @@ fs = static_library(
   include_directories: inc,
   dependencies: [
     shlwapi_dep,
-    system_dep,
     icu_dep,
     fmt_dep,
   ],
