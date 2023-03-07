@@ -9,7 +9,7 @@
 #include "thread/Thread.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "system/PeriodClock.hxx"
+#include "time/PeriodClock.hxx"
 
 #include <cstdint>
 #include <exception>

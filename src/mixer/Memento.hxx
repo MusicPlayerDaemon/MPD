@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "system/PeriodClock.hxx"
+#include "time/PeriodClock.hxx"
 
 class MultipleOutputs;
 class BufferedOutputStream;

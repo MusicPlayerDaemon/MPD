@@ -15,7 +15,7 @@
 #include "../Error.hxx"
 #include "mixer/plugins/AlsaMixerPlugin.hxx"
 #include "pcm/Export.hxx"
-#include "system/PeriodClock.hxx"
+#include "time/PeriodClock.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/Manual.hxx"
