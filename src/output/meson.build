@@ -2,6 +2,7 @@ output_features = configuration_data()
 
 output_api = static_library(
   'output_api',
+  'OutputPlugin.cxx',
   'Interface.cxx',
   'Timer.cxx',
   include_directories: inc,
@@ -31,7 +32,6 @@ output_glue = static_library(
   'State.cxx',
   'Print.cxx',
   'OutputCommand.cxx',
-  'OutputPlugin.cxx',
   'Finish.cxx',
   'Init.cxx',
   include_directories: inc,
