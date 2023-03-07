@@ -7,11 +7,19 @@
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "mixer/Control.hxx"
 #include "mixer/Mixer.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
+#include "filter/Prepared.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "util/StringBuffer.hxx"
 #include "Log.hxx"
+
+FilteredAudioOutput::~FilteredAudioOutput()
+{
+	if (mixer != nullptr)
+		mixer_free(mixer);
+}
 
 bool
 FilteredAudioOutput::SupportsEnableDisable() const noexcept

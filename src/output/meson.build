@@ -47,7 +47,6 @@ output_glue = static_library(
   'State.cxx',
   'Print.cxx',
   'OutputCommand.cxx',
-  'Finish.cxx',
   'Init.cxx',
   include_directories: inc,
   dependencies: [
