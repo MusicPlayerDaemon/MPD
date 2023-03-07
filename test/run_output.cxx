@@ -86,7 +86,7 @@ LoadAudioOutput(const ConfigData &config, EventLoop &event_loop,
 	if (plugin_name == nullptr)
 		throw std::runtime_error("Missing \"type\" configuration");
 
-	const auto *plugin = AudioOutputPlugin_get(plugin_name);
+	const auto *plugin = GetAudioOutputPluginByName(plugin_name);
 	if (plugin == nullptr)
 		throw FmtRuntimeError("No such audio output plugin: {}",
 				      plugin_name);

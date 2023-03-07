@@ -94,7 +94,7 @@ constexpr const AudioOutputPlugin *audio_output_plugins[] = {
 };
 
 const AudioOutputPlugin *
-AudioOutputPlugin_get(const char *name)
+GetAudioOutputPluginByName(const char *name)
 {
 	audio_output_plugins_for_each(plugin)
 		if (StringIsEqual(plugin->name, name))

@@ -265,7 +265,7 @@ audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 		if (p == nullptr)
 			throw std::runtime_error("Missing \"type\" configuration");
 
-		plugin = AudioOutputPlugin_get(p);
+		plugin = GetAudioOutputPluginByName(p);
 		if (plugin == nullptr)
 			throw FmtRuntimeError("No such audio output plugin: {}",
 					      p);

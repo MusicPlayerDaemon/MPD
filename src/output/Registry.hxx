@@ -9,7 +9,7 @@ struct AudioOutputPlugin;
 extern const AudioOutputPlugin *const audio_output_plugins[];
 
 const AudioOutputPlugin *
-AudioOutputPlugin_get(const char *name);
+GetAudioOutputPluginByName(const char *name);
 
 #define audio_output_plugins_for_each(plugin) \
 	for (const AudioOutputPlugin *plugin, \
