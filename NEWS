@@ -15,6 +15,7 @@ ver 0.24 (not yet released)
   - curl: add "connect_timeout" configuration
   - curl: fix busy loop after connection failed
 * decoder
+  - ffmpeg: require FFmpeg 4.0 or later
   - hybrid_dsd: remove
   - opus: implement bitrate calculation
   - wavpack: require libwavpack version 5
