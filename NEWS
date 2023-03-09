@@ -19,6 +19,7 @@ ver 0.24 (not yet released)
   - gme: require GME 0.6 or later
   - hybrid_dsd: remove
   - opus: implement bitrate calculation
+  - sidplay: require libsidplayfp (drop support for the original sidplay)
   - wavpack: require libwavpack version 5
 * player
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly

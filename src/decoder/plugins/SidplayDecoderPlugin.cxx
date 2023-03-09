@@ -12,16 +12,13 @@
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/icu/Converter.hxx"
-#ifdef HAVE_SIDPLAYFP
 #include "io/FileReader.hxx"
-#endif
 #include "util/Domain.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ByteOrder.hxx"
 #include "Log.hxx"
 
-#ifdef HAVE_SIDPLAYFP
 #include <sidplayfp/sidplayfp.h>
 #include <sidplayfp/SidInfo.h>
 #include <sidplayfp/SidConfig.h>
@@ -30,12 +27,6 @@
 #include <sidplayfp/builders/resid.h>
 #include <sidplayfp/builders/residfp.h>
 #include <sidplayfp/SidDatabase.h>
-#else
-#include <sidplay/sidplay2.h>
-#include <sidplay/builders/resid.h>
-#include <sidplay/utils/SidTuneMod.h>
-#include <sidplay/utils/SidDatabase.h>
-#endif
 
 #include <fmt/format.h>
 
@@ -57,16 +48,13 @@ struct SidplayGlobal {
 
 	bool filter_setting;
 
-#ifdef HAVE_SIDPLAYFP
 	std::unique_ptr<uint8_t[]> kernal, basic;
-#endif
 
 	explicit SidplayGlobal(const ConfigBlock &block);
 };
 
 static SidplayGlobal *sidplay_global;
 
-#ifdef HAVE_SIDPLAYFP
 static constexpr unsigned rom_size = 8192;
 
 static void loadRom(const Path rom_path, uint8_t *dump)
@@ -75,7 +63,6 @@ static void loadRom(const Path rom_path, uint8_t *dump)
 	if (romDump.Read(dump, rom_size) != rom_size)
 		throw FmtRuntimeError("Could not load rom dump '{}'", rom_path);
 }
-#endif
 
 /**
  * Throws on error.
@@ -84,11 +71,7 @@ static std::unique_ptr<SidDatabase>
 sidplay_load_songlength_db(const Path path)
 {
 	auto db = std::make_unique<SidDatabase>();
-#ifdef HAVE_SIDPLAYFP
 	bool error = !db->open(path.c_str());
-#else
-	bool error = db->open(path.c_str()) < 0;
-#endif
 	if (error)
 		throw FmtRuntimeError("unable to read songlengths file {}: {}",
 				      path, db->error());
@@ -113,7 +96,6 @@ SidplayGlobal::SidplayGlobal(const ConfigBlock &block)
 
 	filter_setting = block.GetBlockValue("filter", true);
 
-#ifdef HAVE_SIDPLAYFP
 	/* read kernal rom dump file */
 	const auto kernal_path = block.GetPath("kernal");
 	if (!kernal_path.IsNull())
@@ -129,7 +111,6 @@ SidplayGlobal::SidplayGlobal(const ConfigBlock &block)
 		basic = std::make_unique<uint8_t[]>(rom_size);
 		loadRom(basic_path, basic.get());
 	}
-#endif
 }
 
 static bool
@@ -224,17 +205,9 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	/* load the tune */
 
 	const auto container = ParseContainerPath(path_fs);
-#ifdef HAVE_SIDPLAYFP
 	SidTune tune(container.path.c_str());
-#else
-	SidTuneMod tune(container.path.c_str());
-#endif
 	if (!tune.getStatus()) {
-#ifdef HAVE_SIDPLAYFP
 		const char *error = tune.statusString();
-#else
-		const char *error = tune.getInfo().statusString;
-#endif
 		FmtWarning(sidplay_domain, "failed to load file: {}", error);
 		return;
 	}
@@ -248,21 +221,12 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	/* initialize the player */
 
-#ifdef HAVE_SIDPLAYFP
 	sidplayfp player;
 
 	player.setRoms(sidplay_global->kernal.get(),
 		       sidplay_global->basic.get(),
 		       nullptr);
-#else
-	sidplay2 player;
-#endif
-#ifdef HAVE_SIDPLAYFP
-	bool error = !player.load(&tune);
-#else
-	bool error = player.load(&tune) < 0;
-#endif
-	if (error) {
+	if (!player.load(&tune)) {
 		FmtWarning(sidplay_domain,
 			   "sidplay2.load() failed: {}", player.error());
 		return;
@@ -270,7 +234,6 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	/* initialize the builder */
 
-#ifdef HAVE_SIDPLAYFP
 	ReSIDfpBuilder builder("ReSID");
 	if (!builder.getStatus()) {
 		FmtWarning(sidplay_domain,
@@ -286,88 +249,33 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 			   builder.error());
 		return;
 	}
-#else
-	ReSIDBuilder builder("ReSID");
-	builder.create(player.info().maxsids);
-	if (!builder) {
-		FmtWarning(sidplay_domain, "ReSIDBuilder.create() failed: {}",
-			   builder.error());
-		return;
-	}
-#endif
 
 	builder.filter(sidplay_global->filter_setting);
-#ifdef HAVE_SIDPLAYFP
 	if (!builder.getStatus()) {
 		FmtWarning(sidplay_domain,
 			   "ReSIDfpBuilder.filter() failed: {}",
 			   builder.error());
 		return;
 	}
-#else
-	if (!builder) {
-		FmtWarning(sidplay_domain, "ReSIDBuilder.filter() failed: {}",
-			   builder.error());
-		return;
-	}
-#endif
 
 	/* configure the player */
 
 	auto config = player.config();
 
-#ifndef HAVE_SIDPLAYFP
-	config.clockDefault = SID2_CLOCK_PAL;
-	config.clockForced = true;
-	config.clockSpeed = SID2_CLOCK_CORRECT;
-#endif
 	config.frequency = 48000;
-#ifndef HAVE_SIDPLAYFP
-	config.optimisation = SID2_DEFAULT_OPTIMISATION;
-
-	config.precision = 16;
-	config.sidDefault = SID2_MOS6581;
-#endif
 	config.sidEmulation = &builder;
-#ifdef HAVE_SIDPLAYFP
 	config.samplingMethod = SidConfig::INTERPOLATE;
 	config.fastSampling = false;
-#else
-	config.sidModel = SID2_MODEL_CORRECT;
-	config.sidSamples = true;
-	config.sampleFormat = IsLittleEndian()
-		? SID2_LITTLE_SIGNED
-		: SID2_BIG_SIGNED;
-#endif
 
-#ifdef HAVE_SIDPLAYFP
-	const bool stereo = tune.getInfo()->sidChips() >= 2;
-#else
-	const bool stereo = tune.isStereo();
-#endif
-
-	if (stereo) {
-#ifdef HAVE_SIDPLAYFP
+	if (tune.getInfo()->sidChips() >= 2) {
 		config.playback = SidConfig::STEREO;
-#else
-		config.playback = sid2_stereo;
-#endif
 		channels = 2;
 	} else {
-#ifdef HAVE_SIDPLAYFP
 		config.playback = SidConfig::MONO;
-#else
-		config.playback = sid2_mono;
-#endif
 		channels = 1;
 	}
 
-#ifdef HAVE_SIDPLAYFP
-	error = !player.config(config);
-#else
-	error = player.config(config) < 0;
-#endif
-	if (error) {
+	if (!player.config(config)) {
 		FmtWarning(sidplay_domain,
 			   "sidplay2.config() failed: {}", player.error());
 		return;
@@ -382,11 +290,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	/* .. and play */
 
-#ifdef HAVE_SIDPLAYFP
 	constexpr unsigned timebase = 1;
-#else
-	const unsigned timebase = player.timebase();
-#endif
 	const unsigned end = duration.IsNegative()
 		? 0U
 		: duration.ToScale<uint64_t>(timebase);
@@ -399,13 +303,8 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		if (result <= 0)
 			break;
 
-#ifdef HAVE_SIDPLAYFP
 		/* libsidplayfp returns the number of samples */
 		const size_t n_samples = result;
-#else
-		/* libsidplay2 returns the number of bytes */
-		const size_t n_samples = result / sizeof(buffer[0]);
-#endif
 
 		client.SubmitTimestamp(FloatDuration(player.time()) / timebase);
 
@@ -463,15 +362,9 @@ Windows1252ToUTF8(const char *s) noexcept
 static AllocatedString
 GetInfoString(const SidTuneInfo &info, unsigned i) noexcept
 {
-#ifdef HAVE_SIDPLAYFP
 	const char *s = info.numberOfInfoStrings() > i
 		? info.infoString(i)
 		: "";
-#else
-	const char *s = info.numberOfInfoStrings > i
-		? info.infoString[i]
-		: "";
-#endif
 
 	return Windows1252ToUTF8(s);
 }
@@ -542,23 +435,14 @@ sidplay_scan_file(Path path_fs, TagHandler &handler) noexcept
 	const auto container = ParseContainerPath(path_fs);
 	const unsigned song_num = container.track;
 
-#ifdef HAVE_SIDPLAYFP
 	SidTune tune(container.path.c_str());
-#else
-	SidTuneMod tune(container.path.c_str());
-#endif
 	if (!tune.getStatus())
 		return false;
 
 	tune.selectSong(song_num);
 
-#ifdef HAVE_SIDPLAYFP
 	const SidTuneInfo &info = *tune.getInfo();
 	const unsigned n_tracks = info.songs();
-#else
-	const SidTuneInfo &info = tune.getInfo();
-	const unsigned n_tracks = info.songs;
-#endif
 
 	ScanSidTuneInfo(info, song_num, n_tracks, handler);
 
@@ -575,21 +459,12 @@ sidplay_container_scan(Path path_fs)
 {
 	std::forward_list<DetachedSong> list;
 
-#ifdef HAVE_SIDPLAYFP
 	SidTune tune(path_fs.c_str());
-#else
-	SidTuneMod tune(path_fs.c_str());
-#endif
 	if (!tune.getStatus())
 		return list;
 
-#ifdef HAVE_SIDPLAYFP
 	const SidTuneInfo &info = *tune.getInfo();
 	const unsigned n_tracks = info.songs();
-#else
-	const SidTuneInfo &info = tune.getInfo();
-	const unsigned n_tracks = info.songs;
-#endif
 
 	/* Don't treat sids containing a single tune
 		as containers */
