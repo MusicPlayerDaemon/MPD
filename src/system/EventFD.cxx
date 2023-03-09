@@ -9,8 +9,9 @@
 #include <sys/eventfd.h>
 
 EventFD::EventFD()
+	:fd(::eventfd(0, EFD_NONBLOCK|EFD_CLOEXEC))
 {
-	if (!fd.CreateEventFD(0))
+	if (!fd.IsDefined())
 		throw MakeErrno("eventfd() failed");
 }
 

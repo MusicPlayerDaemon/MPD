@@ -239,13 +239,6 @@ FileDescriptor::CheckDuplicate(FileDescriptor new_fd) const noexcept
 #ifdef __linux__
 
 bool
-FileDescriptor::CreateEventFD(unsigned initval) noexcept
-{
-	fd = ::eventfd(initval, EFD_NONBLOCK|EFD_CLOEXEC);
-	return fd >= 0;
-}
-
-bool
 FileDescriptor::CreateSignalFD(const sigset_t *mask) noexcept
 {
 	int new_fd = ::signalfd(fd, mask, SFD_NONBLOCK|SFD_CLOEXEC);
