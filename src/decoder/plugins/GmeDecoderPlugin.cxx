@@ -41,20 +41,17 @@ struct GmeContainerPath {
 	unsigned track;
 };
 
-#if GME_VERSION >= 0x000600
 static int gme_accuracy;
-#endif
 static unsigned gme_default_fade;
 
 static bool
 gme_plugin_init([[maybe_unused]] const ConfigBlock &block)
 {
-#if GME_VERSION >= 0x000600
 	auto accuracy = block.GetBlockParam("accuracy");
 	gme_accuracy = accuracy != nullptr
 		? (int)accuracy->GetBoolValue()
 		: -1;
-#endif
+
 	auto fade = block.GetBlockParam("default_fade");
 	gme_default_fade = fade != nullptr
 		? fade->GetUnsignedValue() * 1000
@@ -148,10 +145,8 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 	FmtDebug(gme_domain, "emulator type '{}'",
 		 gme_type_system(gme_type(emu)));
 
-#if GME_VERSION >= 0x000600
 	if (gme_accuracy >= 0)
 		gme_enable_accuracy(emu, gme_accuracy);
-#endif
 
 	gme_info_t *ti;
 	const char *gme_err = gme_track_info(emu, &ti, container.track);
