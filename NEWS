@@ -1,6 +1,8 @@
 ver 0.23.13 (not yet released)
 * input
   - curl: fix busy loop after connection failed
+* decoder
+  - gme: require GME 0.6 or later
 * output
   - pipewire: fix corruption bug due to missing lock
 * Linux

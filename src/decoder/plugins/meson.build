@@ -81,7 +81,7 @@ if libfaad_dep.found()
   decoder_plugins_sources += 'FaadDecoderPlugin.cxx'
 endif
 
-libgme_dep = c_compiler.find_library('gme', required: get_option('gme'))
+libgme_dep = dependency('libgme', version: '>= 0.6', required: get_option('gme'))
 decoder_features.set('ENABLE_GME', libgme_dep.found())
 if libgme_dep.found()
   decoder_plugins_sources += 'GmeDecoderPlugin.cxx'
