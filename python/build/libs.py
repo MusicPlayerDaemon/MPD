@@ -140,17 +140,14 @@ libopenmpt = AutotoolsProject(
 )
 
 wildmidi = CmakeProject(
-    'https://codeload.github.com/Mindwerks/wildmidi/tar.gz/wildmidi-0.4.4',
-    '6f267c8d331e9859906837e2c197093fddec31829d2ebf7b958cf6b7ae935430',
+    'https://github.com/Mindwerks/wildmidi/releases/download/wildmidi-0.4.5/wildmidi-0.4.5.tar.gz',
+    'd5e7bef00a7aa47534a53d43b1265f8d3d27f6a28e7f563c1cdf02ff4fa35b99',
     'lib/libWildMidi.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',
         '-DWANT_PLAYER=OFF',
         '-DWANT_STATIC=ON',
     ],
-    base='wildmidi-wildmidi-0.4.4',
-    name='wildmidi',
-    version='0.4.4',
 )
 
 gme = CmakeProject(
