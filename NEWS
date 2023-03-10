@@ -11,6 +11,7 @@ ver 0.24 (not yet released)
   - apply Unicode normalization to case-insensitive filter expressions
 * database
   - proxy: require MPD 0.21 or later
+  - proxy: require libmpdclient 2.15 or later
 * archive
   - add option to disable archive plugins in mpd.conf
 * input

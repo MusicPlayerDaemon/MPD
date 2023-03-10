@@ -151,9 +151,7 @@ static constexpr struct {
 	{ TAG_NAME, MPD_TAG_NAME },
 	{ TAG_GENRE, MPD_TAG_GENRE },
 	{ TAG_DATE, MPD_TAG_DATE },
-#if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
 	{ TAG_ORIGINAL_DATE, MPD_TAG_ORIGINAL_DATE },
-#endif
 	{ TAG_COMPOSER, MPD_TAG_COMPOSER },
 	{ TAG_PERFORMER, MPD_TAG_PERFORMER },
 	{ TAG_COMMENT, MPD_TAG_COMMENT },
@@ -167,9 +165,7 @@ static constexpr struct {
 	  MPD_TAG_MUSICBRAINZ_RELEASETRACKID },
 	{ TAG_ARTIST_SORT, MPD_TAG_ARTIST_SORT },
 	{ TAG_ALBUM_ARTIST_SORT, MPD_TAG_ALBUM_ARTIST_SORT },
-#if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
 	{ TAG_ALBUM_SORT, MPD_TAG_ALBUM_SORT },
-#endif
 #if LIBMPDCLIENT_CHECK_VERSION(2,17,0)
 	{ TAG_WORK, MPD_TAG_WORK },
 	{ TAG_CONDUCTOR, MPD_TAG_CONDUCTOR },
@@ -214,7 +210,6 @@ ProxySong::ProxySong(const mpd_song *song)
 	start_time = SongTime::FromS(mpd_song_get_start(song));
 	end_time = SongTime::FromS(mpd_song_get_end(song));
 
-#if LIBMPDCLIENT_CHECK_VERSION(2,15,0)
 	const auto *af = mpd_song_get_audio_format(song);
 	if (af != nullptr) {
 		if (audio_valid_sample_rate(af->sample_rate))
@@ -250,7 +245,6 @@ ProxySong::ProxySong(const mpd_song *song)
 		if (audio_valid_channel_count(af->channels))
 			audio_format.channels = af->channels;
 	}
-#endif
 
 	TagBuilder tag_builder;
 
@@ -306,58 +300,11 @@ CheckError(struct mpd_connection *connection)
 		ThrowError(connection);
 }
 
-#if !LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
-
-static bool
-SendConstraints(mpd_connection *connection, const ISongFilter &f)
-{
-	if (auto t = dynamic_cast<const TagSongFilter *>(&f)) {
-		if (t->IsNegated())
-			// TODO implement
-			return true;
-
-		if (t->GetTagType() == TAG_NUM_OF_ITEM_TYPES)
-			return mpd_search_add_any_tag_constraint(connection,
-								 MPD_OPERATOR_DEFAULT,
-								 t->GetValue().c_str());
-
-		const auto tag = Convert(t->GetTagType());
-		if (tag == MPD_TAG_COUNT)
-			return true;
-
-		return mpd_search_add_tag_constraint(connection,
-						     MPD_OPERATOR_DEFAULT,
-						     tag,
-						     t->GetValue().c_str());
-	} else if (auto u = dynamic_cast<const UriSongFilter *>(&f)) {
-		if (u->IsNegated())
-			// TODO implement
-			return true;
-
-		return mpd_search_add_uri_constraint(connection,
-						     MPD_OPERATOR_DEFAULT,
-						     u->GetValue().c_str());
-	} else if (auto b = dynamic_cast<const BaseSongFilter *>(&f)) {
-		return mpd_search_add_base_constraint(connection,
-						      MPD_OPERATOR_DEFAULT,
-						      b->GetValue());
-	} else
-		return true;
-}
-
-#endif
-
 static bool
 SendConstraints(mpd_connection *connection, const SongFilter &filter)
 {
-#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
 	return mpd_search_add_expression(connection,
 					 filter.ToExpression().c_str());
-#else
-	return std::all_of(
-		filter.GetItems().begin(), filter.GetItems().end(),
-		[=](const auto &item) { return SendConstraints(connection, *item); });
-#endif
 }
 
 static bool
@@ -375,13 +322,11 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection,
 		return false;
 
 	if (selection.sort != TAG_NUM_OF_ITEM_TYPES) {
-#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
 		if (selection.sort == SORT_TAG_LAST_MODIFIED) {
 			if (!mpd_search_add_sort_name(connection, "Last-Modified",
 						      selection.descending))
 				return false;
 		} else {
-#endif
 			const auto sort = Convert(selection.sort);
 			/* if this is an unsupported tag, the sort
 			   will be done later by class
@@ -390,9 +335,7 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection,
 			    !mpd_search_add_sort_tag(connection, sort,
 						     selection.descending))
 				return false;
-#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
 		}
-#endif
 	}
 
 	if (window != RangeArg::All() &&
@@ -407,18 +350,11 @@ SendGroup(mpd_connection *connection, TagType group)
 {
 	assert(group != TAG_NUM_OF_ITEM_TYPES);
 
-#if LIBMPDCLIENT_CHECK_VERSION(2,12,0)
 	const auto tag = Convert(group);
 	if (tag == MPD_TAG_COUNT)
 		throw std::runtime_error("Unsupported tag");
 
 	return mpd_search_add_group_tag(connection, tag);
-#else
-	(void)connection;
-	(void)group;
-
-	throw std::runtime_error("Grouping requires libmpdclient 2.12");
-#endif
 }
 
 static bool
@@ -863,69 +799,12 @@ try {
 	throw;
 }
 
-#if !LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
-
-[[gnu::pure]]
-static bool
-IsFilterSupported(const ISongFilter &f) noexcept
-{
-	if (auto t = dynamic_cast<const TagSongFilter *>(&f)) {
-		if (t->IsNegated())
-			// TODO implement
-			return false;
-
-		if (t->GetTagType() == TAG_NUM_OF_ITEM_TYPES)
-			return true;
-
-		const auto tag = Convert(t->GetTagType());
-		return tag != MPD_TAG_COUNT;
-	} else if (auto u = dynamic_cast<const UriSongFilter *>(&f)) {
-		if (u->IsNegated())
-			// TODO implement
-			return false;
-
-		return false;
-	} else if (dynamic_cast<const BaseSongFilter *>(&f)) {
-		return true;
-	} else
-		return false;
-}
-
-#endif
-
-[[gnu::pure]]
-static bool
-IsFilterFullySupported(const SongFilter &filter) noexcept
-{
-#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
-	(void)filter;
-	return true;
-#else
-	return std::all_of(filter.GetItems().begin(), filter.GetItems().end(),
-			   [](const auto &item) { return IsFilterSupported(*item); });
-#endif
-}
-
-[[gnu::pure]]
-static bool
-IsFilterFullySupported(const SongFilter *filter) noexcept
-{
-	return filter == nullptr ||
-		IsFilterFullySupported(*filter);
-}
-
 [[gnu::pure]]
 static bool
 IsSortSupported(TagType tag_type) noexcept
 {
 	if (tag_type == TagType(SORT_TAG_LAST_MODIFIED)) {
-		/* sort "Last-Modified" requires libmpdclient 2.15 for
-		   mpd_search_add_sort_name() */
-#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
 		return true;
-#else
-		return false;
-#endif
 	}
 
 	return Convert(tag_type) != MPD_TAG_COUNT;
@@ -944,8 +823,7 @@ CheckSelection(DatabaseSelection selection) noexcept
 		   MPD */
 		selection.sort = TAG_NUM_OF_ITEM_TYPES;
 
-	if (selection.window != RangeArg::All() &&
-	    IsFilterFullySupported(selection.filter))
+	if (selection.window != RangeArg::All())
 		/* we can forward the "window" parameter to the other
 		   MPD */
 		selection.window = RangeArg::All();

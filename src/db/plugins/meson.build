@@ -23,7 +23,7 @@ if upnp_dep.found()
   ]
 endif
 
-libmpdclient_dep = dependency('libmpdclient', version: '>= 2.11', required: get_option('libmpdclient'))
+libmpdclient_dep = dependency('libmpdclient', version: '>= 2.15', required: get_option('libmpdclient'))
 conf.set('ENABLE_LIBMPDCLIENT', libmpdclient_dep.found())
 if libmpdclient_dep.found()
   db_plugins_sources += 'ProxyDatabasePlugin.cxx'
