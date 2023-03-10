@@ -9,6 +9,8 @@ ver 0.24 (not yet released)
   - operator "starts_with"
   - show PCRE support in "config" response
   - apply Unicode normalization to case-insensitive filter expressions
+* database
+  - proxy: require MPD 0.21 or later
 * archive
   - add option to disable archive plugins in mpd.conf
 * input

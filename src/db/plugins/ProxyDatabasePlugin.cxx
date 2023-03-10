@@ -306,6 +306,8 @@ CheckError(struct mpd_connection *connection)
 		ThrowError(connection);
 }
 
+#if !LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
+
 static bool
 SendConstraints(mpd_connection *connection, const ISongFilter &f)
 {
@@ -343,20 +345,19 @@ SendConstraints(mpd_connection *connection, const ISongFilter &f)
 		return true;
 }
 
+#endif
+
 static bool
 SendConstraints(mpd_connection *connection, const SongFilter &filter)
 {
 #if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
-	if (mpd_connection_cmp_server_version(connection, 0, 21, 0) >= 0)
-		/* with MPD 0.21 (and libmpdclient 2.15), we can pass
-		   arbitrary filters as expression */
-		return mpd_search_add_expression(connection,
-						 filter.ToExpression().c_str());
-#endif
-
+	return mpd_search_add_expression(connection,
+					 filter.ToExpression().c_str());
+#else
 	return std::all_of(
 		filter.GetItems().begin(), filter.GetItems().end(),
 		[=](const auto &item) { return SendConstraints(connection, *item); });
+#endif
 }
 
 static bool
@@ -373,8 +374,7 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection,
 	    !SendConstraints(connection, *selection.filter))
 		return false;
 
-	if (selection.sort != TAG_NUM_OF_ITEM_TYPES &&
-	    mpd_connection_cmp_server_version(connection, 0, 21, 0) >= 0) {
+	if (selection.sort != TAG_NUM_OF_ITEM_TYPES) {
 #if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
 		if (selection.sort == SORT_TAG_LAST_MODIFIED) {
 			if (!mpd_search_add_sort_name(connection, "Last-Modified",
@@ -487,11 +487,11 @@ ProxyDatabase::Connect()
 	try {
 		CheckError(connection);
 
-		if (mpd_connection_cmp_server_version(connection, 0, 20, 0) < 0) {
+		if (mpd_connection_cmp_server_version(connection, 0, 21, 0) < 0) {
 			const unsigned *version =
 				mpd_connection_get_server_version(connection);
 			throw FmtRuntimeError("Connect to MPD {}.{}.{}, but this "
-					      "plugin requires at least version 0.20",
+					      "plugin requires at least version 0.21",
 					      version[0], version[1], version[2]);
 		}
 
@@ -863,6 +863,8 @@ try {
 	throw;
 }
 
+#if !LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
+
 [[gnu::pure]]
 static bool
 IsFilterSupported(const ISongFilter &f) noexcept
@@ -889,42 +891,33 @@ IsFilterSupported(const ISongFilter &f) noexcept
 		return false;
 }
 
-[[gnu::pure]]
-static bool
-IsFilterFullySupported(const SongFilter &filter,
-		       const struct mpd_connection *connection) noexcept
-{
-#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
-	if (mpd_connection_cmp_server_version(connection, 0, 21, 0) >= 0)
-		/* with MPD 0.21 (and libmpdclient 2.15), we can pass
-		   arbitrary filters as expression */
-		return true;
-#else
-	(void)connection;
 #endif
 
+[[gnu::pure]]
+static bool
+IsFilterFullySupported(const SongFilter &filter) noexcept
+{
+#if LIBMPDCLIENT_CHECK_VERSION(2, 15, 0)
+	(void)filter;
+	return true;
+#else
 	return std::all_of(filter.GetItems().begin(), filter.GetItems().end(),
 			   [](const auto &item) { return IsFilterSupported(*item); });
+#endif
 }
 
 [[gnu::pure]]
 static bool
-IsFilterFullySupported(const SongFilter *filter,
-		       const struct mpd_connection *connection) noexcept
+IsFilterFullySupported(const SongFilter *filter) noexcept
 {
 	return filter == nullptr ||
-		IsFilterFullySupported(*filter, connection);
+		IsFilterFullySupported(*filter);
 }
 
 [[gnu::pure]]
 static bool
-IsSortSupported(TagType tag_type,
-		const struct mpd_connection *connection) noexcept
+IsSortSupported(TagType tag_type) noexcept
 {
-	if (mpd_connection_cmp_server_version(connection, 0, 21, 0) < 0)
-		/* sorting requires MPD 0.21 */
-		return false;
-
 	if (tag_type == TagType(SORT_TAG_LAST_MODIFIED)) {
 		/* sort "Last-Modified" requires libmpdclient 2.15 for
 		   mpd_search_add_sort_name() */
@@ -940,20 +933,19 @@ IsSortSupported(TagType tag_type,
 
 [[gnu::pure]]
 static DatabaseSelection
-CheckSelection(DatabaseSelection selection,
-	       struct mpd_connection *connection) noexcept
+CheckSelection(DatabaseSelection selection) noexcept
 {
 	selection.uri.clear();
 	selection.filter = nullptr;
 
 	if (selection.sort != TAG_NUM_OF_ITEM_TYPES &&
-	    IsSortSupported(selection.sort, connection))
+	    IsSortSupported(selection.sort))
 		/* we can forward the "sort" parameter to the other
 		   MPD */
 		selection.sort = TAG_NUM_OF_ITEM_TYPES;
 
 	if (selection.window != RangeArg::All() &&
-	    IsFilterFullySupported(selection.filter, connection))
+	    IsFilterFullySupported(selection.filter))
 		/* we can forward the "window" parameter to the other
 		   MPD */
 		selection.window = RangeArg::All();
@@ -970,7 +962,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
-	DatabaseVisitorHelper helper(CheckSelection(selection, connection),
+	DatabaseVisitorHelper helper(CheckSelection(selection),
 				     visit_song);
 
 	if (!visit_directory && !visit_playlist && selection.recursive &&
