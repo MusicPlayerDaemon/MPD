@@ -12,10 +12,6 @@
 #include "fs/NarrowPath.hxx"
 #include "Log.hxx"
 
-#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-#error libFLAC is too old
-#endif
-
 static void
 flacPrintErroredState(FLAC__StreamDecoderState state) noexcept
 {

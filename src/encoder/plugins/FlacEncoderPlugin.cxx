@@ -17,10 +17,6 @@
 
 #include <algorithm>
 
-#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-#error libFLAC is too old
-#endif
-
 class FlacEncoder final : public Encoder {
 	const AudioFormat audio_format;
 
