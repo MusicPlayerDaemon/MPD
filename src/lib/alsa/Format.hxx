@@ -1,26 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_ALSA_FORMAT_HXX
-#define MPD_ALSA_FORMAT_HXX
+#pragma once
 
 #include "pcm/SampleFormat.hxx"
 #include "util/Compiler.h"
-#include "config.h"
 
 #include <alsa/asoundlib.h>
 
 #include <cassert>
-
-#if SND_LIB_VERSION >= 0x1001c
-/* alsa-lib supports DSD since version 1.0.27.1 */
-#define HAVE_ALSA_DSD
-#endif
-
-#if SND_LIB_VERSION >= 0x1001d
-/* alsa-lib supports DSD_U32 since version 1.0.29 */
-#define HAVE_ALSA_DSD_U32
-#endif
 
 /**
  * Convert MPD's #SampleFormat enum to libasound's snd_pcm_format_t
@@ -36,11 +24,7 @@ ToAlsaPcmFormat(SampleFormat sample_format) noexcept
 		return SND_PCM_FORMAT_UNKNOWN;
 
 	case SampleFormat::DSD:
-#ifdef HAVE_ALSA_DSD
 		return SND_PCM_FORMAT_DSD_U8;
-#else
-		return SND_PCM_FORMAT_UNKNOWN;
-#endif
 
 	case SampleFormat::S8:
 		return SND_PCM_FORMAT_S8;
@@ -85,7 +69,6 @@ ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt) noexcept
 
 	case SND_PCM_FORMAT_S32_BE: return SND_PCM_FORMAT_S32_LE;
 
-#ifdef HAVE_ALSA_DSD_U32
 	case SND_PCM_FORMAT_DSD_U16_LE:
 		return SND_PCM_FORMAT_DSD_U16_BE;
 
@@ -97,7 +80,6 @@ ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt) noexcept
 
 	case SND_PCM_FORMAT_DSD_U32_BE:
 		return SND_PCM_FORMAT_DSD_U32_LE;
-#endif
 
 	default: return SND_PCM_FORMAT_UNKNOWN;
 	}
@@ -121,5 +103,3 @@ PackAlsaPcmFormat(snd_pcm_format_t fmt) noexcept
 		return SND_PCM_FORMAT_UNKNOWN;
 	}
 }
-
-#endif

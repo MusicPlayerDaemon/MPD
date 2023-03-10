@@ -27,6 +27,7 @@ ver 0.24 (not yet released)
 * tags
   - new tags "TitleSort", "Mood"
 * output
+  - alsa: require alsa-lib 1.1 or later
   - pipewire: fix corruption bug due to missing lock
   - pipewire: map tags "Date" and "Comment"
 * switch to C++20
