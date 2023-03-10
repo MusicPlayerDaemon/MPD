@@ -239,9 +239,7 @@ SoxrPcmResampler::Close() noexcept
 void
 SoxrPcmResampler::Reset() noexcept
 {
-#if SOXR_THIS_VERSION >= SOXR_VERSION(0,1,2)
 	soxr_clear(soxr);
-#endif
 }
 
 std::span<const std::byte>

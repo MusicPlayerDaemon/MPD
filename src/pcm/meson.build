@@ -59,7 +59,7 @@ if libsamplerate_dep.found()
   pcm_sources += 'LibsamplerateResampler.cxx'
 endif
 
-soxr_dep = dependency('soxr', required: get_option('soxr'))
+soxr_dep = dependency('soxr', version: '>= 0.1.2', required: get_option('soxr'))
 if soxr_dep.found()
   conf.set('ENABLE_SOXR', true)
   pcm_sources += 'SoxrResampler.cxx'
