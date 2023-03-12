@@ -23,7 +23,7 @@ GetMimeTypeBase(std::string_view s) noexcept;
  *
  * "foo/bar; param1=value1; param2=value2"
  */
-std::map<std::string, std::string>
+std::map<std::string, std::string, std::less<>>
 ParseMimeTypeParameters(std::string_view mime_type) noexcept;
 
 #endif

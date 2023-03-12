@@ -51,9 +51,9 @@ class UdisksNeighborExplorer final
 	 */
 	mutable Mutex mutex;
 
-	using ByUri = std::map<std::string, NeighborInfo>;
+	using ByUri = std::map<std::string, NeighborInfo, std::less<>>;
 	ByUri by_uri;
-	std::map<std::string, ByUri::iterator> by_path;
+	std::map<std::string, ByUri::iterator, std::less<>> by_path;
 
 public:
 	UdisksNeighborExplorer(EventLoop &_event_loop,

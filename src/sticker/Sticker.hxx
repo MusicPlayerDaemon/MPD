@@ -8,7 +8,7 @@
 #include <string>
 
 struct Sticker {
-	std::map<std::string, std::string> table;
+	std::map<std::string, std::string, std::less<>> table;
 };
 
 #endif

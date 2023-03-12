@@ -49,7 +49,7 @@ public:
 	 *
 	 * This method must be thread-safe.
 	 */
-	virtual std::map<std::string, std::string> GetAttributes() const noexcept {
+	virtual std::map<std::string, std::string, std::less<>> GetAttributes() const noexcept {
 		return {};
 	}
 

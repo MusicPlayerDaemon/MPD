@@ -257,7 +257,7 @@ public:
 	}
 
 private:
-	std::map<std::string, std::string> GetAttributes() const noexcept override;
+	std::map<std::string, std::string, std::less<>> GetAttributes() const noexcept override;
 	void SetAttribute(std::string &&name, std::string &&value) override;
 
 	void Enable() override;
@@ -444,7 +444,7 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 		allowed_formats = Alsa::AllowedFormat::ParseList(allowed_formats_string);
 }
 
-std::map<std::string, std::string>
+std::map<std::string, std::string, std::less<>>
 AlsaOutput::GetAttributes() const noexcept
 {
 	const std::scoped_lock<Mutex> lock(attributes_mutex);

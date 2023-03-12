@@ -24,7 +24,7 @@ struct SearchStats {
 		: total_duration(0) {}
 };
 
-class TagCountMap : public std::map<std::string, SearchStats> {
+class TagCountMap : public std::map<std::string, SearchStats, std::less<>> {
 };
 
 static void

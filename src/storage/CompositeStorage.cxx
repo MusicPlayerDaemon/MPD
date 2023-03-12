@@ -20,8 +20,8 @@
 class CompositeDirectoryReader final : public StorageDirectoryReader {
 	std::unique_ptr<StorageDirectoryReader> other;
 
-	std::set<std::string> names;
-	std::set<std::string>::const_iterator current, next;
+	std::set<std::string, std::less<>> names;
+	std::set<std::string, std::less<>>::const_iterator current, next;
 
 public:
 	template<typename O, typename M>

@@ -52,7 +52,7 @@ struct InputPlugin {
 	/**
 	 * return a set of supported protocols
 	 */
-	std::set<std::string> (*protocols)() noexcept;
+	std::set<std::string, std::less<>> (*protocols)() noexcept;
 
 	/**
 	 * Prepare a #RemoteTagScanner.  The operation must be started

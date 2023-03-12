@@ -88,7 +88,7 @@ private:
 	/**
 	 * A list of channel names this client is subscribed to.
 	 */
-	std::set<std::string> subscriptions;
+	std::set<std::string, std::less<>> subscriptions;
 
 	/**
 	 * The number of subscriptions in #subscriptions.  Used to

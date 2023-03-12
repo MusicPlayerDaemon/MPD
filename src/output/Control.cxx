@@ -103,12 +103,12 @@ AudioOutputControl::GetMixer() const noexcept
 	return output ? output->mixer : nullptr;
 }
 
-std::map<std::string, std::string>
+std::map<std::string, std::string, std::less<>>
 AudioOutputControl::GetAttributes() const noexcept
 {
 	return output
 		? output->GetAttributes()
-		: std::map<std::string, std::string>{};
+		: std::map<std::string, std::string, std::less<>>{};
 }
 
 void

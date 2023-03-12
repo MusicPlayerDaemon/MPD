@@ -127,7 +127,7 @@ public:
 		  void *user_data);
 
 private:
-	void ListValues(std::map<std::string, std::string> &table,
+	void ListValues(std::map<std::string, std::string, std::less<>> &table,
 			const char *type, const char *uri);
 
 	bool UpdateValue(const char *type, const char *uri,

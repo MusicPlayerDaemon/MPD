@@ -57,12 +57,12 @@ input_ffmpeg_init(EventLoop &, const ConfigBlock &)
 		throw PluginUnavailable("No protocol");
 }
 
-static std::set<std::string>
+static std::set<std::string, std::less<>>
 input_ffmpeg_protocols() noexcept
 {
 	void *opaque = nullptr;
 	const char* protocol;
-	std::set<std::string> protocols;
+	std::set<std::string, std::less<>> protocols;
 	while ((protocol = avio_enum_protocols(&opaque, 0))) {
 		if (StringIsEqual(protocol, "hls")) {
 			/* just "hls://" doesn't work, but these do

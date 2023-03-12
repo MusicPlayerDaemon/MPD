@@ -61,7 +61,7 @@ handle_channels(Client &client, [[maybe_unused]] Request args, Response &r)
 {
 	assert(args.empty());
 
-	std::set<std::string> channels;
+	std::set<std::string, std::less<>> channels;
 
 	for (const auto &c : client.GetPartition().clients) {
 		const auto &subscriptions = c.GetSubscriptions();

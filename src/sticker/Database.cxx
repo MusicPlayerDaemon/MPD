@@ -129,7 +129,7 @@ StickerDatabase::LoadValue(const char *type, const char *uri, const char *name)
 }
 
 void
-StickerDatabase::ListValues(std::map<std::string, std::string> &table,
+StickerDatabase::ListValues(std::map<std::string, std::string, std::less<>> &table,
 			    const char *type, const char *uri)
 {
 	sqlite3_stmt *const s = stmt[STICKER_SQL_LIST];

@@ -589,10 +589,10 @@ input_curl_open(const char *url, Mutex &mutex)
 	return CurlInputStream::Open(url, {}, mutex);
 }
 
-static std::set<std::string>
+static std::set<std::string, std::less<>>
 input_curl_protocols() noexcept
 {
-	std::set<std::string> protocols;
+	std::set<std::string, std::less<>> protocols;
 	auto version_info = curl_version_info(CURLVERSION_FIRST);
 	for (auto proto_ptr = version_info->protocols; *proto_ptr != nullptr; proto_ptr++) {
 		if (protocol_is_whitelisted(*proto_ptr)) {

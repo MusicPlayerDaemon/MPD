@@ -33,7 +33,7 @@ static constexpr struct {
 	{ nullptr, 0 },
 };
 
-static std::map<std::string, unsigned> permission_passwords;
+static std::map<std::string, unsigned, std::less<>> permission_passwords;
 
 static unsigned permission_default;
 
@@ -42,7 +42,7 @@ static unsigned local_permissions;
 #endif
 
 #ifdef HAVE_TCP
-static std::map<std::string, unsigned> host_passwords;
+static std::map<std::string, unsigned, std::less<>> host_passwords;
 #endif
 
 static unsigned

@@ -20,7 +20,7 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 #ifdef HAVE_UN
 	fprintf(fp, " file://");
 #endif
-	std::set<std::string> protocols;
+	std::set<std::string, std::less<>> protocols;
 	input_plugins_for_each(plugin)
 		plugin->ForeachSupportedUri([&](const char* uri) {
 			protocols.emplace(uri);
@@ -40,7 +40,7 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 void
 print_supported_uri_schemes(Response &r)
 {
-	std::set<std::string> protocols;
+	std::set<std::string, std::less<>> protocols;
 	input_plugins_for_each_enabled(plugin)
 		plugin->ForeachSupportedUri([&](const char* uri) {
 			protocols.emplace(uri);

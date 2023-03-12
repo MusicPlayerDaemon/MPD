@@ -672,10 +672,10 @@ ffmpeg_uri_decode(DecoderClient &client, const char *uri)
 	FfmpegDecode(client, nullptr, *format_context);
 }
 
-static std::set<std::string>
+static std::set<std::string, std::less<>>
 ffmpeg_protocols() noexcept
 {
-	std::set<std::string> protocols;
+	std::set<std::string, std::less<>> protocols;
 
 	const AVInputFormat *format = nullptr;
 	void *opaque = nullptr;

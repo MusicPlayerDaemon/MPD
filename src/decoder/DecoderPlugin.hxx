@@ -38,7 +38,7 @@ struct DecoderPlugin {
 	/**
 	 * Return a set of supported protocols.
 	 */
-	std::set<std::string> (*protocols)() noexcept = nullptr;
+	std::set<std::string, std::less<>> (*protocols)() noexcept = nullptr;
 
 	/**
 	 * Decode an URI with a protocol listed in protocols().
@@ -138,7 +138,7 @@ struct DecoderPlugin {
 		return copy;
 	}
 
-	constexpr auto WithProtocols(std::set<std::string> (*_protocols)() noexcept,
+	constexpr auto WithProtocols(std::set<std::string, std::less<>> (*_protocols)() noexcept,
 				     void (*_uri_decode)(DecoderClient &client, const char *uri)) const noexcept {
 		auto copy = *this;
 		copy.protocols = _protocols;

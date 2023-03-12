@@ -371,7 +371,7 @@ public:
 
 	void BeginDestroy() noexcept;
 
-	std::map<std::string, std::string> GetAttributes() const noexcept;
+	std::map<std::string, std::string, std::less<>> GetAttributes() const noexcept;
 	void SetAttribute(std::string &&name, std::string &&value);
 
 	/**
