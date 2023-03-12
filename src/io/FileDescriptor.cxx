@@ -15,11 +15,6 @@
 #include <poll.h>
 #endif
 
-#ifdef __linux__
-#include <sys/eventfd.h>
-#include <sys/signalfd.h>
-#endif
-
 #ifndef O_NOCTTY
 #define O_NOCTTY 0
 #endif
