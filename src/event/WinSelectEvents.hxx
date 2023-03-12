@@ -1,8 +1,6 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
 
-#ifndef EVENT_WINSELECT_EVENTS_HXX
-#define EVENT_WINSELECT_EVENTS_HXX
+#pragma once
 
 #include <windows.h>
 
@@ -18,5 +16,3 @@ struct WinSelectEvents {
 	static constexpr unsigned ERROR = 0;
 	static constexpr unsigned HANGUP = 0;
 };
-
-#endif

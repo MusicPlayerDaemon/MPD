@@ -1,8 +1,6 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
 
-#ifndef EVENT_POLL_EVENTS_HXX
-#define EVENT_POLL_EVENTS_HXX
+#pragma once
 
 #include <sys/poll.h>
 
@@ -12,5 +10,3 @@ struct PollEvents {
 	static constexpr unsigned ERROR = POLLERR;
 	static constexpr unsigned HANGUP = POLLHUP;
 };
-
-#endif
