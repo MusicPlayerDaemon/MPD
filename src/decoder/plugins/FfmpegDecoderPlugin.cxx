@@ -29,6 +29,7 @@
 #include "util/IterableSplitString.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
 #include "Log.hxx"
 
 extern "C" {
@@ -703,6 +704,15 @@ ffmpeg_suffixes() noexcept
 				suffixes.emplace(i);
 		} else
 			suffixes.emplace(input_format->name);
+	}
+
+	void *codec_opaque = nullptr;
+	while (const auto codec = av_codec_iterate(&codec_opaque)) {
+		if (StringStartsWith(codec->name, "dsd_")) {
+			/* FFmpeg was compiled with DSD support */
+			suffixes.emplace("dff");
+			suffixes.emplace("dsf");
+		}
 	}
 
 	return suffixes;
