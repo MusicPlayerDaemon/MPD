@@ -147,6 +147,10 @@ static void version()
 			for (; *suffixes != nullptr; ++suffixes)
 				fmt::print(" {}", *suffixes);
 
+		if (plugin.suffixes_function != nullptr)
+			for (const auto &i : plugin.suffixes_function())
+				printf(" %s", i.c_str());
+
 		if (plugin.protocols != nullptr)
 			for (const auto &i : plugin.protocols())
 				fmt::print(" {}", i);

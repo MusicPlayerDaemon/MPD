@@ -23,8 +23,10 @@ DecoderPlugin::SupportsUri(const char *uri) const noexcept
 bool
 DecoderPlugin::SupportsSuffix(std::string_view suffix) const noexcept
 {
-	return suffixes != nullptr &&
-		StringArrayContainsCase(suffixes, suffix);
+	return (suffixes != nullptr &&
+		StringArrayContainsCase(suffixes, suffix)) ||
+		(suffixes_function != nullptr &&
+		 suffixes_function().contains(suffix));
 }
 
 bool
