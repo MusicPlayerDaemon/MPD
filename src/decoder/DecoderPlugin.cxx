@@ -20,13 +20,26 @@ DecoderPlugin::SupportsUri(const char *uri) const noexcept
 	return false;
 }
 
+[[gnu::pure]]
+static bool
+SetContains(const auto &set, const auto &key) noexcept
+{
+#ifdef ANDROID
+	/* the libc++ version in Android NDK r25c doesn't implement
+	   std::set::contains() */ 
+	return set.find(key) != set.end();
+#else
+	return set.contains(key);
+#endif
+}
+
 bool
 DecoderPlugin::SupportsSuffix(std::string_view suffix) const noexcept
 {
 	return (suffixes != nullptr &&
 		StringArrayContainsCase(suffixes, suffix)) ||
 		(suffixes_function != nullptr &&
-		 suffixes_function().contains(suffix));
+		 SetContains(suffixes_function(), suffix));
 }
 
 bool
