@@ -31,17 +31,6 @@ public:
 	}
 };
 
-class DffDsdUint64 {
-	uint32_t hi;
-	uint32_t lo;
-
-public:
-	constexpr uint64_t Read() const {
-		return (uint64_t(FromBE32(hi)) << 32) |
-			uint64_t(FromBE32(lo));
-	}
-};
-
 bool
 dsdlib_skip_to(DecoderClient *client, InputStream &is,
 	       offset_type offset);

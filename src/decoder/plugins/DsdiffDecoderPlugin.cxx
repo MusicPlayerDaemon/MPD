@@ -22,13 +22,13 @@
 
 struct DsdiffHeader {
 	DsdId id;
-	DffDsdUint64 size;
+	PackedBE64 size;
 	DsdId format;
 };
 
 struct DsdiffChunkHeader {
 	DsdId id;
-	DffDsdUint64 size;
+	PackedBE64 size;
 
 	/**
 	 * Read the "size" attribute from the specified header, converting it
@@ -36,7 +36,7 @@ struct DsdiffChunkHeader {
 	 */
 	[[nodiscard]] constexpr
 	uint64_t GetSize() const {
-		return size.Read();
+		return size;
 	}
 
 	/**
