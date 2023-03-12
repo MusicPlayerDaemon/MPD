@@ -20,17 +20,6 @@ struct DsdId {
 	bool Equals(const char *s) const noexcept;
 };
 
-class DsdUint64 {
-	uint32_t lo;
-	uint32_t hi;
-
-public:
-	constexpr uint64_t Read() const {
-		return (uint64_t(FromLE32(hi)) << 32) |
-			uint64_t(FromLE32(lo));
-	}
-};
-
 bool
 dsdlib_skip_to(DecoderClient *client, InputStream &is,
 	       offset_type offset);
