@@ -55,6 +55,8 @@
 #include "archive/ArchivePlugin.hxx"
 #endif
 
+#include <fmt/core.h>
+
 namespace {
 #ifdef _WIN32
 constexpr auto CONFIG_FILE_LOCATION = Path::FromFS(PATH_LITERAL("mpd\\mpd.conf"));
@@ -101,159 +103,159 @@ static constexpr Domain cmdline_domain("cmdline");
 [[noreturn]]
 static void version()
 {
-	printf("Music Player Daemon " VERSION " (%s)"
-	       "\n"
-	       "Copyright 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-	       "Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>\n"
-	       "This is free software; see the source for copying conditions.  There is NO\n"
-	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n",
-	       GIT_VERSION);
+	fmt::print("Music Player Daemon " VERSION " ({})"
+		   "\n"
+		   "Copyright 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
+		   "Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>\n"
+		   "This is free software; see the source for copying conditions.  There is NO\n"
+		   "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n",
+		   GIT_VERSION);
 
 #ifdef ENABLE_DATABASE
-	printf("\n"
-	       "Database plugins:\n");
+	fmt::print("\n"
+		   "Database plugins:\n");
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
-		printf(" %s", (*i)->name);
+		fmt::print(" {}", (*i)->name);
 
-	printf("\n\n"
-	       "Storage plugins:\n");
+	fmt::print("\n\n"
+		   "Storage plugins:\n");
 
 	for (auto i = storage_plugins; *i != nullptr; ++i)
-		printf(" %s", (*i)->name);
+		fmt::print(" {}", (*i)->name);
 
-	printf("\n");
+	fmt::print("\n");
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	printf("\n"
-	       "Neighbor plugins:\n");
+	fmt::print("\n"
+		   "Neighbor plugins:\n");
 	for (auto i = neighbor_plugins; *i != nullptr; ++i)
-		printf(" %s", (*i)->name);
+		fmt::print(" {}", (*i)->name);
 
 #endif
 
-	printf("\n"
-	       "\n"
-	       "Decoders plugins:\n");
+	fmt::print("\n"
+		   "\n"
+		   "Decoders plugins:\n");
 
 	decoder_plugins_for_each([](const DecoderPlugin &plugin){
-		printf(" [%s]", plugin.name);
+		fmt::print(" [{}]", plugin.name);
 
 		const char *const*suffixes = plugin.suffixes;
 		if (suffixes != nullptr)
 			for (; *suffixes != nullptr; ++suffixes)
-				printf(" %s", *suffixes);
+				fmt::print(" {}", *suffixes);
 
 		if (plugin.protocols != nullptr)
 			for (const auto &i : plugin.protocols())
-				printf(" %s", i.c_str());
+				fmt::print(" {}", i);
 
-		printf("\n");
+		fmt::print("\n");
 	});
 
-	printf("\n"
-	       "Filters:\n"
+	fmt::print("\n"
+		   "Filters:\n"
 #ifdef ENABLE_LIBSAMPLERATE
-	       " libsamplerate"
+		   " libsamplerate"
 #endif
 #ifdef ENABLE_SOXR
-	       " soxr"
+		   " soxr"
 #endif
-	       "\n\n"
-	       "Tag plugins:\n"
+		   "\n\n"
+		   "Tag plugins:\n"
 #ifdef ENABLE_ID3TAG
-	       " id3tag"
+		   " id3tag"
 #endif
-	       "\n\n"
-	       "Output plugins:\n");
+		   "\n\n"
+		   "Output plugins:\n");
 	audio_output_plugins_for_each(plugin)
-		printf(" %s", plugin->name);
-	printf("\n"
+		fmt::print(" {}", plugin->name);
+	fmt::print("\n"
 
 #ifdef ENABLE_ENCODER
-	       "\n"
-	       "Encoder plugins:\n");
+		   "\n"
+		   "Encoder plugins:\n");
 	encoder_plugins_for_each(plugin)
-		printf(" %s", plugin->name);
-	printf("\n"
+		fmt::print(" {}", plugin->name);
+	fmt::print("\n"
 #endif
 
 #ifdef ENABLE_ARCHIVE
-	       "\n"
-	       "Archive plugins:\n");
+		   "\n"
+		   "Archive plugins:\n");
 	archive_plugins_for_each(plugin) {
-		printf(" [%s]", plugin->name);
+		fmt::print(" [{}]", plugin->name);
 
 		const char *const*suffixes = plugin->suffixes;
 		if (suffixes != nullptr)
 			for (; *suffixes != nullptr; ++suffixes)
-				printf(" %s", *suffixes);
+				fmt::print(" {}", *suffixes);
 
-		printf("\n");
+		fmt::print("\n");
 	}
 
-	printf(""
+	fmt::print(""
 #endif
 
-	       "\n"
-	       "Input plugins:\n"
-	       " file"
+		   "\n"
+		   "Input plugins:\n"
+		   " file"
 #ifdef HAVE_URING
-	       " io_uring"
+		   " io_uring"
 #endif
 #ifdef ENABLE_ARCHIVE
-	       " archive"
+		   " archive"
 #endif
-	       );
+		);
 	input_plugins_for_each(plugin)
-		printf(" %s", plugin->name);
+		fmt::print(" {}", plugin->name);
 
-	printf("\n\n"
-	       "Playlist plugins:\n");
+	fmt::print("\n\n"
+		   "Playlist plugins:\n");
 	playlist_plugins_for_each(plugin)
-		printf(" %s", plugin->name);
+		fmt::print(" {}", plugin->name);
 
-	printf("\n\n"
-	       "Protocols:\n");
+	fmt::print("\n\n"
+		   "Protocols:\n");
 	print_supported_uri_schemes_to_fp(stdout);
 
-	printf("\n"
-	       "Other features:\n"
+	fmt::print("\n"
+		   "Other features:\n"
 #ifdef HAVE_AVAHI
-	       " avahi"
+		   " avahi"
 #endif
 #ifdef ENABLE_DBUS
-	       " dbus"
+		   " dbus"
 #endif
 #ifdef ENABLE_UDISKS
-	       " udisks"
+		   " udisks"
 #endif
 #ifdef USE_EPOLL
-	       " epoll"
+		   " epoll"
 #endif
 #ifdef HAVE_ICONV
-	       " iconv"
+		   " iconv"
 #endif
 #ifdef HAVE_ICU
-	       " icu"
+		   " icu"
 #endif
 #ifdef ENABLE_INOTIFY
-	       " inotify"
+		   " inotify"
 #endif
 #ifdef HAVE_IPV6
-	       " ipv6"
+		   " ipv6"
 #endif
 #ifdef ENABLE_SYSTEMD_DAEMON
-	       " systemd"
+		   " systemd"
 #endif
 #ifdef HAVE_TCP
-	       " tcp"
+		   " tcp"
 #endif
 #ifdef HAVE_UN
-	       " un"
+		   " un"
 #endif
-	       "\n");
+		   "\n");
 
 	std::exit(EXIT_SUCCESS);
 }
@@ -274,12 +276,12 @@ static void PrintOption(const OptionDef &opt)
 [[noreturn]]
 static void help()
 {
-	printf("Usage:\n"
-	       "  mpd [OPTION...] [path/to/mpd.conf]\n"
-	       "\n"
-	       "Music Player Daemon - a daemon for playing music.\n"
-	       "\n"
-	       "Options:\n");
+	fmt::print("Usage:\n"
+		   "  mpd [OPTION...] [path/to/mpd.conf]\n"
+		   "\n"
+		   "Music Player Daemon - a daemon for playing music.\n"
+		   "\n"
+		   "Options:\n");
 
 	for (const auto &i : option_defs)
 		if(i.HasDescription()) // hide hidden options from help print
