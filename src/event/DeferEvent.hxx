@@ -1,8 +1,7 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
+// author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef MPD_DEFER_EVENT_HXX
-#define MPD_DEFER_EVENT_HXX
+#pragma once
 
 #include "util/BindMethod.hxx"
 #include "util/IntrusiveList.hxx"
@@ -60,5 +59,3 @@ private:
 		callback();
 	}
 };
-
-#endif

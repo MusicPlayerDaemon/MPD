@@ -31,7 +31,6 @@ event = static_library(
   'TimerList.cxx',
   'CoarseTimerEvent.cxx',
   'FineTimerEvent.cxx',
-  'IdleEvent.cxx',
   'InjectEvent.cxx',
   'DeferEvent.cxx',
   'MaskMonitor.cxx',

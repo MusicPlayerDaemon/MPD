@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
-
-#ifndef EVENT_EPOLL_BACKEND_HXX
-#define EVENT_EPOLL_BACKEND_HXX
+// SPDX-License-Identifier: BSD-2-Clause
+// author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "system/EpollFD.hxx"
 
@@ -65,5 +62,3 @@ public:
 		return true;
 	}
 };
-
-#endif

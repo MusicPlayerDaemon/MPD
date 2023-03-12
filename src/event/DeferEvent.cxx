@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
+// author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "DeferEvent.hxx"
 #include "Loop.hxx"

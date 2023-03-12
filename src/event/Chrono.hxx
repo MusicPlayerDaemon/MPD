@@ -1,8 +1,7 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
+// author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef MPD_EVENT_CHRONO_HXX
-#define MPD_EVENT_CHRONO_HXX
+#pragma once
 
 #include <chrono>
 
@@ -17,5 +16,3 @@ using Duration = Clock::duration;
 using TimePoint = Clock::time_point;
 
 } // namespace Event
-
-#endif /* MAIN_NOTIFY_H */

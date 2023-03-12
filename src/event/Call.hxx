@@ -1,8 +1,7 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
+// author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef MPD_EVENT_CALL_HXX
-#define MPD_EVENT_CALL_HXX
+#pragma once
 
 #include <functional>
 
@@ -16,5 +15,3 @@ class EventLoop;
  */
 void
 BlockingCall(EventLoop &loop, std::function<void()> &&f);
-
-#endif /* MAIN_NOTIFY_H */

@@ -1,8 +1,7 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
+// author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef MPD_SOCKET_EVENT_HXX
-#define MPD_SOCKET_EVENT_HXX
+#pragma once
 
 #include "BackendEvents.hxx"
 #include "net/SocketDescriptor.hxx"
@@ -162,5 +161,3 @@ private:
 	 */
 	void Dispatch() noexcept;
 };
-
-#endif
