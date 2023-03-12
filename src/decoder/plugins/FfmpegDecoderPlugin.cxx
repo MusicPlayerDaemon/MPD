@@ -712,6 +712,8 @@ ffmpeg_suffixes() noexcept
 			/* FFmpeg was compiled with DSD support */
 			suffixes.emplace("dff");
 			suffixes.emplace("dsf");
+		} else if (StringIsEqual(codec->name, "dst")) {
+			suffixes.emplace("dst");
 		}
 	}
 
