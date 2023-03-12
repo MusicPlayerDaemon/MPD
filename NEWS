@@ -19,6 +19,7 @@ ver 0.24 (not yet released)
   - curl: fix busy loop after connection failed
 * decoder
   - ffmpeg: require FFmpeg 4.0 or later
+  - ffmpeg: query supported demuxers at runtime
   - gme: require GME 0.6 or later
   - hybrid_dsd: remove
   - opus: implement bitrate calculation
