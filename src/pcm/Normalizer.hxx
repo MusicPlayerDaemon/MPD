@@ -23,10 +23,6 @@ Compressor_new(unsigned int history) noexcept;
 void
 Compressor_delete(struct Compressor *) noexcept;
 
-//! Set the history length
-void
-Compressor_setHistory(struct Compressor *, unsigned int history) noexcept;
-
 //! Get the configuration for a compressor
 struct CompressorConfig *
 Compressor_getConfig(struct Compressor *) noexcept;

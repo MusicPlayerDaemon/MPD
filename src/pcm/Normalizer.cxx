@@ -4,10 +4,8 @@
 
 #include "Normalizer.hxx"
 
-#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
 /*** Default configuration stuff ***/
 #define TARGET 16384		/*!< Target level (on a scale of 0-32767) */
@@ -49,7 +47,13 @@ Compressor_new(unsigned int history) noexcept
 	obj->bufsz = 0;
         obj->pos = 0;
 
-        Compressor_setHistory(obj, history);
+	if (!history)
+                history = BUCKETS;
+
+        obj->bufsz = history;
+        obj->peaks = (int *)calloc(history, sizeof(*obj->peaks));
+        obj->gain = (int *)calloc(history, sizeof(*obj->gain));
+        obj->clipped = (int *)calloc(history, sizeof(*obj->clipped));
 
         return obj;
 }
@@ -64,31 +68,6 @@ Compressor_delete(struct Compressor *obj) noexcept
 	if (obj->clipped)
 		free(obj->clipped);
 	free(obj);
-}
-
-static int *
-resizeArray(int *data, int newsz, int oldsz) noexcept
-{
-        data = (int *)realloc(data, newsz*sizeof(int));
-	if (data == nullptr)
-		/* out of memory, not much we can do */
-		abort();
-
-        if (newsz > oldsz)
-                memset(data + oldsz, 0, sizeof(int)*(newsz - oldsz));
-        return data;
-}
-
-void
-Compressor_setHistory(struct Compressor *obj, unsigned int history) noexcept
-{
-	if (!history)
-                history = BUCKETS;
-
-        obj->peaks = resizeArray(obj->peaks, history, obj->bufsz);
-        obj->gain = resizeArray(obj->gain, history, obj->bufsz);
-        obj->clipped = resizeArray(obj->clipped, history, obj->bufsz);
-        obj->bufsz = history;
 }
 
 struct CompressorConfig *
