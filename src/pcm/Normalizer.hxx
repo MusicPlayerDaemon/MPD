@@ -23,9 +23,6 @@ class PcmNormalizer {
         //! History of the gain values
         int *const gain;
 
-        //! History of clip amounts
-        int *const clipped;
-
 	std::size_t pos = 0;
         const std::size_t bufsz;
 
@@ -33,7 +30,6 @@ public:
 	PcmNormalizer(std::size_t history=400) noexcept
 		:peaks(new int[history]{}),
 		 gain(new int[history]{}),
-		 clipped(new int[history]{}),
 		 bufsz(history)
 	{
 	}
@@ -41,7 +37,6 @@ public:
 	~PcmNormalizer() noexcept {
 		delete[] peaks;
 		delete[] gain;
-		delete[] clipped;
 	}
 
 	//! Process 16-bit signed data
