@@ -42,7 +42,7 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 	int newGain = (1 << 10)*target/peakVal;
 
         //! Adjust the gain with inertia from the previous gain value
-        int curGain = gain[pos];
+        int curGain = prev_gain;
         newGain = (curGain*((1 << smooth) - 1) + newGain) >> smooth;
 
         //! Make sure it's no more than the maximum gain value
@@ -63,7 +63,7 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
         }
 
         //! Record the new gain
-        gain[slot] = newGain;
+        prev_gain = newGain;
 
         if (!ramp)
                 ramp = 1;

@@ -21,8 +21,7 @@ class PcmNormalizer {
         //! History of the peak values
         int *const peaks;
 
-        //! History of the gain values
-        int *const gain;
+	int prev_gain = 0;
 
 	std::size_t pos = 0;
         const std::size_t bufsz;
@@ -30,14 +29,12 @@ class PcmNormalizer {
 public:
 	PcmNormalizer(std::size_t history=400) noexcept
 		:peaks(new int[history]{}),
-		 gain(new int[history]{}),
 		 bufsz(history)
 	{
 	}
 
 	~PcmNormalizer() noexcept {
 		delete[] peaks;
-		delete[] gain;
 	}
 
 	//! Process 16-bit signed data
@@ -45,5 +42,3 @@ public:
 };
 
 //! TODO: Compressor_Process_int32, Compressor_Process_float, others as needed
-
-//! TODO: functions for getting at the peak/gain/clip history buffers (for monitoring)
