@@ -14,6 +14,7 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 {
 	constexpr SampleFormat format = SampleFormat::S16;
 	using Traits = SampleTraits<format>;
+	constexpr unsigned SHIFT = 10;
 
 	int peakVal = 1;
 	std::size_t peakPos = 0;
@@ -40,25 +41,25 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 	}
 
 	//! Determine target gain
-	int newGain = (1 << 10)*target/peakVal;
+	int newGain = (1 << SHIFT)*target/peakVal;
 
         //! Adjust the gain with inertia from the previous gain value
         int curGain = prev_gain;
         newGain = (curGain*((1 << smooth) - 1) + newGain) >> smooth;
 
         //! Make sure it's no more than the maximum gain value
-        if (newGain > (maxgain << 10))
-                newGain = maxgain << 10;
+        if (newGain > (maxgain << SHIFT))
+                newGain = maxgain << SHIFT;
 
         //! Make sure it's no less than 1:1
-	if (newGain < (1 << 10))
-		newGain = 1 << 10;
+	if (newGain < (1 << SHIFT))
+		newGain = 1 << SHIFT;
 
         //! Make sure the adjusted gain won't cause clipping
         std::size_t ramp = src.size();
-        if ((peakVal*newGain >> 10) > Traits::MAX)
+        if ((peakVal*newGain >> SHIFT) > Traits::MAX)
         {
-                newGain = (Traits::MAX << 10)/peakVal;
+                newGain = (Traits::MAX << SHIFT)/peakVal;
                 //! Truncate the ramp time
                 ramp = peakPos;
         }
@@ -69,12 +70,12 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
         if (!ramp)
                 ramp = 1;
         if (!curGain)
-                curGain = 1 << 10;
+                curGain = 1 << SHIFT;
 	const int delta = (newGain - curGain) / (int)ramp;
 
 	for (const auto sample : src.first(ramp)) {
 		//! Amplify the sample
-		*dest++ = PcmClamp<format>(sample * curGain >> 10);
+		*dest++ = PcmClamp<format>(sample * curGain >> SHIFT);
 
                 //! Adjust the gain
 		curGain += delta;
@@ -84,6 +85,6 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 
 	for (const auto sample : src.subspan(ramp)) {
 		//! Amplify the sample
-		*dest++ = PcmClamp<format>(sample * curGain >> 10);
+		*dest++ = PcmClamp<format>(sample * curGain >> SHIFT);
 	}
 }
