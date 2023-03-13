@@ -7,7 +7,6 @@
 void
 PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 {
-	int16_t *ap;
 	std::size_t i;
         int curGain = gain[pos];
         int newGain;
@@ -18,10 +17,9 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
         std::size_t ramp = count;
         int delta;
 
-	ap = audio;
 	for (i = 0; i < count; i++)
 	{
-		int val = *ap++;
+		int val = audio[i];
                 if (val < 0)
                         val = -val;
 		if (val > peakVal)
@@ -73,14 +71,13 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
                 curGain = 1 << 10;
 	delta = (newGain - curGain) / (int)ramp;
 
-	ap = audio;
         *clipped_ = 0;
 	for (i = 0; i < count; i++)
 	{
 		int sample;
 
 		//! Amplify the sample
-		sample = *ap*curGain >> 10;
+		sample = audio[i] * curGain >> 10;
 		if (sample < -32768)
 		{
 			*clipped_ += -32768 - sample;
@@ -90,7 +87,7 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 			*clipped_ += sample - 32767;
 			sample = 32767;
 		}
-		*ap++ = sample;
+		audio[i] = sample;
 
                 //! Adjust the gain
                 if (i < ramp)
