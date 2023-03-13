@@ -8,7 +8,7 @@
 #include "Traits.hxx"
 
 void
-PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
+PcmNormalizer::ProcessS16(const std::span<int16_t> audio) noexcept
 {
 	constexpr SampleFormat format = SampleFormat::S16;
 	using Traits = SampleTraits<format>;
@@ -16,7 +16,7 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
         const int slot = (pos + 1) % bufsz;
 
         int peakVal = 1, peakPos = 0;
-	for (std::size_t i = 0; i < count; i++) {
+	for (std::size_t i = 0; i < audio.size(); i++) {
 		int val = audio[i];
                 if (val < 0)
                         val = -val;
@@ -52,7 +52,7 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 		newGain = 1 << 10;
 
         //! Make sure the adjusted gain won't cause clipping
-        std::size_t ramp = count;
+        std::size_t ramp = audio.size();
         if ((peakVal*newGain >> 10) > Traits::MAX)
         {
                 newGain = (Traits::MAX << 10)/peakVal;
@@ -69,7 +69,7 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
                 curGain = 1 << 10;
 	const int delta = (newGain - curGain) / (int)ramp;
 
-	for (std::size_t i = 0; i < count; i++) {
+	for (std::size_t i = 0; i < audio.size(); i++) {
 		//! Amplify the sample
 		audio[i] = PcmClamp<format>(audio[i] * curGain >> 10);
 

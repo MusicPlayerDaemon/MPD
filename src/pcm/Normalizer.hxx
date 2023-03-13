@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <span>
 
 class PcmNormalizer {
 	///! Target level (on a scale of 0-32767)
@@ -40,7 +41,7 @@ public:
 	}
 
 	//! Process 16-bit signed data
-	void ProcessS16(int16_t *data, std::size_t count) noexcept;
+	void ProcessS16(std::span<int16_t> audio) noexcept;
 };
 
 //! TODO: Compressor_Process_int32, Compressor_Process_float, others as needed

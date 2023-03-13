@@ -54,7 +54,7 @@ NormalizeFilter::FilterPCM(std::span<const std::byte> src)
 	auto *dest = (int16_t *)buffer.Get(src.size());
 	memcpy(dest, src.data(), src.size());
 
-	normalizer.ProcessS16(dest, src.size() / 2);
+	normalizer.ProcessS16({dest, src.size() / 2});
 	return { (const std::byte *)dest, src.size() };
 }
 
