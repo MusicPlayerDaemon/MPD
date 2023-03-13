@@ -10,7 +10,7 @@ struct Compressor;
 
 //! Create a new compressor (use history value of 0 for default)
 struct Compressor *
-Compressor_new(unsigned int history) noexcept;
+Compressor_new(unsigned int history = 400) noexcept;
 
 //! Delete a compressor
 void

@@ -18,7 +18,7 @@ class NormalizeFilter final : public Filter {
 
 public:
 	explicit NormalizeFilter(const AudioFormat &audio_format)
-		:Filter(audio_format), compressor(Compressor_new(0)) {
+		:Filter(audio_format), compressor(Compressor_new()) {
 	}
 
 	~NormalizeFilter() override {

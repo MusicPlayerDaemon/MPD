@@ -4,17 +4,15 @@
 
 #include "Normalizer.hxx"
 
-/*** Default configuration stuff ***/
-#define TARGET 16384		/*!< Target level (on a scale of 0-32767) */
-
-#define GAINMAX 32		/*!< The maximum amount to amplify by */
-#define GAINSMOOTH 8		/*!< How much inertia ramping has*/
-#define BUCKETS 400		/*!< How long of a history to use by default */
-
 struct Compressor {
-	int target;
-	int maxgain;
-	int smooth;
+	///! Target level (on a scale of 0-32767)
+	static constexpr int target = 16384;
+
+	//! The maximum amount to amplify by
+	static constexpr int maxgain = 32;
+
+	//! How much inertia ramping has
+	static constexpr int smooth = 8;
 
         //! History of the peak values
         int *peaks;
@@ -34,16 +32,9 @@ Compressor_new(unsigned int history) noexcept
 {
 	auto obj = new Compressor();
 
-	obj->target = TARGET;
-	obj->maxgain = GAINMAX;
-	obj->smooth = GAINSMOOTH;
-
         obj->peaks = obj->gain = obj->clipped = nullptr;
 	obj->bufsz = 0;
         obj->pos = 0;
-
-	if (!history)
-                history = BUCKETS;
 
         obj->bufsz = history;
         obj->peaks = new int[history]{};

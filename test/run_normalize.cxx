@@ -35,7 +35,7 @@ try {
 	if (argc > 1)
 		audio_format = ParseAudioFormat(argv[1], false);
 
-	compressor = Compressor_new(0);
+	compressor = Compressor_new();
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		Compressor_Process_int16(compressor,
