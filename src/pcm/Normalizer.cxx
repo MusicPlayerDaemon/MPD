@@ -11,6 +11,7 @@ void
 PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 {
 	constexpr SampleFormat format = SampleFormat::S16;
+	using Traits = SampleTraits<format>;
 
         const int slot = (pos + 1) % bufsz;
 
@@ -52,9 +53,9 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 
         //! Make sure the adjusted gain won't cause clipping
         std::size_t ramp = count;
-        if ((peakVal*newGain >> 10) > 32767)
+        if ((peakVal*newGain >> 10) > Traits::MAX)
         {
-                newGain = (32767 << 10)/peakVal;
+                newGain = (Traits::MAX << 10)/peakVal;
                 //! Truncate the ramp time
                 ramp = peakPos;
         }
