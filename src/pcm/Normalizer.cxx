@@ -3,10 +3,15 @@
 // Based on AudioCompress (c)2007 busybee (http://beesbuzz.biz/
 
 #include "Normalizer.hxx"
+#include "Clamp.hxx"
+#include "SampleFormat.hxx"
+#include "Traits.hxx"
 
 void
 PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 {
+	constexpr SampleFormat format = SampleFormat::S16;
+
         const int slot = (pos + 1) % bufsz;
 
         int peakVal = 1, peakPos = 0;
@@ -64,18 +69,8 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 	const int delta = (newGain - curGain) / (int)ramp;
 
 	for (std::size_t i = 0; i < count; i++) {
-		int sample;
-
 		//! Amplify the sample
-		sample = audio[i] * curGain >> 10;
-		if (sample < -32768)
-		{
-			sample = -32768;
-		} else if (sample > 32767)
-		{
-			sample = 32767;
-		}
-		audio[i] = sample;
+		audio[i] = PcmClamp<format>(audio[i] * curGain >> 10);
 
                 //! Adjust the gain
                 if (i < ramp)
