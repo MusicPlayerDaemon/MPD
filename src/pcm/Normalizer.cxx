@@ -15,8 +15,6 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 	constexpr SampleFormat format = SampleFormat::S16;
 	using Traits = SampleTraits<format>;
 
-        const int slot = (pos + 1) % bufsz;
-
         int peakVal = 1, peakPos = 0;
 	for (std::size_t i = 0; i < src.size(); i++) {
 		int val = src[i];
@@ -28,7 +26,9 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
                         peakPos = i;
                 }
 	}
-	peaks[slot] = peakVal;
+
+        pos = (pos + 1) % bufsz;
+	peaks[pos] = peakVal;
 
 	for (std::size_t i = 0; i < bufsz; i++) {
 		if (peaks[i] > peakVal)
@@ -85,6 +85,4 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 		//! Amplify the sample
 		*dest++ = PcmClamp<format>(sample * curGain >> 10);
 	}
-
-        pos = slot;
 }
