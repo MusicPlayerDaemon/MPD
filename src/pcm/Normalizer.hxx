@@ -37,6 +37,8 @@ public:
 		delete[] peaks;
 	}
 
+	void Reset() noexcept;
+
 	//! Process 16-bit signed data
 	void ProcessS16(int16_t *dest, std::span<const int16_t> src) noexcept;
 };

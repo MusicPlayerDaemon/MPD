@@ -24,6 +24,10 @@ public:
 	NormalizeFilter &operator=(const NormalizeFilter &) = delete;
 
 	/* virtual methods from class Filter */
+	void Reset() noexcept override {
+		normalizer.Reset();
+	}
+
 	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
 };
 

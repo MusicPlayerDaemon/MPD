@@ -8,6 +8,16 @@
 #include "Traits.hxx"
 #include "util/Compiler.h"
 
+#include <algorithm> // for std::fill_n()
+
+void
+PcmNormalizer::Reset() noexcept
+{
+	prev_gain = 0;
+	pos = 0;
+	std::fill_n(peaks, bufsz, 0);
+}
+
 void
 PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 			  const std::span<const int16_t> src) noexcept
