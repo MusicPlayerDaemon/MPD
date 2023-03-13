@@ -5,17 +5,17 @@
 #include "Normalizer.hxx"
 
 void
-PcmNormalizer::ProcessS16(int16_t *audio, unsigned int count) noexcept
+PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 {
 	int16_t *ap;
-	unsigned int i;
+	std::size_t i;
         int curGain = gain[pos];
         int newGain;
         int peakVal = 1;
         int peakPos = 0;
         int slot = (pos + 1) % bufsz;
         int *clipped_ = clipped + slot;
-        unsigned int ramp = count;
+        std::size_t ramp = count;
         int delta;
 
 	ap = audio;

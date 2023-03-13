@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 class PcmNormalizer {
@@ -25,11 +26,11 @@ class PcmNormalizer {
         //! History of clip amounts
         int *const clipped;
 
-        unsigned int pos = 0;
-        const unsigned int bufsz;
+	std::size_t pos = 0;
+        const std::size_t bufsz;
 
 public:
-	PcmNormalizer(unsigned history=400) noexcept
+	PcmNormalizer(std::size_t history=400) noexcept
 		:peaks(new int[history]{}),
 		 gain(new int[history]{}),
 		 clipped(new int[history]{}),
@@ -44,7 +45,7 @@ public:
 	}
 
 	//! Process 16-bit signed data
-	void ProcessS16(int16_t *data, unsigned int count) noexcept;
+	void ProcessS16(int16_t *data, std::size_t count) noexcept;
 };
 
 //! TODO: Compressor_Process_int32, Compressor_Process_float, others as needed
