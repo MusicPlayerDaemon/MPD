@@ -7,7 +7,7 @@
 #include "filter/Prepared.hxx"
 #include "pcm/Buffer.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "pcm/AudioCompress/compress.h"
+#include "pcm/Normalizer.hxx"
 
 #include <string.h>
 

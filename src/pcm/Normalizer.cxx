@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: LGPL-2.1
-// (c)2007 busybee (http://beesbuzz.biz/
+// Copyright The Music Player Daemon Project
+// Based on AudioCompress (c)2007 busybee (http://beesbuzz.biz/
+
+#include "Normalizer.hxx"
 
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "compress.h"
 
 /*** Default configuration stuff ***/
 #define TARGET 16384		/*!< Target level (on a scale of 0-32767) */
@@ -34,8 +35,8 @@ struct Compressor {
 
 struct Compressor *Compressor_new(unsigned int history)
 {
-	struct Compressor *obj = malloc(sizeof(struct Compressor));
-	if (obj == NULL)
+	Compressor *obj = (Compressor *)malloc(sizeof(struct Compressor));
+	if (obj == nullptr)
 		/* out of memory, not much we can do */
 		abort();
 
@@ -43,7 +44,7 @@ struct Compressor *Compressor_new(unsigned int history)
 	obj->prefs.maxgain = GAINMAX;
 	obj->prefs.smooth = GAINSMOOTH;
 
-        obj->peaks = obj->gain = obj->clipped = NULL;
+        obj->peaks = obj->gain = obj->clipped = nullptr;
 	obj->bufsz = 0;
         obj->pos = 0;
 
@@ -65,8 +66,8 @@ void Compressor_delete(struct Compressor *obj)
 
 static int *resizeArray(int *data, int newsz, int oldsz)
 {
-        data = realloc(data, newsz*sizeof(int));
-	if (data == NULL)
+        data = (int *)realloc(data, newsz*sizeof(int));
+	if (data == nullptr)
 		/* out of memory, not much we can do */
 		abort();
 

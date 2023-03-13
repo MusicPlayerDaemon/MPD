@@ -47,7 +47,7 @@ pcm_sources = [
   'GlueResampler.cxx',
   'FallbackResampler.cxx',
   'ConfiguredResampler.cxx',
-  'AudioCompress/compress.c',
+  'Normalizer.cxx',
   'ReplayGainAnalyzer.cxx',
   'MixRampAnalyzer.cxx',
   'MixRampGlue.cxx',

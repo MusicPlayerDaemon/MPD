@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: LGPL-2.1
-// (c)2007 busybee (http://beesbuzz.biz/
+// Copyright The Music Player Daemon Project
+// Based on AudioCompress (c)2007 busybee (http://beesbuzz.biz/
 
-#ifndef COMPRESS_H
-#define COMPRESS_H
+#pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 //! Configuration values for the compressor object
 struct CompressorConfig {
@@ -14,10 +14,6 @@ struct CompressorConfig {
 };
 
 struct Compressor;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 //! Create a new compressor (use history value of 0 for default)
 struct Compressor *Compressor_new(unsigned int history);
@@ -34,12 +30,6 @@ struct CompressorConfig *Compressor_getConfig(struct Compressor *);
 //! Process 16-bit signed data
 void Compressor_Process_int16(struct Compressor *, int16_t *data, unsigned int count);
 
-#ifdef __cplusplus
-}
-#endif
-
 //! TODO: Compressor_Process_int32, Compressor_Process_float, others as needed
 
 //! TODO: functions for getting at the peak/gain/clip history buffers (for monitoring)
-
-#endif
