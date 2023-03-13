@@ -4,9 +4,6 @@
 
 #include "Normalizer.hxx"
 
-#include <stdint.h>
-#include <stdlib.h>
-
 /*** Default configuration stuff ***/
 #define TARGET 16384		/*!< Target level (on a scale of 0-32767) */
 
@@ -34,10 +31,7 @@ struct Compressor {
 struct Compressor *
 Compressor_new(unsigned int history) noexcept
 {
-	Compressor *obj = (Compressor *)malloc(sizeof(struct Compressor));
-	if (obj == nullptr)
-		/* out of memory, not much we can do */
-		abort();
+	auto obj = new Compressor();
 
 	obj->prefs.target = TARGET;
 	obj->prefs.maxgain = GAINMAX;
@@ -51,9 +45,9 @@ Compressor_new(unsigned int history) noexcept
                 history = BUCKETS;
 
         obj->bufsz = history;
-        obj->peaks = (int *)calloc(history, sizeof(*obj->peaks));
-        obj->gain = (int *)calloc(history, sizeof(*obj->gain));
-        obj->clipped = (int *)calloc(history, sizeof(*obj->clipped));
+        obj->peaks = new int[history]{};
+        obj->gain = new int[history]{};
+        obj->clipped = new int[history]{};
 
         return obj;
 }
@@ -61,13 +55,10 @@ Compressor_new(unsigned int history) noexcept
 void
 Compressor_delete(struct Compressor *obj) noexcept
 {
-	if (obj->peaks)
-		free(obj->peaks);
-	if (obj->gain)
-		free(obj->gain);
-	if (obj->clipped)
-		free(obj->clipped);
-	free(obj);
+	delete[] obj->peaks;
+	delete[] obj->gain;
+	delete[] obj->clipped;
+	delete obj;
 }
 
 struct CompressorConfig *
