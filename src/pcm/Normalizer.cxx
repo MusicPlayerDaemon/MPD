@@ -71,15 +71,19 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
                 curGain = 1 << 10;
 	const int delta = (newGain - curGain) / (int)ramp;
 
-	for (std::size_t i = 0; i < src.size(); i++) {
+	for (const auto sample : src.first(ramp)) {
 		//! Amplify the sample
-		*dest++ = PcmClamp<format>(src[i] * curGain >> 10);
+		*dest++ = PcmClamp<format>(sample * curGain >> 10);
 
                 //! Adjust the gain
-                if (i < ramp)
-                        curGain += delta;
-                else
-                        curGain = newGain;
+		curGain += delta;
+	}
+
+	curGain = newGain;
+
+	for (const auto sample : src.subspan(ramp)) {
+		//! Amplify the sample
+		*dest++ = PcmClamp<format>(sample * curGain >> 10);
 	}
 
         pos = slot;
