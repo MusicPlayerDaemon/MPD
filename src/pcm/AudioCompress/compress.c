@@ -6,8 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
 #include "compress.h"
+
+/*** Default configuration stuff ***/
+#define TARGET 16384		/*!< Target level (on a scale of 0-32767) */
+
+#define GAINMAX 32		/*!< The maximum amount to amplify by */
+#define GAINSMOOTH 8		/*!< How much inertia ramping has*/
+#define BUCKETS 400		/*!< How long of a history to use by default */
 
 struct Compressor {
         //! The compressor's preferences
