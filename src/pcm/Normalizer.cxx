@@ -15,7 +15,8 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 	constexpr SampleFormat format = SampleFormat::S16;
 	using Traits = SampleTraits<format>;
 
-        int peakVal = 1, peakPos = 0;
+	int peakVal = 1;
+	std::size_t peakPos = 0;
 	for (std::size_t i = 0; i < src.size(); i++) {
 		int val = src[i];
                 if (val < 0)
