@@ -7,18 +7,10 @@
 void
 PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 {
-	std::size_t i;
-        int curGain = gain[pos];
-        int newGain;
-        int peakVal = 1;
-        int peakPos = 0;
-        int slot = (pos + 1) % bufsz;
-        int *clipped_ = clipped + slot;
-        std::size_t ramp = count;
-        int delta;
+        const int slot = (pos + 1) % bufsz;
 
-	for (i = 0; i < count; i++)
-	{
+        int peakVal = 1, peakPos = 0;
+	for (std::size_t i = 0; i < count; i++) {
 		int val = audio[i];
                 if (val < 0)
                         val = -val;
@@ -30,9 +22,7 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 	}
 	peaks[slot] = peakVal;
 
-
-	for (i = 0; i < bufsz; i++)
-	{
+	for (std::size_t i = 0; i < bufsz; i++) {
 		if (peaks[i] > peakVal)
 		{
 			peakVal = peaks[i];
@@ -41,9 +31,10 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 	}
 
 	//! Determine target gain
-	newGain = (1 << 10)*target/peakVal;
+	int newGain = (1 << 10)*target/peakVal;
 
         //! Adjust the gain with inertia from the previous gain value
+        int curGain = gain[pos];
         newGain = (curGain*((1 << smooth) - 1) + newGain) >> smooth;
 
         //! Make sure it's no more than the maximum gain value
@@ -55,6 +46,7 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 		newGain = 1 << 10;
 
         //! Make sure the adjusted gain won't cause clipping
+        std::size_t ramp = count;
         if ((peakVal*newGain >> 10) > 32767)
         {
                 newGain = (32767 << 10)/peakVal;
@@ -69,22 +61,22 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
                 ramp = 1;
         if (!curGain)
                 curGain = 1 << 10;
-	delta = (newGain - curGain) / (int)ramp;
+	const int delta = (newGain - curGain) / (int)ramp;
 
-        *clipped_ = 0;
-	for (i = 0; i < count; i++)
-	{
+        auto &clipped_ = clipped[slot];
+        clipped_ = 0;
+	for (std::size_t i = 0; i < count; i++) {
 		int sample;
 
 		//! Amplify the sample
 		sample = audio[i] * curGain >> 10;
 		if (sample < -32768)
 		{
-			*clipped_ += -32768 - sample;
+			clipped_ += -32768 - sample;
 			sample = -32768;
 		} else if (sample > 32767)
 		{
-			*clipped_ += sample - 32767;
+			clipped_ += sample - 32767;
 			sample = 32767;
 		}
 		audio[i] = sample;
@@ -98,4 +90,3 @@ PcmNormalizer::ProcessS16(int16_t *audio, std::size_t count) noexcept
 
         pos = slot;
 }
-
