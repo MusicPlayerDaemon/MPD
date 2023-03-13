@@ -15,41 +15,41 @@ struct Compressor {
 	static constexpr int smooth = 8;
 
         //! History of the peak values
-        int *peaks;
+        int *const peaks;
 
         //! History of the gain values
-        int *gain;
+        int *const gain;
 
         //! History of clip amounts
-        int *clipped;
+        int *const clipped;
 
-        unsigned int pos;
-        unsigned int bufsz;
+        unsigned int pos = 0;
+        const unsigned int bufsz;
+
+	Compressor(unsigned history) noexcept
+		:peaks(new int[history]{}),
+		 gain(new int[history]{}),
+		 clipped(new int[history]{}),
+		 bufsz(history)
+	{
+	}
+
+	~Compressor() noexcept {
+		delete[] peaks;
+		delete[] gain;
+		delete[] clipped;
+	}
 };
 
 struct Compressor *
 Compressor_new(unsigned int history) noexcept
 {
-	auto obj = new Compressor();
-
-        obj->peaks = obj->gain = obj->clipped = nullptr;
-	obj->bufsz = 0;
-        obj->pos = 0;
-
-        obj->bufsz = history;
-        obj->peaks = new int[history]{};
-        obj->gain = new int[history]{};
-        obj->clipped = new int[history]{};
-
-        return obj;
+	return new Compressor(history);
 }
 
 void
 Compressor_delete(struct Compressor *obj) noexcept
 {
-	delete[] obj->peaks;
-	delete[] obj->gain;
-	delete[] obj->clipped;
 	delete obj;
 }
 
