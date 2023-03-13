@@ -33,7 +33,8 @@ struct Compressor {
         unsigned int bufsz;
 };
 
-struct Compressor *Compressor_new(unsigned int history)
+struct Compressor *
+Compressor_new(unsigned int history) noexcept
 {
 	Compressor *obj = (Compressor *)malloc(sizeof(struct Compressor));
 	if (obj == nullptr)
@@ -53,7 +54,8 @@ struct Compressor *Compressor_new(unsigned int history)
         return obj;
 }
 
-void Compressor_delete(struct Compressor *obj)
+void
+Compressor_delete(struct Compressor *obj) noexcept
 {
 	if (obj->peaks)
 		free(obj->peaks);
@@ -64,7 +66,8 @@ void Compressor_delete(struct Compressor *obj)
 	free(obj);
 }
 
-static int *resizeArray(int *data, int newsz, int oldsz)
+static int *
+resizeArray(int *data, int newsz, int oldsz) noexcept
 {
         data = (int *)realloc(data, newsz*sizeof(int));
 	if (data == nullptr)
@@ -76,7 +79,8 @@ static int *resizeArray(int *data, int newsz, int oldsz)
         return data;
 }
 
-void Compressor_setHistory(struct Compressor *obj, unsigned int history)
+void
+Compressor_setHistory(struct Compressor *obj, unsigned int history) noexcept
 {
 	if (!history)
                 history = BUCKETS;
@@ -87,13 +91,15 @@ void Compressor_setHistory(struct Compressor *obj, unsigned int history)
         obj->bufsz = history;
 }
 
-struct CompressorConfig *Compressor_getConfig(struct Compressor *obj)
+struct CompressorConfig *
+Compressor_getConfig(struct Compressor *obj) noexcept
 {
         return &obj->prefs;
 }
 
-void Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
-                              unsigned int count)
+void
+Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
+			 unsigned int count) noexcept
 {
         struct CompressorConfig *prefs = Compressor_getConfig(obj);
 	int16_t *ap;
