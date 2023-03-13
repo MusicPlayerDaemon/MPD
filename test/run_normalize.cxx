@@ -22,7 +22,6 @@
 
 int main(int argc, char **argv)
 try {
-	struct Compressor *compressor;
 	static char buffer[4096];
 	ssize_t nbytes;
 
@@ -35,16 +34,14 @@ try {
 	if (argc > 1)
 		audio_format = ParseAudioFormat(argv[1], false);
 
-	compressor = Compressor_new();
+	PcmNormalizer normalizer;
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		Compressor_Process_int16(compressor,
-					 (int16_t *)buffer, nbytes / 2);
+		normalizer.ProcessS16((int16_t *)buffer, nbytes / 2);
 
 		[[maybe_unused]] ssize_t ignored = write(1, buffer, nbytes);
 	}
 
-	Compressor_delete(compressor);
 	return EXIT_SUCCESS;
 } catch (...) {
 	PrintException(std::current_exception());

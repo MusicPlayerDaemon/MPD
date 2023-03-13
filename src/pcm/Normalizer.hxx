@@ -6,19 +6,46 @@
 
 #include <cstdint>
 
-struct Compressor;
+class PcmNormalizer {
+	///! Target level (on a scale of 0-32767)
+	static constexpr int target = 16384;
 
-//! Create a new compressor (use history value of 0 for default)
-struct Compressor *
-Compressor_new(unsigned int history = 400) noexcept;
+	//! The maximum amount to amplify by
+	static constexpr int maxgain = 32;
 
-//! Delete a compressor
-void
-Compressor_delete(struct Compressor *) noexcept;
+	//! How much inertia ramping has
+	static constexpr int smooth = 8;
 
-//! Process 16-bit signed data
-void
-Compressor_Process_int16(struct Compressor *, int16_t *data, unsigned int count) noexcept;
+        //! History of the peak values
+        int *const peaks;
+
+        //! History of the gain values
+        int *const gain;
+
+        //! History of clip amounts
+        int *const clipped;
+
+        unsigned int pos = 0;
+        const unsigned int bufsz;
+
+public:
+	PcmNormalizer(unsigned history=400) noexcept
+		:peaks(new int[history]{}),
+		 gain(new int[history]{}),
+		 clipped(new int[history]{}),
+		 bufsz(history)
+	{
+	}
+
+	~PcmNormalizer() noexcept {
+		delete[] peaks;
+		delete[] gain;
+		delete[] clipped;
+	}
+
+	//! Process 16-bit signed data
+	void ProcessS16(int16_t *data, unsigned int count) noexcept;
+};
 
 //! TODO: Compressor_Process_int32, Compressor_Process_float, others as needed
 

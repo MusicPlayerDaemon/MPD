@@ -4,68 +4,17 @@
 
 #include "Normalizer.hxx"
 
-struct Compressor {
-	///! Target level (on a scale of 0-32767)
-	static constexpr int target = 16384;
-
-	//! The maximum amount to amplify by
-	static constexpr int maxgain = 32;
-
-	//! How much inertia ramping has
-	static constexpr int smooth = 8;
-
-        //! History of the peak values
-        int *const peaks;
-
-        //! History of the gain values
-        int *const gain;
-
-        //! History of clip amounts
-        int *const clipped;
-
-        unsigned int pos = 0;
-        const unsigned int bufsz;
-
-	Compressor(unsigned history) noexcept
-		:peaks(new int[history]{}),
-		 gain(new int[history]{}),
-		 clipped(new int[history]{}),
-		 bufsz(history)
-	{
-	}
-
-	~Compressor() noexcept {
-		delete[] peaks;
-		delete[] gain;
-		delete[] clipped;
-	}
-};
-
-struct Compressor *
-Compressor_new(unsigned int history) noexcept
-{
-	return new Compressor(history);
-}
-
 void
-Compressor_delete(struct Compressor *obj) noexcept
-{
-	delete obj;
-}
-
-void
-Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
-			 unsigned int count) noexcept
+PcmNormalizer::ProcessS16(int16_t *audio, unsigned int count) noexcept
 {
 	int16_t *ap;
 	unsigned int i;
-        int *peaks = obj->peaks;
-        int curGain = obj->gain[obj->pos];
+        int curGain = gain[pos];
         int newGain;
         int peakVal = 1;
         int peakPos = 0;
-        int slot = (obj->pos + 1) % obj->bufsz;
-        int *clipped = obj->clipped + slot;
+        int slot = (pos + 1) % bufsz;
+        int *clipped_ = clipped + slot;
         unsigned int ramp = count;
         int delta;
 
@@ -84,7 +33,7 @@ Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
 	peaks[slot] = peakVal;
 
 
-	for (i = 0; i < obj->bufsz; i++)
+	for (i = 0; i < bufsz; i++)
 	{
 		if (peaks[i] > peakVal)
 		{
@@ -94,15 +43,14 @@ Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
 	}
 
 	//! Determine target gain
-	newGain = (1 << 10)*obj->target/peakVal;
+	newGain = (1 << 10)*target/peakVal;
 
         //! Adjust the gain with inertia from the previous gain value
-        newGain = (curGain*((1 << obj->smooth) - 1) + newGain)
-                >> obj->smooth;
+        newGain = (curGain*((1 << smooth) - 1) + newGain) >> smooth;
 
         //! Make sure it's no more than the maximum gain value
-        if (newGain > (obj->maxgain << 10))
-                newGain = obj->maxgain << 10;
+        if (newGain > (maxgain << 10))
+                newGain = maxgain << 10;
 
         //! Make sure it's no less than 1:1
 	if (newGain < (1 << 10))
@@ -117,7 +65,7 @@ Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
         }
 
         //! Record the new gain
-        obj->gain[slot] = newGain;
+        gain[slot] = newGain;
 
         if (!ramp)
                 ramp = 1;
@@ -126,7 +74,7 @@ Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
 	delta = (newGain - curGain) / (int)ramp;
 
 	ap = audio;
-        *clipped = 0;
+        *clipped_ = 0;
 	for (i = 0; i < count; i++)
 	{
 		int sample;
@@ -135,11 +83,11 @@ Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
 		sample = *ap*curGain >> 10;
 		if (sample < -32768)
 		{
-			*clipped += -32768 - sample;
+			*clipped_ += -32768 - sample;
 			sample = -32768;
 		} else if (sample > 32767)
 		{
-			*clipped += sample - 32767;
+			*clipped_ += sample - 32767;
 			sample = 32767;
 		}
 		*ap++ = sample;
@@ -151,6 +99,6 @@ Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
                         curGain = newGain;
 	}
 
-        obj->pos = slot;
+        pos = slot;
 }
 

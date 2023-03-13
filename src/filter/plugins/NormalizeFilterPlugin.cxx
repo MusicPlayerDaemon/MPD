@@ -12,19 +12,14 @@
 #include <string.h>
 
 class NormalizeFilter final : public Filter {
-	Compressor *const compressor;
+	PcmNormalizer normalizer;
 
 	PcmBuffer buffer;
 
 public:
 	explicit NormalizeFilter(const AudioFormat &audio_format)
-		:Filter(audio_format), compressor(Compressor_new()) {
+		:Filter(audio_format) {
 	}
-
-	~NormalizeFilter() override {
-		Compressor_delete(compressor);
-	}
-
 
 	NormalizeFilter(const NormalizeFilter &) = delete;
 	NormalizeFilter &operator=(const NormalizeFilter &) = delete;
@@ -59,7 +54,7 @@ NormalizeFilter::FilterPCM(std::span<const std::byte> src)
 	auto *dest = (int16_t *)buffer.Get(src.size());
 	memcpy(dest, src.data(), src.size());
 
-	Compressor_Process_int16(compressor, dest, src.size() / 2);
+	normalizer.ProcessS16(dest, src.size() / 2);
 	return { (const std::byte *)dest, src.size() };
 }
 
