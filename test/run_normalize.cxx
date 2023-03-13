@@ -37,8 +37,9 @@ try {
 	static std::byte buffer[4096];
 	ssize_t nbytes;
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		normalizer.ProcessS16(FromBytesStrict<int16_t>(std::span{buffer}.first(nbytes)));
-		[[maybe_unused]] ssize_t ignored = write(1, buffer, nbytes);
+		static int16_t dest[2048];
+		normalizer.ProcessS16(dest, FromBytesStrict<const int16_t>(std::span{buffer}.first(nbytes)));
+		[[maybe_unused]] ssize_t ignored = write(1, dest, nbytes);
 	}
 
 	return EXIT_SUCCESS;

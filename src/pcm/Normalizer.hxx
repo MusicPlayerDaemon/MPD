@@ -41,7 +41,7 @@ public:
 	}
 
 	//! Process 16-bit signed data
-	void ProcessS16(std::span<int16_t> audio) noexcept;
+	void ProcessS16(int16_t *dest, std::span<const int16_t> src) noexcept;
 };
 
 //! TODO: Compressor_Process_int32, Compressor_Process_float, others as needed

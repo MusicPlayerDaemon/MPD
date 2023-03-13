@@ -8,8 +8,7 @@
 #include "pcm/Buffer.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Normalizer.hxx"
-
-#include <string.h>
+#include "util/SpanCast.hxx"
 
 class NormalizeFilter final : public Filter {
 	PcmNormalizer normalizer;
@@ -49,13 +48,13 @@ PreparedNormalizeFilter::Open(AudioFormat &audio_format)
 }
 
 std::span<const std::byte>
-NormalizeFilter::FilterPCM(std::span<const std::byte> src)
+NormalizeFilter::FilterPCM(std::span<const std::byte> _src)
 {
-	auto *dest = (int16_t *)buffer.Get(src.size());
-	memcpy(dest, src.data(), src.size());
+	const auto src = FromBytesStrict<const int16_t>(_src);
+	auto *dest = (int16_t *)buffer.GetT<int16_t>(src.size());
 
-	normalizer.ProcessS16({dest, src.size() / 2});
-	return { (const std::byte *)dest, src.size() };
+	normalizer.ProcessS16(dest, src);
+	return std::as_bytes(std::span{dest, src.size()});
 }
 
 const FilterPlugin normalize_filter_plugin = {
