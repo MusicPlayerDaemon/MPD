@@ -12,8 +12,9 @@
 #define BUCKETS 400		/*!< How long of a history to use by default */
 
 struct Compressor {
-        //! The compressor's preferences
-        struct CompressorConfig prefs;
+	int target;
+	int maxgain;
+	int smooth;
 
         //! History of the peak values
         int *peaks;
@@ -33,9 +34,9 @@ Compressor_new(unsigned int history) noexcept
 {
 	auto obj = new Compressor();
 
-	obj->prefs.target = TARGET;
-	obj->prefs.maxgain = GAINMAX;
-	obj->prefs.smooth = GAINSMOOTH;
+	obj->target = TARGET;
+	obj->maxgain = GAINMAX;
+	obj->smooth = GAINSMOOTH;
 
         obj->peaks = obj->gain = obj->clipped = nullptr;
 	obj->bufsz = 0;
@@ -61,17 +62,10 @@ Compressor_delete(struct Compressor *obj) noexcept
 	delete obj;
 }
 
-struct CompressorConfig *
-Compressor_getConfig(struct Compressor *obj) noexcept
-{
-        return &obj->prefs;
-}
-
 void
 Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
 			 unsigned int count) noexcept
 {
-        struct CompressorConfig *prefs = Compressor_getConfig(obj);
 	int16_t *ap;
 	unsigned int i;
         int *peaks = obj->peaks;
@@ -109,15 +103,15 @@ Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
 	}
 
 	//! Determine target gain
-	newGain = (1 << 10)*prefs->target/peakVal;
+	newGain = (1 << 10)*obj->target/peakVal;
 
         //! Adjust the gain with inertia from the previous gain value
-        newGain = (curGain*((1 << prefs->smooth) - 1) + newGain)
-                >> prefs->smooth;
+        newGain = (curGain*((1 << obj->smooth) - 1) + newGain)
+                >> obj->smooth;
 
         //! Make sure it's no more than the maximum gain value
-        if (newGain > (prefs->maxgain << 10))
-                newGain = prefs->maxgain << 10;
+        if (newGain > (obj->maxgain << 10))
+                newGain = obj->maxgain << 10;
 
         //! Make sure it's no less than 1:1
 	if (newGain < (1 << 10))
