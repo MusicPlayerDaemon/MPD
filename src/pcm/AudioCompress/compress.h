@@ -1,9 +1,5 @@
-/*! compress.h
- *  interface to audio compression
- *
- *  (c)2007 busybee (http://beesbuzz.biz/)
- *  Licensed under the terms of the LGPL. See the file COPYING for details.
- */
+// SPDX-License-Identifier: LGPL-2.1
+// (c)2007 busybee (http://beesbuzz.biz/
 
 #ifndef COMPRESS_H
 #define COMPRESS_H

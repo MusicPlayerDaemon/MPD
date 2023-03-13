@@ -1,9 +1,5 @@
-/* compress.c
- * Compressor logic
- *
- * (c)2007 busybee (http://beesbuzz.biz/
- * Licensed under the terms of the LGPL. See the file COPYING for details.
- */
+// SPDX-License-Identifier: LGPL-2.1
+// (c)2007 busybee (http://beesbuzz.biz/
 
 #include <stdio.h>
 #include <stdint.h>
