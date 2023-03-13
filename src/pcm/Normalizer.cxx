@@ -14,6 +14,8 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 {
 	constexpr SampleFormat format = SampleFormat::S16;
 	using Traits = SampleTraits<format>;
+	using long_type = Traits::long_type;
+
 	constexpr unsigned SHIFT = 10;
 
 	int peakVal = 1;
@@ -41,10 +43,10 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
 	}
 
 	//! Determine target gain
-	int newGain = (1 << SHIFT)*target/peakVal;
+	long_type newGain = (1 << SHIFT)*target/peakVal;
 
         //! Adjust the gain with inertia from the previous gain value
-        int curGain = prev_gain;
+        long_type curGain = prev_gain;
         newGain = (curGain*((1 << smooth) - 1) + newGain) >> smooth;
 
         //! Make sure it's no more than the maximum gain value
@@ -71,7 +73,7 @@ PcmNormalizer::ProcessS16(int16_t *gcc_restrict dest,
                 ramp = 1;
         if (!curGain)
                 curGain = 1 << SHIFT;
-	const int delta = (newGain - curGain) / (int)ramp;
+	const long_type delta = (newGain - curGain) / (long_type)ramp;
 
 	for (const auto sample : src.first(ramp)) {
 		//! Amplify the sample
