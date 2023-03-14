@@ -147,7 +147,7 @@ LogFinishSysLog() noexcept
 static void
 FileLog(const Domain &domain, std::string_view message) noexcept
 {
-	fmt::print("{}{}: {}\n",
+	fmt::print(stderr, "{}{}: {}\n",
 		   enable_timestamp ? log_date() : "",
 		   domain.GetName(),
 		   StripRight(message));
