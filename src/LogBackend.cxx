@@ -83,6 +83,8 @@ log_date() noexcept
 	return buf;
 }
 
+#ifdef HAVE_SYSLOG
+
 /**
  * Determines the length of the string excluding trailing whitespace
  * characters.
@@ -92,8 +94,6 @@ chomp_length(std::string_view p) noexcept
 {
 	return StripRight(p.data(), p.size());
 }
-
-#ifdef HAVE_SYSLOG
 
 [[gnu::const]]
 static int
@@ -147,10 +147,10 @@ LogFinishSysLog() noexcept
 static void
 FileLog(const Domain &domain, std::string_view message) noexcept
 {
-	fprintf(stderr, "%s%s: %.*s\n",
-		enable_timestamp ? log_date() : "",
-		domain.GetName(),
-		chomp_length(message), message.data());
+	fmt::print("{}{}: {}\n",
+		   enable_timestamp ? log_date() : "",
+		   domain.GetName(),
+		   StripRight(message));
 
 #ifdef _WIN32
 	/* force-flush the log file, because setvbuf() does not seem
