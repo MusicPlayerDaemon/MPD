@@ -1140,6 +1140,8 @@ excluded.  Example::
   *.opus
   99*
 
+NB: MPD does not recognize file names with square brackets (i.e., "[ ]") in .mpdignore files.  In order for MPD to recognize these file names the square bracket characters MUST be individually escaped (i.e., single or double quoting the entire song is not recognized).  E.g., ' [24] - Artist - Song [ text ].flac ' needs to be entered into the .mpdignore file as ' \[24\] - Artist - Song \[ text \].flac '.
+
 Subject to pattern matching is the file/directory name.  It is (not
 yet) possible to match nested path names, e.g. something like
 ``foo/*.flac`` is not possible.
