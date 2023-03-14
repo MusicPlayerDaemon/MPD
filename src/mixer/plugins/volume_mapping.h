@@ -1,5 +1,6 @@
-#ifndef VOLUME_MAPPING_H_INCLUDED
-#define VOLUME_MAPPING_H_INCLUDED
+// SPDX-License-Identifier: ISC
+
+#pragma once
 
 #include <alsa/asoundlib.h>
 
@@ -13,5 +14,3 @@ int set_normalized_playback_volume(snd_mixer_elem_t *elem,
 int set_normalized_capture_volume(snd_mixer_elem_t *elem,
 				  double volume,
 				  int dir);
-
-#endif
