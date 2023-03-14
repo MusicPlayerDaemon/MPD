@@ -17,18 +17,19 @@
  * -1/0/1 = down/nearest/up.
  */
 
+#include "VolumeMapping.hxx"
+
 #include <math.h>
-#include <stdbool.h>
-#include "volume_mapping.h"
 
 #define MAX_LINEAR_DB_SCALE	24
 
-static inline bool use_linear_dB_scale(long dBmin, long dBmax)
+static constexpr bool use_linear_dB_scale(long dBmin, long dBmax) noexcept
 {
 	return dBmax - dBmin <= MAX_LINEAR_DB_SCALE * 100;
 }
 
-static long lrint_dir(double x, int dir)
+[[gnu::const]]
+static long lrint_dir(double x, int dir) noexcept
 {
 	if (dir > 0)
 		return lrint(ceil(x));
@@ -40,34 +41,41 @@ static long lrint_dir(double x, int dir)
 
 enum ctl_dir { PLAYBACK, CAPTURE };
 
-static int (* const get_dB_range[2])(snd_mixer_elem_t *, long *, long *) = {
+static constexpr int (* const get_dB_range[2])(snd_mixer_elem_t *, long *, long *) = {
 	snd_mixer_selem_get_playback_dB_range,
 	snd_mixer_selem_get_capture_dB_range,
 };
-static int (* const get_raw_range[2])(snd_mixer_elem_t *, long *, long *) = {
+
+static constexpr int (* const get_raw_range[2])(snd_mixer_elem_t *, long *, long *) = {
 	snd_mixer_selem_get_playback_volume_range,
 	snd_mixer_selem_get_capture_volume_range,
 };
-static int (* const get_dB[2])(snd_mixer_elem_t *, snd_mixer_selem_channel_id_t, long *) = {
+
+static constexpr int (* const get_dB[2])(snd_mixer_elem_t *, snd_mixer_selem_channel_id_t, long *) = {
 	snd_mixer_selem_get_playback_dB,
 	snd_mixer_selem_get_capture_dB,
 };
-static int (* const get_raw[2])(snd_mixer_elem_t *, snd_mixer_selem_channel_id_t, long *) = {
+
+static constexpr int (* const get_raw[2])(snd_mixer_elem_t *, snd_mixer_selem_channel_id_t, long *) = {
 	snd_mixer_selem_get_playback_volume,
 	snd_mixer_selem_get_capture_volume,
 };
-static int (* const set_dB[2])(snd_mixer_elem_t *, long, int) = {
+
+static constexpr int (* const set_dB[2])(snd_mixer_elem_t *, long, int) = {
 	snd_mixer_selem_set_playback_dB_all,
 	snd_mixer_selem_set_capture_dB_all,
 };
-static int (* const set_raw[2])(snd_mixer_elem_t *, long) = {
+
+static constexpr int (* const set_raw[2])(snd_mixer_elem_t *, long) = {
 	snd_mixer_selem_set_playback_volume_all,
 	snd_mixer_selem_set_capture_volume_all,
 };
 
-static double get_normalized_volume(snd_mixer_elem_t *elem,
-				    snd_mixer_selem_channel_id_t channel,
-				    enum ctl_dir ctl_dir)
+[[gnu::pure]]
+static double
+get_normalized_volume(snd_mixer_elem_t *elem,
+		      snd_mixer_selem_channel_id_t channel,
+		      enum ctl_dir ctl_dir) noexcept
 {
 	long min, max, value;
 	double normalized, min_norm;
@@ -102,10 +110,11 @@ static double get_normalized_volume(snd_mixer_elem_t *elem,
 	return normalized;
 }
 
-static int set_normalized_volume(snd_mixer_elem_t *elem,
-				 double volume,
-				 int dir,
-				 enum ctl_dir ctl_dir)
+static int
+set_normalized_volume(snd_mixer_elem_t *elem,
+		      double volume,
+		      int dir,
+		      enum ctl_dir ctl_dir) noexcept
 {
 	long min, max, value;
 	double min_norm;
@@ -148,29 +157,32 @@ static int set_normalized_volume(snd_mixer_elem_t *elem,
 	return set_dB[ctl_dir](elem, value, dir);
 }
 
-double get_normalized_playback_volume(snd_mixer_elem_t *elem,
-				      snd_mixer_selem_channel_id_t channel)
+double
+get_normalized_playback_volume(snd_mixer_elem_t *elem,
+			       snd_mixer_selem_channel_id_t channel) noexcept
 {
 	return get_normalized_volume(elem, channel, PLAYBACK);
 }
 
-double get_normalized_capture_volume(snd_mixer_elem_t *elem,
-				     snd_mixer_selem_channel_id_t channel)
+double
+get_normalized_capture_volume(snd_mixer_elem_t *elem,
+			      snd_mixer_selem_channel_id_t channel) noexcept
 {
 	return get_normalized_volume(elem, channel, CAPTURE);
 }
 
-
-int set_normalized_playback_volume(snd_mixer_elem_t *elem,
-				   double volume,
-				   int dir)
+int
+set_normalized_playback_volume(snd_mixer_elem_t *elem,
+			       double volume,
+			       int dir) noexcept
 {
 	return set_normalized_volume(elem, volume, dir, PLAYBACK);
 }
 
-int set_normalized_capture_volume(snd_mixer_elem_t *elem,
-				  double volume,
-				  int dir)
+int
+set_normalized_capture_volume(snd_mixer_elem_t *elem,
+			      double volume,
+			      int dir) noexcept
 {
 	return set_normalized_volume(elem, volume, dir, CAPTURE);
 }

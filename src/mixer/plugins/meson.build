@@ -6,7 +6,7 @@ mixer_plugins_sources = [
 if alsa_dep.found()
   mixer_plugins_sources += [
     'AlsaMixerPlugin.cxx',
-    'volume_mapping.c',
+    'VolumeMapping.cxx',
   ]
 endif
 

@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "AlsaMixerPlugin.hxx"
+#include "VolumeMapping.hxx"
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/Error.hxx"
 #include "lib/fmt/RuntimeError.hxx"
@@ -16,10 +17,6 @@
 #include "util/Domain.hxx"
 #include "util/Math.hxx"
 #include "Log.hxx"
-
-extern "C" {
-#include "volume_mapping.h"
-}
 
 #include <alsa/asoundlib.h>
 
