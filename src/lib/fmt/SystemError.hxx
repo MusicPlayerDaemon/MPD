@@ -67,6 +67,15 @@ FmtLastError(const S &format_str, Args&&... args) noexcept
 
 #endif // _WIN32
 
+[[nodiscard]] [[gnu::pure]]
+inline std::system_error
+VFmtErrno(int code,
+	  fmt::string_view format_str, fmt::format_args args) noexcept
+{
+	return VFmtSystemError(std::error_code(code, ErrnoCategory()),
+			       format_str, args);
+}
+
 template<typename S, typename... Args>
 requires(std::is_convertible_v<S, fmt::string_view>)
 [[nodiscard]] [[gnu::pure]]
