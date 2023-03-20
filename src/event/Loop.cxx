@@ -276,8 +276,8 @@ EventLoop::Run() noexcept
 
 	assert(IsInside());
 	assert(!quit);
-	assert(!quit_injected);
 #ifdef HAVE_THREADED_EVENT_LOOP
+	assert(!quit_injected);
 	assert(alive);
 	assert(busy);
 
