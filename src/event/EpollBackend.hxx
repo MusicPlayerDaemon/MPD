@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
+#pragma once
+
 #include "system/EpollFD.hxx"
 
 #include <array>
