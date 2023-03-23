@@ -21,6 +21,7 @@ uring = static_library(
   'Ring.cxx',
   'Queue.cxx',
   'Operation.cxx',
+  'Close.cxx',
   'ReadOperation.cxx',
   include_directories: inc,
   dependencies: [
