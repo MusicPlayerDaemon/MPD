@@ -52,13 +52,13 @@ protected:
 			Operation &operation) noexcept;
 
 public:
-	virtual void Push(struct io_uring_sqe &sqe,
-			  Operation &operation) noexcept {
+	void Push(struct io_uring_sqe &sqe,
+		  Operation &operation) noexcept {
 		AddPending(sqe, operation);
 		Submit();
 	}
 
-	void Submit() {
+	virtual void Submit() {
 		ring.Submit();
 	}
 

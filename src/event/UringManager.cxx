@@ -20,7 +20,7 @@ void
 Manager::OnIdle() noexcept
 {
 	try {
-		Submit();
+		Queue::Submit();
 	} catch (...) {
 		PrintException(std::current_exception());
 	}

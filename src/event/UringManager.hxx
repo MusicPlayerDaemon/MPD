@@ -23,9 +23,7 @@ public:
 		event.ScheduleRead();
 	}
 
-	void Push(struct io_uring_sqe &sqe,
-		  Operation &operation) noexcept override {
-		AddPending(sqe, operation);
+	void Submit() override {
 		idle_event.Schedule();
 	}
 

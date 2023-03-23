@@ -27,7 +27,7 @@ Queue::RequireSubmitEntry()
 	if (sqe == nullptr) {
 		/* the submit queue is full; submit it to the kernel
 		   and try again */
-		Submit();
+		ring.Submit();
 
 		sqe = GetSubmitEntry();
 		if (sqe == nullptr)
