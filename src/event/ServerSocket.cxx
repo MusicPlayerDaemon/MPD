@@ -332,12 +332,7 @@ ServerSocket::AddPortIPv6(unsigned port) noexcept
 static bool
 SupportsIPv6() noexcept
 {
-	int fd = socket(AF_INET6, SOCK_STREAM, 0);
-	if (fd < 0)
-		return false;
-
-	close(fd);
-	return true;
+	return UniqueSocketDescriptor{}.Create(AF_INET6, SOCK_STREAM, 0);
 }
 
 #endif /* HAVE_IPV6 */
