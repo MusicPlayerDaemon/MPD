@@ -20,13 +20,20 @@ public:
 
 	explicit UniqueSocketDescriptor(SocketDescriptor _fd) noexcept
 		:SocketDescriptor(_fd) {}
+#ifndef _WIN32
 	explicit UniqueSocketDescriptor(FileDescriptor _fd) noexcept
 		:SocketDescriptor(_fd) {}
+#endif // !_WIN32
 	explicit UniqueSocketDescriptor(int _fd) noexcept
 		:SocketDescriptor(_fd) {}
 
+#ifdef _WIN32
+	UniqueSocketDescriptor(UniqueSocketDescriptor &&other) noexcept
+		:SocketDescriptor(std::exchange(other.fd, INVALID_SOCKET)) {}
+#else // !_WIN32
 	UniqueSocketDescriptor(UniqueSocketDescriptor &&other) noexcept
 		:SocketDescriptor(std::exchange(other.fd, -1)) {}
+#endif // !_WIN32
 
 	~UniqueSocketDescriptor() noexcept {
 		if (IsDefined())
