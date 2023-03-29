@@ -13,6 +13,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "cmdline/OptionDef.hxx"
 #include "cmdline/OptionParser.hxx"
+#include "io/FileDescriptor.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StaticFifoBuffer.hxx"

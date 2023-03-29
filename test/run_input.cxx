@@ -18,6 +18,7 @@
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "io/BufferedOutputStream.hxx"
+#include "io/FileDescriptor.hxx"
 #include "io/StdioOutputStream.hxx"
 #include "cmdline/OptionDef.hxx"
 #include "cmdline/OptionParser.hxx"
