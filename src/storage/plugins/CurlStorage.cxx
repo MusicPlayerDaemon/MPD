@@ -512,8 +512,8 @@ private:
 			/* regular file */
 			return path;
 		else if (slash + 1 == path.size())
-			/* trailing slash: collection; strip the slash */
-			return path.substr(0, slash);
+			/* trailing slash: collection; still do not strip the slash */
+			return path;
 		else
 			/* strange, better ignore it */
 			return {};
