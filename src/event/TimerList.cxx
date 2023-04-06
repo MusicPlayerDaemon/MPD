@@ -2,12 +2,8 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#include "Loop.hxx"
+#include "TimerList.hxx"
 #include "FineTimerEvent.hxx"
-
-#ifdef NO_BOOST
-#include <algorithm>
-#endif
 
 constexpr bool
 TimerList::Compare::operator()(const FineTimerEvent &a,
