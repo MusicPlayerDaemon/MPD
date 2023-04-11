@@ -912,7 +912,11 @@ PlayerControl::LockUpdateSongTag(DetachedSong &song,
 		return;
 
 	if (new_tag != song.GetTag()) {
-		song.SetTag(new_tag);
+		if (!song.GetEndTime().IsZero())
+			/* preserve the CUE sheet tags */
+			song.SetTag(Tag::Merge(song.GetTag(), new_tag));
+		else
+			song.SetTag(new_tag);
 
 		LockSetTaggedSong(song);
 
