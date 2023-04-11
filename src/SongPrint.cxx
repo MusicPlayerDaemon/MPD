@@ -49,6 +49,42 @@ song_print_uri(Response &r, const DetachedSong &song, bool base) noexcept
 }
 
 static void
+song_print_real_uri(Response &r, const char *real_uri, bool base) noexcept
+{
+	std::string allocated;
+
+	if (base) {
+		real_uri = PathTraitsUTF8::GetBase(real_uri);
+	} else {
+		allocated = uri_remove_auth(real_uri);
+		if (!allocated.empty())
+			real_uri = allocated.c_str();
+	}
+
+	r.Fmt(FMT_STRING("RealUri: {}\n"), real_uri);
+}
+
+static void
+song_print_real_uri(Response &r, const LightSong &song, bool base) noexcept
+{
+	if (song.real_uri == nullptr)
+		return;
+
+	if (!base && song.directory != nullptr)
+		r.Fmt(FMT_STRING("RealUri: {}\n"),
+		      song.real_uri);
+	else
+		song_print_real_uri(r, song.real_uri, base);
+}
+
+static void
+song_print_real_uri(Response &r, const DetachedSong &song, bool base) noexcept
+{
+	if (song.HasRealURI())
+		song_print_real_uri(r, song.GetRealURI(), base);
+}
+
+static void
 PrintRange(Response &r, SongTime start_time, SongTime end_time) noexcept
 {
 	const unsigned start_ms = start_time.ToMS();
@@ -70,6 +106,8 @@ void
 song_print_info(Response &r, const LightSong &song, bool base) noexcept
 {
 	song_print_uri(r, song, base);
+
+	song_print_real_uri(r, song, base);
 
 	PrintRange(r, song.start_time, song.end_time);
 
@@ -93,6 +131,8 @@ void
 song_print_info(Response &r, const DetachedSong &song, bool base) noexcept
 {
 	song_print_uri(r, song, base);
+
+	song_print_real_uri(r, song, base);
 
 	PrintRange(r, song.GetStartTime(), song.GetEndTime());
 
