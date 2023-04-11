@@ -225,8 +225,13 @@ ProxySong::ProxySong(const mpd_song *song)
 		added = std::chrono::system_clock::from_time_t(_added);
 #endif
 
+#if LIBMPDCLIENT_CHECK_VERSION(2,25,0)
+	start_time = SongTime::FromMS(mpd_song_get_start_ms(song));
+	end_time = SongTime::FromMS(mpd_song_get_end_ms(song));
+#else
 	start_time = SongTime::FromS(mpd_song_get_start(song));
 	end_time = SongTime::FromS(mpd_song_get_end(song));
+#endif
 
 	const auto *af = mpd_song_get_audio_format(song);
 	if (af != nullptr) {
