@@ -7,6 +7,7 @@ ver 0.23.13 (not yet released)
   - pipewire: fix corruption bug due to missing lock
 * Linux
   - shut down if parent process dies in --no-daemon mode
+  - determine systemd unit directories via pkg-config
 
 ver 0.23.12 (2023/01/17)
 * input
