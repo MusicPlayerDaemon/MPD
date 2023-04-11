@@ -211,8 +211,8 @@ ProxySong::ProxySong(const mpd_song *song)
 	if (_mtime > 0)
 		mtime = std::chrono::system_clock::from_time_t(_mtime);
 
-	start_time = SongTime::FromS(mpd_song_get_start(song));
-	end_time = SongTime::FromS(mpd_song_get_end(song));
+	start_time = SongTime::FromMS(mpd_song_get_start_ms(song));
+	end_time = SongTime::FromMS(mpd_song_get_end_ms(song));
 
 	const auto *af = mpd_song_get_audio_format(song);
 	if (af != nullptr) {
