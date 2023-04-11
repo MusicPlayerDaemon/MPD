@@ -28,6 +28,6 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  */
 DetachedSong
 song_load(LineReader &file, const char *uri,
-	  std::string *target_r=nullptr);
+	  std::string *target_r=nullptr, bool *in_playlist_r=nullptr);
 
 #endif
