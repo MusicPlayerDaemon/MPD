@@ -63,6 +63,9 @@ song_save(BufferedOutputStream &os, const Song &song)
 	if (song.audio_format.IsDefined())
 		os.Format("Format: %s\n", ToString(song.audio_format).c_str());
 
+	if (song.in_playlist)
+		os.Write("InPlaylist: yes\n");
+
 	if (!IsNegative(song.mtime))
 		os.Format(SONG_MTIME ": %li\n",
 			  (long)std::chrono::system_clock::to_time_t(song.mtime));
@@ -86,7 +89,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 
 DetachedSong
 song_load(LineReader &file, const char *uri,
-	  std::string *target_r)
+	  std::string *target_r, bool *in_playlist_r)
 {
 	DetachedSong song(uri);
 
@@ -132,6 +135,9 @@ song_load(LineReader &file, const char *uri,
 
 			song.SetStartTime(SongTime::FromMS(start_ms));
 			song.SetEndTime(SongTime::FromMS(end_ms));
+		} else if (StringIsEqual(line, "InPlaylist")) {
+			if (in_playlist_r != nullptr)
+				*in_playlist_r = StringIsEqual(value, "yes");
 		} else {
 			throw FormatRuntimeError("unknown line in db: %s", line);
 		}
