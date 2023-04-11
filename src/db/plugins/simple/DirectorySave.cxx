@@ -154,12 +154,14 @@ directory_load(LineReader &file, Directory &directory)
 						      name);
 
 			std::string target;
+			bool in_playlist = false;
 			auto detached_song = song_load(file, name,
-						       &target);
+						       &target, &in_playlist);
 
 			auto song = std::make_unique<Song>(std::move(detached_song),
 							   directory);
 			song->target = std::move(target);
+			song->in_playlist = in_playlist;
 
 			directory.AddSong(std::move(song));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_META_BEGIN))) {
