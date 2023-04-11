@@ -210,6 +210,12 @@ Copy(TagBuilder &tag, TagType d_tag,
 ProxySong::ProxySong(const mpd_song *song)
 	:LightSong(mpd_song_get_uri(song), tag_buffer)
 {
+#if LIBMPDCLIENT_CHECK_VERSION(2,25,0)
+	const auto _real_uri = mpd_song_get_real_uri(song);
+	if (_real_uri != nullptr)
+		real_uri = _real_uri;
+#endif
+
 	const auto _mtime = mpd_song_get_last_modified(song);
 	if (_mtime > 0)
 		mtime = std::chrono::system_clock::from_time_t(_mtime);
