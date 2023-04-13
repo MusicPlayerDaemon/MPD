@@ -181,7 +181,7 @@
 #
 #database {
 #       plugin "simple"
-#       path "~/.local/share/mpd/db
+#       path "~/.local/share/mpd/db"
 #       cache_directory "~/.local/share/mpd/cache"
 #}
 #
