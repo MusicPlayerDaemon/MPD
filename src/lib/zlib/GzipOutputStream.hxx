@@ -26,7 +26,7 @@ public:
 	 * Throws #ZlibError on error.
 	 */
 	explicit GzipOutputStream(OutputStream &_next);
-	~GzipOutputStream();
+	~GzipOutputStream() noexcept;
 
 	/**
 	 * Throws on error.

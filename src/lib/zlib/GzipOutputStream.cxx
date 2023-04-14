@@ -23,7 +23,7 @@ GzipOutputStream::GzipOutputStream(OutputStream &_next)
 		throw ZlibError(result);
 }
 
-GzipOutputStream::~GzipOutputStream()
+GzipOutputStream::~GzipOutputStream() noexcept
 {
 	deflateEnd(&z);
 }
