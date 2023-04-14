@@ -13,7 +13,7 @@ GzipOutputStream::GzipOutputStream(OutputStream &_next)
 	z.zfree = Z_NULL;
 	z.opaque = Z_NULL;
 
-	constexpr int windowBits = 15;
+	constexpr int windowBits = MAX_WBITS;
 	constexpr int gzip_encoding = 16;
 
 	int result = deflateInit2(&z, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
