@@ -25,6 +25,7 @@ AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _out
 	 thread(BIND_THIS_METHOD(Task)),
 	 tags(block.GetBlockValue("tags", true)),
 	 always_on(block.GetBlockValue("always_on", false)),
+	 always_off(block.GetBlockValue("always_off", false)),
 	 enabled(block.GetBlockValue("enabled", true))
 {
 }
@@ -36,7 +37,8 @@ AudioOutputControl::AudioOutputControl(AudioOutputControl &&src,
 	 client(_client),
 	 thread(BIND_THIS_METHOD(Task)),
 	 tags(src.tags),
-	 always_on(src.always_on)
+	 always_on(src.always_on),
+	 always_off(src.always_off)
 {
 }
 
@@ -174,6 +176,9 @@ void
 AudioOutputControl::EnableAsync()
 {
 	if (!output)
+		return;
+
+	if (always_off)
 		return;
 
 	if (!thread.IsDefined()) {

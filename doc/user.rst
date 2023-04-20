@@ -517,6 +517,11 @@ The following table lists the audio_output options valid for all plugins:
      - If set to no, then :program:`MPD` will not send tags to this output. This is only useful for output plugins that can receive tags, for example the httpd output plugin.
    * - **always_on yes|no**
      - If set to yes, then :program:`MPD` attempts to keep this audio output always open. This may be useful for streaming servers, when you don't want to disconnect all listeners even when playback is accidentally stopped.
+   * - **always_off yes|no**
+     - If set to yes, then :program:`MPD` never uses this audio output for
+       playback even if it's enabled. This can be used with the null output
+       plugin to create placeholder outputs for other software to react to
+       the enabled state without affecting playback.
    * - **mixer_type hardware|software|null|none**
      - Specifies which mixer should be used for this audio output: the
        hardware mixer (available for ALSA :ref:`alsa_plugin`, OSS
