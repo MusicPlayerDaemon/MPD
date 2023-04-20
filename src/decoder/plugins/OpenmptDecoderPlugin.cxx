@@ -82,7 +82,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 #else
 	mod.ctl_set("seek.sync_samples", std::to_string((unsigned)openmpt_sync_samples));
 	mod.ctl_set("render.resampler.emulate_amiga", std::to_string((unsigned)openmpt_emulate_amiga));
-	mod.ctl_set("play.at_end", std::to_string((unsigned)openmpt_at_end));
+	mod.ctl_set("play.at_end", std::string{openmpt_at_end});
 #endif
 
 	static constexpr unsigned channels = 2;
