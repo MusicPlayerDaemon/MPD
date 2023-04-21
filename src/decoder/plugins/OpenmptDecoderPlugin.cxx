@@ -2,7 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "OpenmptDecoderPlugin.hxx"
-#include "decoder/Features.h"
 #include "ModCommon.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
@@ -28,7 +27,7 @@ static int openmpt_volume_ramping;
 static bool openmpt_sync_samples;
 static std::string_view openmpt_at_end;
 static bool openmpt_emulate_amiga;
-#ifdef HAVE_LIBOPENMPT_VERSION_0_5
+#if OPENMPT_API_VERSION_AT_LEAST(0,5,0)
 static std::string_view openmpt_emulate_amiga_type;
 #endif
 
@@ -43,7 +42,7 @@ openmpt_decoder_init(const ConfigBlock &block)
 	openmpt_sync_samples = block.GetBlockValue("sync_samples", true);
 	openmpt_at_end = block.GetBlockValue("at_end", "fadeout");
 	openmpt_emulate_amiga = block.GetBlockValue("emulate_amiga", true);
-#ifdef HAVE_LIBOPENMPT_VERSION_0_5
+#if OPENMPT_API_VERSION_AT_LEAST(0,5,0)
 	openmpt_emulate_amiga_type = block.GetBlockValue("emulate_amiga_type", "auto");
 #endif
 
@@ -74,7 +73,7 @@ mod_decode(DecoderClient &client, InputStream &is)
 		mod.set_render_param(mod.RENDER_INTERPOLATIONFILTER_LENGTH, 0);
 	}
 	mod.set_render_param(mod.RENDER_VOLUMERAMPING_STRENGTH, openmpt_volume_ramping);
-#ifdef HAVE_LIBOPENMPT_VERSION_0_5
+#if OPENMPT_API_VERSION_AT_LEAST(0,5,0)
 	mod.ctl_set_boolean("seek.sync_samples", openmpt_sync_samples);
 	mod.ctl_set_boolean("render.resampler.emulate_amiga", openmpt_emulate_amiga);
 	mod.ctl_set_text("render.resampler.emulate_amiga_type", openmpt_emulate_amiga_type);
