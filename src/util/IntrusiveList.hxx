@@ -492,7 +492,7 @@ public:
 			      GetHookMode() < IntrusiveHookMode::AUTO_UNLINK,
 			      "Can't use auto-unlink hooks with constant_time_size");
 
-		auto &existing_node = ToNode(*p);
+		auto &existing_node = *p.cursor;
 		auto &new_node = ToNode(t);
 
 		IntrusiveListNode::Connect(*existing_node.prev,
@@ -529,13 +529,13 @@ public:
 		if (_begin == _end)
 			return;
 
-		auto &next_node = ToNode(*position);
-		auto &prev_node = ToNode(*std::prev(position));
+		auto &next_node = *position.cursor;
+		auto &prev_node = *std::prev(position).cursor;
 
-		auto &first_node = ToNode(*_begin);
-		auto &before_first_node = ToNode(*std::prev(_begin));
-		auto &last_node = ToNode(*std::prev(_end));
-		auto &after_last_node = ToNode(*_end);
+		auto &first_node = *_begin.cursor;
+		auto &before_first_node = *std::prev(_begin).cursor;
+		auto &last_node = *std::prev(_end).cursor;
+		auto &after_last_node = *_end.cursor;
 
 		/* remove from the other list */
 		IntrusiveListNode::Connect(before_first_node, after_last_node);
