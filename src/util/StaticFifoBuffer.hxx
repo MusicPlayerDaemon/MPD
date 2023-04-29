@@ -80,6 +80,31 @@ public:
 		tail += n;
 	}
 
+	/**
+	 * Move as much data as possible from the specified buffer.
+	 *
+	 * @return the number of items moved
+	 */
+	template<typename U>
+	constexpr size_type MoveFrom(std::span<U> src) noexcept {
+		auto w = Write();
+
+		if (src.size() > w.size() && head > 0) {
+			/* if the source contains more data than we
+			   can append at the tail, try to make more
+			   room by shifting the head to 0 */
+			Shift();
+			w = Write();
+		}
+
+		if (src.size() > w.size())
+			src = src.first(w.size());
+
+		std::move(src.begin(), src.end(), w.begin());
+		Append(src.size());
+		return src.size();
+	}
+
 	constexpr size_type GetAvailable() const noexcept {
 		return tail - head;
 	}
