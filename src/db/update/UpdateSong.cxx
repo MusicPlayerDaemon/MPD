@@ -16,7 +16,7 @@
 
 inline void
 UpdateWalk::UpdateSongFile2(Directory &directory,
-			    const char *name, std::string_view suffix,
+			    std::string_view name, std::string_view suffix,
 			    const StorageFileInfo &info) noexcept
 try {
 	Song *song;
@@ -83,7 +83,7 @@ try {
 
 bool
 UpdateWalk::UpdateSongFile(Directory &directory,
-			   const char *name, std::string_view suffix,
+			   std::string_view name, std::string_view suffix,
 			   const StorageFileInfo &info) noexcept
 {
 	if (!decoder_plugins_supports_suffix(suffix))

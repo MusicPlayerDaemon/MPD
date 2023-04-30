@@ -79,11 +79,11 @@ private:
 	void PurgeDanglingFromPlaylists(Directory &directory) noexcept;
 
 	void UpdateSongFile2(Directory &directory,
-			     const char *name, std::string_view suffix,
+			     std::string_view name, std::string_view suffix,
 			     const StorageFileInfo &info) noexcept;
 
 	bool UpdateSongFile(Directory &directory,
-			    const char *name, std::string_view suffix,
+			    std::string_view name, std::string_view suffix,
 			    const StorageFileInfo &info) noexcept;
 
 	bool UpdateContainerFile(Directory &directory,
@@ -93,7 +93,7 @@ private:
 
 #ifdef ENABLE_ARCHIVE
 	void UpdateArchiveTree(ArchiveFile &archive, Directory &parent,
-			       const char *name) noexcept;
+			       std::string_view name) noexcept;
 
 	bool UpdateArchiveFile(Directory &directory,
 			       std::string_view name, std::string_view suffix,
@@ -106,7 +106,7 @@ private:
 
 #else
 	bool UpdateArchiveFile([[maybe_unused]] Directory &directory,
-			       [[maybe_unused]] const char *name,
+			       [[maybe_unused]] std::string_view name,
 			       [[maybe_unused]] std::string_view suffix,
 			       [[maybe_unused]] const StorageFileInfo &info) noexcept {
 		return false;
