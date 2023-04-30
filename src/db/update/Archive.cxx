@@ -48,11 +48,8 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 		//create directories first
 		UpdateArchiveTree(archive, *subdir, rest);
 	} else {
-		if (name.empty()) {
-			LogWarning(update_domain,
-				   "archive returned directory only");
+		if (name.empty())
 			return;
-		}
 
 		//add file
 		Song *song = LockFindSong(directory, name);
