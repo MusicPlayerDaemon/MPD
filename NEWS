@@ -14,6 +14,7 @@ ver 0.24 (not yet released)
   - proxy: require libmpdclient 2.15 or later
 * archive
   - add option to disable archive plugins in mpd.conf
+  - zzip: fix crash bug
 * input
   - curl: add "connect_timeout" configuration
   - curl: fix busy loop after connection failed

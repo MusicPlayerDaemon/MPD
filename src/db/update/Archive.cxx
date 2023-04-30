@@ -50,6 +50,9 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 {
 	const auto [child_name, rest] = Split(name, '/');
 	if (rest.data() != nullptr) {
+		if (!IsAcceptableFilename(child_name))
+			return;
+
 		//add dir is not there already
 		Directory *subdir = LockMakeChild(directory, child_name);
 		subdir->device = DEVICE_INARCHIVE;
