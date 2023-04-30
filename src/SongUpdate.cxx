@@ -34,10 +34,10 @@ Song::IsPluginAvailable() const noexcept
 }
 
 SongPtr
-Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
+Song::LoadFile(Storage &storage, std::string_view path_utf8, Directory &parent)
 {
 	assert(!uri_has_scheme(path_utf8));
-	assert(std::strchr(path_utf8, '\n') == nullptr);
+	assert(path_utf8.find('\n') == path_utf8.npos);
 
 	auto song = std::make_unique<Song>(path_utf8, parent);
 	if (!song->UpdateFile(storage))
@@ -89,11 +89,11 @@ Song::UpdateFile(Storage &storage)
 #ifdef ENABLE_ARCHIVE
 
 SongPtr
-Song::LoadFromArchive(ArchiveFile &archive, const char *name_utf8,
+Song::LoadFromArchive(ArchiveFile &archive, std::string_view name_utf8,
 		      Directory &parent) noexcept
 {
 	assert(!uri_has_scheme(name_utf8));
-	assert(std::strchr(name_utf8, '\n') == nullptr);
+	assert(name_utf8.find('\n') == name_utf8.npos);
 
 	auto song = std::make_unique<Song>(name_utf8, parent);
 	if (!song->UpdateFileInArchive(archive))

@@ -105,7 +105,7 @@ struct Song : IntrusiveListHook<> {
 	 * @return the song on success, nullptr if the file was not
 	 * recognized
 	 */
-	static SongPtr LoadFile(Storage &storage, const char *name_utf8,
+	static SongPtr LoadFile(Storage &storage, std::string_view name_utf8,
 				Directory &parent);
 
 	/**
@@ -117,7 +117,7 @@ struct Song : IntrusiveListHook<> {
 
 #ifdef ENABLE_ARCHIVE
 	static SongPtr LoadFromArchive(ArchiveFile &archive,
-				       const char *name_utf8,
+				       std::string_view name_utf8,
 				       Directory &parent) noexcept;
 	bool UpdateFileInArchive(ArchiveFile &archive) noexcept;
 #endif
