@@ -67,6 +67,9 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 	const char *tmp = std::strchr(name, '/');
 	if (tmp) {
 		const std::string_view child_name(name, tmp - name);
+		if (!IsAcceptableFilename(child_name))
+			return;
+
 		//add dir is not there already
 		Directory *subdir = LockMakeChild(directory, child_name);
 		subdir->device = DEVICE_INARCHIVE;
