@@ -35,6 +35,13 @@ LockFindSong(Directory &directory, std::string_view name) noexcept
 	return directory.FindSong(name);
 }
 
+[[gnu::pure]]
+static bool
+IsAcceptableFilename(std::string_view name) noexcept
+{
+	return !name.empty();
+}
+
 void
 UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 			      std::string_view name) noexcept
@@ -48,7 +55,7 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 		//create directories first
 		UpdateArchiveTree(archive, *subdir, rest);
 	} else {
-		if (name.empty())
+		if (!IsAcceptableFilename(name))
 			return;
 
 		//add file
