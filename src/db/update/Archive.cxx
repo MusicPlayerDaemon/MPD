@@ -39,7 +39,9 @@ LockFindSong(Directory &directory, std::string_view name) noexcept
 static bool
 IsAcceptableFilename(std::string_view name) noexcept
 {
-	return !name.empty();
+	return !name.empty() &&
+		/* newlines cannot be represented in MPD's protocol */
+		name.find('\n') == name.npos;
 }
 
 void
