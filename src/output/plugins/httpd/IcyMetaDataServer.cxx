@@ -21,7 +21,7 @@ icy_server_metadata_header(const char *name,
 			   "icy-genre: {}\r\n"            /* TODO */
 			   "icy-url: {}\r\n"              /* TODO */
 			   "icy-pub:1\r\n"
-			   "icy-metaint:%d\r\n"
+			   "icy-metaint:{}\r\n"
 			   /* TODO "icy-br:%d\r\n" */
 			   "Content-Type: {}\r\n"
 			   "Connection: close\r\n"
