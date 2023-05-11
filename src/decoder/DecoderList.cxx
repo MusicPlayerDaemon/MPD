@@ -114,11 +114,11 @@ constexpr const struct DecoderPlugin *decoder_plugins[] = {
 #ifdef ENABLE_ADPLUG
 	&adplug_decoder_plugin,
 #endif
-#ifdef ENABLE_FFMPEG
-	&ffmpeg_decoder_plugin,
-#endif
 #ifdef ENABLE_GME
 	&gme_decoder_plugin,
+#endif
+#ifdef ENABLE_FFMPEG
+	&ffmpeg_decoder_plugin,
 #endif
 	&pcm_decoder_plugin,
 	nullptr
