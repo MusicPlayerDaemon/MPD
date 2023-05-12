@@ -219,7 +219,7 @@ AlsaInputStream::PrepareSockets() noexcept
 
 void
 AlsaInputStream::DispatchSockets() noexcept
-{
+try {
 	non_block.DispatchSockets(*this, capture_handle);
 
 	const std::scoped_lock<Mutex> protect(mutex);
@@ -238,15 +238,16 @@ AlsaInputStream::DispatchSockets() noexcept
 		if (n_frames == -EAGAIN)
 			return;
 
-		if (Recover(n_frames) < 0) {
-			postponed_exception = std::make_exception_ptr(std::runtime_error("PCM error - stream aborted"));
-			InvokeOnAvailable();
-			return;
-		}
+		if (Recover(n_frames) < 0)
+			throw std::runtime_error("PCM error - stream aborted");
 	}
 
 	size_t nbytes = n_frames * frame_size;
 	CommitWriteBuffer(nbytes);
+}
+catch (...) {
+	postponed_exception = std::current_exception();
+	InvokeOnAvailable();
 }
 
 inline int
