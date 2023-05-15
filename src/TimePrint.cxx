@@ -20,5 +20,5 @@ time_print(Response &r, const char *name,
 		return;
 	}
 
-	r.Fmt(FMT_STRING("{}: {}\n"), name, s);
+	r.Fmt(FMT_STRING("{}: {}\n"), name, s.c_str());
 }
