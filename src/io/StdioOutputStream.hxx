@@ -15,8 +15,8 @@ public:
 	explicit StdioOutputStream(FILE *_file) noexcept:file(_file) {}
 
 	/* virtual methods from class OutputStream */
-	void Write(const void *data, size_t size) override {
-		fwrite(data, 1, size, file);
+	void Write(std::span<const std::byte> src) override {
+		fwrite(src.data(), 1, src.size(), file);
 
 		/* this class is debug-only and ignores errors */
 	}

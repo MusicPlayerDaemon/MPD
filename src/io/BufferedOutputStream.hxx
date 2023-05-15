@@ -43,11 +43,7 @@ public:
 	/**
 	 * Write the contents of a buffer.
 	 */
-	void Write(const void *data, std::size_t size);
-
-	void Write(std::span<const std::byte> src) {
-		Write(src.data(), src.size());
-	}
+	void Write(std::span<const std::byte> src);
 
 	/**
 	 * Write the given object.  Note that this is only safe with
@@ -55,7 +51,7 @@ public:
 	 */
 	template<typename T>
 	void WriteT(const T &value) {
-		Write(&value, sizeof(value));
+		Write(std::as_bytes(std::span{&value, 1}));
 	}
 
 	/**
@@ -115,7 +111,7 @@ public:
 	}
 
 private:
-	bool AppendToBuffer(const void *data, std::size_t size) noexcept;
+	bool AppendToBuffer(std::span<const std::byte> src) noexcept;
 
 #ifdef _UNICODE
 	void WriteWideToUTF8(std::wstring_view src);

@@ -42,7 +42,7 @@ public:
 	void Finish();
 
 	/* virtual methods from class OutputStream */
-	void Write(const void *data, size_t size) override;
+	void Write(std::span<const std::byte> src) override;
 };
 
 #endif

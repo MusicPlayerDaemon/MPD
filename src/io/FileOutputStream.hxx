@@ -127,7 +127,7 @@ public:
 	uint64_t Tell() const noexcept;
 
 	/* virtual methods from class OutputStream */
-	void Write(const void *data, size_t size) override;
+	void Write(std::span<const std::byte> src) override;
 
 	/**
 	 * Flush all data written to this object to disk (but does not

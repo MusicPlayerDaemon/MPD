@@ -17,7 +17,7 @@ static bool
 Copy(OutputStream &dest, int src)
 {
 	while (true) {
-		uint8_t buffer[8192];
+		std::byte buffer[8192];
 		ssize_t nbytes = read(src, buffer, sizeof(buffer));
 		if (nbytes < 0) {
 			fprintf(stderr, "Failed to read from stdin: %s\n",
@@ -28,7 +28,7 @@ Copy(OutputStream &dest, int src)
 		if (nbytes == 0)
 			return true;
 
-		dest.Write(buffer, nbytes);
+		dest.Write(std::span{buffer}.first(nbytes));
 	}
 }
 

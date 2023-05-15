@@ -18,6 +18,6 @@ EncoderToOutputStream(OutputStream &os, Encoder &encoder)
 
 		/* write everything to the stream */
 
-		os.Write(r.data(), r.size());
+		os.Write(r);
 	}
 }

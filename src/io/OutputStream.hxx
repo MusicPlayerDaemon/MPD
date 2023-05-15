@@ -5,6 +5,7 @@
 #define OUTPUT_STREAM_HXX
 
 #include <cstddef>
+#include <span>
 
 class OutputStream {
 public:
@@ -14,7 +15,7 @@ public:
 	/**
 	 * Throws std::exception on error.
 	 */
-	virtual void Write(const void *data, std::size_t size) = 0;
+	virtual void Write(std::span<const std::byte> src) = 0;
 };
 
 #endif

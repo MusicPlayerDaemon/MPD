@@ -15,12 +15,12 @@ static void
 Copy(OutputStream &dest, Reader &src)
 {
 	while (true) {
-		char buffer[4096];
+		std::byte buffer[4096];
 		size_t nbytes = src.Read(buffer, sizeof(buffer));
 		if (nbytes == 0)
 			break;
 
-		dest.Write(buffer, nbytes);
+		dest.Write(std::span{buffer}.first(nbytes));
 	}
 }
 

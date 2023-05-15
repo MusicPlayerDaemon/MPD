@@ -14,7 +14,7 @@ static void
 Copy(OutputStream &dest, int src)
 {
 	while (true) {
-		char buffer[4096];
+		std::byte buffer[4096];
 		ssize_t nbytes = read(src, buffer, sizeof(buffer));
 		if (nbytes <= 0) {
 			if (nbytes < 0)
@@ -23,7 +23,7 @@ Copy(OutputStream &dest, int src)
 			return;
 		}
 
-		dest.Write(buffer, nbytes);
+		dest.Write(std::span{buffer}.first(nbytes));
 	}
 }
 

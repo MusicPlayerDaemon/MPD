@@ -47,7 +47,7 @@ GzipOutputStream::SyncFlush()
 		if (z.next_out == output)
 			break;
 
-		next.Write(output, z.next_out - output);
+		next.Write(std::as_bytes(std::span{output}.first(z.next_out - output)));
 	} while (z.avail_out == 0);
 }
 
@@ -65,7 +65,7 @@ GzipOutputStream::Finish()
 
 		int result = deflate(&z, Z_FINISH);
 		if (z.next_out > output)
-			next.Write(output, z.next_out - output);
+			next.Write(std::as_bytes(std::span{output}.first(z.next_out - output)));
 
 		if (result == Z_STREAM_END)
 			break;
@@ -75,13 +75,13 @@ GzipOutputStream::Finish()
 }
 
 void
-GzipOutputStream::Write(const void *_data, size_t size)
+GzipOutputStream::Write(std::span<const std::byte> src)
 {
 	/* zlib's API requires non-const input pointer */
-	void *data = const_cast<void *>(_data);
+	void *data = const_cast<std::byte *>(src.data());
 
 	z.next_in = reinterpret_cast<Bytef *>(data);
-	z.avail_in = size;
+	z.avail_in = src.size();
 
 	while (z.avail_in > 0) {
 		Bytef output[65536];
@@ -93,6 +93,6 @@ GzipOutputStream::Write(const void *_data, size_t size)
 			throw ZlibError(result);
 
 		if (z.next_out > output)
-			next.Write(output, z.next_out - output);
+			next.Write(std::as_bytes(std::span{output}.first(z.next_out - output)));
 	}
 }
