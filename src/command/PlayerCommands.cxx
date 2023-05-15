@@ -13,6 +13,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "IdleFlags.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/Exception.hxx"
@@ -170,7 +171,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 
 		if (player_status.audio_format.IsDefined())
 			r.Fmt(FMT_STRING(COMMAND_STATUS_AUDIO ": {}\n"),
-			      ToString(player_status.audio_format));
+			      player_status.audio_format);
 	}
 
 #ifdef ENABLE_DATABASE

@@ -8,6 +8,7 @@
 #include "TagPrint.hxx"
 #include "client/Response.hxx"
 #include "fs/Traits.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/UriUtil.hxx"
@@ -77,7 +78,7 @@ song_print_info(Response &r, const LightSong &song, bool base) noexcept
 		time_print(r, "Last-Modified", song.mtime);
 
 	if (song.audio_format.IsDefined())
-		r.Fmt(FMT_STRING("Format: {}\n"), ToString(song.audio_format));
+		r.Fmt(FMT_STRING("Format: {}\n"), song.audio_format);
 
 	tag_print_values(r, song.tag);
 
@@ -100,7 +101,7 @@ song_print_info(Response &r, const DetachedSong &song, bool base) noexcept
 		time_print(r, "Last-Modified", song.GetLastModified());
 
 	if (const auto &f = song.GetAudioFormat(); f.IsDefined())
-		r.Fmt(FMT_STRING("Format: {}\n"), ToString(f));
+		r.Fmt(FMT_STRING("Format: {}\n"), f);
 
 	tag_print_values(r, song.GetTag());
 
