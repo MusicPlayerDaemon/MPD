@@ -5,6 +5,7 @@
 #define BUFFERED_OUTPUT_STREAM_HXX
 
 #include "util/DynamicFifoBuffer.hxx"
+#include "util/SpanCast.hxx"
 
 #include <fmt/core.h>
 #if FMT_VERSION >= 80000 && FMT_VERSION < 90000
@@ -12,6 +13,7 @@
 #endif
 
 #include <cstddef>
+#include <string_view>
 
 #ifdef _UNICODE
 #include <wchar.h>
@@ -43,6 +45,10 @@ public:
 	 */
 	void Write(const void *data, std::size_t size);
 
+	void Write(std::span<const std::byte> src) {
+		Write(src.data(), src.size());
+	}
+
 	/**
 	 * Write the given object.  Note that this is only safe with
 	 * POD types.  Types with padding can expose sensitive data.
@@ -60,9 +66,11 @@ public:
 	}
 
 	/**
-	 * Write a null-terminated string.
+	 * Write a string.
 	 */
-	void Write(const char *p);
+	void Write(std::string_view src) {
+		Write(AsBytes(src));
+	}
 
 	void VFmt(fmt::string_view format_str, fmt::format_args args);
 
@@ -80,16 +88,18 @@ public:
 
 #ifdef _UNICODE
 	/**
-	 * Write one narrow character.
+	 * Write one wide character.
 	 */
 	void Write(const wchar_t &ch) {
-		WriteWideToUTF8(&ch, 1);
+		WriteWideToUTF8({&ch, 1});
 	}
 
 	/**
-	 * Write a null-terminated wide string.
+	 * Write a wide string.
 	 */
-	void Write(const wchar_t *p);
+	void Write(std::wstring_view src) {
+		WriteWideToUTF8(src);
+	}
 #endif
 
 	/**
@@ -108,7 +118,7 @@ private:
 	bool AppendToBuffer(const void *data, std::size_t size) noexcept;
 
 #ifdef _UNICODE
-	void WriteWideToUTF8(const wchar_t *p, std::size_t length);
+	void WriteWideToUTF8(std::wstring_view src);
 #endif
 };
 
