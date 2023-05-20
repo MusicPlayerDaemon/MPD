@@ -30,6 +30,8 @@
 #ifndef STRING_BUFFER_HXX
 #define STRING_BUFFER_HXX
 
+#include <fmt/format.h>
+
 #include <array>
 
 /**
@@ -106,5 +108,15 @@ public:
 
 template<std::size_t CAPACITY>
 class StringBuffer : public BasicStringBuffer<char, CAPACITY> {};
+
+#if FMT_VERSION >= 90000
+template <std::size_t CAPACITY>
+struct fmt::formatter<StringBuffer<CAPACITY>> : formatter<string_view> {
+	auto format(const StringBuffer<CAPACITY> &buffer, format_context &ctx) const {
+		const string_view view{buffer.begin(), CAPACITY};
+		return formatter<string_view>::format(view, ctx);
+	}
+};
+#endif
 
 #endif

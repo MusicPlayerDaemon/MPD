@@ -33,6 +33,8 @@
 #include "ConstBuffer.hxx"
 #include "StringAPI.hxx"
 
+#include <fmt/format.h>
+
 #include <cstddef>
 #include <string_view>
 #include <utility>
@@ -237,5 +239,15 @@ struct StringView : BasicStringView<char> {
 	constexpr StringView(BasicStringView<value_type> src) noexcept
 		:BasicStringView(src) {}
 };
+
+#if FMT_VERSION >= 90000
+template <>
+struct fmt::formatter<StringView> : formatter<string_view> {
+	auto format(const StringView &view, format_context &ctx) const {
+		string_view std_view{view.begin(), view.size};
+		return formatter<string_view>::format(std_view, ctx);
+	}
+};
+#endif
 
 #endif
