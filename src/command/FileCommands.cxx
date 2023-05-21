@@ -126,7 +126,8 @@ public:
 	explicit PrintCommentHandler(Response &_response) noexcept
 		:NullTagHandler(WANT_PAIR), response(_response) {}
 
-	void OnPair(StringView key, StringView value) noexcept override {
+	void OnPair(StringView _key, StringView _value) noexcept override {
+		const std::string_view key{_key}, value{_value};
 		if (IsValidName(key) && IsValidValue(value))
 			response.Fmt(FMT_STRING("{}: {}\n"), key, value);
 	}

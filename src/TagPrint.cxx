@@ -35,8 +35,9 @@ tag_print_types(Response &r) noexcept
 }
 
 void
-tag_print(Response &r, TagType type, StringView value) noexcept
+tag_print(Response &r, TagType type, StringView _value) noexcept
 {
+	const std::string_view value{_value};
 	r.Fmt(FMT_STRING("{}: {}\n"), tag_item_names[type], value);
 }
 
