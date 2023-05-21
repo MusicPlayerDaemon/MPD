@@ -14,14 +14,11 @@ ver 0.24 (not yet released)
   - proxy: require libmpdclient 2.15 or later
 * archive
   - add option to disable archive plugins in mpd.conf
-  - zzip: fix crash bug
 * input
   - curl: add "connect_timeout" configuration
-  - curl: fix busy loop after connection failed
 * decoder
   - ffmpeg: require FFmpeg 4.0 or later
   - ffmpeg: query supported demuxers at runtime
-  - gme: require GME 0.6 or later
   - hybrid_dsd: remove
   - opus: implement bitrate calculation
   - sidplay: require libsidplayfp (drop support for the original sidplay)
@@ -35,19 +32,30 @@ ver 0.24 (not yet released)
   - new tags "TitleSort", "Mood"
 * output
   - alsa: require alsa-lib 1.1 or later
-  - pipewire: fix corruption bug due to missing lock
   - pipewire: map tags "Date" and "Comment"
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
 * static partition configuration
-* Linux
-  - shut down if parent process dies in --no-daemon mode
 * Windows
   - build with libsamplerate
   - remove JACK DLL support
 * remove Haiku support
 * remove Boost dependency
 * require libfmt 7 or later
+
+ver 0.23.13 (not yet released)
+* input
+  - curl: fix busy loop after connection failed
+* archive
+  - zzip: fix crash bug
+* decoder
+  - ffmpeg: reorder to a lower priority than "gme"
+  - gme: require GME 0.6 or later
+* output
+  - pipewire: fix corruption bug due to missing lock
+* Linux
+  - shut down if parent process dies in --no-daemon mode
+  - determine systemd unit directories via pkg-config
 * support libfmt 10
 
 ver 0.23.12 (2023/01/17)
