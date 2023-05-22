@@ -2,7 +2,10 @@ systemd_user_unit_dir = get_option('systemd_user_unit_dir')
 if systemd_user_unit_dir == ''
   systemd = dependency('systemd', required: false)
   if systemd.found()
-    systemd_user_unit_dir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
+    systemd_user_unit_dir = systemd.get_variable(
+      pkgconfig: 'systemduserunitdir',
+      pkgconfig_define: ['prefix', get_option('prefix')],
+    )
   endif
 endif
 if systemd_user_unit_dir == ''
