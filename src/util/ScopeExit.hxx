@@ -43,9 +43,8 @@ public:
 	explicit ScopeExitGuard(F &&f) noexcept:F(std::forward<F>(f)) {}
 
 	ScopeExitGuard(ScopeExitGuard &&src) noexcept
-		:F(std::move(src)), enabled(src.enabled) {
-		src.enabled = false;
-	}
+		:F(std::move(src)),
+		 enabled(std::exchange(src.enabled, false)) {}
 
 	/* destructors are "noexcept" by default; this explicit
 	   "noexcept" declaration allows the destructor to throw if
