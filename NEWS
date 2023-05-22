@@ -1,6 +1,7 @@
 ver 0.23.13 (not yet released)
 * input
   - curl: fix busy loop after connection failed
+  - curl: hide "404" log messages for non-existent ".mpdignore" files
 * archive
   - zzip: fix crash bug
 * database
