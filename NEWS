@@ -1,4 +1,4 @@
-ver 0.23.13 (not yet released)
+ver 0.23.13 (2023/05/22)
 * input
   - curl: fix busy loop after connection failed
   - curl: hide "404" log messages for non-existent ".mpdignore" files
