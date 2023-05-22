@@ -47,7 +47,11 @@ public:
 		src.enabled = false;
 	}
 
-	~ScopeExitGuard() {
+	/* destructors are "noexcept" by default; this explicit
+	   "noexcept" declaration allows the destructor to throw if
+	   the function can throw; without this, a throwing function
+	   would std::terminate() */
+	~ScopeExitGuard() noexcept(noexcept(F::operator()())) {
 		if (enabled)
 			F::operator()();
 	}
