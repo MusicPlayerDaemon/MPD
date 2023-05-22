@@ -29,17 +29,11 @@ try {
 		FmtError(update_domain,
 			 "no read permissions on {}/{}",
 			 directory.GetPath(), name);
-		if (song != nullptr)
-			editor.LockDeleteSong(directory, song);
-
 		return;
 	}
 
 	if (!(song != nullptr && info.mtime == song->mtime && !walk_discard) &&
 	    UpdateContainerFile(directory, name, suffix, info)) {
-		if (song != nullptr)
-			editor.LockDeleteSong(directory, song);
-
 		return;
 	}
 
@@ -55,6 +49,8 @@ try {
 			return;
 		}
 
+		new_song->mark = true;
+
 		{
 			const ScopeDatabaseLock protect;
 			directory.AddSong(std::move(new_song));
@@ -66,14 +62,17 @@ try {
 	} else if (info.mtime != song->mtime || walk_discard) {
 		FmtNotice(update_domain, "updating {}/{}",
 			  directory.GetPath(), name);
-		if (!song->UpdateFile(storage)) {
+		if (song->UpdateFile(storage))
+			song->mark = true;
+		else
 			FmtDebug(update_domain,
 				 "deleting unrecognized file {}/{}",
 				 directory.GetPath(), name);
-			editor.LockDeleteSong(directory, song);
-		}
 
 		modified = true;
+	} else {
+		/* not modified */
+		song->mark = true;
 	}
 } catch (...) {
 	FmtError(update_domain,

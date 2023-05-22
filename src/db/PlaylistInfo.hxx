@@ -24,6 +24,12 @@ struct PlaylistInfo {
 	std::chrono::system_clock::time_point mtime =
 		std::chrono::system_clock::time_point::min();
 
+	/**
+	 * This field is used by the database update to check whether
+	 * an item has disappeared.
+	 */
+	bool mark;
+
 	class CompareName {
 		const std::string_view name;
 

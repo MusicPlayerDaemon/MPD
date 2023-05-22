@@ -75,6 +75,12 @@ struct Directory : IntrusiveListHook<> {
 	 */
 	DatabasePtr mounted_database;
 
+	/**
+	 * This field is used by the database update to check whether
+	 * an item has disappeared.
+	 */
+	bool mark;
+
 public:
 	Directory(std::string &&_path_utf8, Directory *_parent) noexcept;
 	~Directory() noexcept;

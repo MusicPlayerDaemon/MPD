@@ -137,7 +137,6 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, std::string_view name,
 		file = archive_file_open(&plugin, path_fs);
 	} catch (...) {
 		LogError(std::current_exception());
-		editor.LockDeleteDirectory(directory);
 		return;
 	}
 
@@ -145,6 +144,8 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, std::string_view name,
 
 	UpdateArchiveVisitor visitor(*this, *file, *directory);
 	file->Visit(visitor);
+
+	directory->mark = true;
 }
 
 bool

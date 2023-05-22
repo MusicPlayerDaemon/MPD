@@ -79,6 +79,12 @@ struct Song : IntrusiveListHook<> {
 	 */
 	bool in_playlist = false;
 
+	/**
+	 * This field is used by the database update to check whether
+	 * an item has disappeared.
+	 */
+	bool mark;
+
 	template<typename F>
 	Song(F &&_filename, Directory &_parent) noexcept
 		:parent(_parent), filename(std::forward<F>(_filename)) {}

@@ -22,6 +22,7 @@ UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, std::string_view n
 		    directory->device == virtual_device &&
 		    !walk_discard) {
 			/* not modified */
+			directory->mark = true;
 			return nullptr;
 		}
 
@@ -32,6 +33,7 @@ UpdateWalk::MakeVirtualDirectoryIfModified(Directory &parent, std::string_view n
 	directory = parent.MakeChild(name);
 	directory->mtime = info.mtime;
 	directory->device = virtual_device;
+	directory->mark = true;
 	return directory;
 }
 

@@ -73,6 +73,19 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 	});
 }
 
+static void
+UnmarkAllIn(Directory &directory) noexcept
+{
+	for (auto &i : directory.children)
+		i.mark = false;
+
+	for (auto &i : directory.songs)
+		i.mark = false;
+
+	for (auto &i : directory.playlists)
+		i.mark = false;
+}
+
 inline void
 UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 {
@@ -81,8 +94,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 			/* mount points are always preserved */
 			return;
 
-		if (DirectoryExists(storage, child) &&
-		    child.IsPluginAvailable())
+		if (child.mark)
 			return;
 
 		/* the directory was deleted (or the plugin which
@@ -94,9 +106,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 	});
 
 	directory.ForEachSongSafe([&](Song &song){
-		if (!directory_child_is_regular(storage, directory,
-						song.filename) ||
-		    !song.IsPluginAvailable()) {
+		if (!song.mark) {
 			/* the song file was deleted (or the decoder
 			   plugin is unavailable) */
 
@@ -109,7 +119,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory) noexcept
 	for (auto i = directory.playlists.begin(),
 		     end = directory.playlists.end();
 	     i != end;) {
-		if (!directory_child_is_regular(storage, directory, i->name)) {
+		if (!i->mark) {
 			const ScopeDatabaseLock protect;
 			i = directory.playlists.erase(i);
 		} else
@@ -343,7 +353,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 	if (!child_exclude_list.IsEmpty())
 		RemoveExcludedFromDirectory(directory, child_exclude_list);
 
-	PurgeDeletedFromDirectory(directory);
+	UnmarkAllIn(directory);
 
 	const char *name_utf8;
 	while (!cancel && (name_utf8 = reader->Read()) != nullptr) {
@@ -370,7 +380,10 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 		UpdateDirectoryChild(directory, child_exclude_list, name_utf8, info2);
 	}
 
+	PurgeDeletedFromDirectory(directory);
+
 	directory.mtime = info.mtime;
+	directory.mark = true;
 
 	return true;
 }

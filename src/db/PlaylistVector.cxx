@@ -27,8 +27,11 @@ PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi) noexcept
 			return false;
 
 		i->mtime = pi.mtime;
-	} else
+		i->mark = true;
+	} else {
+		pi.mark = true;
 		push_back(std::move(pi));
+	}
 
 	return true;
 }
