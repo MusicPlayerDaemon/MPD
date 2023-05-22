@@ -40,9 +40,9 @@ class ScopeExitGuard : F {
 	bool enabled = true;
 
 public:
-	explicit ScopeExitGuard(F &&f):F(std::forward<F>(f)) {}
+	explicit ScopeExitGuard(F &&f) noexcept:F(std::forward<F>(f)) {}
 
-	ScopeExitGuard(ScopeExitGuard &&src)
+	ScopeExitGuard(ScopeExitGuard &&src) noexcept
 		:F(std::move(src)), enabled(src.enabled) {
 		src.enabled = false;
 	}
@@ -68,7 +68,7 @@ struct ScopeExitTag {
 	   parantheses at the end of the expression AtScopeExit()
 	   call */
 	template<typename F>
-	ScopeExitGuard<F> operator+(F &&f) {
+	ScopeExitGuard<F> operator+(F &&f) noexcept {
 		return ScopeExitGuard<F>(std::forward<F>(f));
 	}
 };
