@@ -272,9 +272,8 @@ EventLoop::Run() noexcept
 #endif
 
 	assert(IsInside());
-	assert(!quit);
 #ifdef HAVE_THREADED_EVENT_LOOP
-	assert(alive);
+	assert(alive || quit);
 	assert(busy);
 
 	wake_event.Schedule(SocketEvent::READ);
@@ -299,7 +298,7 @@ EventLoop::Run() noexcept
 
 	steady_clock_cache.flush();
 
-	do {
+	while (!quit) {
 		again = false;
 
 		/* invoke timers */
@@ -361,7 +360,7 @@ EventLoop::Run() noexcept
 
 			socket_event.Dispatch();
 		}
-	} while (!quit);
+	}
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 #ifndef NDEBUG
