@@ -288,6 +288,14 @@ public:
 	SongPtr RemoveSong(Song *song) noexcept;
 
 	/**
+	 * Recursively walk through the whole tree and set all
+	 * `Song::in_playlist` fields to `false`.
+	 *
+	 * Caller must lock the #db_mutex.
+	 */
+	void ClearInPlaylist() noexcept;
+
+	/**
 	 * Caller must lock the #db_mutex.
 	 */
 	void PruneEmpty() noexcept;

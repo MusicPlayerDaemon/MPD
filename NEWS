@@ -3,6 +3,8 @@ ver 0.23.13 (not yet released)
   - curl: fix busy loop after connection failed
 * archive
   - zzip: fix crash bug
+* database
+  - simple: reveal hidden songs after deleting containing CUE
 * decoder
   - ffmpeg: reorder to a lower priority than "gme"
   - gme: require GME 0.6 or later

@@ -531,6 +531,7 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard) noexcept
 
 	{
 		const ScopeDatabaseLock protect;
+		root.ClearInPlaylist();
 		PurgeDanglingFromPlaylists(root);
 	}
 
