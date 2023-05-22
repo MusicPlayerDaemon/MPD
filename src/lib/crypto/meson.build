@@ -18,13 +18,13 @@ endif
 
 conf.set('HAVE_MD5', crypto_md5_dep.found())
 
-if libavutil_dep.found()
+if ffmpeg_util_dep.found()
   crypto_base64 = static_library(
     'crypto_base64',
     'Base64.cxx',
     include_directories: inc,
     dependencies: [
-      libavutil_dep,
+      ffmpeg_util_dep,
     ],
   )
 

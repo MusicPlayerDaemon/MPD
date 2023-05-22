@@ -13,6 +13,30 @@ else
 endif
 conf.set('HAVE_LIBAVFILTER', libavfilter_dep.found())
 
+if not libavutil_dep.found()
+  ffmpeg_util_dep = dependency('', required: false)
+  ffmpeg_dep = dependency('', required: false)
+  subdir_done()
+endif
+
+ffmpeg_util = static_library(
+  'ffmpeg_util',
+  'Interleave.cxx',
+  'Error.cxx',
+  include_directories: inc,
+  dependencies: [
+    fmt_dep,
+    libavutil_dep,
+  ],
+)
+
+ffmpeg_util_dep = declare_dependency(
+  link_with: ffmpeg_util,
+  dependencies: [
+    libavutil_dep,
+  ],
+)
+
 if not enable_ffmpeg
   ffmpeg_dep = dependency('', required: false)
   subdir_done()
@@ -30,17 +54,16 @@ ffmpeg = static_library(
   'ffmpeg',
   'Init.cxx',
   'Interleave.cxx',
-  'LogError.cxx',
   'LogCallback.cxx',
   'Error.cxx',
   'Domain.cxx',
   ffmpeg_sources,
   include_directories: inc,
   dependencies: [
+    ffmpeg_util_dep,
     libavformat_dep,
     libavcodec_dep,
     libavfilter_dep,
-    libavutil_dep,
     log_dep,
   ],
 )
@@ -48,9 +71,9 @@ ffmpeg = static_library(
 ffmpeg_dep = declare_dependency(
   link_with: ffmpeg,
   dependencies: [
+    ffmpeg_util_dep,
     libavformat_dep,
     libavcodec_dep,
     libavfilter_dep,
-    libavutil_dep,
   ],
 )

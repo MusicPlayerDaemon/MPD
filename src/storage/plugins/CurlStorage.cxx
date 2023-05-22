@@ -6,6 +6,7 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "storage/MemoryDirectoryReader.hxx"
+#include "lib/curl/HttpStatusError.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Slist.hxx"
@@ -14,7 +15,6 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Escape.hxx"
 #include "lib/expat/ExpatParser.hxx"
-#include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/ToBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "event/InjectEvent.hxx"
@@ -286,8 +286,9 @@ private:
 	/* virtual methods from CurlResponseHandler */
 	void OnHeaders(unsigned status, Curl::Headers &&headers) final {
 		if (status != 207)
-			throw FmtRuntimeError("Status {} from WebDAV server; expected \"207 Multi-Status\"",
-					      status);
+			throw HttpStatusError(status,
+					      FmtBuffer<80>("Status {} from WebDAV server; expected \"207 Multi-Status\"",
+							    status));
 
 		if (!IsXmlContentType(headers))
 			throw std::runtime_error("Unexpected Content-Type from WebDAV server");

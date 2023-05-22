@@ -112,6 +112,18 @@ Directory::LookupTargetSong(std::string_view target) noexcept
 }
 
 void
+Directory::ClearInPlaylist() noexcept
+{
+	assert(holding_db_lock());
+
+	for (auto &child : children)
+		child.ClearInPlaylist();
+
+	for (auto &song : songs)
+		song.in_playlist = false;
+}
+
+void
 Directory::PruneEmpty() noexcept
 {
 	assert(holding_db_lock());

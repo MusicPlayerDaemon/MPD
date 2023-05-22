@@ -670,6 +670,11 @@ If ReplayGain is enabled, then the setting ``replaygain_preamp`` is
 set to a value (in dB) between ``-15`` and ``15``.  This is the gain
 applied to songs with ReplayGain tags.
 
+On songs without ReplayGain tags, the setting
+``replaygain_missing_preamp`` is used instead.  If this setting is not
+configured, then no ReplayGain is applied to such songs, and they will
+appear too loud.
+
 ReplayGain is usually implemented with a software volume filter (which
 prevents `Bit-perfect playback`_).  To use a hardware mixer, set
 ``replay_gain_handler`` to ``mixer`` in the ``audio_output`` section

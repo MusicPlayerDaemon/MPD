@@ -463,7 +463,6 @@ CurlInputStream::InitEasy()
 	request->SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
 	request->SetOption(CURLOPT_FOLLOWLOCATION, 1L);
 	request->SetOption(CURLOPT_MAXREDIRS, 5L);
-	request->SetOption(CURLOPT_FAILONERROR, 1L);
 
 	/* this option eliminates the probe request when
 	   username/password are specified */

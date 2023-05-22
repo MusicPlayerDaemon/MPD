@@ -43,11 +43,14 @@ ver 0.24 (not yet released)
 * remove Boost dependency
 * require libfmt 7 or later
 
-ver 0.23.13 (not yet released)
+ver 0.23.13 (2023/05/22)
 * input
   - curl: fix busy loop after connection failed
+  - curl: hide "404" log messages for non-existent ".mpdignore" files
 * archive
   - zzip: fix crash bug
+* database
+  - simple: reveal hidden songs after deleting containing CUE
 * decoder
   - ffmpeg: reorder to a lower priority than "gme"
   - gme: require GME 0.6 or later
