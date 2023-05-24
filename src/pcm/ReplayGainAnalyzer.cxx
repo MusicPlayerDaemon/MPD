@@ -86,7 +86,8 @@ CalcStereoRMS(std::span<const ReplayGainAnalyzer::Frame> src) noexcept
 	return 10 * std::log10(sum / src.size()) + 90.0 - 3.0;
 }
 
-static constexpr bool
+[[gnu::const]]
+static bool
 IsSilentSample(float value) noexcept
 {
 	return std::fabs(value) <= 1e-10f;
