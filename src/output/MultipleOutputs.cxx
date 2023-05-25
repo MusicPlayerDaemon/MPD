@@ -215,6 +215,10 @@ MultipleOutputs::Open(const AudioFormat audio_format)
 	for (const auto &ao : outputs) {
 		const std::scoped_lock<Mutex> lock(ao->mutex);
 
+		/* can't play on this device even if it's enabled */
+		if (ao->AlwaysOff())
+			continue;
+
 		if (ao->IsEnabled())
 			enabled = true;
 

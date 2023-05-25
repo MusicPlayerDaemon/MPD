@@ -33,6 +33,7 @@ ver 0.24 (not yet released)
 * tags
   - new tags "TitleSort", "Mood"
 * output
+  - add option "always_off"
   - alsa: require alsa-lib 1.1 or later
   - pipewire: map tags "Date" and "Comment"
 * switch to C++20

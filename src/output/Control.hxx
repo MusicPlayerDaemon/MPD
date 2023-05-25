@@ -144,6 +144,11 @@ class AudioOutputControl {
 	const bool always_on;
 
 	/**
+	 * Should this output never play anything, even when enabled?
+	 */
+	const bool always_off;
+
+	/**
 	 * Has the user enabled this device?
 	 */
 	bool enabled = true;
@@ -272,6 +277,10 @@ public:
 
 	bool IsDummy() const noexcept {
 		return !output;
+	}
+
+	bool AlwaysOff() const noexcept {
+		return always_off;
 	}
 
 	/**
