@@ -40,17 +40,17 @@ public:
 		using R = std::invoke_result_t<std::decay_t<Function>>;
 		auto promise = std::make_shared<Promise<R>>();
 		auto future = promise->get_future();
-		Push([function = std::forward<Function>(function),
-			      promise = std::move(promise)]() mutable {
+		Push([func = std::forward<Function>(function),
+			      prom = std::move(promise)]() mutable {
 			try {
 				if constexpr (std::is_void_v<R>) {
-					std::invoke(std::forward<Function>(function));
-					promise->set_value();
+					std::invoke(std::forward<Function>(func));
+					prom->set_value();
 				} else {
-					promise->set_value(std::invoke(std::forward<Function>(function)));
+					prom->set_value(std::invoke(std::forward<Function>(func)));
 				}
 			} catch (...) {
-				promise->set_exception(std::current_exception());
+				prom->set_exception(std::current_exception());
 			}
 		});
 		return future;
