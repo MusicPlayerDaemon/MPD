@@ -158,7 +158,7 @@ gme = CmakeProject(
         '-DBUILD_SHARED_LIBS=OFF',
         '-DENABLE_UBSAN=OFF',
         '-DZLIB_INCLUDE_DIR=OFF',
-        '-DSDL2_DIR=OFF',
+        '-DCMAKE_DISABLE_FIND_PACKAGE_SDL2=ON',
     ],
 )
 
