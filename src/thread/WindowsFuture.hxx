@@ -114,7 +114,7 @@ public:
 
 	void set_value(const T &value) {
 		std::unique_lock<CriticalSection> lock(mutex);
-		if (!std::holds_alternative<std::monostate>(&result)) {
+		if (!std::holds_alternative<std::monostate>(result)) {
 			throw WinFutureError(WinFutureErrc::promise_already_satisfied);
 		}
 		result.template emplace<T>(value);
