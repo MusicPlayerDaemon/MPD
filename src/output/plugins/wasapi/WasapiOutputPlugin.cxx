@@ -1026,7 +1026,7 @@ WasapiOutput::EnumerateDevices(IMMDeviceEnumerator &enumerator)
 			continue;
 
 		FmtNotice(wasapi_output_domain,
-			  "Device \"{}\" \"{}\"", i, name);
+			  "Device \"{}\" \"{}\"", i, name.c_str());
 	}
 }
 
