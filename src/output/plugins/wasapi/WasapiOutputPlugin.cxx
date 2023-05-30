@@ -1006,8 +1006,8 @@ WasapiOutput::EnumerateDevices(IMMDeviceEnumerator &enumerator)
 		if (name == nullptr)
 			continue;
 
-		FmtNotice(wasapi_output_domain,
-			  "Device \"{}\" \"{}\"", i, name);
+		FmtNotice(wasapi_output_domain, "Device \"{}\" \"{}\"", i,
+			  std::string_view(name));
 	}
 }
 
