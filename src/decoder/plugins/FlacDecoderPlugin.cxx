@@ -8,6 +8,7 @@
 #include "lib/xiph/FlacMetadataChain.hxx"
 #include "OggCodec.hxx"
 #include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "Log.hxx"
@@ -54,13 +55,30 @@ static bool
 flac_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	FlacMetadataChain chain;
-	if (!chain.Read(NarrowPath(path_fs))) {
+	const bool succeed = [&chain, &path_fs]() noexcept {
+		// read by NarrowPath
+		if (chain.Read(NarrowPath(path_fs))) {
+			return true;
+		}
+		if (std::is_same_v<Path::value_type, char> ||
+		    chain.GetStatus() != FLAC__METADATA_CHAIN_STATUS_ERROR_OPENING_FILE) {
+			return false;
+		}
+		// read by InputStream
+		Mutex mutex;
+		auto is = OpenLocalInputStream(path_fs, mutex);
+		if (is && chain.Read(*is)) {
+			return true;
+		}
+		return false;
+	}();
+
+	if (!succeed) {
 		FmtDebug(flac_domain,
 			 "Failed to read FLAC tags: {}",
 			 chain.GetStatusString());
 		return false;
 	}
-
 	chain.Scan(handler);
 	return true;
 }

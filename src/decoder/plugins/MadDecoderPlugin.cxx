@@ -546,7 +546,21 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 
 	mad_bit_skip(ptr, 16);
 
-	lame->peak = MAD_F(mad_bit_read(ptr, 32) << 5); /* peak */
+	/* The lame peak value is a float multiplied by 2^23 and stored as an
+	 * unsigned integer (it is always positive). MAD's fixed-point format uses
+	 * 28 bits for the fractional part, so shift the 23 bit fraction up before
+	 * converting to a float.
+	 */
+	unsigned long peak_int = mad_bit_read(ptr, 32);
+
+#define LAME_PEAK_FRACBITS 23
+#if MAD_F_FRACBITS > LAME_PEAK_FRACBITS
+	peak_int <<= (MAD_F_FRACBITS - LAME_PEAK_FRACBITS);
+#elif LAME_PEAK_FRACBITS > MAD_F_FRACBITS
+	peak_int >>= (LAME_PEAK_FRACBITS - MAD_F_FRACBITS);
+#endif
+
+	lame->peak = mad_f_todouble(peak_int); /* peak */
 	FmtDebug(mad_domain, "LAME peak found: {}", lame->peak);
 
 	lame->track_gain = 0;

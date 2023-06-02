@@ -725,9 +725,11 @@ MPD enables MixRamp if:
 - Cross-fade is enabled
 - :ref:`mixrampdelay <command_mixrampdelay>` is set to a positive
   value, e.g.::
+
     mpc mixrampdelay 1
 - :ref:`mixrampdb <command_mixrampdb>` is set to a reasonable value,
   e.g.::
+
     mpc mixrampdb -17
 - both songs have MixRamp tags (or ``mixramp_analyzer`` is enabled)
 - both songs have the same audio format (or :ref:`audio_output_format`
