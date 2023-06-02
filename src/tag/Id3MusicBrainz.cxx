@@ -15,5 +15,7 @@ const struct tag_table musicbrainz_txxx_tags[] = {
 	{ "MusicBrainz Release Track Id",
 	  TAG_MUSICBRAINZ_RELEASETRACKID },
 	{ "MusicBrainz Work Id", TAG_MUSICBRAINZ_WORKID },
+	{ "MusicBrainz Release Group Id",
+	  TAG_MUSICBRAINZ_RELEASEGROUPID },
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };

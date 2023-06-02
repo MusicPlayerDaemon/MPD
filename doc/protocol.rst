@@ -315,6 +315,7 @@ The following tags are supported by :program:`MPD`:
 * **musicbrainz_albumid**: the album id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_albumartistid**: the album artist id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_trackid**: the track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
+* **musicbrainz_releasegroupid**: the release group id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_releasetrackid**: the release track id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_workid**: the work id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 
