@@ -187,7 +187,9 @@ daemonize_commit()
 		/* tell the parent process to let go of us and exit
 		   indicating success */
 		int result = 0;
-		write(detach_fd, &result, sizeof(result));
+		if (write(detach_fd, &result, sizeof(result)) < 0) {
+ 		   return;
+		}
 		close(detach_fd);
 	} else
 		/* the pidfile was not written by the parent because
