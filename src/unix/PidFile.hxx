@@ -55,10 +55,14 @@ public:
 	void Write(pid_t pid) noexcept {
 		if (fd < 0)
 			return;
-
+		
 		const auto s = FmtBuffer<64>("{}\n", pid);
-
-		write(fd, s.c_str(), strlen(s.c_str()));
+		ssize_t nbytes_written = write(fd, s.c_str(), strlen(s.c_str()));
+		
+		if (nbytes_written < static_cast<ssize_t>(strlen(s.c_str()))) {
+			return;
+		}
+		
 		close(fd);
 	}
 
