@@ -31,7 +31,7 @@ RemoteTagCache::Lookup(const std::string &uri) noexcept
 	auto [tag, value] = map.insert_check(uri);
 	if (value) {
 		auto item = new Item(*this, uri);
-		map.insert(tag, *item);
+		map.insert_commit(tag, *item);
 		waiting_list.push_back(*item);
 		lock.unlock();
 

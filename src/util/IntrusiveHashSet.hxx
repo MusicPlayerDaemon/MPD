@@ -235,7 +235,7 @@ public:
 	 *
 	 * @param bucket the bucket returned by insert_check()
 	 */
-	constexpr void insert(bucket_iterator bucket, reference item) noexcept {
+	constexpr void insert_commit(bucket_iterator bucket, reference item) noexcept {
 		++counter;
 		GetBucket(item).insert(bucket, item);
 	}

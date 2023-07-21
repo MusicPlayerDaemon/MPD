@@ -43,7 +43,7 @@ TEST(IntrusiveHashSet, Basic)
 	{
 		auto [position, inserted] = set.insert_check(2);
 		ASSERT_TRUE(inserted);
-		set.insert(position, b);
+		set.insert_commit(position, b);
 	}
 
 	ASSERT_FALSE(set.insert_check(2).second);
@@ -52,7 +52,7 @@ TEST(IntrusiveHashSet, Basic)
 	{
 		auto [position, inserted] = set.insert_check(a);
 		ASSERT_TRUE(inserted);
-		set.insert(position, a);
+		set.insert_commit(position, a);
 	}
 
 	set.insert(c);
@@ -100,7 +100,7 @@ TEST(IntrusiveHashSet, Basic)
 	{
 		auto [position, inserted] = set.insert_check(f);
 		ASSERT_TRUE(inserted);
-		set.insert(position, f);
+		set.insert_commit(position, f);
 	}
 
 	ASSERT_EQ(set.find(a), set.iterator_to(f));
