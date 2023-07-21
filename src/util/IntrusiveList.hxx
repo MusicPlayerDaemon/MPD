@@ -486,6 +486,12 @@ public:
 		insert(end(), t);
 	}
 
+	/**
+	 * Insert a new item before the given position.
+	 *
+	 * @param p a valid iterator (end() is allowed)for this list
+	 * describing the position where to insert
+	 */
 	void insert(iterator p, reference t) noexcept {
 		static_assert(!constant_time_size ||
 			      GetHookMode() < IntrusiveHookMode::AUTO_UNLINK,
