@@ -182,7 +182,7 @@ public:
 		counter.reset();
 	}
 
-	void remove_and_dispose_if(Predicate<const_reference> auto pred,
+	void remove_and_dispose_if(std::predicate<const_reference> auto pred,
 				   Disposer<value_type> auto disposer) noexcept {
 		for (auto &bucket : table)
 			counter -= bucket.remove_and_dispose_if(pred, disposer);
@@ -200,7 +200,7 @@ public:
 	}
 
 	constexpr void remove_and_dispose_if(const auto &key,
-					     Predicate<const_reference> auto pred,
+					     std::predicate<const_reference> auto pred,
 					     Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
 		counter -= bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
@@ -296,7 +296,7 @@ public:
 	 */
 	[[nodiscard]] [[gnu::pure]]
 	constexpr bucket_iterator find_if(const auto &key,
-					  Predicate<const_reference> auto pred) noexcept {
+					  std::predicate<const_reference> auto pred) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
 			if (equal(key, i) && pred(i))
@@ -320,9 +320,9 @@ public:
 	 */
 	[[nodiscard]] [[gnu::pure]]
 	constexpr bucket_iterator expire_find_if(const auto &key,
-						 Predicate<const_reference> auto expired_pred,
+						 std::predicate<const_reference> auto expired_pred,
 						 Disposer<value_type> auto disposer,
-						 Predicate<const_reference> auto match_pred) noexcept {
+						 std::predicate<const_reference> auto match_pred) noexcept {
 		auto &bucket = GetBucket(key);
 
 		for (auto i = bucket.begin(), e = bucket.end(); i != e;) {

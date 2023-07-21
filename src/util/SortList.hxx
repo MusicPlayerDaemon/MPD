@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "Concepts.hxx"
 #include "StaticVector.hxx"
 
 #include <algorithm> // for std::find_if()
+#include <concepts>
 
 /**
  * Move all items from #src to #dest, keeping both sorted.
@@ -17,7 +17,7 @@
 template<typename List>
 constexpr void
 MergeList(List &dest, List &src,
-	  Predicate<typename List::const_reference, typename List::const_reference> auto p) noexcept
+	  std::predicate<typename List::const_reference, typename List::const_reference> auto p) noexcept
 {
 	const auto dest_end = dest.end(), src_end = src.end();
 
@@ -59,7 +59,7 @@ MergeList(List &dest, List &src,
 template<typename List>
 constexpr void
 SortList(List &list,
-	 Predicate <typename List::const_reference, typename List::const_reference> auto p) noexcept
+	 std::predicate <typename List::const_reference, typename List::const_reference> auto p) noexcept
 {
 	using std::swap;
 
