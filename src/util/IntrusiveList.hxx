@@ -508,6 +508,13 @@ public:
 	}
 
 	/**
+	 * Like insert(), but insert after the given position.
+	 */
+	void insert_after(iterator p, reference t) noexcept {
+		insert(std::next(p), t);
+	}
+
+	/**
 	 * Move one item of the given list to this one before the
 	 * given position.
 	 */
