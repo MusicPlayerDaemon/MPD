@@ -227,7 +227,11 @@ public:
 			if (equal(key, i))
 				return {bucket.iterator_to(i), false};
 
-		return {bucket.begin(), true};
+		/* bucket.end() is a pointer to the bucket's list
+		   head, a stable value that is guaranteed to be still
+		   valid when insert_commit() gets called
+		   eventually */
+		return {bucket.end(), true};
 	}
 
 	/**
@@ -237,7 +241,10 @@ public:
 	 */
 	constexpr void insert_commit(bucket_iterator bucket, reference item) noexcept {
 		++counter;
-		GetBucket(item).insert(bucket, item);
+
+		/* using insert_after() so the new item gets inserted
+		   at the front of the bucket list */
+		GetBucket(item).insert_after(bucket, item);
 	}
 
 	/**
