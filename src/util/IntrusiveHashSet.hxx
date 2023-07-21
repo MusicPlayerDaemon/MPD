@@ -213,6 +213,13 @@ public:
 		return Bucket::iterator_to(item);
 	}
 
+	/**
+	 * Prepare insertion of a new item.  If the key already
+	 * exists, return an iterator to the existing item and
+	 * `false`.  If the key does not exist, return an iterator to
+	 * the bucket where the new item may be inserted using
+	 * insert() and `true`.
+	 */
 	[[nodiscard]] [[gnu::pure]]
 	constexpr std::pair<bucket_iterator, bool> insert_check(const auto &key) noexcept {
 		auto &bucket = GetBucket(key);
@@ -223,11 +230,20 @@ public:
 		return {bucket.begin(), true};
 	}
 
+	/**
+	 * Finish the insertion if insert_check() has returned true.
+	 *
+	 * @param bucket the bucket returned by insert_check()
+	 */
 	constexpr void insert(bucket_iterator bucket, reference item) noexcept {
 		++counter;
 		GetBucket(item).insert(bucket, item);
 	}
 
+	/**
+	 * Insert a new item without checking whether the key already
+	 * exists.
+	 */
 	constexpr void insert(reference item) noexcept {
 		++counter;
 		GetBucket(item).push_front(item);
