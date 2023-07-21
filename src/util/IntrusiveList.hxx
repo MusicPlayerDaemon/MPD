@@ -264,9 +264,7 @@ public:
 
 	void clear_and_dispose(Disposer<value_type> auto disposer) noexcept {
 		while (!empty()) {
-			auto *item = &front();
-			pop_front();
-			disposer(item);
+			disposer(&pop_front());
 		}
 	}
 
@@ -302,15 +300,15 @@ public:
 		return *Cast(head.next);
 	}
 
-	void pop_front() noexcept {
-		ToHook(front()).unlink();
-		--counter;
-	}
-
-	void pop_front_and_dispose(Disposer<value_type> auto disposer) noexcept {
+	reference pop_front() noexcept {
 		auto &i = front();
 		ToHook(i).unlink();
 		--counter;
+		return i;
+	}
+
+	void pop_front_and_dispose(Disposer<value_type> auto disposer) noexcept {
+		auto &i = pop_front();
 		disposer(&i);
 	}
 
@@ -319,7 +317,8 @@ public:
 	}
 
 	void pop_back() noexcept {
-		ToHook(back()).unlink();
+		auto &i = back();
+		ToHook(i).unlink();
 		--counter;
 	}
 
