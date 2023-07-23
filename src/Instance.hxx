@@ -71,7 +71,7 @@ struct Instance final
 	/**
 	 * A thread running an #EventLoop for non-blocking (bulk) I/O.
 	 */
-	EventThread io_thread;
+	EventThread io_thread{true};
 
 	/**
 	 * Another thread running an #EventLoop for non-blocking
@@ -82,7 +82,7 @@ struct Instance final
 	EventThread rtio_thread;
 
 #ifdef ENABLE_SYSTEMD_DAEMON
-	Systemd::Watchdog systemd_watchdog;
+	Systemd::Watchdog systemd_watchdog{event_loop};
 #endif
 
 	std::unique_ptr<InputCacheManager> input_cache;
@@ -91,7 +91,7 @@ struct Instance final
 	 * Monitor for global idle events to be broadcasted to all
 	 * partitions.
 	 */
-	MaskMonitor idle_monitor;
+	MaskMonitor idle_monitor{event_loop, BIND_THIS_METHOD(OnIdle)};
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	std::unique_ptr<NeighborGlue> neighbors;
