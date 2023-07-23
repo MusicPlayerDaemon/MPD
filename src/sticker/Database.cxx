@@ -93,7 +93,8 @@ StickerDatabase::StickerDatabase(Path path)
 
 StickerDatabase::~StickerDatabase() noexcept
 {
-	assert(db != nullptr);
+	if (db == nullptr)
+		return;
 
 	for (const auto &sticker : stmt) {
 		assert(sticker != nullptr);

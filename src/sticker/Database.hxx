@@ -65,6 +65,9 @@ public:
 	StickerDatabase(Path path);
 	~StickerDatabase() noexcept;
 
+	StickerDatabase(StickerDatabase &&) noexcept = default;
+	StickerDatabase &operator=(StickerDatabase &&) noexcept = default;
+
 	/**
 	 * Returns one value from an object's sticker record.  Returns an
 	 * empty string if the value doesn't exist.
