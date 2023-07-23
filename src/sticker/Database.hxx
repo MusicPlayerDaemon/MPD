@@ -53,8 +53,12 @@ class StickerDatabase {
 		  SQL_COUNT
 	};
 
+	std::string path;
+
 	Sqlite::Database db;
 	sqlite3_stmt *stmt[SQL_COUNT];
+
+	explicit StickerDatabase(const char *_path);
 
 public:
 	/**
@@ -67,6 +71,14 @@ public:
 
 	StickerDatabase(StickerDatabase &&) noexcept = default;
 	StickerDatabase &operator=(StickerDatabase &&) noexcept = default;
+
+	/**
+	 * Open another connection to the same database file.
+	 */
+	[[nodiscard]]
+	StickerDatabase Reopen() const {
+		return StickerDatabase{path.c_str()};
+	}
 
 	/**
 	 * Returns one value from an object's sticker record.  Returns an

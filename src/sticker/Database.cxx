@@ -67,11 +67,10 @@ static constexpr const char sticker_sql_create[] =
 	" sticker_value ON sticker(type, uri, name);"
 	"";
 
-StickerDatabase::StickerDatabase(Path path)
-	:db(NarrowPath(path))
+StickerDatabase::StickerDatabase(const char *_path)
+	:path(_path),
+	 db(path.c_str())
 {
-	assert(!path.IsNull());
-
 	int ret;
 
 	/* create the table and index */
@@ -90,6 +89,9 @@ StickerDatabase::StickerDatabase(Path path)
 		stmt[i] = Prepare(db, sticker_sql[i]);
 	}
 }
+
+StickerDatabase::StickerDatabase(Path _path)
+	:StickerDatabase(NarrowPath{_path}) {}
 
 StickerDatabase::~StickerDatabase() noexcept
 {
