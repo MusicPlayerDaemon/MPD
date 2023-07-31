@@ -38,7 +38,7 @@ AddTagHandler::OnDuration(SongTime duration) noexcept
 }
 
 void
-NullTagHandler::OnLyrics(StringView) noexcept
+NullTagHandler::OnLyrics(std::string_view) noexcept
 {
 }
 

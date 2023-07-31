@@ -7,7 +7,6 @@
 #include "Table.hxx"
 #include "Handler.hxx"
 #include "util/ASCII.hxx"
-#include "util/StringView.hxx"
 #include "util/IterableSplitString.hxx"
 
 static constexpr struct tag_table ape_tags[] = {

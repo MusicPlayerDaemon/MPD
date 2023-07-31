@@ -116,7 +116,7 @@ public:
          * @param the text of the lyrics; the pointer will become
          * invalid after returning
          */
-        virtual void OnLyrics(StringView value) noexcept = 0;
+	virtual void OnLyrics(std::string_view value) noexcept = 0;
 
 };
 
@@ -132,7 +132,7 @@ public:
 	void OnAudioFormat(AudioFormat af) noexcept override;
 	void OnPicture(const char *mime_type,
 		       std::span<const std::byte> buffer) noexcept override;
-        void OnLyrics(StringView value) noexcept override;
+	void OnLyrics(std::string_view value) noexcept override;
 };
 
 /**

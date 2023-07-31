@@ -361,26 +361,56 @@ handle_read_picture(Client &client, Request args, Response &r)
 
 class PrintLyricsHandler final : public NullTagHandler {
 	Response &response;
+        const size_t offset;
+        bool found = false;
+        bool bad_offset = false;
 
 public:
-	explicit PrintLyricsHandler(Response &_response) noexcept
-                :NullTagHandler(WANT_LYRICS), response(_response) {}
+        explicit PrintLyricsHandler(Response &_response, size_t _offset) noexcept
+                :NullTagHandler(WANT_LYRICS), response(_response), offset(_offset) {}
+
+        void RethrowError() const {
+                if (bad_offset)
+                        throw ProtocolError(ACK_ERROR_ARG, "Bad buffer offset");
+        }
 
 
         void OnLyrics(std::string_view value) noexcept override {
-                        // response.Format("%.*s\n",
-                        //                 int(value.size), value.data);
+                if (found)
+                        /* only use the first lyrics field */
+                        return;
+
+                found = true;
+
+                const char *const LYRICS_TYPE = "UNSYNCEDLYRICS";
+                std::span<const std::byte> buffer = std::span((const std::byte *) value.data(), value.size());
+                if (offset > buffer.size()) {
+                        bad_offset = true;
+                        return;
+                }
+                response.Fmt(FMT_STRING("size: {}\n"), buffer.size());
+                response.Fmt(FMT_STRING("type: {}\n"), LYRICS_TYPE); // possibly include synced lyrics in the future
+
+                buffer = buffer.subspan(offset);
+
+                const std::size_t binary_limit = response.GetClient().binary_limit;
+                if (buffer.size() > binary_limit)
+                        buffer = buffer.first(binary_limit);
+
+                response.WriteBinary(buffer);
 	}
 };
 
 CommandResult
 handle_read_lyrics(Client &client, Request args, Response &r)
 {
-        assert(args.size() == 1);
+	assert(args.size() == 2);
 
 	const char *const uri = args.front();
+        const size_t offset = args.ParseUnsigned(1);
 
-	PrintLyricsHandler handler(r);
+        PrintLyricsHandler handler(r, offset);
 	TagScanAny(client, uri, handler);
+        handler.RethrowError();
 	return CommandResult::OK;
 }

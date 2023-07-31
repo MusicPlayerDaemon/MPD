@@ -37,7 +37,7 @@ ScanOneOpusTag(std::string_view name, std::string_view value,
 	    StringIsEqualIgnoreCase(name, "METADATA_BLOCK_PICTURE"sv))
 		return ScanVorbisPicture(value, handler);
 
-        if (handler.WantLyrics() && name.EqualsIgnoreCase("LYRICS")) {
+        if (handler.WantLyrics() && StringIsEqualIgnoreCase(name, "LYRICS"sv)) {
                 return handler.OnLyrics(value);
         }
 

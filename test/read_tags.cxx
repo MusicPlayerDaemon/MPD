@@ -65,6 +65,10 @@ public:
 		printf("picture mime='%s' size=%zu\n",
 		       mime_type, buffer.size());
 	}
+
+        void OnLyrics(StringView value) noexcept override {
+                printf("lyrics='%s'\n", value.data);
+        }
 };
 
 int main(int argc, char **argv)
