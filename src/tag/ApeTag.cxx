@@ -37,10 +37,10 @@ tag_ape_import_item(unsigned long flags,
 	if ((flags & (0x3 << 1)) != 0)
 		return false;
 
-        if (handler.WantLyrics() && StringEqualsCaseASCII("lyrics", key)) {
-                handler.OnLyrics(value);
-                return true;
-        }
+	if (handler.WantLyrics() && StringEqualsCaseASCII("lyrics", key)) {
+		handler.OnLyrics(value);
+		return true;
+	}
 
 	if (handler.WantPair())
 		for (const auto i : IterableSplitString(value, '\0'))

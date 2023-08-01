@@ -27,7 +27,7 @@ public:
 	static constexpr unsigned WANT_PAIR = 0x4;
 	static constexpr unsigned WANT_AUDIO_FORMAT = 0x8;
 	static constexpr unsigned WANT_PICTURE = 0x10;
-        static constexpr unsigned WANT_LYRICS = 0x20;
+	static constexpr unsigned WANT_LYRICS = 0x20;
 
 	explicit TagHandler(unsigned _want_mask) noexcept
 		:want_mask(_want_mask) {}
@@ -55,9 +55,9 @@ public:
 		return want_mask & WANT_PICTURE;
 	}
 
-        bool WantLyrics() const noexcept {
-                return want_mask & WANT_LYRICS;
-        }
+	bool WantLyrics() const noexcept {
+		return want_mask & WANT_LYRICS;
+	}
 
 	/**
 	 * Declare the duration of a song.  Do not call
@@ -110,12 +110,12 @@ public:
 	virtual void OnPicture(const char *mime_type,
 			       std::span<const std::byte> buffer) noexcept = 0;
 
-        /**
-         * Lyrics have been read.
-         *
-         * @param the text of the lyrics; the pointer will become
-         * invalid after returning
-         */
+	/**
+	 * Lyrics have been read.
+	 *
+	 * @param the text of the lyrics; the pointer will become
+	 * invalid after returning
+	 */
 	virtual void OnLyrics(std::string_view value) noexcept = 0;
 
 };

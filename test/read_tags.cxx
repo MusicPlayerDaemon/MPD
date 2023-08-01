@@ -66,9 +66,9 @@ public:
 		       mime_type, buffer.size());
 	}
 
-        void OnLyrics(StringView value) noexcept override {
-                printf("lyrics='%s'\n", value.data);
-        }
+	void OnLyrics(StringView value) noexcept override {
+		printf("lyrics='%s'\n", value.data);
+	}
 };
 
 int main(int argc, char **argv)

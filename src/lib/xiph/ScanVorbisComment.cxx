@@ -37,14 +37,14 @@ ScanVorbisComment(std::string_view comment, TagHandler &handler) noexcept
 	}
 
 	if (handler.WantLyrics()) {
-                const auto unsynced = GetVorbisCommentValue(comment, "UNSYNCEDLYRICS");
-                if (!unsynced.empty()) {
-                        handler.OnLyrics(unsynced);
-                }
+		const auto unsynced = GetVorbisCommentValue(comment, "UNSYNCEDLYRICS");
+		if (!unsynced.empty()) {
+			handler.OnLyrics(unsynced);
+		}
 
-                const auto lyrics = GetVorbisCommentValue(comment, "lyrics");
-                if (!lyrics.empty()) {
-                        handler.OnLyrics(lyrics);
+		const auto lyrics = GetVorbisCommentValue(comment, "lyrics");
+		if (!lyrics.empty()) {
+			handler.OnLyrics(lyrics);
 		}
 	}
 

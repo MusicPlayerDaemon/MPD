@@ -397,7 +397,6 @@ ver 0.22 (2020/09/23)
   - command "moveoutput" moves an output between partitions
   - command "delpartition" deletes a partition
   - show partition name in "status" response
-
 * tags
   - new tags "Grouping" (for ID3 "TIT1"), "Work" and "Conductor"
 * input

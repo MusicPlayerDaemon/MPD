@@ -311,35 +311,35 @@ tag_id3_handle_apic(const struct id3_tag *id3_tag,
 
 static void
 tag_id3_handle_uslt(const struct id3_tag *id3_tag,
-                    TagHandler &handler) noexcept
+		    TagHandler &handler) noexcept
 {
-        if (!handler.WantLyrics())
-                return;
+	if (!handler.WantLyrics())
+		return;
 
-        for (unsigned i = 0;; ++i) {
-                const id3_frame *frame = id3_tag_findframe(id3_tag, "USLT", i);
-                if (frame == nullptr)
-                        break;
+	for (unsigned i = 0;; ++i) {
+		const id3_frame *frame = id3_tag_findframe(id3_tag, "USLT", i);
+		if (frame == nullptr)
+			break;
 
-                if (frame->nfields != 4)
-                        return;
+		if (frame->nfields != 4)
+			return;
 
-                const id3_field *field = id3_frame_field(frame, 3);
-                if (field == nullptr)
-                        return;
+		const id3_field *field = id3_frame_field(frame, 3);
+		if (field == nullptr)
+			return;
 
-                const id3_ucs4_t *ucs4 = id3_field_getfullstring(field);
-                if (ucs4 == nullptr)
-                        return;
+		const id3_ucs4_t *ucs4 = id3_field_getfullstring(field);
+		if (ucs4 == nullptr)
+			return;
 
-                id3_utf8_t *utf8 = import_id3_string(ucs4);
-                if (utf8 == nullptr)
-                        return;
+		id3_utf8_t *utf8 = import_id3_string(ucs4);
+		if (utf8 == nullptr)
+			return;
 
-                AtScopeExit(utf8) { free(utf8); };
+		AtScopeExit(utf8) { free(utf8); };
 
-                handler.OnLyrics((const char *)utf8);
-        }
+		handler.OnLyrics((const char *)utf8);
+	}
 
 
 }
@@ -384,13 +384,13 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_MOOD, TAG_MOOD, handler);
 	tag_id3_import_text(tag, ID3_FRAME_TITLE_SORT, TAG_TITLE_SORT, handler);
-        tag_id3_import_comment(tag, ID3_FRAME_LYRICS, TAG_LYRICS,
-                            handler);
+	tag_id3_import_comment(tag, ID3_FRAME_LYRICS, TAG_LYRICS,
+			       handler);
 
 	tag_id3_import_musicbrainz(tag, handler);
 	tag_id3_import_ufid(tag, handler);
 	tag_id3_handle_apic(tag, handler);
-        tag_id3_handle_uslt(tag, handler);
+	tag_id3_handle_uslt(tag, handler);
 }
 
 Tag
