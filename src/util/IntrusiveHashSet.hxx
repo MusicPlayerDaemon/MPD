@@ -191,30 +191,44 @@ public:
 		counter.reset();
 	}
 
-	void remove_and_dispose_if(std::predicate<const_reference> auto pred,
+	/**
+	 * Remove and dispose all items matching the given predicate.
+	 *
+	 * @return the number of removed items
+	 */
+	std::size_t remove_and_dispose_if(std::predicate<const_reference> auto pred,
 				   Disposer<value_type> auto disposer) noexcept {
+		std::size_t n = 0;
 		for (auto &bucket : table)
-			counter -= bucket.remove_and_dispose_if(pred, disposer);
+			n += bucket.remove_and_dispose_if(pred, disposer);
+		counter -= n;
+		return n;
 	}
 
 	/**
 	 * Remove and dispose all items with the specified key.
+	 *
+	 * @return the number of removed items
 	 */
-	constexpr void remove_and_dispose_key(const auto &key,
-					      Disposer<value_type> auto disposer) noexcept {
+	constexpr std::size_t remove_and_dispose_key(const auto &key,
+						     Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
-		counter -= bucket.remove_and_dispose_if([this, &key](const auto &item){
+		std::size_t n = bucket.remove_and_dispose_if([this, &key](const auto &item){
 			return ops.equal(key, item);
 		}, disposer);
+		counter -= n;
+		return n;
 	}
 
-	constexpr void remove_and_dispose_key_if(const auto &key,
-						 std::predicate<const_reference> auto pred,
-					     Disposer<value_type> auto disposer) noexcept {
+	constexpr std::size_t remove_and_dispose_key_if(const auto &key,
+							std::predicate<const_reference> auto pred,
+							Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
-		counter -= bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
+		std::size_t n = bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
 			return ops.equal(key, item) && pred(item);
 		}, disposer);
+		counter -= n;
+		return n;
 	}
 
 	[[nodiscard]]
