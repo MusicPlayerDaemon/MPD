@@ -52,26 +52,10 @@ class RemoteTagCache final {
 		void OnRemoteTag(Tag &&tag) noexcept override;
 		void OnRemoteTagError(std::exception_ptr e) noexcept override;
 
-		struct Hash : std::hash<std::string> {
-			using std::hash<std::string>::operator();
-
+		struct GetUri {
 			[[gnu::pure]]
-			std::size_t operator()(const Item &item) const noexcept {
-				return std::hash<std::string>::operator()(item.uri);
-			}
-		};
-
-		struct Equal {
-			[[gnu::pure]]
-			bool operator()(const Item &a,
-					const Item &b) const noexcept {
-				return a.uri == b.uri;
-			}
-
-			[[gnu::pure]]
-			bool operator()(const std::string &a,
-					const Item &b) const noexcept {
-				return a == b.uri;
+			std::string_view operator()(const Item &item) const noexcept {
+				return item.uri;
 			}
 		};
 	};
@@ -101,7 +85,9 @@ class RemoteTagCache final {
 	ItemList invoke_list;
 
 	IntrusiveHashSet<Item, 127,
-			 IntrusiveHashSetOperators<Item::Hash, Item::Equal>,
+			 IntrusiveHashSetOperators<std::hash<std::string_view>,
+						   std::equal_to<std::string_view>,
+						   Item::GetUri>,
 			 IntrusiveHashSetBaseHookTraits<Item>,
 			 true> map;
 

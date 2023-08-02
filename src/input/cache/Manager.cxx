@@ -11,37 +11,10 @@
 
 #include <string.h>
 
-inline std::size_t
-InputCacheManager::ItemHash::operator()(std::string_view uri) const noexcept
+inline std::string_view
+InputCacheManager::ItemGetUri::operator()(const InputCacheItem &item) const noexcept
 {
-	return std::hash<std::string_view>{}(uri);
-}
-
-inline std::size_t
-InputCacheManager::ItemHash::operator()(const InputCacheItem &item) const noexcept
-{
-	return std::hash<std::string_view>{}(item.GetUri());
-}
-
-inline bool
-InputCacheManager::ItemEqual::operator()(const InputCacheItem &a,
-					 std::string_view b) const noexcept
-{
-	return a.GetUri() == b;
-}
-
-inline bool
-InputCacheManager::ItemEqual::operator()(std::string_view a,
-					 const InputCacheItem &b) const noexcept
-{
-	return a == b.GetUri();
-}
-
-inline bool
-InputCacheManager::ItemEqual::operator()(const InputCacheItem &a,
-					 const InputCacheItem &b) const noexcept
-{
-	return a.GetUri() == b.GetUri();
+	return item.GetUri();
 }
 
 InputCacheManager::InputCacheManager(const InputCacheConfig &config) noexcept

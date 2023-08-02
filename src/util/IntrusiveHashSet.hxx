@@ -75,7 +75,12 @@ struct IntrusiveHashSetMemberHookTraits {
 	}
 };
 
-template<typename Hash, typename Equal>
+/**
+ * @param GetKey a function object which extracts the "key" part of an
+ * item
+ */
+template<typename Hash, typename Equal,
+	 typename GetKey=std::identity>
 struct IntrusiveHashSetOperators {
 	using hasher = Hash;
 	using key_equal = Equal;
@@ -85,6 +90,9 @@ struct IntrusiveHashSetOperators {
 
 	[[no_unique_address]]
 	Equal equal;
+
+	[[no_unique_address]]
+	GetKey get_key;
 };
 
 /**
@@ -214,7 +222,7 @@ public:
 						     Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
 		std::size_t n = bucket.remove_and_dispose_if([this, &key](const auto &item){
-			return ops.equal(key, item);
+			return ops.equal(key, ops.get_key(item));
 		}, disposer);
 		counter -= n;
 		return n;
@@ -225,7 +233,7 @@ public:
 							Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
 		std::size_t n = bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
-			return ops.equal(key, item) && pred(item);
+			return ops.equal(key, ops.get_key(item)) && pred(item);
 		}, disposer);
 		counter -= n;
 		return n;
@@ -247,7 +255,7 @@ public:
 	constexpr std::pair<bucket_iterator, bool> insert_check(const auto &key) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
-			if (ops.equal(key, i))
+			if (ops.equal(key, ops.get_key(i)))
 				return {bucket.iterator_to(i), false};
 
 		/* bucket.end() is a pointer to the bucket's list
@@ -267,7 +275,7 @@ public:
 
 		/* using insert_after() so the new item gets inserted
 		   at the front of the bucket list */
-		GetBucket(item).insert_after(bucket, item);
+		GetBucket(ops.get_key(item)).insert_after(bucket, item);
 	}
 
 	/**
@@ -276,12 +284,12 @@ public:
 	 */
 	constexpr void insert(reference item) noexcept {
 		++counter;
-		GetBucket(item).push_front(item);
+		GetBucket(ops.get_key(item)).push_front(item);
 	}
 
 	constexpr bucket_iterator erase(bucket_iterator i) noexcept {
 		--counter;
-		return GetBucket(*i).erase(i);
+		return GetBucket(ops.get_key(*i)).erase(i);
 	}
 
 	constexpr bucket_iterator erase_and_dispose(bucket_iterator i,
@@ -295,7 +303,7 @@ public:
 	constexpr bucket_iterator find(const auto &key) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
-			if (ops.equal(key, i))
+			if (ops.equal(key, ops.get_key(i)))
 				return bucket.iterator_to(i);
 
 		return end();
@@ -305,7 +313,7 @@ public:
 	constexpr const_bucket_iterator find(const auto &key) const noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
-			if (ops.equal(key, i))
+			if (ops.equal(key, ops.get_key(i)))
 				return bucket.iterator_to(i);
 
 		return end();
@@ -322,7 +330,7 @@ public:
 					  std::predicate<const_reference> auto pred) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
-			if (ops.equal(key, i) && pred(i))
+			if (ops.equal(key, ops.get_key(i)) && pred(i))
 				return bucket.iterator_to(i);
 
 		return end();
@@ -349,7 +357,7 @@ public:
 		auto &bucket = GetBucket(key);
 
 		for (auto i = bucket.begin(), e = bucket.end(); i != e;) {
-			if (!ops.equal(key, *i))
+			if (!ops.equal(key, ops.get_key(*i)))
 				++i;
 			else if (expired_pred(*i))
 				i = erase_and_dispose(i, disposer);

@@ -24,32 +24,17 @@ class InputCacheManager {
 
 	size_t total_size = 0;
 
-	struct ItemHash {
+	struct ItemGetUri {
 		[[gnu::pure]]
-		std::size_t operator()(std::string_view uri) const noexcept;
-
-		[[gnu::pure]]
-		std::size_t operator()(const InputCacheItem &item) const noexcept;
-	};
-
-	struct ItemEqual {
-		[[gnu::pure]]
-		bool operator()(const InputCacheItem &a,
-				std::string_view b) const noexcept;
-
-		[[gnu::pure]]
-		bool operator()(std::string_view a,
-				const InputCacheItem &b) const noexcept;
-
-		[[gnu::pure]]
-		bool operator()(const InputCacheItem &a,
-				const InputCacheItem &b) const noexcept;
+		std::string_view operator()(const InputCacheItem &item) const noexcept;
 	};
 
 	IntrusiveList<InputCacheItem> items_by_time;
 
 	IntrusiveHashSet<InputCacheItem, 127,
-			 IntrusiveHashSetOperators<ItemHash, ItemEqual>> items_by_uri;
+			 IntrusiveHashSetOperators<std::hash<std::string_view>,
+						   std::equal_to<std::string_view>,
+						   ItemGetUri>> items_by_uri;
 
 public:
 	explicit InputCacheManager(const InputCacheConfig &config) noexcept;
