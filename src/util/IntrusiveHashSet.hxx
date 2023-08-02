@@ -75,13 +75,28 @@ struct IntrusiveHashSetMemberHookTraits {
 	}
 };
 
+template<typename Hash, typename Equal>
+struct IntrusiveHashSetOperators {
+	using hasher = Hash;
+	using key_equal = Equal;
+
+	[[no_unique_address]]
+	Hash hash;
+
+	[[no_unique_address]]
+	Equal equal;
+};
+
 /**
  * A hash table implementation which stores pointers to items which
  * have an embedded #IntrusiveHashSetHook.  The actual table is
  * embedded with a compile-time fixed size in this object.
+ *
+ * @param Operators a class which contains functions `hash` and
+ * `equal`
  */
 template<typename T, std::size_t table_size,
-	 typename Hash=typename T::Hash, typename Equal=typename T::Equal,
+	 typename Operators,
 	 typename HookTraits=IntrusiveHashSetBaseHookTraits<T>,
 	 bool constant_time_size=false>
 class IntrusiveHashSet {
@@ -89,10 +104,7 @@ class IntrusiveHashSet {
 	OptionalCounter<constant_time_size> counter;
 
 	[[no_unique_address]]
-	Hash hash;
-
-	[[no_unique_address]]
-	Equal equal;
+	Operators ops;
 
 	struct BucketHookTraits {
 		template<typename U>
@@ -129,20 +141,20 @@ public:
 	using const_pointer = const T *;
 	using size_type = std::size_t;
 
-	using hasher = Hash;
-	using key_equal = Equal;
+	using hasher = typename Operators::hasher;
+	using key_equal = typename Operators::key_equal;
 
 	[[nodiscard]]
 	IntrusiveHashSet() noexcept = default;
 
 	[[nodiscard]]
 	constexpr const hasher &hash_function() const noexcept {
-		return hash;
+		return ops.hash;
 	}
 
 	[[nodiscard]]
 	constexpr const key_equal &key_eq() const noexcept {
-		return equal;
+		return ops.equal;
 	}
 
 	[[nodiscard]]
@@ -192,7 +204,7 @@ public:
 					  Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
 		counter -= bucket.remove_and_dispose_if([this, &key](const auto &item){
-			return equal(key, item);
+			return ops.equal(key, item);
 		}, disposer);
 	}
 
@@ -201,7 +213,7 @@ public:
 					     Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
 		counter -= bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
-			return equal(key, item) && pred(item);
+			return ops.equal(key, item) && pred(item);
 		}, disposer);
 	}
 
@@ -221,7 +233,7 @@ public:
 	constexpr std::pair<bucket_iterator, bool> insert_check(const auto &key) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
-			if (equal(key, i))
+			if (ops.equal(key, i))
 				return {bucket.iterator_to(i), false};
 
 		/* bucket.end() is a pointer to the bucket's list
@@ -269,7 +281,7 @@ public:
 	constexpr bucket_iterator find(const auto &key) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
-			if (equal(key, i))
+			if (ops.equal(key, i))
 				return bucket.iterator_to(i);
 
 		return end();
@@ -279,7 +291,7 @@ public:
 	constexpr const_bucket_iterator find(const auto &key) const noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
-			if (equal(key, i))
+			if (ops.equal(key, i))
 				return bucket.iterator_to(i);
 
 		return end();
@@ -296,7 +308,7 @@ public:
 					  std::predicate<const_reference> auto pred) noexcept {
 		auto &bucket = GetBucket(key);
 		for (auto &i : bucket)
-			if (equal(key, i) && pred(i))
+			if (ops.equal(key, i) && pred(i))
 				return bucket.iterator_to(i);
 
 		return end();
@@ -323,7 +335,7 @@ public:
 		auto &bucket = GetBucket(key);
 
 		for (auto i = bucket.begin(), e = bucket.end(); i != e;) {
-			if (!equal(key, *i))
+			if (!ops.equal(key, *i))
 				++i;
 			else if (expired_pred(*i))
 				i = erase_and_dispose(i, disposer);
@@ -361,7 +373,7 @@ private:
 	[[gnu::pure]]
 	[[nodiscard]]
 	constexpr auto &GetBucket(K &&key) noexcept {
-		const auto h = hash(std::forward<K>(key));
+		const auto h = ops.hash(std::forward<K>(key));
 		return table[h % table_size];
 	}
 
@@ -369,7 +381,7 @@ private:
 	[[gnu::pure]]
 	[[nodiscard]]
 	constexpr const auto &GetBucket(K &&key) const noexcept {
-		const auto h = hash(std::forward<K>(key));
+		const auto h = ops.hash(std::forward<K>(key));
 		return table[h % table_size];
 	}
 };

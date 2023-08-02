@@ -100,11 +100,10 @@ class RemoteTagCache final {
 	 */
 	ItemList invoke_list;
 
-	using KeyMap = IntrusiveHashSet<Item, 127, Item::Hash, Item::Equal,
-					IntrusiveHashSetBaseHookTraits<Item>,
-					true>;
-
-	KeyMap map;
+	IntrusiveHashSet<Item, 127,
+			 IntrusiveHashSetOperators<Item::Hash, Item::Equal>,
+			 IntrusiveHashSetBaseHookTraits<Item>,
+			 true> map;
 
 public:
 	RemoteTagCache(EventLoop &event_loop,

@@ -48,10 +48,8 @@ class InputCacheManager {
 
 	IntrusiveList<InputCacheItem> items_by_time;
 
-	using UriMap =
-		IntrusiveHashSet<InputCacheItem, 127, ItemHash, ItemEqual>;
-
-	UriMap items_by_uri;
+	IntrusiveHashSet<InputCacheItem, 127,
+			 IntrusiveHashSetOperators<ItemHash, ItemEqual>> items_by_uri;
 
 public:
 	explicit InputCacheManager(const InputCacheConfig &config) noexcept;
