@@ -200,16 +200,16 @@ public:
 	/**
 	 * Remove and dispose all items with the specified key.
 	 */
-	constexpr void remove_and_dispose(const auto &key,
-					  Disposer<value_type> auto disposer) noexcept {
+	constexpr void remove_and_dispose_key(const auto &key,
+					      Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
 		counter -= bucket.remove_and_dispose_if([this, &key](const auto &item){
 			return ops.equal(key, item);
 		}, disposer);
 	}
 
-	constexpr void remove_and_dispose_if(const auto &key,
-					     std::predicate<const_reference> auto pred,
+	constexpr void remove_and_dispose_key_if(const auto &key,
+						 std::predicate<const_reference> auto pred,
 					     Disposer<value_type> auto disposer) noexcept {
 		auto &bucket = GetBucket(key);
 		counter -= bucket.remove_and_dispose_if([this, &key, &pred](const auto &item){
