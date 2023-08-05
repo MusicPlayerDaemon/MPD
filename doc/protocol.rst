@@ -1232,27 +1232,23 @@ The music database
     Read lyrics from the file specified by "URI". This "URI"
     can be a path relative to the music directory or an
     absolute path. Lyrics will be sent as binary response.
-    This is implemented by reading USLT from ID3v2 tags
-    and UNSYNCEDLYRICS or LYRICS from Vorbis comments.
-    Only first lyrics tag found is returned.
+    This is implemented by reading ``USLT`` from ID3v2 tags
+    and ``UNSYNCEDLYRICS`` or ``lyrics`` from Vorbis comments.
+    Only the first lyrics tag found is returned.
 
     Returns the following values:
 
-    - ``size``: the total file size
-    - ``type``: the lyrics type, currently only UNSYNCEDLYRICS is supported
+    - ``size``: the total buffer size
     - ``binary``: see :ref:`binary`
 
     then a newline and the completion code.
 
-    If the song file was recognized, but there is no picture, the
+    If the song file was recognized, but there is no lyrics, the
     response is successful, but is otherwise empty.
-
-    UNSYNCEDLYRICS is a raw text string of the lyrics including newlines without any formatting or timings.
 
     Example::
 
      readlyrics foo/bar.ogg 0
-     type: UNSYNCEDLYRICS
      size: 13120
      binary: 8192
      <8192 bytes>

@@ -382,14 +382,12 @@ public:
 
 		found = true;
 
-		const char *const LYRICS_TYPE = "UNSYNCEDLYRICS";
 		std::span<const std::byte> buffer = std::span((const std::byte *) value.data(), value.size());
 		if (offset > buffer.size()) {
 			bad_offset = true;
 			return;
 		}
 		response.Fmt(FMT_STRING("size: {}\n"), buffer.size());
-		response.Fmt(FMT_STRING("type: {}\n"), LYRICS_TYPE); // possibly include synced lyrics in the future
 
 		buffer = buffer.subspan(offset);
 
