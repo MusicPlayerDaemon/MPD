@@ -82,3 +82,11 @@ HexFormat(std::span<const std::byte, size> input) noexcept
 	HexFormat(output.data(), input);
 	return output;
 }
+
+template<std::size_t size>
+constexpr auto
+HexFormat(std::span<std::byte, size> input) noexcept
+{
+	std::span<const std::byte, size> const_input{input};
+	return HexFormat(const_input);
+}
