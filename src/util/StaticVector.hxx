@@ -206,10 +206,27 @@ public:
 		return *Launder(&array[the_size++]);
 	}
 
+	constexpr void pop_front() noexcept {
+		assert(!empty());
+
+		erase(begin());
+	}
+
 	constexpr void pop_back() noexcept {
 		assert(!empty());
 
 		back().~T();
 		--the_size;
+	}
+
+	constexpr iterator erase(iterator first, iterator last) noexcept {
+		std::size_t n = std::distance(first, last);
+		std::move(last, end(), first);
+		the_size -= n;
+		return first;
+	}
+
+	constexpr iterator erase(iterator pos) noexcept {
+		return erase(pos, std::next(pos));
 	}
 };
