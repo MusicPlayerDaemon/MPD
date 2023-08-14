@@ -191,20 +191,20 @@ public:
 		return Launder(array.data());
 	}
 
-	constexpr void push_back(const_reference value) {
-		emplace_back(value);
+	constexpr reference push_back(const_reference value) {
+		return emplace_back(value);
 	}
 
-	constexpr void push_back(T &&value) {
-		emplace_back(std::move(value));
+	constexpr reference push_back(T &&value) {
+		return emplace_back(std::move(value));
 	}
 
 	template<typename... Args>
-	constexpr void emplace_back(Args&&... args) {
+	constexpr reference emplace_back(Args&&... args) {
 		if (full())
 			throw std::bad_alloc{};
 
 		::new(&array[the_size]) T(std::forward<Args>(args)...);
-		++the_size;
+		return *Launder(&array[the_size++]);
 	}
 };
