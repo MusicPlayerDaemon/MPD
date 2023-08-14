@@ -115,10 +115,8 @@ public:
 			/* we don't need to call any destructor */
 			the_size = 0;
 		} else {
-			while (!empty()) {
-				back().~T();
-				--the_size;
-			}
+			while (!empty())
+				pop_back();
 		}
 	}
 
@@ -206,5 +204,12 @@ public:
 
 		::new(&array[the_size]) T(std::forward<Args>(args)...);
 		return *Launder(&array[the_size++]);
+	}
+
+	constexpr void pop_back() noexcept {
+		assert(!empty());
+
+		back().~T();
+		--the_size;
 	}
 };
