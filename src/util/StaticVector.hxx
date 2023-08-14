@@ -192,19 +192,11 @@ public:
 	}
 
 	constexpr void push_back(const_reference value) {
-		if (full())
-			throw std::bad_alloc{};
-
-		::new(&array[the_size]) T(value);
-		++the_size;
+		emplace_back(value);
 	}
 
 	constexpr void push_back(T &&value) {
-		if (full())
-			throw std::bad_alloc{};
-
-		::new(&array[the_size]) T(std::move(value));
-		++the_size;
+		emplace_back(std::move(value));
 	}
 
 	template<typename... Args>
