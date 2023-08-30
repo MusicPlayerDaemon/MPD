@@ -117,6 +117,11 @@ public:
 #endif
 
 	[[gnu::pure]]
+	std::span<const std::byte> GetSteadyPart() const noexcept {
+		return SocketAddress{*this}.GetSteadyPart();
+	}
+
+	[[gnu::pure]]
 	bool operator==(SocketAddress other) const noexcept {
 		return (SocketAddress)*this == other;
 	}
