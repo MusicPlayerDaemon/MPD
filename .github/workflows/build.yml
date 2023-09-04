@@ -50,7 +50,7 @@ jobs:
 
     steps:
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
@@ -121,7 +121,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
