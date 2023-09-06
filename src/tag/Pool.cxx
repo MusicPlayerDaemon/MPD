@@ -142,14 +142,17 @@ tag_pool_put_item(TagItem *item) noexcept
 		return;
 
 	auto &list = tag_value_list(item->type, item->value);
-	for (auto i = list.before_begin(), n = std::next(i);; i = n) {
-		assert(n != list.end());
-		auto &s = *n++;
+	for (auto i = list.before_begin();;) {
+		const auto n = std::next(i);
+		auto &s = *n;
+		assert(i != list.end());
 
 		if (&s == slot) {
 			list.erase_after(i);
 			DeleteVarSize(slot);
 			return;
 		}
+
+		i = n;
 	}
 }
