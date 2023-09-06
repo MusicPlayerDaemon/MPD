@@ -9,11 +9,11 @@
 
 [[gnu::pure]]
 static bool
-HaveArchivePluginForFilename(const char *filename) noexcept
+HaveArchivePluginForFilename(std::string_view filename) noexcept
 {
 #ifdef ENABLE_ARCHIVE
-	const char *suffix = PathTraitsUTF8::GetFilenameSuffix(filename);
-	return suffix != nullptr &&
+	const auto suffix = PathTraitsUTF8::GetFilenameSuffix(filename);
+	return !suffix.empty() &&
 		archive_plugin_from_suffix(suffix) != nullptr;
 #else
 	(void)filename;
@@ -23,20 +23,20 @@ HaveArchivePluginForFilename(const char *filename) noexcept
 
 [[gnu::pure]]
 static bool
-HaveContainerPluginForFilename(const char *filename) noexcept
+HaveContainerPluginForFilename(std::string_view filename) noexcept
 {
-	const char *suffix = PathTraitsUTF8::GetFilenameSuffix(filename);
-	return suffix != nullptr &&
+	const auto suffix = PathTraitsUTF8::GetFilenameSuffix(filename);
+	return !suffix.empty() &&
 		// TODO: check if this plugin really supports containers
 		decoder_plugins_supports_suffix(suffix);
 }
 
 [[gnu::pure]]
 static bool
-HavePlaylistPluginForFilename(const char *filename) noexcept
+HavePlaylistPluginForFilename(std::string_view filename) noexcept
 {
-	const char *suffix = PathTraitsUTF8::GetFilenameSuffix(filename);
-	if (suffix == nullptr)
+	const auto suffix = PathTraitsUTF8::GetFilenameSuffix(filename);
+	if (suffix.empty())
 		return false;
 
 	const auto plugin = FindPlaylistPluginBySuffix(suffix);
