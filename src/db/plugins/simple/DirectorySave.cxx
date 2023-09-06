@@ -17,6 +17,9 @@
 
 #include <fmt/format.h>
 
+#include <set>
+#include <string_view>
+
 #include <string.h>
 
 #define DIRECTORY_DIR "directory: "
@@ -109,9 +112,6 @@ ParseLine(Directory &directory, const char *line)
 static Directory *
 directory_load_subdir(LineReader &file, Directory &parent, std::string_view name)
 {
-	if (parent.FindChild(name) != nullptr)
-		throw FmtRuntimeError("Duplicate subdirectory '{}'", name);
-
 	Directory *directory = parent.CreateChild(name);
 
 	try {
@@ -139,19 +139,23 @@ directory_load_subdir(LineReader &file, Directory &parent, std::string_view name
 void
 directory_load(LineReader &file, Directory &directory)
 {
+	/* these sets are used to quickly check for duplicates,
+	   avoiding linear lookups */
+	std::set<std::string_view> children, songs;
+
 	const char *line;
 
 	while ((line = file.ReadLine()) != nullptr &&
 	       !StringStartsWith(line, DIRECTORY_END)) {
 		const char *p;
 		if ((p = StringAfterPrefix(line, DIRECTORY_DIR))) {
-			directory_load_subdir(file, directory, p);
+			auto *child = directory_load_subdir(file, directory, p);
+
+			const std::string_view name = child->GetName();
+			if (!children.emplace(name).second)
+				throw FmtRuntimeError("Duplicate subdirectory '{}'", name);
 		} else if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
 			const char *name = p;
-
-			if (directory.FindSong(name) != nullptr)
-				throw FmtRuntimeError("Duplicate song '{}'",
-						      name);
 
 			std::string target;
 			bool in_playlist = false;
@@ -162,6 +166,10 @@ directory_load(LineReader &file, Directory &directory)
 							   directory);
 			song->target = std::move(target);
 			song->in_playlist = in_playlist;
+
+			if (!songs.emplace(song->filename).second)
+				throw FmtRuntimeError("Duplicate song '{}'",
+						      name);
 
 			directory.AddSong(std::move(song));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_META_BEGIN))) {
