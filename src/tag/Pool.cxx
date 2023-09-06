@@ -6,6 +6,7 @@
 #include "util/Cast.hxx"
 #include "util/VarSize.hxx"
 
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <limits>
@@ -14,8 +15,6 @@
 #include <stdlib.h>
 
 Mutex tag_pool_lock;
-
-static constexpr size_t NUM_SLOTS = 16127;
 
 struct TagPoolSlot {
 	TagPoolSlot *next;
@@ -46,7 +45,7 @@ TagPoolSlot::Create(TagPoolSlot *_next, TagType type,
 				       value);
 }
 
-static TagPoolSlot *slots[NUM_SLOTS];
+static std::array<TagPoolSlot *, 16127> slots;
 
 static inline unsigned
 calc_hash(TagType type, std::string_view p) noexcept
@@ -81,13 +80,13 @@ tag_item_to_slot(TagItem *item) noexcept
 static inline TagPoolSlot **
 tag_value_slot_p(TagType type, std::string_view value) noexcept
 {
-	return &slots[calc_hash(type, value) % NUM_SLOTS];
+	return &slots[calc_hash(type, value) % slots.size()];
 }
 
 static inline TagPoolSlot **
 tag_value_slot_p(TagType type, const char *value) noexcept
 {
-	return &slots[calc_hash(type, value) % NUM_SLOTS];
+	return &slots[calc_hash(type, value) % slots.size()];
 }
 
 TagItem *
