@@ -4,7 +4,7 @@
 #include "Pool.hxx"
 #include "Item.hxx"
 #include "util/Cast.hxx"
-#include "util/IntrusiveForwardList.hxx"
+#include "util/IntrusiveList.hxx"
 #include "util/VarSize.hxx"
 
 #include <array>
@@ -18,7 +18,7 @@
 Mutex tag_pool_lock;
 
 struct TagPoolSlot {
-	IntrusiveForwardListHook list_hook;
+	IntrusiveListHook<IntrusiveHookMode::NORMAL> list_hook;
 	uint8_t ref = 1;
 	TagItem item;
 
@@ -45,8 +45,8 @@ TagPoolSlot::Create(TagType type,
 				       value);
 }
 
-static std::array<IntrusiveForwardList<TagPoolSlot,
-				       IntrusiveForwardListMemberHookTraits<&TagPoolSlot::list_hook>>,
+static std::array<IntrusiveList<TagPoolSlot,
+				IntrusiveListMemberHookTraits<&TagPoolSlot::list_hook>>,
 		  16127> slots;
 
 static inline unsigned
@@ -56,19 +56,6 @@ calc_hash(TagType type, std::string_view p) noexcept
 
 	for (auto ch : p)
 		hash = (hash << 5) + hash + ch;
-
-	return hash ^ type;
-}
-
-static inline unsigned
-calc_hash(TagType type, const char *p) noexcept
-{
-	unsigned hash = 5381;
-
-	assert(p != nullptr);
-
-	while (*p != 0)
-		hash = (hash << 5) + hash + *p++;
 
 	return hash ^ type;
 }
@@ -85,20 +72,12 @@ tag_value_list(TagType type, std::string_view value) noexcept
 	return slots[calc_hash(type, value) % slots.size()];
 }
 
-static inline auto &
-tag_value_list(TagType type, const char *value) noexcept
-{
-	return slots[calc_hash(type, value) % slots.size()];
-}
-
 TagItem *
 tag_pool_get_item(TagType type, std::string_view value) noexcept
 {
 	auto &list = tag_value_list(type, value);
 
-	for (auto i = list.before_begin(), n = std::next(i); n != list.end(); i = n) {
-		auto &slot = *n++;
-
+	for (auto &slot : list) {
 		if (slot.item.type == type &&
 		    value == slot.item.value &&
 		    slot.ref < TagPoolSlot::MAX_REF) {
@@ -141,18 +120,6 @@ tag_pool_put_item(TagItem *item) noexcept
 	if (slot->ref > 0)
 		return;
 
-	auto &list = tag_value_list(item->type, item->value);
-	for (auto i = list.before_begin();;) {
-		const auto n = std::next(i);
-		auto &s = *n;
-		assert(i != list.end());
-
-		if (&s == slot) {
-			list.erase_after(i);
-			DeleteVarSize(slot);
-			return;
-		}
-
-		i = n;
-	}
+	slot->list_hook.unlink();
+	DeleteVarSize(slot);
 }
