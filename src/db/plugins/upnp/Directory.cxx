@@ -172,7 +172,7 @@ protected:
 		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
 			assert(object.type != UPnPDirObject::Type::UNKNOWN);
 
-			tag.AddItem(tag_type, value.c_str());
+			tag.AddItem(tag_type, value);
 
 			if (tag_type == TAG_TITLE)
 				object.name = TitleToPathSegment(std::move(value));

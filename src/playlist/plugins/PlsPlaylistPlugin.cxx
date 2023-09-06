@@ -113,7 +113,7 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 
 		TagBuilder tag;
 		if (!entry.title.empty())
-			tag.AddItem(TAG_TITLE, entry.title.c_str());
+			tag.AddItem(TAG_TITLE, entry.title);
 
 		if (entry.length > 0)
 			tag.SetDuration(SignedSongTime::FromS(entry.length));

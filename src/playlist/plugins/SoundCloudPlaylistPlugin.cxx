@@ -210,7 +210,7 @@ SoundCloudJsonData::EndMap() noexcept
 	TagBuilder tag;
 	tag.SetDuration(SignedSongTime::FromMS(duration));
 	if (!title.empty())
-		tag.AddItem(TAG_NAME, title.c_str());
+		tag.AddItem(TAG_NAME, title);
 
 	songs.emplace_front(u.c_str(), tag.Commit());
 
