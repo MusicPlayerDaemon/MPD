@@ -4,6 +4,7 @@
 #include "Pool.hxx"
 #include "Item.hxx"
 #include "util/Cast.hxx"
+#include "util/IntrusiveForwardList.hxx"
 #include "util/VarSize.hxx"
 
 #include <array>
@@ -17,35 +18,36 @@
 Mutex tag_pool_lock;
 
 struct TagPoolSlot {
-	TagPoolSlot *next;
+	IntrusiveForwardListHook list_hook;
 	uint8_t ref = 1;
 	TagItem item;
 
 	static constexpr unsigned MAX_REF = std::numeric_limits<decltype(ref)>::max();
 
-	TagPoolSlot(TagPoolSlot *_next, TagType type,
-		    std::string_view value) noexcept
-		:next(_next) {
+	TagPoolSlot(TagType type,
+		    std::string_view value) noexcept {
 		item.type = type;
 		*std::copy(value.begin(), value.end(), item.value) = 0;
 	}
 
-	static TagPoolSlot *Create(TagPoolSlot *_next, TagType type,
+	static TagPoolSlot *Create(TagType type,
 				   std::string_view value) noexcept;
 };
 
 TagPoolSlot *
-TagPoolSlot::Create(TagPoolSlot *_next, TagType type,
+TagPoolSlot::Create(TagType type,
 		    std::string_view value) noexcept
 {
 	TagPoolSlot *dummy;
 	return NewVarSize<TagPoolSlot>(sizeof(dummy->item.value),
 				       value.size() + 1,
-				       _next, type,
+				       type,
 				       value);
 }
 
-static std::array<TagPoolSlot *, 16127> slots;
+static std::array<IntrusiveForwardList<TagPoolSlot,
+				       IntrusiveForwardListMemberHookTraits<&TagPoolSlot::list_hook>>,
+		  16127> slots;
 
 static inline unsigned
 calc_hash(TagType type, std::string_view p) noexcept
@@ -77,34 +79,37 @@ tag_item_to_slot(TagItem *item) noexcept
 	return &ContainerCast(*item, &TagPoolSlot::item);
 }
 
-static inline TagPoolSlot **
-tag_value_slot_p(TagType type, std::string_view value) noexcept
+static inline auto &
+tag_value_list(TagType type, std::string_view value) noexcept
 {
-	return &slots[calc_hash(type, value) % slots.size()];
+	return slots[calc_hash(type, value) % slots.size()];
 }
 
-static inline TagPoolSlot **
-tag_value_slot_p(TagType type, const char *value) noexcept
+static inline auto &
+tag_value_list(TagType type, const char *value) noexcept
 {
-	return &slots[calc_hash(type, value) % slots.size()];
+	return slots[calc_hash(type, value) % slots.size()];
 }
 
 TagItem *
 tag_pool_get_item(TagType type, std::string_view value) noexcept
 {
-	auto slot_p = tag_value_slot_p(type, value);
-	for (auto slot = *slot_p; slot != nullptr; slot = slot->next) {
-		if (slot->item.type == type &&
-		    value == slot->item.value &&
-		    slot->ref < TagPoolSlot::MAX_REF) {
-			assert(slot->ref > 0);
-			++slot->ref;
-			return &slot->item;
+	auto &list = tag_value_list(type, value);
+
+	for (auto i = list.before_begin(), n = std::next(i); n != list.end(); i = n) {
+		auto &slot = *n++;
+
+		if (slot.item.type == type &&
+		    value == slot.item.value &&
+		    slot.ref < TagPoolSlot::MAX_REF) {
+			assert(slot.ref > 0);
+			++slot.ref;
+			return &slot.item;
 		}
 	}
 
-	auto slot = TagPoolSlot::Create(*slot_p, type, value);
-	*slot_p = slot;
+	auto slot = TagPoolSlot::Create(type, value);
+	list.push_front(*slot);
 	return &slot->item;
 }
 
@@ -129,21 +134,22 @@ tag_pool_dup_item(TagItem *item) noexcept
 void
 tag_pool_put_item(TagItem *item) noexcept
 {
-	TagPoolSlot **slot_p, *slot;
-
-	slot = tag_item_to_slot(item);
+	TagPoolSlot *const slot = tag_item_to_slot(item);
 	assert(slot->ref > 0);
 	--slot->ref;
 
 	if (slot->ref > 0)
 		return;
 
-	for (slot_p = tag_value_slot_p(item->type, item->value);
-	     *slot_p != slot;
-	     slot_p = &(*slot_p)->next) {
-		assert(*slot_p != nullptr);
-	}
+	auto &list = tag_value_list(item->type, item->value);
+	for (auto i = list.before_begin(), n = std::next(i);; i = n) {
+		assert(n != list.end());
+		auto &s = *n++;
 
-	*slot_p = slot->next;
-	DeleteVarSize(slot);
+		if (&s == slot) {
+			list.erase_after(i);
+			DeleteVarSize(slot);
+			return;
+		}
+	}
 }
