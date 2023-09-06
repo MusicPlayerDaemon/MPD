@@ -53,20 +53,20 @@ Directory::Delete() noexcept
 					   DeleteDisposer());
 }
 
-const char *
+std::string_view
 Directory::GetName() const noexcept
 {
 	assert(!IsRoot());
 
 	if (parent->IsRoot())
-		return path.c_str();
+		return path;
 
-	assert(StringAfterPrefix(path.c_str(), parent->path.c_str()) != nullptr);
-	assert(*StringAfterPrefix(path.c_str(), parent->path.c_str()) == PathTraitsUTF8::SEPARATOR);
+	assert(path.starts_with(parent->path));
+	assert(path[parent->path.length()] == PathTraitsUTF8::SEPARATOR);
 
 	/* strip the parent directory path and the slash separator
 	   from this directory's path, and the base name remains */
-	return path.c_str() + parent->path.length() + 1;
+	return std::string_view{path}.substr(parent->path.length() + 1);
 }
 
 Directory *

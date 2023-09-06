@@ -208,7 +208,7 @@ public:
 	 * Returns the base name of the directory.
 	 */
 	[[gnu::pure]]
-	const char *GetName() const noexcept;
+	std::string_view GetName() const noexcept;
 
 	/**
 	 * Is this the root directory of the music database?
