@@ -57,14 +57,12 @@ db_load_internal(LineReader &file, Directory &music_root)
 	char *line;
 	unsigned format = 0;
 	bool found_charset = false, found_version = false;
-	bool tags[TAG_NUM_OF_ITEM_TYPES];
+	bool tags[TAG_NUM_OF_ITEM_TYPES]{};
 
 	/* get initial info */
 	line = file.ReadLine();
 	if (line == nullptr || strcmp(DIRECTORY_INFO_BEGIN, line) != 0)
 		throw std::runtime_error("Database corrupted");
-
-	memset(tags, false, sizeof(tags));
 
 	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, DIRECTORY_INFO_END) != 0) {
