@@ -90,7 +90,7 @@ Directory::FindChild(std::string_view name) const noexcept
 	assert(holding_db_lock());
 
 	for (const auto &child : children)
-		if (name.compare(child.GetName()) == 0)
+		if (child.GetName() == name)
 			return &child;
 
 	return nullptr;
