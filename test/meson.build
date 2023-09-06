@@ -266,6 +266,21 @@ if enable_database
     ],
   )
 
+  executable(
+    'LoadDatabase',
+    'LoadDatabase.cxx',
+    '../src/db/PlaylistVector.cxx',
+    '../src/SongSave.cxx',
+    '../src/TagSave.cxx',
+    include_directories: inc,
+    dependencies: [
+      fmt_dep,
+      pcm_basic_dep,
+      song_dep,
+      db_plugins_dep,
+    ],
+  )
+
   test(
     'test_translate_song',
     executable(
