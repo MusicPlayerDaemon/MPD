@@ -92,7 +92,7 @@ song_load(LineReader &file, const char *uri,
 
 		TagType type;
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
-			tag.AddItem(type, value);
+			tag.AddItemUnchecked(type, value);
 		} else if (StringIsEqual(line, "Time")) {
 			tag.SetDuration(SignedSongTime::FromS(ParseDouble(value)));
 		} else if (StringIsEqual(line, "Target")) {
