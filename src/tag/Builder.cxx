@@ -214,12 +214,6 @@ TagBuilder::AddItem(TagType type, std::string_view value) noexcept
 }
 
 void
-TagBuilder::AddItem(TagType type, const char *value) noexcept
-{
-	AddItem(type, std::string_view(value));
-}
-
-void
 TagBuilder::AddEmptyItem(TagType type) noexcept
 {
 	AddItemUnchecked(type, "");

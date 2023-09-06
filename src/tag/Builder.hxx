@@ -133,15 +133,6 @@ public:
 	void AddItem(TagType type, std::string_view value) noexcept;
 
 	/**
-	 * Appends a new tag item.
-	 *
-	 * @param type the type of the new tag item
-	 * @param value the value of the tag item (null-terminated)
-	 */
-	[[gnu::nonnull]]
-	void AddItem(TagType type, const char *value) noexcept;
-
-	/**
 	 * Appends a new tag item with an empty value.  Do not use
 	 * this unless you know what you're doing - because usually,
 	 * empty values are discarded.
