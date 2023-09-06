@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef MPD_VAR_SIZE_HXX
-#define MPD_VAR_SIZE_HXX
+#pragma once
 
 #include <type_traits>
 #include <utility>
@@ -21,13 +20,11 @@
  * #T
  */
 template<class T, typename... Args>
+requires std::is_standard_layout_v<T>
 [[gnu::malloc]] [[gnu::returns_nonnull]]
 T *
 NewVarSize(size_t declared_tail_size, size_t real_tail_size, Args&&... args)
 {
-	static_assert(std::is_standard_layout<T>::value,
-		      "Not standard-layout");
-
 	/* determine the total size of this instance */
 	size_t size = sizeof(T) - declared_tail_size + real_tail_size;
 
@@ -53,5 +50,3 @@ DeleteVarSize(T *instance)
 	/* free memory */
 	free(instance);
 }
-
-#endif
