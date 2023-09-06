@@ -93,6 +93,14 @@ struct PathTraitsFS {
 	}
 
 	[[gnu::pure]]
+	static string_view GetFilenameSuffix(string_view filename) noexcept {
+		const auto dot = filename.rfind('.');
+		return dot != filename.npos && dot > 0
+			? filename.substr(dot + 1)
+			: string_view{};
+	}
+
+	[[gnu::pure]]
 	static const_pointer GetPathSuffix(const_pointer path) noexcept {
 		return GetFilenameSuffix(GetBase(path));
 	}
@@ -226,6 +234,14 @@ struct PathTraitsUTF8 {
 		return dot != nullptr && dot > filename && dot[1] != 0
 			? dot + 1
 			: nullptr;
+	}
+
+	[[gnu::pure]]
+	static string_view GetFilenameSuffix(string_view filename) noexcept {
+		const auto dot = filename.rfind('.');
+		return dot != filename.npos && dot > 0
+			? filename.substr(dot + 1)
+			: string_view{};
 	}
 
 	[[gnu::pure]]
