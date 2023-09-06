@@ -232,6 +232,12 @@ public:
 			cursor = cursor->next;
 			return *this;
 		}
+
+		iterator operator++(int) noexcept {
+			auto old = *this;
+			cursor = cursor->next;
+			return old;
+		}
 	};
 
 	constexpr iterator before_begin() noexcept {
@@ -285,6 +291,12 @@ public:
 		const_iterator &operator++() noexcept {
 			cursor = cursor->next;
 			return *this;
+		}
+
+		const_iterator operator++(int) noexcept {
+			auto old = *this;
+			cursor = cursor->next;
+			return old;
 		}
 	};
 
