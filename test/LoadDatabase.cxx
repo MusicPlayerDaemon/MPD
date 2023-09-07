@@ -21,7 +21,7 @@ try {
 
 	Directory root{{}, nullptr};
 	TextFile line_reader{db_path};
-	db_load_internal(line_reader, root);
+	db_load_internal(line_reader, root, true);
 
 	return EXIT_SUCCESS;
 } catch (...) {

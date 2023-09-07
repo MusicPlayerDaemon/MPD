@@ -13,8 +13,12 @@ db_save_internal(BufferedOutputStream &os, const Directory &root);
 
 /**
  * Throws #std::runtime_error on error.
+ *
+ * @param ignore_config_mismatches if true, then configuration
+ * mismatches (e.g. enabled tags or filesystem charset) are ignored
  */
 void
-db_load_internal(LineReader &file, Directory &root);
+db_load_internal(LineReader &file, Directory &root,
+		 bool ignore_config_mismatches=false);
 
 #endif

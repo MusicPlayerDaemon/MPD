@@ -52,7 +52,8 @@ db_save_internal(BufferedOutputStream &os, const Directory &music_root)
 }
 
 void
-db_load_internal(LineReader &file, Directory &music_root)
+db_load_internal(LineReader &file, Directory &music_root,
+		 bool ignore_config_mismatches)
 {
 	char *line;
 	unsigned format = 0;
@@ -81,6 +82,9 @@ db_load_internal(LineReader &file, Directory &music_root)
 
 			found_charset = true;
 
+			if (ignore_config_mismatches)
+				continue;
+
 			const char *new_charset = p;
 			const char *const old_charset = GetFSCharset();
 			if (*old_charset != 0
@@ -90,6 +94,9 @@ db_load_internal(LineReader &file, Directory &music_root)
 						      "discarding database file",
 						      new_charset, old_charset);
 		} else if ((p = StringAfterPrefix(line, DB_TAG_PREFIX))) {
+			if (ignore_config_mismatches)
+				continue;
+
 			const char *name = p;
 			TagType tag = tag_name_parse(name);
 			if (tag == TAG_NUM_OF_ITEM_TYPES)
@@ -107,10 +114,11 @@ db_load_internal(LineReader &file, Directory &music_root)
 		throw std::runtime_error("Database format mismatch, "
 					 "discarding database file");
 
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (IsTagEnabled(i) && !tags[i])
-			throw std::runtime_error("Tag list mismatch, "
-						 "discarding database file");
+	if (!ignore_config_mismatches)
+		for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
+			if (IsTagEnabled(i) && !tags[i])
+				throw std::runtime_error("Tag list mismatch, "
+							 "discarding database file");
 
 	const ScopeDatabaseLock protect;
 	directory_load(file, music_root);
