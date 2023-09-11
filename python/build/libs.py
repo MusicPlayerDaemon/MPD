@@ -29,8 +29,8 @@ libogg = CmakeProject(
 )
 
 opus = AutotoolsProject(
-    'https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz',
-    '65b58e1e25b2a114157014736a3d9dfeaad8d41be1c8179866f144a2fb44ff9d',
+    'https://downloads.xiph.org/releases/opus/opus-1.4.tar.gz',
+    'c9b32b4253be5ae63d1ff16eea06b94b5f0f2951b7a02aceef58e3a3ce49c51f',
     'lib/libopus.a',
     [
         '--disable-shared', '--enable-static',
