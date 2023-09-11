@@ -5,7 +5,7 @@
 #include "Item.hxx"
 #include "util/Cast.hxx"
 #include "util/djb_hash.hxx"
-#include "util/IntrusiveList.hxx"
+#include "util/IntrusiveHashSet.hxx"
 #include "util/SpanCast.hxx"
 #include "util/VarSize.hxx"
 
@@ -16,8 +16,23 @@
 
 Mutex tag_pool_lock;
 
+struct TagPoolKey {
+	std::string_view value;
+	TagType type;
+
+	friend constexpr auto operator<=>(const TagPoolKey &,
+					  const TagPoolKey &) noexcept = default;
+
+	struct Hash {
+		[[gnu::pure]]
+		std::size_t operator()(const TagPoolKey &key) const noexcept {
+			return djb_hash(AsBytes(key.value)) ^ key.type;
+		}
+	};
+};
+
 struct TagPoolItem {
-	IntrusiveListHook<IntrusiveHookMode::NORMAL> list_hook;
+	IntrusiveHashSetHook<IntrusiveHookMode::NORMAL> hash_set_hook;
 	uint8_t ref = 1;
 	TagItem item;
 
@@ -31,6 +46,24 @@ struct TagPoolItem {
 
 	static TagPoolItem *Create(TagType type,
 				   std::string_view value) noexcept;
+
+	struct GetKey {
+		[[gnu::pure]]
+		constexpr TagPoolKey operator()(const TagItem &i) const noexcept {
+			return { i.value, i.type };
+		}
+
+		[[gnu::pure]]
+		constexpr TagPoolKey operator()(const TagPoolItem &i) const noexcept {
+			return operator()(i.item);
+		}
+	};
+
+	struct CanIncrementRef {
+		constexpr bool operator()(const TagPoolItem &i) const noexcept {
+			return i.ref < MAX_REF;
+		}
+	};
 };
 
 TagPoolItem *
@@ -44,16 +77,12 @@ TagPoolItem::Create(TagType type,
 				       value);
 }
 
-static std::array<IntrusiveList<TagPoolItem,
-				IntrusiveListMemberHookTraits<&TagPoolItem::list_hook>,
-				IntrusiveListOptions{.zero_initialized = true}>,
-		  16127> slots;
-
-static inline std::size_t
-calc_hash(TagType type, std::string_view p) noexcept
-{
-	return djb_hash(AsBytes(p)) ^ type;
-}
+static IntrusiveHashSet<TagPoolItem, 16127,
+	IntrusiveHashSetOperators<TagPoolKey::Hash,
+				  std::equal_to<TagPoolKey>,
+				  TagPoolItem::GetKey>,
+	IntrusiveHashSetMemberHookTraits<&TagPoolItem::hash_set_hook>,
+	IntrusiveHashSetOptions{.zero_initialized = true}> tag_pool;
 
 static constexpr TagPoolItem *
 TagItemToPoolItem(TagItem *item) noexcept
@@ -61,30 +90,21 @@ TagItemToPoolItem(TagItem *item) noexcept
 	return &ContainerCast(*item, &TagPoolItem::item);
 }
 
-static inline auto &
-tag_value_list(TagType type, std::string_view value) noexcept
-{
-	return slots[calc_hash(type, value) % slots.size()];
-}
-
 TagItem *
 tag_pool_get_item(TagType type, std::string_view value) noexcept
 {
-	auto &list = tag_value_list(type, value);
+	const auto [position, inserted] =
+		tag_pool.insert_check_if(TagPoolKey{value, type},
+					 TagPoolItem::CanIncrementRef{});
 
-	for (auto &i : list) {
-		if (i.item.type == type &&
-		    value == i.item.value &&
-		    i.ref < TagPoolItem::MAX_REF) {
-			assert(i.ref > 0);
-			++i.ref;
-			return &i.item;
-		}
+	if (inserted) {
+		auto *pool_item = TagPoolItem::Create(type, value);
+		tag_pool.insert_commit(position, *pool_item);
+		return &pool_item->item;
+	} else {
+		++position->ref;
+		return &position->item;
 	}
-
-	auto *pool_item = TagPoolItem::Create(type, value);
-	list.push_front(*pool_item);
-	return &pool_item->item;
 }
 
 TagItem *
@@ -115,6 +135,6 @@ tag_pool_put_item(TagItem *item) noexcept
 	if (pool_item->ref > 0)
 		return;
 
-	pool_item->list_hook.unlink();
+	tag_pool.erase(tag_pool.iterator_to(*pool_item));
 	DeleteVarSize(pool_item);
 }
