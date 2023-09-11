@@ -77,7 +77,7 @@ TagPoolItem::Create(TagType type,
 				       value);
 }
 
-static IntrusiveHashSet<TagPoolItem, 16127,
+static IntrusiveHashSet<TagPoolItem, 16384,
 	IntrusiveHashSetOperators<TagPoolKey::Hash,
 				  std::equal_to<TagPoolKey>,
 				  TagPoolItem::GetKey>,
