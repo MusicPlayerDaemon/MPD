@@ -6,6 +6,8 @@ ver 0.23.14 (not yet released)
   - wasapi: fix problem setting volume
 * more libfmt 10 fixes
 * fix auto-detected systemd unit directory
+* Android
+  - require Android 7 or newer
 
 ver 0.23.13 (2023/05/22)
 * input
