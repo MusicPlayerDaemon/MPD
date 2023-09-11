@@ -55,10 +55,5 @@ ParseDouble(const char *p, char **endptr=nullptr) noexcept
 static inline float
 ParseFloat(const char *p, char **endptr=nullptr) noexcept
 {
-#if defined(__BIONIC__) && __ANDROID_API__ < 21
-	/* strtof() requires API level 21 */
-	return (float)ParseDouble(p, endptr);
-#else
 	return strtof(p, endptr);
-#endif
 }
