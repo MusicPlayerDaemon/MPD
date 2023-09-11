@@ -277,6 +277,25 @@ public:
 	}
 
 	/**
+	 * Like insert_check(), but existing items are only considered
+	 * conflicting if they match the given predicate.
+	 */
+	[[nodiscard]] [[gnu::pure]]
+	constexpr std::pair<bucket_iterator, bool> insert_check_if(const auto &key,
+								   std::predicate<const_reference> auto pred) noexcept {
+		auto &bucket = GetBucket(key);
+		for (auto &i : bucket)
+			if (ops.equal(key, ops.get_key(i)) && pred(i))
+				return {bucket.iterator_to(i), false};
+
+		/* bucket.end() is a pointer to the bucket's list
+		   head, a stable value that is guaranteed to be still
+		   valid when insert_commit() gets called
+		   eventually */
+		return {bucket.end(), true};
+	}
+
+	/**
 	 * Finish the insertion if insert_check() has returned true.
 	 *
 	 * @param bucket the bucket returned by insert_check()
