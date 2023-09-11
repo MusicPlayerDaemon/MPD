@@ -78,7 +78,7 @@ class AndroidNdkToolchain:
         self.build_path = build_path
 
         ndk_arch = abi_info['ndk_arch']
-        android_api_level = '21'
+        android_api_level = '24'
 
         install_prefix = os.path.join(arch_path, 'root')
 

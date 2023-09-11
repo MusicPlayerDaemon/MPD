@@ -39,6 +39,8 @@ ver 0.24 (not yet released)
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
 * static partition configuration
+* Android
+  - require Android 7 or newer
 * Windows
   - build with libsamplerate
   - remove JACK DLL support
