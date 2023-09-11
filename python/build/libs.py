@@ -120,6 +120,7 @@ libmodplug = AutotoolsProject(
     [
         '--disable-shared', '--enable-static',
     ],
+    patches='src/lib/modplug/patches',
 )
 
 libopenmpt = AutotoolsProject(
