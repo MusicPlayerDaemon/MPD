@@ -14,6 +14,10 @@
 #include <type_traits>
 #include <utility>
 
+struct IntrusiveForwardListOptions {
+	bool constant_time_size = false;
+};
+
 struct IntrusiveForwardListNode {
 	IntrusiveForwardListNode *next;
 };
@@ -93,8 +97,10 @@ struct IntrusiveForwardListMemberHookTraits {
  */
 template<typename T,
 	 typename HookTraits=IntrusiveForwardListBaseHookTraits<T>,
-	 bool constant_time_size=false>
+	 IntrusiveForwardListOptions options=IntrusiveForwardListOptions{}>
 class IntrusiveForwardList {
+	static constexpr bool constant_time_size = options.constant_time_size;
+
 	IntrusiveForwardListNode head{nullptr};
 
 	[[no_unique_address]]
@@ -145,7 +151,7 @@ public:
 		:head(src.head)
 	{
 		// shallow copies mess with the counter
-		static_assert(!constant_time_size);
+		static_assert(!options.constant_time_size);
 	}
 
 	IntrusiveForwardList &operator=(IntrusiveForwardList &&src) noexcept {

@@ -14,11 +14,11 @@
  */
 template<typename T, typename Compare=typename T::Compare,
 	 typename HookTraits=IntrusiveListBaseHookTraits<T>,
-	 bool constant_time_size=false>
+	 IntrusiveListOptions options=IntrusiveListOptions{}>
 class IntrusiveSortedList
-	: public IntrusiveList<T, HookTraits, constant_time_size>
+	: public IntrusiveList<T, HookTraits, options>
 {
-	using Base = IntrusiveList<T, HookTraits, constant_time_size>;
+	using Base = IntrusiveList<T, HookTraits, options>;
 
 	[[no_unique_address]]
 	Compare compare;

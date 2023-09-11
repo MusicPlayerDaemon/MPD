@@ -6,8 +6,7 @@
  * Internal declarations for the "httpd" audio output plugin.
  */
 
-#ifndef MPD_OUTPUT_HTTPD_INTERNAL_H
-#define MPD_OUTPUT_HTTPD_INTERNAL_H
+#pragma once
 
 #include "HttpdClient.hxx"
 #include "output/Interface.hxx"
@@ -121,8 +120,9 @@ private:
 	 * A linked list containing all clients which are currently
 	 * connected.
 	 */
-	IntrusiveList<HttpdClient, IntrusiveListBaseHookTraits<HttpdClient>,
-		      true> clients;
+	IntrusiveList<
+		HttpdClient, IntrusiveListBaseHookTraits<HttpdClient>,
+		IntrusiveListOptions{.constant_time_size = true}> clients;
 
 	/**
 	 * The maximum number of clients connected at the same time.
@@ -255,5 +255,3 @@ private:
 };
 
 extern const class Domain httpd_output_domain;
-
-#endif

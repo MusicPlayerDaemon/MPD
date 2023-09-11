@@ -13,6 +13,10 @@
 #include <type_traits>
 #include <utility>
 
+struct IntrusiveListOptions {
+	bool constant_time_size = false;
+};
+
 struct IntrusiveListNode {
 	IntrusiveListNode *next, *prev;
 
@@ -27,7 +31,7 @@ template<IntrusiveHookMode _mode=IntrusiveHookMode::NORMAL>
 class IntrusiveListHook {
 	template<typename T> friend struct IntrusiveListBaseHookTraits;
 	template<auto member> friend struct IntrusiveListMemberHookTraits;
-	template<typename T, typename HookTraits, bool> friend class IntrusiveList;
+	template<typename T, typename HookTraits, IntrusiveListOptions> friend class IntrusiveList;
 
 protected:
 	IntrusiveListNode siblings;
@@ -135,8 +139,10 @@ struct IntrusiveListMemberHookTraits {
  */
 template<typename T,
 	 typename HookTraits=IntrusiveListBaseHookTraits<T>,
-	 bool constant_time_size=false>
+	 IntrusiveListOptions options=IntrusiveListOptions{}>
 class IntrusiveList {
+	static constexpr bool constant_time_size = options.constant_time_size;
+
 	IntrusiveListNode head{&head, &head};
 
 	[[no_unique_address]]

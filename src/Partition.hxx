@@ -49,7 +49,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	std::unique_ptr<ClientListener> listener;
 
-	IntrusiveList<Client, ClientPerPartitionListHook, false> clients;
+	IntrusiveList<Client, ClientPerPartitionListHook> clients;
 
 	/**
 	 * Monitor for idle events local to this partition.

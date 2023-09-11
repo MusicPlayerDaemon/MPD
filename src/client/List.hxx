@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_CLIENT_LIST_HXX
-#define MPD_CLIENT_LIST_HXX
+#pragma once
 
 #include "Client.hxx"
 #include "util/IntrusiveList.hxx"
 
 class ClientList {
-	using List =
-		IntrusiveList<Client, IntrusiveListMemberHookTraits<&Client::list_siblings>, true>;
+	using List = IntrusiveList<
+		Client,
+		IntrusiveListMemberHookTraits<&Client::list_siblings>,
+		IntrusiveListOptions{.constant_time_size = true}>;
 
 	const unsigned max_size;
 
@@ -39,5 +40,3 @@ public:
 
 	void Remove(Client &client) noexcept;
 };
-
-#endif

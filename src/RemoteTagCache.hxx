@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_REMOTE_TAG_CACHE_HXX
-#define MPD_REMOTE_TAG_CACHE_HXX
+#pragma once
 
 #include "input/RemoteTagScanner.hxx"
 #include "tag/Tag.hxx"
@@ -84,12 +83,13 @@ class RemoteTagCache final {
 	 */
 	ItemList invoke_list;
 
-	IntrusiveHashSet<Item, 127,
-			 IntrusiveHashSetOperators<std::hash<std::string_view>,
-						   std::equal_to<std::string_view>,
-						   Item::GetUri>,
-			 IntrusiveHashSetBaseHookTraits<Item>,
-			 true> map;
+	IntrusiveHashSet<
+		Item, 127,
+		IntrusiveHashSetOperators<std::hash<std::string_view>,
+					  std::equal_to<std::string_view>,
+					  Item::GetUri>,
+		IntrusiveHashSetBaseHookTraits<Item>,
+		IntrusiveHashSetOptions{.constant_time_size = true}> map;
 
 public:
 	RemoteTagCache(EventLoop &event_loop,
@@ -107,5 +107,3 @@ private:
 
 	void ItemResolved(Item &item) noexcept;
 };
-
-#endif

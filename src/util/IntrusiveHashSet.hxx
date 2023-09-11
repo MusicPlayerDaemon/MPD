@@ -10,6 +10,10 @@
 #include <array>
 #include <numeric> // for std::accumulate()
 
+struct IntrusiveHashSetOptions {
+	bool constant_time_size = false;
+};
+
 template<IntrusiveHookMode mode=IntrusiveHookMode::NORMAL>
 struct IntrusiveHashSetHook {
 	using SiblingsHook = IntrusiveListHook<mode>;
@@ -106,8 +110,10 @@ struct IntrusiveHashSetOperators {
 template<typename T, std::size_t table_size,
 	 typename Operators,
 	 typename HookTraits=IntrusiveHashSetBaseHookTraits<T>,
-	 bool constant_time_size=false>
+	 IntrusiveHashSetOptions options=IntrusiveHashSetOptions{}>
 class IntrusiveHashSet {
+	static constexpr bool constant_time_size = options.constant_time_size;
+
 	[[no_unique_address]]
 	OptionalCounter<constant_time_size> counter;
 
