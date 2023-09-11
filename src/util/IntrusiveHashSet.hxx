@@ -12,6 +12,11 @@
 
 struct IntrusiveHashSetOptions {
 	bool constant_time_size = false;
+
+	/**
+	 * @see IntrusiveListOptions::zero_initialized
+	 */
+	bool zero_initialized = false;
 };
 
 template<IntrusiveHookMode mode=IntrusiveHookMode::NORMAL>
@@ -141,7 +146,7 @@ class IntrusiveHashSet {
 		}
 	};
 
-	using Bucket = IntrusiveList<T, BucketHookTraits>;
+	using Bucket = IntrusiveList<T, BucketHookTraits, IntrusiveListOptions{.zero_initialized = options.zero_initialized}>;
 	std::array<Bucket, table_size> table;
 
 	using bucket_iterator = typename Bucket::iterator;
