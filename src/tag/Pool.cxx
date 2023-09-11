@@ -4,16 +4,15 @@
 #include "Pool.hxx"
 #include "Item.hxx"
 #include "util/Cast.hxx"
+#include "util/djb_hash.hxx"
 #include "util/IntrusiveList.hxx"
+#include "util/SpanCast.hxx"
 #include "util/VarSize.hxx"
 
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <limits>
-
-#include <string.h>
-#include <stdlib.h>
 
 Mutex tag_pool_lock;
 
@@ -53,12 +52,7 @@ static std::array<IntrusiveList<TagPoolItem,
 static inline std::size_t
 calc_hash(TagType type, std::string_view p) noexcept
 {
-	std::size_t hash = 5381;
-
-	for (auto ch : p)
-		hash = (hash << 5) + hash + ch;
-
-	return hash ^ type;
+	return djb_hash(AsBytes(p)) ^ type;
 }
 
 static constexpr TagPoolItem *

@@ -24,6 +24,7 @@ util = static_library(
   'ByteReverse.cxx',
   'format.c',
   'BitReverse.cxx',
+  'djb_hash.cxx',
   'Serial.cxx',
   include_directories: inc,
 )
