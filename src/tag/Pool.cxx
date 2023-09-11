@@ -50,10 +50,10 @@ static std::array<IntrusiveList<TagPoolItem,
 				IntrusiveListOptions{.zero_initialized = true}>,
 		  16127> slots;
 
-static inline unsigned
+static inline std::size_t
 calc_hash(TagType type, std::string_view p) noexcept
 {
-	unsigned hash = 5381;
+	std::size_t hash = 5381;
 
 	for (auto ch : p)
 		hash = (hash << 5) + hash + ch;
