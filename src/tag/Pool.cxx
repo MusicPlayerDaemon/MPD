@@ -46,7 +46,8 @@ TagPoolSlot::Create(TagType type,
 }
 
 static std::array<IntrusiveList<TagPoolSlot,
-				IntrusiveListMemberHookTraits<&TagPoolSlot::list_hook>>,
+				IntrusiveListMemberHookTraits<&TagPoolSlot::list_hook>,
+				IntrusiveListOptions{.zero_initialized = true}>,
 		  16127> slots;
 
 static inline unsigned
