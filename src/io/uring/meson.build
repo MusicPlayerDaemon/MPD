@@ -7,7 +7,9 @@ if host_machine.system() != 'linux'
   subdir_done()
 endif
 
-liburing = dependency('liburing', required: get_option('io_uring'))
+liburing = dependency('liburing',
+                      include_type: 'system',
+                      required: get_option('io_uring'))
 uring_features.set('HAVE_URING', liburing.found())
 configure_file(output: 'Features.h', configuration: uring_features)
 
