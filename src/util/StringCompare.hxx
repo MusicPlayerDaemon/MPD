@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef STRING_COMPARE_HXX
-#define STRING_COMPARE_HXX
+#pragma once
 
 #include "StringAPI.hxx"
 
@@ -12,7 +11,7 @@
 
 #include <string_view>
 
-[[gnu::nonnull]]
+[[gnu::pure]] [[gnu::nonnull]]
 static constexpr bool
 StringIsEmpty(const char *string) noexcept
 {
@@ -134,5 +133,3 @@ RemoveSuffix(std::basic_string_view<T> &haystack,
 		haystack.remove_suffix(needle.size());
 	return match;
 }
-
-#endif
