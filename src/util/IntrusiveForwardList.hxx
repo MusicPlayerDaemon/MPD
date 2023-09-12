@@ -8,6 +8,7 @@
 #include "Concepts.hxx"
 #include "MemberPointer.hxx"
 #include "OptionalCounter.hxx"
+#include "OptionalField.hxx"
 #include "ShallowCopy.hxx"
 
 #include <iterator>
@@ -16,6 +17,12 @@
 
 struct IntrusiveForwardListOptions {
 	bool constant_time_size = false;
+
+	/**
+	 * Cache a pointer to the last item?  This makes back() and
+	 * push_back() run in constant time.
+	 */
+	bool cache_last = false;
 };
 
 struct IntrusiveForwardListNode {
@@ -104,6 +111,9 @@ class IntrusiveForwardList {
 	IntrusiveForwardListNode head{nullptr};
 
 	[[no_unique_address]]
+	OptionalField<IntrusiveForwardListNode *, options.cache_last> last_cache{&head};
+
+	[[no_unique_address]]
 	OptionalCounter<constant_time_size> counter;
 
 	static constexpr T *Cast(IntrusiveForwardListNode *node) noexcept {
@@ -144,6 +154,7 @@ public:
 		:head{std::exchange(src.head.next, nullptr)}
 	{
 		using std::swap;
+		swap(last_cache, src.last_cache);
 		swap(counter, src.counter);
 	}
 
@@ -152,11 +163,13 @@ public:
 	{
 		// shallow copies mess with the counter
 		static_assert(!options.constant_time_size);
+		static_assert(!options.cache_last);
 	}
 
 	IntrusiveForwardList &operator=(IntrusiveForwardList &&src) noexcept {
 		using std::swap;
 		swap(head, src.head);
+		swap(last_cache, src.last_cache);
 		swap(counter, src.counter);
 		return *this;
 	}
@@ -174,6 +187,7 @@ public:
 
 	void clear() noexcept {
 		head = {};
+		last_cache = {};
 		counter.reset();
 	}
 
@@ -183,6 +197,8 @@ public:
 			pop_front();
 			disposer(item);
 		}
+
+		last_cache = {};
 	}
 
 	const_reference front() const noexcept {
@@ -196,6 +212,11 @@ public:
 	reference pop_front() noexcept {
 		auto &i = front();
 		head.next = head.next->next;
+
+		if constexpr (options.cache_last)
+			if (head.next == nullptr)
+				last_cache.value = &head;
+
 		--counter;
 		return i;
 	}
@@ -203,6 +224,16 @@ public:
 	void pop_front_and_dispose(Disposer<value_type> auto disposer) noexcept {
 		auto &i = pop_front();
 		disposer(&i);
+	}
+
+	const_reference back() const noexcept
+		requires(options.cache_last) {
+		return *Cast(last_cache.value);
+	}
+
+	reference back() noexcept
+		requires(options.cache_last) {
+		return *Cast(last_cache.value);
 	}
 
 	class const_iterator;
@@ -265,6 +296,11 @@ public:
 		return {nullptr};
 	}
 
+	constexpr iterator last() noexcept
+		requires(options.cache_last) {
+		return {last_cache.value};
+	}
+
 	class const_iterator final {
 		friend IntrusiveForwardList;
 
@@ -317,15 +353,35 @@ public:
 		return {head.next};
 	}
 
+	constexpr const_iterator last() const noexcept
+		requires(options.cache_last) {
+		return {last_cache.value};
+	}
+
 	void push_front(reference t) noexcept {
 		auto &new_node = ToNode(t);
+
+		if constexpr (options.cache_last)
+			if (empty())
+				last_cache.value = &new_node;
+
 		new_node.next = head.next;
 		head.next = &new_node;
 		++counter;
 	}
 
+	void push_back(reference t) noexcept
+		requires(options.cache_last) {
+		auto &new_node = ToNode(t);
+		new_node.next = nullptr;
+		last_cache.value->next = &new_node;
+		last_cache.value = &new_node;
+
+		++counter;
+	}
+
 	static iterator insert_after(iterator pos, reference t) noexcept
-		requires(!constant_time_size) {
+		requires(!constant_time_size && !options.cache_last) {
 		/* if we have no counter, then this method is allowed
 		   to be static */
 
@@ -336,9 +392,15 @@ public:
 		return &new_node;
 	}
 
-	iterator insert_after(iterator pos, reference t) noexcept {
+	iterator insert_after(iterator pos, reference t) noexcept
+		requires(constant_time_size || options.cache_last) {
 		auto &pos_node = *pos.cursor;
 		auto &new_node = ToNode(t);
+
+		if constexpr (options.cache_last)
+			if (pos_node.next == nullptr)
+				last_cache.value = &new_node;
+
 		new_node.next = pos_node.next;
 		pos_node.next = &new_node;
 		++counter;
@@ -347,6 +409,11 @@ public:
 
 	void erase_after(iterator pos) noexcept {
 		pos.cursor->next = pos.cursor->next->next;
+
+		if constexpr (options.cache_last)
+			if (pos.cursor->next == nullptr)
+				last_cache.value = pos.cursor;
+
 		--counter;
 	}
 
