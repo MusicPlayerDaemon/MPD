@@ -41,6 +41,12 @@ public:
 		dbus_message_iter_get_basic(&iter, value);
 	}
 
+	bool GetBool() noexcept {
+		dbus_bool_t value;
+		GetBasic(&value);
+		return value;
+	}
+
 	const char *GetString() noexcept {
 		const char *value;
 		GetBasic(&value);
