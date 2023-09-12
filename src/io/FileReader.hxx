@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef FILE_READER_HXX
-#define FILE_READER_HXX
+#pragma once
 
 #include "Reader.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -39,8 +38,8 @@ public:
 		 handle(std::exchange(other.handle, INVALID_HANDLE_VALUE)) {}
 
 	~FileReader() noexcept {
-		if (IsDefined())
-			Close();
+		if (handle != INVALID_HANDLE_VALUE)
+			CloseHandle(handle);
 	}
 #else
 	FileReader(FileReader &&other) noexcept
@@ -64,8 +63,6 @@ public:
 		return fd;
 	}
 #endif
-
-	void Close() noexcept;
 
 	FileInfo GetFileInfo() const;
 
@@ -105,5 +102,3 @@ public:
 	/* virtual methods from class Reader */
 	std::size_t Read(void *data, std::size_t size) override;
 };
-
-#endif
