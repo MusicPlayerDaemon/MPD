@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef ODBUS_ERROR_HXX
-#define ODBUS_ERROR_HXX
+#pragma once
 
 #include <dbus/dbus.h>
 
@@ -37,6 +36,10 @@ public:
 		return &error;
 	}
 
+	const char *GetName() const noexcept {
+		return error.name;
+	}
+
 	const char *GetMessage() const noexcept {
 		return error.message;
 	}
@@ -47,5 +50,3 @@ public:
 };
 
 } /* namespace ODBus */
-
-#endif
