@@ -68,7 +68,7 @@ public:
 
 	template<typename T>
 	void ReadFullT(T &dest) {
-		ReadFull({&dest, sizeof(dest)});
+		ReadFull(std::as_writable_bytes(std::span{&dest, 1}));
 	}
 
 	template<typename T>
