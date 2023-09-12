@@ -157,7 +157,7 @@ public:
 	IntrusiveForwardList &operator=(IntrusiveForwardList &&src) noexcept {
 		using std::swap;
 		swap(head, src.head);
-		swap(counter, counter);
+		swap(counter, src.counter);
 		return *this;
 	}
 
