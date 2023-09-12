@@ -12,7 +12,7 @@
 template<class Rep, class Period>
 [[gnu::const]]
 std::chrono::system_clock::time_point
-TimePointAfterUnixEpoch(const std::chrono::duration<Rep,Period> &d) noexcept
+TimePointAfterUnixEpoch(const std::chrono::duration<Rep,Period> d) noexcept
 {
 	/* this is guaranteed to be 0 in C++20 */
 	const auto unix_epoch = std::chrono::system_clock::from_time_t(0);
@@ -27,7 +27,7 @@ TimePointAfterUnixEpoch(const std::chrono::duration<Rep,Period> &d) noexcept
  */
 [[gnu::const]]
 inline std::chrono::system_clock::duration
-DurationSinceUnixEpoch(const std::chrono::system_clock::time_point &tp) noexcept
+DurationSinceUnixEpoch(const std::chrono::system_clock::time_point tp) noexcept
 {
 	/* this is guaranteed to be 0 in C++20 */
 	const auto unix_epoch = std::chrono::system_clock::from_time_t(0);
