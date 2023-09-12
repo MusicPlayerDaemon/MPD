@@ -187,7 +187,7 @@ OpenTempFile(FileDescriptor directory_fd,
 #endif /* HAVE_O_TMPFILE */
 
 inline void
-FileOutputStream::OpenCreate([[maybe_unused]] bool visible)
+FileOutputStream::OpenCreate(bool visible)
 {
 #ifdef HAVE_O_TMPFILE
 	/* try Linux's O_TMPFILE first */

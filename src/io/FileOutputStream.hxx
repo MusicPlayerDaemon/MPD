@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef FILE_OUTPUT_STREAM_HXX
-#define FILE_OUTPUT_STREAM_HXX
+#pragma once
 
 #include "OutputStream.hxx"
 #include "fs/AllocatedPath.hxx"
 
 #ifndef _WIN32
-#include "io/FileDescriptor.hxx"
+#include "FileDescriptor.hxx"
 #endif
 
 #include <cassert>
@@ -190,5 +189,3 @@ private:
 	void RenameOrThrow(Path old_path, Path new_path) const;
 	void Delete(Path delete_path) const noexcept;
 };
-
-#endif
