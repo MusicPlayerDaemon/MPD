@@ -300,21 +300,22 @@ public:
 	 *
 	 * @param bucket the bucket returned by insert_check()
 	 */
-	constexpr void insert_commit(bucket_iterator bucket, reference item) noexcept {
+	constexpr bucket_iterator insert_commit(bucket_iterator bucket,
+						reference item) noexcept {
 		++counter;
 
 		/* using insert_after() so the new item gets inserted
 		   at the front of the bucket list */
-		GetBucket(ops.get_key(item)).insert_after(bucket, item);
+		return GetBucket(ops.get_key(item)).insert_after(bucket, item);
 	}
 
 	/**
 	 * Insert a new item without checking whether the key already
 	 * exists.
 	 */
-	constexpr void insert(reference item) noexcept {
+	constexpr bucket_iterator insert(reference item) noexcept {
 		++counter;
-		GetBucket(ops.get_key(item)).push_front(item);
+		return GetBucket(ops.get_key(item)).push_front(item);
 	}
 
 	constexpr bucket_iterator erase(bucket_iterator i) noexcept {
