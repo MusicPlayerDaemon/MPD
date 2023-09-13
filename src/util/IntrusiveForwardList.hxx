@@ -200,6 +200,11 @@ public:
 		return i;
 	}
 
+	void pop_front_and_dispose(Disposer<value_type> auto disposer) noexcept {
+		auto &i = pop_front();
+		disposer(&i);
+	}
+
 	class const_iterator;
 
 	class iterator final {
