@@ -301,6 +301,10 @@ public:
 		return {last_cache.value};
 	}
 
+	static constexpr iterator iterator_to(reference t) noexcept {
+		return {&ToNode(t)};
+	}
+
 	class const_iterator final {
 		friend IntrusiveForwardList;
 
@@ -356,6 +360,10 @@ public:
 	constexpr const_iterator last() const noexcept
 		requires(options.cache_last) {
 		return {last_cache.value};
+	}
+
+	static constexpr const_iterator iterator_to(const_reference t) noexcept {
+		return {&ToNode(t)};
 	}
 
 	void push_front(reference t) noexcept {
