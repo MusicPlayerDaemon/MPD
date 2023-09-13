@@ -317,14 +317,24 @@ public:
 		++counter;
 	}
 
-	static iterator insert_after(iterator pos, reference t) noexcept {
-		// no counter update in this static method
-		static_assert(!constant_time_size);
+	static iterator insert_after(iterator pos, reference t) noexcept
+		requires(!constant_time_size) {
+		/* if we have no counter, then this method is allowed
+		   to be static */
 
 		auto &pos_node = *pos.cursor;
 		auto &new_node = ToNode(t);
 		new_node.next = pos_node.next;
 		pos_node.next = &new_node;
+		return &new_node;
+	}
+
+	iterator insert_after(iterator pos, reference t) noexcept {
+		auto &pos_node = *pos.cursor;
+		auto &new_node = ToNode(t);
+		new_node.next = pos_node.next;
+		pos_node.next = &new_node;
+		++counter;
 		return &new_node;
 	}
 
