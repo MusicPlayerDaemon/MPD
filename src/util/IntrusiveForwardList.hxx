@@ -178,11 +178,9 @@ public:
 		return head.next == nullptr;
 	}
 
-	constexpr size_type size() const noexcept {
-		if constexpr (constant_time_size)
-			return counter;
-		else
-			return std::distance(begin(), end());
+	constexpr size_type size() const noexcept
+		requires(constant_time_size) {
+		return counter;
 	}
 
 	void clear() noexcept {
