@@ -193,9 +193,11 @@ public:
 		return *Cast(head.next);
 	}
 
-	void pop_front() noexcept {
+	reference pop_front() noexcept {
+		auto &i = front();
 		head.next = head.next->next;
 		--counter;
+		return i;
 	}
 
 	class const_iterator;
