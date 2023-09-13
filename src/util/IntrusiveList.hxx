@@ -487,6 +487,9 @@ public:
 		return {&ToNode(t)};
 	}
 
+	/**
+	 * @return an iterator to the item following the specified one
+	 */
 	iterator erase(iterator i) noexcept {
 		auto result = std::next(i);
 		ToHook(*i).unlink();
@@ -494,6 +497,9 @@ public:
 		return result;
 	}
 
+	/**
+	 * @return an iterator to the item following the specified one
+	 */
 	iterator erase_and_dispose(iterator i,
 				   Disposer<value_type> auto disposer) noexcept {
 		auto result = erase(i);
