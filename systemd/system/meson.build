@@ -12,8 +12,10 @@ if systemd_system_unit_dir == ''
   systemd_system_unit_dir = join_paths(get_option('prefix'), 'lib', 'systemd', 'system')
 endif
 
-install_data(
-  'mpd.socket',
+configure_file(
+  input: 'mpd.socket.in',
+  output: 'mpd.socket',
+  configuration: systemd_socket_conf,
   install_dir: systemd_system_unit_dir,
 )
 

@@ -12,9 +12,10 @@ if systemd_user_unit_dir == ''
   systemd_user_unit_dir = join_paths(get_option('prefix'), 'lib', 'systemd', 'user')
 endif
 
-# copy the system socket unit to the "user" directory
-install_data(
-  join_paths('..', 'system', 'mpd.socket'),
+configure_file(
+  input: join_paths('..', 'system', 'mpd.socket.in'),
+  output: 'mpd.socket',
+  configuration: systemd_socket_conf,
   install_dir: systemd_user_unit_dir,
 )
 
