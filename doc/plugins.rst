@@ -1028,6 +1028,12 @@ It is highly recommended to configure a fixed format, because a stream cannot sw
      - Chooses an encoder plugin. A list of encoder plugins can be found in the encoder plugin reference :ref:`encoder_plugins`.
    * - **max_clients MC**
      - Sets a limit, number of concurrent clients. When set to 0 no limit will apply.
+   * - **genre GENRE**
+     - The genre of the stream. Will be reflected in the `icy-genre` header of the stream.
+   * - **website URL**
+     - The website of the stream. Will be reflected in the `icy-url` header of the stream.
+
+The `name` from the `audio_output` block that uses this output plugin will be reflected as the stream name in the `icy-name` header of the stream.
 
 null
 ----
