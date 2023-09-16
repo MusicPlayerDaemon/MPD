@@ -44,6 +44,8 @@ class InjectEvent;
  */
 class EventLoop final
 {
+	EventPollBackend poll_backend;
+
 #ifdef HAVE_THREADED_EVENT_LOOP
 	WakeFD wake_fd;
 	SocketEvent wake_event{*this, BIND_THIS_METHOD(OnSocketReady), wake_fd.GetSocket()};
@@ -127,8 +129,6 @@ class EventLoop final
 #ifdef HAVE_URING
 	bool uring_initialized = false;
 #endif
-
-	EventPollBackend poll_backend;
 
 	ClockCache<std::chrono::steady_clock> steady_clock_cache;
 
