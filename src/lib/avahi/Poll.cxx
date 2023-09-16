@@ -1,5 +1,6 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
+// Copyright CM4all GmbH
+// author: Max Kellermann <mk@cm4all.com>
 
 #include "Poll.hxx"
 #include "event/SocketEvent.hxx"
@@ -33,8 +34,8 @@ private:
 
 public:
 	AvahiWatch(EventLoop &_loop,
-		   SocketDescriptor _fd, AvahiWatchEvent _event,
-		   AvahiWatchCallback _callback, void *_userdata) noexcept
+	      SocketDescriptor _fd, AvahiWatchEvent _event,
+	      AvahiWatchCallback _callback, void *_userdata) noexcept
 		:event(_loop, BIND_THIS_METHOD(OnSocketReady), _fd),
 		 callback(_callback), userdata(_userdata) {
 		event.Schedule(FromAvahiWatchEvent(_event));
@@ -138,7 +139,7 @@ Poll::Poll(EventLoop &_loop) noexcept
 
 AvahiWatch *
 Poll::WatchNew(const AvahiPoll *api, int fd, AvahiWatchEvent event,
-	       AvahiWatchCallback callback, void *userdata) noexcept
+		      AvahiWatchCallback callback, void *userdata) noexcept
 {
 	const Poll &poll = *(const Poll *)api;
 
@@ -148,7 +149,7 @@ Poll::WatchNew(const AvahiPoll *api, int fd, AvahiWatchEvent event,
 
 AvahiTimeout *
 Poll::TimeoutNew(const AvahiPoll *api, const struct timeval *tv,
-		 AvahiTimeoutCallback callback, void *userdata) noexcept
+			AvahiTimeoutCallback callback, void *userdata) noexcept
 {
 	const Poll &poll = *(const Poll *)api;
 

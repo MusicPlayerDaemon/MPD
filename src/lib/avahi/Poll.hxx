@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
+// Copyright CM4all GmbH
+// author: Max Kellermann <mk@cm4all.com>
 
-#ifndef MPD_AVAHI_POLL_HXX
-#define MPD_AVAHI_POLL_HXX
+#pragma once
 
 #include <avahi-common/watch.h>
 
@@ -36,5 +36,3 @@ private:
 };
 
 } // namespace Avahi
-
-#endif
