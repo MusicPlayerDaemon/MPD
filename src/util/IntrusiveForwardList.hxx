@@ -292,7 +292,7 @@ public:
 		return {head.next};
 	}
 
-	static constexpr iterator end() noexcept {
+	constexpr iterator end() noexcept {
 		return {nullptr};
 	}
 
@@ -355,6 +355,10 @@ public:
 
 	constexpr const_iterator begin() const noexcept {
 		return {head.next};
+	}
+
+	constexpr const_iterator end() const noexcept {
+		return {nullptr};
 	}
 
 	constexpr const_iterator last() const noexcept
