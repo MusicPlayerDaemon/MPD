@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef EVENT_LOOP_HXX
-#define EVENT_LOOP_HXX
+#pragma once
 
 #include "Chrono.hxx"
 #include "TimerWheel.hxx"
 #include "Backend.hxx"
-#include "SocketEvent.hxx"
 #include "event/Features.h"
 #include "time/ClockCache.hxx"
 #include "util/IntrusiveList.hxx"
@@ -18,6 +16,7 @@
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 #include "WakeFD.hxx"
+#include "SocketEvent.hxx"
 #include "thread/Id.hxx"
 #include "thread/Mutex.hxx"
 #endif
@@ -31,6 +30,7 @@ namespace Uring { class Queue; class Manager; }
 #endif
 
 class DeferEvent;
+class SocketEvent;
 class InjectEvent;
 
 /**
@@ -310,5 +310,3 @@ public:
 #endif
 	}
 };
-
-#endif /* MAIN_NOTIFY_H */
