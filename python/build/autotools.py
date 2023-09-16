@@ -1,15 +1,17 @@
 import os.path, subprocess, sys
+from typing import Collection, Iterable, Optional
 
 from build.makeproject import MakeProject
 
 class AutotoolsProject(MakeProject):
-    def __init__(self, url, md5, installed, configure_args=[],
-                 autogen=False,
-                 autoreconf=False,
-                 cppflags='',
-                 ldflags='',
-                 libs='',
-                 subdirs=None,
+    def __init__(self, url: str, md5: str, installed: str,
+                 configure_args: Iterable[str]=[],
+                 autogen: bool=False,
+                 autoreconf: bool=False,
+                 cppflags: str='',
+                 ldflags: str='',
+                 libs: str='',
+                 subdirs: Optional[Collection[str]]=None,
                  **kwargs):
         MakeProject.__init__(self, url, md5, installed, **kwargs)
         self.configure_args = configure_args
@@ -20,7 +22,7 @@ class AutotoolsProject(MakeProject):
         self.libs = libs
         self.subdirs = subdirs
 
-    def configure(self, toolchain):
+    def configure(self, toolchain) -> str:
         src = self.unpack(toolchain)
         if self.autogen:
             if sys.platform == 'darwin':
@@ -68,7 +70,7 @@ class AutotoolsProject(MakeProject):
 
         return build
 
-    def _build(self, toolchain):
+    def _build(self, toolchain) -> None:
         build = self.configure(toolchain)
         if self.subdirs is not None:
             for subdir in self.subdirs:

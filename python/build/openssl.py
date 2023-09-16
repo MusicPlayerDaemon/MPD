@@ -1,13 +1,14 @@
 import subprocess
+from typing import Optional
 
 from build.makeproject import MakeProject
 
 class OpenSSLProject(MakeProject):
-    def __init__(self, url, md5, installed,
+    def __init__(self, url: str, md5: str, installed: str,
                  **kwargs):
         MakeProject.__init__(self, url, md5, installed, install_target='install_dev', **kwargs)
 
-    def get_make_args(self, toolchain):
+    def get_make_args(self, toolchain) -> list[str]:
         return MakeProject.get_make_args(self, toolchain) + [
             'CC=' + toolchain.cc,
             'CFLAGS=' + toolchain.cflags,
@@ -17,13 +18,13 @@ class OpenSSLProject(MakeProject):
             'build_libs',
         ]
 
-    def get_make_install_args(self, toolchain):
+    def get_make_install_args(self, toolchain) -> list[str]:
         # OpenSSL's Makefile runs "ranlib" during installation
         return MakeProject.get_make_install_args(self, toolchain) + [
             'RANLIB=' + toolchain.ranlib,
         ]
 
-    def _build(self, toolchain):
+    def _build(self, toolchain) -> None:
         src = self.unpack(toolchain, out_of_tree=False)
 
         # OpenSSL has a weird target architecture scheme with lots of

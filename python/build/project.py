@@ -1,16 +1,18 @@
 import os, shutil
 import re
+from typing import cast, BinaryIO, Optional
 
 from build.download import download_and_verify
 from build.tar import untar
 from build.quilt import push_all
 
 class Project:
-    def __init__(self, url, md5, installed, name=None, version=None,
-                 base=None,
-                 patches=None,
+    def __init__(self, url: str, md5: str, installed: str,
+                 name: Optional[str]=None, version: Optional[str]=None,
+                 base: Optional[str]=None,
+                 patches: Optional[str]=None,
                  edits=None,
-                 use_cxx=False):
+                 use_cxx: bool=False):
         if base is None:
             basename = os.path.basename(url)
             m = re.match(r'^(.+)\.(tar(\.(gz|bz2|xz|lzma))?|zip)$', basename)
@@ -39,10 +41,10 @@ class Project:
         self.edits = edits
         self.use_cxx = use_cxx
 
-    def download(self, toolchain):
+    def download(self, toolchain) -> str:
         return download_and_verify(self.url, self.md5, toolchain.tarball_path)
 
-    def is_installed(self, toolchain):
+    def is_installed(self, toolchain) -> bool:
         tarball = self.download(toolchain)
         installed = os.path.join(toolchain.install_prefix, self.installed)
         tarball_mtime = os.path.getmtime(tarball)
@@ -51,7 +53,7 @@ class Project:
         except FileNotFoundError:
             return False
 
-    def unpack(self, toolchain, out_of_tree=True):
+    def unpack(self, toolchain, out_of_tree: bool=True) -> str:
         if out_of_tree:
             parent_path = toolchain.src_path
         else:
@@ -72,7 +74,7 @@ class Project:
 
         return path
 
-    def make_build_path(self, toolchain, lazy=False):
+    def make_build_path(self, toolchain, lazy: bool=False) -> str:
         path = os.path.join(toolchain.build_path, self.base)
         if lazy and os.path.isdir(path):
             return path
@@ -83,5 +85,5 @@ class Project:
         os.makedirs(path, exist_ok=True)
         return path
 
-    def build(self, toolchain):
+    def build(self, toolchain) -> None:
         self._build(toolchain)
