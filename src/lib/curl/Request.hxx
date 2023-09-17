@@ -97,38 +97,6 @@ public:
 		easy.SetRequestHeaders(request_headers);
 	}
 
-	void SetVerifyHost(bool value) {
-		easy.SetVerifyHost(value);
-	}
-
-	void SetVerifyPeer(bool value) {
-		easy.SetVerifyPeer(value);
-	}
-
-	void SetProxyVerifyHost(bool value) {
-		easy.SetOption(CURLOPT_PROXY_SSL_VERIFYHOST, value ? 2L : 0L);
-	}
-
-	void SetProxyVerifyPeer(bool value) {
-		easy.SetOption(CURLOPT_PROXY_SSL_VERIFYPEER, value);
-	}
-
-	void SetConnectTimeout(long timeout_seconds) {
-		easy.SetConnectTimeout(timeout_seconds);
-	}
-
-	void SetNoBody(bool value=true) {
-		easy.SetNoBody(value);
-	}
-
-	void SetPost(bool value=true) {
-		easy.SetPost(value);
-	}
-
-	void SetRequestBody(const void *data, std::size_t size) {
-		easy.SetRequestBody(data, size);
-	}
-
 	void Resume() noexcept;
 
 	/**

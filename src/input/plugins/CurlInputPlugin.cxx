@@ -455,54 +455,62 @@ CurlInputStream::~CurlInputStream() noexcept
 	FreeEasyIndirect();
 }
 
-void
-CurlInputStream::InitEasy()
+static CurlEasy
+CreateEasy(const char *url)
 {
-	request = new CurlRequest(**curl_init, GetURI(), *this);
+	CurlEasy easy{url};
 
-	request->SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
-	request->SetOption(CURLOPT_FOLLOWLOCATION, 1L);
-	request->SetOption(CURLOPT_MAXREDIRS, 5L);
+	easy.SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
+	easy.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
+	easy.SetOption(CURLOPT_MAXREDIRS, 5L);
 
 	/* this option eliminates the probe request when
 	   username/password are specified */
-	request->SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	easy.SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
 	if (proxy != nullptr)
-		request->SetOption(CURLOPT_PROXY, proxy);
+		easy.SetOption(CURLOPT_PROXY, proxy);
 
 	if (proxy_port > 0)
-		request->SetOption(CURLOPT_PROXYPORT, (long)proxy_port);
+		easy.SetOption(CURLOPT_PROXYPORT, (long)proxy_port);
 
 	if (proxy_user != nullptr && proxy_password != nullptr)
-		request->SetOption(CURLOPT_PROXYUSERPWD,
-				   FmtBuffer<1024>("{}:{}", proxy_user,
-						   proxy_password).c_str());
+		easy.SetOption(CURLOPT_PROXYUSERPWD,
+			       FmtBuffer<1024>("{}:{}", proxy_user,
+					       proxy_password).c_str());
 
 	if (cacert != nullptr)
-		request->SetOption(CURLOPT_CAINFO, cacert);
-	request->SetVerifyPeer(verify_peer);
-	request->SetVerifyHost(verify_host);
-	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
+		easy.SetOption(CURLOPT_CAINFO, cacert);
+	easy.SetVerifyPeer(verify_peer);
+	easy.SetVerifyHost(verify_host);
 
 	try {
-		request->SetProxyVerifyPeer(verify_peer);
-		request->SetProxyVerifyHost(verify_host);
+		easy.SetProxyVerifyPeer(verify_peer);
+		easy.SetProxyVerifyHost(verify_host);
 	} catch (...) {
 		/* these methods fail if libCURL was compiled with
 		   CURL_DISABLE_PROXY; ignore silently */
 	}
 
-	request->SetConnectTimeout(connect_timeout);
+	easy.SetConnectTimeout(connect_timeout);
 
-	request->SetOption(CURLOPT_VERBOSE, verbose ? 1 : 0);
+	easy.SetOption(CURLOPT_VERBOSE, verbose ? 1 : 0);
 
-	request->SetOption(CURLOPT_LOW_SPEED_LIMIT, low_speed_limit);
-	request->SetOption(CURLOPT_LOW_SPEED_TIME, low_speed_time);
+	easy.SetOption(CURLOPT_LOW_SPEED_LIMIT, low_speed_limit);
+	easy.SetOption(CURLOPT_LOW_SPEED_TIME, low_speed_time);
 
-	request->SetOption(CURLOPT_TCP_KEEPALIVE, tcp_keepalive ? 1 : 0);
-	request->SetOption(CURLOPT_TCP_KEEPIDLE, tcp_keepidle);
-	request->SetOption(CURLOPT_TCP_KEEPINTVL, tcp_keepintvl);
+	easy.SetOption(CURLOPT_TCP_KEEPALIVE, tcp_keepalive ? 1 : 0);
+	easy.SetOption(CURLOPT_TCP_KEEPIDLE, tcp_keepidle);
+	easy.SetOption(CURLOPT_TCP_KEEPINTVL, tcp_keepintvl);
+
+	return easy;
+}
+
+void
+CurlInputStream::InitEasy()
+{
+	request = new CurlRequest(**curl_init, CreateEasy(GetURI()), *this);
+	request->SetRequestHeaders(request_headers.Get());
 }
 
 void

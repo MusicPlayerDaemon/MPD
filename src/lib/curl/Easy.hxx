@@ -125,6 +125,14 @@ public:
 		SetOption(CURLOPT_SSL_VERIFYPEER, (long)value);
 	}
 
+	void SetProxyVerifyHost(bool value) {
+		SetOption(CURLOPT_PROXY_SSL_VERIFYHOST, value ? 2L : 0L);
+	}
+
+	void SetProxyVerifyPeer(bool value) {
+		SetOption(CURLOPT_PROXY_SSL_VERIFYPEER, value);
+	}
+
 	void SetConnectTimeout(long timeout) {
 		SetOption(CURLOPT_CONNECTTIMEOUT, timeout);
 	}
