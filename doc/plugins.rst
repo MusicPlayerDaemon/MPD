@@ -1115,7 +1115,7 @@ Connect to a `PipeWire <https://pipewire.org/>`_ server.  Requires
    * - **target NAME**
      - Link to the given target.  If not specified, let the PipeWire
        manager select a target.  To get a list of available targets,
-       type ``pw-cli dump short Node``
+       type ``pw-cli ls Node``
    * - **remote NAME**
      - The name of the remote to connect to.  The default is
        ``pipewire-0``.
