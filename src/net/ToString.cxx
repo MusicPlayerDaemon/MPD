@@ -50,6 +50,9 @@ LocalAddressToString(std::string_view raw) noexcept
 std::string
 ToString(SocketAddress address) noexcept
 {
+	if (address.IsNull() || address.GetSize() == 0)
+		return "null";
+
 #ifdef HAVE_UN
 	if (address.GetFamily() == AF_LOCAL)
 		/* return path of local socket */
@@ -88,7 +91,7 @@ ToString(SocketAddress address) noexcept
 std::string
 HostToString(SocketAddress address) noexcept
 {
-	if (address.IsNull())
+	if (address.IsNull() || address.GetSize() == 0)
 		return "null";
 
 #ifdef HAVE_UN
