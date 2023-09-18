@@ -6,6 +6,8 @@
 #include "SocketAddress.hxx"
 #include "IPv4Address.hxx"
 
+#include <fmt/core.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -75,18 +77,11 @@ ToString(SocketAddress address) noexcept
 	if (serv[0] != 0 && (serv[0] != '0' || serv[1] != 0)) {
 #ifdef HAVE_IPV6
 		if (std::strchr(host, ':') != nullptr) {
-			std::string result("[");
-			result.append(host);
-			result.append("]:");
-			result.append(serv);
-			return result;
+			return fmt::format("[{}]:{}", host, serv);
 		}
 #endif
 
-		std::string result(host);
-		result.push_back(':');
-		result.append(serv);
-		return result;
+		return fmt::format("{}:{}", host, serv);
 	}
 
 	return host;
