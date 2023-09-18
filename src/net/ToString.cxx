@@ -70,13 +70,13 @@ ToString(SocketAddress address) noexcept
 	char host[NI_MAXHOST], serv[NI_MAXSERV];
 	int ret = getnameinfo(address.GetAddress(), address.GetSize(),
 			      host, sizeof(host), serv, sizeof(serv),
-			      NI_NUMERICHOST|NI_NUMERICSERV);
+			      NI_NUMERICHOST | NI_NUMERICSERV);
 	if (ret != 0)
 		return "unknown";
 
 	if (serv[0] != 0 && (serv[0] != '0' || serv[1] != 0)) {
 #ifdef HAVE_IPV6
-		if (std::strchr(host, ':') != nullptr) {
+		if (address.GetFamily() == AF_INET6) {
 			return fmt::format("[{}]:{}", host, serv);
 		}
 #endif
