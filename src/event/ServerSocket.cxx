@@ -4,6 +4,7 @@
 #include "ServerSocket.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "lib/fmt/SocketAddressFormatter.hxx"
 #include "net/IPv4Address.hxx"
 #include "net/IPv6Address.hxx"
 #include "net/StaticSocketAddress.hxx"
@@ -13,7 +14,6 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
-#include "net/ToString.hxx"
 #include "event/SocketEvent.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Domain.hxx"
@@ -83,9 +83,9 @@ public:
 		event.Close();
 	}
 
-	[[nodiscard]] [[gnu::pure]]
-	std::string ToString() const noexcept {
-		return ::ToString(address);
+	[[nodiscard]]
+	SocketAddress GetAddress() const noexcept {
+		return address;
 	}
 
 	void SetFD(UniqueSocketDescriptor _fd) noexcept {
@@ -224,23 +224,19 @@ ServerSocket::Open()
 			i.Open();
 		} catch (...) {
 			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
-				const auto address_string = i.ToString();
-				const auto good_string = good->ToString();
 				FmtError(server_socket_domain,
 					 "bind to '{}' failed "
 					 "(continuing anyway, because "
 					 "binding to '{}' succeeded): {}",
-					 address_string,
-					 good_string,
+					 i.GetAddress(),
+					 good->GetAddress(),
 					 std::current_exception());
 			} else if (bad == nullptr) {
 				bad = &i;
 
-				const auto address_string = i.ToString();
-
 				try {
 					std::throw_with_nested(FmtRuntimeError("Failed to bind to '{}'",
-									       address_string));
+									       i.GetAddress()));
 				} catch (...) {
 					last_error = std::current_exception();
 				}

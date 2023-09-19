@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
+#include "lib/fmt/SocketAddressFormatter.hxx"
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
-#include "net/ToString.hxx"
 #include "net/SocketAddress.hxx"
 #include "util/PrintException.hxx"
+
+#include <fmt/format.h>
 
 #include <exception>
 
@@ -20,7 +22,7 @@ try {
 	}
 
 	for (const auto &i : Resolve(argv[1], 80, AI_PASSIVE, SOCK_STREAM)) {
-		printf("%s\n", ToString(i).c_str());
+		fmt::print("{}\n", i);
 	}
 
 	return EXIT_SUCCESS;

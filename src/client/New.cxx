@@ -8,9 +8,9 @@
 #include "BackgroundCommand.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
+#include "lib/fmt/SocketAddressFormatter.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
-#include "net/ToString.hxx"
 #include "Log.hxx"
 #include "Version.h"
 
@@ -36,11 +36,10 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   UniqueSocketDescriptor fd, SocketAddress address, int uid,
+	   UniqueSocketDescriptor fd, SocketAddress remote_address, int uid,
 	   unsigned permission) noexcept
 {
 	static unsigned int next_client_num;
-	const auto remote = ToString(address);
 
 	assert(fd.IsDefined());
 
@@ -61,7 +60,7 @@ client_new(EventLoop &loop, Partition &partition,
 	partition.clients.push_back(*client);
 
 	FmtInfo(client_domain, "[{}] opened from {}",
-		num, remote);
+		num, remote_address);
 }
 
 void
