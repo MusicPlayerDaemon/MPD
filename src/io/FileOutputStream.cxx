@@ -4,13 +4,13 @@
 #include "FileOutputStream.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/SystemError.hxx"
-#include "lib/fmt/ToBuffer.hxx"
 
 #ifdef _WIN32
 #include <tchar.h>
 #endif
 
 #ifdef __linux__
+#include "io/linux/ProcPath.hxx"
 #include <fcntl.h>
 #endif
 
@@ -281,8 +281,7 @@ try {
 		unlinkat(directory_fd.Get(), GetPath().c_str(), 0);
 
 		/* hard-link the temporary file to the final path */
-		if (linkat(-1,
-			   FmtBuffer<64>("/proc/self/fd/{}", fd.Get()),
+		if (linkat(-1, ProcFdPath(fd),
 			   directory_fd.Get(), path.c_str(),
 			   AT_SYMLINK_FOLLOW) < 0)
 			throw FmtErrno("Failed to commit {}", path);
