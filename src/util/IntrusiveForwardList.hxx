@@ -199,6 +199,30 @@ public:
 		last_cache = {};
 	}
 
+	/**
+	 * @return the number of removed items
+	 */
+	std::size_t remove_and_dispose_if(std::predicate<const_reference> auto pred,
+					  Disposer<value_type> auto dispose) noexcept {
+		std::size_t result = 0;
+
+		for (auto prev = before_begin(), current = std::next(prev);
+		     current != end();) {
+			auto &item = *current;
+
+			if (pred(item)) {
+				++result;
+				++current;
+				erase_after(prev);
+				dispose(&item);
+			} else {
+				prev = current++;
+			}
+		}
+
+		return result;
+	}
+
 	const_reference front() const noexcept {
 		return *Cast(head.next);
 	}
