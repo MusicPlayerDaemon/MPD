@@ -368,7 +368,7 @@ public:
 		return {&ToNode(t)};
 	}
 
-	void push_front(reference t) noexcept {
+	iterator push_front(reference t) noexcept {
 		auto &new_node = ToNode(t);
 
 		if constexpr (options.cache_last)
@@ -378,9 +378,11 @@ public:
 		new_node.next = head.next;
 		head.next = &new_node;
 		++counter;
+
+		return iterator_to(t);
 	}
 
-	void push_back(reference t) noexcept
+	iterator push_back(reference t) noexcept
 		requires(options.cache_last) {
 		auto &new_node = ToNode(t);
 		new_node.next = nullptr;
@@ -388,6 +390,8 @@ public:
 		last_cache.value = &new_node;
 
 		++counter;
+
+		return iterator_to(t);
 	}
 
 	static iterator insert_after(iterator pos, reference t) noexcept
