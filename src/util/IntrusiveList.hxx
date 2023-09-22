@@ -412,6 +412,16 @@ public:
 		return {&ToNode(t)};
 	}
 
+	using reverse_iterator = std::reverse_iterator<iterator>;
+
+	constexpr reverse_iterator rbegin() noexcept {
+		return reverse_iterator{end()};
+	}
+
+	constexpr reverse_iterator rend() noexcept {
+		return reverse_iterator{begin()};
+	}
+
 	class const_iterator final {
 		friend IntrusiveList;
 
@@ -485,6 +495,16 @@ public:
 
 	static constexpr const_iterator iterator_to(const_reference t) noexcept {
 		return {&ToNode(t)};
+	}
+
+	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+	constexpr const_reverse_iterator rbegin() const noexcept {
+		return reverse_iterator{end()};
+	}
+
+	constexpr const_reverse_iterator rend() const noexcept {
+		return reverse_iterator{begin()};
 	}
 
 	/**
