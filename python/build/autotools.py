@@ -1,5 +1,6 @@
 import os.path, subprocess, sys
 from typing import Collection, Iterable, Optional, Sequence, Union
+from collections.abc import Mapping
 
 from build.makeproject import MakeProject
 from .toolchain import AnyToolchain
@@ -9,6 +10,7 @@ class AutotoolsProject(MakeProject):
                  configure_args: Iterable[str]=[],
                  autogen: bool=False,
                  autoreconf: bool=False,
+                 per_arch_cflags: Optional[Mapping[str, str]]=None,
                  cppflags: str='',
                  ldflags: str='',
                  libs: str='',
@@ -18,6 +20,7 @@ class AutotoolsProject(MakeProject):
         self.configure_args = configure_args
         self.autogen = autogen
         self.autoreconf = autoreconf
+        self.per_arch_cflags = per_arch_cflags
         self.cppflags = cppflags
         self.ldflags = ldflags
         self.libs = libs
@@ -38,12 +41,16 @@ class AutotoolsProject(MakeProject):
 
         build = self.make_build_path(toolchain)
 
+        arch_cflags = ''
+        if self.per_arch_cflags is not None and toolchain.host_triplet is not None:
+            arch_cflags = self.per_arch_cflags.get(toolchain.host_triplet, '')
+
         configure = [
             os.path.join(src, 'configure'),
             'CC=' + toolchain.cc,
             'CXX=' + toolchain.cxx,
-            'CFLAGS=' + toolchain.cflags,
-            'CXXFLAGS=' + toolchain.cxxflags,
+            'CFLAGS=' + toolchain.cflags + ' ' + arch_cflags,
+            'CXXFLAGS=' + toolchain.cxxflags + ' ' + arch_cflags,
             'CPPFLAGS=' + toolchain.cppflags + ' ' + self.cppflags,
             'LDFLAGS=' + toolchain.ldflags + ' ' + self.ldflags,
             'LIBS=' + toolchain.libs + ' ' + self.libs,
