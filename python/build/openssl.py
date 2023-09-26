@@ -74,6 +74,7 @@ class OpenSSLProject(MakeProject):
 
         if toolchain.host_triplet is not None:
             configure.append(openssl_archs[toolchain.host_triplet])
+            configure.append(f'--cross-compile-prefix={toolchain.host_triplet}-')
 
         subprocess.check_call(configure, cwd=src, env=toolchain.env)
         self.build_make(toolchain, src)
