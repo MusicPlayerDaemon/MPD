@@ -63,6 +63,7 @@ class OpenSSLProject(MakeProject):
             'no-static-engine',
             'no-async',
             'no-tests',
+            'no-makedepend',
             openssl_arch,
             '--prefix=' + toolchain.install_prefix,
         ]
