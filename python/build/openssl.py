@@ -64,6 +64,7 @@ class OpenSSLProject(MakeProject):
             'no-async',
             'no-tests',
             'no-makedepend',
+            '--libdir=lib', # no "lib64" on amd64, please
             openssl_arch,
             '--prefix=' + toolchain.install_prefix,
         ]
