@@ -65,13 +65,15 @@ class OpenSSLProject(MakeProject):
             'no-tests',
             'no-makedepend',
             '--libdir=lib', # no "lib64" on amd64, please
-            openssl_arch,
             '--prefix=' + toolchain.install_prefix,
         ]
 
         if toolchain.is_windows:
             # workaround for build failures
             configure.append('no-asm')
+
+        if toolchain.host_triplet is not None:
+            configure.append(openssl_archs[toolchain.host_triplet])
 
         subprocess.check_call(configure, cwd=src, env=toolchain.env)
         self.build_make(toolchain, src)
