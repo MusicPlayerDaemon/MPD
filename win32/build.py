@@ -35,7 +35,8 @@ build_path = os.path.join(arch_path, 'build')
 root_path = os.path.join(arch_path, 'root')
 
 class CrossGccToolchain:
-    def __init__(self, toolchain_path, arch,
+    def __init__(self, top_path: str,
+                 toolchain_path, arch, x64: bool,
                  tarball_path, src_path, build_path, install_prefix):
         self.arch = arch
         self.actual_arch = arch
@@ -85,7 +86,7 @@ class CrossGccToolchain:
         import shutil
         bin_dir = os.path.join(install_prefix, 'bin')
         os.makedirs(bin_dir, exist_ok=True)
-        self.pkg_config = shutil.copy(os.path.join(mpd_path, 'build', 'pkg-config.sh'),
+        self.pkg_config = shutil.copy(os.path.join(top_path, 'build', 'pkg-config.sh'),
                                       os.path.join(bin_dir, 'pkg-config'))
         self.env['PKG_CONFIG'] = self.pkg_config
 
@@ -111,7 +112,8 @@ thirdparty_libs = [
 ]
 
 # build the third-party libraries
-toolchain = CrossGccToolchain('/usr', host_arch,
+toolchain = CrossGccToolchain(mpd_path,
+                              '/usr', host_arch, x64,
                               tarball_path, src_path, build_path, root_path)
 
 for x in thirdparty_libs:
