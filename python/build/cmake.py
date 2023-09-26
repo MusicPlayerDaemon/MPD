@@ -56,34 +56,37 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 """)
 
 def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[], env: Optional[Mapping[str, str]]=None) -> None:
-    cross_args = []
+    cross_args: list[str] = []
 
     if toolchain.is_windows:
         cross_args.append('-DCMAKE_RC_COMPILER=' + cast(str, toolchain.windres))
 
-    # Several targets need a sysroot to prevent pkg-config from
-    # looking for libraries on the build host (TODO: fix this
-    # properly); but we must not do that on Android because the NDK
-    # has a sysroot already
-    if not toolchain.is_android and not toolchain.is_darwin:
-        cross_args.append('-DCMAKE_SYSROOT=' + toolchain.install_prefix)
-
-    os.makedirs(build, exist_ok=True)
-    cmake_toolchain_file = os.path.join(build, 'cmake_toolchain_file')
-    with open(cmake_toolchain_file, 'w') as f:
-        __write_cmake_toolchain_file(f, toolchain)
-
     configure = [
         'cmake',
         src,
-
-        '-DCMAKE_TOOLCHAIN_FILE=' + cmake_toolchain_file,
 
         '-DCMAKE_INSTALL_PREFIX=' + toolchain.install_prefix,
         '-DCMAKE_BUILD_TYPE=release',
 
         '-GNinja',
     ] + cross_args + args
+
+    if toolchain.host_triplet is not None:
+        # cross-compiling: write a toolchain file
+        os.makedirs(build, exist_ok=True)
+
+        # Several targets need a sysroot to prevent pkg-config from
+        # looking for libraries on the build host (TODO: fix this
+        # properly); but we must not do that on Android because the NDK
+        # has a sysroot already
+        if not toolchain.is_android and not toolchain.is_darwin:
+            cross_args.append('-DCMAKE_SYSROOT=' + toolchain.install_prefix)
+
+        cmake_toolchain_file = os.path.join(build, 'cmake_toolchain_file')
+        with open(cmake_toolchain_file, 'w') as f:
+            __write_cmake_toolchain_file(f, toolchain)
+
+        configure.append('-DCMAKE_TOOLCHAIN_FILE=' + cmake_toolchain_file)
 
     if env is None:
         env = toolchain.env
