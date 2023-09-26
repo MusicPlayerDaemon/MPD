@@ -39,8 +39,6 @@ ver 0.24 (not yet released)
 * switch to C++20
   - GCC 10 or clang 11 (or newer) recommended
 * static partition configuration
-* Android
-  - require Android 7 or newer
 * Windows
   - build with libsamplerate
   - remove JACK DLL support
@@ -56,6 +54,8 @@ ver 0.23.14 (not yet released)
   - wasapi: fix problem setting volume
 * more libfmt 10 fixes
 * fix auto-detected systemd unit directory
+* Android
+  - require Android 7 or newer
 
 ver 0.23.13 (2023/05/22)
 * input

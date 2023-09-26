@@ -66,7 +66,8 @@ flac = AutotoolsProject(
 )
 
 zlib = ZlibProject(
-    'http://zlib.net/zlib-1.3.tar.xz',
+    ('http://zlib.net/zlib-1.3.tar.xz',
+     'https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.xz'),
     '8a9ba2898e1d0d774eca6ba5b4627a11e5588ba85c8851336eb38de4683050a7',
     'lib/libz.a',
 )
@@ -608,13 +609,15 @@ ffmpeg = FfmpegProject(
 )
 
 openssl = OpenSSLProject(
-    'https://www.openssl.org/source/openssl-3.1.2.tar.gz',
-    'a0ce69b8b97ea6a35b96875235aa453b966ba3cba8af2de23657d8b6767d6539',
+    ('https://www.openssl.org/source/openssl-3.1.3.tar.gz',
+     'https://artfiles.org/openssl.org/source/openssl-3.1.3.tar.gz'),
+    'f0316a2ebd89e7f2352976445458689f80302093788c466692fb2a188b2eacf6',
     'include/openssl/ossl_typ.h',
 )
 
 curl = CmakeProject(
-    'https://curl.se/download/curl-8.2.1.tar.xz',
+    ('https://curl.se/download/curl-8.2.1.tar.xz',
+     'https://github.com/curl/curl/releases/download/curl-8_2_1/curl-8.2.1.tar.xz'),
     'dd322f6bd0a20e6cebdfd388f69e98c3d183bed792cf4713c8a7ef498cba4894',
     'lib/libcurl.a',
     [

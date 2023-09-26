@@ -1,10 +1,17 @@
 import os
 import subprocess
 import platform
+from typing import Optional, Sequence, Union
 
 from build.project import Project
+from .toolchain import AnyToolchain
 
-def make_cross_file(toolchain):
+def __no_ccache(cmd: str) -> str:
+    if cmd.startswith('ccache '):
+        cmd = cmd[7:]
+    return cmd
+
+def make_cross_file(toolchain: AnyToolchain) -> str:
     if toolchain.is_windows:
         system = 'windows'
         windres = "windres = '%s'" % toolchain.windres
@@ -23,7 +30,7 @@ def make_cross_file(toolchain):
         cpu = 'arm64-v8a'
     else:
         cpu_family = 'x86'
-        if 'x86_64' in toolchain.arch:
+        if 'x86_64' in toolchain.host_triplet:
             cpu = 'x86_64'
         else:
             cpu = 'i686'
@@ -38,8 +45,8 @@ def make_cross_file(toolchain):
     with open(path, 'w') as f:
         f.write(f"""
 [binaries]
-c = '{toolchain.cc}'
-cpp = '{toolchain.cxx}'
+c = '{__no_ccache(toolchain.cc)}'
+cpp = '{__no_ccache(toolchain.cxx)}'
 ar = '{toolchain.ar}'
 strip = '{toolchain.strip}'
 pkgconfig = '{toolchain.pkg_config}'
@@ -56,7 +63,7 @@ pkgconfig = '{toolchain.pkg_config}'
 root = '{toolchain.install_prefix}'
 """)
 
-        if 'android' in toolchain.arch:
+        if toolchain.is_android:
             f.write("""
 # Keep Meson from executing Android-x86 test binariees
 needs_exe_wrapper = true
@@ -80,8 +87,7 @@ endian = '{endian}'
 """)
     return path
 
-def configure(toolchain, src, build, args=()):
-    cross_file = make_cross_file(toolchain)
+def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[]) -> None:
     configure = [
         'meson', 'setup',
         build, src,
@@ -91,27 +97,31 @@ def configure(toolchain, src, build, args=()):
         '--buildtype', 'plain',
 
         '--default-library=static',
-
-        '--cross-file', cross_file,
     ] + args
+
+    if toolchain.host_triplet is not None:
+        # cross-compiling: write a cross-file
+        cross_file = make_cross_file(toolchain)
+        configure.append(f'--cross-file={cross_file}')
 
     env = toolchain.env.copy()
 
     subprocess.check_call(configure, env=env)
 
 class MesonProject(Project):
-    def __init__(self, url, md5, installed, configure_args=[],
+    def __init__(self, url: Union[str, Sequence[str]], md5: str, installed: str,
+                 configure_args: list[str]=[],
                  **kwargs):
         Project.__init__(self, url, md5, installed, **kwargs)
         self.configure_args = configure_args
 
-    def configure(self, toolchain):
+    def configure(self, toolchain: AnyToolchain) -> str:
         src = self.unpack(toolchain)
         build = self.make_build_path(toolchain)
         configure(toolchain, src, build, self.configure_args)
         return build
 
-    def _build(self, toolchain):
+    def _build(self, toolchain: AnyToolchain) -> None:
         build = self.configure(toolchain)
         subprocess.check_call(['ninja', '-v', 'install'],
                               cwd=build, env=toolchain.env)
