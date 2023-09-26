@@ -1,6 +1,7 @@
 import os, shutil, subprocess
 
-def untar(tarball_path, parent_path, base, lazy=False):
+def untar(tarball_path: str, parent_path: str, base: str,
+          lazy: bool=False) -> str:
     path = os.path.join(parent_path, base)
     if lazy and os.path.isdir(path):
         return path
