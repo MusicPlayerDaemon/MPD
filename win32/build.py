@@ -34,7 +34,7 @@ arch_path = os.path.join(lib_path, host_arch)
 build_path = os.path.join(arch_path, 'build')
 root_path = os.path.join(arch_path, 'root')
 
-class CrossGccToolchain:
+class MingwToolchain:
     def __init__(self, top_path: str,
                  toolchain_path, arch, x64: bool,
                  tarball_path, src_path, build_path, install_prefix):
@@ -112,9 +112,9 @@ thirdparty_libs = [
 ]
 
 # build the third-party libraries
-toolchain = CrossGccToolchain(mpd_path,
-                              '/usr', host_arch, x64,
-                              tarball_path, src_path, build_path, root_path)
+toolchain = MingwToolchain(mpd_path,
+                           '/usr', host_arch, x64,
+                           tarball_path, src_path, build_path, root_path)
 
 for x in thirdparty_libs:
     if not x.is_installed(toolchain):
