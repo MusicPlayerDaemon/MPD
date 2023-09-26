@@ -54,7 +54,9 @@ class AutotoolsProject(MakeProject):
             '--host=' + toolchain.arch,
             '--prefix=' + toolchain.install_prefix,
             '--disable-silent-rules',
-        ] + self.configure_args
+        ]
+
+        configure.extend(self.configure_args)
 
         try:
             print(configure)
