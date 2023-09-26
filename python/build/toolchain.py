@@ -4,30 +4,26 @@ from typing import Union
 
 android_abis = {
     'armeabi-v7a': {
-        'arch': 'arm-linux-androideabi',
+        'arch': 'armv7a-linux-androideabi',
         'ndk_arch': 'arm',
-        'llvm_triple': 'armv7-linux-androideabi',
         'cflags': '-fpic -mfpu=neon -mfloat-abi=softfp',
     },
 
     'arm64-v8a': {
         'arch': 'aarch64-linux-android',
         'ndk_arch': 'arm64',
-        'llvm_triple': 'aarch64-linux-android',
         'cflags': '-fpic',
     },
 
     'x86': {
         'arch': 'i686-linux-android',
         'ndk_arch': 'x86',
-        'llvm_triple': 'i686-linux-android',
         'cflags': '-fPIC -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32',
     },
 
     'x86_64': {
         'arch': 'x86_64-linux-android',
         'ndk_arch': 'x86_64',
-        'llvm_triple': 'x86_64-linux-android',
         'cflags': '-fPIC -m64',
     },
 }
@@ -60,7 +56,7 @@ class AndroidNdkToolchain:
         self.install_prefix = install_prefix
 
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
-        llvm_triple = abi_info['llvm_triple'] + android_api_level
+        llvm_triple = arch + android_api_level
 
         common_flags = '-Os -g'
         common_flags += ' ' + abi_info['cflags']

@@ -36,7 +36,7 @@ class OpenSSLProject(MakeProject):
             # to know where the SDK is, but our own build scripts
             # prepared everything already to look like a regular Linux
             # build
-            'arm-linux-androideabi': 'linux-generic32',
+            'armv7a-linux-androideabi': 'linux-generic32',
             'aarch64-linux-android': 'linux-aarch64',
             'i686-linux-android': 'linux-x86-clang',
             'x86_64-linux-android': 'linux-x86_64-clang',
