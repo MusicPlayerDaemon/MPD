@@ -12,7 +12,7 @@ EncoderToOutputStream(OutputStream &os, Encoder &encoder)
 		/* read from the encoder */
 
 		std::byte buffer[32768];
-		const auto r = encoder.Read(std::span{buffer});
+		const auto r = encoder.Read(buffer);
 		if (r.empty())
 			return;
 
