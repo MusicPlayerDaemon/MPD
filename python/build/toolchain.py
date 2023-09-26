@@ -91,6 +91,8 @@ class AndroidNdkToolchain:
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
         self.is_aarch64 = ndk_arch == 'arm64'
         self.is_windows = False
+        self.is_android = True
+        self.is_darwin = False
 
         libstdcxx_flags = ''
         libstdcxx_cxxflags = ''
@@ -162,6 +164,8 @@ class MingwToolchain:
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
         self.is_aarch64 = arch == 'aarch64'
         self.is_windows = 'mingw32' in arch
+        self.is_android = False
+        self.is_darwin = False
 
         self.env = dict(os.environ)
 

@@ -15,7 +15,7 @@ def __write_cmake_compiler(f: TextIO, language: str, compiler: str) -> None:
     print(f'set(CMAKE_{language}_COMPILER {compiler})', file=f)
 
 def __write_cmake_toolchain_file(f: TextIO, toolchain: AnyToolchain) -> None:
-    if '-darwin' in toolchain.actual_arch:
+    if toolchain.is_darwin:
         cmake_system_name = 'Darwin'
     elif toolchain.is_windows:
         cmake_system_name = 'Windows'
@@ -65,7 +65,7 @@ def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[],
     # looking for libraries on the build host (TODO: fix this
     # properly); but we must not do that on Android because the NDK
     # has a sysroot already
-    if '-android' not in toolchain.actual_arch and '-darwin' not in toolchain.actual_arch:
+    if not toolchain.is_android and not toolchain.is_darwin:
         cross_args.append('-DCMAKE_SYSROOT=' + toolchain.install_prefix)
 
     os.makedirs(build, exist_ok=True)

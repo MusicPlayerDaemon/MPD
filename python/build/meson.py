@@ -63,7 +63,7 @@ pkgconfig = '{toolchain.pkg_config}'
 root = '{toolchain.install_prefix}'
 """)
 
-        if 'android' in toolchain.arch:
+        if toolchain.is_android:
             f.write("""
 # Keep Meson from executing Android-x86 test binariees
 needs_exe_wrapper = true
