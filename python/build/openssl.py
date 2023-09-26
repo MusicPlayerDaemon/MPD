@@ -41,12 +41,16 @@ class OpenSSLProject(MakeProject):
             'i686-linux-android': 'linux-x86-clang',
             'x86_64-linux-android': 'linux-x86_64-clang',
 
-            # Kobo
+            # generic Linux
             'arm-linux-gnueabihf': 'linux-generic32',
 
             # Windows
             'i686-w64-mingw32': 'mingw',
             'x86_64-w64-mingw32': 'mingw64',
+
+            # Apple
+            'x86_64-apple-darwin': 'darwin64-x86_64-cc',
+            'aarch64-apple-darwin': 'darwin64-arm64-cc',
         }
 
         openssl_arch = openssl_archs[toolchain.arch]
