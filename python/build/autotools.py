@@ -58,10 +58,12 @@ class AutotoolsProject(MakeProject):
             'ARFLAGS=' + toolchain.arflags,
             'RANLIB=' + toolchain.ranlib,
             'STRIP=' + toolchain.strip,
-            '--host=' + toolchain.host_triplet,
             '--prefix=' + toolchain.install_prefix,
             '--disable-silent-rules',
         ]
+
+        if toolchain.host_triplet is not None:
+            configure.append('--host=' + toolchain.host_triplet)
 
         configure.extend(self.configure_args)
 
