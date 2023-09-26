@@ -233,14 +233,6 @@ struct DecoderPlugin {
 			: false;
 	}
 
-	/**
-	 * return "virtual" tracks in a container
-	 */
-	template<typename P>
-	char *ContainerScan(P path, const unsigned int tnum) const {
-		return container_scan(path, tnum);
-	}
-
 	[[gnu::pure]]
 	bool SupportsUri(const char *uri) const noexcept;
 
