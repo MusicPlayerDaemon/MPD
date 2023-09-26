@@ -58,7 +58,7 @@ class AutotoolsProject(MakeProject):
             'ARFLAGS=' + toolchain.arflags,
             'RANLIB=' + toolchain.ranlib,
             'STRIP=' + toolchain.strip,
-            '--host=' + toolchain.arch,
+            '--host=' + toolchain.host_triplet,
             '--prefix=' + toolchain.install_prefix,
             '--disable-silent-rules',
         ]

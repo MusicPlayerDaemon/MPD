@@ -53,7 +53,7 @@ class OpenSSLProject(MakeProject):
             'aarch64-apple-darwin': 'darwin64-arm64-cc',
         }
 
-        openssl_arch = openssl_archs[toolchain.arch]
+        openssl_arch = openssl_archs[toolchain.host_triplet]
 
         configure = [
             './Configure',

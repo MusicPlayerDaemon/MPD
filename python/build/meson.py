@@ -30,7 +30,7 @@ def make_cross_file(toolchain: AnyToolchain) -> str:
         cpu = 'arm64-v8a'
     else:
         cpu_family = 'x86'
-        if 'x86_64' in toolchain.arch:
+        if 'x86_64' in toolchain.host_triplet:
             cpu = 'x86_64'
         else:
             cpu = 'i686'

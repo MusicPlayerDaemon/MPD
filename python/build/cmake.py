@@ -24,10 +24,10 @@ def __write_cmake_toolchain_file(f: TextIO, toolchain: AnyToolchain) -> None:
 
     f.write(f"""
 set(CMAKE_SYSTEM_NAME {cmake_system_name})
-set(CMAKE_SYSTEM_PROCESSOR {toolchain.actual_arch.split('-', 1)[0]})
+set(CMAKE_SYSTEM_PROCESSOR {toolchain.host_triplet.split('-', 1)[0]})
 
-set(CMAKE_C_COMPILER_TARGET {toolchain.actual_arch})
-set(CMAKE_CXX_COMPILER_TARGET {toolchain.actual_arch})
+set(CMAKE_C_COMPILER_TARGET {toolchain.host_triplet})
+set(CMAKE_CXX_COMPILER_TARGET {toolchain.host_triplet})
 
 set(CMAKE_C_FLAGS_INIT "{toolchain.cflags} {toolchain.cppflags}")
 set(CMAKE_CXX_FLAGS_INIT "{toolchain.cxxflags} {toolchain.cppflags}")

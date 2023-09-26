@@ -38,9 +38,9 @@ class AndroidNdkToolchain:
 
         # select the NDK target
         abi_info = android_abis[android_abi]
-        arch = abi_info['arch']
+        host_triplet = abi_info['arch']
 
-        arch_path = os.path.join(lib_path, arch)
+        arch_path = os.path.join(lib_path, host_triplet)
 
         self.tarball_path = tarball_path
         self.src_path = src_path
@@ -51,12 +51,11 @@ class AndroidNdkToolchain:
 
         install_prefix = os.path.join(arch_path, 'root')
 
-        self.arch = arch
-        self.actual_arch = arch
+        self.host_triplet = host_triplet
         self.install_prefix = install_prefix
 
         llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
-        llvm_triple = arch + android_api_level
+        llvm_triple = host_triplet + android_api_level
 
         common_flags = '-Os -g'
         common_flags += ' ' + abi_info['cflags']
@@ -118,24 +117,23 @@ class AndroidNdkToolchain:
 
 class MingwToolchain:
     def __init__(self, top_path: str,
-                 toolchain_path, arch, x64: bool,
+                 toolchain_path, host_triplet, x64: bool,
                  tarball_path, src_path, build_path, install_prefix):
-        self.arch = arch
-        self.actual_arch = arch
+        self.host_triplet = host_triplet
         self.tarball_path = tarball_path
         self.src_path = src_path
         self.build_path = build_path
         self.install_prefix = install_prefix
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
-        self.cc = os.path.join(toolchain_bin, arch + '-gcc')
-        self.cxx = os.path.join(toolchain_bin, arch + '-g++')
-        self.ar = os.path.join(toolchain_bin, arch + '-ar')
+        self.cc = os.path.join(toolchain_bin, host_triplet + '-gcc')
+        self.cxx = os.path.join(toolchain_bin, host_triplet + '-g++')
+        self.ar = os.path.join(toolchain_bin, host_triplet + '-ar')
         self.arflags = 'rcs'
-        self.ranlib = os.path.join(toolchain_bin, arch + '-ranlib')
-        self.nm = os.path.join(toolchain_bin, arch + '-nm')
-        self.strip = os.path.join(toolchain_bin, arch + '-strip')
-        self.windres = os.path.join(toolchain_bin, arch + '-windres')
+        self.ranlib = os.path.join(toolchain_bin, host_triplet + '-ranlib')
+        self.nm = os.path.join(toolchain_bin, host_triplet + '-nm')
+        self.strip = os.path.join(toolchain_bin, host_triplet + '-strip')
+        self.windres = os.path.join(toolchain_bin, host_triplet + '-windres')
 
         common_flags = '-O2 -g'
 
@@ -156,10 +154,10 @@ class MingwToolchain:
         # enable it.
         self.cppflags += ' -D_FORTIFY_SOURCE=0'
 
-        self.is_arm = arch.startswith('arm')
+        self.is_arm = host_triplet.startswith('arm')
         self.is_armv7 = self.is_arm and 'armv7' in self.cflags
-        self.is_aarch64 = arch == 'aarch64'
-        self.is_windows = 'mingw32' in arch
+        self.is_aarch64 = host_triplet == 'aarch64'
+        self.is_windows = 'mingw32' in host_triplet
         self.is_android = False
         self.is_darwin = False
 
