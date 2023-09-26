@@ -50,10 +50,6 @@ android_abis = {
     },
 }
 
-# select the NDK target
-abi_info = android_abis[android_abi]
-arch = abi_info['arch']
-
 # the path to the MPD sources
 mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..'))
 sys.path[0] = os.path.join(mpd_path, 'python')
@@ -61,20 +57,25 @@ sys.path[0] = os.path.join(mpd_path, 'python')
 # output directories
 from build.dirs import lib_path, tarball_path, src_path
 
-arch_path = os.path.join(lib_path, arch)
-build_path = os.path.join(arch_path, 'build')
-
-# build host configuration
-build_arch = 'linux-x86_64'
-
 # set up the NDK toolchain
 
 class AndroidNdkToolchain:
-    def __init__(self, tarball_path, src_path, build_path,
+    def __init__(self, top_path: str, lib_path: str,
+                 tarball_path: str, src_path: str,
+                 ndk_path: str, android_abi: str,
                  use_cxx):
+        # build host configuration
+        build_arch = 'linux-x86_64'
+
+        # select the NDK target
+        abi_info = android_abis[android_abi]
+        arch = abi_info['arch']
+
+        arch_path = os.path.join(lib_path, arch)
+
         self.tarball_path = tarball_path
         self.src_path = src_path
-        self.build_path = build_path
+        self.build_path = os.path.join(arch_path, 'build')
 
         ndk_arch = abi_info['ndk_arch']
         android_api_level = '24'
@@ -141,7 +142,7 @@ class AndroidNdkToolchain:
         import shutil
         bin_dir = os.path.join(install_prefix, 'bin')
         os.makedirs(bin_dir, exist_ok=True)
-        self.pkg_config = shutil.copy(os.path.join(mpd_path, 'build', 'pkg-config.sh'),
+        self.pkg_config = shutil.copy(os.path.join(top_path, 'build', 'pkg-config.sh'),
                                       os.path.join(bin_dir, 'pkg-config'))
         self.env['PKG_CONFIG'] = self.pkg_config
 
@@ -165,13 +166,17 @@ thirdparty_libs = [
 
 # build the third-party libraries
 for x in thirdparty_libs:
-    toolchain = AndroidNdkToolchain(tarball_path, src_path, build_path,
+    toolchain = AndroidNdkToolchain(mpd_path, lib_path,
+                                    tarball_path, src_path,
+                                    ndk_path, android_abi,
                                     use_cxx=x.use_cxx)
     if not x.is_installed(toolchain):
         x.build(toolchain)
 
 # configure and build MPD
-toolchain = AndroidNdkToolchain(tarball_path, src_path, build_path,
+toolchain = AndroidNdkToolchain(mpd_path, lib_path,
+                                tarball_path, src_path,
+                                ndk_path, android_abi,
                                 use_cxx=True)
 
 configure_args += [
