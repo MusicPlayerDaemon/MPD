@@ -1,5 +1,6 @@
 import os.path
 import shutil
+from typing import Union
 
 android_abis = {
     'armeabi-v7a': {
@@ -172,3 +173,5 @@ class MingwToolchain:
         self.pkg_config = shutil.copy(os.path.join(top_path, 'build', 'pkg-config.sh'),
                                       os.path.join(bin_dir, 'pkg-config'))
         self.env['PKG_CONFIG'] = self.pkg_config
+
+AnyToolchain = Union[AndroidNdkToolchain, MingwToolchain]

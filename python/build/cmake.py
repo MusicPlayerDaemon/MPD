@@ -5,6 +5,7 @@ from typing import Optional, TextIO
 from collections.abc import Mapping
 
 from build.project import Project
+from .toolchain import AnyToolchain
 
 def __write_cmake_compiler(f: TextIO, language: str, compiler: str) -> None:
     s = compiler.split(' ', 1)
@@ -13,7 +14,7 @@ def __write_cmake_compiler(f: TextIO, language: str, compiler: str) -> None:
         compiler = s[1]
     print(f'set(CMAKE_{language}_COMPILER {compiler})', file=f)
 
-def __write_cmake_toolchain_file(f: TextIO, toolchain) -> None:
+def __write_cmake_toolchain_file(f: TextIO, toolchain: AnyToolchain) -> None:
     if '-darwin' in toolchain.actual_arch:
         cmake_system_name = 'Darwin'
     elif toolchain.is_windows:
@@ -54,7 +55,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 """)
 
-def configure(toolchain, src: str, build: str, args: list[str]=[], env: Optional[Mapping[str, str]]=None) -> None:
+def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[], env: Optional[Mapping[str, str]]=None) -> None:
     cross_args = []
 
     if toolchain.is_windows:
@@ -103,7 +104,7 @@ class CmakeProject(Project):
         self.windows_configure_args = windows_configure_args
         self.env = env
 
-    def configure(self, toolchain) -> str:
+    def configure(self, toolchain: AnyToolchain) -> str:
         src = self.unpack(toolchain)
         build = self.make_build_path(toolchain)
         configure_args = self.configure_args
@@ -112,7 +113,7 @@ class CmakeProject(Project):
         configure(toolchain, src, build, configure_args, self.env)
         return build
 
-    def _build(self, toolchain) -> None:
+    def _build(self, toolchain: AnyToolchain) -> None:
         build = self.configure(toolchain)
         subprocess.check_call(['ninja', '-v', 'install'],
                               cwd=build, env=toolchain.env)

@@ -2,6 +2,7 @@ import os.path, subprocess, sys
 from typing import Collection, Iterable, Optional
 
 from build.makeproject import MakeProject
+from .toolchain import AnyToolchain
 
 class AutotoolsProject(MakeProject):
     def __init__(self, url: str, md5: str, installed: str,
@@ -22,7 +23,7 @@ class AutotoolsProject(MakeProject):
         self.libs = libs
         self.subdirs = subdirs
 
-    def configure(self, toolchain) -> str:
+    def configure(self, toolchain: AnyToolchain) -> str:
         src = self.unpack(toolchain)
         if self.autogen:
             if sys.platform == 'darwin':
@@ -70,7 +71,7 @@ class AutotoolsProject(MakeProject):
 
         return build
 
-    def _build(self, toolchain) -> None:
+    def _build(self, toolchain: AnyToolchain) -> None:
         build = self.configure(toolchain)
         if self.subdirs is not None:
             for subdir in self.subdirs:
