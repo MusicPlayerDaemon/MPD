@@ -1,6 +1,7 @@
-from build.verify import verify_file_digest
 import os
 import urllib.request
+
+from .verify import verify_file_digest
 
 def download_and_verify(url, md5, parent_path):
     """Download a file, verify its MD5 checksum and return the local path."""
