@@ -170,13 +170,13 @@ dump_input_stream(InputStream &is, FileDescriptor out,
 			}
 		}
 
-		char buffer[MAX_CHUNK_SIZE];
+		std::byte buffer[MAX_CHUNK_SIZE];
 		assert(chunk_size <= sizeof(buffer));
 		size_t num_read = is.Read(lock, buffer, chunk_size);
 		if (num_read == 0)
 			break;
 
-		out.FullWrite(buffer, num_read);
+		out.FullWrite({buffer, num_read});
 	}
 
 	is.Check();

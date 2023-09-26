@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <span>
 #include <utility>
 
 #include <unistd.h>
@@ -224,7 +225,7 @@ public:
 	 * Read until all of the given buffer has been filled.  Throws
 	 * on error.
 	 */
-	void FullRead(void *buffer, std::size_t length) const;
+	void FullRead(std::span<std::byte> dest) const;
 
 	ssize_t Write(const void *buffer, std::size_t length) const noexcept {
 		return ::write(fd, buffer, length);
@@ -234,7 +235,7 @@ public:
 	 * Write until all of the given buffer has been written.
 	 * Throws on error.
 	 */
-	void FullWrite(const void *buffer, std::size_t length) const;
+	void FullWrite(std::span<const std::byte> src) const;
 
 #ifndef _WIN32
 	int Poll(short events, int timeout) const noexcept;

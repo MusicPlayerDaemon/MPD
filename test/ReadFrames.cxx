@@ -28,7 +28,7 @@ ReadFrames(FileDescriptor fd, void *_buffer, std::size_t size,
 	const size_t modulo = nbytes % frame_size;
 	if (modulo > 0) {
 		size_t rest = frame_size - modulo;
-		fd.FullRead(buffer + nbytes, rest);
+		fd.FullRead({(std::byte *)buffer + nbytes, rest});
 		nbytes += rest;
 	}
 

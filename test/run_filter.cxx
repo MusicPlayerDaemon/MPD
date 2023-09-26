@@ -87,14 +87,14 @@ try {
 			break;
 
 		auto dest = filter->FilterPCM(std::span{buffer}.first(nbytes));
-		output_fd.FullWrite(dest.data(), dest.size());
+		output_fd.FullWrite(dest);
 	}
 
 	while (true) {
 		auto dest = filter->Flush();
 		if (dest.data() == nullptr)
 			break;
-		output_fd.FullWrite(dest.data(), dest.size());
+		output_fd.FullWrite(dest);
 	}
 
 	/* cleanup and exit */
