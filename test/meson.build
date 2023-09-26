@@ -134,6 +134,7 @@ executable(
   'run_resolver.cxx',
   include_directories: inc,
   dependencies: [
+    fmt_dep,
     net_dep,
     util_dep,
   ],
