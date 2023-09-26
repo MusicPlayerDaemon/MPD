@@ -6,6 +6,11 @@ from typing import Optional, Sequence, Union
 from build.project import Project
 from .toolchain import AnyToolchain
 
+def __no_ccache(cmd: str) -> str:
+    if cmd.startswith('ccache '):
+        cmd = cmd[7:]
+    return cmd
+
 def make_cross_file(toolchain: AnyToolchain) -> str:
     if toolchain.is_windows:
         system = 'windows'
@@ -40,8 +45,8 @@ def make_cross_file(toolchain: AnyToolchain) -> str:
     with open(path, 'w') as f:
         f.write(f"""
 [binaries]
-c = '{toolchain.cc}'
-cpp = '{toolchain.cxx}'
+c = '{__no_ccache(toolchain.cc)}'
+cpp = '{__no_ccache(toolchain.cxx)}'
 ar = '{toolchain.ar}'
 strip = '{toolchain.strip}'
 pkgconfig = '{toolchain.pkg_config}'
