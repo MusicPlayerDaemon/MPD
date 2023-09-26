@@ -55,13 +55,18 @@ class OpenSSLProject(MakeProject):
 
         openssl_arch = openssl_archs[toolchain.arch]
 
-        subprocess.check_call(['./Configure',
-                               'no-shared',
-                               'no-module', 'no-engine', 'no-static-engine',
-                               'no-async',
-                               'no-tests',
-                               'no-asm', # "asm" causes build failures on Windows
-                               openssl_arch,
-                               '--prefix=' + toolchain.install_prefix],
-                              cwd=src, env=toolchain.env)
+        configure = [
+            './Configure',
+            'no-shared',
+            'no-module',
+            'no-engine',
+            'no-static-engine',
+            'no-async',
+            'no-tests',
+            'no-asm', # "asm" causes build failures on Windows
+            openssl_arch,
+            '--prefix=' + toolchain.install_prefix,
+        ]
+
+        subprocess.check_call(configure, cwd=src, env=toolchain.env)
         self.build_make(toolchain, src)
