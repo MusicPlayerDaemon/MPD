@@ -63,10 +63,13 @@ class OpenSSLProject(MakeProject):
             'no-static-engine',
             'no-async',
             'no-tests',
-            'no-asm', # "asm" causes build failures on Windows
             openssl_arch,
             '--prefix=' + toolchain.install_prefix,
         ]
+
+        if toolchain.is_windows:
+            # workaround for build failures
+            configure.append('no-asm')
 
         subprocess.check_call(configure, cwd=src, env=toolchain.env)
         self.build_make(toolchain, src)
