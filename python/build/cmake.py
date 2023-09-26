@@ -1,7 +1,7 @@
 import os
 import re
 import subprocess
-from typing import Optional, TextIO
+from typing import Optional, Sequence, TextIO, Union
 from collections.abc import Mapping
 
 from build.project import Project
@@ -94,7 +94,7 @@ def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[],
     subprocess.check_call(configure, env=env, cwd=build)
 
 class CmakeProject(Project):
-    def __init__(self, url: str, md5: str, installed: str,
+    def __init__(self, url: Union[str, Sequence[str]], md5: str, installed: str,
                  configure_args: list[str]=[],
                  windows_configure_args: list[str]=[],
                  env: Optional[Mapping[str, str]]=None,

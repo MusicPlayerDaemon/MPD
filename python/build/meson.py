@@ -1,7 +1,7 @@
 import os
 import subprocess
 import platform
-from typing import Optional
+from typing import Optional, Sequence, Union
 
 from build.project import Project
 from .toolchain import AnyToolchain
@@ -105,7 +105,7 @@ def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[])
     subprocess.check_call(configure, env=env)
 
 class MesonProject(Project):
-    def __init__(self, url: str, md5: str, installed: str,
+    def __init__(self, url: Union[str, Sequence[str]], md5: str, installed: str,
                  configure_args: list[str]=[],
                  **kwargs):
         Project.__init__(self, url, md5, installed, **kwargs)

@@ -1,11 +1,11 @@
 import os.path, subprocess, sys
-from typing import Collection, Iterable, Optional
+from typing import Collection, Iterable, Optional, Sequence, Union
 
 from build.makeproject import MakeProject
 from .toolchain import AnyToolchain
 
 class AutotoolsProject(MakeProject):
-    def __init__(self, url: str, md5: str, installed: str,
+    def __init__(self, url: Union[str, Sequence[str]], md5: str, installed: str,
                  configure_args: Iterable[str]=[],
                  autogen: bool=False,
                  autoreconf: bool=False,

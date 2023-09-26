@@ -1,21 +1,21 @@
 import os, shutil
 import re
-from typing import cast, BinaryIO, Optional
+from typing import cast, BinaryIO, Optional, Sequence, Union
 
-from build.download import download_and_verify
+from build.download import download_basename, download_and_verify
 from build.tar import untar
 from build.quilt import push_all
 from .toolchain import AnyToolchain
 
 class Project:
-    def __init__(self, url: str, md5: str, installed: str,
+    def __init__(self, url: Union[str, Sequence[str]], md5: str, installed: str,
                  name: Optional[str]=None, version: Optional[str]=None,
                  base: Optional[str]=None,
                  patches: Optional[str]=None,
                  edits=None,
                  use_cxx: bool=False):
         if base is None:
-            basename = os.path.basename(url)
+            basename = download_basename(url)
             m = re.match(r'^(.+)\.(tar(\.(gz|bz2|xz|lzma))?|zip)$', basename)
             if not m: raise RuntimeError('Could not identify tarball name: ' + basename)
             self.base = m.group(1)
