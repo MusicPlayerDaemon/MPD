@@ -60,7 +60,6 @@ sys.path[0] = os.path.join(mpd_path, 'python')
 
 # output directories
 from build.dirs import lib_path, tarball_path, src_path
-from build.meson import configure as run_meson
 
 arch_path = os.path.join(lib_path, arch)
 build_path = os.path.join(arch_path, 'build')
