@@ -1,7 +1,7 @@
 import os
 import re
 import subprocess
-from typing import Optional, Sequence, TextIO, Union
+from typing import cast, Optional, Sequence, TextIO, Union
 from collections.abc import Mapping
 
 from build.project import Project
@@ -59,7 +59,7 @@ def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[],
     cross_args = []
 
     if toolchain.is_windows:
-        cross_args.append('-DCMAKE_RC_COMPILER=' + toolchain.windres)
+        cross_args.append('-DCMAKE_RC_COMPILER=' + cast(str, toolchain.windres))
 
     # Several targets need a sysroot to prevent pkg-config from
     # looking for libraries on the build host (TODO: fix this
