@@ -6,10 +6,10 @@
 
 #include <stdexcept>
 
-BufferedSocket::ssize_t
-BufferedSocket::DirectRead(void *data, size_t length) noexcept
+inline BufferedSocket::ssize_t
+BufferedSocket::DirectRead(std::span<std::byte> dest) noexcept
 {
-	const auto nbytes = GetSocket().Read((char *)data, length);
+	const auto nbytes = GetSocket().Read((char *)dest.data(), dest.size());
 	if (nbytes > 0) [[likely]]
 		return nbytes;
 
@@ -37,7 +37,7 @@ BufferedSocket::ReadToBuffer() noexcept
 	const auto buffer = input.Write();
 	assert(!buffer.empty());
 
-	const auto nbytes = DirectRead(buffer.data(), buffer.size());
+	const auto nbytes = DirectRead(buffer);
 	if (nbytes > 0)
 		input.Append(nbytes);
 
