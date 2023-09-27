@@ -8,7 +8,7 @@
 #include "util/StaticFifoBuffer.hxx"
 
 #include <cassert>
-#include <cstdint>
+#include <cstddef>
 #include <exception>
 #include <type_traits>
 
@@ -18,7 +18,7 @@ class EventLoop;
  * A #SocketEvent specialization that adds an input buffer.
  */
 class BufferedSocket {
-	StaticFifoBuffer<uint8_t, 8192> input;
+	StaticFifoBuffer<std::byte, 8192> input;
 
 protected:
 	SocketEvent event;
