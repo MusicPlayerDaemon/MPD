@@ -8,10 +8,10 @@
 
 #include <string.h>
 
-FullyBufferedSocket::ssize_t
-FullyBufferedSocket::DirectWrite(const void *data, size_t length) noexcept
+inline FullyBufferedSocket::ssize_t
+FullyBufferedSocket::DirectWrite(std::span<const std::byte> src) noexcept
 {
-	const auto nbytes = GetSocket().Write((const char *)data, length);
+	const auto nbytes = GetSocket().Write((const char *)src.data(), src.size());
 	if (nbytes < 0) [[unlikely]] {
 		const auto code = GetSocketError();
 		if (IsSocketErrorSendWouldBlock(code))
@@ -41,7 +41,7 @@ FullyBufferedSocket::Flush() noexcept
 		return true;
 	}
 
-	auto nbytes = DirectWrite(data.data(), data.size());
+	auto nbytes = DirectWrite(data);
 	if (nbytes <= 0) [[unlikely]]
 		return nbytes == 0;
 

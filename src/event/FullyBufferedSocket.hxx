@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_FULLY_BUFFERED_SOCKET_HXX
-#define MPD_FULLY_BUFFERED_SOCKET_HXX
+#pragma once
 
 #include "BufferedSocket.hxx"
 #include "IdleEvent.hxx"
 #include "util/PeakBuffer.hxx"
+
+#include <span>
 
 /**
  * A #BufferedSocket specialization that adds an output buffer.
@@ -42,7 +43,7 @@ private:
 	 * socket isn't ready for writing, -1 on error (the socket has
 	 * been closed and probably destructed)
 	 */
-	ssize_t DirectWrite(const void *data, size_t length) noexcept;
+	ssize_t DirectWrite(std::span<const std::byte> src) noexcept;
 
 protected:
 	/**
@@ -62,5 +63,3 @@ protected:
 	/* virtual methods from class BufferedSocket */
 	void OnSocketReady(unsigned flags) noexcept override;
 };
-
-#endif
