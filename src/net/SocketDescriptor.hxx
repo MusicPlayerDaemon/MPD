@@ -10,6 +10,8 @@
 #include "io/FileDescriptor.hxx"
 #endif
 
+#include <cstddef>
+#include <span>
 #include <type_traits>
 #include <utility>
 
@@ -260,8 +262,23 @@ public:
 	[[gnu::pure]]
 	StaticSocketAddress GetPeerAddress() const noexcept;
 
+	/**
+	 * Wrapper for recv().
+	 */
+	ssize_t Receive(std::span<std::byte> dest, int flags=0) const noexcept;
+
+	/**
+	 * Wrapper for send().
+	 *
+	 * MSG_NOSIGNAL is implicitly added (if available).
+	 */
+	ssize_t Send(std::span<const std::byte> src, int flags=0) const noexcept;
+
 	ssize_t Read(void *buffer, std::size_t length) const noexcept;
-	ssize_t Write(const void *buffer, std::size_t length) const noexcept;
+
+	ssize_t Write(const void *buffer, std::size_t length) const noexcept {
+		return Send({static_cast<const std::byte *>(buffer), length});
+	}
 
 #ifdef _WIN32
 	int WaitReadable(int timeout_ms) const noexcept;

@@ -404,6 +404,22 @@ SocketDescriptor::GetPeerAddress() const noexcept
 }
 
 ssize_t
+SocketDescriptor::Receive(std::span<std::byte> dest, int flags) const noexcept
+{
+	return ::recv(Get(), (char *)dest.data(), dest.size(), flags);
+}
+
+ssize_t
+SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
+{
+#ifdef __linux__
+	flags |= MSG_NOSIGNAL;
+#endif
+
+	return ::send(Get(), (const char *)src.data(), src.size(), flags);
+}
+
+ssize_t
 SocketDescriptor::Read(void *buffer, std::size_t length) const noexcept
 {
 	int flags = 0;
@@ -411,18 +427,7 @@ SocketDescriptor::Read(void *buffer, std::size_t length) const noexcept
 	flags |= MSG_DONTWAIT;
 #endif
 
-	return ::recv(Get(), (char *)buffer, length, flags);
-}
-
-ssize_t
-SocketDescriptor::Write(const void *buffer, std::size_t length) const noexcept
-{
-	int flags = 0;
-#ifdef __linux__
-	flags |= MSG_NOSIGNAL;
-#endif
-
-	return ::send(Get(), (const char *)buffer, length, flags);
+	return Receive({static_cast<std::byte *>(buffer), length}, flags);
 }
 
 #ifdef _WIN32
