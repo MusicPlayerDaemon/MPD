@@ -64,8 +64,7 @@ try {
 	static_assert(sizeof(buffer) >= sizeof(struct inotify_event) + NAME_MAX + 1,
 		      "inotify buffer too small");
 
-	ssize_t nbytes = event.GetFileDescriptor().Read(buffer.data(),
-							buffer.size());
+	ssize_t nbytes = event.GetFileDescriptor().Read(buffer);
 	if (nbytes <= 0) [[unlikely]] {
 		if (nbytes == 0)
 			throw std::runtime_error{"EOF from inotify"};

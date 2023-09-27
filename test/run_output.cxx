@@ -124,7 +124,7 @@ RunOutput(AudioOutput &ao, AudioFormat audio_format,
 			const auto dest = buffer.Write();
 			assert(!dest.empty());
 
-			ssize_t nbytes = in_fd.Read(dest.data(), dest.size());
+			ssize_t nbytes = in_fd.Read(dest);
 			if (nbytes <= 0)
 				break;
 

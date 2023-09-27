@@ -671,7 +671,7 @@ OssOutput::Play(std::span<const std::byte> src)
 		return src.size();
 
 	while (true) {
-		const ssize_t ret = fd.Write(e.data(), e.size());
+		const ssize_t ret = fd.Write(e);
 		if (ret > 0)
 			return pcm_export->CalcInputSize(ret);
 

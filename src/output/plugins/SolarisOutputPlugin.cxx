@@ -125,7 +125,7 @@ SolarisOutput::Close() noexcept
 std::size_t
 SolarisOutput::Play(std::span<const std::byte> src)
 {
-	ssize_t nbytes = fd.Write(src.data(), src.size());
+	ssize_t nbytes = fd.Write(src);
 	if (nbytes <= 0)
 		throw MakeErrno("Write failed");
 
