@@ -11,12 +11,15 @@
 #include "lib/fmt/SocketAddressFormatter.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
+#include "util/SpanCast.hxx"
 #include "Log.hxx"
 #include "Version.h"
 
 #include <cassert>
 
-static constexpr char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
+using std::string_view_literals::operator""sv;
+
+static constexpr auto GREETING = "OK MPD " PROTOCOL_VERSION "\n"sv;
 
 Client::Client(EventLoop &_loop, Partition &_partition,
 	       UniqueSocketDescriptor _fd,
@@ -49,7 +52,7 @@ client_new(EventLoop &loop, Partition &partition,
 		return;
 	}
 
-	(void)fd.Write(GREETING, sizeof(GREETING) - 1);
+	(void)fd.WriteNoWait(AsBytes(GREETING));
 
 	const unsigned num = next_client_num++;
 	auto *client = new Client(loop, partition, std::move(fd), uid,

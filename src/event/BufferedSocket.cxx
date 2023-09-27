@@ -9,7 +9,7 @@
 inline BufferedSocket::ssize_t
 BufferedSocket::DirectRead(std::span<std::byte> dest) noexcept
 {
-	const auto nbytes = GetSocket().Read((char *)dest.data(), dest.size());
+	const auto nbytes = GetSocket().ReadNoWait(dest);
 	if (nbytes > 0) [[likely]]
 		return nbytes;
 

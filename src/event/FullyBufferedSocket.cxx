@@ -11,7 +11,7 @@
 inline FullyBufferedSocket::ssize_t
 FullyBufferedSocket::DirectWrite(std::span<const std::byte> src) noexcept
 {
-	const auto nbytes = GetSocket().Write((const char *)src.data(), src.size());
+	const auto nbytes = GetSocket().WriteNoWait(src);
 	if (nbytes < 0) [[unlikely]] {
 		const auto code = GetSocketError();
 		if (IsSocketErrorSendWouldBlock(code))

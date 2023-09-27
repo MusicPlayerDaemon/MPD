@@ -9,6 +9,7 @@
 #include "IcyMetaDataServer.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "util/SpanCast.hxx"
 #include "Log.hxx"
 
 #include <fmt/core.h>
@@ -150,7 +151,7 @@ HttpdClient::SendResponse() noexcept
 		response = allocated.c_str();
 	}
 
-	ssize_t nbytes = GetSocket().Write(response, strlen(response));
+	ssize_t nbytes = GetSocket().WriteNoWait(AsBytes(std::string_view{response}));
 	if (nbytes < 0) [[unlikely]] {
 		const SocketErrorMessage msg;
 		FmtWarning(httpd_output_domain,
@@ -207,8 +208,7 @@ HttpdClient::TryWritePage(const Page &page, size_t position) noexcept
 {
 	assert(position < page.size());
 
-	return GetSocket().Write(page.data() + position,
-				 page.size() - position);
+	return GetSocket().WriteNoWait(std::span<const std::byte>{page}.subspan(position));
 }
 
 ssize_t
@@ -216,7 +216,7 @@ HttpdClient::TryWritePageN(const Page &page,
 			   size_t position, ssize_t n) noexcept
 {
 	return n >= 0
-		? GetSocket().Write(page.data() + position, n)
+		? GetSocket().WriteNoWait({page.data() + position, (std::size_t)n})
 		: TryWritePage(page, position);
 }
 
@@ -283,9 +283,9 @@ HttpdClient::TryWrite() noexcept
 				metadata_sent = true;
 			}
 		} else {
-			char empty_data = 0;
+			static constexpr std::byte empty_data[1]{};
 
-			ssize_t nbytes = GetSocket().Write(&empty_data, 1);
+			ssize_t nbytes = GetSocket().Write(empty_data);
 			if (nbytes < 0) {
 				auto e = GetSocketError();
 				if (IsSocketErrorSendWouldBlock(e))

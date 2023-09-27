@@ -420,14 +420,25 @@ SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
 }
 
 ssize_t
-SocketDescriptor::Read(void *buffer, std::size_t length) const noexcept
+SocketDescriptor::ReadNoWait(std::span<std::byte> dest) const noexcept
 {
 	int flags = 0;
 #ifndef _WIN32
 	flags |= MSG_DONTWAIT;
 #endif
 
-	return Receive({static_cast<std::byte *>(buffer), length}, flags);
+	return Receive(dest, flags);
+}
+
+ssize_t
+SocketDescriptor::WriteNoWait(std::span<const std::byte> src) const noexcept
+{
+	int flags = 0;
+#ifndef _WIN32
+	flags |= MSG_DONTWAIT;
+#endif
+
+	return Send(src, flags);
 }
 
 #ifdef _WIN32

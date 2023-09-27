@@ -274,11 +274,25 @@ public:
 	 */
 	ssize_t Send(std::span<const std::byte> src, int flags=0) const noexcept;
 
-	ssize_t Read(void *buffer, std::size_t length) const noexcept;
-
-	ssize_t Write(const void *buffer, std::size_t length) const noexcept {
-		return Send({static_cast<const std::byte *>(buffer), length});
+	ssize_t Read(std::span<std::byte> dest) const noexcept {
+		return Receive(dest);
 	}
+
+	ssize_t Write(std::span<const std::byte> src) const noexcept {
+		return Send(src);
+	}
+
+	/**
+	 * Wrapper for Receive() with MSG_DONTWAIT (not available on
+	 * Windows).
+	 */
+	ssize_t ReadNoWait(std::span<std::byte> dest) const noexcept;
+
+	/**
+	 * Wrapper for Receive() with MSG_DONTWAIT (not available on
+	 * Windows).
+	 */
+	ssize_t WriteNoWait(std::span<const std::byte> src) const noexcept;
 
 #ifdef _WIN32
 	int WaitReadable(int timeout_ms) const noexcept;

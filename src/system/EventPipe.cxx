@@ -37,8 +37,8 @@ EventPipe::Read() noexcept
 	assert(r.IsDefined());
 	assert(w.IsDefined());
 
-	char buffer[256];
-	return r.Read(buffer, sizeof(buffer)) > 0;
+	std::byte buffer[256];
+	return r.Read(buffer) > 0;
 }
 
 void
@@ -47,7 +47,8 @@ EventPipe::Write() noexcept
 	assert(r.IsDefined());
 	assert(w.IsDefined());
 
-	w.Write("", 1);
+	static constexpr std::byte buffer[1]{};
+	w.Write(buffer);
 }
 
 #ifdef _WIN32
