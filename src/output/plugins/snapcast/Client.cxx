@@ -97,7 +97,7 @@ SnapcastClient::OnSocketReady(unsigned flags) noexcept
 static bool
 Send(SocketDescriptor s, std::span<const std::byte> buffer) noexcept
 {
-	auto nbytes = s.Write(buffer.data(), buffer.size());
+	auto nbytes = s.Send(buffer);
 	return nbytes == ssize_t(buffer.size());
 }
 
