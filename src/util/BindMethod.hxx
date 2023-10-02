@@ -48,7 +48,7 @@ public:
 		return function != nullptr;
 	}
 
-	R operator()(Args... args) const {
+	R operator()(Args... args) const noexcept(NoExcept) {
 		return function(instance_, std::forward<Args>(args)...);
 	}
 };
