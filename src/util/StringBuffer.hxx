@@ -12,7 +12,7 @@
 template<typename T, std::size_t CAPACITY>
 class BasicStringBuffer {
 public:
-	typedef T value_type;
+	using value_type = T;
 	using reference = T &;
 	using pointer = T *;
 	using const_pointer = const T *;
