@@ -17,8 +17,8 @@ template<typename S=void()>
 class BoundMethod;
 
 template<typename R,
-	bool NoExcept,
-	typename... Args>
+	 bool NoExcept,
+	 typename... Args>
 class BoundMethod<R(Args...) noexcept(NoExcept)> {
 	typedef R (*function_pointer)(void *instance, Args... args) noexcept(NoExcept);
 
