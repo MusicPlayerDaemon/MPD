@@ -126,12 +126,10 @@ MakeWrapperFunction() noexcept
  * @param instance the instance of #T to be bound
  */
 template<auto method>
-constexpr auto
+constexpr BoundMethod<typename BindMethodDetail::SignatureHelper<decltype(method)>::plain_signature>
 BindMethod(typename BindMethodDetail::SignatureHelper<decltype(method)>::class_type &instance) noexcept
 {
-	using H = BindMethodDetail::SignatureHelper<decltype(method)>;
-	using plain_signature = typename H::plain_signature;
-	return BoundMethod<plain_signature>{
+	return {
 		&instance,
 		BindMethodDetail::MakeWrapperFunction<method>(),
 	};
@@ -156,12 +154,10 @@ BindMethod(typename BindMethodDetail::SignatureHelper<decltype(method)>::class_t
  * @param function the function pointer
  */
 template<auto function>
-constexpr auto
+constexpr BoundMethod<typename BindMethodDetail::SignatureHelper<decltype(function)>::plain_signature>
 BindFunction() noexcept
 {
-	using H = BindMethodDetail::SignatureHelper<decltype(function)>;
-	using plain_signature = typename H::plain_signature;
-	return BoundMethod<plain_signature>{
+	return {
 		nullptr,
 		BindMethodDetail::MakeWrapperFunction<function>(),
 	};
