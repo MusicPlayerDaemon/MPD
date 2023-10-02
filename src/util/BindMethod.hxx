@@ -20,7 +20,7 @@ template<typename R,
 	 bool NoExcept,
 	 typename... Args>
 class BoundMethod<R(Args...) noexcept(NoExcept)> {
-	typedef R (*function_pointer)(void *instance, Args... args) noexcept(NoExcept);
+	using function_pointer = R (*)(void *, Args...) noexcept(NoExcept);
 
 	void *instance_;
 	function_pointer function;
@@ -68,24 +68,22 @@ struct SignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 	/**
 	 * The class which contains the given method (signature).
 	 */
-	typedef T class_type;
+	using class_type = T;
 
 	/**
 	 * A function type which describes the "plain" function
 	 * signature.
 	 */
-	typedef R plain_signature(Args...) noexcept(NoExcept);
+	using plain_signature = R (Args...) noexcept(NoExcept);
 
-	typedef R (*function_pointer)(void *instance,
-				      Args...) noexcept(NoExcept);
+	using function_pointer = R (*)(void *, Args...) noexcept(NoExcept);
 };
 
 template<typename R, bool NoExcept, typename... Args>
 struct SignatureHelper<R (*)(Args...) noexcept(NoExcept)> {
-	typedef R plain_signature(Args...) noexcept(NoExcept);
+	using plain_signature = R (Args...) noexcept(NoExcept);
 
-	typedef R (*function_pointer)(void *instance,
-				      Args...) noexcept(NoExcept);
+	using function_pointer = R (*)(void *, Args...) noexcept(NoExcept);
 };
 
 /**
