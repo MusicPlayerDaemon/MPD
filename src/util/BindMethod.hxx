@@ -29,7 +29,7 @@ public:
 	/**
 	 * Non-initializing trivial constructor
 	 */
-	BoundMethod() = default;
+	constexpr BoundMethod() = default;
 
 	constexpr
 	BoundMethod(void *_instance, function_pointer _function) noexcept
@@ -39,12 +39,12 @@ public:
 	 * Construct an "undefined" object.  It must not be called,
 	 * and its "bool" operator returns false.
 	 */
-	BoundMethod(std::nullptr_t) noexcept:function(nullptr) {}
+	constexpr BoundMethod(std::nullptr_t) noexcept:function(nullptr) {}
 
 	/**
 	 * Was this object initialized with a valid function pointer?
 	 */
-	operator bool() const noexcept {
+	constexpr operator bool() const noexcept {
 		return function != nullptr;
 	}
 
