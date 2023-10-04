@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef NFS_ERROR_HXX
-#define NFS_ERROR_HXX
+#pragma once
 
 #include <stdexcept>
 
@@ -26,5 +25,3 @@ public:
 		return code;
 	}
 };
-
-#endif

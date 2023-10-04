@@ -11,8 +11,6 @@ extern "C" {
 
 #include <cassert>
 
-#include <string.h>
-
 static auto
 FormatNfsClientError(struct nfs_context *nfs, const char *msg) noexcept
 {
