@@ -133,6 +133,26 @@ TEST(IntrusiveForwardList, CacheLast)
 	list.reverse();
 	ASSERT_EQ(ToString(list), "");
 
+	/* test push_back() */
+
+	for (auto &i : items)
+		list.push_back(i);
+
+	ASSERT_EQ(ToString(list), "abc");
+	ASSERT_EQ(&list.back(), &items[2]);
+
+	list.clear();
+
+	/* test push_back() again to see if clear() has worked */
+
+	for (auto &i : items)
+		list.push_back(i);
+
+	ASSERT_EQ(ToString(list), "abc");
+	ASSERT_EQ(&list.back(), &items[2]);
+
+	list.clear();
+
 	for (auto &i : items)
 		list.push_front(i);
 
