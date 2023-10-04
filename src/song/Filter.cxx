@@ -247,8 +247,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 			negated,
 		};
 		f.SetRegex(std::make_shared<UniqueRegex>(f.GetValue().c_str(),
-							 false, false,
-							 fold_case));
+							 Pcre::CompileOptions{.caseless=fold_case}));
 		return f;
 	}
 #endif
