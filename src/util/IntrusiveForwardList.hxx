@@ -185,7 +185,7 @@ public:
 
 	void clear() noexcept {
 		head = {};
-		last_cache = {};
+		last_cache = {&head};
 		counter.reset();
 	}
 
@@ -196,7 +196,7 @@ public:
 			disposer(item);
 		}
 
-		last_cache = {};
+		last_cache = {&head};
 	}
 
 	/**
