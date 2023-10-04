@@ -281,7 +281,7 @@ try {
 		unlinkat(directory_fd.Get(), GetPath().c_str(), 0);
 
 		/* hard-link the temporary file to the final path */
-		if (linkat(AT_FDCWD,
+		if (linkat(-1,
 			   FmtBuffer<64>("/proc/self/fd/{}", fd.Get()),
 			   directory_fd.Get(), path.c_str(),
 			   AT_SYMLINK_FOLLOW) < 0)
