@@ -26,6 +26,7 @@ public:
 	 * @return the number of bytes read into the given buffer or 0
 	 * on end-of-stream
 	 */
+	[[nodiscard]]
 	virtual std::size_t Read(std::span<std::byte> dest) = 0;
 
 	/**
