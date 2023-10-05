@@ -32,12 +32,12 @@ AutoGunzipReader::Detect()
 		next = &peek;
 }
 
-size_t
-AutoGunzipReader::Read(void *data, size_t size)
+std::size_t
+AutoGunzipReader::Read(std::span<std::byte> dest)
 {
 	if (next == nullptr)
 		Detect();
 
 	assert(next != nullptr);
-	return next->Read(data, size);
+	return next->Read(dest);
 }

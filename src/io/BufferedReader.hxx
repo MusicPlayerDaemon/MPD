@@ -15,7 +15,7 @@ class BufferedReader {
 
 	Reader &reader;
 
-	DynamicFifoBuffer<char> buffer;
+	DynamicFifoBuffer<std::byte> buffer;
 
 	bool eof = false;
 

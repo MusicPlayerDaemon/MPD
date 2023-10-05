@@ -30,7 +30,7 @@ public:
 	}
 
 	/* virtual methods from class Reader */
-	size_t Read(void *data, size_t size) override;
+	std::size_t Read(std::span<std::byte> dest) override;
 };
 
 #endif

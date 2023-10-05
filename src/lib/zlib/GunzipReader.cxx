@@ -24,7 +24,7 @@ GunzipReader::FillBuffer()
 	auto w = buffer.Write();
 	assert(!w.empty());
 
-	std::size_t nbytes = next.Read(w.data(), w.size());
+	std::size_t nbytes = next.Read(w);
 	if (nbytes == 0)
 		return false;
 
@@ -33,13 +33,13 @@ GunzipReader::FillBuffer()
 }
 
 std::size_t
-GunzipReader::Read(void *data, std::size_t size)
+GunzipReader::Read(std::span<std::byte> dest)
 {
 	if (eof)
 		return 0;
 
-	z.next_out = (Bytef *)data;
-	z.avail_out = size;
+	z.next_out = (Bytef *)dest.data();
+	z.avail_out = dest.size();
 
 	while (true) {
 		int flush = Z_NO_FLUSH;
@@ -52,19 +52,19 @@ GunzipReader::Read(void *data, std::size_t size)
 				flush = Z_FINISH;
 		}
 
-		z.next_in = r.data();
+		z.next_in = reinterpret_cast<Bytef *>(r.data());
 		z.avail_in = r.size();
 
 		int result = inflate(&z, flush);
 		if (result == Z_STREAM_END) {
 			eof = true;
-			return size - z.avail_out;
+			return dest.size() - z.avail_out;
 		} else if (result != Z_OK)
 			throw ZlibError(result);
 
 		buffer.Consume(r.size() - z.avail_in);
 
-		if (z.avail_out < size)
-			return size - z.avail_out;
+		if (z.avail_out < dest.size())
+			return dest.size() - z.avail_out;
 	}
 }

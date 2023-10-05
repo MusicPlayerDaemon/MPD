@@ -60,7 +60,7 @@ static constexpr unsigned rom_size = 8192;
 static void loadRom(const Path rom_path, uint8_t *dump)
 {
 	FileReader romDump(rom_path);
-	if (romDump.Read(dump, rom_size) != rom_size)
+	if (romDump.Read(std::as_writable_bytes(std::span{dump, rom_size})) != rom_size)
 		throw FmtRuntimeError("Could not load rom dump '{}'", rom_path);
 }
 

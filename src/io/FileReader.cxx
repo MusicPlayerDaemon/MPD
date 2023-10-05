@@ -30,12 +30,12 @@ FileReader::GetFileInfo() const
 }
 
 std::size_t
-FileReader::Read(void *data, std::size_t size)
+FileReader::Read(std::span<std::byte> dest)
 {
 	assert(IsDefined());
 
 	DWORD nbytes;
-	if (!ReadFile(handle, data, size, &nbytes, nullptr))
+	if (!ReadFile(handle, dest.data(), dest.size(), &nbytes, nullptr))
 		throw FmtLastError("Failed to read from {}", path);
 
 	return nbytes;
@@ -82,11 +82,11 @@ FileReader::GetFileInfo() const
 }
 
 std::size_t
-FileReader::Read(void *data, std::size_t size)
+FileReader::Read(std::span<std::byte> dest)
 {
 	assert(IsDefined());
 
-	ssize_t nbytes = fd.Read(data, size);
+	ssize_t nbytes = fd.Read(dest);
 	if (nbytes < 0)
 		throw FmtErrno("Failed to read from {}", path);
 

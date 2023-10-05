@@ -78,7 +78,7 @@ FileInputStream::Read(std::unique_lock<Mutex> &,
 
 	{
 		const ScopeUnlock unlock(mutex);
-		nbytes = reader.Read(ptr, read_size);
+		nbytes = reader.Read({static_cast<std::byte *>(ptr), read_size});
 	}
 
 	if (nbytes == 0 && !IsEOF())

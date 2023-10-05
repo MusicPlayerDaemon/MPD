@@ -7,11 +7,11 @@
 bool
 OggSyncState::Feed(size_t size)
 {
-	char *buffer = ogg_sync_buffer(&oy, size);
+	std::byte *buffer = reinterpret_cast<std::byte *>(ogg_sync_buffer(&oy, size));
 	if (buffer == nullptr)
 		return false;
 
-	size_t nbytes = reader.Read(buffer, size);
+	size_t nbytes = reader.Read({buffer, size});
 	if (nbytes == 0)
 		return false;
 

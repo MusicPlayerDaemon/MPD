@@ -17,8 +17,7 @@ PeekReader::Peek(size_t size)
 	assert(buffer_position == 0);
 
 	do {
-		size_t nbytes = next.Read(buffer + buffer_size,
-					  size - buffer_size);
+		size_t nbytes = next.Read(std::span{buffer}.first(buffer_size).subspan(size));
 		if (nbytes == 0)
 			return nullptr;
 
@@ -29,15 +28,17 @@ PeekReader::Peek(size_t size)
 }
 
 size_t
-PeekReader::Read(void *data, size_t size)
+PeekReader::Read(std::span<std::byte> dest)
 {
-	size_t buffer_remaining = buffer_size - buffer_position;
-	if (buffer_remaining > 0) {
-		size_t nbytes = std::min(buffer_remaining, size);
-		memcpy(data, buffer + buffer_position, nbytes);
-		buffer_position += nbytes;
-		return nbytes;
+	auto src = std::span{buffer}.first(buffer_size).subspan(buffer_position);
+	if (!src.empty()) {
+		if (dest.size() < src.size())
+			src = src.first(dest.size());
+
+		std::copy(src.begin(), src.end(), dest.begin());
+		buffer_position += src.size();
+		return src.size();
 	}
 
-	return next.Read(data, size);
+	return next.Read(dest);
 }

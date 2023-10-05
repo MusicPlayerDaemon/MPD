@@ -4,8 +4,8 @@
 #include "Reader.hxx"
 #include "DecoderAPI.hxx"
 
-size_t
-DecoderReader::Read(void *data, size_t size)
+std::size_t
+DecoderReader::Read(std::span<std::byte> dest)
 {
-	return decoder_read(client, is, data, size);
+	return decoder_read(client, is, dest.data(), dest.size());
 }

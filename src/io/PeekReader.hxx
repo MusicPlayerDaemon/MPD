@@ -18,7 +18,7 @@ class PeekReader final : public Reader {
 
 	size_t buffer_size = 0, buffer_position = 0;
 
-	uint8_t buffer[64];
+	std::byte buffer[64];
 
 public:
 	explicit PeekReader(Reader &_next)
@@ -27,7 +27,7 @@ public:
 	const void *Peek(size_t size);
 
 	/* virtual methods from class Reader */
-	size_t Read(void *data, size_t size) override;
+	size_t Read(std::span<std::byte> dest) override;
 };
 
 #endif

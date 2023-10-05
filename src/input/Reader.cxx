@@ -4,10 +4,10 @@
 #include "Reader.hxx"
 #include "InputStream.hxx"
 
-size_t
-InputStreamReader::Read(void *data, size_t size)
+std::size_t
+InputStreamReader::Read(std::span<std::byte> dest)
 {
-	size_t nbytes = is.LockRead(data, size);
+	size_t nbytes = is.LockRead(dest.data(), dest.size());
 	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;

@@ -16,7 +16,7 @@ Copy(OutputStream &dest, Reader &src)
 {
 	while (true) {
 		std::byte buffer[4096];
-		size_t nbytes = src.Read(buffer, sizeof(buffer));
+		std::size_t nbytes = src.Read(buffer);
 		if (nbytes == 0)
 			break;
 
