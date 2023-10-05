@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Reader.hxx"
-#include "fs/AllocatedPath.hxx"
 
 #ifdef _WIN32
 #include <fileapi.h>
@@ -16,13 +15,14 @@
 #endif
 
 #include <cstdint>
+#include <utility> // for std::exchange()
+
+#include <sys/types.h> // for off_t
 
 class Path;
 class FileInfo;
 
 class FileReader final : public Reader {
-	AllocatedPath path;
-
 #ifdef _WIN32
 	HANDLE handle;
 #else
@@ -34,8 +34,7 @@ public:
 
 #ifdef _WIN32
 	FileReader(FileReader &&other) noexcept
-		:path(std::move(other.path)),
-		 handle(std::exchange(other.handle, INVALID_HANDLE_VALUE)) {}
+		:handle(std::exchange(other.handle, INVALID_HANDLE_VALUE)) {}
 
 	~FileReader() noexcept {
 		if (handle != INVALID_HANDLE_VALUE)
@@ -43,8 +42,7 @@ public:
 	}
 #else
 	FileReader(FileReader &&other) noexcept
-		:path(std::move(other.path)),
-		 fd(std::move(other.fd)) {}
+		:fd(std::move(other.fd)) {}
 #endif
 
 
