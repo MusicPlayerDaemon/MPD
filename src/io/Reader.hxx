@@ -28,11 +28,16 @@ public:
 	 */
 	virtual std::size_t Read(std::span<std::byte> dest) = 0;
 
+	/**
+	 * Like Read(), but throws an exception when there is not
+	 * enough data to fill the destination buffer.
+	 */
+	void ReadFull(std::span<std::byte> dest);
+
 	template<typename T>
 	requires std::is_standard_layout_v<T> && std::is_trivially_copyable_v<T>
 	void ReadT(T &dest) {
-		// TODO check return value
-		Read(std::as_writable_bytes(std::span{&dest, 1}));
+		ReadFull(std::as_writable_bytes(std::span{&dest, 1}));
 	}
 };
 

@@ -2,6 +2,7 @@ io = static_library(
   'io',
   'FileDescriptor.cxx',
   'Open.cxx',
+  'Reader.cxx',
   'PeekReader.cxx',
   'BufferedReader.cxx',
   'BufferedOutputStream.cxx',
