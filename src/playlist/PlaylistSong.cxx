@@ -25,6 +25,7 @@ merge_song_metadata(DetachedSong &add, const DetachedSong &base) noexcept
 	}
 
 	add.SetLastModified(base.GetLastModified());
+	add.SetAdded(base.GetAdded());
 
 	if (add.GetStartTime().IsZero()) {
 		add.SetStartTime(base.GetStartTime());

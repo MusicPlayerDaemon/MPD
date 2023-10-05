@@ -51,6 +51,9 @@ ParseSortTag(const char *s)
 	if (StringIsEqualIgnoreCase(s, "Last-Modified"))
 		return TagType(SORT_TAG_LAST_MODIFIED);
 
+	if (StringIsEqualIgnoreCase(s, "Added"))
+		return TagType(SORT_TAG_ADDED);
+
 	TagType tag = tag_name_parse_i(s);
 	if (tag == TAG_NUM_OF_ITEM_TYPES)
 		throw ProtocolError(ACK_ERROR_ARG, "Unknown sort tag");

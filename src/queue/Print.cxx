@@ -127,6 +127,17 @@ PrintSortedQueue(Response &r, const Queue &queue,
 
 					 return a.GetLastModified() < b.GetLastModified();
 				 });
+	else if (sort == TagType(SORT_TAG_ADDED))
+		std::stable_sort(v.begin(), v.end(),
+				 [&queue, descending](unsigned a_pos, unsigned b_pos){
+					 if (descending)
+						 std::swap(a_pos, b_pos);
+
+					 const auto &a = queue.Get(a_pos);
+					 const auto &b = queue.Get(b_pos);
+
+					 return a.GetAdded() < b.GetAdded();
+				 });
 	else if (sort == TagType(SORT_TAG_PRIO))
 		std::stable_sort(v.begin(), v.end(),
 				 [&queue, descending](unsigned a_pos, unsigned b_pos){

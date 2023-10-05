@@ -11,6 +11,7 @@ DetachedSong::DetachedSong(const LightSong &other) noexcept
 	 real_uri(other.real_uri != nullptr ? other.real_uri : ""),
 	 tag(other.tag),
 	 mtime(other.mtime),
+	 added(other.added),
 	 start_time(other.start_time),
 	 end_time(other.end_time),
 	 audio_format(other.audio_format) {}
@@ -21,6 +22,7 @@ DetachedSong::operator LightSong() const noexcept
 	result.directory = nullptr;
 	result.real_uri = real_uri.empty() ? nullptr : real_uri.c_str();
 	result.mtime = mtime;
+	result.added = added;
 	result.start_time = start_time;
 	result.end_time = end_time;
 	return result;

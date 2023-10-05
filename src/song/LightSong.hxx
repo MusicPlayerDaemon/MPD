@@ -52,6 +52,12 @@ struct LightSong {
 	std::chrono::system_clock::time_point mtime = std::chrono::system_clock::time_point::min();
 
 	/**
+	 * The time stamp when the file was added. A negative
+	 * value means that this is unknown/unavailable.
+	 */
+	std::chrono::system_clock::time_point added = std::chrono::system_clock::time_point::min();
+
+	/**
 	 * Start of this sub-song within the file.
 	 */
 	SongTime start_time = SongTime::zero();
