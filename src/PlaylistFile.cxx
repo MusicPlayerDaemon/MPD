@@ -24,6 +24,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "system/Error.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UriExtract.hxx"
 
