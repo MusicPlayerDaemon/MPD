@@ -47,7 +47,7 @@ public:
 #endif
 	}
 
-	constexpr uint64_t GetSize() const noexcept {
+	constexpr uint_least64_t GetSize() const noexcept {
 #ifdef _WIN32
 		return ConstructUint64(data.nFileSizeLow, data.nFileSizeHigh);
 #else
