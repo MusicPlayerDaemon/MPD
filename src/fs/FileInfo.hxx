@@ -30,7 +30,7 @@ class FileInfo {
 public:
 	constexpr FileInfo() noexcept = default;
 
-	FileInfo(Path path, bool follow_symlinks=true) {
+	explicit FileInfo(Path path, bool follow_symlinks=true) {
 		if (!GetFileInfo(path, *this, follow_symlinks)) {
 #ifdef _WIN32
 			throw FmtLastError("Failed to access {}", path);
