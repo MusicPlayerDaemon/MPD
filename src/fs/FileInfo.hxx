@@ -4,8 +4,6 @@
 #pragma once
 
 #include "Path.hxx"
-#include "lib/fmt/PathFormatter.hxx"
-#include "lib/fmt/SystemError.hxx"
 
 #ifdef _WIN32
 #include "time/FileTime.hxx"
@@ -30,15 +28,7 @@ class FileInfo {
 public:
 	constexpr FileInfo() noexcept = default;
 
-	explicit FileInfo(Path path, bool follow_symlinks=true) {
-		if (!GetFileInfo(path, *this, follow_symlinks)) {
-#ifdef _WIN32
-			throw FmtLastError("Failed to access {}", path);
-#else
-			throw FmtErrno("Failed to access {}", path);
-#endif
-		}
-	}
+	explicit FileInfo(Path path, bool follow_symlinks=true);
 
 	constexpr bool IsRegular() const noexcept {
 #ifdef _WIN32

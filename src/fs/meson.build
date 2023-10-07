@@ -12,6 +12,7 @@ fs_sources = [
   'List.cxx',
   'LookupFile.cxx',
   'DirectoryReader.cxx',
+  'FileInfo.cxx',
 ]
 
 if is_windows
