@@ -17,6 +17,10 @@
 class FileInfo {
 	friend bool GetFileInfo(Path path, FileInfo &info,
 				bool follow_symlinks) noexcept;
+#ifdef _WIN32
+	friend bool GetFileInfoByHandle(HANDLE handle, FileInfo &info) noexcept;
+#endif
+
 	friend class FileReader;
 
 #ifdef _WIN32
@@ -29,6 +33,10 @@ public:
 	constexpr FileInfo() noexcept = default;
 
 	explicit FileInfo(Path path, bool follow_symlinks=true);
+
+#ifdef _WIN32
+	explicit FileInfo(HANDLE handle);
+#endif
 
 	constexpr bool IsRegular() const noexcept {
 #ifdef _WIN32
@@ -97,3 +105,10 @@ GetFileInfo(Path path, FileInfo &info, bool follow_symlinks=true) noexcept
 	return ret == 0;
 #endif
 }
+
+#ifdef _WIN32
+
+bool
+GetFileInfoByHandle(HANDLE handle, FileInfo &info) noexcept;
+
+#endif
