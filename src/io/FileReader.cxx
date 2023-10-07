@@ -73,12 +73,7 @@ FileReader::GetFileInfo() const
 {
 	assert(IsDefined());
 
-	FileInfo info;
-	const bool success = fstat(fd.Get(), &info.st) == 0;
-	if (!success)
-		throw MakeErrno("Failed to access file");
-
-	return info;
+	return FileInfo{fd};
 }
 
 std::size_t

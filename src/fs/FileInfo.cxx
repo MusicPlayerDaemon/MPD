@@ -8,6 +8,8 @@
 #ifdef _WIN32
 #include <windef.h> // for HWND (needed by winbase.h)
 #include <winbase.h> // for FILE_*_INFO
+#else
+#include "io/FileDescriptor.hxx"
 #endif
 
 FileInfo::FileInfo(Path path, bool follow_symlinks)
@@ -53,6 +55,14 @@ GetFileInfoByHandle(HANDLE handle, FileInfo &info) noexcept
 	info.data.nFileSizeHigh = standard.EndOfFile.HighPart;
 
 	return true;
+}
+
+#else
+
+FileInfo::FileInfo(FileDescriptor fd)
+{
+	if (fstat(fd.Get(), &st) < 0)
+		throw MakeErrno("Failed to access file");
 }
 
 #endif // _WIN32

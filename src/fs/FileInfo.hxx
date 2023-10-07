@@ -14,14 +14,14 @@
 #include <chrono>
 #include <cstdint>
 
+class FileDescriptor;
+
 class FileInfo {
 	friend bool GetFileInfo(Path path, FileInfo &info,
 				bool follow_symlinks) noexcept;
 #ifdef _WIN32
 	friend bool GetFileInfoByHandle(HANDLE handle, FileInfo &info) noexcept;
 #endif
-
-	friend class FileReader;
 
 #ifdef _WIN32
 	WIN32_FILE_ATTRIBUTE_DATA data;
@@ -36,6 +36,8 @@ public:
 
 #ifdef _WIN32
 	explicit FileInfo(HANDLE handle);
+#else
+	explicit FileInfo(FileDescriptor fd);
 #endif
 
 	constexpr bool IsRegular() const noexcept {
