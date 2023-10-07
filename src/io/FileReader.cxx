@@ -26,7 +26,7 @@ FileReader::GetFileInfo() const
 {
 	assert(IsDefined());
 
-	return FileInfo(path);
+	return FileInfo{handle};
 }
 
 std::size_t
