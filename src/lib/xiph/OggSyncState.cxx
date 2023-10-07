@@ -7,16 +7,16 @@
 bool
 OggSyncState::Feed(size_t size)
 {
-		char *buffer = ogg_sync_buffer(&oy, size);
-		if (buffer == nullptr)
-			return false;
+	char *buffer = ogg_sync_buffer(&oy, size);
+	if (buffer == nullptr)
+		return false;
 
-		size_t nbytes = reader.Read(buffer, size);
-		if (nbytes == 0)
-			return false;
+	size_t nbytes = reader.Read(buffer, size);
+	if (nbytes == 0)
+		return false;
 
-		ogg_sync_wrote(&oy, nbytes);
-		return true;
+	ogg_sync_wrote(&oy, nbytes);
+	return true;
 }
 
 bool
