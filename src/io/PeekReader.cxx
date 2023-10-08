@@ -17,7 +17,7 @@ PeekReader::Peek(size_t size)
 	assert(buffer_position == 0);
 
 	do {
-		size_t nbytes = next.Read(std::span{buffer}.first(buffer_size).subspan(size));
+		size_t nbytes = next.Read(std::span{buffer}.first(size).subspan(buffer_size));
 		if (nbytes == 0)
 			return nullptr;
 
