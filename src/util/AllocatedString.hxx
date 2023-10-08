@@ -148,7 +148,7 @@ private:
 
 	static constexpr std::size_t TotalSize(std::initializer_list<string_view> src) noexcept {
 		std::size_t size = 0;
-		for (std::string_view i : src)
+		for (const string_view i : src)
 			size += i.size();
 		return size;
 	}
