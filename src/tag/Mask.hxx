@@ -8,7 +8,7 @@
 #include <cstdint>
 
 class TagMask {
-	typedef uint_least32_t mask_t;
+	using mask_t = uint_least64_t;
 
 	/* the mask must have enough bits to represent all tags
 	   supported by MPD */
