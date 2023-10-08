@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_TAG_MASK_HXX
-#define MPD_TAG_MASK_HXX
+#pragma once
+
+#include "Type.hxx"
 
 #include <cstdint>
 
-enum TagType : uint8_t;
-
 class TagMask {
 	typedef uint_least32_t mask_t;
+
+	/* the mask must have enough bits to represent all tags
+	   supported by MPD */
+	static_assert(TAG_NUM_OF_ITEM_TYPES <= sizeof(mask_t) * 8);
+
 	mask_t value;
 
 	explicit constexpr TagMask(uint_least32_t _value) noexcept
@@ -76,5 +80,3 @@ public:
 		*this &= ~TagMask(tag);
 	}
 };
-
-#endif
