@@ -85,6 +85,12 @@ public:
 	int AddWatch(const char *pathname, uint32_t mask);
 
 	/**
+	 * Like AddWatch(), but returns -1 instead of throwing on
+	 * error.
+	 */
+	int TryAddWatch(const char *pathname, uint32_t mask) noexcept;
+
+	/**
 	 * Wrapper for AddWatch(pathname, IN_MODIFY).
 	 */
 	int AddModifyWatch(const char *pathname);
