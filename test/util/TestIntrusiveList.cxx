@@ -166,6 +166,51 @@ TEST(IntrusiveList, AutoUnlink)
 	ASSERT_TRUE(b.is_linked());
 }
 
+TEST(IntrusiveList, Tag)
+{
+	struct A {};
+	struct B {};
+
+	struct TaggedItem
+		: public IntrusiveListHook<IntrusiveHookMode::NORMAL, A>,
+		  public IntrusiveListHook<IntrusiveHookMode::NORMAL, B> {};
+
+	TaggedItem one, two;
+
+	IntrusiveList<TaggedItem, IntrusiveListBaseHookTraits<TaggedItem, A>> a;
+	IntrusiveList<TaggedItem, IntrusiveListBaseHookTraits<TaggedItem, B>> b;
+
+	EXPECT_TRUE(a.empty());
+	EXPECT_TRUE(b.empty());
+
+	a.push_back(one);
+	a.push_back(two);
+
+	EXPECT_FALSE(a.empty());
+	EXPECT_TRUE(b.empty());
+
+	b.push_back(one);
+
+	EXPECT_FALSE(a.empty());
+	EXPECT_FALSE(b.empty());
+
+	a.clear();
+
+	EXPECT_TRUE(a.empty());
+	EXPECT_FALSE(b.empty());
+
+	a.push_back(two);
+	a.push_back(one);
+
+	EXPECT_FALSE(a.empty());
+	EXPECT_FALSE(b.empty());
+
+	b.erase(b.iterator_to(one));
+
+	EXPECT_FALSE(a.empty());
+	EXPECT_TRUE(b.empty());
+}
+
 TEST(IntrusiveList, Merge)
 {
 	using Item = CharItem<IntrusiveHookMode::NORMAL>;

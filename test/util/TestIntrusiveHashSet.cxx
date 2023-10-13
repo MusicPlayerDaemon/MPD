@@ -149,3 +149,74 @@ TEST(IntrusiveHashSet, Multi)
 	ASSERT_EQ(set.remove_and_dispose_key(b, [](auto*){}), 0U);
 	ASSERT_EQ(set.find(b), set.end());
 }
+
+TEST(IntrusiveHashSet, Tag)
+{
+	struct A {};
+	struct B {};
+
+	struct TaggedItem final
+		: IntrusiveHashSetHook<IntrusiveHookMode::NORMAL, A>,
+		  IntrusiveHashSetHook<IntrusiveHookMode::NORMAL, B> {
+		int a, b;
+
+		TaggedItem(int _a, int _b) noexcept
+			:a(_a), b(_b) {}
+	};
+
+	struct GetA {
+		int operator()(const TaggedItem &item) const noexcept {
+			return item.a;
+		}
+	};
+
+	struct GetB {
+		int operator()(const TaggedItem &item) const noexcept {
+			return item.b;
+		}
+	};
+
+	TaggedItem one{1, 11}, two{2, 22};
+
+	IntrusiveHashSet<TaggedItem, 3,
+			 IntrusiveHashSetOperators<std::hash<int>,
+						   std::equal_to<int>,
+						   GetA>,
+			 IntrusiveHashSetBaseHookTraits<TaggedItem, A>> a;
+
+	IntrusiveHashSet<TaggedItem, 3,
+			 IntrusiveHashSetOperators<std::hash<int>,
+						   std::equal_to<int>,
+						   GetB>,
+			 IntrusiveHashSetBaseHookTraits<TaggedItem, B>> b;
+
+	EXPECT_TRUE(a.empty());
+	EXPECT_TRUE(b.empty());
+
+	a.insert(one);
+	a.insert(two);
+
+	EXPECT_FALSE(a.empty());
+	EXPECT_TRUE(b.empty());
+
+	b.insert(one);
+
+	EXPECT_FALSE(a.empty());
+	EXPECT_FALSE(b.empty());
+
+	a.clear();
+
+	EXPECT_TRUE(a.empty());
+	EXPECT_FALSE(b.empty());
+
+	a.insert(two);
+	a.insert(one);
+
+	EXPECT_FALSE(a.empty());
+	EXPECT_FALSE(b.empty());
+
+	b.erase(b.iterator_to(one));
+
+	EXPECT_FALSE(a.empty());
+	EXPECT_TRUE(b.empty());
+}

@@ -35,9 +35,13 @@ struct IntrusiveListNode {
 	}
 };
 
-template<IntrusiveHookMode _mode=IntrusiveHookMode::NORMAL>
+/**
+ * @param Tag an arbitrary tag type to allow using multiple base hooks
+ */
+template<IntrusiveHookMode _mode=IntrusiveHookMode::NORMAL,
+	 typename Tag=void>
 class IntrusiveListHook {
-	template<typename T> friend struct IntrusiveListBaseHookTraits;
+	template<typename, typename> friend struct IntrusiveListBaseHookTraits;
 	template<auto member> friend struct IntrusiveListMemberHookTraits;
 	template<typename T, typename HookTraits, IntrusiveListOptions> friend class IntrusiveList;
 
@@ -91,12 +95,14 @@ using AutoUnlinkIntrusiveListHook =
 
 /**
  * For classes which embed #IntrusiveListHook as base class.
+ *
+ * @param Tag selector for which #IntrusiveHashSetHook to use
  */
-template<typename T>
+template<typename T, typename Tag=void>
 struct IntrusiveListBaseHookTraits {
 	/* a never-called helper function which is used by _Cast() */
 	template<IntrusiveHookMode mode>
-	static constexpr IntrusiveListHook<mode> _Identity(const IntrusiveListHook<mode> &) noexcept;
+	static constexpr IntrusiveListHook<mode, Tag> _Identity(const IntrusiveListHook<mode, Tag> &) noexcept;
 
 	/* another never-called helper function which "calls"
 	   _Identity(), implicitly casting the item to the

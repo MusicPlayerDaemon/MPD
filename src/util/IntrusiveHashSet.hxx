@@ -19,7 +19,11 @@ struct IntrusiveHashSetOptions {
 	bool zero_initialized = false;
 };
 
-template<IntrusiveHookMode mode=IntrusiveHookMode::NORMAL>
+/**
+ * @param Tag an arbitrary tag type to allow using multiple base hooks
+ */
+template<IntrusiveHookMode mode=IntrusiveHookMode::NORMAL,
+	 typename Tag=void>
 struct IntrusiveHashSetHook {
 	using SiblingsHook = IntrusiveListHook<mode>;
 
@@ -36,12 +40,14 @@ struct IntrusiveHashSetHook {
 
 /**
  * For classes which embed #IntrusiveHashSetHook as base class.
+ *
+ * @param Tag selector for which #IntrusiveHashSetHook to use
  */
-template<typename T>
+template<typename T, typename Tag=void>
 struct IntrusiveHashSetBaseHookTraits {
 	/* a never-called helper function which is used by _Cast() */
 	template<IntrusiveHookMode mode>
-	static constexpr IntrusiveHashSetHook<mode> _Identity(const IntrusiveHashSetHook<mode> &) noexcept;
+	static constexpr IntrusiveHashSetHook<mode, Tag> _Identity(const IntrusiveHashSetHook<mode, Tag> &) noexcept;
 
 	/* another never-called helper function which "calls"
 	   _Identity(), implicitly casting the item to the
