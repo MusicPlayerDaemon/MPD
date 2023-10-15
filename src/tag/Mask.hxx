@@ -20,7 +20,7 @@ class TagMask {
 		:value(_value) {}
 
 public:
-	TagMask() = default;
+	constexpr TagMask() noexcept = default;
 
 	constexpr TagMask(TagType tag) noexcept
 		:value(mask_t(1) << mask_t(tag)) {}
@@ -49,17 +49,17 @@ public:
 		return TagMask(value ^ other.value);
 	}
 
-	TagMask &operator&=(TagMask other) noexcept {
+	constexpr TagMask &operator&=(TagMask other) noexcept {
 		value &= other.value;
 		return *this;
 	}
 
-	TagMask &operator|=(TagMask other) noexcept {
+	constexpr TagMask &operator|=(TagMask other) noexcept {
 		value |= other.value;
 		return *this;
 	}
 
-	TagMask &operator^=(TagMask other) noexcept {
+	constexpr TagMask &operator^=(TagMask other) noexcept {
 		value ^= other.value;
 		return *this;
 	}
@@ -72,11 +72,11 @@ public:
 		return (*this & tag).TestAny();
 	}
 
-	void Set(TagType tag) noexcept {
+	constexpr void Set(TagType tag) noexcept {
 		*this |= tag;
 	}
 
-	void Unset(TagType tag) noexcept {
+	constexpr void Unset(TagType tag) noexcept {
 		*this &= ~TagMask(tag);
 	}
 };
