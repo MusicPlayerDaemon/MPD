@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: LGPL-2.1
+// SPDX-License-Identifier: LGPL-2.1-only
 // Copyright The Music Player Daemon Project
 // Based on AudioCompress (c)2007 busybee (http://beesbuzz.biz/
 
