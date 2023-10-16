@@ -1403,8 +1403,8 @@ the database for songs).
 
 .. note:: Since :program:`MPD` 0.24 stickers can also be attached to playlists,
   some tag types, and :ref:`filter expressions <filter_syntax>`.
-  The following tag types are alloed: Title, Album, Artist, AlbumArtist, Genre,
-  Composer, Performer, Conductor, Work, Ensable, Location, and Label.
+  The following tag types are allowed: Title, Album, Artist, AlbumArtist, Genre,
+  Composer, Performer, Conductor, Work, Ensemble, Location, and Label.
 
 .. list-table:: Sticker addressing
    :widths: 10 45 45
@@ -1480,14 +1480,14 @@ Examples:
 
    .. code-block::
 
-     sitcker set song "path/to/song_1.mp3" "name_1" "value_1"
+     sticker set song "path/to/song_1.mp3" "name_1" "value_1"
      OK
-     sitcker set song "path/to/song_2.mp3" "name_1" "value_2"
+     sticker set song "path/to/song_2.mp3" "name_1" "value_2"
      OK
      sticker get song "path/to/song_1.mp3" "name_1"
      sticker: name_1=value_1
      OK
-     sitcker find song "path" "name_1"
+     sticker find song "path" "name_1"
      file: path/to/song_1.mp3
      sticker: name_1=value_1
      file: path/to/song_2.mp3
@@ -1502,9 +1502,9 @@ Examples:
     Album: Greatest Hits
     sticker: name_1=value_1
     OK
-    stciker set filter "((album == 'Greatest Hits') AND (artist == 'Vera Lynn'))" name_1 value_1
+    sticker set filter "((album == 'Greatest Hits') AND (artist == 'Vera Lynn'))" name_1 value_1
     OK
-    stciker set filter "((album == 'Greatest Hits') AND (artist == 'Johnny Chester'))" name_1 value_1
+    sticker set filter "((album == 'Greatest Hits') AND (artist == 'Johnny Chester'))" name_1 value_1
     OK
     sticker find filter "" name_1
     filter: ((album == 'Greatest Hits') AND (artist == 'Johnny Chester'))
