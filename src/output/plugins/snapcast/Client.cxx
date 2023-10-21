@@ -105,7 +105,7 @@ template<typename T>
 static bool
 SendT(SocketDescriptor s, const T &buffer) noexcept
 {
-	return Send(s, std::as_bytes(std::span{&buffer, 1}));
+	return Send(s, ReferenceAsBytes(buffer));
 }
 
 static bool

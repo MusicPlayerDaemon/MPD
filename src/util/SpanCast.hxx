@@ -59,6 +59,16 @@ AsBytes(std::string_view sv) noexcept
 	return std::as_bytes(ToSpan(sv));
 }
 
+/**
+ * Cast a reference to a fixed-size std::span<const std::byte>.
+ */
+template<typename T>
+constexpr auto
+ReferenceAsBytes(const T &value) noexcept
+{
+	return std::as_bytes(std::span<const T, 1>{&value, 1});
+}
+
 constexpr std::string_view
 ToStringView(std::span<const char> s) noexcept
 {
