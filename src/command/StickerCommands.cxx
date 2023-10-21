@@ -102,6 +102,24 @@ public:
 		return CommandResult::OK;
 	}
 
+	virtual CommandResult Names() {
+		auto data = CallbackContext{
+			.name = "",
+			.sticker_type = sticker_type,
+			.response = response,
+			.is_song = StringIsEqual("song", sticker_type)
+		};
+
+		auto callback = [](const char *found_value, void *user_data) {
+			auto context = reinterpret_cast<CallbackContext *>(user_data);
+			context->response.Fmt("name: {}\n", found_value);
+		};
+
+		sticker_database.Names(callback, &data);
+
+		return CommandResult::OK;
+	}
+
 protected:
 	DomainHandler(Response &_response,
 		      const Database &_database,
@@ -291,6 +309,24 @@ private:
 };
 
 } // namespace
+
+CommandResult
+handle_sticker_names(Client &client, Request args, Response &r)
+{
+	(void) args;
+	auto &instance = client.GetInstance();
+	if (!instance.HasStickerDatabase()) {
+		r.Error(ACK_ERROR_UNKNOWN, "sticker database is disabled");
+		return CommandResult::ERROR;
+	}
+
+	auto &db = client.GetPartition().GetDatabaseOrThrow();
+	auto &sticker_database = *instance.sticker_database;
+
+	std::unique_ptr<DomainHandler> handler = std::make_unique<SongHandler>(r, db, sticker_database);
+
+	return handler->Names();
+}
 
 CommandResult
 handle_sticker(Client &client, Request args, Response &r)

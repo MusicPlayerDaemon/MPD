@@ -32,6 +32,7 @@ enum sticker_sql {
 	STICKER_SQL_TRANSACTION_BEGIN,
 	STICKER_SQL_TRANSACTION_COMMIT,
 	STICKER_SQL_TRANSACTION_ROLLBACK,
+	STICKER_SQL_NAMES,
 
 	STICKER_SQL_COUNT
 };
@@ -72,6 +73,9 @@ static constexpr auto sticker_sql = std::array {
 
 	//[STICKER_SQL_TRANSACTION_ROLLBACK]
 	"ROLLBACK",
+
+	//[STICKER_SQL_NAMES]
+	"SELECT DISTINCT name FROM sticker order by name",
 };
 
 static constexpr const char sticker_sql_create[] =
@@ -364,6 +368,23 @@ StickerDatabase::GetUniqueStickers()
 				    (const char*)sqlite3_column_text(s, 1));
 	});
 	return result;
+}
+
+void
+StickerDatabase::Names(void (*func)(const char *value, void *user_data), void *user_data)
+{
+	assert(func != nullptr);
+
+	sqlite3_stmt *const s = stmt[STICKER_SQL_NAMES];
+	assert(s != nullptr);
+
+	AtScopeExit(s) {
+		sqlite3_reset(s);
+	};
+
+	ExecuteForEach(s, [s, func, user_data](){
+			func((const char*)sqlite3_column_text(s, 0), user_data);
+		});
 }
 
 void

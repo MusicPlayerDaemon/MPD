@@ -186,6 +186,7 @@ static constexpr struct command commands[] = {
 	{ "status", PERMISSION_READ, 0, 0, handle_status },
 #ifdef ENABLE_SQLITE
 	{ "sticker", PERMISSION_ADMIN, 3, -1, handle_sticker },
+	{ "stickernames", PERMISSION_ADMIN, 0, 0, handle_sticker_names },
 #endif
 	{ "stop", PERMISSION_PLAYER, 0, 0, handle_stop },
 	{ "subscribe", PERMISSION_READ, 1, 1, handle_subscribe },

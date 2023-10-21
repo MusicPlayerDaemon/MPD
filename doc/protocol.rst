@@ -1513,6 +1513,9 @@ Examples:
     sticker: name_1=value_1
     OK
 
+:command:`stickernames`
+    Gets a list of uniq sticker names.
+
 Connection settings
 ===================
 

@@ -12,5 +12,7 @@ class Response;
 
 CommandResult
 handle_sticker(Client &client, Request request, Response &response);
+CommandResult
+handle_sticker_names(Client &client, Request request, Response &response);
 
 #endif
