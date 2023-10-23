@@ -11,7 +11,9 @@
  * A variant of #SocketEvent for pipes (and other kinds of
  * #FileDescriptor which can be used with epoll).
  */
-class PipeEvent final {
+class PipeEvent final
+	: public EventPollBackendEvents
+{
 	SocketEvent event;
 
 public:
