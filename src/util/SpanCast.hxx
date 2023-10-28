@@ -69,6 +69,13 @@ ReferenceAsBytes(const T &value) noexcept
 	return std::as_bytes(std::span<const T, 1>{&value, 1});
 }
 
+template<typename T>
+constexpr auto
+ReferenceAsWritableBytes(T &value) noexcept
+{
+	return std::as_writable_bytes(std::span<T, 1>{&value, 1});
+}
+
 constexpr std::string_view
 ToStringView(std::span<const char> s) noexcept
 {
