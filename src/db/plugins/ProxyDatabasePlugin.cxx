@@ -205,12 +205,16 @@ Copy(TagBuilder &tag, TagType d_tag,
 ProxySong::ProxySong(const mpd_song *song)
 	:LightSong(mpd_song_get_uri(song), tag2)
 {
+	const auto _real_uri = mpd_song_get_real_uri(song);
+	if (_real_uri != nullptr)
+		real_uri = _real_uri;
+
 	const auto _mtime = mpd_song_get_last_modified(song);
 	if (_mtime > 0)
 		mtime = std::chrono::system_clock::from_time_t(_mtime);
 
-	start_time = SongTime::FromS(mpd_song_get_start(song));
-	end_time = SongTime::FromS(mpd_song_get_end(song));
+	start_time = SongTime::FromMS(mpd_song_get_start_ms(song));
+	end_time = SongTime::FromMS(mpd_song_get_end_ms(song));
 
 	const auto *af = mpd_song_get_audio_format(song);
 	if (af != nullptr) {
