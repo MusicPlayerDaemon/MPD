@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #define SONG_MTIME "mtime"
+#define SONG_ADDED "added"
 #define SONG_END "song_end"
 
 static void
@@ -54,6 +55,10 @@ song_save(BufferedOutputStream &os, const Song &song)
 	if (!IsNegative(song.mtime))
 		os.Fmt(FMT_STRING(SONG_MTIME ": {}\n"),
 		       std::chrono::system_clock::to_time_t(song.mtime));
+
+	if (!IsNegative(song.added))
+		os.Fmt(FMT_STRING(SONG_ADDED ": {}\n"),
+		       std::chrono::system_clock::to_time_t(song.added));
 	os.Write(SONG_END "\n");
 }
 
@@ -69,6 +74,10 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 	if (!IsNegative(song.GetLastModified()))
 		os.Fmt(FMT_STRING(SONG_MTIME ": {}\n"),
 		       std::chrono::system_clock::to_time_t(song.GetLastModified()));
+
+	if (!IsNegative(song.GetAdded()))
+		os.Fmt(FMT_STRING(SONG_ADDED ": {}\n"),
+		       std::chrono::system_clock::to_time_t(song.GetAdded()));
 	os.Write(SONG_END "\n");
 }
 
@@ -109,6 +118,8 @@ song_load(LineReader &file, const char *uri,
 			tag.SetHasPlaylist(StringIsEqual(value, "yes"));
 		} else if (StringIsEqual(line, SONG_MTIME)) {
 			song.SetLastModified(std::chrono::system_clock::from_time_t(atoi(value)));
+		} else if (StringIsEqual(line, SONG_ADDED)) {
+			song.SetAdded(std::chrono::system_clock::from_time_t(atoi(value)));
 		} else if (StringIsEqual(line, "Range")) {
 			char *endptr;
 

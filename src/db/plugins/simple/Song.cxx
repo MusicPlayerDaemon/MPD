@@ -19,6 +19,7 @@ Song::Song(DetachedSong &&other, Directory &_parent) noexcept
 	 filename(other.GetURI()),
 	 tag(std::move(other.WritableTag())),
 	 mtime(other.GetLastModified()),
+	 added(other.GetAdded()),
 	 start_time(other.GetStartTime()),
 	 end_time(other.GetEndTime()),
 	 audio_format(other.GetAudioFormat())
@@ -117,6 +118,9 @@ Song::Export() const noexcept
 	dest.mtime = IsNegative(mtime) && target_song != nullptr
 		? target_song->mtime
 		: mtime;
+	dest.added = IsNegative(added) && target_song != nullptr
+		? target_song->added
+		: added;
 	dest.start_time = start_time.IsZero() && target_song != nullptr
 		? target_song->start_time
 		: start_time;

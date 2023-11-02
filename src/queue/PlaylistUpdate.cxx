@@ -33,6 +33,7 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 	}
 
 	song.SetLastModified(original->mtime);
+	song.SetAdded(original->added);
 	song.SetTag(original->tag);
 
 	db.ReturnSong(original);

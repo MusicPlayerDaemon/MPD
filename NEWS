@@ -10,7 +10,9 @@ ver 0.24 (not yet released)
   - show PCRE support in "config" response
   - apply Unicode normalization to case-insensitive filter expressions
   - stickers on playlists and some tag types
+  - new command "stickernames"
 * database
+  - attribute "added" shows when each song was added to the database
   - proxy: require MPD 0.21 or later
   - proxy: require libmpdclient 2.15 or later
 * archive

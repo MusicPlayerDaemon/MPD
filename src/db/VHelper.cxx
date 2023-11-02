@@ -60,6 +60,13 @@ DatabaseVisitorHelper::Commit()
 						 ? a.GetLastModified() > b.GetLastModified()
 						 : a.GetLastModified() < b.GetLastModified();
 				 });
+	else if (sort == TagType(SORT_TAG_ADDED))
+		std::stable_sort(songs.begin(), songs.end(),
+				 [descending](const DetachedSong &a, const DetachedSong &b){
+					 return descending
+						 ? a.GetAdded() > b.GetAdded()
+						 : a.GetAdded() < b.GetAdded();
+				 });
 	else
 		std::stable_sort(songs.begin(), songs.end(),
 				 [sort, descending](const DetachedSong &a,

@@ -50,6 +50,7 @@ try {
 		}
 
 		new_song->mark = true;
+		new_song->added = std::chrono::system_clock::now();
 
 		{
 			const ScopeDatabaseLock protect;

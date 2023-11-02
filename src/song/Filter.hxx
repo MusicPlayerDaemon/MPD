@@ -21,6 +21,11 @@
  */
 #define SORT_TAG_PRIO (TAG_NUM_OF_ITEM_TYPES + 4)
 
+/**
+ * Special value for the db_selection_print() sort parameter.
+ */
+#define SORT_TAG_ADDED (TAG_NUM_OF_ITEM_TYPES + 5)
+
 enum TagType : uint8_t;
 struct LightSong;
 

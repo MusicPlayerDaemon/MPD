@@ -77,6 +77,9 @@ song_print_info(Response &r, const LightSong &song, bool base) noexcept
 	if (!IsNegative(song.mtime))
 		time_print(r, "Last-Modified", song.mtime);
 
+	if (!IsNegative(song.added))
+		time_print(r, "Added", song.added);
+
 	if (song.audio_format.IsDefined())
 		r.Fmt(FMT_STRING("Format: {}\n"), song.audio_format);
 
@@ -99,6 +102,9 @@ song_print_info(Response &r, const DetachedSong &song, bool base) noexcept
 
 	if (!IsNegative(song.GetLastModified()))
 		time_print(r, "Last-Modified", song.GetLastModified());
+
+	if (!IsNegative(song.GetAdded()))
+		time_print(r, "Added", song.GetAdded());
 
 	if (const auto &f = song.GetAudioFormat(); f.IsDefined())
 		r.Fmt(FMT_STRING("Format: {}\n"), f);

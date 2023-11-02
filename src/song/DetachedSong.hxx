@@ -7,6 +7,7 @@
 #include "tag/Tag.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "Chrono.hxx"
+#include "time/ChronoUtil.hxx"
 
 #include <chrono>
 #include <string>
@@ -56,6 +57,13 @@ class DetachedSong {
 	 * value means that this is unknown/unavailable.
 	 */
 	std::chrono::system_clock::time_point mtime =
+		std::chrono::system_clock::time_point::min();
+
+	/**
+	 * The time stamp when the file was added to db. A negative
+	 * value means that this is unknown/unavailable.
+	 */
+	std::chrono::system_clock::time_point added =
 		std::chrono::system_clock::time_point::min();
 
 	/**
@@ -210,6 +218,16 @@ public:
 
 	void SetLastModified(std::chrono::system_clock::time_point _value) noexcept {
 		mtime = _value;
+	}
+
+	std::chrono::system_clock::time_point GetAdded() const noexcept {
+		return IsNegative(added)
+			? mtime
+			: added;
+	}
+
+	void SetAdded(std::chrono::system_clock::time_point _value) noexcept {
+		added = _value;
 	}
 
 	SongTime GetStartTime() const noexcept {
