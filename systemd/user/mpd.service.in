@@ -28,8 +28,7 @@ ProtectSystem=yes
 NoNewPrivileges=yes
 ProtectKernelTunables=yes
 ProtectControlGroups=yes
-# AF_NETLINK is required by libsmbclient, or it will exit() .. *sigh*
-RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+RestrictAddressFamilies=@address_families@
 RestrictNamespaces=yes
 
 # Note that "ProtectKernelModules=yes" is missing in the user unit

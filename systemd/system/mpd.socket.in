@@ -1,6 +1,5 @@
 [Socket]
-ListenStream=%t/mpd/socket
-ListenStream=6600
+@listen_streams@
 Backlog=5
 KeepAlive=true
 PassCredentials=true
