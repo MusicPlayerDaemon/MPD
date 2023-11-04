@@ -11,6 +11,7 @@ ver 0.24 (not yet released)
   - apply Unicode normalization to case-insensitive filter expressions
   - stickers on playlists and some tag types
   - new command "stickernames"
+  - new "search"/"find" filter "added-since"
 * database
   - attribute "added" shows when each song was added to the database
   - proxy: require MPD 0.21 or later
