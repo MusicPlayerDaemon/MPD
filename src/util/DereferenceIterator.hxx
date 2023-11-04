@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef DEREFERENCE_ITERATOR_HXX
-#define DEREFERENCE_ITERATOR_HXX
+#pragma once
 
 #include <iterator>
 #include <type_traits>
@@ -12,7 +11,7 @@
  * original iterator.
  */
 template<typename IT,
-	 typename VT=typename std::remove_pointer<typename IT::value_type>::type>
+	 typename VT=std::remove_reference_t<decltype(*std::declval<typename std::iterator_traits<IT>::value_type>())>>
 class DereferenceIterator {
 	using Traits = std::iterator_traits<IT>;
 
@@ -86,5 +85,3 @@ public:
 		return original != other.original;
 	}
 };
-
-#endif
