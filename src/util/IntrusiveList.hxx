@@ -72,9 +72,8 @@ public:
 			siblings.next = nullptr;
 	}
 
-	bool is_linked() const noexcept {
-		static_assert(mode >= IntrusiveHookMode::TRACK);
-
+	bool is_linked() const noexcept
+		requires(mode >= IntrusiveHookMode::TRACK) {
 		return siblings.next != nullptr;
 	}
 
