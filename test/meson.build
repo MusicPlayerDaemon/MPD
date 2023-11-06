@@ -1,7 +1,5 @@
-gtest_main_dep = dependency('gtest', main: true, fallback: ['gtest', 'gtest_main_dep'])
-gtest_dep = declare_dependency(
-  dependencies: [gtest_main_dep],
-)
+gtest_dep = dependency('gtest', main: true,
+                       fallback: ['gtest', 'gtest_main_dep'])
 
 subdir('util')
 subdir('net')
