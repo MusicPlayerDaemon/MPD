@@ -62,6 +62,9 @@ public:
 		return due;
 	}
 
+	/**
+	 * Was this timer scheduled?
+	 */
 	bool IsPending() const noexcept {
 		return is_linked();
 	}
