@@ -6,12 +6,28 @@
 #include "Loop.hxx"
 
 void
+FineTimerEvent::SetDue(Event::Duration d) noexcept
+{
+	assert(!IsPending());
+
+	SetDue(loop.SteadyNow() + d);
+}
+
+void
+FineTimerEvent::ScheduleCurrent() noexcept
+{
+	assert(!IsPending());
+
+	loop.Insert(*this);
+}
+
+void
 FineTimerEvent::Schedule(Event::Duration d) noexcept
 {
 	Cancel();
 
-	due = loop.SteadyNow() + d;
-	loop.Insert(*this);
+	SetDue(d);
+	ScheduleCurrent();
 }
 
 void
@@ -26,6 +42,6 @@ FineTimerEvent::ScheduleEarlier(Event::Duration d) noexcept
 		Cancel();
 	}
 
-	due = new_due;
-	loop.Insert(*this);
+	SetDue(due);
+	ScheduleCurrent();
 }
