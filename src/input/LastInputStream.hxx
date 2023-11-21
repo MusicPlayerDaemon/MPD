@@ -6,7 +6,7 @@
 
 #include "Ptr.hxx"
 #include "thread/Mutex.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 
 #include <string>
 
@@ -25,7 +25,7 @@ class LastInputStream {
 
 	InputStreamPtr is;
 
-	TimerEvent close_timer;
+	CoarseTimerEvent close_timer;
 
 public:
 	explicit LastInputStream(EventLoop &event_loop) noexcept;
