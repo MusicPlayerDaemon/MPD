@@ -1,4 +1,6 @@
 ver 0.23.15 (not yet released)
+* decoder
+  - ffmpeg: fix build failure with FFmpeg 6.1
 
 ver 0.23.14 (2023/10/08)
 * decoder
