@@ -13,7 +13,6 @@
 #include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
-#include "Log.hxx"
 #include "db/DatabaseSong.hxx"
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
@@ -25,12 +24,6 @@
 
 #include <string.h>
 #include <stdio.h>
-
-void
-Log(LogLevel, const Domain &domain, const char *msg) noexcept
-{
-	fprintf(stderr, "[%s] %s\n", domain.GetName(), msg);
-}
 
 bool
 uri_supported_scheme(const char *uri) noexcept
