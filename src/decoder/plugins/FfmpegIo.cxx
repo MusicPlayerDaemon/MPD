@@ -10,6 +10,9 @@
 
 extern "C" {
 #include <libavutil/mem.h>
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(58, 29, 100)
+#include <libavutil/error.h>
+#endif
 }
 
 AvioStream::~AvioStream()
