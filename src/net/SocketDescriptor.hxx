@@ -188,6 +188,9 @@ public:
 	std::size_t GetOption(int level, int name,
 			      void *value, std::size_t size) const noexcept;
 
+	[[gnu::pure]]
+	int GetIntOption(int level, int name, int fallback) const noexcept;
+
 #ifdef HAVE_STRUCT_UCRED
 	/**
 	 * Receive peer credentials (SO_PEERCRED).  On error, the pid
