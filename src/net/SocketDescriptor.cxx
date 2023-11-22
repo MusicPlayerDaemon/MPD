@@ -191,12 +191,9 @@ SocketDescriptor::CreateSocketPairNonBlock(int domain, int type, int protocol,
 int
 SocketDescriptor::GetError() const noexcept
 {
-	assert(IsDefined());
-
 	int s_err = 0;
-	socklen_t s_err_size = sizeof(s_err);
-	return getsockopt(fd, SOL_SOCKET, SO_ERROR,
-			  (char *)&s_err, &s_err_size) == 0
+	return GetOption(SOL_SOCKET, SO_ERROR,
+			 &s_err, sizeof(s_err)) == sizeof(s_err)
 		? s_err
 		: errno;
 }
