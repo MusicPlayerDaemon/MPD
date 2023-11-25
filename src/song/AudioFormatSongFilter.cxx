@@ -5,12 +5,16 @@
 #include "LightSong.hxx"
 #include "util/StringBuffer.hxx"
 
+#include <fmt/core.h>
+
+using std::string_view_literals::operator""sv;
+
 std::string
 AudioFormatSongFilter::ToExpression() const noexcept
 {
-	return std::string("(AudioFormat ") +
-		(value.IsFullyDefined() ? "==" : "=~") +
-		" \"" + ToString(value).c_str() + "\")";
+	return fmt::format("(AudioFormat {} \"{}\")"sv,
+			   value.IsFullyDefined() ? "==" : "=~",
+			   ToString(value).c_str());
 }
 
 bool

@@ -6,10 +6,14 @@
 #include "time/ISO8601.hxx"
 #include "util/StringBuffer.hxx"
 
+#include <fmt/core.h>
+
+using std::string_view_literals::operator""sv;
+
 std::string
 ModifiedSinceSongFilter::ToExpression() const noexcept
 {
-	return std::string("(modified-since \"") + FormatISO8601(value).c_str() + "\")";
+	return fmt::format("(modified-since \"{}\")"sv, FormatISO8601(value).c_str());
 }
 
 bool
