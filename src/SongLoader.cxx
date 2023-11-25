@@ -14,7 +14,7 @@
 
 #ifdef ENABLE_DATABASE
 
-SongLoader::SongLoader(const Client &_client)
+SongLoader::SongLoader(const Client &_client) noexcept
 	:client(&_client), db(_client.GetDatabase()),
 	 storage(_client.GetStorage()) {}
 
