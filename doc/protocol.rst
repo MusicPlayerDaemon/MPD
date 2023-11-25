@@ -357,6 +357,10 @@ may contain :ref:`song tags <tags>` and other metadata, specifically:
   format.  Example:
   "*2008-09-28T20:04:57Z*"
 
+- ``added`` [#since_0_24]_: the time stamp when the file was added in ISO 8601.
+  A negative value means that this is unknown/unavailable.
+  Example: "*2023-11-25T13:25:07Z*"
+
 Recipes
 *******
 
