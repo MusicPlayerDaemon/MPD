@@ -156,8 +156,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-6.0.tar.xz',
-    '57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082',
+    'http://ffmpeg.org/releases/ffmpeg-6.1.tar.xz',
+    '488c76e57dd9b3bee901f71d5c95eaf1db4a5a31fe46a28654e837144207c270',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -464,6 +464,8 @@ ffmpeg = FfmpegProject(
         '--disable-decoder=pam',
         '--disable-decoder=pbm',
         '--disable-decoder=pcx',
+        '--disable-decoder=pdv',
+        '--disable-decoder=pfm',
         '--disable-decoder=pgm',
         '--disable-decoder=pgmyuv',
         '--disable-decoder=pgssub',
