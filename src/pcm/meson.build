@@ -75,6 +75,7 @@ pcm = static_library(
     libsamplerate_dep,
     soxr_dep,
     log_dep,
+    config_dep,
   ],
 )
 

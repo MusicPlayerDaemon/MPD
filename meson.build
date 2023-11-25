@@ -401,6 +401,9 @@ subdir('src/win32')
 
 subdir('src/apple')
 
+subdir('src/fs/glue')
+
+subdir('src/config')
 subdir('src/pcm')
 
 subdir('src/lib/dbus')
@@ -428,8 +431,6 @@ subdir('src/lib/crypto')
 
 subdir('src/zeroconf')
 
-subdir('src/fs/glue')
-subdir('src/config')
 subdir('src/tag')
 subdir('src/neighbor')
 subdir('src/input')
