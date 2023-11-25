@@ -8,6 +8,7 @@
 #include "BaseSongFilter.hxx"
 #include "TagSongFilter.hxx"
 #include "ModifiedSinceSongFilter.hxx"
+#include "AddedSinceSongFilter.hxx"
 #include "AudioFormatSongFilter.hxx"
 #include "PrioritySongFilter.hxx"
 #include "pcm/AudioParser.hxx"
@@ -40,6 +41,7 @@ enum {
 	LOCATE_TAG_PRIORITY,
 	LOCATE_TAG_FILE_TYPE,
 	LOCATE_TAG_ANY_TYPE,
+	LOCATE_TAG_ADDED_SINCE,
 };
 
 /**
@@ -61,6 +63,9 @@ locate_parse_type(const char *str) noexcept
 
 	if (strcmp(str, "modified-since") == 0)
 		return LOCATE_TAG_MODIFIED_SINCE;
+
+	if (strcmp(str, "added-since") == 0)
+		return LOCATE_TAG_ADDED_SINCE;
 
 	if (StringEqualsCaseASCII(str, "AudioFormat"))
 		return LOCATE_TAG_AUDIO_FORMAT;
@@ -322,6 +327,12 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 			throw std::runtime_error("')' expected");
 		s = StripLeft(s + 1);
 		return std::make_unique<ModifiedSinceSongFilter>(ParseTimeStamp(value_s.c_str()));
+	} else if (type == LOCATE_TAG_ADDED_SINCE) {
+		const auto value_s = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+		s = StripLeft(s + 1);
+		return std::make_unique<AddedSinceSongFilter>(ParseTimeStamp(value_s.c_str()));
 	} else if (type == LOCATE_TAG_BASE_TYPE) {
 		auto value = ExpectQuoted(s);
 		if (*s != ')')
@@ -405,6 +416,10 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 
 	case LOCATE_TAG_MODIFIED_SINCE:
 		and_filter.AddItem(std::make_unique<ModifiedSinceSongFilter>(ParseTimeStamp(value)));
+		break;
+	
+	case LOCATE_TAG_ADDED_SINCE:
+		and_filter.AddItem(std::make_unique<AddedSinceSongFilter>(ParseTimeStamp(value)));
 		break;
 
 	case LOCATE_TAG_FILE_TYPE:

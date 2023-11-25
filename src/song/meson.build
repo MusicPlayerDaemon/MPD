@@ -7,6 +7,7 @@ song = static_library(
   'BaseSongFilter.cxx',
   'TagSongFilter.cxx',
   'ModifiedSinceSongFilter.cxx',
+  'AddedSinceSongFilter.cxx',
   'PrioritySongFilter.cxx',
   'AudioFormatSongFilter.cxx',
   'AndSongFilter.cxx',
