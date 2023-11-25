@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_CLIENT_H
-#define MPD_CLIENT_H
+#pragma once
 
+#include "IClient.hxx"
 #include "Message.hxx"
 #include "command/CommandResult.hxx"
 #include "command/CommandListBuilder.hxx"
@@ -32,7 +32,7 @@ class Storage;
 class BackgroundCommand;
 
 class Client final
-	: FullyBufferedSocket
+	: public IClient, FullyBufferedSocket
 {
 	friend struct ClientPerPartitionListHook;
 	friend class ClientList;
@@ -223,19 +223,6 @@ public:
 		}
 	}
 
-	/**
-	 * Is this client allowed to use the specified local file?
-	 *
-	 * Note that this function is vulnerable to timing/symlink attacks.
-	 * We cannot fix this as long as there are plugins that open a file by
-	 * its name, and not by file descriptor / callbacks.
-	 *
-	 * Throws #std::runtime_error on error.
-	 *
-	 * @param path_fs the absolute path name in filesystem encoding
-	 */
-	void AllowFile(Path path_fs) const;
-
 	Partition &GetPartition() const noexcept {
 		return *partition;
 	}
@@ -252,18 +239,17 @@ public:
 	PlayerControl &GetPlayerControl() const noexcept;
 
 	/**
-	 * Wrapper for Instance::GetDatabase().
-	 */
-	[[gnu::pure]]
-	const Database *GetDatabase() const noexcept;
-
-	/**
 	 * Wrapper for Instance::GetDatabaseOrThrow().
 	 */
 	const Database &GetDatabaseOrThrow() const;
 
-	[[gnu::pure]]
-	const Storage *GetStorage() const noexcept;
+	// virtual methods from class IClient
+	void AllowFile(Path path_fs) const override;
+
+#ifdef ENABLE_DATABASE
+	const Database *GetDatabase() const noexcept override;
+	const Storage *GetStorage() const noexcept override;
+#endif // ENABLE_DATABASE
 
 private:
 	CommandResult ProcessCommandList(bool list_ok,
@@ -287,5 +273,3 @@ void
 client_new(EventLoop &loop, Partition &partition,
 	   UniqueSocketDescriptor fd, SocketAddress address, int uid,
 	   unsigned permission) noexcept;
-
-#endif

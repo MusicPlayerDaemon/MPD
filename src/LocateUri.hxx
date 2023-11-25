@@ -18,7 +18,7 @@
 #endif
 #endif
 
-class Client;
+class IClient;
 
 #ifdef ENABLE_DATABASE
 class Storage;
@@ -65,7 +65,7 @@ struct LocatedUri {
  *
  * Throws #std::runtime_error on error.
  *
- * @param client the #Client that is used to determine whether a local
+ * @param client the #IClient that is used to determine whether a local
  * file is allowed; nullptr disables the check and allows all local
  * files
  * @param storage a #Storage instance which may be used to convert
@@ -74,7 +74,7 @@ struct LocatedUri {
  */
 LocatedUri
 LocateUri(UriPluginKind kind,
-	  const char *uri, const Client *client
+	  const char *uri, const IClient *client
 #ifdef ENABLE_DATABASE
 	  , const Storage *storage
 #endif

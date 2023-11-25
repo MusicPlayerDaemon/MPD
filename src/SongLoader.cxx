@@ -3,7 +3,8 @@
 
 #include "SongLoader.hxx"
 #include "LocateUri.hxx"
-#include "client/Client.hxx"
+#include "Partition.hxx"
+#include "client/IClient.hxx"
 #include "db/DatabaseSong.hxx"
 #include "storage/StorageInterface.hxx"
 #include "song/DetachedSong.hxx"
@@ -14,8 +15,9 @@
 
 #ifdef ENABLE_DATABASE
 
-SongLoader::SongLoader(const Client &_client) noexcept
-	:client(&_client), db(_client.GetDatabase()),
+SongLoader::SongLoader(const IClient &_client) noexcept
+	:client(&_client),
+	 db(_client.GetDatabase()),
 	 storage(_client.GetStorage()) {}
 
 #endif

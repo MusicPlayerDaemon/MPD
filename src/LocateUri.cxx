@@ -3,7 +3,7 @@
 
 #include "config.h"
 #include "LocateUri.hxx"
-#include "client/Client.hxx"
+#include "client/IClient.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
 #include "storage/Registry.hxx"
@@ -17,7 +17,7 @@
 #include <stdexcept>
 
 static LocatedUri
-LocateFileUri(const char *uri, const Client *client
+LocateFileUri(const char *uri, const IClient *client
 #ifdef ENABLE_DATABASE
 	      , const Storage *storage
 #endif
@@ -86,7 +86,7 @@ LocateAbsoluteUri(UriPluginKind kind, const char *uri
 
 LocatedUri
 LocateUri(UriPluginKind kind,
-	  const char *uri, const Client *client
+	  const char *uri, const IClient *client
 #ifdef ENABLE_DATABASE
 	  , const Storage *storage
 #endif
