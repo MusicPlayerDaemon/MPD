@@ -11,7 +11,7 @@
 #include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "protocol/RangeArg.hxx"
-#include "fs/io/TextFile.hxx"
+#include "io/FileLineReader.hxx"
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "config/Data.hxx"
@@ -184,7 +184,7 @@ try {
 
 	assert(!path_fs.IsNull());
 
-	TextFile file(path_fs);
+	FileLineReader file{path_fs};
 
 	char *s;
 	while ((s = file.ReadLine()) != nullptr) {

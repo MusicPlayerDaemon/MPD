@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "TextFile.hxx"
+#include "AutoGunzipFileLineReader.hxx"
 #include "io/FileReader.hxx"
 #include "io/BufferedReader.hxx"
 #include "lib/zlib/AutoGunzipReader.hxx"
@@ -9,7 +9,7 @@
 
 #include <cassert>
 
-TextFile::TextFile(Path path_fs)
+AutoGunzipFileLineReader::AutoGunzipFileLineReader(Path path_fs)
 	:file_reader(std::make_unique<FileReader>(path_fs)),
 #ifdef ENABLE_ZLIB
 	 gunzip_reader(std::make_unique<AutoGunzipReader>(*file_reader)),
@@ -24,10 +24,10 @@ TextFile::TextFile(Path path_fs)
 {
 }
 
-TextFile::~TextFile() noexcept = default;
+AutoGunzipFileLineReader::~AutoGunzipFileLineReader() noexcept = default;
 
 char *
-TextFile::ReadLine()
+AutoGunzipFileLineReader::ReadLine()
 {
 	assert(buffered_reader != nullptr);
 

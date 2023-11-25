@@ -26,7 +26,8 @@
 #include "util/StringSplit.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringCompare.hxx"
-#include "fs/io/TextFile.hxx"
+#include "io/FileLineReader.hxx"
+
 #include <string.h>
 #include <utility>
 #endif
@@ -230,7 +231,7 @@ try {
 	if (config_dir.IsNull())
 		return result;
 
-	TextFile input(config_dir / Path::FromFS("user-dirs.dirs"));
+	FileLineReader input{config_dir / Path::FromFS("user-dirs.dirs")};
 	char *line;
 	while ((line = input.ReadLine()) != nullptr)
 		if (ParseConfigLine(line, name, result))

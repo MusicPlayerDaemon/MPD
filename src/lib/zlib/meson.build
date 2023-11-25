@@ -10,6 +10,7 @@ zlib = static_library(
   'GunzipReader.cxx',
   'GzipOutputStream.cxx',
   'AutoGunzipReader.cxx',
+  'AutoGunzipFileLineReader.cxx',
   include_directories: inc,
   dependencies: [
     zlib_dep,

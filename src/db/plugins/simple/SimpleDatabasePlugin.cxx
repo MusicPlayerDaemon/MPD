@@ -18,7 +18,7 @@
 #include "db/DatabaseLock.hxx"
 #include "db/DatabaseError.hxx"
 #include "lib/fmt/PathFormatter.hxx"
-#include "fs/io/TextFile.hxx"
+#include "lib/zlib/AutoGunzipFileLineReader.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "io/FileOutputStream.hxx"
 #include "fs/FileInfo.hxx"
@@ -132,7 +132,7 @@ SimpleDatabase::Load()
 	assert(!path.IsNull());
 	assert(root != nullptr);
 
-	TextFile file(path);
+	AutoGunzipFileLineReader file{path};
 
 	LogDebug(simple_db_domain, "reading DB");
 

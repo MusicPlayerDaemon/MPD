@@ -5,7 +5,7 @@ fs_glue = static_library(
   include_directories: inc,
   dependencies: [
     fs_dep,
-    fs_io_dep,
+    io_dep,
     fmt_dep,
     log_dep,
     util_dep,

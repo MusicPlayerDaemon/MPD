@@ -4,9 +4,9 @@
 #include "config.h"
 #include "db/plugins/simple/DatabaseSave.hxx"
 #include "db/plugins/simple/Directory.hxx"
+#include "lib/zlib/AutoGunzipFileLineReader.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
-#include "fs/io/TextFile.hxx"
 #include "util/PrintException.hxx"
 
 int
@@ -20,7 +20,7 @@ try {
 	const FromNarrowPath db_path = argv[1];
 
 	Directory root{{}, nullptr};
-	TextFile line_reader{db_path};
+	AutoGunzipFileLineReader line_reader{db_path};
 	db_load_internal(line_reader, root, true);
 
 	return EXIT_SUCCESS;

@@ -5,7 +5,7 @@
 #include "StateFile.hxx"
 #include "output/State.hxx"
 #include "queue/PlaylistState.hxx"
-#include "fs/io/TextFile.hxx"
+#include "io/FileLineReader.hxx"
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "storage/StorageState.hxx"
@@ -97,7 +97,7 @@ try {
 
 	FmtDebug(state_file_domain, "Loading state file {}", path_utf8);
 
-	TextFile file(config.path);
+	FileLineReader file{config.path};
 
 #ifdef ENABLE_DATABASE
 	const SongLoader song_loader(partition.instance.GetDatabase(),

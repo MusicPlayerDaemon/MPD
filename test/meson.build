@@ -252,6 +252,7 @@ if enable_database
       pcm_basic_dep,
       song_dep,
       db_plugins_dep,
+      zlib_dep,
     ],
   )
 
