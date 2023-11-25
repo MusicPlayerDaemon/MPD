@@ -706,7 +706,8 @@ Song ids on the other hand are stable: an id is assigned to a song
 when it is added, and will stay the same, no matter how much it is
 moved around.  Adding the same song twice will assign different ids to
 them, and a deleted-and-readded song will have a new id.  This way, a
-client can always be sure the correct song is being used.
+client can always be sure the correct song is being used.  Song ids are not
+preserved across :program:`MPD` restarts.
 
 Many commands come in two flavors, one for each address type.
 Whenever possible, ids should be used.
