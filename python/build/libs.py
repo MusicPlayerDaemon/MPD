@@ -116,8 +116,8 @@ libmodplug = AutotoolsProject(
 )
 
 libopenmpt = AutotoolsProject(
-    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.6.6+release.autotools.tar.gz',
-    '6ddb9e26a430620944891796fefb1bbb38bd9148f6cfc558810c0d3f269876c7',
+    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.7.3+release.autotools.tar.gz',
+    '2cf8369b7916b09264f3f14b9fb6cef35a6e9bee0328dec4f49d98211ccfd722',
     'lib/libopenmpt.a',
     [
         '--disable-shared', '--enable-static',
