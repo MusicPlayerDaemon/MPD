@@ -54,6 +54,14 @@ set(CMAKE_FIND_ROOT_PATH "{toolchain.install_prefix};{sysroot}")
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 """)
+    elif cmake_system_name == 'Windows':
+            # search libraries and headers only in the sysroot, not on
+            # the build host
+            f.write(f"""
+set(CMAKE_FIND_ROOT_PATH "{toolchain.install_prefix}")
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+""")
 
 def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[], env: Optional[Mapping[str, str]]=None) -> None:
     cross_args: list[str] = []
