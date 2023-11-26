@@ -26,7 +26,7 @@ class IdTable {
 	int *const data = new int[size];
 
 public:
-	IdTable(unsigned _size) noexcept
+	explicit IdTable(unsigned _size) noexcept
 		:size(_size) {}
 
 	~IdTable() noexcept {
