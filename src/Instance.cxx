@@ -211,6 +211,8 @@ Instance::OnPlaylistDeleted(const char *name) const noexcept
 		} catch (...) {
 		}
 	}
+#else
+	(void)name;
 #endif
 }
 
