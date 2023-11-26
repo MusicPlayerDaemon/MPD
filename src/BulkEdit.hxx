@@ -20,6 +20,9 @@ public:
 	~ScopeBulkEdit() {
 		partition.playlist.CommitBulk(partition.pc);
 	}
+
+	ScopeBulkEdit(const ScopeBulkEdit &) = delete;
+	ScopeBulkEdit &operator=(const ScopeBulkEdit &) = delete;
 };
 
 #endif
