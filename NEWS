@@ -21,6 +21,7 @@ ver 0.24 (not yet released)
 * storage
   - curl: optimize database update
 * input
+  - alsa: limit ALSA buffer time to 2 seconds
   - curl: add "connect_timeout" configuration
 * decoder
   - ffmpeg: require FFmpeg 4.0 or later

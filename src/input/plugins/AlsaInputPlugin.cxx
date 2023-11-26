@@ -353,9 +353,14 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 		 period_size_min, period_size_max,
 		 period_time_min, period_time_max);
 
-	/* choose the maximum possible buffer_size ... */
-	snd_pcm_hw_params_set_buffer_size(capture_handle, hw_params,
-					  buffer_size_max);
+	/* choose the maximum buffer_time up to limit of 2 seconds ... */
+	unsigned buffer_time = buffer_time_max;
+	if (buffer_time > 2000000U)
+		buffer_time = 2000000U;
+	int direction = -1;
+	if ((err = snd_pcm_hw_params_set_buffer_time_near(capture_handle,
+				hw_params, &buffer_time, &direction)) < 0)
+		throw Alsa::MakeError(err, "Cannot set buffer time");
 
 	/* ... and calculate the period_size to have four periods in
 	   one buffer; this way, we get woken up often enough to avoid
@@ -363,7 +368,7 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 	snd_pcm_uframes_t buffer_size;
 	if (snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size) == 0) {
 		snd_pcm_uframes_t period_size = buffer_size / 4;
-		int direction = -1;
+		direction = -1;
 		if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle,
 		                             hw_params, &period_size, &direction)) < 0)
 			throw Alsa::MakeError(err, "Cannot set period size");
