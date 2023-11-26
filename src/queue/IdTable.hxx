@@ -21,14 +21,13 @@ class IdTable {
 	 */
 	unsigned initialized = 1;
 
-	unsigned next;
+	unsigned next = 1;
 
-	int *const data;
+	int *const data = new int[size];
 
 public:
 	IdTable(unsigned _size) noexcept
-		:size(_size), next(1), data(new int[size]) {
-	}
+		:size(_size) {}
 
 	~IdTable() noexcept {
 		delete[] data;
