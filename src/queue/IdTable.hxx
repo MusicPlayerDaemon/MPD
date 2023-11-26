@@ -34,23 +34,23 @@ class IdTable {
 	int *const data = new int[size];
 
 public:
-	explicit IdTable(unsigned _size) noexcept
+	explicit constexpr IdTable(unsigned _size) noexcept
 		:size(_size) {}
 
-	~IdTable() noexcept {
+	constexpr ~IdTable() noexcept {
 		delete[] data;
 	}
 
 	IdTable(const IdTable &) = delete;
 	IdTable &operator=(const IdTable &) = delete;
 
-	int IdToPosition(unsigned id) const noexcept {
+	constexpr int IdToPosition(unsigned id) const noexcept {
 		return id < initialized
 			? data[id]
 			: -1;
 	}
 
-	unsigned GenerateId() noexcept {
+	constexpr unsigned GenerateId() noexcept {
 		assert(next > 0);
 		assert(next <= initialized);
 
@@ -75,21 +75,21 @@ public:
 		}
 	}
 
-	unsigned Insert(unsigned position) noexcept {
+	constexpr unsigned Insert(unsigned position) noexcept {
 		unsigned id = GenerateId();
 		assert(id < initialized);
 		data[id] = position;
 		return id;
 	}
 
-	void Move(unsigned id, unsigned position) noexcept {
+	constexpr void Move(unsigned id, unsigned position) noexcept {
 		assert(id < initialized);
 		assert(data[id] >= 0);
 
 		data[id] = position;
 	}
 
-	void Erase(unsigned id) noexcept {
+	constexpr void Erase(unsigned id) noexcept {
 		assert(id < initialized);
 		assert(data[id] >= 0);
 
