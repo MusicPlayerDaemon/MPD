@@ -1002,14 +1002,19 @@ AlsaOutput::DrainInternal()
 			period_buffer.FillWithSilence(silence, out_frame_size);
 
 		/* drain period_buffer */
-		if (!period_buffer.IsDrained()) {
+		unsigned int retry_count = 0;
+		while (!period_buffer.IsDrained() && retry_count <= 1) {
 			auto frames_written = WriteFromPeriodBuffer();
 			if (frames_written < 0) {
-				if (frames_written == -EAGAIN)
+				if (frames_written == -EAGAIN || frames_written == -EINTR)
 					return false;
 
-				throw Alsa::MakeError(frames_written,
-						      "snd_pcm_writei() failed");
+				if (Recover(frames_written) < 0)
+					throw Alsa::MakeError(frames_written,
+							      "snd_pcm_writei() failed");
+
+				retry_count++;
+				continue;
 			}
 
 			/* need to call CopyRingToPeriodBuffer() and
