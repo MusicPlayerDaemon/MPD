@@ -31,6 +31,8 @@
 #include <string>
 #include <utility>
 
+using std::string_view_literals::operator""sv;
+
 class CurlStorage final : public Storage {
 	const std::string base;
 
@@ -244,29 +246,30 @@ public:
 		:BlockingHttpRequest(_curl, _uri),
 		 CommonExpatParser(ExpatNamespaceSeparator{'|'})
 	{
-		request.SetOption(CURLOPT_CUSTOMREQUEST, "PROPFIND");
-		request.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
-		request.SetOption(CURLOPT_MAXREDIRS, 1L);
+		auto &easy = request.GetEasy();
+
+		easy.SetOption(CURLOPT_CUSTOMREQUEST, "PROPFIND");
+		easy.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
+		easy.SetOption(CURLOPT_MAXREDIRS, 1L);
 
 		/* this option eliminates the probe request when
 		   username/password are specified */
-		request.SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		easy.SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
 		request_headers.Append(FmtBuffer<40>("depth: {}", depth));
 		request_headers.Append("content-type: text/xml");
 
-		request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
+		easy.SetRequestHeaders(request_headers.Get());
 
-		request.SetOption(CURLOPT_POSTFIELDS,
-				  "<?xml version=\"1.0\"?>\n"
-				  "<a:propfind xmlns:a=\"DAV:\">"
-				  "<a:prop>"
-				  "<a:resourcetype/>"
-				  "<a:getcontenttype/>"
-				  "<a:getcontentlength/>"
-				  "<a:getlastmodified/>"
-				  "</a:prop>"
-				  "</a:propfind>");
+		easy.SetRequestBody("<?xml version=\"1.0\"?>\n"
+				    "<a:propfind xmlns:a=\"DAV:\">"
+				    "<a:prop>"
+				    "<a:resourcetype/>"
+				    "<a:getcontenttype/>"
+				    "<a:getcontentlength/>"
+				    "<a:getlastmodified/>"
+				    "</a:prop>"
+				    "</a:propfind>"sv);
 	}
 
 	using BlockingHttpRequest::GetEasy;

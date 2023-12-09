@@ -69,7 +69,7 @@ QobuzTrackRequest::QobuzTrackRequest(QobuzClient &client,
 {
 	request_headers.Append(("X-User-Auth-Token:"
 				+ session.user_auth_token).c_str());
-	request.SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
+	request.GetEasy().SetRequestHeaders(request_headers.Get());
 }
 
 QobuzTrackRequest::~QobuzTrackRequest() noexcept

@@ -456,7 +456,7 @@ CurlInputStream::~CurlInputStream() noexcept
 }
 
 static CurlEasy
-CreateEasy(const char *url)
+CreateEasy(const char *url, struct curl_slist *headers)
 {
 	CurlEasy easy{url};
 
@@ -503,14 +503,17 @@ CreateEasy(const char *url)
 	easy.SetOption(CURLOPT_TCP_KEEPIDLE, tcp_keepidle);
 	easy.SetOption(CURLOPT_TCP_KEEPINTVL, tcp_keepintvl);
 
+	easy.SetRequestHeaders(headers);
+
 	return easy;
 }
 
 void
 CurlInputStream::InitEasy()
 {
-	request = new CurlRequest(**curl_init, CreateEasy(GetURI()), *this);
-	request->SetRequestHeaders(request_headers.Get());
+	request = new CurlRequest(**curl_init,
+				  CreateEasy(GetURI(), request_headers.Get()),
+				  *this);
 }
 
 void
@@ -540,8 +543,8 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 	/* send the "Range" header */
 
 	if (offset > 0)
-		request->SetOption(CURLOPT_RANGE,
-				   fmt::format_int{offset}.c_str());
+		request->GetEasy().SetOption(CURLOPT_RANGE,
+					     fmt::format_int{offset}.c_str());
 
 	StartRequest();
 }

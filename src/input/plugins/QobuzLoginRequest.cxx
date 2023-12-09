@@ -109,9 +109,9 @@ QobuzLoginRequest::QobuzLoginRequest(CurlGlobal &curl,
 	:request(curl, *this),
 	 handler(_handler)
 {
-	request.SetUrl(MakeLoginUrl(request.Get(), base_url, app_id,
-				    username, email, password,
-				    device_manufacturer_id).c_str());
+	request.GetEasy().SetURL(MakeLoginUrl(request.Get(), base_url, app_id,
+					      username, email, password,
+					      device_manufacturer_id).c_str());
 }
 
 QobuzLoginRequest::~QobuzLoginRequest() noexcept

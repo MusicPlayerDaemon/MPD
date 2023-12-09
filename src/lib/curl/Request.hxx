@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef CURL_REQUEST_HXX
-#define CURL_REQUEST_HXX
+#pragma once
 
 #include "Easy.hxx"
 #include "Adapter.hxx"
-
-#include <cstddef>
 
 class CurlGlobal;
 class CurlResponseHandler;
@@ -38,7 +35,7 @@ public:
 	CurlRequest(CurlGlobal &_global, const char *url,
 		    CurlResponseHandler &_handler)
 		:CurlRequest(_global, _handler) {
-		SetUrl(url);
+		easy.SetURL(url);
 	}
 
 	~CurlRequest() noexcept;
@@ -84,19 +81,6 @@ public:
 		return easy;
 	}
 
-	template<typename T>
-	void SetOption(CURLoption option, T value) {
-		easy.SetOption(option, value);
-	}
-
-	void SetUrl(const char *url) {
-		easy.SetURL(url);
-	}
-
-	void SetRequestHeaders(struct curl_slist *request_headers) {
-		easy.SetRequestHeaders(request_headers);
-	}
-
 	void Resume() noexcept;
 
 	/**
@@ -113,5 +97,3 @@ private:
 	 */
 	void FreeEasy() noexcept;
 };
-
-#endif
