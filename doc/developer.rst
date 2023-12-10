@@ -20,6 +20,7 @@ Some example code:
 
 .. code-block:: c
 
+    int
     Foo(const char *abc, int xyz)
     {
         if (abc == nullptr) {
