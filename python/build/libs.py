@@ -59,17 +59,6 @@ libmad = AutotoolsProject(
     autogen=True,
 )
 
-liblame = AutotoolsProject(
-    'http://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz',
-    'ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e',
-    'lib/libmp3lame.a',
-    [
-        '--disable-shared', '--enable-static',
-        '--disable-gtktest', '--disable-analyzer-hooks',
-        '--disable-decoder', '--disable-frontend',
-    ],
-)
-
 libmodplug = AutotoolsProject(
     'https://downloads.sourceforge.net/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz',
     '457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de',

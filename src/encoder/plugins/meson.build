@@ -16,7 +16,19 @@ if libvorbisenc_dep.found()
   encoder_plugins_sources += 'VorbisEncoderPlugin.cxx'
 endif
 
-liblame_dep = c_compiler.find_library('mp3lame', required: get_option('lame'))
+if not get_option('lame').disabled()
+  # LAME doesn't have a pkg-config file so we have to use
+  # find_library()
+  liblame_dep = c_compiler.find_library('mp3lame', required: false)
+  if not liblame_dep.found()
+    # only if that was not found, use dependency() which may use the
+    # LAME subproject
+    liblame_dep = dependency('mp3lame', required: get_option('lame'))
+  endif
+else
+  liblame_dep = dependency('', required: false)
+endif
+
 encoder_features.set('ENABLE_LAME', liblame_dep.found())
 if liblame_dep.found()
   encoder_plugins_sources += 'LameEncoderPlugin.cxx'

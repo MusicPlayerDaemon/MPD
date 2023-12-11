@@ -40,7 +40,6 @@ from build.libs import *
 thirdparty_libs = [
     zlib,
     libid3tag,
-    liblame,
     libmodplug,
     libopenmpt,
     wildmidi,
