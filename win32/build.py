@@ -47,7 +47,6 @@ thirdparty_libs = [
     wildmidi,
     gme,
     ffmpeg,
-    curl,
     libnfs,
     libsamplerate,
 ]

@@ -38,7 +38,6 @@ thirdparty_libs = [
     gme,
     ffmpeg,
     openssl,
-    curl,
     libnfs,
 ]
 
