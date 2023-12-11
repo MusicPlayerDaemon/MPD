@@ -7,7 +7,6 @@ from build.meson import MesonProject
 from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
-from build.openssl import OpenSSLProject
 
 libmpdclient = MesonProject(
     'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.20.tar.xz',
@@ -569,13 +568,6 @@ ffmpeg = FfmpegProject(
         '--disable-bsf=vp9_superframe',
         '--disable-bsf=vp9_superframe_split',
     ],
-)
-
-openssl = OpenSSLProject(
-    ('https://www.openssl.org/source/openssl-3.1.4.tar.gz',
-     'https://artfiles.org/openssl.org/source/openssl-3.1.4.tar.gz'),
-    '840af5366ab9b522bde525826be3ef0fb0af81c6a9ebd84caa600fea1731eee3',
-    'include/openssl/ossl_typ.h',
 )
 
 libnfs = AutotoolsProject(
