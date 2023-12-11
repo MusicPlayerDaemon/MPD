@@ -26,45 +26,6 @@ libsamplerate = CmakeProject(
     ],
 )
 
-libogg = CmakeProject(
-    'http://downloads.xiph.org/releases/ogg/libogg-1.3.5.tar.xz',
-    'c4d91be36fc8e54deae7575241e03f4211eb102afb3fc0775fbbc1b740016705',
-    'lib/libogg.a',
-    [
-        '-DBUILD_SHARED_LIBS=OFF',
-        '-DINSTALL_DOCS=OFF',
-        '-DINSTALL_CMAKE_PACKAGE_MODULE=OFF',
-    ],
-)
-
-opus = AutotoolsProject(
-    'https://downloads.xiph.org/releases/opus/opus-1.4.tar.gz',
-    'c9b32b4253be5ae63d1ff16eea06b94b5f0f2951b7a02aceef58e3a3ce49c51f',
-    'lib/libopus.a',
-    [
-        '--disable-shared', '--enable-static',
-        '--disable-doc',
-        '--disable-extra-programs',
-    ],
-
-    # suppress "visibility default" from opus_defines.h
-    cppflags='-DOPUS_EXPORT=',
-)
-
-flac = AutotoolsProject(
-    'http://downloads.xiph.org/releases/flac/flac-1.4.3.tar.xz',
-    '6c58e69cd22348f441b861092b825e591d0b822e106de6eb0ee4d05d27205b70',
-    'lib/libFLAC.a',
-    [
-        '--disable-shared', '--enable-static',
-        '--disable-stack-smash-protection',
-        '--disable-xmms-plugin', '--disable-cpplibs',
-        '--disable-doxygen-docs',
-        '--disable-programs',
-    ],
-    subdirs=['include', 'src/libFLAC'],
-)
-
 zlib = ZlibProject(
     ('http://zlib.net/zlib-1.3.tar.xz',
      'https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.xz'),

@@ -1,8 +1,11 @@
 /packagecache/
 
 /expat-*/
+/flac-*/
 /fmt-*/
 /googletest-*/
+/opus-*/
 /sqlite-*/
+/libogg-*/
 /libvorbis-*/
 /liburing-*/

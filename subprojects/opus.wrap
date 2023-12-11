@@ -1,0 +1,13 @@
+[wrap-file]
+directory = opus-1.4
+source_url = https://downloads.xiph.org/releases/opus/opus-1.4.tar.gz
+source_filename = opus-1.4.tar.gz
+source_hash = c9b32b4253be5ae63d1ff16eea06b94b5f0f2951b7a02aceef58e3a3ce49c51f
+source_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/opus_1.4-1/opus-1.4.tar.gz
+wrapdb_version = 1.4-1
+
+# fix for https://github.com/xiph/opus/issues/273
+diff_files = opus_have_arm_intrinsics_or_asm.patch
+
+[provide]
+opus = opus_dep
