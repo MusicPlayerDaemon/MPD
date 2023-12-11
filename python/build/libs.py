@@ -609,41 +609,6 @@ openssl = OpenSSLProject(
     'include/openssl/ossl_typ.h',
 )
 
-curl = CmakeProject(
-    ('https://curl.se/download/curl-8.5.0.tar.xz',
-     'https://github.com/curl/curl/releases/download/curl-8_5_0/curl-8.5.0.tar.xz'),
-    '42ab8db9e20d8290a3b633e7fbb3cec15db34df65fd1015ef8ac1e4723750eeb',
-    'lib/libcurl.a',
-    [
-        '-DBUILD_CURL_EXE=OFF',
-        '-DBUILD_SHARED_LIBS=OFF',
-        '-DCURL_DISABLE_LDAP=ON',
-        '-DCURL_DISABLE_TELNET=ON',
-        '-DCURL_DISABLE_DICT=ON',
-        '-DCURL_DISABLE_FILE=ON',
-        '-DCURL_DISABLE_FTP=ON',
-        '-DCURL_DISABLE_TFTP=ON',
-        '-DCURL_DISABLE_LDAPS=ON',
-        '-DCURL_DISABLE_RTSP=ON',
-        '-DCURL_DISABLE_PROXY=ON',
-        '-DCURL_DISABLE_POP3=ON',
-        '-DCURL_DISABLE_IMAP=ON',
-        '-DCURL_DISABLE_SMTP=ON',
-        '-DCURL_DISABLE_GOPHER=ON',
-        '-DCURL_DISABLE_COOKIES=ON',
-        '-DCURL_DISABLE_CRYPTO_AUTH=ON',
-        '-DCURL_DISABLE_ALTSVC=ON',
-        '-DCMAKE_USE_LIBSSH2=OFF',
-        '-DCURL_WINDOWS_SSPI=OFF',
-        '-DCURL_DISABLE_NTLM=ON',
-        '-DBUILD_TESTING=OFF',
-    ],
-    windows_configure_args=[
-        '-DCURL_USE_SCHANNEL=ON',
-    ],
-    patches='src/lib/curl/patches',
-)
-
 libnfs = AutotoolsProject(
     'https://github.com/sahlberg/libnfs/archive/libnfs-5.0.3.tar.gz',
     'd945cb4f4c8f82ee1f3640893a168810f794a28e1010bb007ec5add345e9df3e',
