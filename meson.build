@@ -14,11 +14,14 @@ project(
     # linked statically into the MPD executable.
     'curl:default_library=static',
     'expat:default_library=static',
+    'flac:default_library=static',
     'fmt:default_library=static',
     'gtest:default_library=static',
     'libmicrohttpd:default_library=static',
     'libnpupnp:default_library=static',
     'liburing:default_library=static',
+    'ogg:default_library=static',
+    'opus:default_library=static',
     'sqlite3:default_library=static',
     'vorbis:default_library=static',
 
@@ -27,12 +30,18 @@ project(
     'curl:warning_level=0',
     'expat:werror=false',
     'expat:warning_level=0',
+    'flac:werror=false',
+    'flac:warning_level=0',
     'fmt:warning_level=0',
     'gtest:warning_level=0',
     'libmicrohttpd:warning_level=0',
     'libnpupnp:warning_level=0',
     'liburing:warning_level=0',
     'sqlite3:warning_level=0',
+    'oggiopus:werror=false',
+    'ogg:warning_level=0',
+    'opus:werror=false',
+    'opus:warning_level=0',
     'vorbis:warning_level=0',
 
     # Disable subprojects features we don't need

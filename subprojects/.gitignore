@@ -2,10 +2,13 @@
 
 /curl-*/
 /expat-*/
+/flac-*/
 /fmt-*/
 /googletest-*/
 /libmicrohttpd*
 /libnpupnp-*/
+/libogg-*/
 /liburing-*/
 /libvorbis-*/
+/opus-*/
 /sqlite-*/
