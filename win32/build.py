@@ -41,7 +41,6 @@ thirdparty_libs = [
     libmpdclient,
     zlib,
     libid3tag,
-    liblame,
     libmodplug,
     libopenmpt,
     wildmidi,
