@@ -1,4 +1,5 @@
 import os.path
+import platform
 import shutil
 from typing import Union
 
@@ -28,14 +29,22 @@ android_abis = {
     },
 }
 
+# https://developer.android.com/ndk/guides/other_build_systems
+def build_arch() :
+    platforms = {
+        'Linux': 'linux-x86_64',
+        'Windows': 'windows-x86_64',
+        'Darwin': 'darwin-x86_64' # Despite the x86_64 tag in the Darwin name, those are fat binaries that include M1 support.
+    }
+
+    return platforms.get(platform.system())
+
+
 class AndroidNdkToolchain:
     def __init__(self, top_path: str, lib_path: str,
                  tarball_path: str, src_path: str,
                  ndk_path: str, android_abi: str,
                  use_cxx):
-        # build host configuration
-        build_arch = 'linux-x86_64'
-
         # select the NDK target
         abi_info = android_abis[android_abi]
         host_triplet = abi_info['arch']
@@ -54,7 +63,7 @@ class AndroidNdkToolchain:
         self.host_triplet = host_triplet
         self.install_prefix = install_prefix
 
-        llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
+        llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch())
         llvm_triple = host_triplet + android_api_level
 
         common_flags = '-Os -g'
