@@ -1,6 +1,7 @@
 #!/usr/bin/env -S python3 -u
 
 import os, os.path
+import shutil
 import sys, subprocess
 
 if len(sys.argv) < 4:
@@ -60,8 +61,11 @@ configure_args += [
     '-Dandroid_ndk=' + ndk_path,
     '-Dandroid_abi=' + android_abi,
     '-Dandroid_strip=' + toolchain.strip,
+    '-Dopenssl:asm=disabled'
 ]
 
 from build.meson import configure as run_meson
 run_meson(toolchain, mpd_path, '.', configure_args)
-subprocess.check_call(['/usr/bin/ninja'], env=toolchain.env)
+
+ninja = shutil.which("ninja")
+subprocess.check_call([ninja], env=toolchain.env)
