@@ -16,7 +16,7 @@ GENCLASS="$D/classes"
 GENINCLUDE="$D/include"
 
 mkdir -p "$GENSRC/$JAVA_PKG_PATH"
-"$JAVAC" -source 1.7 -target 1.7 -Xlint:-options \
+"$JAVAC" -source 1.8 -target 1.8 -Xlint:-options \
 	 -cp "$CLASSPATH" \
 	 -h "$GENINCLUDE" \
 	 -d "$GENCLASS" \
