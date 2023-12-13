@@ -29,7 +29,7 @@ if get_option('android_debug_keystore') != ''
     output: 'mpd-debug.apk',
     input: aligned_apk,
     command: [
-      apksigner, 'sign',
+      android_apksigner, 'sign',
       '--in', '@INPUT@',
       '--out', '@OUTPUT@',
       '--debuggable-apk-permitted',
@@ -47,7 +47,7 @@ if get_option('android_keystore') != '' and get_option('android_keyalias') != ''
     output: 'mpd.apk',
     input: aligned_apk,
     command: [
-      apksigner, 'sign',
+      android_apksigner, 'sign',
       '--in', '@INPUT@',
       '--out', '@OUTPUT@',
       '-ks', get_option('android_keystore'),

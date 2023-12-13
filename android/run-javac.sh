@@ -4,7 +4,10 @@ JAVAC=$1
 CLASSPATH=$2
 JAVA_PKG_PATH=$3
 ZIP=$4
-JARFILE=`realpath "$5"`
+DIRNAME=`dirname "$5"`
+REALDIR=`realpath "$DIRNAME"`
+BASENAME=`basename "$5"`
+JARFILE=$REALDIR/$BASENAME
 shift 5
 
 D=`dirname "$JARFILE"`

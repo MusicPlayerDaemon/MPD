@@ -5,7 +5,7 @@ android_ndk = get_option('android_ndk')
 android_sdk = get_option('android_sdk')
 android_abi = get_option('android_abi')
 
-android_sdk_build_tools_version = '29.0.3'
+android_sdk_build_tools_version = '34.0.0'
 android_sdk_platform = 'android-29'
 
 android_build_tools_dir = join_paths(android_sdk, 'build-tools', android_sdk_build_tools_version)
@@ -13,11 +13,11 @@ android_sdk_platform_dir = join_paths(android_sdk, 'platforms', android_sdk_plat
 
 android_aidl = join_paths(android_build_tools_dir, 'aidl')
 android_aapt = join_paths(android_build_tools_dir, 'aapt')
-android_dx = join_paths(android_build_tools_dir, 'dx')
+android_d8 = join_paths(android_build_tools_dir, 'd8')
 android_zipalign = join_paths(android_build_tools_dir, 'zipalign')
+android_apksigner = join_paths(android_build_tools_dir, 'apksigner')
 
 javac = find_program('javac')
-apksigner = find_program('apksigner')
 rsvg_convert = find_program('rsvg-convert')
 convert = find_program('convert')
 zip = find_program('zip')
@@ -133,8 +133,8 @@ classes_dex = custom_target(
   output: 'classes.dex',
   input: classes_jar,
   command: [
-    android_dx,
-    '--dex', '--output', '@OUTPUT@',
+    android_d8,
+    '--output', meson.current_build_dir(),   
     '@INPUT@',
   ],
 )
