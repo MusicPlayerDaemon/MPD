@@ -23,11 +23,14 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import androidx.core.app.ServiceCompat;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 public class Main extends Service implements Runnable {
 	private static final String TAG = "Main";
+	private static final String WAKELOCK_TAG = "mpd:wakelockmain";
 	private static final String REMOTE_ERROR = "MPD process was killed";
 	private static final int MAIN_STATUS_ERROR = -1;
 	private static final int MAIN_STATUS_STOPPED = 0;
@@ -198,7 +201,7 @@ public class Main extends Service implements Runnable {
 		mainIntent.setAction("android.intent.action.MAIN");
 		mainIntent.addCategory("android.intent.category.LAUNCHER");
 		final PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-				mainIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+				mainIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 		Notification.Builder nBuilder;
 		if (Build.VERSION.SDK_INT >= 26 /* Build.VERSION_CODES.O */)
@@ -262,7 +265,7 @@ public class Main extends Service implements Runnable {
 	private void setWakelockEnabled(boolean enabled) {
 		if (enabled && mWakelock == null) {
 			PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
-			mWakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+			mWakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_TAG);
 			mWakelock.acquire();
 			Log.d(TAG, "Wakelock acquired");
 		} else if (!enabled && mWakelock != null) {

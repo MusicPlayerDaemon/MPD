@@ -566,7 +566,7 @@ if is_android
     '-lz',
   ]
   more_deps += [
-    declare_dependency(sources: [classes_jar]),
+    declare_dependency(sources: [bridge_header]),
     java_dep,
   ]
 else

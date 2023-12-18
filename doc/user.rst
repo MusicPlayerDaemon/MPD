@@ -203,10 +203,8 @@ You need:
 * cmake
 * pkg-config
 * quilt
-* imagemagick
 * zip
 * libtool
-* rsvg-convert 
 * python 3.9+
 
 Just like with the native build, unpack the :program:`MPD` source
@@ -221,7 +219,8 @@ tarball and change into the directory.  Then, instead of
    --buildtype=debugoptimized -Db_ndebug=true \
    -Dwrap_mode=forcefallback \
    -Dandroid_debug_keystore=$HOME/.android/debug.keystore
- ninja android/apk/mpd-debug.apk
+ cd ../../android
+ ./gradlew assembleDebug
 
 :envvar:`SDK_PATH` is the absolute path where you installed the
 Android SDK; :envvar:`NDK_PATH` is the Android NDK installation path;
