@@ -775,10 +775,10 @@ brackets if you want to configure a port::
 
 To bind to a local socket (UNIX domain socket), specify an absolute
 path or a path starting with a tilde (~).  Some clients default to
-connecting to :file:`/var/run/mpd/socket` so this may be a good
+connecting to :file:`/run/mpd/socket` so this may be a good
 choice::
 
- bind_to_address "/var/run/mpd/socket"
+ bind_to_address "/run/mpd/socket"
 
 On Linux, local sockets can be bound to a name without a socket inode
 on the filesystem; MPD implements this by prepending ``@`` to the
