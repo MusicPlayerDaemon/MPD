@@ -214,6 +214,9 @@ of:
   file's time stamp with the given value (ISO 8601 or UNIX
   time stamp).
 
+- ``(added-since 'VALUE')``: compares time stamp when the file was added with
+  the given value (ISO 8601 or UNIX time stamp).
+
 - ``(AudioFormat == 'SAMPLERATE:BITS:CHANNELS')``: compares the audio
   format with the given value.  See :ref:`audio_output_format` for a
   detailed explanation.
