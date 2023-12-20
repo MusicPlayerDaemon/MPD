@@ -4,6 +4,7 @@
 #include "IcyMetaDataParser.hxx"
 #include "tag/Builder.hxx"
 #include "util/AllocatedString.hxx"
+#include "util/StringSplit.hxx"
 
 #include <algorithm>
 #include <cassert>
@@ -99,24 +100,21 @@ icy_parse_tag_item(TagBuilder &tag,
  * of the string).  If that fails, return the first single quote.  If
  * that also fails, return #end.
  */
-static const char *
-find_end_quote(const char *p, const char *const end) noexcept
+static constexpr std::pair<std::string_view, std::string_view>
+SplitEndQuote(std::string_view s) noexcept
 {
-	const char *fallback = std::find(p, end, '\'');
-	if (fallback >= end - 1 || fallback[1] == ';')
-		return fallback;
+	auto quote = s.find('\'');
+	if (quote == s.npos)
+		return {};
 
-	p = fallback + 1;
-	while (true) {
-		p = std::find(p, end, '\'');
-		if (p == end)
-			return fallback;
+	if (const auto i = s.find("';"sv, quote); i != s.npos)
+		quote = i;
+	else
+		quote = s.rfind('\'');
 
-		if (p == end - 1 || p[1] == ';')
-			return p;
+	assert(quote != s.npos);
 
-		++p;
-	}
+	return {s.substr(0, quote), s.substr(quote + 1)};
 }
 
 static std::unique_ptr<Tag>
@@ -124,41 +122,27 @@ icy_parse_tag(
 #ifdef HAVE_ICU_CONVERTER
 	      const IcuConverter *icu_converter,
 #endif
-	      const char *p, const char *const end) noexcept
+	      std::string_view src) noexcept
 {
-	assert(p != nullptr);
-	assert(end != nullptr);
-	assert(p <= end);
-
 	TagBuilder tag;
 
-	while (p != end) {
-		const char *eq = std::find(p, end, '=');
-		if (eq == end)
+	while (!src.empty()) {
+		const auto [name, rest] = Split(src, '=');
+		if (rest.empty())
 			break;
 
-		const std::string_view name{p, eq};
-
-		p = eq + 1;
-
-		if (*p != '\'') {
+		if (rest.front() != '\'') {
 			/* syntax error; skip to the next semicolon,
 			   try to recover */
-			const char *semicolon = std::find(p, end, ';');
-			if (semicolon == end)
-				break;
-			p = semicolon + 1;
+			src = Split(rest, ';').second;
 			continue;
 		}
 
-		++p;
+		src = rest.substr(1);
 
-		const char *quote = find_end_quote(p, end);
-		if (quote == end)
+		const auto [value, after_value] = SplitEndQuote(rest.substr(1));
+		if (after_value.data() == nullptr)
 			break;
-
-		const std::string_view value{p, quote};
-		p = quote + 1;
 
 		icy_parse_tag_item(tag,
 #ifdef HAVE_ICU_CONVERTER
@@ -166,10 +150,7 @@ icy_parse_tag(
 #endif
 				   name, value);
 
-		const char *semicolon = std::find(p, end, ';');
-		if (semicolon == end)
-			break;
-		p = semicolon + 1;
+		src = Split(after_value, ';').second;
 	}
 
 	return tag.CommitNew();
@@ -223,7 +204,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 #ifdef HAVE_ICU_CONVERTER
 				    icu_converter.get(),
 #endif
-				    meta_data, meta_data + meta_size);
+				    {meta_data, meta_size});
 		delete[] meta_data;
 
 		/* change back to normal data mode */

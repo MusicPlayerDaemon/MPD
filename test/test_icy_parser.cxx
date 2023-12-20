@@ -11,15 +11,15 @@
 
 #include <string.h>
 
-static std::unique_ptr<Tag>
-icy_parse_tag(const char *p)
-{
-	return icy_parse_tag(
 #ifdef HAVE_ICU_CONVERTER
-			     nullptr,
-#endif
-			     p, p + strlen(p));
+
+static std::unique_ptr<Tag>
+icy_parse_tag(std::string_view p) noexcept
+{
+	return icy_parse_tag(nullptr, p);
 }
+
+#endif
 
 static void
 CompareTagTitle(const Tag &tag, const std::string &title)
