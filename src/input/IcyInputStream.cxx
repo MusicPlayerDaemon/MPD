@@ -81,7 +81,7 @@ IcyInputStream::Read(std::unique_lock<Mutex> &lock,
 			return 0;
 		}
 
-		size_t result = parser->ParseInPlace(ptr, nbytes);
+		size_t result = parser->ParseInPlace({static_cast<std::byte *>(ptr), nbytes});
 		if (result > 0) {
 			override_offset += result;
 			offset = override_offset;

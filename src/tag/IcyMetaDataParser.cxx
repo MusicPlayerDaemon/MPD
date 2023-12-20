@@ -156,28 +156,29 @@ icy_parse_tag(
 	return tag.CommitNew();
 }
 
-size_t
-IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
+std::size_t
+IcyMetaDataParser::Meta(std::span<const std::byte> src) noexcept
 {
-	const auto *p = (const unsigned char *)data;
-
 	assert(IsDefined());
 	assert(data_rest == 0);
-	assert(length > 0);
+	assert(!src.empty());
+
+	std::size_t consumed = 0;
 
 	if (meta_size == 0) {
 		/* read meta_size from the first byte of a meta
 		   block */
-		meta_size = *p++ * 16;
+		meta_size = static_cast<std::size_t>(src.front()) * 16;
 		if (meta_size == 0) {
 			/* special case: no metadata */
 			data_rest = data_size;
 			return 1;
 		}
 
-		/* 1 byte was consumed (must be re-added later for the
-		   return value */
-		--length;
+		src = src.subspan(1);
+
+		/* 1 byte was consumed */
+		++consumed;
 
 		/* initialize metadata reader, allocate enough
 		   memory (+1 for the null terminator) */
@@ -187,15 +188,12 @@ IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 
 	assert(meta_position < meta_size);
 
-	if (length > meta_size - meta_position)
-		length = meta_size - meta_position;
+	if (src.size() > meta_size - meta_position)
+		src = src.first(meta_size - meta_position);
 
-	memcpy(meta_data + meta_position, p, length);
-	meta_position += length;
-
-	if (p != data)
-		/* re-add the first byte (which contained meta_size) */
-		++length;
+	memcpy(meta_data + meta_position, src.data(), src.size());
+	meta_position += src.size();
+	consumed += src.size();
 
 	if (meta_position == meta_size) {
 		/* parse */
@@ -213,34 +211,29 @@ IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 		data_rest = data_size;
 	}
 
-	return length;
+	return consumed;
 }
 
 size_t
-IcyMetaDataParser::ParseInPlace(void *data, size_t length) noexcept
+IcyMetaDataParser::ParseInPlace(std::span<std::byte> buffer) noexcept
 {
-	auto *const dest0 = (std::byte *)data;
-	std::byte *dest = dest0;
-	const std::byte *src = dest0;
+	const auto begin = buffer.begin();
+	auto dest = begin;
+	auto src = buffer;
 
-	while (length > 0) {
-		size_t chunk = Data(length);
+	while (!src.empty()) {
+		std::size_t chunk = Data(src.size());
 		if (chunk > 0) {
-			memmove(dest, src, chunk);
-			dest += chunk;
-			src += chunk;
-			length -= chunk;
-
-			if (length == 0)
+			dest = std::copy_n(src.begin(), chunk, dest);
+			src = src.subspan(chunk);
+			if (src.empty())
 				break;
 		}
 
-		chunk = Meta(src, length);
-		if (chunk > 0) {
-			src += chunk;
-			length -= chunk;
-		}
+		chunk = Meta(src);
+		if (chunk > 0)
+			src = src.subspan(chunk);
 	}
 
-	return dest - dest0;
+	return std::distance(begin, dest);
 }

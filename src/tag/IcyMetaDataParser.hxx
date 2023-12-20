@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <span>
 
 class IcyMetaDataParser {
 	size_t data_size = 0, data_rest;
@@ -66,18 +67,18 @@ public:
 	size_t Data(size_t length) noexcept;
 
 	/**
-	 * Reads metadata from the stream.  Returns the number of bytes
-	 * consumed.  If the return value is smaller than "length", the caller
-	 * should invoke icy_data().
+	 * Reads metadata from the stream.  Returns the number of
+	 * bytes consumed.  If the return value is smaller than
+	 * "src.size()", the caller should invoke Data().
 	 */
-	size_t Meta(const void *data, size_t length) noexcept;
+	std::size_t Meta(std::span<const std::byte> src) noexcept;
 
 	/**
 	 * Parse data and eliminate metadata.
 	 *
 	 * @return the number of data bytes remaining in the buffer
 	 */
-	size_t ParseInPlace(void *data, size_t length) noexcept;
+	size_t ParseInPlace(std::span<std::byte> buffer) noexcept;
 
 	std::unique_ptr<Tag> ReadTag() noexcept {
 		return std::exchange(tag, nullptr);
