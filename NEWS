@@ -1,4 +1,4 @@
-ver 0.23.15 (not yet released)
+ver 0.23.15 (2023/12/20)
 * decoder
   - ffmpeg: fix build failure with FFmpeg 6.1
 * output
