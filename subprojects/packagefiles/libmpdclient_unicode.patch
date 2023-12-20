@@ -1,0 +1,27 @@
+commit 14e9b3be33a7b7e94bb6504a519e03072bae033d
+Author: Max Kellermann <max@musicpd.org>
+Date:   Wed Dec 20 17:13:54 2023 +0100
+
+    ierror: use FormatMessageA() instead of FormatMessage()
+    
+    Just in case _UNICODE is defined.
+
+diff --git a/src/ierror.c b/src/ierror.c
+index 1642dbd2..e068dc8c 100644
+--- a/src/ierror.c
++++ b/src/ierror.c
+@@ -103,10 +103,10 @@ mpd_error_system_message(struct mpd_error_info *error, int code)
+ 	mpd_error_system(error, code);
+ 
+ #ifdef _WIN32
+-	nbytes = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+-			       FORMAT_MESSAGE_IGNORE_INSERTS |
+-			       FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, code, 0,
+-			       (LPSTR)buffer, sizeof(buffer), NULL);
++	nbytes = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
++				FORMAT_MESSAGE_IGNORE_INSERTS |
++				FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, code, 0,
++				(LPSTR)buffer, sizeof(buffer), NULL);
+ 	mpd_error_message(error, nbytes > 0 ? buffer : "Unknown error");
+ #else
+ 	mpd_error_message(error, strerror(code));

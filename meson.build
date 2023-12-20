@@ -18,6 +18,7 @@ project(
     'fmt:default_library=static',
     'gtest:default_library=static',
     'lame:default_library=static',
+    'libmpdclient:default_library=static',
     'liburing:default_library=static',
     'ogg:default_library=static',
     'openssl:default_library=static',
@@ -76,6 +77,8 @@ project(
     'curl:tftp=disabled',
     'lame:decoder=false',
     'lame:tools=disabled',
+    'libmpdclient:documentation=false',
+    'libmpdclient:test=false',
     'openssl:build_cli=false',
     'openssl:asm=disabled', # work around "call to undeclared function "asm" on Android
     'opus:docs=disabled',
