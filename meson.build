@@ -109,8 +109,11 @@ configure_file(output: 'Version.h', configuration: version_conf)
 conf = configuration_data()
 conf.set_quoted('SYSTEM_CONFIG_FILE_LOCATION', join_paths(get_option('prefix'), get_option('sysconfdir'), 'mpd.conf'))
 
-common_cppflags = [
+common_global_cppflags = [
   '-D_GNU_SOURCE',
+]
+
+common_cppflags = [
 ]
 
 test_global_common_flags = [
@@ -259,8 +262,11 @@ if is_android
   subdir('android')
 endif
 
-add_global_arguments(common_cppflags, language: 'c')
-add_global_arguments(common_cppflags, language: 'cpp')
+add_global_arguments(common_global_cppflags, language: 'c')
+add_global_arguments(common_global_cppflags, language: 'cpp')
+
+add_project_arguments(common_cppflags, language: 'c')
+add_project_arguments(common_cppflags, language: 'cpp')
 
 enable_daemon = not is_windows and not is_android and get_option('daemon')
 conf.set('ENABLE_DAEMON', enable_daemon)
