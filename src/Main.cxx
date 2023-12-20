@@ -102,6 +102,7 @@
 Context *context;
 LogListener *logListener;
 #endif
+const char *staticListenerPath;
 
 Instance *global_instance;
 
@@ -352,7 +353,8 @@ MainConfigured(const CommandLineOptions &options,
 	initialize_decoder_and_player(instance,
 				      raw_config, partition_config);
 
-	listen_global_init(raw_config, *instance.partitions.front().listener);
+
+	listen_global_init(raw_config, *instance.partitions.front().listener, staticListenerPath);
 
 #ifdef ENABLE_DAEMON
 	daemonize_set_user();
@@ -566,6 +568,9 @@ AndroidMain(JNIEnv *env)
 	ConfigData raw_config;
 
 	LoadConfigFile(env, raw_config);
+
+    auto filesDir = context->GetFilesDir(env);
+    staticListenerPath = (filesDir / Path::FromFS("mpd_comm.socket")).c_str();
 
 	MainConfigured(options, raw_config);
 }

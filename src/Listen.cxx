@@ -99,7 +99,7 @@ ListenXdgRuntimeDir(ClientListener &listener) noexcept
 }
 
 void
-listen_global_init(const ConfigData &config, ClientListener &listener)
+listen_global_init(const ConfigData &config, ClientListener &listener, const char *staticListenerPath)
 {
 	int port = config.GetPositive(ConfigOption::PORT, DEFAULT_PORT);
 
@@ -134,6 +134,14 @@ listen_global_init(const ConfigData &config, ClientListener &listener)
 							       port));
 		}
 	}
+
+    if (staticListenerPath) {
+        try {
+            ServerSocketAddGeneric(listener, staticListenerPath, 0);
+        } catch (...) {
+            std::throw_with_nested(FmtRuntimeError("Failed to bind static listener unix socket"));
+        }
+    }
 
 	try {
 		listener.Open();

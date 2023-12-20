@@ -12,6 +12,7 @@
 
 static jmethodID getExternalFilesDir_method,
   getCacheDir_method,
+  getFilesDir_method,
   getSystemService_method;
 
 void
@@ -23,6 +24,8 @@ Context::Initialise(JNIEnv *env) noexcept
 						      "(Ljava/lang/String;)Ljava/io/File;");
 	getCacheDir_method = env->GetMethodID(cls, "getCacheDir",
 					      "()Ljava/io/File;");
+    getFilesDir_method = env->GetMethodID(cls, "getFilesDir",
+                          "()Ljava/io/File;");
 	getSystemService_method = env->GetMethodID(cls, "getSystemService",
 						   "(Ljava/lang/String;)Ljava/lang/Object;");
 }
@@ -50,6 +53,18 @@ Context::GetCacheDir(JNIEnv *env) const noexcept
 		return nullptr;
 
 	return Java::File::ToAbsolutePath(env, file);
+}
+
+AllocatedPath
+Context::GetFilesDir(JNIEnv *env) const noexcept
+{
+    assert(env != nullptr);
+
+    jobject file = env->CallObjectMethod(Get(), getFilesDir_method);
+    if (Java::DiscardException(env) || file == nullptr)
+        return nullptr;
+
+    return Java::File::ToAbsolutePath(env, file);
 }
 
 AudioManager *

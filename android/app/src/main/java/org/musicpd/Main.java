@@ -15,6 +15,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.AudioManager;
+import android.net.LocalSocket;
+import android.net.LocalSocketAddress;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -25,6 +27,9 @@ import android.widget.RemoteViews;
 
 import androidx.core.app.ServiceCompat;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
@@ -40,6 +45,8 @@ public class Main extends Service implements Runnable {
 	private static final int MSG_SEND_LOG = 1;
 
 	private Thread mThread = null;
+
+	private Thread networkThread = null;
 	private int mStatus = MAIN_STATUS_STOPPED;
 	private boolean mAbort = false;
 	private String mError = null;
@@ -128,6 +135,8 @@ public class Main extends Service implements Runnable {
 
 	@Override
 	public void run() {
+		Log.e(TAG, "test2");
+
 		if (!Loader.loaded) {
 			final String error = "Failed to load the native MPD libary.\n" +
 				"Report this problem to us, and include the following information:\n" +
@@ -221,6 +230,35 @@ public class Main extends Service implements Runnable {
 
 		mThread = new Thread(this);
 		mThread.start();
+
+		networkThread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+
+				try {
+					LocalSocket clientSocket = new LocalSocket();
+					String filesPath = getFilesDir().getPath();
+
+					clientSocket.connect(new LocalSocketAddress(filesPath + "/mpd_comm.socket", LocalSocketAddress.Namespace.FILESYSTEM));
+
+					InputStreamReader inputStreamReader = new InputStreamReader(
+							clientSocket.getInputStream());
+					BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+					String resp = bufferedReader.readLine();
+					Log.e(TAG, resp);
+				}
+				catch (Exception e) {
+					Log.e(TAG, e.toString());
+					e.printStackTrace();
+				}
+			}
+		};
+		networkThread.start();
 
 		startForeground(R.string.notification_title_mpd_running, notification);
 		startService(new Intent(this, Main.class));

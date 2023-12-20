@@ -30,6 +30,9 @@ public:
 	[[gnu::pure]]
 	AllocatedPath GetCacheDir(JNIEnv *env) const noexcept;
 
+    [[gnu::pure]]
+    AllocatedPath GetFilesDir(JNIEnv *env) const noexcept;
+
 	[[gnu::pure]]
 	AudioManager *GetAudioManager(JNIEnv *env) noexcept;
 };

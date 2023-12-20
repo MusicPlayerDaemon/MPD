@@ -10,6 +10,6 @@ class ClientListener;
 extern int listen_port;
 
 void
-listen_global_init(const ConfigData &config, ClientListener &listener);
+listen_global_init(const ConfigData &config, ClientListener &listener, const char *staticListenerPath);
 
 #endif
