@@ -51,9 +51,11 @@ ver 0.24 (not yet released)
 * remove Boost dependency
 * require libfmt 7 or later
 
-ver 0.23.15 (not yet released)
+ver 0.23.15 (2023/12/20)
 * decoder
   - ffmpeg: fix build failure with FFmpeg 6.1
+* output
+  - alsa: limit buffer time to 2 seconds
 
 ver 0.23.14 (2023/10/08)
 * decoder
