@@ -100,9 +100,11 @@ FormatHResultError(HRESULT result, const char *fmt, ...) noexcept
 	va_start(args1, fmt);
 	va_copy(args2, args1);
 
-	const int size = vsnprintf(nullptr, 0, fmt, args1);
+	int size = vsnprintf(nullptr, 0, fmt, args1);
 	va_end(args1);
-	assert(size >= 0);
+
+	if (size < 0)
+		size = 0;
 
 	auto buffer = std::make_unique<char[]>(size + 1);
 	vsprintf(buffer.get(), fmt, args2);
