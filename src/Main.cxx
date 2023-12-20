@@ -602,7 +602,7 @@ JNIEXPORT void JNICALL
 Java_org_musicpd_Bridge_shutdown(JNIEnv *, jclass)
 {
 	if (global_instance != nullptr)
-		global_instance->Break();
+		global_instance->event_loop.InjectBreak();
 }
 
 gcc_visibility_default
