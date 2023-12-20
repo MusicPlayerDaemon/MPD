@@ -72,6 +72,7 @@ project(
     'curl:telnet=disabled',
     'curl:tftp=disabled',
     'openssl:build_cli=false',
+    'openssl:asm=disabled', # work around "call to undeclared function "asm" on Android
     'opus:docs=disabled',
     'opus:extra-programs=disabled',
     'opus:tests=disabled',
