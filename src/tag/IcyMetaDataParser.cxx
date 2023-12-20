@@ -99,10 +99,10 @@ icy_parse_tag_item(TagBuilder &tag,
  * of the string).  If that fails, return the first single quote.  If
  * that also fails, return #end.
  */
-static char *
-find_end_quote(char *p, char *const end) noexcept
+static const char *
+find_end_quote(const char *p, const char *const end) noexcept
 {
-	char *fallback = std::find(p, end, '\'');
+	const char *fallback = std::find(p, end, '\'');
 	if (fallback >= end - 1 || fallback[1] == ';')
 		return fallback;
 
@@ -124,7 +124,7 @@ icy_parse_tag(
 #ifdef HAVE_ICU_CONVERTER
 	      const IcuConverter *icu_converter,
 #endif
-	      char *p, char *const end) noexcept
+	      const char *p, const char *const end) noexcept
 {
 	assert(p != nullptr);
 	assert(end != nullptr);
@@ -133,18 +133,18 @@ icy_parse_tag(
 	TagBuilder tag;
 
 	while (p != end) {
-		const char *const name = p;
-		char *eq = std::find(p, end, '=');
+		const char *eq = std::find(p, end, '=');
 		if (eq == end)
 			break;
 
-		*eq = 0;
+		const std::string_view name{p, eq};
+
 		p = eq + 1;
 
 		if (*p != '\'') {
 			/* syntax error; skip to the next semicolon,
 			   try to recover */
-			char *semicolon = std::find(p, end, ';');
+			const char *semicolon = std::find(p, end, ';');
 			if (semicolon == end)
 				break;
 			p = semicolon + 1;
@@ -153,12 +153,11 @@ icy_parse_tag(
 
 		++p;
 
-		const char *const value = p;
-		char *quote = find_end_quote(p, end);
+		const char *quote = find_end_quote(p, end);
 		if (quote == end)
 			break;
 
-		*quote = 0;
+		const std::string_view value{p, quote};
 		p = quote + 1;
 
 		icy_parse_tag_item(tag,
@@ -167,7 +166,7 @@ icy_parse_tag(
 #endif
 				   name, value);
 
-		char *semicolon = std::find(p, end, ';');
+		const char *semicolon = std::find(p, end, ';');
 		if (semicolon == end)
 			break;
 		p = semicolon + 1;
