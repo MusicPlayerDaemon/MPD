@@ -26,7 +26,7 @@
 #include "cmdline/OptionDef.hxx"
 #include "cmdline/OptionParser.hxx"
 #include "util/Domain.hxx"
-#include "Version.h"
+#include "MPDVersion.h"
 
 #ifdef _WIN32
 #include "system/Error.hxx"

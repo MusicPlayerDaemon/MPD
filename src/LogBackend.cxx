@@ -6,7 +6,7 @@
 #include "util/Compiler.h"
 #include "util/Domain.hxx"
 #include "util/StringStrip.hxx"
-#include "Version.h"
+#include "MPDVersion.h"
 #include "config.h"
 
 #include <cassert>

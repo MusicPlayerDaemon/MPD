@@ -40,7 +40,7 @@
 #endif
 
 #ifdef USE_XDG
-#include "Version.h" // for PACKAGE_NAME
+#include "MPDVersion.h" // for PACKAGE_NAME
 #define APP_FILENAME PATH_LITERAL(PACKAGE_NAME)
 static constexpr Path app_filename = Path::FromFS(APP_FILENAME);
 #endif

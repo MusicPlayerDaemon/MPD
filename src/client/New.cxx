@@ -13,7 +13,7 @@
 #include "net/SocketAddress.hxx"
 #include "util/SpanCast.hxx"
 #include "Log.hxx"
-#include "Version.h"
+#include "MPDVersion.h"
 
 #include <cassert>
 

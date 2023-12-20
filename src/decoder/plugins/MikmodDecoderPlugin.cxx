@@ -10,7 +10,7 @@
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-#include "Version.h"
+#include "MPDVersion.h"
 
 #include <mikmod.h>
 

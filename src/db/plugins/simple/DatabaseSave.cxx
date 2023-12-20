@@ -12,7 +12,7 @@
 #include "tag/Settings.hxx"
 #include "fs/Charset.hxx"
 #include "util/StringCompare.hxx"
-#include "Version.h"
+#include "MPDVersion.h"
 
 #include <fmt/format.h>
 

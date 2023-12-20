@@ -3,7 +3,7 @@
 
 #include "Setup.hxx"
 #include "Easy.hxx"
-#include "Version.h"
+#include "MPDVersion.h"
 
 namespace Curl {
 
