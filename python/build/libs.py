@@ -10,12 +10,6 @@ from build.ffmpeg import FfmpegProject
 from build.boost import BoostProject
 from build.jack import JackProject
 
-libmpdclient = MesonProject(
-    'https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.20.tar.xz',
-    '18793f68e939c3301e34d8fcadea1f7daa24143941263cecadb80126194e277d',
-    'lib/libmpdclient.a',
-)
-
 libsamplerate = CmakeProject(
     'https://github.com/libsndfile/libsamplerate/releases/download/0.2.2/libsamplerate-0.2.2.tar.xz',
     '97c010fc25156c33cddc272c1935afab',

@@ -1,0 +1,6 @@
+[wrap-git]
+url = https://github.com/MusicPlayerDaemon/libmpdclient
+revision = v2.22
+
+[provide]
+libmpdclient = libmpdclient_dep

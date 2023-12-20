@@ -6,6 +6,7 @@
 /fmt-*/
 /googletest-*/
 /libmicrohttpd*
+/libmpdclient/
 /libnpupnp-*/
 /libogg-*/
 /liburing-*/
