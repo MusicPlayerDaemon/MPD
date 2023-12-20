@@ -236,9 +236,9 @@ IcyMetaDataParser::Meta(const void *data, size_t length) noexcept
 size_t
 IcyMetaDataParser::ParseInPlace(void *data, size_t length) noexcept
 {
-	auto *const dest0 = (uint8_t *)data;
-	uint8_t *dest = dest0;
-	const uint8_t *src = dest0;
+	auto *const dest0 = (std::byte *)data;
+	std::byte *dest = dest0;
+	const std::byte *src = dest0;
 
 	while (length > 0) {
 		size_t chunk = Data(length);
