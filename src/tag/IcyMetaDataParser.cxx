@@ -7,8 +7,11 @@
 
 #include <algorithm>
 #include <cassert>
+#include <string_view>
 
 #include <string.h>
+
+using std::string_view_literals::operator""sv;
 
 #ifdef HAVE_ICU_CONVERTER
 
@@ -72,9 +75,9 @@ icy_parse_tag_item(TagBuilder &tag,
 #ifdef HAVE_ICU_CONVERTER
 		   const IcuConverter *icu_converter,
 #endif
-		   const char *name, const char *value) noexcept
+		   std::string_view name, std::string_view value) noexcept
 {
-	if (strcmp(name, "StreamTitle") == 0) {
+	if (name == "StreamTitle"sv) {
 #ifdef HAVE_ICU_CONVERTER
 		if (icu_converter != nullptr) {
 			try {
