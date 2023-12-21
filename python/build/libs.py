@@ -3,7 +3,6 @@ from os.path import abspath
 
 from build.project import Project
 from build.zlib import ZlibProject
-from build.meson import MesonProject
 from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
