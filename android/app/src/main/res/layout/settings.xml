@@ -2,14 +2,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="center"
+            android:src="@drawable/baseline_wifi_24"
+            android:layout_margin="4dp"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/networkAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="24sp"
+            android:gravity="center"
+            android:padding="4dp"
+            android:textSize="24sp" />
+    </LinearLayout>
 
     <ToggleButton
         android:id="@+id/run"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textOn="@string/toggle_button_run_on"
-        android:textOff="@string/toggle_button_run_off" />
+        android:textOff="@string/toggle_button_run_off"
+        android:textOn="@string/toggle_button_run_on" />
 
     <CheckBox
         android:id="@+id/run_on_boot"
@@ -35,9 +57,9 @@
         android:layout_height="wrap_content" />
 
     <ListView
-		android:id="@+id/log_list"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:paddingTop="10dip" />
+        android:id="@+id/log_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dip" />
 
 </LinearLayout>
