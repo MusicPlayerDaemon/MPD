@@ -16,7 +16,7 @@
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/BitReverse.hxx"
-#include "util/ByteOrder.hxx"
+#include "util/PackedBigEndian.hxx"
 #include "tag/Handler.hxx"
 #include "DsdLib.hxx"
 

@@ -3,7 +3,7 @@
 
 #include "Id3Picture.hxx"
 #include "Handler.hxx"
-#include "util/ByteOrder.hxx"
+#include "util/PackedBigEndian.hxx"
 
 #include <cstdint>
 #include <string>

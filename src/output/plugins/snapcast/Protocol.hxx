@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_OUTPUT_SNAPCAST_PROTOCOL_HXX
-#define MPD_OUTPUT_SNAPCAST_PROTOCOL_HXX
+#pragma once
 
-#include "util/ByteOrder.hxx"
+#include "util/PackedLittleEndian.hxx"
 
 // see https://github.com/badaix/snapcast/blob/master/doc/binary_protocol.md
 
@@ -55,5 +54,3 @@ struct SnapcastWireChunk {
 struct SnapcastTime {
 	SnapcastTimestamp latency;
 };
-
-#endif

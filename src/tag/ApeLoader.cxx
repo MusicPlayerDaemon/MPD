@@ -2,8 +2,8 @@
 // Copyright The Music Player Daemon Project
 
 #include "ApeLoader.hxx"
-#include "util/ByteOrder.hxx"
 #include "input/InputStream.hxx"
+#include "util/PackedLittleEndian.hxx"
 
 #include <cassert>
 #include <cstdint>

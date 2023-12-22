@@ -9,6 +9,8 @@
 #include "event/Loop.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "util/PackedBigEndian.hxx"
+#include "util/PackedLittleEndian.hxx"
 #include "util/SpanCast.hxx"
 #include "Log.hxx"
 
