@@ -9,10 +9,11 @@ bridge_header = custom_target(
     '../app/src/main/java/org/musicpd/Bridge.java',
   ],
   command: [
-    join_paths(meson.current_source_dir(), 'run-javac.sh'),
     javac,
-    join_paths(android_sdk_platform_dir, 'android.jar'),
-    '@OUTDIR@',
+    '-source', '1.8', '-target', '1.8',
+    '-Xlint:-options',
+    '-cp', join_paths(android_sdk_platform_dir, 'android.jar'),
+    '-h', '@OUTDIR@',
     '@INPUT@',
   ],
 )
