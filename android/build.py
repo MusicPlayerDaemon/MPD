@@ -31,7 +31,6 @@ from build.toolchain import AndroidNdkToolchain
 # a list of third-party libraries to be used by MPD on Android
 from build.libs import *
 thirdparty_libs = [
-    libid3tag,
     libmodplug,
     wildmidi,
     gme,
