@@ -4,10 +4,12 @@ import platform
 
 from .toolchain import AnyToolchain
 
-def __no_ccache(cmd: str) -> str:
-    if cmd.startswith('ccache '):
-        cmd = cmd[7:]
-    return cmd
+def format_meson_cross_file_command(command: str) -> str:
+    splitted = command.split()
+    if len(splitted) == 1:
+        return repr(command)
+
+    return repr(splitted)
 
 def make_cross_file(toolchain: AnyToolchain) -> str:
     if toolchain.is_windows:
@@ -43,15 +45,15 @@ def make_cross_file(toolchain: AnyToolchain) -> str:
     with open(path, 'w') as f:
         f.write(f"""
 [binaries]
-c = '{__no_ccache(toolchain.cc)}'
-cpp = '{__no_ccache(toolchain.cxx)}'
-ar = '{toolchain.ar}'
-strip = '{toolchain.strip}'
-pkgconfig = '{toolchain.pkg_config}'
+c = {format_meson_cross_file_command(toolchain.cc)}
+cpp = {format_meson_cross_file_command(toolchain.cxx)}
+ar = {format_meson_cross_file_command(toolchain.ar)}
+strip = {format_meson_cross_file_command(toolchain.strip)}
+pkgconfig = {format_meson_cross_file_command(toolchain.pkg_config)}
 """)
 
         if toolchain.is_windows and platform.system() != 'Windows':
-            f.write(f"windres = '{toolchain.windres}'\n")
+            f.write(f"windres = {format_meson_cross_file_command(toolchain.windres)}\n")
 
             # Run unit tests with WINE when cross-building for Windows
             print("exe_wrapper = 'wine'", file=f)
