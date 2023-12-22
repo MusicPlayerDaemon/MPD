@@ -43,19 +43,6 @@ libid3tag = AutotoolsProject(
     }
 )
 
-libmad = AutotoolsProject(
-    'ftp://ftp.mars.org/pub/mpeg/libmad-0.15.1b.tar.gz',
-    '1be543bc30c56fb6bea1d7bf6a64e66c',
-    'lib/libmad.a',
-    [
-        '--disable-shared', '--enable-static',
-
-        # without this, libmad's configure.ac ignores -O* and -f*
-        '--disable-debugging',
-    ],
-    autogen=True,
-)
-
 libmodplug = AutotoolsProject(
     'https://downloads.sourceforge.net/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz',
     '457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de',
