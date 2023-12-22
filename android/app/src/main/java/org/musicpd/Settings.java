@@ -213,6 +213,10 @@ public class Settings extends Activity {
 		if (Preferences.getBoolean(this, Preferences.KEY_PAUSE_ON_HEADPHONES_DISCONNECT, false))
 			checkbox.setChecked(true);
 
+		TextView networkAddressTextView = (TextView) findViewById(R.id.networkAddress);
+		String deviceIPV4Address = NetworkUtil.getDeviceIPV4Address(this);
+		networkAddressTextView.setText(deviceIPV4Address);
+
 		super.onCreate(savedInstanceState);
 	}
 
