@@ -25,24 +25,6 @@ zlib = ZlibProject(
     'lib/libz.a',
 )
 
-libid3tag = AutotoolsProject(
-    'ftp://ftp.mars.org/pub/mpeg/libid3tag-0.15.1b.tar.gz',
-    'e5808ad997ba32c498803822078748c3',
-    'lib/libid3tag.a',
-    [
-        '--disable-shared', '--enable-static',
-
-        # without this, libid3tag's configure.ac ignores -O* and -f*
-        '--disable-debugging',
-    ],
-    autogen=True,
-
-    edits={
-        # fix bug in libid3tag's configure.ac which discards all but the last optimization flag
-        'configure.ac': lambda data: re.sub(r'optimize="\$1"', r'optimize="$optimize $1"', data, count=1),
-    }
-)
-
 libmodplug = AutotoolsProject(
     'https://downloads.sourceforge.net/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz',
     '457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de',

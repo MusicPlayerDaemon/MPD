@@ -39,7 +39,6 @@ root_path = os.path.join(arch_path, 'root')
 from build.libs import *
 thirdparty_libs = [
     zlib,
-    libid3tag,
     libmodplug,
     libopenmpt,
     wildmidi,
