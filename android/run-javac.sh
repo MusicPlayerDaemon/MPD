@@ -2,7 +2,7 @@
 
 JAVAC=$1
 CLASSPATH=$2
-DIRNAME=`dirname "$3"`
+DIRNAME=$3
 REALDIR=`realpath "$DIRNAME"`
 
 GENINCLUDE="$REALDIR/include"

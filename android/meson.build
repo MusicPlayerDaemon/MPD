@@ -28,7 +28,7 @@ bridge_header = custom_target(
     join_paths(meson.current_source_dir(), 'run-javac.sh'),
     javac,
     join_paths(android_sdk_platform_dir, 'android.jar'),
-    '@OUTPUT@',
+    '@OUTDIR@',
     '@INPUT@',
   ],
 )
