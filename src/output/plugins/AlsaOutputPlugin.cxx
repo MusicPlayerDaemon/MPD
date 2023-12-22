@@ -910,7 +910,6 @@ AlsaOutput::Recover(int err) noexcept
 		/* fall-through to snd_pcm_prepare: */
 		[[fallthrough]];
 
-	case SND_PCM_STATE_OPEN:
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
 		period_buffer.Rewind();
@@ -918,6 +917,7 @@ AlsaOutput::Recover(int err) noexcept
 		err = snd_pcm_prepare(pcm);
 		break;
 
+	case SND_PCM_STATE_OPEN:
 	case SND_PCM_STATE_DISCONNECTED:
 	case SND_PCM_STATE_DRAINING:
 		/* can't play in this state; throw the error */
