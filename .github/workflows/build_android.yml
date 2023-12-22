@@ -51,7 +51,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             ninja-build \
             quilt 
-          pip3 install --user meson==0.56.2
+          pip3 install --user meson==1.3.0
             
       - name: Install SDK
         run: |
