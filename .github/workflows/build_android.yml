@@ -39,12 +39,6 @@ jobs:
         with:
           key: android
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: 17
-
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -75,5 +69,6 @@ jobs:
 
           cd -
           cd ./android
+          export JAVA_HOME=$JAVA_HOME_17_X64
           ./gradlew assembleDebug
 
