@@ -3,9 +3,8 @@
 JAVAC=$1
 CLASSPATH=$2
 DIRNAME=$3
-REALDIR=`realpath "$DIRNAME"`
 
-GENINCLUDE="$REALDIR/include"
+GENINCLUDE="$DIRNAME/include"
 
 mkdir -p "$GENINCLUDE"
 "$JAVAC" -source 1.8 -target 1.8 -Xlint:-options \
