@@ -3,6 +3,13 @@ import platform
 import shutil
 from typing import Union
 
+def with_ccache(command: str) -> str:
+    ccache = shutil.which('ccache')
+    if ccache is None:
+        return command
+    else:
+        return f'{ccache} {command}'
+
 android_abis = {
     'armeabi-v7a': {
         'arch': 'armv7a-linux-androideabi',
@@ -70,8 +77,8 @@ class AndroidNdkToolchain:
         common_flags += ' ' + abi_info['cflags']
 
         llvm_bin = os.path.join(llvm_path, 'bin')
-        self.cc = os.path.join(llvm_bin, 'clang')
-        self.cxx = os.path.join(llvm_bin, 'clang++')
+        self.cc = with_ccache(os.path.join(llvm_bin, 'clang'))
+        self.cxx = with_ccache(os.path.join(llvm_bin, 'clang++'))
         common_flags += ' -target ' + llvm_triple
 
         common_flags += ' -fvisibility=hidden -fdata-sections -ffunction-sections'
@@ -135,8 +142,8 @@ class MingwToolchain:
         self.install_prefix = install_prefix
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
-        self.cc = os.path.join(toolchain_bin, host_triplet + '-gcc')
-        self.cxx = os.path.join(toolchain_bin, host_triplet + '-g++')
+        self.cc = with_ccache(os.path.join(toolchain_bin, host_triplet + '-gcc'))
+        self.cxx = with_ccache(os.path.join(toolchain_bin, host_triplet + '-g++'))
         self.ar = os.path.join(toolchain_bin, host_triplet + '-ar')
         self.arflags = 'rcs'
         self.ranlib = os.path.join(toolchain_bin, host_triplet + '-ranlib')
