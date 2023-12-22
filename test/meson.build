@@ -468,6 +468,7 @@ if libid3tag_dep.found()
       tag_dep,
       input_glue_dep,
       archive_glue_dep,
+      libid3tag_dep,
     ],
   )
 endif

@@ -1,6 +1,7 @@
 decoder_plugins_sources = [
   'PcmDecoderPlugin.cxx',
 ]
+decoder_plugins_dependencies = []
 
 if get_option('dsd')
   decoder_plugins_sources += [
@@ -8,6 +9,7 @@ if get_option('dsd')
     'DsfDecoderPlugin.cxx',
     'DsdLib.cxx',
   ]
+  decoder_plugins_dependencies += libid3tag_dep
 endif
 
 if ffmpeg_dep.found()
@@ -90,6 +92,7 @@ libmad_dep = c_compiler.find_library('mad', required: get_option('mad'))
 decoder_features.set('ENABLE_MAD', libmad_dep.found())
 if libmad_dep.found()
   decoder_plugins_sources += 'MadDecoderPlugin.cxx'
+  decoder_plugins_dependencies += libid3tag_dep
 endif
 
 libmikmod_dep = dependency('libmikmod', version: '>= 3.2', required: get_option('mikmod'))
@@ -166,6 +169,7 @@ decoder_plugins = static_library(
   decoder_plugins_sources,
   include_directories: inc,
   dependencies: [
+    decoder_plugins_dependencies,
     adplug_dep,
     ffmpeg_dep,
     flac_dep,
