@@ -13,6 +13,10 @@ bridge_header = custom_target(
     '-source', '1.8', '-target', '1.8',
     '-Xlint:-options',
     '-cp', join_paths(android_sdk_platform_dir, 'android.jar'),
+
+    # not interested in *.class, we only want the JNI header
+    '-d', '@PRIVATE_DIR@',
+
     '-h', '@OUTDIR@',
     '@INPUT@',
   ],
