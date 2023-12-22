@@ -1,7 +1,5 @@
 javac = find_program('javac')
 
-common_cppflags += '-I' + meson.current_build_dir()
-
 bridge_header = custom_target(
   'org_musicpd_Bridge.h',
   output: 'org_musicpd_Bridge.h',
