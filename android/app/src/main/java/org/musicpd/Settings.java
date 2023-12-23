@@ -7,9 +7,6 @@ import java.util.LinkedList;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,32 +36,6 @@ public class Settings extends Activity {
 	private static final int MSG_STOPPED = 1;
 	private static final int MSG_STARTED = 2;
 	private static final int MSG_LOG = 3;
-
-	public static class Preferences {
-		public static final String KEY_RUN_ON_BOOT ="run_on_boot";
-		public static final String KEY_WAKELOCK ="wakelock";
-		public static final String KEY_PAUSE_ON_HEADPHONES_DISCONNECT ="pause_on_headphones_disconnect";
-
-		public static SharedPreferences get(Context context) {
-			return context.getSharedPreferences(TAG, MODE_PRIVATE);
-		}
-
-		public static void putBoolean(Context context, String key, boolean value) {
-			final SharedPreferences prefs = get(context);
-
-			if (prefs == null)
-				return;
-			final Editor editor = prefs.edit();
-			editor.putBoolean(key, value);
-			editor.apply();
-		}
-
-		public static boolean getBoolean(Context context, String key, boolean defValue) {
-			final SharedPreferences prefs = get(context);
-
-			return prefs != null ? prefs.getBoolean(key, defValue) : defValue;
-		}
-	}
 
 	private Handler mHandler = new Handler(new Handler.Callback() {
 		@Override
