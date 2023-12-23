@@ -9,4 +9,5 @@
   <string name="checkbox_run_on_boot">Run MPD automatically on boot</string>
   <string name="checkbox_wakelock">Prevent suspend when MPD is running (Wakelock)</string>
   <string name="checkbox_pause_on_headphones_disconnect">Pause MPD when headphones disconnect</string>
+  <string name="external_files_permission_request">MPD requires access to external files to play local music. Please grant the permission.</string>
 </resources>
