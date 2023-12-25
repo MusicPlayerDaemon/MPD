@@ -97,7 +97,7 @@ jobs:
           directory: output/full
           setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled
           options: --verbose
-          meson-version: 0.56.0
+          meson-version: 0.63.0
 
       - name: Unit Tests
         uses: BSFishy/meson-build@v1.0.3
@@ -106,7 +106,7 @@ jobs:
           directory: output/full
           setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled
           options: --verbose
-          meson-version: 0.56.0
+          meson-version: 0.63.0
 
       - name: Mini Build
         uses: BSFishy/meson-build@v1.0.3
@@ -115,7 +115,7 @@ jobs:
           directory: output/mini
           setup-options: -Dbuildtype=minsize -Dauto_features=disabled -Dtest=true -Ddaemon=false -Dinotify=false -Depoll=false -Deventfd=false -Dsignalfd=false -Dtcp=false -Ddsd=false -Ddatabase=false -Dneighbor=false -Dcue=false -Dfifo=false -Dhttpd=false -Dpipe=false -Drecorder=false -Dsnapcast=false
           options: --verbose
-          meson-version: 0.56.0
+          meson-version: 0.63.0
 
   build-macos:
     runs-on: macos-latest
@@ -161,7 +161,7 @@ jobs:
           directory: output
           setup-options: -Ddocumentation=disabled -Dtest=true
           options: --verbose
-          meson-version: 0.56.0
+          meson-version: 0.63.0
 
       - name: Unit Tests
         uses: BSFishy/meson-build@v1.0.3
@@ -170,4 +170,4 @@ jobs:
           directory: output
           setup-options: -Ddocumentation=disabled -Dtest=true
           options: --verbose
-          meson-version: 0.56.0
+          meson-version: 0.63.0

@@ -50,6 +50,7 @@ ver 0.24 (not yet released)
 * remove Haiku support
 * remove Boost dependency
 * require libfmt 7 or later
+* require Meson 0.63 or later
 
 ver 0.23.15 (2023/12/20)
 * decoder
