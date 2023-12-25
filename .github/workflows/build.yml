@@ -171,3 +171,51 @@ jobs:
           setup-options: -Ddocumentation=disabled -Dtest=true
           options: --verbose
           meson-version: 0.56.0
+
+  build-msys2:
+    strategy:
+      matrix:
+        platform: ['MINGW32', 'MINGW64', 'UCRT64']
+    defaults:
+      run:
+        shell: msys2 {0}
+    runs-on: windows-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{matrix.platform}}
+          pacboy: >-
+            cc:p
+            cmake:p
+            dbus:p
+            faad2:p
+            ffmpeg:p
+            fmt:p
+            flac:p
+            gtest:p
+            jack2:p
+            libao:p
+            libid3tag:p
+            libmad:p
+            libmpcdec:p
+            libopenmpt:p
+            libsamplerate:p
+            libshout:p
+            libsndfile:p
+            libsoxr:p
+            libvorbis:p
+            meson:p
+            ninja:p
+            opus:p
+            pulseaudio:p
+            shine:p
+            twolame:p
+            yajl:p
+
+      - name: Compile and Test
+        run: |
+          meson setup "${{github.workspace}}/build" -Dbzip2=disabled -Dcdio_paranoia=disabled -Dchromaprint=disabled -Ddocumentation=disabled -Dfluidsynth=disabled -Dicu=disabled -Diso9660=disabled -Dmikmod=disabled -Dmpg123=disabled -Dnfs=disabled -Dsidplay=disabled -Dudisks=disabled -Dupnp=disabled -Dwavpack=disabled -Dzzip=disabled -Dtest=true -Dwarning_level=3
+          meson compile -C "${{github.workspace}}/build" --verbose
