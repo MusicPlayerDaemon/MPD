@@ -23,6 +23,10 @@
 
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <processenv.h>
+#endif
+
 #define MPD_PULSE_NAME "Music Player Daemon"
 
 class PulseOutput final : AudioOutput {
@@ -175,8 +179,13 @@ PulseOutput::PulseOutput(const ConfigBlock &block)
 	 sink(block.GetBlockValue("sink")),
 	 media_role(block.GetBlockValue("media_role"))
 {
+#ifdef _WIN32
+	SetEnvironmentVariableA("PULSE_PROP_media.role", "music");
+	SetEnvironmentVariableA("PULSE_PROP_application.icon_name", "mpd");
+#else
 	setenv("PULSE_PROP_media.role", "music", true);
 	setenv("PULSE_PROP_application.icon_name", "mpd", true);
+#endif
 }
 
 struct pa_threaded_mainloop *
