@@ -15,6 +15,8 @@ Each line in the configuration file contains a setting name and its value, e.g.:
 
 :code:`connection_timeout "5"`
 
+Lines starting with ``#`` are treated as comments and ignored.
+
 For settings which specify a filesystem path, the tilde is expanded:
 
 :code:`music_directory "~/Music"`
