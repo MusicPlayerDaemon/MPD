@@ -5,12 +5,15 @@ import android.net.ConnectivityManager;
 import android.net.LinkAddress;
 import android.net.LinkProperties;
 
+import androidx.annotation.Nullable;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.List;
 
 public class NetworkUtil {
 
+    @Nullable
     public static String getDeviceIPV4Address(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         LinkProperties linkProperties = connectivityManager.getLinkProperties(connectivityManager.getActiveNetwork());

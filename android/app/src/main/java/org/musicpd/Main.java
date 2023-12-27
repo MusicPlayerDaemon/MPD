@@ -25,6 +25,8 @@ import android.widget.RemoteViews;
 
 import androidx.core.app.ServiceCompat;
 
+import org.musicpd.ui.SettingsActivity;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
@@ -197,7 +199,7 @@ public class Main extends Service implements Runnable {
 			}
 		}, filter);
 
-		final Intent mainIntent = new Intent(this, Settings.class);
+		final Intent mainIntent = new Intent(this, SettingsActivity.class);
 		mainIntent.setAction("android.intent.action.MAIN");
 		mainIntent.addCategory("android.intent.category.LAUNCHER");
 		final PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
