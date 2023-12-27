@@ -38,7 +38,7 @@ SetFSCharset(const char *charset)
 void
 DeinitFSCharset() noexcept
 {
-#ifdef HAVE_ICU_CONVERTER
+#ifdef HAVE_FS_CHARSET
 	fs_converter.reset();
 #endif
 }
