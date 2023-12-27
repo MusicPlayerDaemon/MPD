@@ -60,13 +60,13 @@ class UpnpDatabase : public Database {
 	UpnpClient_Handle handle;
 	UPnPDeviceDirectory *discovery;
 
-	const char* interface;
+	const char* iface;
 
 public:
 	explicit UpnpDatabase(EventLoop &_event_loop, const ConfigBlock &block) noexcept
 		:Database(upnp_db_plugin),
 		 event_loop(_event_loop),
-		 interface(block.GetBlockValue("interface", nullptr)) {}
+		 iface(block.GetBlockValue("interface", nullptr)) {}
 
 	static DatabasePtr Create(EventLoop &main_event_loop,
 				  EventLoop &io_event_loop,
@@ -142,7 +142,7 @@ UpnpDatabase::Create(EventLoop &, EventLoop &io_event_loop,
 void
 UpnpDatabase::Open()
 {
-	handle = UpnpClientGlobalInit(interface);
+	handle = UpnpClientGlobalInit(iface);
 
 	discovery = new UPnPDeviceDirectory(event_loop, handle);
 	try {
