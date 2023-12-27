@@ -338,7 +338,7 @@ may contain :ref:`song tags <tags>` and other metadata, specifically:
 - ``duration``: the duration of the song in
   seconds; may contain a fractional part.
 
-- ``time``: like ``duration``,
+- ``Time``: like ``duration``,
   but as integer value.  This is deprecated and is only here
   for compatibility with older clients.  Do not use.
 
