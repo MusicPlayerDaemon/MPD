@@ -41,7 +41,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_9
     }
     kotlinOptions {
-        jvmTarget = "1.9"
+        jvmTarget = "9"
     }
     packaging {
         resources {
