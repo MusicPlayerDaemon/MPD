@@ -1,6 +1,6 @@
 libflac_dep = dependency('flac', version: '>= 1.2', required: get_option('flac'))
 
-if is_windows
+if is_windows and libflac_dep.found()
   # Our Windows build generates a static libFLAC build
   libflac_dep = declare_dependency(compile_args: '-DFLAC__NO_DLL',
                                    dependencies: libflac_dep)
