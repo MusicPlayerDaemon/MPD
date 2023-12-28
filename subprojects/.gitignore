@@ -7,7 +7,9 @@
 /googletest-*/
 /lame-*/
 /libid3tag-*/
+/libmicrohttpd-*/
 /libmpdclient/
+/libnpupnp-*/
 /openssl-*/
 /opus-*/
 /sqlite-*/
