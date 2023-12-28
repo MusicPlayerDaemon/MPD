@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_UPNP_CALLBACK_HXX
-#define MPD_UPNP_CALLBACK_HXX
+#pragma once
 
-#include "Compat.hxx"
+#include <upnp.h>
 
 /**
  * A class that is supposed to be used for libupnp asynchronous
@@ -26,5 +25,3 @@ public:
 
 	virtual int Invoke(Upnp_EventType et, const void *evp) noexcept = 0;
 };
-
-#endif

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef _UPNPDIR_HXX_INCLUDED_
-#define _UPNPDIR_HXX_INCLUDED_
+#pragma once
 
-#include "Compat.hxx"
+#include <upnp.h>
 
 #include <string>
 #include <forward_list>
@@ -103,5 +102,3 @@ public:
 		return m_friendlyName.c_str();
 	}
 };
-
-#endif /* _UPNPDIR_HXX_INCLUDED_ */

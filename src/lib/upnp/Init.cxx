@@ -2,10 +2,10 @@
 // Copyright The Music Player Daemon Project
 
 #include "Init.hxx"
-#include "Compat.hxx"
 #include "Error.hxx"
 #include "thread/Mutex.hxx"
 
+#include <upnp.h>
 #include <upnptools.h>
 #ifdef USING_PUPNP
 #	include <ixml.h>

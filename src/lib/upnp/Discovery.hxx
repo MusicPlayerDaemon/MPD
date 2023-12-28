@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef _UPNPPDISC_H_X_INCLUDED_
-#define _UPNPPDISC_H_X_INCLUDED_
-
-#include "Compat.hxx"
 #include "Callback.hxx"
 #include "Device.hxx"
 #include "lib/curl/Init.hxx"
@@ -13,6 +9,8 @@
 #include "thread/Mutex.hxx"
 #include "event/InjectEvent.hxx"
 #include "util/IntrusiveList.hxx"
+
+#include <upnp.h>
 
 #include <list>
 #include <vector>
@@ -174,5 +172,3 @@ private:
 	int Invoke(Upnp_EventType et, const void *evp) noexcept override;
 };
 
-
-#endif /* _UPNPPDISC_H_X_INCLUDED_ */
