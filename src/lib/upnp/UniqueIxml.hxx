@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_UPNP_UNIQUE_XML_HXX
-#define MPD_UPNP_UNIQUE_XML_HXX
+#pragma once
 
-#ifdef USING_PUPNP
-#	include <ixml.h>
+#include <ixml.h>
 
-#	include <memory>
+#include <memory>
 
 struct UpnpIxmlDeleter {
 	void operator()(IXML_Document *doc) noexcept {
@@ -21,6 +19,3 @@ struct UpnpIxmlDeleter {
 
 typedef std::unique_ptr<IXML_Document, UpnpIxmlDeleter> UniqueIxmlDocument;
 typedef std::unique_ptr<IXML_NodeList, UpnpIxmlDeleter> UniqueIxmlNodeList;
-
-#endif /* USING_PUPNP */
-#endif

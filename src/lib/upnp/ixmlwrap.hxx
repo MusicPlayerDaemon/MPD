@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright J.F.Dockes
 
-#ifndef _IXMLWRAP_H_INCLUDED_
-#define _IXMLWRAP_H_INCLUDED_
+#pragma once
 
-#ifdef USING_PUPNP
-#	include <ixml.h>
+#include <ixml.h>
 
 namespace ixmlwrap {
 	/**
@@ -17,6 +15,3 @@ namespace ixmlwrap {
 					 const char *name) noexcept;
 
 }
-
-#endif /* USING_PUPNP */
-#endif /* _IXMLWRAP_H_INCLUDED_ */

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_UPNP_ACTION_HXX
-#define MPD_UPNP_ACTION_HXX
+#pragma once
 
 #include <upnptools.h>
 
@@ -20,7 +19,6 @@ CountNameValuePairs([[maybe_unused]] const char *name, [[maybe_unused]] const ch
 	return 1 + CountNameValuePairs(args...);
 }
 
-#ifdef USING_PUPNP
 /**
  * A wrapper for UpnpMakeAction() that counts the number of name/value
  * pairs and adds the nullptr sentinel.
@@ -35,6 +33,3 @@ MakeActionHelper(const char *action_name, const char *service_type,
 			      args...,
 			      nullptr, nullptr);
 }
-#endif
-
-#endif

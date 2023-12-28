@@ -2,16 +2,17 @@
 // Copyright The Music Player Daemon Project
 
 #include "lib/upnp/ContentDirectoryService.hxx"
-#include "config.h"
-#ifdef USING_PUPNP
-#	include "lib/upnp/ixmlwrap.hxx"
-#endif
-#include "lib/upnp/UniqueIxml.hxx"
-#include "lib/upnp/Action.hxx"
 #include "lib/upnp/Error.hxx"
 #include "Directory.hxx"
 #include "util/NumberParser.hxx"
 #include "util/ScopeExit.hxx"
+#include "config.h"
+
+#ifdef USING_PUPNP
+#include "lib/upnp/ixmlwrap.hxx"
+#include "lib/upnp/Action.hxx"
+#include "lib/upnp/UniqueIxml.hxx"
+#endif
 
 #include <fmt/format.h>
 

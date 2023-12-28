@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
-
 #include "ContentDirectoryService.hxx"
 #include "Device.hxx"
 #include "Error.hxx"
-#include "UniqueIxml.hxx"
-#ifdef USING_PUPNP
-#	include "ixmlwrap.hxx"
-#endif
-#include "Action.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/UriRelative.hxx"
 #include "util/UriUtil.hxx"
+#include "config.h"
+
+#ifdef USING_PUPNP
+#include "ixmlwrap.hxx"
+#include "Action.hxx"
+#include "UniqueIxml.hxx"
+#endif
 
 #include <algorithm>
 
