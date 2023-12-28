@@ -19,17 +19,17 @@
 
 #include <upnptools.h>
 
+using std::string_view_literals::operator""sv;
+
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 						 const UPnPService &service) noexcept
 	:m_actionURL(uri_apply_base(service.controlURL, device.URLBase)),
 	 m_serviceType(service.serviceType),
 	 m_deviceId(device.UDN),
 	 m_friendlyName(device.friendlyName),
-	 m_manufacturer(device.manufacturer),
-	 m_modelName(device.modelName),
 	 m_rdreqcnt(200)
 {
-	if (m_modelName == "MediaTomb") {
+	if (device.modelName == "MediaTomb"sv) {
 		// Readdir by 200 entries is good for most, but MediaTomb likes
 		// them really big. Actually 1000 is better but I don't dare
 		m_rdreqcnt = 500;

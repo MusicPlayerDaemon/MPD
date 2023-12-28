@@ -34,8 +34,6 @@ class ContentDirectoryService {
 	std::string m_serviceType;
 	std::string m_deviceId;
 	std::string m_friendlyName;
-	std::string m_manufacturer;
-	std::string m_modelName;
 
 	int m_rdreqcnt; // Slice size to use when reading
 
