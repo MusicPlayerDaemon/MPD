@@ -20,9 +20,9 @@ public class Receiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Log.d("Receiver", "onReceive: " + intent);
-		if (intent.getAction() == "android.intent.action.BOOT_COMPLETED") {
-			if (Settings.Preferences.getBoolean(context,
-							    Settings.Preferences.KEY_RUN_ON_BOOT,
+		if (BOOT_ACTIONS.contains(intent.getAction())) {
+			if (Preferences.getBoolean(context,
+							    Preferences.KEY_RUN_ON_BOOT,
 							    false)) {
 				final boolean wakelock =
 					Preferences.getBoolean(context,
