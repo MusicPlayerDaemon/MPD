@@ -614,6 +614,20 @@ Java_org_musicpd_Bridge_pause(JNIEnv *, jclass)
 			partition.pc.LockSetPause(true);
 }
 
+gcc_visibility_default
+JNIEXPORT void JNICALL
+Java_org_musicpd_Bridge_playNext(JNIEnv *, jclass)
+{
+
+}
+
+gcc_visibility_default
+JNIEXPORT void JNICALL
+Java_org_musicpd_Bridge_playPrevious(JNIEnv *, jclass)
+{
+
+}
+
 #else
 
 static inline void
