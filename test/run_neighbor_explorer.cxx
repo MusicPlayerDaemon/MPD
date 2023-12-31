@@ -5,6 +5,7 @@
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
 #include "neighbor/Glue.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"
 #include "ShutdownHandler.hxx"
@@ -35,7 +36,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const Path config_path = Path::FromFS(argv[1]);
+	const FromNarrowPath config_path = argv[1];
 
 	/* initialize the core */
 
