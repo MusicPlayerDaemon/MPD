@@ -79,6 +79,7 @@
 #include "android/Environment.hxx"
 #include "android/Context.hxx"
 #include "android/LogListener.hxx"
+#include "android/Song.hxx"
 #include "config/File.hxx"
 #include "fs/FileSystem.hxx"
 #include "org_musicpd_Bridge.h"
@@ -632,6 +633,17 @@ gcc_visibility_default
 JNIEXPORT jobject JNICALL
 Java_org_musicpd_Bridge_currentSong(JNIEnv *env, jclass)
 {
+    if (global_instance != nullptr) {
+        for (auto &partition : global_instance->partitions) {
+            int current_position = partition.playlist.GetCurrentPosition();
+            if (current_position < 0)
+                continue;
+
+            std::unique_ptr<DetachedSong> song = std::make_unique<DetachedSong>(partition.playlist.queue.Get(current_position));
+            return song_to_song_info(env, song);
+        }
+    }
+
     return NULL;
 }
 
