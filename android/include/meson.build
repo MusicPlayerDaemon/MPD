@@ -5,6 +5,7 @@ bridge_header = custom_target(
   output: 'org_musicpd_Bridge.h',
   input: [
     '../app/src/main/java/org/musicpd/Bridge.java',
+    '../app/src/main/java/org/musicpd/models/SongInfo.java',
   ],
   command: [
     javac,

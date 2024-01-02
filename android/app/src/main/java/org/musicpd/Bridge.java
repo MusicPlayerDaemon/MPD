@@ -5,6 +5,8 @@ package org.musicpd;
 
 import android.content.Context;
 
+import org.musicpd.models.SongInfo;
+
 /**
  * Bridge to native code.
  */
@@ -20,5 +22,5 @@ public class Bridge {
 	public static native void pause();
 	public static native void playNext();
 	public static native void playPrevious();
-	public static native Object currentSong();
+	public static native SongInfo currentSong();
 }
