@@ -628,6 +628,13 @@ Java_org_musicpd_Bridge_playPrevious(JNIEnv *, jclass)
 
 }
 
+gcc_visibility_default
+JNIEXPORT jobject JNICALL
+Java_org_musicpd_Bridge_currentSong(JNIEnv *env, jclass)
+{
+    return NULL;
+}
+
 #else
 
 static inline void

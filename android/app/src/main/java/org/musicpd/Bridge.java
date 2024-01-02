@@ -20,4 +20,5 @@ public class Bridge {
 	public static native void pause();
 	public static native void playNext();
 	public static native void playPrevious();
+	public static native Object currentSong();
 }
