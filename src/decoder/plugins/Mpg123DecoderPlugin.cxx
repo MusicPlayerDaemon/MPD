@@ -8,6 +8,7 @@
 #include "tag/Builder.hxx"
 #include "tag/ReplayGainParser.hxx"
 #include "tag/MixRampParser.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
@@ -43,14 +44,15 @@ mpd_mpg123_finish() noexcept
  * @return true on success
  */
 static bool
-mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
+mpd_mpg123_open(mpg123_handle *handle, Path path_fs,
 		AudioFormat &audio_format)
 {
-	int error = mpg123_open(handle, path_fs);
+	auto np = NarrowPath(path_fs);
+	int error = mpg123_open(handle, np);
 	if (error != MPG123_OK) {
 		FmtWarning(mpg123_domain,
 			   "libmpg123 failed to open {}: {}",
-			   path_fs, mpg123_plain_strerror(error));
+			   np.c_str(), mpg123_plain_strerror(error));
 		return false;
 	}
 
@@ -179,7 +181,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 	AtScopeExit(handle) { mpg123_delete(handle); };
 
 	AudioFormat audio_format;
-	if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format))
+	if (!mpd_mpg123_open(handle, path_fs, audio_format))
 		return;
 
 	const off_t num_samples = mpg123_length(handle);
@@ -271,7 +273,7 @@ mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
 
 	AudioFormat audio_format;
 	try {
-		if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format)) {
+		if (!mpd_mpg123_open(handle, path_fs, audio_format)) {
 			return false;
 		}
 	} catch (...) {
