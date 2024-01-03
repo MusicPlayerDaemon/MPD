@@ -4,6 +4,7 @@
 #include "FluidsynthDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "pcm/CheckAudioFormat.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
@@ -101,6 +102,8 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 	fluid_player_t *player;
 	int ret;
 
+	auto np = NarrowPath(path_fs);
+
 	/* set up fluid settings */
 
 	settings = new_fluid_settings();
@@ -141,7 +144,7 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 		return;
 	}
 
-	ret = fluid_player_add(player, path_fs.c_str());
+	ret = fluid_player_add(player, np);
 	if (ret != 0) {
 		LogWarning(fluidsynth_domain, "fluid_player_add() failed");
 		delete_fluid_player(player);
@@ -200,7 +203,8 @@ static bool
 fluidsynth_scan_file(Path path_fs,
 		     [[maybe_unused]] TagHandler &handler) noexcept
 {
-	return fluid_is_midifile(path_fs.c_str());
+	auto np = NarrowPath(path_fs);
+	return fluid_is_midifile(np);
 }
 
 static const char *const fluidsynth_suffixes[] = {
