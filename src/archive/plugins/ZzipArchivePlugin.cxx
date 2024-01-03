@@ -12,6 +12,7 @@
 #include "input/InputStream.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "lib/fmt/SystemError.hxx"
 #include "util/UTF8.hxx"
@@ -24,7 +25,7 @@ struct ZzipDir {
 	ZZIP_DIR *const dir;
 
 	explicit ZzipDir(Path path)
-		:dir(zzip_dir_open(path.c_str(), nullptr)) {
+		:dir(zzip_dir_open(NarrowPath(path), nullptr)) {
 		if (dir == nullptr)
 			throw FmtRuntimeError("Failed to open ZIP file {}",
 					      path);
