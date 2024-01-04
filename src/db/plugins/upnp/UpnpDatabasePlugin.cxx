@@ -33,6 +33,7 @@
 #include <string.h>
 
 static const char *const rootid = "0";
+static constexpr std::string_view rootid_sv{rootid};
 
 class UpnpSongData {
 protected:
@@ -602,10 +603,9 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	}
 
 	// We do have a path: the first element selects the server
-	std::string servername(vpath.front());
+	auto server = discovery->GetServer(vpath.front());
 	vpath.pop_front();
 
-	auto server = discovery->GetServer(servername.c_str());
 	VisitServer(server, std::move(vpath), selection,
 		    visit_directory, visit_song, visit_playlist);
 	helper.Commit();
