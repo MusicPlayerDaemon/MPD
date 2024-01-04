@@ -83,12 +83,14 @@ DumpPlaylist(const PlaylistInfo &playlist, const LightDirectory &directory)
 int
 main(int argc, char **argv)
 try {
-	if (argc != 2) {
-		fmt::print(stderr, "Usage: DumpDatabase CONFIG\n");
+	if (argc < 2 || argc > 3) {
+		fmt::print(stderr, "Usage: DumpDatabase CONFIG [URI]\n");
 		return EXIT_FAILURE;
 	}
 
 	const FromNarrowPath config_path = argv[1];
+
+	const char *uri = argc >= 3 ? argv[2] : "";
 
 	/* initialize MPD */
 
@@ -111,7 +113,7 @@ try {
 
 	AtScopeExit(&db) { db->Close(); };
 
-	const DatabaseSelection selection("", true);
+	const DatabaseSelection selection(uri, true);
 
 	db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist);
 
