@@ -460,6 +460,11 @@ CreateEasy(const char *url, struct curl_slist *headers)
 {
 	CurlEasy easy{url};
 
+	/* increase CURL's receive buffer size from 16 kB to 512 kB
+	   (the maximum until CURL 7.88.0) to reduce system call
+	   overhead */
+	easy.TrySetOption(CURLOPT_BUFFERSIZE, 512L * 1024L);
+
 	easy.SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
 	easy.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
 	easy.SetOption(CURLOPT_MAXREDIRS, 5L);
