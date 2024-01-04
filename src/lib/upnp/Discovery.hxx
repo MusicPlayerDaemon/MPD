@@ -6,7 +6,7 @@
 #include "thread/Mutex.hxx"
 #include "util/IntrusiveList.hxx"
 
-#include <list>
+#include <map>
 #include <vector>
 #include <string>
 #include <chrono>
@@ -49,7 +49,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	/**
 	 * Protected by #mutex.
 	 */
-	std::list<ContentDirectoryDescriptor> directories;
+	std::map<std::string, ContentDirectoryDescriptor, std::less<>> directories;
 
 	/**
 	 * The UPnP device search timeout, which should actually be
@@ -97,7 +97,7 @@ private:
 	 */
 	void ExpireDevices() noexcept;
 
-	void LockAdd(ContentDirectoryDescriptor &&d) noexcept;
+	void LockAdd(std::string &&id, ContentDirectoryDescriptor &&d) noexcept;
 	void LockRemove(std::string_view id) noexcept;
 
 	int OnAlive(const UpnpDiscovery *disco) noexcept;

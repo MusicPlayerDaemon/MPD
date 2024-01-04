@@ -21,8 +21,6 @@
 
 class UPnPDeviceDirectory::ContentDirectoryDescriptor {
 public:
-	std::string id;
-
 	UPnPDevice device;
 
 	/**
@@ -30,11 +28,9 @@ public:
 	 */
 	std::chrono::steady_clock::time_point expires;
 
-	ContentDirectoryDescriptor(std::string &&_id,
-				   std::chrono::steady_clock::time_point last,
+	ContentDirectoryDescriptor(std::chrono::steady_clock::time_point last,
 				   std::chrono::steady_clock::duration exp) noexcept
-		:id(std::move(_id)),
-		 expires(last + exp + std::chrono::seconds(20)) {}
+		:expires(last + exp + std::chrono::seconds(20)) {}
 
 	void Parse(std::string_view url, std::string_view description) {
 		device.Parse(url, description);
@@ -125,8 +121,7 @@ UPnPDeviceDirectory::Downloader::OnEnd()
 {
 	AtScopeExit(this) { Destroy(); };
 
-	ContentDirectoryDescriptor d(std::move(id),
-				     std::chrono::steady_clock::now(),
+	ContentDirectoryDescriptor d(std::chrono::steady_clock::now(),
 				     expires);
 
 	try {
@@ -135,7 +130,7 @@ UPnPDeviceDirectory::Downloader::OnEnd()
 		LogError(std::current_exception());
 	}
 
-	parent.LockAdd(std::move(d));
+	parent.LockAdd(std::move(id), std::move(d));
 }
 
 void
@@ -192,21 +187,14 @@ AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device) noex
 }
 
 inline void
-UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d) noexcept
+UPnPDeviceDirectory::LockAdd(std::string &&id, ContentDirectoryDescriptor &&d) noexcept
 {
 	const std::scoped_lock<Mutex> protect(mutex);
 
-	for (auto &i : directories) {
-		if (i.id == d.id) {
-			i = std::move(d);
-			return;
-		}
-	}
-
-	directories.emplace_back(std::move(d));
+	const auto i = directories.insert_or_assign(std::move(id), std::move(d)).first;
 
 	if (listener != nullptr)
-		AnnounceFoundUPnP(*listener, directories.back().device);
+		AnnounceFoundUPnP(*listener, i->second.device);
 }
 
 inline void
@@ -214,15 +202,11 @@ UPnPDeviceDirectory::LockRemove(const std::string_view id) noexcept
 {
 	const std::scoped_lock<Mutex> protect(mutex);
 
-	for (auto i = directories.begin(), end = directories.end();
-	     i != end; ++i) {
-		if (i->id == id) {
-			if (listener != nullptr)
-				AnnounceLostUPnP(*listener, i->device);
+	if (auto i = directories.find(id); i != directories.end()) {
+		if (listener != nullptr)
+			AnnounceLostUPnP(*listener, i->second.device);
 
-			directories.erase(i);
-			break;
-		}
+		directories.erase(i);
 	}
 }
 
@@ -290,12 +274,13 @@ UPnPDeviceDirectory::ExpireDevices() noexcept
 	const auto now = std::chrono::steady_clock::now();
 	bool didsomething = false;
 
-	directories.remove_if([now, &didsomething](const ContentDirectoryDescriptor &d){
-			bool expired = now > d.expires;
-			if (expired)
-				didsomething = true;
-			return expired;
-		});
+	std::erase_if(directories, [now, &didsomething](const auto &i){
+		const auto &d = i.second;
+		bool expired = now > d.expires;
+		if (expired)
+			didsomething = true;
+		return expired;
+	});
 
 	if (didsomething)
 		Search();
@@ -357,7 +342,7 @@ UPnPDeviceDirectory::GetDirectories() noexcept
 	ExpireDevices();
 
 	std::vector<ContentDirectoryService> out;
-	for (const auto &descriptor : directories) {
+	for (const auto &[id, descriptor] : directories) {
 		for (const auto &service : descriptor.device.services) {
 			if (isCDService(service.serviceType)) {
 				out.emplace_back(descriptor.device, service);
@@ -375,7 +360,7 @@ UPnPDeviceDirectory::GetServer(std::string_view friendly_name)
 
 	ExpireDevices();
 
-	for (const auto &i : directories) {
+	for (const auto &[id, i] : directories) {
 		const auto &device = i.device;
 
 		if (device.friendlyName != friendly_name)
