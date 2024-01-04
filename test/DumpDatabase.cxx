@@ -18,11 +18,9 @@
 #include "util/ScopeExit.hxx"
 #include "util/PrintException.hxx"
 
+#include <fmt/core.h>
+
 #include <stdexcept>
-#include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include <stdlib.h>
 
@@ -53,42 +51,41 @@ InputStream::LockRead(void *, size_t)
 class MyDatabaseListener final : public DatabaseListener {
 public:
 	void OnDatabaseModified() noexcept override {
-		cout << "DatabaseModified" << endl;
+		fmt::print("DatabaseModified\n");
 	}
 
 	void OnDatabaseSongRemoved(const char *uri) noexcept override {
-		cout << "SongRemoved " << uri << endl;
+		fmt::print("SongRemoved '{}'\n", uri);
 	}
 };
 
 static void
 DumpDirectory(const LightDirectory &directory)
 {
-	cout << "D " << directory.GetPath() << endl;
+	fmt::print("D {}\n", directory.GetPath());
 }
 
 static void
 DumpSong(const LightSong &song)
 {
-	cout << "S ";
 	if (song.directory != nullptr)
-		cout << song.directory << "/";
-	cout << song.uri << endl;
+		fmt::print("S {}/{}\n", song.directory, song.uri);
+	else
+		fmt::print("S {}\n", song.uri);
 }
 
 static void
 DumpPlaylist(const PlaylistInfo &playlist, const LightDirectory &directory)
 {
-	cout << "P " << directory.GetPath()
-	     << "/" << playlist.name.c_str() << endl;
+	fmt::print("P {}/{}\n", directory.GetPath(), playlist.name);
 }
 
 int
 main(int argc, char **argv)
 try {
 	if (argc != 3) {
-		cerr << "Usage: DumpDatabase CONFIG PLUGIN" << endl;
-		return 1;
+		fmt::print(stderr, "Usage: DumpDatabase CONFIG PLUGIN\n");
+		return EXIT_FAILURE;
 	}
 
 	const FromNarrowPath config_path = argv[1];
@@ -96,7 +93,7 @@ try {
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
 	if (plugin == nullptr) {
-		cerr << "No such database plugin: " << plugin_name << endl;
+		fmt::print(stderr, "No such database plugin: {}\n", plugin_name);
 		return EXIT_FAILURE;
 	}
 
