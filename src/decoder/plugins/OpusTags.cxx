@@ -9,7 +9,7 @@
 #include "tag/ParseName.hxx"
 #include "util/ASCII.hxx"
 #include "tag/ReplayGainInfo.hxx"
-#include "util/CNumberParser.hxx"
+#include "util/NumberParser.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 
@@ -46,19 +46,15 @@ ScanOneOpusTag(std::string_view name, std::string_view value,
 		/* R128_TRACK_GAIN is a Q7.8 fixed point number in
 		   dB */
 
-		const char *endptr;
-		const auto l = ParseInt64(value, &endptr, 10);
-		if (endptr > value.begin() && endptr == value.end())
-			rgi->track.gain = float(l) / 256.0f;
+		if (const auto i = ParseInteger<int_least32_t>(value))
+			rgi->track.gain = float(*i) / 256.0f;
 	} else if (rgi != nullptr &&
 		   StringIsEqualIgnoreCase(name, "R128_ALBUM_GAIN"sv)) {
 		/* R128_ALBUM_GAIN is a Q7.8 fixed point number in
 		   dB */
 
-		const char *endptr;
-		const auto l = ParseInt64(value, &endptr, 10);
-		if (endptr > value.begin() && endptr == value.end())
-			rgi->album.gain = float(l) / 256.0f;
+		if (const auto i = ParseInteger<int_least32_t>(value))
+			rgi->album.gain = float(*i) / 256.0f;
 	}
 
 	handler.OnPair(name, value);
