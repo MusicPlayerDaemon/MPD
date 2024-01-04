@@ -27,9 +27,9 @@ path_catslash(std::string &s) noexcept
 }
 
 std::string
-path_getfather(const std::string &s) noexcept
+path_getfather(const std::string_view s) noexcept
 {
-	std::string father = s;
+	std::string father{s};
 
 	// ??
 	if (father.empty())
