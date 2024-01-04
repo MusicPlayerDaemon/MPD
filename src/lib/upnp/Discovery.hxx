@@ -4,13 +4,8 @@
 #include "Callback.hxx"
 #include "Device.hxx"
 #include "lib/curl/Init.hxx"
-#include "lib/curl/Handler.hxx"
-#include "lib/curl/Request.hxx"
 #include "thread/Mutex.hxx"
-#include "event/InjectEvent.hxx"
 #include "util/IntrusiveList.hxx"
-
-#include <upnp.h>
 
 #include <list>
 #include <vector>
@@ -60,46 +55,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		}
 	};
 
-	class Downloader final
-		: public IntrusiveListHook<>, CurlResponseHandler
-	{
-		InjectEvent defer_start_event;
-
-		UPnPDeviceDirectory &parent;
-
-		std::string id;
-		const std::string url;
-		const std::chrono::steady_clock::duration expires;
-
-		CurlRequest request;
-
-		std::string data;
-
-	public:
-		Downloader(UPnPDeviceDirectory &_parent,
-			   const UpnpDiscovery &disco);
-
-		void Start() noexcept {
-			defer_start_event.Schedule();
-		}
-
-		void Destroy() noexcept;
-
-	private:
-		void OnDeferredStart() noexcept {
-			try {
-				request.Start();
-			} catch (...) {
-				OnError(std::current_exception());
-			}
-		}
-
-		/* virtual methods from CurlResponseHandler */
-		void OnHeaders(unsigned status, Curl::Headers &&headers) override;
-		void OnData(std::span<const std::byte> data) override;
-		void OnEnd() override;
-		void OnError(std::exception_ptr e) noexcept override;
-	};
+	class Downloader;
 
 	CurlInit curl;
 
