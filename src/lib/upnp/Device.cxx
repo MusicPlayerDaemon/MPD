@@ -79,7 +79,7 @@ protected:
 };
 
 void
-UPnPDevice::Parse(const std::string &url, const char *description)
+UPnPDevice::Parse(const std::string_view url, const char *description)
 {
 	{
 		UPnPDeviceParser mparser(*this);

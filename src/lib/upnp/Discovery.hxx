@@ -55,7 +55,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 			:id(std::move(_id)),
 			 expires(last + exp + std::chrono::seconds(20)) {}
 
-		void Parse(const std::string &url, const char *description) {
+		void Parse(std::string_view url, const char *description) {
 			device.Parse(url, description);
 		}
 	};

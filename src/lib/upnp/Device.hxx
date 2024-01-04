@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef _UPNPDEV_HXX_INCLUDED_
-#define _UPNPDEV_HXX_INCLUDED_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -57,7 +56,5 @@ public:
 	 * @param url where the description came from
 	 * @param description the xml device description
 	 */
-	void Parse(const std::string &url, const char *description);
+	void Parse(std::string_view url, const char *description);
 };
-
-#endif /* _UPNPDEV_HXX_INCLUDED_ */
