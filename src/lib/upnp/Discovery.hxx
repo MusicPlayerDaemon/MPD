@@ -71,12 +71,14 @@ public:
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
 
+	[[gnu::const]]
 	EventLoop &GetEventLoop() const noexcept;
 
 	void Start();
 
 	/** Retrieve the directory services currently seen on the network */
-	std::vector<ContentDirectoryService> GetDirectories();
+	[[gnu::pure]]
+	std::vector<ContentDirectoryService> GetDirectories() noexcept;
 
 	/**
 	 * Get server by friendly name.
@@ -93,10 +95,10 @@ private:
 	 *
 	 * Caller must lock #mutex.
 	 */
-	void ExpireDevices();
+	void ExpireDevices() noexcept;
 
-	void LockAdd(ContentDirectoryDescriptor &&d);
-	void LockRemove(const std::string &id);
+	void LockAdd(ContentDirectoryDescriptor &&d) noexcept;
+	void LockRemove(const std::string &id) noexcept;
 
 	int OnAlive(const UpnpDiscovery *disco) noexcept;
 	int OnByeBye(const UpnpDiscovery *disco) noexcept;

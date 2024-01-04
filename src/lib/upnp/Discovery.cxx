@@ -174,7 +174,7 @@ isMSDevice(std::string_view st) noexcept
 }
 
 static void
-AnnounceFoundUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
+AnnounceFoundUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device) noexcept
 {
 	for (const auto &service : device.services)
 		if (isCDService(service.serviceType))
@@ -183,7 +183,7 @@ AnnounceFoundUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
 }
 
 static void
-AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
+AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device) noexcept
 {
 	for (const auto &service : device.services)
 		if (isCDService(service.serviceType))
@@ -192,7 +192,7 @@ AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
 }
 
 inline void
-UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
+UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d) noexcept
 {
 	const std::scoped_lock<Mutex> protect(mutex);
 
@@ -210,7 +210,7 @@ UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 }
 
 inline void
-UPnPDeviceDirectory::LockRemove(const std::string &id)
+UPnPDeviceDirectory::LockRemove(const std::string &id) noexcept
 {
 	const std::scoped_lock<Mutex> protect(mutex);
 
@@ -285,7 +285,7 @@ UPnPDeviceDirectory::Invoke(Upnp_EventType et, const void *evp) noexcept
 }
 
 void
-UPnPDeviceDirectory::ExpireDevices()
+UPnPDeviceDirectory::ExpireDevices() noexcept
 {
 	const auto now = std::chrono::steady_clock::now();
 	bool didsomething = false;
@@ -350,7 +350,7 @@ UPnPDeviceDirectory::Search()
 }
 
 std::vector<ContentDirectoryService>
-UPnPDeviceDirectory::GetDirectories()
+UPnPDeviceDirectory::GetDirectories() noexcept
 {
 	const std::scoped_lock<Mutex> protect(mutex);
 
