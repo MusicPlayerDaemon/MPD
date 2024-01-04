@@ -32,7 +32,7 @@
 
 #include <string.h>
 
-static const char *const rootid = "0";
+static constexpr const char *rootid = "0";
 static constexpr std::string_view rootid_sv{rootid};
 
 class UpnpSongData {
@@ -191,7 +191,7 @@ UpnpDatabase::GetSong(std::string_view uri) const
 				    "No such song");
 
 	UPnPDirObject dirent;
-	if (vpath.front() != rootid) {
+	if (vpath.front() != rootid_sv) {
 		dirent = Namei(server, std::move(vpath));
 	} else {
 		vpath.pop_front();
@@ -324,7 +324,7 @@ static std::string
 songPath(const std::string_view servername,
 	 const std::string_view objid) noexcept
 {
-	return fmt::format("{}/{}/{}", servername, rootid, objid);
+	return fmt::format("{}/{}/{}", servername, rootid_sv, objid);
 }
 
 void
@@ -404,7 +404,7 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 		// looking for root info
 		return ReadNode(server, rootid);
 
-	std::string objid(rootid);
+	std::string objid(rootid_sv);
 
 	// Walk the path elements, read each directory and try to find the next one
 	while (true) {
@@ -500,7 +500,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	/* !Note: this *can't* be handled by Namei further down,
 	   because the path is not valid for traversal. Besides, it's
 	   just faster to access the target node directly */
-	if (!vpath.empty() && vpath.front() == rootid) {
+	if (!vpath.empty() && vpath.front() == rootid_sv) {
 		vpath.pop_front();
 		if (vpath.empty())
 			return;
