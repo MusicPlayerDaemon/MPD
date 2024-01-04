@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_UPNP_OBJECT_HXX
-#define MPD_UPNP_OBJECT_HXX
+#pragma once
 
 #include "tag/Tag.hxx"
 
+#include <cstdint>
 #include <string>
 
 /**
@@ -15,7 +15,7 @@
  */
 class UPnPDirObject {
 public:
-	enum class Type {
+	enum class Type : uint_least8_t {
 		UNKNOWN,
 		ITEM,
 		CONTAINER,
@@ -28,7 +28,7 @@ public:
 	// items are special to us, and so should playlists, but I've not
 	// seen one of the latter yet (servers seem to use containers for
 	// playlists).
-	enum class ItemClass {
+	enum class ItemClass : uint_least8_t {
 		UNKNOWN,
 		MUSIC,
 		PLAYLIST,
@@ -88,5 +88,3 @@ public:
 			 item_class != UPnPDirObject::ItemClass::UNKNOWN);
 	}
 };
-
-#endif /* _UPNPDIRCONTENT_H_X_INCLUDED_ */
