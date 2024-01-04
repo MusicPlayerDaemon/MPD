@@ -6,7 +6,7 @@
 #include "Tags.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Table.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 
 #include <algorithm>
 #include <string>

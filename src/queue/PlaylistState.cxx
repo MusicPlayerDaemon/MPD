@@ -18,7 +18,7 @@
 #include "util/CharUtil.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 #include "Log.hxx"
 
 #include <fmt/format.h>

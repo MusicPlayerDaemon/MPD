@@ -8,7 +8,7 @@
 #include "mixer/Mixer.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 #include "config/Block.hxx"
 
 #include <pulse/context.h>

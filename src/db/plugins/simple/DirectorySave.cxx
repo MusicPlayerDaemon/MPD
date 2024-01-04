@@ -13,7 +13,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 
 #include <fmt/format.h>
 

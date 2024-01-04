@@ -5,7 +5,7 @@
 #include "VorbisComment.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 
 #include <cassert>
 

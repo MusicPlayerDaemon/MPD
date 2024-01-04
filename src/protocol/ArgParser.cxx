@@ -6,7 +6,7 @@
 #include "Ack.hxx"
 #include "Chrono.hxx"
 #include "lib/fmt/ToBuffer.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 
 #include <stdlib.h>
 

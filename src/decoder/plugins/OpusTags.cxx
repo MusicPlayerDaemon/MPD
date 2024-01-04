@@ -9,7 +9,7 @@
 #include "tag/ParseName.hxx"
 #include "util/ASCII.hxx"
 #include "tag/ReplayGainInfo.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 

@@ -23,7 +23,7 @@
 #include "BulkEdit.hxx"
 #include "util/Exception.hxx"
 #include "util/StringAPI.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 
 #include <fmt/format.h>
 

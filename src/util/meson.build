@@ -3,7 +3,7 @@ util = static_library(
   'Exception.cxx',
   'UTF8.cxx',
   'MimeType.cxx',
-  'NumberParser.cxx',
+  'CNumberParser.cxx',
   'TruncateString.cxx',
   'StringStrip.cxx',
   'StringUtil.cxx',

@@ -5,7 +5,7 @@
 #include "../EncoderAPI.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "lib/fmt/RuntimeError.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 #include "util/SpanCast.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"

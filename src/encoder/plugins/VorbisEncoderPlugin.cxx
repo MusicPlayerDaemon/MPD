@@ -9,7 +9,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "config/Domain.hxx"
 #include "util/StringUtil.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 
 #include <vorbis/vorbisenc.h>
 

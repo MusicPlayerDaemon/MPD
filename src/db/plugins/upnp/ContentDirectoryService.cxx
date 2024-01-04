@@ -4,7 +4,7 @@
 #include "lib/upnp/ContentDirectoryService.hxx"
 #include "lib/upnp/Action.hxx"
 #include "Directory.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 
 #include <fmt/format.h>
 

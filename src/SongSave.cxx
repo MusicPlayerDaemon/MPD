@@ -17,7 +17,7 @@
 #include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/StringStrip.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 
 #include <stdlib.h>
 

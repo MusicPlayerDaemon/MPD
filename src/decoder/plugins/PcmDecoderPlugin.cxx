@@ -12,7 +12,7 @@
 #include "util/Domain.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/StaticFifoBuffer.hxx"
-#include "util/NumberParser.hxx"
+#include "util/CNumberParser.hxx"
 #include "util/MimeType.hxx"
 #include "Log.hxx"
 
