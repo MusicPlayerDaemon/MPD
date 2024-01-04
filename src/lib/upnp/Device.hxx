@@ -45,13 +45,6 @@ public:
 	// Services provided by this device.
 	std::vector<UPnPService> services;
 
-	UPnPDevice() = default;
-	UPnPDevice(const UPnPDevice &) = delete;
-	UPnPDevice(UPnPDevice &&) = default;
-	UPnPDevice &operator=(UPnPDevice &&) = default;
-
-	~UPnPDevice() noexcept;
-
 	/** Build device from xml description downloaded from discovery
 	 * @param url where the description came from
 	 * @param description the xml device description
