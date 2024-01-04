@@ -21,6 +21,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
+#include "util/NumberParser.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
@@ -160,21 +161,18 @@ struct DavResponse {
 
 [[gnu::pure]]
 static unsigned
-ParseStatus(const char *s) noexcept
-{
-	/* skip the "HTTP/1.1" prefix */
-	const char *space = std::strchr(s, ' ');
-	if (space == nullptr)
-		return 0;
-
-	return strtoul(space + 1, nullptr, 10);
-}
-
-[[gnu::pure]]
-static unsigned
 ParseStatus(std::string_view s) noexcept
 {
-	return ParseStatus(std::string{s}.c_str());
+	/* skip the "HTTP/1.1" prefix */
+	const auto [http_1_1, rest] = Split(s, ' ');
+
+	/* skip the string suffix */
+	const auto [status_string, _] = Split(rest, ' ');
+
+	if (const auto status = ParseInteger<unsigned>(status_string))
+		return *status;
+
+	return 0;
 }
 
 [[gnu::pure]]
@@ -193,16 +191,12 @@ ParseTimeStamp(std::string_view s) noexcept
 
 [[gnu::pure]]
 static uint64_t
-ParseU64(const char *s) noexcept
-{
-	return strtoull(s, nullptr, 10);
-}
-
-[[gnu::pure]]
-static uint64_t
 ParseU64(std::string_view s) noexcept
 {
-	return ParseU64(std::string{s}.c_str());
+	if (const auto i = ParseInteger<uint_least64_t>(s))
+		return *i;
+
+	return 0;
 }
 
 [[gnu::pure]]
