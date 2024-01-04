@@ -172,9 +172,9 @@ ParseStatus(const char *s) noexcept
 
 [[gnu::pure]]
 static unsigned
-ParseStatus(const char *s, size_t length) noexcept
+ParseStatus(std::string_view s) noexcept
 {
-	return ParseStatus(std::string(s, length).c_str());
+	return ParseStatus(std::string{s}.c_str());
 }
 
 [[gnu::pure]]
@@ -186,9 +186,9 @@ ParseTimeStamp(const char *s) noexcept
 
 [[gnu::pure]]
 static std::chrono::system_clock::time_point
-ParseTimeStamp(const char *s, size_t length) noexcept
+ParseTimeStamp(std::string_view s) noexcept
 {
-	return ParseTimeStamp(std::string(s, length).c_str());
+	return ParseTimeStamp(std::string{s}.c_str());
 }
 
 [[gnu::pure]]
@@ -200,9 +200,9 @@ ParseU64(const char *s) noexcept
 
 [[gnu::pure]]
 static uint64_t
-ParseU64(const char *s, size_t length) noexcept
+ParseU64(std::string_view s) noexcept
 {
-	return ParseU64(std::string(s, length).c_str());
+	return ParseU64(std::string{s}.c_str());
 }
 
 [[gnu::pure]]
@@ -391,7 +391,7 @@ private:
 		}
 	}
 
-	void CharacterData(const XML_Char *s, int len) final {
+	void CharacterData(std::string_view s) final {
 		switch (state) {
 		case State::ROOT:
 		case State::PROPSTAT:
@@ -400,19 +400,19 @@ private:
 			break;
 
 		case State::HREF:
-			response.href.append(s, len);
+			response.href.append(s);
 			break;
 
 		case State::STATUS:
-			response.status = ParseStatus(s, len);
+			response.status = ParseStatus(s);
 			break;
 
 		case State::MTIME:
-			response.mtime = ParseTimeStamp(s, len);
+			response.mtime = ParseTimeStamp(s);
 			break;
 
 		case State::LENGTH:
-			response.length = ParseU64(s, len);
+			response.length = ParseU64(s);
 			break;
 		}
 	}

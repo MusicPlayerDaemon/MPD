@@ -69,9 +69,9 @@ protected:
 		}
 	}
 
-	void CharacterData(const XML_Char *s, int len) override {
+	void CharacterData(std::string_view s) override {
 		if (value != nullptr)
-			value->append(s, len);
+			value->append(s);
 	}
 };
 

@@ -115,7 +115,7 @@ protected:
 	virtual void StartElement(const XML_Char *name,
 				  const XML_Char **atts) = 0;
 	virtual void EndElement(const XML_Char *name) = 0;
-	virtual void CharacterData(const XML_Char *s, int len) = 0;
+	virtual void CharacterData(const std::string_view s) = 0;
 
 private:
 	static void XMLCALL StartElement(void *user_data, const XML_Char *name,
@@ -132,6 +132,6 @@ private:
 	static void XMLCALL CharacterData(void *user_data,
 					  const XML_Char *s, int len) {
 		CommonExpatParser &p = *(CommonExpatParser *)user_data;
-		p.CharacterData(s, len);
+		p.CharacterData({s, static_cast<std::size_t>(len)});
 	}
 };

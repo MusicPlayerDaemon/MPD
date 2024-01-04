@@ -191,12 +191,12 @@ protected:
 		state = NONE;
 	}
 
-	void CharacterData(const XML_Char *s, int len) override
+	void CharacterData(std::string_view s) override
 	{
 		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
 			assert(object.type != UPnPDirObject::Type::UNKNOWN);
 
-			value.append(s, len);
+			value.append(s);
 			return;
 		}
 
@@ -205,11 +205,11 @@ protected:
 			break;
 
 		case RES:
-			object.url.assign(s, len);
+			object.url.assign(s);
 			break;
 
 		case CLASS:
-			object.item_class = ParseItemClass(std::string_view(s, len));
+			object.item_class = ParseItemClass(s);
 			break;
 		}
 	}
