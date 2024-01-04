@@ -37,12 +37,14 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.musicpd.Main
 import org.musicpd.R
 
+@AndroidEntryPoint
 class SettingsActivity : ComponentActivity() {
 
     private val settingsViewModel: SettingsViewModel by viewModels()
@@ -71,10 +73,6 @@ class SettingsActivity : ComponentActivity() {
                 settingsViewModel.removeClient()
                 settingsViewModel.updateStatus(error, false)
                 connectClient()
-            }
-
-            override fun onLog(priority: Int, msg: String) {
-                settingsViewModel.addLogItem(priority, msg)
             }
         })
 
@@ -138,7 +136,7 @@ fun SettingsContainer(settingsViewModel: SettingsViewModel = viewModel()) {
                     settingsViewModel.setPauseOnHeadphonesDisconnect(newValue)
                 }
             )
-            LogView(settingsViewModel.logItemFLow.collectAsStateWithLifecycle())
+            LogView(settingsViewModel.getLogs().collectAsStateWithLifecycle())
         }
     }
 }
