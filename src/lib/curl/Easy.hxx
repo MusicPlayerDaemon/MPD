@@ -64,8 +64,13 @@ public:
 	}
 
 	template<typename T>
+	CURLcode TrySetOption(CURLoption option, T value) noexcept {
+		return curl_easy_setopt(handle, option, value);
+	}
+
+	template<typename T>
 	void SetOption(CURLoption option, T value) {
-		CURLcode code = curl_easy_setopt(handle, option, value);
+		CURLcode code = TrySetOption(option, value);
 		if (code != CURLE_OK)
 			throw Curl::MakeError(code, "Failed to set option");
 	}
