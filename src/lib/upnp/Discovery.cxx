@@ -210,7 +210,7 @@ UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d) noexcept
 }
 
 inline void
-UPnPDeviceDirectory::LockRemove(const std::string &id) noexcept
+UPnPDeviceDirectory::LockRemove(const std::string_view id) noexcept
 {
 	const std::scoped_lock<Mutex> protect(mutex);
 

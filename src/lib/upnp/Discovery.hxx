@@ -98,7 +98,7 @@ private:
 	void ExpireDevices() noexcept;
 
 	void LockAdd(ContentDirectoryDescriptor &&d) noexcept;
-	void LockRemove(const std::string &id) noexcept;
+	void LockRemove(std::string_view id) noexcept;
 
 	int OnAlive(const UpnpDiscovery *disco) noexcept;
 	int OnByeBye(const UpnpDiscovery *disco) noexcept;
