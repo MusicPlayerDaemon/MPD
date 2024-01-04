@@ -233,16 +233,7 @@ UPnPDeviceDirectory::OnAlive(const UpnpDiscovery *disco) noexcept
 	    isCDService(UpnpDiscovery_get_ServiceType_cstr(disco))) {
 		try {
 			auto *downloader = new Downloader(*this, *disco);
-
-			try {
-				downloader->Start();
-			} catch (...) {
-				BlockingCall(GetEventLoop(), [downloader](){
-						downloader->Destroy();
-					});
-
-				throw;
-			}
+			downloader->Start();
 		} catch (...) {
 			LogError(std::current_exception());
 			return UPNP_E_SUCCESS;
