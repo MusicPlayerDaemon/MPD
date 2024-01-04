@@ -2,7 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "Callback.hxx"
-#include "Device.hxx"
 #include "lib/curl/Init.hxx"
 #include "thread/Mutex.hxx"
 #include "util/IntrusiveList.hxx"
@@ -31,29 +30,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	 * Descriptor for one device having a Content Directory
 	 * service found on the network.
 	 */
-	class ContentDirectoryDescriptor {
-	public:
-		std::string id;
-
-		UPnPDevice device;
-
-		/**
-		 * The time stamp when this device expires.
-		 */
-		std::chrono::steady_clock::time_point expires;
-
-		ContentDirectoryDescriptor() = default;
-
-		ContentDirectoryDescriptor(std::string &&_id,
-					   std::chrono::steady_clock::time_point last,
-					   std::chrono::steady_clock::duration exp) noexcept
-			:id(std::move(_id)),
-			 expires(last + exp + std::chrono::seconds(20)) {}
-
-		void Parse(std::string_view url, std::string_view description) {
-			device.Parse(url, description);
-		}
-	};
+	class ContentDirectoryDescriptor;
 
 	class Downloader;
 

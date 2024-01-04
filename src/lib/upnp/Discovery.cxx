@@ -3,6 +3,7 @@
 
 #include "Discovery.hxx"
 #include "ContentDirectoryService.hxx"
+#include "Device.hxx"
 #include "Log.hxx"
 #include "Error.hxx"
 #include "lib/curl/Global.hxx"
@@ -17,6 +18,30 @@
 #include <upnptools.h>
 
 #include <stdlib.h>
+
+class UPnPDeviceDirectory::ContentDirectoryDescriptor {
+public:
+	std::string id;
+
+	UPnPDevice device;
+
+	/**
+	 * The time stamp when this device expires.
+	 */
+	std::chrono::steady_clock::time_point expires;
+
+	ContentDirectoryDescriptor() = default;
+
+	ContentDirectoryDescriptor(std::string &&_id,
+				   std::chrono::steady_clock::time_point last,
+				   std::chrono::steady_clock::duration exp) noexcept
+		:id(std::move(_id)),
+		 expires(last + exp + std::chrono::seconds(20)) {}
+
+	void Parse(std::string_view url, std::string_view description) {
+		device.Parse(url, description);
+	}
+};
 
 class UPnPDeviceDirectory::Downloader final
 	: public IntrusiveListHook<>, CurlResponseHandler
