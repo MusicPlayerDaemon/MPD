@@ -24,6 +24,8 @@
 #include "util/SplitString.hxx"
 #include "config/Block.hxx"
 
+#include <fmt/core.h>
+
 #include <cassert>
 #include <string>
 #include <utility>
@@ -318,10 +320,10 @@ visitSong(const UPnPDirObject &meta, const char *path,
  * directory name would fit.
  */
 static std::string
-songPath(const std::string &servername,
-	 const std::string &objid) noexcept
+songPath(const std::string_view servername,
+	 const std::string_view objid) noexcept
 {
-	return servername + "/" + rootid + "/" + objid;
+	return fmt::format("{}/{}/{}", servername, rootid, objid);
 }
 
 void
