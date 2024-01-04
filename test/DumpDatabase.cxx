@@ -3,7 +3,7 @@
 
 #include "config.h"
 #include "db/Registry.hxx"
-#include "db/DatabasePlugin.hxx"
+#include "db/Configured.hxx"
 #include "db/Interface.hxx"
 #include "db/Selection.hxx"
 #include "db/DatabaseListener.hxx"
@@ -83,19 +83,12 @@ DumpPlaylist(const PlaylistInfo &playlist, const LightDirectory &directory)
 int
 main(int argc, char **argv)
 try {
-	if (argc != 3) {
-		fmt::print(stderr, "Usage: DumpDatabase CONFIG PLUGIN\n");
+	if (argc != 2) {
+		fmt::print(stderr, "Usage: DumpDatabase CONFIG\n");
 		return EXIT_FAILURE;
 	}
 
 	const FromNarrowPath config_path = argv[1];
-	const char *const plugin_name = argv[2];
-
-	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
-	if (plugin == nullptr) {
-		fmt::print(stderr, "No such database plugin: {}\n", plugin_name);
-		return EXIT_FAILURE;
-	}
 
 	/* initialize MPD */
 
@@ -109,14 +102,10 @@ try {
 
 	/* do it */
 
-	const auto *path = config.GetParam(ConfigOption::DB_FILE);
-	ConfigBlock block(path != nullptr ? path->line : -1);
-	if (path != nullptr)
-		block.AddBlockParam("path", path->value, path->line);
-
-	auto db = plugin->create(init.GetEventLoop(),
-				 init.GetEventLoop(),
-				 database_listener, block);
+	auto db = CreateConfiguredDatabase(config,
+					   init.GetEventLoop(),
+					   init.GetEventLoop(),
+					   database_listener);
 
 	db->Open();
 

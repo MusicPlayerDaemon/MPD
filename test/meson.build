@@ -223,6 +223,8 @@ if enable_database
   executable(
     'DumpDatabase',
     'DumpDatabase.cxx',
+    '../src/db/Configured.cxx',
+    '../src/db/DatabaseGlue.cxx',
     '../src/db/Registry.cxx',
     '../src/db/Selection.cxx',
     '../src/db/PlaylistVector.cxx',
