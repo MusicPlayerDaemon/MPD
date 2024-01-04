@@ -98,7 +98,7 @@ public:
 	}
 
 	/** Retrieve the "friendly name" for this server, useful for display. */
-	const char *getFriendlyName() const noexcept {
-		return m_friendlyName.c_str();
+	const std::string &GetFriendlyName() const noexcept {
+		return m_friendlyName;
 	}
 };

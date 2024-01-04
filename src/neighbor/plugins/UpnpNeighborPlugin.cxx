@@ -91,21 +91,21 @@ UpnpNeighborExplorer::GetList() const noexcept
 
 	List result;
 	for (const auto &i : tmp)
-		result.emplace_front(i.GetURI(), i.getFriendlyName());
+		result.emplace_front(i.GetURI(), i.GetFriendlyName());
 	return result;
 }
 
 void
 UpnpNeighborExplorer::FoundUPnP(const ContentDirectoryService &service)
 {
-	const NeighborInfo n(service.GetURI(), service.getFriendlyName());
+	const NeighborInfo n(service.GetURI(), service.GetFriendlyName());
 	listener.FoundNeighbor(n);
 }
 
 void
 UpnpNeighborExplorer::LostUPnP(const ContentDirectoryService &service)
 {
-	const NeighborInfo n(service.GetURI(), service.getFriendlyName());
+	const NeighborInfo n(service.GetURI(), service.GetFriendlyName());
 	listener.LostNeighbor(n);
 }
 

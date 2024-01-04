@@ -357,7 +357,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 		//    course, 'All Music' is very big.
 		// So we return synthetic and ugly paths based on the object id,
 		// which we later have to detect.
-		const std::string path = songPath(server.getFriendlyName(),
+		const std::string path = songPath(server.GetFriendlyName(),
 						  dirent.id);
 		visitSong(dirent, path.c_str(),
 			  selection, visit_song);
@@ -391,8 +391,7 @@ UpnpDatabase::BuildPath(const ContentDirectoryService &server,
 			path = PathTraitsUTF8::Build(dirent.name, path);
 	}
 
-	return PathTraitsUTF8::Build(server.getFriendlyName(),
-				     path.c_str());
+	return PathTraitsUTF8::Build(server.GetFriendlyName(), path);
 }
 
 // Take server and internal title pathname and return objid and metadata.
@@ -519,7 +518,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 				throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 						    "Not found");
 
-			std::string path = songPath(server.getFriendlyName(),
+			std::string path = songPath(server.GetFriendlyName(),
 						    dirent.id);
 			visitSong(dirent, path.c_str(),
 				  selection, visit_song);
@@ -541,7 +540,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	}
 
 	const char *const base_uri = selection.uri.empty()
-		? server.getFriendlyName()
+		? server.GetFriendlyName().c_str()
 		: selection.uri.c_str();
 
 	if (tdirent.type == UPnPDirObject::Type::ITEM) {
@@ -587,7 +586,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	if (vpath.empty()) {
 		for (const auto &server : discovery->GetDirectories()) {
 			if (visit_directory) {
-				const LightDirectory d(server.getFriendlyName(),
+				const LightDirectory d(server.GetFriendlyName().c_str(),
 						       std::chrono::system_clock::time_point::min());
 				visit_directory(d);
 			}
