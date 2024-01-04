@@ -14,7 +14,6 @@
 #include <upnptools.h>
 
 #include <stdlib.h>
-#include <string.h>
 
 UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 					    const UpnpDiscovery &disco)
@@ -86,10 +85,12 @@ static constexpr char ContentDirectorySType[] = "urn:schemas-upnp-org:service:Co
 // version 1
 [[gnu::pure]]
 static bool
-isCDService(const char *st) noexcept
+isCDService(std::string_view st) noexcept
 {
-	constexpr size_t sz = sizeof(ContentDirectorySType) - 3;
-	return strncmp(ContentDirectorySType, st, sz) == 0;
+	std::string_view prefix = ContentDirectorySType;
+	prefix.remove_suffix(2);
+
+	return st.starts_with(prefix);
 }
 
 // The type of device we're asking for in search
@@ -97,17 +98,19 @@ static constexpr char MediaServerDType[] = "urn:schemas-upnp-org:device:MediaSer
 
 [[gnu::pure]]
 static bool
-isMSDevice(const char *st) noexcept
+isMSDevice(std::string_view st) noexcept
 {
-	constexpr size_t sz = sizeof(MediaServerDType) - 3;
-	return strncmp(MediaServerDType, st, sz) == 0;
+	std::string_view prefix = MediaServerDType;
+	prefix.remove_suffix(2);
+
+	return st.starts_with(prefix);
 }
 
 static void
 AnnounceFoundUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
 {
 	for (const auto &service : device.services)
-		if (isCDService(service.serviceType.c_str()))
+		if (isCDService(service.serviceType))
 			listener.FoundUPnP(ContentDirectoryService(device,
 								   service));
 }
@@ -116,7 +119,7 @@ static void
 AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
 {
 	for (const auto &service : device.services)
-		if (isCDService(service.serviceType.c_str()))
+		if (isCDService(service.serviceType))
 			listener.LostUPnP(ContentDirectoryService(device,
 								  service));
 }
@@ -298,7 +301,7 @@ UPnPDeviceDirectory::GetDirectories()
 	std::vector<ContentDirectoryService> out;
 	for (const auto &descriptor : directories) {
 		for (const auto &service : descriptor.device.services) {
-			if (isCDService(service.serviceType.c_str())) {
+			if (isCDService(service.serviceType)) {
 				out.emplace_back(descriptor.device, service);
 			}
 		}
@@ -321,7 +324,7 @@ UPnPDeviceDirectory::GetServer(std::string_view friendly_name)
 			continue;
 
 		for (const auto &service : device.services)
-			if (isCDService(service.serviceType.c_str()))
+			if (isCDService(service.serviceType))
 				return {device, service};
 	}
 
