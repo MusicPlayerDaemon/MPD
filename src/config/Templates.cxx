@@ -61,6 +61,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "despotify_password", false, true },
 	{ "despotify_high_bitrate", false, true },
 	{ "mixramp_analyzer" },
+	{ "max_buffered_input_stream_size" },
 };
 
 static constexpr unsigned n_config_param_templates =

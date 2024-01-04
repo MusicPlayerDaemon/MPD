@@ -927,6 +927,9 @@ These settings are various limitations to prevent :program:`MPD` from using too 
      - The maximum size a command list. Default is 2048 (2 MiB).
    * - **max_output_buffer_size KBYTES**
      - The maximum size of the output buffer to a client (maximum response size). Default is 8192 (8 MiB).
+   * - **max_buffered_input_stream_size KBYTES**
+     - Network streams of known size read from a server with seek ability and smaller than this size will be entirely read in memory. Larger streams are read by chunks, as needed. The default is 128 MiB, which may be too big for small machines.
+
 
 Buffer Settings
 ^^^^^^^^^^^^^^^
