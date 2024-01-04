@@ -30,8 +30,6 @@ public:
 	 */
 	std::chrono::steady_clock::time_point expires;
 
-	ContentDirectoryDescriptor() = default;
-
 	ContentDirectoryDescriptor(std::string &&_id,
 				   std::chrono::steady_clock::time_point last,
 				   std::chrono::steady_clock::duration exp) noexcept
