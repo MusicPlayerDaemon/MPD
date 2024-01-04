@@ -47,8 +47,8 @@ upnp = static_library(
   'Device.cxx',
   'ContentDirectoryService.cxx',
   'Discovery.cxx',
-  'ixmlwrap.cxx',
   'Util.cxx',
+  'Action.cxx',
   include_directories: inc,
   dependencies: [
     log_dep,
