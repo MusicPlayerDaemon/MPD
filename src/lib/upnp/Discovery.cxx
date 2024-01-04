@@ -63,7 +63,7 @@ UPnPDeviceDirectory::Downloader::OnEnd()
 				     expires);
 
 	try {
-		d.Parse(url, data.c_str());
+		d.Parse(url, data);
 	} catch (...) {
 		LogError(std::current_exception());
 	}

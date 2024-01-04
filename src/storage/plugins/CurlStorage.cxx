@@ -297,9 +297,8 @@ private:
 			throw std::runtime_error("Unexpected Content-Type from WebDAV server");
 	}
 
-	void OnData(std::span<const std::byte> _src) final {
-		auto src = ToStringView(_src);
-		Parse(src.data(), src.size());
+	void OnData(std::span<const std::byte> src) final {
+		Parse(ToStringView(src));
 	}
 
 	void OnEnd() final {

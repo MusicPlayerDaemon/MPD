@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_UPNP_DIRECTORY_HXX
-#define MPD_UPNP_DIRECTORY_HXX
+#pragma once
 
 #include "Object.hxx"
 
-#include <string>
+#include <string_view>
 #include <vector>
 
 /**
@@ -44,7 +43,5 @@ public:
 	 * actually global, nothing really bad will happen if you mix
 	 * up...
 	 */
-	void Parse(const char *didltext);
+	void Parse(std::string_view didltext);
 };
-
-#endif /* _UPNPDIRCONTENT_H_X_INCLUDED_ */

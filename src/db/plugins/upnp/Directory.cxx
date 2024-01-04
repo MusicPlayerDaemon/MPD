@@ -216,8 +216,8 @@ protected:
 };
 
 void
-UPnPDirContent::Parse(const char *input)
+UPnPDirContent::Parse(std::string_view input)
 {
 	UPnPDirParser parser(*this);
-	parser.Parse(input, strlen(input), true);
+	parser.Parse(input, true);
 }

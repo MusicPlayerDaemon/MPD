@@ -7,9 +7,9 @@
 #include <string.h>
 
 void
-ExpatParser::Parse(const char *data, size_t length, bool is_final)
+ExpatParser::Parse(std::string_view src, bool is_final)
 {
-	if (XML_Parse(parser, data, length, is_final) != XML_STATUS_OK)
+	if (XML_Parse(parser, src.data(), src.size(), is_final) != XML_STATUS_OK)
 		throw ExpatError(parser);
 }
 

@@ -79,11 +79,11 @@ protected:
 };
 
 void
-UPnPDevice::Parse(const std::string_view url, const char *description)
+UPnPDevice::Parse(const std::string_view url, const std::string_view description)
 {
 	{
 		UPnPDeviceParser mparser(*this);
-		mparser.Parse(description, strlen(description), true);
+		mparser.Parse(description, true);
 	}
 
 	if (URLBase.empty()) {

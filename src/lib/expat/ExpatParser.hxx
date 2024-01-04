@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_EXPAT_HXX
-#define MPD_EXPAT_HXX
+#pragma once
 
 #include <expat.h>
 
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 
 class InputStream;
@@ -54,10 +54,10 @@ public:
 		XML_SetCharacterDataHandler(parser, charhndl);
 	}
 
-	void Parse(const char *data, size_t length, bool is_final=false);
+	void Parse(std::string_view src, bool is_final=false);
 
 	void CompleteParse() {
-		Parse("", 0, true);
+		Parse({}, true);
 	}
 
 	void Parse(InputStream &is);
@@ -135,5 +135,3 @@ private:
 		p.CharacterData(s, len);
 	}
 };
-
-#endif

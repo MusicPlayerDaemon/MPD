@@ -56,5 +56,5 @@ public:
 	 * @param url where the description came from
 	 * @param description the xml device description
 	 */
-	void Parse(std::string_view url, const char *description);
+	void Parse(std::string_view url, std::string_view description);
 };
