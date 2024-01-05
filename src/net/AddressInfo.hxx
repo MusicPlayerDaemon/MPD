@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef NET_ADDRESS_INFO_HXX
-#define NET_ADDRESS_INFO_HXX
+#pragma once
 
 #include "SocketAddress.hxx"
 
@@ -43,6 +42,14 @@ public:
 
 	constexpr int GetProtocol() const noexcept {
 		return ai_protocol;
+	}
+
+	constexpr bool IsInet() const noexcept {
+		return ai_family == AF_INET || ai_family == AF_INET6;
+	}
+
+	constexpr bool IsTCP() const noexcept {
+		return IsInet() && GetType() == SOCK_STREAM;
 	}
 
 	constexpr operator SocketAddress() const noexcept {
@@ -130,5 +137,3 @@ public:
 		return const_iterator(nullptr);
 	}
 };
-
-#endif
