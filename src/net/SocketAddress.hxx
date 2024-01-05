@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef SOCKET_ADDRESS_HXX
-#define SOCKET_ADDRESS_HXX
+#pragma once
 
 #include "Features.hxx"
 
@@ -95,6 +94,10 @@ public:
 		return GetFamily() != AF_UNSPEC;
 	}
 
+	constexpr bool IsInet() const noexcept {
+		return GetFamily() == AF_INET || GetFamily() == AF_INET6;
+	}
+
 #ifdef HAVE_UN
 	/**
 	 * Extract the local socket path (which may begin with a null
@@ -135,10 +138,8 @@ public:
 	/**
 	 * Does the address family support port numbers?
 	 */
-	[[gnu::pure]]
-	bool HasPort() const noexcept {
-		return !IsNull() &&
-			(GetFamily() == AF_INET || GetFamily() == AF_INET6);
+	constexpr bool HasPort() const noexcept {
+		return !IsNull() && IsInet();
 	}
 
 	/**
@@ -173,5 +174,3 @@ public:
 		return !(*this == other);
 	}
 };
-
-#endif

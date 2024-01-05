@@ -91,6 +91,10 @@ public:
 		address.ss_family = AF_UNSPEC;
 	}
 
+	constexpr bool IsInet() const noexcept {
+		return GetFamily() == AF_INET || GetFamily() == AF_INET6;
+	}
+
 #ifdef HAVE_UN
 	/**
 	 * @see SocketAddress::GetLocalRaw()
