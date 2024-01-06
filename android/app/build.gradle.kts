@@ -64,6 +64,8 @@ dependencies {
     implementation("com.github.alorma:compose-settings-storage-preferences:1.0.3")
     implementation("com.google.accompanist:accompanist-permissions:0.33.2-alpha")
 
+    implementation("androidx.media3:media3-session:1.2.0")
+
     // Android Studio Preview support
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")

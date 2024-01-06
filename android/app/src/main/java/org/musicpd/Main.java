@@ -3,7 +3,6 @@
 
 package org.musicpd;
 
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -17,13 +16,15 @@ import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
-import android.widget.RemoteViews;
 
-import androidx.core.app.ServiceCompat;
+import androidx.annotation.OptIn;
+import androidx.media3.common.util.UnstableApi;
+import androidx.media3.session.MediaSession;
 
 import org.musicpd.ui.SettingsActivity;
 
@@ -49,6 +50,8 @@ public class Main extends Service implements Runnable {
 	private final IBinder mBinder = new MainStub(this);
 	private boolean mPauseOnHeadphonesDisconnect = false;
 	private PowerManager.WakeLock mWakelock = null;
+
+	private MediaSession mMediaSession = null;
 
 	static class MainStub extends IMain.Stub {
 		private Main mService;
@@ -183,6 +186,7 @@ public class Main extends Service implements Runnable {
 		}
 	}
 
+	@OptIn(markerClass = UnstableApi.class)
 	private void start() {
 		if (mThread != null)
 			return;
@@ -224,11 +228,16 @@ public class Main extends Service implements Runnable {
 		mThread = new Thread(this);
 		mThread.start();
 
+		MPDPlayer player = new MPDPlayer(Looper.getMainLooper());
+		mMediaSession = new MediaSession.Builder(this, player).build();
+
 		startForeground(R.string.notification_title_mpd_running, notification);
 		startService(new Intent(this, Main.class));
 	}
 
 	private void stop() {
+		mMediaSession.release();
+		mMediaSession = null;
 		if (mThread != null) {
 			if (mThread.isAlive()) {
 				synchronized (this) {
