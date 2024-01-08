@@ -21,13 +21,13 @@ class DatabaseListener;
 class PrefixedLightSong;
 
 class SimpleDatabase : public Database {
-	AllocatedPath path;
+	const AllocatedPath path;
 	std::string path_utf8;
 
 	/**
 	 * The path where cache files for Mount() are located.
 	 */
-	AllocatedPath cache_path;
+	const AllocatedPath cache_path;
 
 	Directory *root;
 
