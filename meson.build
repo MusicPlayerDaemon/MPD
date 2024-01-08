@@ -438,6 +438,7 @@ else
     'src/android/AudioManager.cxx',
     'src/android/Environment.cxx',
     'src/android/LogListener.cxx',
+    'src/android/Song.cxx',
   ]
 endif
 
