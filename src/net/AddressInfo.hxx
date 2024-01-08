@@ -55,6 +55,13 @@ public:
 	constexpr operator SocketAddress() const noexcept {
 		return {ai_addr, (SocketAddress::size_type)ai_addrlen};
 	}
+
+	/**
+	 * Cast a #addrinfo reference to an #AddressInfo reference.
+	 */
+	static constexpr const AddressInfo &Cast(const struct addrinfo &ai) noexcept {
+		return static_cast<const AddressInfo &>(ai);
+	}
 };
 
 class AddressInfoList {
