@@ -24,12 +24,6 @@ class SimpleDatabase : public Database {
 	AllocatedPath path;
 	std::string path_utf8;
 
-#ifdef ENABLE_ZLIB
-	bool compress;
-#endif
-
-	bool hide_playlist_targets;
-
 	/**
 	 * The path where cache files for Mount() are located.
 	 */
@@ -53,6 +47,12 @@ class SimpleDatabase : public Database {
 #ifndef NDEBUG
 	mutable unsigned borrowed_song_count;
 #endif
+
+#ifdef ENABLE_ZLIB
+	const bool compress;
+#endif
+
+	const bool hide_playlist_targets;
 
 public:
 	SimpleDatabase(const ConfigBlock &block);
