@@ -54,17 +54,20 @@ inline SimpleDatabase::SimpleDatabase(const ConfigBlock &block)
 	path_utf8 = path.ToUTF8();
 }
 
-inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
+inline
+SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 #ifndef ENABLE_ZLIB
-				      [[maybe_unused]]
+			       [[maybe_unused]]
 #endif
-				      bool _compress) noexcept
+			       bool _compress,
+			       bool _hide_playlist_targets) noexcept
 	:Database(simple_db_plugin),
 	 path(std::move(_path)),
 	 path_utf8(path.ToUTF8()),
 #ifdef ENABLE_ZLIB
 	 compress(_compress),
 #endif
+	 hide_playlist_targets(_hide_playlist_targets),
 	 cache_path(nullptr)
 {
 }
@@ -426,7 +429,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 	constexpr bool compress = false;
 #endif
 	auto db = std::make_unique<SimpleDatabase>(cache_path / name_fs,
-						   compress);
+						   compress, hide_playlist_targets);
 	db->Open();
 
 	bool exists = db->FileExists();

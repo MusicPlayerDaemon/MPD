@@ -56,7 +56,8 @@ class SimpleDatabase : public Database {
 
 public:
 	SimpleDatabase(const ConfigBlock &block);
-	SimpleDatabase(AllocatedPath &&_path, bool _compress) noexcept;
+	SimpleDatabase(AllocatedPath &&_path, bool _compress,
+		       bool _hide_playlist_targets) noexcept;
 
 	static DatabasePtr Create(EventLoop &main_event_loop,
 				  EventLoop &io_event_loop,
