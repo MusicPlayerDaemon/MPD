@@ -127,13 +127,13 @@ sent from the client to the server::
 
 The server responds with::
 
- ACK [50@1] {play} song doesn't exist: "10240"
+ ACK [2@1] {play} Bad song index
 
 This tells us that the play command, which was the second in the list
-(the first or only command is numbered 0), failed with error 50.  The
-number 50 translates to ``ACK_ERROR_NO_EXIST`` -- the song doesn't
-exist.  This is reiterated by the message text which also tells us
-which song doesn't exist.
+(the first or only command is numbered 0), failed with error 2.  The
+number 2 translates to ``ACK_ERROR_ARG`` -- the argument is invalid
+since such song position does not exist.  This is reiterated by the
+message text which also tells us that the song index is incorrect.
 
 .. _command_lists:
 
