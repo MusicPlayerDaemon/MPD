@@ -214,7 +214,7 @@ int
 SocketDescriptor::GetIntOption(int level, int name, int fallback) const noexcept
 {
 	int value = fallback;
-	GetOption(level, name, &value, sizeof(value));
+	(void)GetOption(level, name, &value, sizeof(value));
 	return value;
 }
 
