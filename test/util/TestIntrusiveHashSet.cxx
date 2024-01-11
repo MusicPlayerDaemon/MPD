@@ -59,7 +59,7 @@ TEST(IntrusiveHashSet, Basic)
 
 	set.insert(c);
 
-	ASSERT_EQ(set.size(), 3);
+	ASSERT_EQ(set.size(), 3U);
 
 	ASSERT_NE(set.find(c), set.end());
 	ASSERT_EQ(set.find(c), set.iterator_to(c));
@@ -71,7 +71,7 @@ TEST(IntrusiveHashSet, Basic)
 
 	set.erase(set.iterator_to(c));
 
-	ASSERT_EQ(set.size(), 2);
+	ASSERT_EQ(set.size(), 2U);
 	ASSERT_EQ(set.find(3), set.end());
 	ASSERT_EQ(set.find(c), set.end());
 
@@ -79,7 +79,7 @@ TEST(IntrusiveHashSet, Basic)
 	set.insert(d);
 	set.insert(e);
 
-	ASSERT_EQ(set.size(), 5);
+	ASSERT_EQ(set.size(), 5U);
 	ASSERT_FALSE(set.insert_check(1).second);
 	ASSERT_EQ(set.insert_check(1).first, set.iterator_to(a));
 	ASSERT_FALSE(set.insert_check(f).second);
