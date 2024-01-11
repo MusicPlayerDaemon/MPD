@@ -351,15 +351,15 @@ public:
 	 * Receive a datagram and return the source address.
 	 */
 	[[nodiscard]]
-	ssize_t Read(void *buffer, std::size_t length,
-		     StaticSocketAddress &address) const noexcept;
+	ssize_t ReadNoWait(std::span<std::byte> dest,
+			   StaticSocketAddress &address) const noexcept;
 
 	/**
 	 * Send a datagram to the specified address.
 	 */
 	[[nodiscard]]
-	ssize_t Write(const void *buffer, std::size_t length,
-		      SocketAddress address) const noexcept;
+	ssize_t WriteNoWait(std::span<const std::byte> src,
+			    SocketAddress address) const noexcept;
 
 #ifndef _WIN32
 	void Shutdown() const noexcept;
