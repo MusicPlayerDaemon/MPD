@@ -23,7 +23,7 @@ static inline UniqueFileDescriptor
 OpenFile(Path file, int flags, int mode)
 {
 	UniqueFileDescriptor fd;
-	fd.Open(file.c_str(), flags, mode);
+	(void)fd.Open(file.c_str(), flags, mode);
 	return fd;
 }
 

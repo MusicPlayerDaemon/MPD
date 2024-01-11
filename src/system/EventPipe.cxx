@@ -48,7 +48,7 @@ EventPipe::Write() noexcept
 	assert(w.IsDefined());
 
 	static constexpr std::byte buffer[1]{};
-	w.Write(buffer);
+	(void)w.Write(buffer);
 }
 
 #ifdef _WIN32

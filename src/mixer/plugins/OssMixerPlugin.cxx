@@ -97,8 +97,7 @@ OssMixer::Close() noexcept
 void
 OssMixer::Open()
 {
-	device_fd.OpenReadOnly(device);
-	if (!device_fd.IsDefined())
+	if (!device_fd.OpenReadOnly(device))
 		throw FmtErrno("failed to open {}", device);
 
 	try {

@@ -27,7 +27,10 @@ protected:
 	int fd;
 
 public:
+	[[nodiscard]]
 	FileDescriptor() = default;
+
+	[[nodiscard]]
 	explicit constexpr FileDescriptor(int _fd) noexcept:fd(_fd) {}
 
 	constexpr bool operator==(FileDescriptor other) const noexcept {
@@ -80,6 +83,7 @@ public:
 		fd = _fd;
 	}
 
+	[[nodiscard]]
 	int Steal() noexcept {
 		return std::exchange(fd, -1);
 	}
@@ -88,37 +92,46 @@ public:
 		fd = -1;
 	}
 
+	[[nodiscard]]
 	static constexpr FileDescriptor Undefined() noexcept {
 		return FileDescriptor(-1);
 	}
 
 #ifdef __linux__
+	[[nodiscard]]
 	bool Open(FileDescriptor dir, const char *pathname,
 		  int flags, mode_t mode=0666) noexcept;
 #endif
 
+	[[nodiscard]]
 	bool Open(const char *pathname, int flags, mode_t mode=0666) noexcept;
 
 #ifdef _WIN32
+	[[nodiscard]]
 	bool Open(const wchar_t *pathname, int flags, mode_t mode=0666) noexcept;
 #endif
 
+	[[nodiscard]]
 	bool OpenReadOnly(const char *pathname) noexcept;
 
 #ifdef __linux__
+	[[nodiscard]]
 	bool OpenReadOnly(FileDescriptor dir,
 			  const char *pathname) noexcept;
 #endif
 
 #ifndef _WIN32
+	[[nodiscard]]
 	bool OpenNonBlocking(const char *pathname) noexcept;
 #endif
 
 #ifdef __linux__
+	[[nodiscard]]
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w,
 			       int flags) noexcept;
 #endif
 
+	[[nodiscard]]
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w) noexcept;
 
 #ifdef _WIN32
@@ -126,6 +139,7 @@ public:
 	void DisableCloseOnExec() const noexcept {}
 	void SetBinaryMode() const noexcept;
 #else
+	[[nodiscard]]
 	static bool CreatePipeNonBlock(FileDescriptor &r,
 				       FileDescriptor &w) noexcept;
 
@@ -159,11 +173,13 @@ public:
 	 * @return the new file descriptor or UniqueFileDescriptor{}
 	 * on error
 	 */
+	[[nodiscard]]
 	UniqueFileDescriptor Duplicate() const noexcept;
 
 	/**
 	 * Duplicate the file descriptor onto the given file descriptor.
 	 */
+	[[nodiscard]]
 	bool Duplicate(FileDescriptor new_fd) const noexcept {
 		return ::dup2(Get(), new_fd.Get()) != -1;
 	}
@@ -189,12 +205,15 @@ public:
 	/**
 	 * Rewind the pointer to the beginning of the file.
 	 */
+	[[nodiscard]]
 	bool Rewind() const noexcept;
 
+	[[nodiscard]]
 	off_t Seek(off_t offset) const noexcept {
 		return lseek(Get(), offset, SEEK_SET);
 	}
 
+	[[nodiscard]]
 	off_t Skip(off_t offset) const noexcept {
 		return lseek(Get(), offset, SEEK_CUR);
 	}
@@ -211,16 +230,19 @@ public:
 	off_t GetSize() const noexcept;
 
 #ifndef _WIN32
+	[[nodiscard]]
 	ssize_t ReadAt(off_t offset,
 		       void *buffer, std::size_t length) const noexcept {
 		return ::pread(fd, buffer, length, offset);
 	}
 #endif
 
+	[[nodiscard]]
 	ssize_t Read(std::span<std::byte> dest) const noexcept {
 		return ::read(fd, dest.data(), dest.size());
 	}
 
+	[[nodiscard]]
 	ssize_t Read(void *buffer, std::size_t length) const noexcept {
 		return ::read(fd, buffer, length);
 	}
@@ -231,10 +253,12 @@ public:
 	 */
 	void FullRead(std::span<std::byte> dest) const;
 
+	[[nodiscard]]
 	ssize_t Write(std::span<const std::byte> src) const noexcept {
 		return ::write(fd, src.data(), src.size());
 	}
 
+	[[nodiscard]]
 	ssize_t Write(const void *buffer, std::size_t length) const noexcept {
 		return ::write(fd, buffer, length);
 	}
@@ -246,9 +270,13 @@ public:
 	void FullWrite(std::span<const std::byte> src) const;
 
 #ifndef _WIN32
+	[[nodiscard]]
 	int Poll(short events, int timeout) const noexcept;
 
+	[[nodiscard]]
 	int WaitReadable(int timeout) const noexcept;
+
+	[[nodiscard]]
 	int WaitWritable(int timeout) const noexcept;
 
 	[[gnu::pure]]
