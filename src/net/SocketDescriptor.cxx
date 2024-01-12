@@ -6,6 +6,7 @@
 #include "StaticSocketAddress.hxx"
 #include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
+#include "MsgHdr.hxx"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -424,6 +425,13 @@ SocketDescriptor::Receive(struct msghdr &msg, int flags) const noexcept
 }
 
 ssize_t
+SocketDescriptor::Receive(std::span<const struct iovec> v, int flags) const noexcept
+{
+	auto msg = MakeMsgHdr(v);
+	return Receive(msg, flags);
+}
+
+ssize_t
 SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
 {
 #ifdef __linux__
@@ -441,6 +449,12 @@ SocketDescriptor::Send(const struct msghdr &msg, int flags) const noexcept
 #endif
 
 	return ::sendmsg(Get(), &msg, flags);
+}
+
+ssize_t
+SocketDescriptor::Send(std::span<const struct iovec> v, int flags) const noexcept
+{
+	return Send(MakeMsgHdr(v), flags);
 }
 
 ssize_t

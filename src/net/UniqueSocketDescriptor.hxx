@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef UNIQUE_SOCKET_DESCRIPTOR_SOCKET_HXX
-#define UNIQUE_SOCKET_DESCRIPTOR_SOCKET_HXX
+#pragma once
 
 #include "SocketDescriptor.hxx"
 
@@ -90,5 +89,3 @@ public:
 	}
 #endif
 };
-
-#endif
