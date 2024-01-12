@@ -418,6 +418,12 @@ SocketDescriptor::Receive(std::span<std::byte> dest, int flags) const noexcept
 }
 
 ssize_t
+SocketDescriptor::Receive(struct msghdr &msg, int flags) const noexcept
+{
+	return ::recvmsg(Get(), &msg, flags);
+}
+
+ssize_t
 SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
 {
 #ifdef __linux__
@@ -425,6 +431,16 @@ SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
 #endif
 
 	return ::send(Get(), (const char *)src.data(), src.size(), flags);
+}
+
+ssize_t
+SocketDescriptor::Send(const struct msghdr &msg, int flags) const noexcept
+{
+#ifdef __linux__
+	flags |= MSG_NOSIGNAL;
+#endif
+
+	return ::sendmsg(Get(), &msg, flags);
 }
 
 ssize_t

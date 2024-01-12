@@ -304,12 +304,26 @@ public:
 	ssize_t Receive(std::span<std::byte> dest, int flags=0) const noexcept;
 
 	/**
+	 * Wrapper for recvmsg().
+	 */
+	[[nodiscard]]
+	ssize_t Receive(struct msghdr &msg, int flags=0) const noexcept;
+
+	/**
 	 * Wrapper for send().
 	 *
 	 * MSG_NOSIGNAL is implicitly added (if available).
 	 */
 	[[nodiscard]]
 	ssize_t Send(std::span<const std::byte> src, int flags=0) const noexcept;
+
+	/**
+	 * Wrapper for sendmsg().
+	 *
+	 * MSG_NOSIGNAL is implicitly added (if available).
+	 */
+	[[nodiscard]]
+	ssize_t Send(const struct msghdr &msg, int flags=0) const noexcept;
 
 	[[nodiscard]]
 	ssize_t Read(std::span<std::byte> dest) const noexcept {
