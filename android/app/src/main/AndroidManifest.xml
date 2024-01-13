@@ -25,7 +25,8 @@
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:theme="@style/Theme.MPD">
+        android:theme="@style/Theme.MPD"
+        android:name=".MPDApplication">
         <activity
             android:name=".ui.SettingsActivity"
             android:exported="true">
@@ -53,8 +54,7 @@
         </receiver>
 
         <service
-            android:name=".Main"
-            android:process=":main" />
+            android:name=".Main" />
     </application>
 
 </manifest>

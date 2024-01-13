@@ -1,22 +1,22 @@
 package org.musicpd.ui
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.musicpd.Main
 import org.musicpd.Preferences
+import org.musicpd.data.LoggingRepository
+import javax.inject.Inject
 
-private const val MAX_LOGS = 500
 
-class SettingsViewModel : ViewModel() {
-
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    private var loggingRepository: LoggingRepository
+) : ViewModel() {
     private var mClient: Main.Client? = null
-
-    private val _logItemFLow = MutableStateFlow(listOf<String>())
-    val logItemFLow: StateFlow<List<String>> = _logItemFLow
 
     data class StatusUiState(
         val statusMessage: String = "",
@@ -26,21 +26,8 @@ class SettingsViewModel : ViewModel() {
     private val _statusUIState = MutableStateFlow(StatusUiState())
     val statusUIState: StateFlow<StatusUiState> = _statusUIState.asStateFlow()
 
-    fun addLogItem(priority: Int, message: String) {
-        if (_logItemFLow.value.size > MAX_LOGS) {
-            _logItemFLow.value = _logItemFLow.value.drop(1)
-        }
-
-        val priorityString: String = when (priority) {
-            Log.DEBUG -> "D"
-            Log.ERROR -> "E"
-            Log.INFO -> "I"
-            Log.VERBOSE -> "V"
-            Log.WARN -> "W"
-            else -> ""
-        }
-
-        _logItemFLow.value = _logItemFLow.value + ("$priorityString/$message")
+    fun getLogs(): StateFlow<List<String>> {
+        return loggingRepository.logItemFLow
     }
 
     fun updateStatus(message: String, running: Boolean) {
