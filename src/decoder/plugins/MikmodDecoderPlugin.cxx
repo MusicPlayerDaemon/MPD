@@ -7,6 +7,7 @@
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "tag/Handler.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -128,9 +129,10 @@ mikmod_decoder_finish() noexcept
 static void
 mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 {
+	auto np = NarrowPath(path_fs);
 	/* deconstify the path because libmikmod wants a non-const
 	   string pointer */
-	char *const path2 = const_cast<char *>(path_fs.c_str());
+	const auto path2 = const_cast<char *>(np.c_str());
 
 	MODULE *handle;
 	int ret;
@@ -167,9 +169,10 @@ mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 static bool
 mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
+	auto np = NarrowPath(path_fs);
 	/* deconstify the path because libmikmod wants a non-const
 	   string pointer */
-	char *const path2 = const_cast<char *>(path_fs.c_str());
+	const auto path2 = const_cast<char *>(np.c_str());
 
 	MODULE *handle = Player_Load(path2, 128, 0);
 

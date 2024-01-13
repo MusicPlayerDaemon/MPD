@@ -7,6 +7,7 @@
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
 #include "song/DetachedSong.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "lib/fmt/PathFormatter.hxx"
@@ -155,10 +156,9 @@ ParseSubtuneName(const char *base) noexcept
 static SidplayContainerPath
 ParseContainerPath(Path path_fs) noexcept
 {
-	const Path base = path_fs.GetBase();
+	const NarrowPath base = NarrowPath(path_fs.GetBase());
 	unsigned track;
-	if (base.IsNull() ||
-	    (track = ParseSubtuneName(base.c_str())) < 1)
+	if (!base || (track = ParseSubtuneName(base)) < 1)
 		return { AllocatedPath(path_fs), 1 };
 
 	return { path_fs.GetDirectoryName(), track };
@@ -205,7 +205,8 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	/* load the tune */
 
 	const auto container = ParseContainerPath(path_fs);
-	SidTune tune(container.path.c_str());
+	auto np = NarrowPath(container.path);
+	auto tune = SidTune(np);
 	if (!tune.getStatus()) {
 		const char *error = tune.statusString();
 		FmtWarning(sidplay_domain, "failed to load file: {}", error);
@@ -435,7 +436,8 @@ sidplay_scan_file(Path path_fs, TagHandler &handler) noexcept
 	const auto container = ParseContainerPath(path_fs);
 	const unsigned song_num = container.track;
 
-	SidTune tune(container.path.c_str());
+	auto np = NarrowPath(container.path);
+	auto tune = SidTune(np);
 	if (!tune.getStatus())
 		return false;
 
@@ -459,7 +461,7 @@ sidplay_container_scan(Path path_fs)
 {
 	std::forward_list<DetachedSong> list;
 
-	SidTune tune(path_fs.c_str());
+	auto tune = SidTune{NarrowPath(path_fs)};
 	if (!tune.getStatus())
 		return list;
 

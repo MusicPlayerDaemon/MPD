@@ -10,6 +10,7 @@
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"
 #include "archive/ArchiveVisitor.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "util/PrintException.hxx"
 
@@ -54,7 +55,7 @@ try {
 	}
 
 	const char *plugin_name = argv[1];
-	const Path path = Path::FromFS(argv[2]);
+	const Path path = FromNarrowPath(argv[2]);
 
 	/* initialize MPD */
 
