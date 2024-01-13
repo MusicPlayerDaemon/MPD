@@ -614,6 +614,28 @@ Java_org_musicpd_Bridge_pause(JNIEnv *, jclass)
 			partition.pc.LockSetPause(true);
 }
 
+gcc_visibility_default
+JNIEXPORT void JNICALL
+Java_org_musicpd_Bridge_playNext(JNIEnv *, jclass)
+{
+	if (global_instance != nullptr)
+		BlockingCall(global_instance->event_loop, [&](){
+			for (auto &partition : global_instance->partitions)
+				partition.PlayNext();
+		});
+}
+
+gcc_visibility_default
+JNIEXPORT void JNICALL
+Java_org_musicpd_Bridge_playPrevious(JNIEnv *, jclass)
+{
+	if (global_instance != nullptr)
+		BlockingCall(global_instance->event_loop, [&](){
+			for (auto &partition : global_instance->partitions)
+				partition.PlayPrevious();
+		});
+}
+
 #else
 
 static inline void

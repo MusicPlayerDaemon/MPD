@@ -70,6 +70,8 @@ dependencies {
     ksp("com.google.dagger:dagger-compiler:2.49")
     ksp("com.google.dagger:hilt-compiler:2.49")
 
+    implementation("androidx.media3:media3-session:1.2.0")
+
     // Android Studio Preview support
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
