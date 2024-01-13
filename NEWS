@@ -50,6 +50,7 @@ ver 0.24 (not yet released)
 * remove Haiku support
 * remove Boost dependency
 * require libfmt 7 or later
+* documentation: switch to sphinx-rtd-theme
 
 ver 0.23.15 (2023/12/20)
 * decoder
