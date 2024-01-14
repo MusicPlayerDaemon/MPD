@@ -36,7 +36,11 @@ public class MPDPlayer extends SimpleBasePlayer {
     @NonNull
     @Override
     protected State getState() {
-        Commands commands = new Commands.Builder().addAll(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM, COMMAND_SEEK_TO_NEXT_MEDIA_ITEM).build();
+        Commands commands = new Commands.Builder().addAll(
+                COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
+                COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
+                COMMAND_PLAY_PAUSE
+        ).build();
 
         return new State.Builder()
                 .setAvailableCommands(commands)
@@ -44,6 +48,13 @@ public class MPDPlayer extends SimpleBasePlayer {
                 .setPlaylist(placeholderItems)
                 .setCurrentMediaItemIndex(1)
                 .build();
+    }
+
+    @NonNull
+    @Override
+    protected ListenableFuture<?> handleSetPlayWhenReady(boolean playWhenReady) {
+        Bridge.playPause();
+        return Futures.immediateVoidFuture();
     }
 
     @NonNull

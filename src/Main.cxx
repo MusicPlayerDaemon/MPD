@@ -616,6 +616,16 @@ Java_org_musicpd_Bridge_pause(JNIEnv *, jclass)
 
 gcc_visibility_default
 JNIEXPORT void JNICALL
+Java_org_musicpd_Bridge_playPause(JNIEnv *, jclass)
+{
+	if (global_instance != nullptr)
+		for (auto &partition : global_instance->partitions)
+			partition.pc.LockPause();
+
+}
+
+gcc_visibility_default
+JNIEXPORT void JNICALL
 Java_org_musicpd_Bridge_playNext(JNIEnv *, jclass)
 {
 	if (global_instance != nullptr)
