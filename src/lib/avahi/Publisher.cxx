@@ -49,7 +49,11 @@ Publisher::Publisher(Client &_client, const char *_name,
 	client.AddListener(*this);
 
 	if (client.IsConnected())
-		RegisterServices(client.GetClient());
+		try {
+			RegisterServices(client.GetClient());
+		} catch (...) {
+			error_handler.OnAvahiError(std::current_exception());
+		}
 }
 
 Publisher::~Publisher() noexcept
@@ -126,25 +130,21 @@ AddServices(AvahiEntryGroup &group,
 }
 
 void
-Publisher::RegisterServices(AvahiClient *c) noexcept
+Publisher::RegisterServices(AvahiClient *c)
 {
 	assert(visible);
 
-	try {
-		if (!group) {
-			group.reset(avahi_entry_group_new(c, GroupCallback, this));
-			if (!group)
-				throw MakeError(*c, "Failed to create Avahi service group");
-		}
-
-		AddServices(*group, services, name.c_str());
-
-		if (int error = avahi_entry_group_commit(group.get());
-		    error != AVAHI_OK)
-			throw MakeError(error, "Failed to commit Avahi service group");
-	} catch (...) {
-		error_handler.OnAvahiError(std::current_exception());
+	if (!group) {
+		group.reset(avahi_entry_group_new(c, GroupCallback, this));
+		if (!group)
+			throw MakeError(*c, "Failed to create Avahi service group");
 	}
+
+	AddServices(*group, services, name.c_str());
+
+	if (int error = avahi_entry_group_commit(group.get());
+	    error != AVAHI_OK)
+		throw MakeError(error, "Failed to commit Avahi service group");
 }
 
 void
@@ -168,14 +168,22 @@ Publisher::ShowServices() noexcept
 	visible = true;
 
 	if (client.IsConnected())
-		RegisterServices(client.GetClient());
+		try {
+			RegisterServices(client.GetClient());
+		} catch (...) {
+			error_handler.OnAvahiError(std::current_exception());
+		}
 }
 
 void
 Publisher::OnAvahiConnect(AvahiClient *c) noexcept
 {
 	if (visible)
-		RegisterServices(c);
+		try {
+			RegisterServices(c);
+		} catch (...) {
+			error_handler.OnAvahiError(std::current_exception());
+		}
 }
 
 void

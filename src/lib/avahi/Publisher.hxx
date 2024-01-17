@@ -68,7 +68,7 @@ private:
 				  AvahiEntryGroupState state,
 				  void *userdata) noexcept;
 
-	void RegisterServices(AvahiClient *c) noexcept;
+	void RegisterServices(AvahiClient *c);
 
 	/* virtual methods from class AvahiConnectionListener */
 	void OnAvahiConnect(AvahiClient *client) noexcept override;
