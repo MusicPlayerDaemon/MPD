@@ -69,6 +69,12 @@ class HttpdClient final
 	 */
 	bool should_reject = false;
 
+	/**
+	 * Should we reject this request as unauthorized?
+	 */
+	bool should_reject_unauthorized = false;
+
+
 	/* ICY */
 
 	/**
@@ -110,6 +116,11 @@ class HttpdClient final
 	 * since the last icy information was sent.
 	 */
 	unsigned metadata_fill = 0;
+
+	/**
+	 * Provided password (using HTTP basic auth)
+	 */
+	std::string provided_password;
 
 public:
 	/**

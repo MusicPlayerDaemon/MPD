@@ -1032,6 +1032,11 @@ It is highly recommended to configure a fixed format, because a stream cannot sw
      - The genre of the stream. Will be reflected in the `icy-genre` header of the stream.
    * - **website URL**
      - The website of the stream. Will be reflected in the `icy-url` header of the stream.
+   * - **password passwd**
+     - Requires HTTP Basic authentication with set password when set to non-empty string.
+       Username is ignored and can contain any printable characters except colon (':').
+       Be aware that the password is transmitted over unencrypted connection only base64 encoded, and is therefore visible to anyone listening to your traffic.
+
 
 The `name` from the `audio_output` block that uses this output plugin will be reflected as the stream name in the `icy-name` header of the stream.
 

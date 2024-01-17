@@ -115,6 +115,12 @@ private:
 	 */
 	char const *const website;
 
+	/**
+	 * The configured password.
+	 */
+	char const *password;
+
+
 private:
 	/**
 	 * A linked list containing all clients which are currently
