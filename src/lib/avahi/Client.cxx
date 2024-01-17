@@ -94,6 +94,8 @@ Client::ClientCallback(AvahiClient *c, AvahiClientState state,
 void
 Client::OnReconnectTimer() noexcept
 {
+	assert(client == nullptr);
+
 	int error;
 	client = avahi_client_new(&poll, AVAHI_CLIENT_NO_FAIL,
 				  ClientCallback, this,
