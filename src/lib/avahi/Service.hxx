@@ -11,6 +11,9 @@
 
 namespace Avahi {
 
+/**
+ * A service that will be published by class #Publisher.
+ */
 struct Service {
 	AvahiIfIndex interface = AVAHI_IF_UNSPEC;
 	AvahiProtocol protocol = AVAHI_PROTO_UNSPEC;
