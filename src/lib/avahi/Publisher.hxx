@@ -6,6 +6,7 @@
 
 #include "EntryGroup.hxx"
 #include "ConnectionListener.hxx"
+#include "event/DeferEvent.hxx"
 
 #include <avahi-client/publish.h>
 
@@ -30,6 +31,8 @@ class Publisher final : ConnectionListener {
 	std::string name;
 
 	Client &client;
+
+	DeferEvent defer_register_services;
 
 	EntryGroupPtr group;
 
@@ -70,6 +73,7 @@ private:
 
 	void RegisterServices(AvahiEntryGroup &g);
 	void RegisterServices(AvahiClient *c);
+	void DeferredRegisterServices() noexcept;
 
 	/* virtual methods from class AvahiConnectionListener */
 	void OnAvahiConnect(AvahiClient *client) noexcept override;

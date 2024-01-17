@@ -42,18 +42,17 @@ Publisher::Publisher(Client &_client, const char *_name,
 		     ErrorHandler &_error_handler) noexcept
 	:error_handler(_error_handler),
 	 name(MakePidName(_name)),
-	 client(_client), services(std::move(_services))
+	 client(_client),
+	 defer_register_services(client.GetEventLoop(),
+				 BIND_THIS_METHOD(DeferredRegisterServices)),
+	 services(std::move(_services))
 {
 	assert(!services.empty());
 
 	client.AddListener(*this);
 
 	if (client.IsConnected())
-		try {
-			RegisterServices(client.GetClient());
-		} catch (...) {
-			error_handler.OnAvahiError(std::current_exception());
-		}
+		defer_register_services.Schedule();
 }
 
 Publisher::~Publisher() noexcept
@@ -154,12 +153,27 @@ Publisher::RegisterServices(AvahiClient *c)
 }
 
 void
+Publisher::DeferredRegisterServices() noexcept
+{
+	assert(visible);
+	assert(client.IsConnected());
+
+	try {
+		RegisterServices(client.GetClient());
+	} catch (...) {
+		error_handler.OnAvahiError(std::current_exception());
+	}
+}
+
+void
 Publisher::HideServices() noexcept
 {
 	if (!visible)
 		return;
 
 	visible = false;
+
+	defer_register_services.Cancel();
 
 	if (group)
 		avahi_entry_group_reset(group.get());
@@ -174,11 +188,7 @@ Publisher::ShowServices() noexcept
 	visible = true;
 
 	if (client.IsConnected())
-		try {
-			RegisterServices(client.GetClient());
-		} catch (...) {
-			error_handler.OnAvahiError(std::current_exception());
-		}
+		defer_register_services.Schedule();
 }
 
 void
