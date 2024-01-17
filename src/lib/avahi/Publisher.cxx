@@ -48,9 +48,8 @@ Publisher::Publisher(Client &_client, const char *_name,
 
 	client.AddListener(*this);
 
-	auto *c = client.GetClient();
-	if (c != nullptr)
-		RegisterServices(c);
+	if (client.IsConnected())
+		RegisterServices(client.GetClient());
 }
 
 Publisher::~Publisher() noexcept
@@ -168,9 +167,8 @@ Publisher::ShowServices() noexcept
 
 	visible = true;
 
-	auto *c = client.GetClient();
-	if (c != nullptr)
-		RegisterServices(c);
+	if (client.IsConnected())
+		RegisterServices(client.GetClient());
 }
 
 void

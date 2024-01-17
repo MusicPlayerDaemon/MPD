@@ -29,6 +29,8 @@ class Client final {
 
 	std::forward_list<ConnectionListener *> listeners;
 
+	bool connected = false;
+
 public:
 	Client(EventLoop &event_loop, ErrorHandler &_error_handler) noexcept;
 	~Client() noexcept;
@@ -41,6 +43,10 @@ public:
 	}
 
 	void Close() noexcept;
+
+	bool IsConnected() const noexcept {
+		return connected;
+	}
 
 	AvahiClient *GetClient() noexcept {
 		return client;

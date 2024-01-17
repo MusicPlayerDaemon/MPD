@@ -30,11 +30,15 @@ void
 Client::Close() noexcept
 {
 	if (client != nullptr) {
+		connected = false;
+
 		for (auto *l : listeners)
 			l->OnAvahiDisconnect();
 
 		avahi_client_free(client);
 		client = nullptr;
+	} else {
+		assert(!connected);
 	}
 
 	reconnect_timer.Cancel();
@@ -45,6 +49,8 @@ Client::ClientCallback(AvahiClient *c, AvahiClientState state) noexcept
 {
 	switch (state) {
 	case AVAHI_CLIENT_S_RUNNING:
+		connected = true;
+
 		for (auto *l : listeners)
 			l->OnAvahiConnect(c);
 
@@ -73,12 +79,15 @@ Client::ClientCallback(AvahiClient *c, AvahiClientState state) noexcept
 
 	case AVAHI_CLIENT_S_COLLISION:
 	case AVAHI_CLIENT_S_REGISTERING:
+		assert(!connected);
+
 		for (auto *l : listeners)
 			l->OnAvahiChanged();
 
 		break;
 
 	case AVAHI_CLIENT_CONNECTING:
+		assert(!connected);
 		break;
 	}
 }
@@ -95,6 +104,7 @@ void
 Client::OnReconnectTimer() noexcept
 {
 	assert(client == nullptr);
+	assert(!connected);
 
 	int error;
 	client = avahi_client_new(&poll, AVAHI_CLIENT_NO_FAIL,
