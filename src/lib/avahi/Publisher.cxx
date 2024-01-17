@@ -38,26 +38,39 @@ MakePidName(const char *prefix) noexcept
 }
 
 Publisher::Publisher(Client &_client, const char *_name,
-		     std::forward_list<Service> _services,
 		     ErrorHandler &_error_handler) noexcept
 	:error_handler(_error_handler),
 	 name(MakePidName(_name)),
 	 client(_client),
 	 defer_register_services(client.GetEventLoop(),
-				 BIND_THIS_METHOD(DeferredRegisterServices)),
-	 services(std::move(_services))
+				 BIND_THIS_METHOD(DeferredRegisterServices))
 {
-	assert(!services.empty());
-
 	client.AddListener(*this);
-
-	if (client.IsConnected())
-		defer_register_services.Schedule();
 }
 
 Publisher::~Publisher() noexcept
 {
+	assert(services.empty());
+
 	client.RemoveListener(*this);
+}
+
+void
+Publisher::AddService(Service &service) noexcept
+{
+	services.push_back(service);
+
+	if (visible && client.IsConnected())
+		defer_register_services.Schedule();
+}
+
+void
+Publisher::RemoveService(Service &service) noexcept
+{
+	services.erase(services.iterator_to(service));
+
+	if (visible && client.IsConnected())
+		defer_register_services.Schedule();
 }
 
 inline void
@@ -82,6 +95,7 @@ try {
 		}
 
 		/* And recreate the services */
+		should_reset_group = false;
 		RegisterServices(*g);
 		break;
 
@@ -122,7 +136,7 @@ AddService(AvahiEntryGroup &group, const Service &service,
 
 static void
 AddServices(AvahiEntryGroup &group,
-	    const std::forward_list<Service> &services, const char *name)
+	    const IntrusiveList<Service> &services, const char *name)
 {
 	for (const auto &i : services)
 		AddService(group, i, name);
@@ -131,11 +145,20 @@ AddServices(AvahiEntryGroup &group,
 void
 Publisher::RegisterServices(AvahiEntryGroup &g)
 {
+	if (should_reset_group) {
+		should_reset_group = false;
+		avahi_entry_group_reset(&g);
+	}
+
 	AddServices(g, services, name.c_str());
 
-	if (int error = avahi_entry_group_commit(&g);
-	    error != AVAHI_OK)
-		throw MakeError(error, "Failed to commit Avahi service group");
+	if (!services.empty()) {
+		should_reset_group = true;
+
+		if (int error = avahi_entry_group_commit(&g);
+		    error != AVAHI_OK)
+			throw MakeError(error, "Failed to commit Avahi service group");
+	}
 }
 
 void
@@ -144,6 +167,8 @@ Publisher::RegisterServices(AvahiClient *c)
 	assert(visible);
 
 	if (!group) {
+		assert(!should_reset_group);
+
 		group.reset(avahi_entry_group_new(c, GroupCallback, this));
 		if (!group)
 			throw MakeError(*c, "Failed to create Avahi service group");
@@ -175,8 +200,12 @@ Publisher::HideServices() noexcept
 
 	defer_register_services.Cancel();
 
-	if (group)
+	if (group) {
+		should_reset_group = false;
 		avahi_entry_group_reset(group.get());
+	} else {
+		assert(!should_reset_group);
+	}
 }
 
 void
@@ -194,7 +223,10 @@ Publisher::ShowServices() noexcept
 void
 Publisher::OnAvahiConnect(AvahiClient *c) noexcept
 {
-	if (visible)
+	assert(!group);
+	assert(!should_reset_group);
+
+	if (visible && !services.empty())
 		try {
 			RegisterServices(c);
 		} catch (...) {
@@ -206,12 +238,14 @@ void
 Publisher::OnAvahiDisconnect() noexcept
 {
 	group.reset();
+	should_reset_group = false;
 }
 
 void
 Publisher::OnAvahiChanged() noexcept
 {
 	group.reset();
+	should_reset_group = false;
 }
 
 } // namespace Avahi

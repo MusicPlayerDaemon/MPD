@@ -4,7 +4,6 @@
 #include "Helper.hxx"
 #include "lib/avahi/Client.hxx"
 #include "lib/avahi/ErrorHandler.hxx"
-#include "lib/avahi/Service.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "Log.hxx"
 
@@ -29,12 +28,19 @@ static std::weak_ptr<SharedAvahiClient> shared_avahi_client;
 inline
 AvahiHelper::AvahiHelper(std::shared_ptr<SharedAvahiClient> _client,
 			 const char *service_name,
-			 std::forward_list<Avahi::Service> &&services)
+			 const char *service_type, unsigned port)
 	:client(std::move(_client)),
-	 publisher(client->client, service_name,
-		   std::move(services), *client) {}
+	 publisher(client->client, service_name, *client),
+	 service(AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC,
+		 service_type, port)
+{
+	publisher.AddService(service);
+}
 
-AvahiHelper::~AvahiHelper() noexcept = default;
+AvahiHelper::~AvahiHelper() noexcept
+{
+	publisher.RemoveService(service);
+}
 
 std::unique_ptr<AvahiHelper>
 AvahiInit(EventLoop &event_loop, const char *service_name,
@@ -49,11 +55,6 @@ AvahiInit(EventLoop &event_loop, const char *service_name,
 		shared_avahi_client = client =
 			std::make_shared<SharedAvahiClient>(event_loop);
 
-	std::forward_list<Avahi::Service> services;
-	services.emplace_front(AVAHI_IF_UNSPEC,
-			       AVAHI_PROTO_UNSPEC,
-			       service_type, port);
-
 	return std::make_unique<AvahiHelper>(std::move(client), service_name,
-					     std::move(services));
+					     service_type, port);
 }

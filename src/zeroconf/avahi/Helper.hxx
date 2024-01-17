@@ -4,6 +4,7 @@
 #pragma once
 
 #include "lib/avahi/Publisher.hxx"
+#include "lib/avahi/Service.hxx"
 
 #include <memory>
 
@@ -15,11 +16,12 @@ class SharedAvahiClient;
 class AvahiHelper final {
 	std::shared_ptr<SharedAvahiClient> client;
 	Avahi::Publisher publisher;
+	Avahi::Service service;
 
 public:
 	AvahiHelper(std::shared_ptr<SharedAvahiClient> _client,
 		    const char *service_name,
-		    std::forward_list<Avahi::Service> &&services);
+		    const char *service_type, unsigned port);
 	~AvahiHelper() noexcept;
 };
 

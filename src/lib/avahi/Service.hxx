@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "util/IntrusiveList.hxx"
+
 #include <avahi-common/address.h>
 
 #include <cstdint>
@@ -14,7 +16,7 @@ namespace Avahi {
 /**
  * A service that will be published by class #Publisher.
  */
-struct Service {
+struct Service : IntrusiveListHook<> {
 	AvahiIfIndex interface = AVAHI_IF_UNSPEC;
 	AvahiProtocol protocol = AVAHI_PROTO_UNSPEC;
 	std::string type;
