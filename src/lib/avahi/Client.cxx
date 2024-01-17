@@ -43,8 +43,6 @@ Client::Close() noexcept
 void
 Client::ClientCallback(AvahiClient *c, AvahiClientState state) noexcept
 {
-	int error;
-
 	switch (state) {
 	case AVAHI_CLIENT_S_RUNNING:
 		for (auto *l : listeners)
@@ -53,8 +51,8 @@ Client::ClientCallback(AvahiClient *c, AvahiClientState state) noexcept
 		break;
 
 	case AVAHI_CLIENT_FAILURE:
-		error = avahi_client_errno(c);
-		if (error == AVAHI_ERR_DISCONNECTED) {
+		if (int error = avahi_client_errno(c);
+		    error == AVAHI_ERR_DISCONNECTED) {
 			Close();
 
 			reconnect_timer.Schedule(std::chrono::seconds(10));
