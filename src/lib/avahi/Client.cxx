@@ -57,6 +57,8 @@ Client::ClientCallback(AvahiClient *c, AvahiClientState state) noexcept
 
 			reconnect_timer.Schedule(std::chrono::seconds(10));
 		} else {
+			Close();
+
 			if (!error_handler.OnAvahiError(std::make_exception_ptr(MakeError(error,
 											  "Avahi connection error"))))
 				return;
