@@ -60,7 +60,7 @@ Publisher::~Publisher() noexcept
 inline void
 Publisher::GroupCallback(AvahiEntryGroup *g,
 			 AvahiEntryGroupState state) noexcept
-{
+try {
 	switch (state) {
 	case AVAHI_ENTRY_GROUP_ESTABLISHED:
 		break;
@@ -83,14 +83,14 @@ Publisher::GroupCallback(AvahiEntryGroup *g,
 		break;
 
 	case AVAHI_ENTRY_GROUP_FAILURE:
-		error_handler.OnAvahiError(std::make_exception_ptr(MakeError(*avahi_entry_group_get_client(g),
-									     "Avahi service group failure")));
-		break;
+		throw MakeError(*avahi_entry_group_get_client(g), "Avahi service group failure");
 
 	case AVAHI_ENTRY_GROUP_UNCOMMITED:
 	case AVAHI_ENTRY_GROUP_REGISTERING:
 		break;
 	}
+} catch (...) {
+	error_handler.OnAvahiError(std::current_exception());
 }
 
 void
