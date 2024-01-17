@@ -83,7 +83,7 @@ try {
 		}
 
 		/* And recreate the services */
-		RegisterServices(avahi_entry_group_get_client(g));
+		RegisterServices(*g);
 		break;
 
 	case AVAHI_ENTRY_GROUP_FAILURE:
@@ -130,6 +130,16 @@ AddServices(AvahiEntryGroup &group,
 }
 
 void
+Publisher::RegisterServices(AvahiEntryGroup &g)
+{
+	AddServices(g, services, name.c_str());
+
+	if (int error = avahi_entry_group_commit(&g);
+	    error != AVAHI_OK)
+		throw MakeError(error, "Failed to commit Avahi service group");
+}
+
+void
 Publisher::RegisterServices(AvahiClient *c)
 {
 	assert(visible);
@@ -140,11 +150,7 @@ Publisher::RegisterServices(AvahiClient *c)
 			throw MakeError(*c, "Failed to create Avahi service group");
 	}
 
-	AddServices(*group, services, name.c_str());
-
-	if (int error = avahi_entry_group_commit(group.get());
-	    error != AVAHI_OK)
-		throw MakeError(error, "Failed to commit Avahi service group");
+	RegisterServices(*group);
 }
 
 void

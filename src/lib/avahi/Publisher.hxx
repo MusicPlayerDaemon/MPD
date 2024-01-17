@@ -68,6 +68,7 @@ private:
 				  AvahiEntryGroupState state,
 				  void *userdata) noexcept;
 
+	void RegisterServices(AvahiEntryGroup &g);
 	void RegisterServices(AvahiClient *c);
 
 	/* virtual methods from class AvahiConnectionListener */
