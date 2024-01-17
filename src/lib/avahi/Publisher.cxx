@@ -126,32 +126,23 @@ AddServices(AvahiEntryGroup &group,
 		AddService(group, i, name);
 }
 
-static EntryGroupPtr
-MakeEntryGroup(AvahiClient &c,
-	       const std::forward_list<Service> &services, const char *name,
-	       AvahiEntryGroupCallback callback, void *userdata)
-{
-	EntryGroupPtr group(avahi_entry_group_new(&c, callback, userdata));
-	if (!group)
-		throw MakeError(c, "Failed to create Avahi service group");
-
-	AddServices(*group, services, name);
-
-	int error = avahi_entry_group_commit(group.get());
-	if (error != AVAHI_OK)
-		throw MakeError(error, "Failed to commit Avahi service group");
-
-	return group;
-}
-
 void
 Publisher::RegisterServices(AvahiClient *c) noexcept
 {
 	assert(visible);
 
 	try {
-		group = MakeEntryGroup(*c, services, name.c_str(),
-				       GroupCallback, this);
+		if (!group) {
+			group.reset(avahi_entry_group_new(c, GroupCallback, this));
+			if (!group)
+				throw MakeError(*c, "Failed to create Avahi service group");
+		}
+
+		AddServices(*group, services, name.c_str());
+
+		if (int error = avahi_entry_group_commit(group.get());
+		    error != AVAHI_OK)
+			throw MakeError(error, "Failed to commit Avahi service group");
 	} catch (...) {
 		error_handler.OnAvahiError(std::current_exception());
 	}
@@ -164,7 +155,9 @@ Publisher::HideServices() noexcept
 		return;
 
 	visible = false;
-	group.reset();
+
+	if (group)
+		avahi_entry_group_reset(group.get());
 }
 
 void
@@ -183,7 +176,7 @@ Publisher::ShowServices() noexcept
 void
 Publisher::OnAvahiConnect(AvahiClient *c) noexcept
 {
-	if (group == nullptr && visible)
+	if (visible)
 		RegisterServices(c);
 }
 
