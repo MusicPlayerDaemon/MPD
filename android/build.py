@@ -68,3 +68,5 @@ run_meson(toolchain, mpd_path, '.', configure_args)
 
 ninja = shutil.which("ninja")
 subprocess.check_call([ninja], env=toolchain.env)
+
+subprocess.check_call([ninja, 'install'], env=toolchain.env)

@@ -597,9 +597,13 @@ if is_android
     declare_dependency(sources: [bridge_header]),
     java_dep,
   ]
+
+  android_abi = get_option('android_abi')
+  install_dir = meson.current_source_dir() / 'android/app/src/main/jnilibs' / android_abi
 else
   target_type = 'executable'
   target_name = 'mpd'
+  install_dir = ''
 endif
 
 mpd = build_target(
@@ -637,12 +641,9 @@ mpd = build_target(
   ],
   link_args: link_args,
   build_by_default: not get_option('fuzzer'),
-  install: not is_android
+  install : true,
+  install_dir: install_dir
 )
-
-if is_android
-  subdir('android/apk')
-endif
 
 configure_file(output: 'config.h', configuration: conf)
 
@@ -650,15 +651,17 @@ if systemd_dep.found()
   subdir('systemd')
 endif
 
-install_data(
-  'mpd.svg',
-  install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', 'scalable', 'apps'),
-)
+if not is_android
+  install_data(
+    'mpd.svg',
+    install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', 'scalable', 'apps'),
+  )
 
-install_data(
-  'AUTHORS', 'COPYING', 'NEWS', 'README.md',
-  install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
-)
+  install_data(
+    'AUTHORS', 'COPYING', 'NEWS', 'README.md',
+    install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
+  )
+endif
 
 subdir('doc')
 
