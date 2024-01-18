@@ -196,7 +196,7 @@ Compiling for Android
 
 You need:
 
-* Android SDK (sdk platform 29, build tools 29.0.3)
+* Android SDK (sdk platform 34, build tools 34.0.0)
 * `Android NDK r26b <https://developer.android.com/ndk/downloads>`_
 * `Meson 0.56.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
