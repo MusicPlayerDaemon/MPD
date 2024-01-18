@@ -1,5 +1,5 @@
-package org.musicpd.ui
-
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.Headphones
@@ -7,11 +7,35 @@ import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.alorma.compose.settings.storage.preferences.rememberPreferenceBooleanSettingState
 import com.alorma.compose.settings.ui.SettingsSwitch
 import org.musicpd.Preferences
 import org.musicpd.R
+import org.musicpd.ui.SettingsViewModel
+
+@Composable
+fun MPDSettings(settingsViewModel: SettingsViewModel) {
+    val context = LocalContext.current
+
+    Column(Modifier.fillMaxSize()) {
+        SettingsOptions(
+            onBootChanged = { newValue ->
+                if (newValue) {
+                    settingsViewModel.startMPD(context)
+                }
+            },
+            onWakeLockChanged = { newValue ->
+                settingsViewModel.setWakelockEnabled(newValue)
+            },
+            onHeadphonesChanged = { newValue ->
+                settingsViewModel.setPauseOnHeadphonesDisconnect(newValue)
+            }
+        )
+    }
+}
 
 @Composable
 fun SettingsOptions(
