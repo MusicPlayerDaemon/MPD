@@ -1,4 +1,5 @@
 gtest_dep = dependency('gtest', main: true,
+                       include_type: 'system',
                        fallback: ['gtest', 'gtest_main_dep'])
 
 subdir('util')
