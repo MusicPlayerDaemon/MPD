@@ -28,7 +28,7 @@
         android:theme="@style/Theme.MPD"
         android:name=".MPDApplication">
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

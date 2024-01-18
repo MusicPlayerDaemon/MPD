@@ -27,7 +27,6 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.MediaSession;
 
 import org.musicpd.data.LoggingRepository;
-import org.musicpd.ui.SettingsActivity;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -208,7 +207,7 @@ public class Main extends Service implements Runnable {
 			}
 		}, filter);
 
-		final Intent mainIntent = new Intent(this, SettingsActivity.class);
+		final Intent mainIntent = new Intent(this, MainActivity.class);
 		mainIntent.setAction("android.intent.action.MAIN");
 		mainIntent.addCategory("android.intent.category.LAUNCHER");
 		final PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
