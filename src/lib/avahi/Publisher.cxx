@@ -95,6 +95,7 @@ try {
 		}
 
 		/* And recreate the services */
+		defer_register_services.Cancel();
 		should_reset_group = false;
 		RegisterServices(*g);
 		break;
@@ -107,6 +108,7 @@ try {
 		break;
 	}
 } catch (...) {
+	defer_register_services.Cancel();
 	error_handler.OnAvahiError(std::current_exception());
 }
 
@@ -239,6 +241,7 @@ Publisher::OnAvahiDisconnect() noexcept
 {
 	group.reset();
 	should_reset_group = false;
+	defer_register_services.Cancel();
 }
 
 void
@@ -246,6 +249,7 @@ Publisher::OnAvahiChanged() noexcept
 {
 	group.reset();
 	should_reset_group = false;
+	defer_register_services.Cancel();
 }
 
 } // namespace Avahi
