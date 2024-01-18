@@ -631,7 +631,9 @@ Java_org_musicpd_Bridge_playNext(JNIEnv *, jclass)
 	if (global_instance != nullptr)
 		BlockingCall(global_instance->event_loop, [&](){
 			for (auto &partition : global_instance->partitions)
-				partition.PlayNext();
+				if (partition.playlist.playing) {
+					partition.PlayNext();
+				}
 		});
 }
 
@@ -642,7 +644,9 @@ Java_org_musicpd_Bridge_playPrevious(JNIEnv *, jclass)
 	if (global_instance != nullptr)
 		BlockingCall(global_instance->event_loop, [&](){
 			for (auto &partition : global_instance->partitions)
-				partition.PlayPrevious();
+				if (partition.playlist.playing) {
+					partition.PlayPrevious();
+				}
 		});
 }
 
