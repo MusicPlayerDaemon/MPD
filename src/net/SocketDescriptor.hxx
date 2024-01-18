@@ -146,7 +146,6 @@ public:
 		return fd;
 	}
 
-	[[nodiscard]]
 	constexpr void Set(SOCKET _fd) noexcept {
 		fd = _fd;
 	}
