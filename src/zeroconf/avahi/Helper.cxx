@@ -4,7 +4,6 @@
 #include "Helper.hxx"
 #include "lib/avahi/Client.hxx"
 #include "lib/avahi/ErrorHandler.hxx"
-#include "lib/avahi/Publisher.hxx"
 #include "lib/avahi/Service.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "Log.hxx"
@@ -29,9 +28,11 @@ static std::weak_ptr<SharedAvahiClient> shared_avahi_client;
 
 inline
 AvahiHelper::AvahiHelper(std::shared_ptr<SharedAvahiClient> _client,
-			 std::unique_ptr<Avahi::Publisher> _publisher)
+			 const char *service_name,
+			 std::forward_list<Avahi::Service> &&services)
 	:client(std::move(_client)),
-	 publisher(std::move(_publisher)) {}
+	 publisher(client->client, service_name,
+		   std::move(services), *client) {}
 
 AvahiHelper::~AvahiHelper() noexcept = default;
 
@@ -53,11 +54,6 @@ AvahiInit(EventLoop &event_loop, const char *service_name,
 			       AVAHI_PROTO_UNSPEC,
 			       service_type, port);
 
-	auto publisher = std::make_unique<Avahi::Publisher>(client->client,
-							    service_name,
-							    std::move(services),
-							    *client);
-
-	return std::make_unique<AvahiHelper>(std::move(client),
-					     std::move(publisher));
+	return std::make_unique<AvahiHelper>(std::move(client), service_name,
+					     std::move(services));
 }
