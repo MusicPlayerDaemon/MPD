@@ -137,7 +137,7 @@ static void version()
 
 	fmt::print("\n"
 		   "\n"
-		   "Decoders plugins:\n");
+		   "Decoder plugins:\n");
 
 	decoder_plugins_for_each([](const DecoderPlugin &plugin){
 		fmt::print(" [{}]", plugin.name);
