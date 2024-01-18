@@ -13,7 +13,7 @@ ndk_path = sys.argv[2]
 android_abi = sys.argv[3]
 configure_args = sys.argv[4:]
 
-if not os.path.isfile(os.path.join(sdk_path, 'tools', 'android')):
+if not os.path.isfile(os.path.join(sdk_path, 'licenses', 'android-sdk-license')):
     print("SDK not found in", sdk_path, file=sys.stderr)
     sys.exit(1)
 
