@@ -5,7 +5,7 @@ mpd_so = custom_target(
   output: 'libmpd.so',
   input: mpd,
   command: [
-    'cp',
+    'move_mpdlib.sh',
     '@INPUT@',
     join_paths(meson.current_source_dir(), '../app/src/main/jnilibs/', android_abi),
   ],
