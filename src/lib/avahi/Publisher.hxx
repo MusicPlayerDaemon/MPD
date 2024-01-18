@@ -60,6 +60,12 @@ public:
 	Publisher &operator=(const Publisher &) = delete;
 
 	/**
+	 * Call this after a #Service field was modified to publish
+	 * the changes.
+	 */
+	void UpdateServices() noexcept;
+
+	/**
 	 * Publish another service.
 	 *
 	 * @param service a #Service instance owned by the caller (it

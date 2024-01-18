@@ -56,21 +56,24 @@ Publisher::~Publisher() noexcept
 }
 
 void
+Publisher::UpdateServices() noexcept
+{
+	if (visible && client.IsConnected())
+		defer_register_services.Schedule();
+}
+
+void
 Publisher::AddService(Service &service) noexcept
 {
 	services.push_back(service);
-
-	if (visible && client.IsConnected())
-		defer_register_services.Schedule();
+	UpdateServices();
 }
 
 void
 Publisher::RemoveService(Service &service) noexcept
 {
 	services.erase(services.iterator_to(service));
-
-	if (visible && client.IsConnected())
-		defer_register_services.Schedule();
+	UpdateServices();
 }
 
 inline void
@@ -141,7 +144,8 @@ AddServices(AvahiEntryGroup &group,
 	    const IntrusiveList<Service> &services, const char *name)
 {
 	for (const auto &i : services)
-		AddService(group, i, name);
+		if (i.visible)
+			AddService(group, i, name);
 }
 
 void
