@@ -6,11 +6,12 @@
 #include "StaticSocketAddress.hxx"
 #include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
-#include "MsgHdr.hxx"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
+#include "MsgHdr.hxx"
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -418,6 +419,8 @@ SocketDescriptor::Receive(std::span<std::byte> dest, int flags) const noexcept
 	return ::recv(Get(), (char *)dest.data(), dest.size(), flags);
 }
 
+#ifndef _WIN32
+
 ssize_t
 SocketDescriptor::Receive(struct msghdr &msg, int flags) const noexcept
 {
@@ -431,6 +434,8 @@ SocketDescriptor::Receive(std::span<const struct iovec> v, int flags) const noex
 	return Receive(msg, flags);
 }
 
+#endif // !_WIN32
+
 ssize_t
 SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
 {
@@ -440,6 +445,8 @@ SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
 
 	return ::send(Get(), (const char *)src.data(), src.size(), flags);
 }
+
+#ifndef _WIN32
 
 ssize_t
 SocketDescriptor::Send(const struct msghdr &msg, int flags) const noexcept
@@ -456,6 +463,8 @@ SocketDescriptor::Send(std::span<const struct iovec> v, int flags) const noexcep
 {
 	return Send(MakeMsgHdr(v), flags);
 }
+
+#endif // !_WIN32
 
 ssize_t
 SocketDescriptor::ReadNoWait(std::span<std::byte> dest) const noexcept
