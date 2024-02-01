@@ -79,7 +79,7 @@ Client::ClientCallback(AvahiClient *c, AvahiClientState state) noexcept
 
 	case AVAHI_CLIENT_S_COLLISION:
 	case AVAHI_CLIENT_S_REGISTERING:
-		assert(!connected);
+		connected = false;
 
 		for (auto *l : listeners)
 			l->OnAvahiChanged();
