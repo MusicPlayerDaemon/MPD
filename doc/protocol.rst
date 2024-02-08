@@ -1001,6 +1001,19 @@ remote playlists (absolute URI with a supported scheme).
 
     The second parameter can be a range. [#since_0_23_3]_
 
+.. _command_playlistlength:
+
+:command:`playlistlength {NAME}`
+    Count the number of songs and their total playtime (seconds) in the
+    playlist.
+
+    Example::
+
+     playlistlength example
+     songs: 10
+     playtime: 8192
+     OK
+
 .. _command_playlistmove:
 
 :command:`playlistmove {NAME} [{FROM} | {START:END}] {TO}`

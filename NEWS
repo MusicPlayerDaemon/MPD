@@ -10,7 +10,7 @@ ver 0.24 (not yet released)
   - show PCRE support in "config" response
   - apply Unicode normalization to case-insensitive filter expressions
   - stickers on playlists and some tag types
-  - new command "stickernames"
+  - new commands "stickernames" and "playlistlength"
   - new "search"/"find" filter "added-since"
 * database
   - attribute "added" shows when each song was added to the database

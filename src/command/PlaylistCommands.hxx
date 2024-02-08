@@ -27,6 +27,9 @@ CommandResult
 handle_listplaylistinfo(Client &client, Request request, Response &response);
 
 CommandResult
+handle_playlistlength(Client &client, Request request, Response &response);
+
+CommandResult
 handle_rm(Client &client, Request request, Response &response);
 
 CommandResult
