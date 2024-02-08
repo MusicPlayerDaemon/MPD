@@ -12,6 +12,7 @@ ver 0.24 (not yet released)
   - stickers on playlists and some tag types
   - new command "stickernames"
   - new "search"/"find" filter "added-since"
+  - allow range in listplaylist and listplaylistinfo
 * database
   - attribute "added" shows when each song was added to the database
   - proxy: require MPD 0.21 or later

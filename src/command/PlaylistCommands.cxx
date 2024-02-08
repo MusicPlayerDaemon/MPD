@@ -125,8 +125,10 @@ handle_listplaylist(Client &client, Request args, Response &r)
 #endif
 					   );
 
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
+
 	if (playlist_file_print(r, client.GetPartition(), SongLoader(client),
-				name, false))
+				name, range.start, range.end, false))
 		return CommandResult::OK;
 
 	throw PlaylistError::NoSuchList();
@@ -142,8 +144,10 @@ handle_listplaylistinfo(Client &client, Request args, Response &r)
 #endif
 					   );
 
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
+
 	if (playlist_file_print(r, client.GetPartition(), SongLoader(client),
-				name, true))
+				name, range.start, range.end, true))
 		return CommandResult::OK;
 
 	throw PlaylistError::NoSuchList();

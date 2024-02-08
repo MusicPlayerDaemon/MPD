@@ -944,15 +944,17 @@ remote playlists (absolute URI with a supported scheme).
 
 .. _command_listplaylist:
 
-:command:`listplaylist {NAME}`
+:command:`listplaylist {NAME} [{START:END}]`
     Lists the songs in the playlist.  Playlist plugins are
-    supported.
+    supported. A range may be specified to list
+    only a part of the playlist. [#since_0_24]_
 
 .. _command_listplaylistinfo:
 
-:command:`listplaylistinfo {NAME}`
+:command:`listplaylistinfo {NAME} [{START:END}]`
     Lists the songs with metadata in the playlist.  Playlist
-    plugins are supported.
+    plugins are supported. A range may be specified to list
+    only a part of the playlist. [#since_0_24]_
 
 .. _command_listplaylists:
 
