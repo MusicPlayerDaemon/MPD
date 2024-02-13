@@ -57,9 +57,6 @@ const ConfigTemplate config_param_templates[] = {
 	{ "gapless_mp3_playback", false, true },
 	{ "auto_update" },
 	{ "auto_update_depth" },
-	{ "despotify_user", false, true },
-	{ "despotify_password", false, true },
-	{ "despotify_high_bitrate", false, true },
 	{ "mixramp_analyzer" },
 };
 
