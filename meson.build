@@ -387,6 +387,7 @@ sources = [
   'src/PlaylistError.cxx',
   'src/PlaylistPrint.cxx',
   'src/PlaylistSave.cxx',
+  'src/playlist/Length.cxx',
   'src/playlist/PlaylistStream.cxx',
   'src/playlist/PlaylistMapper.cxx',
   'src/playlist/PlaylistAny.cxx',
