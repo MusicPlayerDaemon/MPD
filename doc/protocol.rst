@@ -1764,7 +1764,8 @@ Client to client
 Clients can communicate with each others over "channels".  A
 channel is created by a client subscribing to it.  More than
 one client can be subscribed to a channel at a time; all of
-them will receive the messages which get sent to it.
+them will receive the messages which get sent to it.  A client
+can be subscribed to up to 16 channels simultaneously.
 
 Each time a client subscribes or unsubscribes, the global idle
 event ``subscription`` is generated.  In
