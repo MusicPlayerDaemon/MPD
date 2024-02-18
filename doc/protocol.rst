@@ -470,6 +470,10 @@ Querying :program:`MPD`'s status
     notifications when something changed in one of the
     specified subsytems.
 
+    Note, however, that while waiting for `idle` results on specific
+    subsystem(s), changes on other subsystems are not accumulated -
+    it is possible to miss events this way.
+
 .. _command_status:
 
 :command:`status`
