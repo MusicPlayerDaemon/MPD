@@ -447,7 +447,8 @@ Querying :program:`MPD`'s status
     - ``partition``: a partition was added, removed or changed
     - ``sticker``: the sticker database has been modified.
     - ``subscription``: a client has subscribed or unsubscribed to a channel
-    - ``message``: a message was received on a channel this client is subscribed to; this event is only emitted when the queue is empty
+    - ``message``: a message was received on a channel this client is subscribed to;
+      this event is only emitted when the client's message queue is empty
     - ``neighbor``: a neighbor was found or lost
     - ``mount``: the mount list has changed
 
