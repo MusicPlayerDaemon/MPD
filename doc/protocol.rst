@@ -1776,6 +1776,14 @@ additional services.
 New messages are indicated by the ``message``
 idle event.
 
+:program:`MPD` will queue up to 64 unread messages for a
+client that is subscribed to a channel.  To prevent lost
+messages, a sending client should not flood the channel with
+messages and the subscriber-client should take care to not
+inadvertently miss the ``message`` idle event by (temporarily)
+idling on a list of subsystems that does not include
+``message``.
+
 If your MPD instance has multiple partitions, note that
 client-to-client messages are local to the current partition.
 
