@@ -101,7 +101,7 @@ IsSocketErrorAcceptWouldBlock(socket_error_t code) noexcept
 }
 
 constexpr bool
-IsSocketErrorInterruped(socket_error_t code) noexcept
+IsSocketErrorInterrupted(socket_error_t code) noexcept
 {
 #ifdef _WIN32
 	return code == WSAEINTR;
