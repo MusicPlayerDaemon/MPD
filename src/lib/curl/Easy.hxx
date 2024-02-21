@@ -9,6 +9,7 @@
 #include <curl/curl.h>
 
 #include <cstddef>
+#include <span>
 #include <stdexcept>
 #include <string_view>
 #include <utility>
@@ -179,6 +180,10 @@ public:
 	void SetRequestBody(const void *data, size_t size) {
 		SetOption(CURLOPT_POSTFIELDS, data);
 		SetOption(CURLOPT_POSTFIELDSIZE, (long)size);
+	}
+
+	void SetRequestBody(std::span<const std::byte> s) {
+		SetRequestBody(s.data(), s.size());
 	}
 
 	void SetRequestBody(std::string_view s) {
