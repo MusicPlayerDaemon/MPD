@@ -257,11 +257,11 @@ input_cdio_open(const char *uri,
 
 	lsn_t lsn_from, lsn_to;
 	if (parsed_uri.track >= 0) {
-		lsn_from = cdio_get_track_lsn(cdio, parsed_uri.track);
-		lsn_to = cdio_get_track_last_lsn(cdio, parsed_uri.track);
+		lsn_from = cdio_cddap_track_firstsector(drv, parsed_uri.track);
+		lsn_to = cdio_cddap_track_lastsector(drv, parsed_uri.track);
 	} else {
-		lsn_from = 0;
-		lsn_to = cdio_get_disc_last_lsn(cdio);
+		lsn_from = cdio_cddap_disc_firstsector(drv);
+		lsn_to = cdio_cddap_disc_lastsector(drv);
 	}
 
 	return std::make_unique<CdioParanoiaInputStream>(uri, mutex,
