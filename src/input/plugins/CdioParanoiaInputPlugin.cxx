@@ -224,7 +224,10 @@ input_cdio_open(const char *uri,
 	if (speed > 0) {
 		FmtDebug(cdio_domain, "Attempting to set CD speed to {}x",
 			 speed);
-		cdio_cddap_speed_set(drv,speed);
+		/* Negative value indicate error (e.g. -405: not supported) */
+		if (cdio_cddap_speed_set(drv,speed) < 0)
+			FmtDebug(cdio_domain, "Failed to set CD speed to {}x",
+				 speed);
 	}
 
 	bool reverse_endian;
