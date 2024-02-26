@@ -214,16 +214,17 @@ input_cdio_open(const char *uri,
 	}
 
 	cdio_cddap_verbose_set(drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
-	if (speed > 0) {
-		FmtDebug(cdio_domain, "Attempting to set CD speed to {}x",
-			 speed);
-		cdio_cddap_speed_set(drv,speed);
-	}
 
 	if (0 != cdio_cddap_open(drv)) {
 		cdio_cddap_close_no_free_cdio(drv);
 		cdio_destroy(cdio);
 		throw std::runtime_error("Unable to open disc.");
+	}
+
+	if (speed > 0) {
+		FmtDebug(cdio_domain, "Attempting to set CD speed to {}x",
+			 speed);
+		cdio_cddap_speed_set(drv,speed);
 	}
 
 	bool reverse_endian;
