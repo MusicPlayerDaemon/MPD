@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef BUFFERED_OUTPUT_STREAM_HXX
-#define BUFFERED_OUTPUT_STREAM_HXX
+#pragma once
 
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/SpanCast.hxx"
@@ -130,5 +129,3 @@ WithBufferedOutputStream(OutputStream &os, F &&f)
 	f(bos);
 	bos.Flush();
 }
-
-#endif

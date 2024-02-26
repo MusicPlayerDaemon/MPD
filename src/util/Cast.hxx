@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef CAST_HXX
-#define CAST_HXX
+#pragma once
 
 #include "OffsetPointer.hxx"
 
@@ -55,5 +54,3 @@ ContainerCast(const A &a, const A C::*member)
 {
 	return *OffsetCast<const C, const A>(&a, -ContainerAttributeOffset<C, A>(member));
 }
-
-#endif

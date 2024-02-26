@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef DYNAMIC_FIFO_BUFFER_HXX
-#define DYNAMIC_FIFO_BUFFER_HXX
+#pragma once
 
 #include "ForeignFifoBuffer.hxx"
 
@@ -91,5 +90,3 @@ public:
 protected:
 	using ForeignFifoBuffer<T>::GetBuffer;
 };
-
-#endif

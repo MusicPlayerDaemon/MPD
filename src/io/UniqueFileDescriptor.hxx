@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef UNIQUE_FILE_DESCRIPTOR_HXX
-#define UNIQUE_FILE_DESCRIPTOR_HXX
+#pragma once
 
 #include "FileDescriptor.hxx" // IWYU pragma: export
 
@@ -72,5 +71,3 @@ public:
 		return IsDefined() && FileDescriptor::Close();
 	}
 };
-
-#endif

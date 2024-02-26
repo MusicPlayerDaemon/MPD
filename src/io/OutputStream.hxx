@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef OUTPUT_STREAM_HXX
-#define OUTPUT_STREAM_HXX
+#pragma once
 
 #include <cstddef>
 #include <span>
@@ -17,5 +16,3 @@ public:
 	 */
 	virtual void Write(std::span<const std::byte> src) = 0;
 };
-
-#endif

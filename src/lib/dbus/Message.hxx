@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef ODBUS_MESSAGE_HXX
-#define ODBUS_MESSAGE_HXX
+#pragma once
 
 #include <dbus/dbus.h>
 
@@ -123,5 +122,3 @@ public:
 };
 
 } /* namespace ODBus */
-
-#endif

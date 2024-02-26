@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef READER_HXX
-#define READER_HXX
+#pragma once
 
 #include <cstddef>
 #include <span>
@@ -41,5 +40,3 @@ public:
 		ReadFull(std::as_writable_bytes(std::span{&dest, 1}));
 	}
 };
-
-#endif

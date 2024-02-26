@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef IPV6_ADDRESS_HXX
-#define IPV6_ADDRESS_HXX
+#pragma once
 
 #include "SocketAddress.hxx"
 #include "util/ByteOrder.hxx"
@@ -191,5 +190,3 @@ private:
 			   : (0xffff << (offset + 16 - prefix_length)));
 	}
 };
-
-#endif

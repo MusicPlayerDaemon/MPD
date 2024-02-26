@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef OPEN_HXX
-#define OPEN_HXX
+#pragma once
 
 class FileDescriptor;
 class UniqueFileDescriptor;
@@ -36,7 +35,5 @@ OpenWriteOnly(FileDescriptor directory, const char *name, int flags=0);
 
 UniqueFileDescriptor
 OpenDirectory(FileDescriptor directory, const char *name, int flags=0);
-
-#endif
 
 #endif

@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef SHALLOW_COPY_HXX
-#define SHALLOW_COPY_HXX
+#pragma once
 
 /**
  * A tag for overloading copying constructors, telling them to make
@@ -11,5 +10,3 @@
  * duplicating the referenced objects).
  */
 struct ShallowCopy {};
-
-#endif

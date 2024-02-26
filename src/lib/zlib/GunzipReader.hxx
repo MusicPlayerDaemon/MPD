@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef GUNZIP_READER_HXX
-#define GUNZIP_READER_HXX
+#pragma once
 
 #include "io/Reader.hxx"
 #include "util/StaticFifoBuffer.hxx"
@@ -39,5 +38,3 @@ public:
 private:
 	bool FillBuffer();
 };
-
-#endif

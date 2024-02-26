@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef STDIO_OUTPUT_STREAM_HXX
-#define STDIO_OUTPUT_STREAM_HXX
+#pragma once
 
 #include "OutputStream.hxx"
 
@@ -21,5 +20,3 @@ public:
 		/* this class is debug-only and ignores errors */
 	}
 };
-
-#endif

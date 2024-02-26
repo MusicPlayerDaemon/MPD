@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef CURL_STRING_HXX
-#define CURL_STRING_HXX
+#pragma once
 
 #include <curl/curl.h>
 
@@ -47,5 +46,3 @@ public:
 		return p;
 	}
 };
-
-#endif

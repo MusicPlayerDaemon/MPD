@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef STRING_POINTER_HXX
-#define STRING_POINTER_HXX
+#pragma once
 
 #include <cstddef>
 
@@ -52,5 +51,3 @@ public:
 		return *value == SENTINEL;
 	}
 };
-
-#endif

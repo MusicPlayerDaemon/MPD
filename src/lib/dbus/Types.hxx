@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef ODBUS_TYPES_HXX
-#define ODBUS_TYPES_HXX
+#pragma once
 
 #include "util/TemplateString.hxx"
 
@@ -89,5 +88,3 @@ struct StructTypeTraits {
 };
 
 } /* namespace ODBus */
-
-#endif

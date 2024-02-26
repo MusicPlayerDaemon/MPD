@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef STRING_BUFFER_HXX
-#define STRING_BUFFER_HXX
+#pragma once
 
 #include <array>
 
@@ -89,5 +88,3 @@ public:
 
 template<std::size_t CAPACITY>
 class StringBuffer : public BasicStringBuffer<char, CAPACITY> {};
-
-#endif

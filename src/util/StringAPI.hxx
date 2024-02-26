@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef STRING_API_HXX
-#define STRING_API_HXX
+#pragma once
 
 #include <cstring>
 
@@ -193,5 +192,3 @@ DuplicateString(const char *p) noexcept
 {
 	return strdup(p);
 }
-
-#endif

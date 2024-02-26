@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef SCOPE_EXIT_HXX
-#define SCOPE_EXIT_HXX
+#pragma once
 
 #include <utility>
 
@@ -64,5 +63,3 @@ struct ScopeExitTag {
  * Boost's compile-time and runtime bloat.
  */
 #define AtScopeExit(...) auto ScopeExitName(__LINE__) = ScopeExitTag() + [__VA_ARGS__]()
-
-#endif

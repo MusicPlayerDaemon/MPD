@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef ZLIB_ERROR_HXX
-#define ZLIB_ERROR_HXX
+#pragma once
 
 #include <exception>
 
@@ -18,5 +17,3 @@ public:
 
 	const char *what() const noexcept override;
 };
-
-#endif

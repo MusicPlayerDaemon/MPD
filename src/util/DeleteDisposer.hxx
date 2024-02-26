@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef DELETE_DISPOSER_HXX
-#define DELETE_DISPOSER_HXX
+#pragma once
 
 /**
  * A disposer for boost::intrusive that invokes the "delete" operator
@@ -15,5 +14,3 @@ public:
 		delete t;
 	}
 };
-
-#endif

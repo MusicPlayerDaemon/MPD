@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef IPV4_ADDRESS_HXX
-#define IPV4_ADDRESS_HXX
+#pragma once
 
 #include "SocketAddress.hxx"
 #include "util/ByteOrder.hxx"
@@ -209,5 +208,3 @@ public:
 				   GetPort() & other.GetPort());
 	}
 };
-
-#endif
