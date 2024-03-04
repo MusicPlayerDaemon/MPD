@@ -148,7 +148,7 @@ update_directory_stat(Storage &storage, Directory &directory) noexcept
  */
 static int
 FindAncestorLoop(Storage &storage, Directory *parent,
-		 unsigned inode, unsigned device) noexcept
+		 uint64_t inode, uint64_t device) noexcept
 {
 #ifndef _WIN32
 	if (device == 0 && inode == 0)
