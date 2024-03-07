@@ -92,6 +92,7 @@ void
 sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		  const char *base_uri, const char *name,
 		  StickerOperator op, const char *value,
+		  const char *sort, bool descending, RangeArg window,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data)
@@ -114,5 +115,6 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 	data.base_uri_length = strlen(data.base_uri);
 
 	sticker_database.Find("song", data.base_uri, name, op, value,
+				  sort, descending, window,
 			      sticker_song_find_cb, &data);
 }

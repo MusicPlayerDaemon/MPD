@@ -1486,19 +1486,21 @@ the database for songs).
 
 .. _command_sticker_find:
 
-:command:`sticker find {TYPE} {URI} {NAME}`
+:command:`sticker find {TYPE} {URI} {NAME} [sort {SORTTYPE}] [window {START:END}]`
     Searches the sticker database for stickers with the
     specified name, below the specified directory (URI).
     For each matching song, it prints the URI and that one
     sticker's value.
 
+    ``sort`` sorts the result by "``uri``","``value`` or "``value_int``" (casts the sticker value to an integer). [#since_0_24]_
+
 .. _command_sticker_find_value:
 
-:command:`sticker find {TYPE} {URI} {NAME} = {VALUE}`
+:command:`sticker find {TYPE} {URI} {NAME} = {VALUE} [sort {SORTTYPE}] [window {START:END}]`
     Searches for stickers with the given value.
 
     Other supported operators are:
-    "``<``", "``>``"
+    "``<``", "``>``" for strings and "``eq``", "``lt``", "``gt``" to cast the value to an integer.
 
 Examples:
 

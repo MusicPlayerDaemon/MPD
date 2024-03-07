@@ -10,12 +10,26 @@
 #include "util/StringCompare.hxx"
 #include "util/ScopeExit.hxx"
 
+#include <fmt/format.h>
 #include <cassert>
 #include <iterator>
 #include <array>
 #include <stdexcept>
 
 using namespace Sqlite;
+
+enum sticker_sql_find {
+	STICKER_SQL_FIND,
+	STICKER_SQL_FIND_VALUE,
+	STICKER_SQL_FIND_LT,
+	STICKER_SQL_FIND_GT,
+
+	STICKER_SQL_FIND_EQ_INT,
+	STICKER_SQL_FIND_LT_INT,
+	STICKER_SQL_FIND_GT_INT,
+
+	STICKER_SQL_FIND_COUNT
+};
 
 enum sticker_sql {
 	STICKER_SQL_GET,
@@ -24,10 +38,6 @@ enum sticker_sql {
 	STICKER_SQL_INSERT,
 	STICKER_SQL_DELETE,
 	STICKER_SQL_DELETE_VALUE,
-	STICKER_SQL_FIND,
-	STICKER_SQL_FIND_VALUE,
-	STICKER_SQL_FIND_LT,
-	STICKER_SQL_FIND_GT,
 	STICKER_SQL_DISTINCT_TYPE_URI,
 	STICKER_SQL_TRANSACTION_BEGIN,
 	STICKER_SQL_TRANSACTION_COMMIT,
@@ -35,6 +45,29 @@ enum sticker_sql {
 	STICKER_SQL_NAMES,
 
 	STICKER_SQL_COUNT
+};
+
+static constexpr auto sticker_sql_find = std::array {
+	//[STICKER_SQL_FIND] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=?",
+
+	//[STICKER_SQL_FIND_VALUE] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value=?",
+
+	//[STICKER_SQL_FIND_LT] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value<?",
+
+	//[STICKER_SQL_FIND_GT] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value>?",
+
+	//[STICKER_SQL_FIND_EQ_INT] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND CAST(value AS INT)=?",
+
+	//[STICKER_SQL_FIND_LT_INT] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND CAST(value AS INT)<?",
+
+	//[STICKER_SQL_FIND_GT_INT] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND CAST(value AS INT)>?",
 };
 
 static constexpr auto sticker_sql = std::array {
@@ -50,17 +83,6 @@ static constexpr auto sticker_sql = std::array {
 	"DELETE FROM sticker WHERE type=? AND uri=?",
 	//[STICKER_SQL_DELETE_VALUE] =
 	"DELETE FROM sticker WHERE type=? AND uri=? AND name=?",
-	//[STICKER_SQL_FIND] =
-	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=?",
-
-	//[STICKER_SQL_FIND_VALUE] =
-	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value=?",
-
-	//[STICKER_SQL_FIND_LT] =
-	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value<?",
-
-	//[STICKER_SQL_FIND_GT] =
-	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value>?",
 
 	//[STICKER_SQL_DISTINCT_TYPE_URI] =
 	"SELECT DISTINCT type,uri FROM sticker",
@@ -297,7 +319,8 @@ StickerDatabase::Load(const char *type, const char *uri)
 sqlite3_stmt *
 StickerDatabase::BindFind(const char *type, const char *base_uri,
 			  const char *name,
-			  StickerOperator op, const char *value)
+			  StickerOperator op, const char *value,
+			  const char *sort, bool descending, RangeArg window)
 {
 	assert(type != nullptr);
 	assert(name != nullptr);
@@ -305,25 +328,70 @@ StickerDatabase::BindFind(const char *type, const char *base_uri,
 	if (base_uri == nullptr)
 		base_uri = "";
 
+	auto order_by = StringIsEmpty(sort)
+		? std::string()
+		: StringIsEqual(sort, "value_int")
+			? fmt::format("ORDER BY CAST(value AS INT) {}", descending ? "desc" : "asc")
+			: fmt::format("ORDER BY {} {}", sort, descending ? "desc" : "asc");
+
+	auto offset = window.IsAll()
+		? std::string()
+		: window.IsOpenEnded()
+			? fmt::format("LIMIT -1 OFFSET {}", window.start)
+			: fmt::format("LIMIT {} OFFSET {}", window.Count(), window.start);
+
+	std::string sql_str;
+	sqlite3_stmt *sql;
+
 	switch (op) {
 	case StickerOperator::EXISTS:
-		BindAll(stmt[STICKER_SQL_FIND], type, base_uri, name);
-		return stmt[STICKER_SQL_FIND];
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name);
+		return sql;
 
 	case StickerOperator::EQUALS:
-		BindAll(stmt[STICKER_SQL_FIND_VALUE],
-			type, base_uri, name, value);
-		return stmt[STICKER_SQL_FIND_VALUE];
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND_VALUE], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name, value);
+		return sql;
 
 	case StickerOperator::LESS_THAN:
-		BindAll(stmt[STICKER_SQL_FIND_LT],
-			type, base_uri, name, value);
-		return stmt[STICKER_SQL_FIND_LT];
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND_LT], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name, value);
+		return sql;
 
 	case StickerOperator::GREATER_THAN:
-		BindAll(stmt[STICKER_SQL_FIND_GT],
-			type, base_uri, name, value);
-		return stmt[STICKER_SQL_FIND_GT];
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND_GT], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name, value);
+		return sql;
+
+	case StickerOperator::EQUALS_INT:
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND_EQ_INT], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name, value);
+		return sql;
+
+	case StickerOperator::LESS_THAN_INT:
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND_LT_INT], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name, value);
+		return sql;
+
+	case StickerOperator::GREATER_THAN_INT:
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND_GT_INT], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name, value);
+		return sql;
 	}
 
 	assert(false);
@@ -333,18 +401,18 @@ StickerDatabase::BindFind(const char *type, const char *base_uri,
 void
 StickerDatabase::Find(const char *type, const char *base_uri, const char *name,
 		      StickerOperator op, const char *value,
+			  const char *sort, bool descending, RangeArg window,
 		      void (*func)(const char *uri, const char *value,
 				   void *user_data),
 		      void *user_data)
 {
 	assert(func != nullptr);
 
-	sqlite3_stmt *const s = BindFind(type, base_uri, name, op, value);
+	sqlite3_stmt *const s = BindFind(type, base_uri, name, op, value, sort, descending, window);
 	assert(s != nullptr);
 
 	AtScopeExit(s) {
-		sqlite3_reset(s);
-		sqlite3_clear_bindings(s);
+		sqlite3_finalize(s);
 	};
 
 	ExecuteForEach(s, [s, func, user_data](){

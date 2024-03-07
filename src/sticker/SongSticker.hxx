@@ -5,6 +5,7 @@
 #define MPD_SONG_STICKER_HXX
 
 #include "Match.hxx"
+#include "protocol/RangeArg.hxx"
 
 #include <string>
 
@@ -80,6 +81,7 @@ void
 sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		  const char *base_uri, const char *name,
 		  StickerOperator op, const char *value,
+		  const char *sort, bool descending, RangeArg window,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data);

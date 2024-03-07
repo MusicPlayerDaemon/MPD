@@ -28,6 +28,7 @@
 
 #include "Match.hxx"
 #include "lib/sqlite/Database.hxx"
+#include "protocol/RangeArg.hxx"
 
 #include <sqlite3.h>
 
@@ -46,10 +47,6 @@ class StickerDatabase {
 		  SQL_INSERT,
 		  SQL_DELETE,
 		  SQL_DELETE_VALUE,
-		  SQL_FIND,
-		  SQL_FIND_VALUE,
-		  SQL_FIND_LT,
-		  SQL_FIND_GT,
 		  SQL_DISTINCT_TYPE_URI,
 		  SQL_TRANSACTION_BEGIN,
 		  SQL_TRANSACTION_COMMIT,
@@ -57,6 +54,19 @@ class StickerDatabase {
 		  SQL_NAMES,
 
 		  SQL_COUNT
+	};
+
+	enum SQL_FIND {
+		  SQL_FIND,
+		  SQL_FIND_VALUE,
+		  SQL_FIND_LT,
+		  SQL_FIND_GT,
+
+		  SQL_FIND_EQ_INT,
+		  SQL_FIND_LT_INT,
+		  SQL_FIND_GT_INT,
+
+		  SQL_FIND_COUNT
 	};
 
 	std::string path;
@@ -143,6 +153,7 @@ public:
 	 */
 	void Find(const char *type, const char *base_uri, const char *name,
 		  StickerOperator op, const char *value,
+		  const char *sort, bool descending, RangeArg window,
 		  void (*func)(const char *uri, const char *value,
 			       void *user_data),
 		  void *user_data);
@@ -178,7 +189,8 @@ private:
 
 	sqlite3_stmt *BindFind(const char *type, const char *base_uri,
 			       const char *name,
-			       StickerOperator op, const char *value);
+			       StickerOperator op, const char *value,
+				   const char *sort, bool descending, RangeArg window);
 };
 
 #endif
