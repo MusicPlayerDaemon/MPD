@@ -26,9 +26,11 @@ void
 Client::IdleNotify() noexcept
 {
 	assert(idle_waiting);
-	assert(idle_flags != 0);
 
-	unsigned flags = std::exchange(idle_flags, 0) & idle_subscriptions;
+	const unsigned flags = idle_flags & idle_subscriptions;
+	idle_flags &= ~idle_subscriptions;
+	assert(flags != 0);
+
 	idle_waiting = false;
 
 	Response r(*this, 0);

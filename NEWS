@@ -14,6 +14,7 @@ ver 0.24 (not yet released)
   - new "search"/"find" filter "added-since"
   - allow range in listplaylist and listplaylistinfo
   - "sticker find" supports sort and window parameter and new sticker compare operators "eq", "lt" and "gt"
+  - consume only idle flags that were subscribed to
 * database
   - attribute "added" shows when each song was added to the database
   - fix integer overflows with 64-bit inode numbers
