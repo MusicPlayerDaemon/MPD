@@ -534,6 +534,6 @@ libnfs = AutotoolsProject(
 
         '--disable-utils', '--disable-examples',
     ],
-    base='libnfs-libnfs-5.0.2',
+    base='libnfs-libnfs-5.0.3',
     autoreconf=True,
 )
