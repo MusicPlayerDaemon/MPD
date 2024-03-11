@@ -522,8 +522,8 @@ ffmpeg = FfmpegProject(
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-5.0.2.tar.gz',
-    '637e56643b19da9fba98f06847788c4dad308b723156a64748041035dcdf9bd3',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-5.0.3.tar.gz',
+    'd945cb4f4c8f82ee1f3640893a168810f794a28e1010bb007ec5add345e9df3e',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
