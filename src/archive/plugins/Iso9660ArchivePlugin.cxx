@@ -242,7 +242,7 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 	if (remaining == 0)
 		return 0;
 
-	if (offset_type(read_size) > remaining)
+	if (std::cmp_greater(read_size, remaining))
 		read_size = remaining;
 
 	auto r = buffer.Read();

@@ -105,7 +105,7 @@ RewindInputStream::Seek(std::unique_lock<Mutex> &lock, offset_type new_offset)
 {
 	assert(IsReady());
 
-	if (tail > 0 && new_offset <= (offset_type)tail) {
+	if (tail > 0 && std::cmp_less_equal(new_offset, tail)) {
 		/* buffered seek */
 
 		assert(!ReadingFromBuffer() ||
