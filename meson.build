@@ -10,6 +10,8 @@ project(
     'build.cpp_std=c++2a',
     'warning_level=3',
 
+    'fmt:cpp_std=c++2a',
+
     # If we build those libraries as Meson subproject, they shall be
     # linked statically into the MPD executable.
     'curl:default_library=static',
