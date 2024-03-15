@@ -109,7 +109,7 @@ AsyncInputStream::Seek(std::unique_lock<Mutex> &lock,
 			break;
 
 		const size_t nbytes =
-			new_offset - offset < (offset_type)r.size()
+			std::cmp_less(new_offset - offset, r.size())
 			? new_offset - offset
 			: r.size();
 

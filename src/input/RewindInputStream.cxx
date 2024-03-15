@@ -82,7 +82,7 @@ RewindInputStream::Read(std::unique_lock<Mutex> &lock,
 
 		size_t nbytes = input->Read(lock, ptr, read_size);
 
-		if (input->GetOffset() > (offset_type)sizeof(buffer))
+		if (std::cmp_greater(input->GetOffset(), sizeof(buffer)))
 			/* disable buffering */
 			tail = 0;
 		else if (tail == (size_t)offset) {
