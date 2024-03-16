@@ -910,7 +910,6 @@ AlsaOutput::Recover(int err) noexcept
 		/* fall-through to snd_pcm_prepare: */
 		[[fallthrough]];
 
-	case SND_PCM_STATE_OPEN:
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
 		period_buffer.Rewind();
@@ -918,6 +917,7 @@ AlsaOutput::Recover(int err) noexcept
 		err = snd_pcm_prepare(pcm);
 		break;
 
+	case SND_PCM_STATE_OPEN:
 	case SND_PCM_STATE_DISCONNECTED:
 	case SND_PCM_STATE_DRAINING:
 		/* can't play in this state; throw the error */
@@ -1002,14 +1002,19 @@ AlsaOutput::DrainInternal()
 			period_buffer.FillWithSilence(silence, out_frame_size);
 
 		/* drain period_buffer */
-		if (!period_buffer.IsDrained()) {
+		unsigned int retry_count = 0;
+		while (!period_buffer.IsDrained() && retry_count <= 1) {
 			auto frames_written = WriteFromPeriodBuffer();
 			if (frames_written < 0) {
-				if (frames_written == -EAGAIN)
+				if (frames_written == -EAGAIN || frames_written == -EINTR)
 					return false;
 
-				throw Alsa::MakeError(frames_written,
-						      "snd_pcm_writei() failed");
+				if (Recover(frames_written) < 0)
+					throw Alsa::MakeError(frames_written,
+							      "snd_pcm_writei() failed");
+
+				retry_count++;
+				continue;
 			}
 
 			/* need to call CopyRingToPeriodBuffer() and
