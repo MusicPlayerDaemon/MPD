@@ -5,6 +5,10 @@
 
 #include "SocketDescriptor.hxx"
 
+#ifndef _WIN32
+#include "io/UniqueFileDescriptor.hxx"
+#endif
+
 #include <utility>
 
 class StaticSocketAddress;
@@ -46,6 +50,12 @@ public:
 	SocketDescriptor Release() noexcept {
 		return std::exchange(*(SocketDescriptor *)this, Undefined());
 	}
+
+#ifndef _WIN32
+	UniqueFileDescriptor MoveToFileDescriptor() && noexcept {
+		return UniqueFileDescriptor{Release().ToFileDescriptor()};
+	}
+#endif
 
 	UniqueSocketDescriptor &operator=(UniqueSocketDescriptor &&src) noexcept {
 		using std::swap;
