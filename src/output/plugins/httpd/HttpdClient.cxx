@@ -1,21 +1,30 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
+#include "config.h"
 #include "HttpdClient.hxx"
 #include "HttpdInternal.hxx"
 #include "util/ASCII.hxx"
 #include "util/AllocatedString.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
+#include "lib/crypto/Base64.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/SpanCast.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringSplit.hxx"
 #include "Log.hxx"
 
 #include <fmt/core.h>
 
 #include <cassert>
 #include <cstring>
+
+#ifdef HAVE_BASE64
+#include "lib/crypto/Base64.hxx"
+#endif
+
 
 HttpdClient::~HttpdClient() noexcept
 {
@@ -40,6 +49,10 @@ void
 HttpdClient::BeginResponse() noexcept
 {
 	assert(state != State::RESPONSE);
+
+	if (!head_method) {
+		should_reject_unauthorized = httpd.password != nullptr && provided_password != httpd.password;
+	}
 
 	state = State::RESPONSE;
 	current_page = nullptr;
@@ -102,6 +115,15 @@ HttpdClient::HandleLine(const char *line) noexcept
 			return true;
 		}
 
+
+		#ifdef HAVE_BASE64
+		if (const char *b64 = StringAfterPrefixIgnoreCase(line, "Authorization: Basic ")) {
+			auto decodedBytes = DecodeBase64(b64);
+			auto [username, pw] = Split(ToStringView(decodedBytes), ':');
+			provided_password = std::string{pw};
+		}
+		#endif
+
 		if (StringEqualsCaseASCII(line, "Icy-MetaData: 1", 15) ||
 		    StringEqualsCaseASCII(line, "Icy-MetaData:1", 14)) {
 			/* Send icy metadata */
@@ -132,6 +154,15 @@ HttpdClient::SendResponse() noexcept
 			"Connection: close\r\n"
 			"\r\n"
 			"404 not found";
+	} else if (should_reject_unauthorized) {
+		allocated = fmt::format(
+			"HTTP/1.1 401 unauthorized\r\n"
+			"Content-Type: text/plain\r\n"
+			"WWW-Authenticate: Basic realm=\"{}\"\r\n"
+			"Connection: close\r\n"
+			"\r\n"
+			"401 unauthorized", httpd.name);
+		response = allocated.c_str();
 	} else if (metadata_requested) {
 		allocated =
 			icy_server_metadata_header(httpd.name, httpd.genre,
@@ -169,7 +200,8 @@ HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor _fd,
 			 bool _metadata_supported)
 	:BufferedSocket(_fd.Release(), _loop),
 	 httpd(_httpd),
-	 metadata_supported(_metadata_supported)
+	 metadata_supported(_metadata_supported),
+	 provided_password{""}
 {
 }
 
@@ -414,7 +446,7 @@ HttpdClient::OnSocketInput(void *data, size_t length) noexcept
 		if (!SendResponse())
 			return InputResult::CLOSED;
 
-		if (head_method || should_reject) {
+		if (head_method || should_reject || should_reject_unauthorized) {
 			LockClose();
 			return InputResult::CLOSED;
 		}

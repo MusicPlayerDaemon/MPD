@@ -44,6 +44,8 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 			ServerSocket::SetDscpClass(value);
 		});
 
+	password = block.GetBlockValue("password");
+
 	/* set up bind_to_address */
 
 	ServerSocketAddGeneric(*this, block.GetBlockValue("bind_to_address"), block.GetBlockValue("port", 8000U));
