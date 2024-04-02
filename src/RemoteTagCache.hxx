@@ -85,9 +85,9 @@ class RemoteTagCache final {
 
 	IntrusiveHashSet<
 		Item, 127,
-		IntrusiveHashSetOperators<std::hash<std::string_view>,
-					  std::equal_to<std::string_view>,
-					  Item::GetUri>,
+		IntrusiveHashSetOperators<Item, Item::GetUri,
+					  std::hash<std::string_view>,
+					  std::equal_to<std::string_view>>,
 		IntrusiveHashSetBaseHookTraits<Item>,
 		IntrusiveHashSetOptions{.constant_time_size = true}> map;
 

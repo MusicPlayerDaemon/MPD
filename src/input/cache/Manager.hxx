@@ -32,9 +32,9 @@ class InputCacheManager {
 	IntrusiveList<InputCacheItem> items_by_time;
 
 	IntrusiveHashSet<InputCacheItem, 127,
-			 IntrusiveHashSetOperators<std::hash<std::string_view>,
-						   std::equal_to<std::string_view>,
-						   ItemGetUri>> items_by_uri;
+			 IntrusiveHashSetOperators<InputCacheItem, ItemGetUri,
+						   std::hash<std::string_view>,
+						   std::equal_to<std::string_view>>> items_by_uri;
 
 public:
 	explicit InputCacheManager(const InputCacheConfig &config) noexcept;

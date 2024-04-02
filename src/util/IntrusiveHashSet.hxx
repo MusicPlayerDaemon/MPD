@@ -8,6 +8,7 @@
 
 #include <algorithm> // for std::all_of()
 #include <array>
+#include <concepts> // for std::regular_invocable
 #include <numeric> // for std::accumulate()
 
 struct IntrusiveHashSetOptions {
@@ -94,8 +95,11 @@ struct IntrusiveHashSetMemberHookTraits {
  * @param GetKey a function object which extracts the "key" part of an
  * item
  */
-template<typename Hash, typename Equal,
-	 typename GetKey=std::identity>
+template<typename T,
+	 std::regular_invocable<const T &> GetKey,
+	 std::regular_invocable<std::invoke_result_t<GetKey, const T &>> Hash,
+	 std::predicate<std::invoke_result_t<GetKey, const T &>,
+			std::invoke_result_t<GetKey, const T &>> Equal>
 struct IntrusiveHashSetOperators {
 	using hasher = Hash;
 	using key_equal = Equal;

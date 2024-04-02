@@ -39,7 +39,8 @@ TEST(IntrusiveHashSet, Basic)
 	IntItem a{1}, b{2}, c{3}, d{4}, e{5}, f{1};
 
 	IntrusiveHashSet<IntItem, 3,
-			 IntrusiveHashSetOperators<IntItem::Hash,
+			 IntrusiveHashSetOperators<IntItem, std::identity,
+						   IntItem::Hash,
 						   IntItem::Equal>> set;
 
 	{
@@ -124,7 +125,8 @@ TEST(IntrusiveHashSet, Multi)
 	IntItem a{1}, b{2}, c{3}, d{4}, e{5}, f{1};
 
 	IntrusiveHashSet<IntItem, 3,
-			 IntrusiveHashSetOperators<IntItem::Hash,
+			 IntrusiveHashSetOperators<IntItem, std::identity,
+						   IntItem::Hash,
 						   IntItem::Equal>> set;
 
 	set.insert(a);
@@ -179,15 +181,15 @@ TEST(IntrusiveHashSet, Tag)
 	TaggedItem one{1, 11}, two{2, 22};
 
 	IntrusiveHashSet<TaggedItem, 3,
-			 IntrusiveHashSetOperators<std::hash<int>,
-						   std::equal_to<int>,
-						   GetA>,
+			 IntrusiveHashSetOperators<TaggedItem, GetA,
+						   std::hash<int>,
+						   std::equal_to<int>>,
 			 IntrusiveHashSetBaseHookTraits<TaggedItem, A>> a;
 
 	IntrusiveHashSet<TaggedItem, 3,
-			 IntrusiveHashSetOperators<std::hash<int>,
-						   std::equal_to<int>,
-						   GetB>,
+			 IntrusiveHashSetOperators<TaggedItem, GetB,
+						   std::hash<int>,
+						   std::equal_to<int>>,
 			 IntrusiveHashSetBaseHookTraits<TaggedItem, B>> b;
 
 	EXPECT_TRUE(a.empty());
