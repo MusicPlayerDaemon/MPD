@@ -8,6 +8,7 @@ test(
     'TestIntrusiveForwardList.cxx',
     'TestIntrusiveHashSet.cxx',
     'TestIntrusiveList.cxx',
+    'TestIntrusiveTreeSet.cxx',
     'TestMimeType.cxx',
     'TestRingBuffer.cxx',
     'TestSplitString.cxx',
