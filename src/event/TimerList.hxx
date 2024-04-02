@@ -6,12 +6,7 @@
 
 #include "Chrono.hxx"
 #include "event/Features.h"
-
-#ifdef NO_BOOST
-#include "util/IntrusiveSortedList.hxx"
-#else
 #include "util/IntrusiveTreeSet.hxx"
-#endif
 
 class FineTimerEvent;
 
@@ -23,20 +18,8 @@ class TimerList final {
 		constexpr Event::TimePoint operator()(const FineTimerEvent &timer) const noexcept;
 	};
 
-#ifdef NO_BOOST
-	struct Compare {
-		constexpr bool operator()(const FineTimerEvent &a,
-					  const FineTimerEvent &b) const noexcept;
-	};
-
-	/* when building without Boost, then this is just a sorted
-	   doubly-linked list - this doesn't scale well, but is good
-	   enough for most programs */
-	IntrusiveSortedList<FineTimerEvent, Compare> timers;
-#else
 	IntrusiveTreeSet<FineTimerEvent,
 			 IntrusiveTreeSetOperators<FineTimerEvent, GetDue>> timers;
-#endif
 
 public:
 	TimerList();

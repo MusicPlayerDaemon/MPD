@@ -11,17 +11,6 @@ TimerList::GetDue::operator()(const FineTimerEvent &timer) const noexcept
 	return timer.due;
 }
 
-#ifdef NO_BOOST
-
-constexpr bool
-TimerList::Compare::operator()(const FineTimerEvent &a,
-			       const FineTimerEvent &b) const noexcept
-{
-	return a.due < b.due;
-}
-
-#endif
-
 TimerList::TimerList() = default;
 
 TimerList::~TimerList() noexcept
@@ -48,11 +37,7 @@ TimerList::Run(const Event::TimePoint now) noexcept
 		if (timeout > timeout.zero())
 			return timeout;
 
-#ifdef NO_BOOST
-		t.Cancel();
-#else
 		timers.pop_front();
-#endif
 
 		t.Run();
 	}

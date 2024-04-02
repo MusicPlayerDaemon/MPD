@@ -7,12 +7,7 @@
 #include "Chrono.hxx"
 #include "event/Features.h"
 #include "util/BindMethod.hxx"
-
-#ifdef NO_BOOST
-#include "util/IntrusiveList.hxx"
-#else
 #include "util/IntrusiveTreeSet.hxx"
-#endif
 
 #include <cassert>
 
@@ -30,16 +25,9 @@ class EventLoop;
  * as thread-safe.
  */
 class FineTimerEvent final :
-#ifdef NO_BOOST
-	AutoUnlinkIntrusiveListHook
-#else
 	public IntrusiveTreeSetHook<IntrusiveHookMode::AUTO_UNLINK>
-#endif
 {
 	friend class TimerList;
-#ifdef NO_BOOST
-	friend struct IntrusiveListBaseHookTraits<FineTimerEvent>;
-#endif
 
 	EventLoop &loop;
 
@@ -105,9 +93,7 @@ public:
 	void ScheduleEarlier(Event::Duration d) noexcept;
 
 	void Cancel() noexcept {
-#ifdef NO_BOOST
 		if (IsPending())
-#endif
 			unlink();
 	}
 
