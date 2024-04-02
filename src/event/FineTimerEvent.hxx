@@ -11,7 +11,7 @@
 #ifdef NO_BOOST
 #include "util/IntrusiveList.hxx"
 #else
-#include <boost/intrusive/set_hook.hpp>
+#include "util/IntrusiveTreeSet.hxx"
 #endif
 
 #include <cassert>
@@ -33,7 +33,7 @@ class FineTimerEvent final :
 #ifdef NO_BOOST
 	AutoUnlinkIntrusiveListHook
 #else
-	public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>
+	public IntrusiveTreeSetHook<IntrusiveHookMode::AUTO_UNLINK>
 #endif
 {
 	friend class TimerList;

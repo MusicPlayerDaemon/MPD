@@ -10,7 +10,7 @@
 #ifdef NO_BOOST
 #include "util/IntrusiveSortedList.hxx"
 #else
-#include <boost/intrusive/set.hpp>
+#include "util/IntrusiveTreeSet.hxx"
 #endif
 
 class FineTimerEvent;
@@ -19,21 +19,23 @@ class FineTimerEvent;
  * A list of #FineTimerEvent instances sorted by due time point.
  */
 class TimerList final {
+	struct GetDue {
+		constexpr Event::TimePoint operator()(const FineTimerEvent &timer) const noexcept;
+	};
+
+#ifdef NO_BOOST
 	struct Compare {
 		constexpr bool operator()(const FineTimerEvent &a,
 					  const FineTimerEvent &b) const noexcept;
 	};
 
-#ifdef NO_BOOST
 	/* when building without Boost, then this is just a sorted
 	   doubly-linked list - this doesn't scale well, but is good
 	   enough for most programs */
 	IntrusiveSortedList<FineTimerEvent, Compare> timers;
 #else
-	boost::intrusive::multiset<FineTimerEvent,
-				   boost::intrusive::base_hook<boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>>>,
-				   boost::intrusive::compare<Compare>,
-				   boost::intrusive::constant_time_size<false>> timers;
+	IntrusiveTreeSet<FineTimerEvent,
+			 IntrusiveTreeSetOperators<FineTimerEvent, GetDue>> timers;
 #endif
 
 public:

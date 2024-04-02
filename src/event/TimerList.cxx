@@ -5,12 +5,22 @@
 #include "TimerList.hxx"
 #include "FineTimerEvent.hxx"
 
+constexpr Event::TimePoint
+TimerList::GetDue::operator()(const FineTimerEvent &timer) const noexcept
+{
+	return timer.due;
+}
+
+#ifdef NO_BOOST
+
 constexpr bool
 TimerList::Compare::operator()(const FineTimerEvent &a,
 			       const FineTimerEvent &b) const noexcept
 {
 	return a.due < b.due;
 }
+
+#endif
 
 TimerList::TimerList() = default;
 
@@ -41,7 +51,7 @@ TimerList::Run(const Event::TimePoint now) noexcept
 #ifdef NO_BOOST
 		t.Cancel();
 #else
-		timers.erase(i);
+		timers.pop_front();
 #endif
 
 		t.Run();
