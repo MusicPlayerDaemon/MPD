@@ -100,7 +100,7 @@ class HttpdClient final
 	 */
 	PagePtr metadata;
 
-	/*
+	/**
 	 * The amount of bytes which were already sent from the metadata.
 	 */
 	size_t metadata_current_position = 0;
