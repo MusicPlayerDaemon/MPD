@@ -50,9 +50,6 @@ HttpdClient::BeginResponse() noexcept
 		httpd.SendHeader(*this);
 }
 
-/**
- * Handle a line of the HTTP request.
- */
 bool
 HttpdClient::HandleLine(const char *line) noexcept
 {
@@ -116,9 +113,6 @@ HttpdClient::HandleLine(const char *line) noexcept
 	}
 }
 
-/**
- * Sends the status line and response headers to the client.
- */
 bool
 HttpdClient::SendResponse() noexcept
 {
