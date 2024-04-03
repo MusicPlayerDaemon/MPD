@@ -118,8 +118,7 @@ private:
 	/**
 	 * The configured password.
 	 */
-	char const *password;
-
+	char const *const password;
 
 private:
 	/**

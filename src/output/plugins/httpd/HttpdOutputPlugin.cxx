@@ -33,7 +33,8 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	 name(block.GetBlockValue("name", "Set name in config")),
 	 genre(block.GetBlockValue("genre", "Set genre in config")),
 	 website(block.GetBlockValue("website", "Set website in config")),
-	 clients_max(block.GetBlockValue("max_clients", 0U))
+	 clients_max(block.GetBlockValue("max_clients", 0U)),
+	 password(block.GetBlockValue("password"))
 {
 	if (const auto *p = block.GetBlockParam("dscp_class"))
 		p->With([this](const char *s){
@@ -43,8 +44,6 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 
 			ServerSocket::SetDscpClass(value);
 		});
-
-	password = block.GetBlockValue("password");
 
 	/* set up bind_to_address */
 

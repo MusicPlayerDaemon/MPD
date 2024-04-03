@@ -8,7 +8,6 @@
 #include "util/AllocatedString.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
-#include "lib/crypto/Base64.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/SpanCast.hxx"
@@ -24,7 +23,6 @@
 #ifdef HAVE_BASE64
 #include "lib/crypto/Base64.hxx"
 #endif
-
 
 HttpdClient::~HttpdClient() noexcept
 {
@@ -115,14 +113,13 @@ HttpdClient::HandleLine(const char *line) noexcept
 			return true;
 		}
 
-
-		#ifdef HAVE_BASE64
+#ifdef HAVE_BASE64
 		if (const char *b64 = StringAfterPrefixIgnoreCase(line, "Authorization: Basic ")) {
 			auto decodedBytes = DecodeBase64(b64);
 			auto [username, pw] = Split(ToStringView(decodedBytes), ':');
 			provided_password = std::string{pw};
 		}
-		#endif
+#endif
 
 		if (StringEqualsCaseASCII(line, "Icy-MetaData: 1", 15) ||
 		    StringEqualsCaseASCII(line, "Icy-MetaData:1", 14)) {
@@ -200,8 +197,7 @@ HttpdClient::HttpdClient(HttpdOutput &_httpd, UniqueSocketDescriptor _fd,
 			 bool _metadata_supported)
 	:BufferedSocket(_fd.Release(), _loop),
 	 httpd(_httpd),
-	 metadata_supported(_metadata_supported),
-	 provided_password{""}
+	 metadata_supported(_metadata_supported)
 {
 }
 
