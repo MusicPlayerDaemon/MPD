@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
+#include "config.h"
 #include "HttpdOutputPlugin.hxx"
 #include "HttpdInternal.hxx"
 #include "HttpdClient.hxx"
@@ -33,8 +34,10 @@ HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	 name(block.GetBlockValue("name", "Set name in config")),
 	 genre(block.GetBlockValue("genre", "Set genre in config")),
 	 website(block.GetBlockValue("website", "Set website in config")),
-	 clients_max(block.GetBlockValue("max_clients", 0U)),
-	 password(block.GetBlockValue("password"))
+#ifdef HAVE_BASE64
+	 password(block.GetBlockValue("password")),
+#endif
+	 clients_max(block.GetBlockValue("max_clients", 0U))
 {
 	if (const auto *p = block.GetBlockParam("dscp_class"))
 		p->With([this](const char *s){

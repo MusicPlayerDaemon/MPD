@@ -4,6 +4,7 @@
 #ifndef MPD_OUTPUT_HTTPD_CLIENT_HXX
 #define MPD_OUTPUT_HTTPD_CLIENT_HXX
 
+#include "config.h"
 #include "Page.hxx"
 #include "event/BufferedSocket.hxx"
 #include "util/IntrusiveList.hxx"
@@ -120,7 +121,9 @@ class HttpdClient final
 	/**
 	 * Provided password (using HTTP basic auth)
 	 */
+#ifdef HAVE_BASE64
 	std::string provided_password;
+#endif
 
 public:
 	/**

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "config.h"
 #include "HttpdClient.hxx"
 #include "output/Interface.hxx"
 #include "output/Timer.hxx"
@@ -118,7 +119,9 @@ private:
 	/**
 	 * The configured password.
 	 */
+#ifdef HAVE_BASE64
 	char const *const password;
+#endif
 
 private:
 	/**

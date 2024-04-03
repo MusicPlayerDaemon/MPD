@@ -11,7 +11,6 @@
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/SpanCast.hxx"
-#include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 #include "Log.hxx"
 
@@ -22,6 +21,7 @@
 
 #ifdef HAVE_BASE64
 #include "lib/crypto/Base64.hxx"
+#include "util/StringCompare.hxx"
 #endif
 
 HttpdClient::~HttpdClient() noexcept
@@ -48,9 +48,11 @@ HttpdClient::BeginResponse() noexcept
 {
 	assert(state != State::RESPONSE);
 
+#ifdef HAVE_BASE64
 	if (!head_method) {
 		should_reject_unauthorized = httpd.password != nullptr && provided_password != httpd.password;
 	}
+#endif
 
 	state = State::RESPONSE;
 	current_page = nullptr;
@@ -151,6 +153,7 @@ HttpdClient::SendResponse() noexcept
 			"Connection: close\r\n"
 			"\r\n"
 			"404 not found";
+#ifdef HAVE_BASE64
 	} else if (should_reject_unauthorized) {
 		allocated = fmt::format(
 			"HTTP/1.1 401 unauthorized\r\n"
@@ -160,6 +163,7 @@ HttpdClient::SendResponse() noexcept
 			"\r\n"
 			"401 unauthorized", httpd.name);
 		response = allocated.c_str();
+#endif
 	} else if (metadata_requested) {
 		allocated =
 			icy_server_metadata_header(httpd.name, httpd.genre,
@@ -442,7 +446,11 @@ HttpdClient::OnSocketInput(void *data, size_t length) noexcept
 		if (!SendResponse())
 			return InputResult::CLOSED;
 
+#ifdef HAVE_BASE64
 		if (head_method || should_reject || should_reject_unauthorized) {
+#else
+		if (head_method || should_reject) {
+#endif
 			LockClose();
 			return InputResult::CLOSED;
 		}
