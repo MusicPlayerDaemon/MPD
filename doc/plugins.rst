@@ -1036,6 +1036,7 @@ It is highly recommended to configure a fixed format, because a stream cannot sw
      - Requires HTTP Basic authentication with set password when set to non-empty string.
        Username is ignored and can contain any printable characters except colon (':').
        Be aware that the password is transmitted over unencrypted connection only base64 encoded, and is therefore visible to anyone listening to your traffic.
+       Requires base64 support.
 
 
 The `name` from the `audio_output` block that uses this output plugin will be reflected as the stream name in the `icy-name` header of the stream.
