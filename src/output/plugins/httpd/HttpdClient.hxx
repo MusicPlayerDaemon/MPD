@@ -93,7 +93,7 @@ class HttpdClient final
 	/**
 	 * The amount of streaming data between each metadata block
 	 */
-	unsigned metaint = 8192; /*TODO: just a std value */
+	static constexpr std::size_t metaint = 8192;
 
 	/**
 	 * The metadata as #Page which is currently being sent to the client.
