@@ -17,6 +17,8 @@
 #include <cassert>
 #include <cstring>
 
+using std::string_view_literals::operator""sv;
+
 HttpdClient::~HttpdClient() noexcept
 {
 	if (IsDefined())
@@ -121,7 +123,7 @@ bool
 HttpdClient::SendResponse() noexcept
 {
 	std::string allocated;
-	const char *response;
+	std::string_view response;
 
 	assert(state == State::RESPONSE);
 
@@ -131,14 +133,14 @@ HttpdClient::SendResponse() noexcept
 			"Content-Type: text/plain\r\n"
 			"Connection: close\r\n"
 			"\r\n"
-			"404 not found";
+			"404 not found"sv;
 	} else if (metadata_requested) {
 		allocated =
 			icy_server_metadata_header(httpd.name, httpd.genre,
 						   httpd.website,
 						   httpd.content_type,
 						   metaint);
-		response = allocated.c_str();
+		response = allocated;
 	} else { /* revert to a normal HTTP request */
 		allocated = fmt::format("HTTP/1.1 200 OK\r\n"
 					"Content-Type: {}\r\n"
@@ -148,10 +150,10 @@ HttpdClient::SendResponse() noexcept
 					"Access-Control-Allow-Origin: *\r\n"
 					"\r\n",
 					httpd.content_type);
-		response = allocated.c_str();
+		response = allocated;
 	}
 
-	ssize_t nbytes = GetSocket().WriteNoWait(AsBytes(std::string_view{response}));
+	ssize_t nbytes = GetSocket().WriteNoWait(AsBytes(response));
 	if (nbytes < 0) [[unlikely]] {
 		const SocketErrorMessage msg;
 		FmtWarning(httpd_output_domain,
