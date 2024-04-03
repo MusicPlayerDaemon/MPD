@@ -10,4 +10,11 @@ PartitionConfig::PartitionConfig(const ConfigData &config)
 	queue.max_length =
 		config.GetPositive(ConfigOption::MAX_PLAYLIST_LENGTH,
 				   QueueConfig::DEFAULT_MAX_LENGTH);
+
+	if (queue.max_length > QueueConfig::MAX_MAX_LENGTH)
+		/* silently clip max_playlist_length to a resonable
+		   limit to avoid out-of-memory during startup (or
+		   worse, an integer overflow because the allocation
+		   size is larger than SIZE_MAX) */
+		queue.max_length = QueueConfig::MAX_MAX_LENGTH;
 }
