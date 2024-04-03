@@ -64,7 +64,14 @@ struct mpd_mpg123_iohandle {
 	InputStream &is;
 };
 
-static mpg123_ssize_t
+static
+#if MPG123_API_VERSION >= 47
+/* this typedef was added to libmpg123 somewhere between 1.26.4 (45)
+   and 1.31.2 (47) */
+mpg123_ssize_t
+#else
+ssize_t
+#endif
 mpd_mpg123_read(void *_iohandle, void *data, size_t size) noexcept
 {
 	auto &iohandle = *reinterpret_cast<mpd_mpg123_iohandle *>(_iohandle);
