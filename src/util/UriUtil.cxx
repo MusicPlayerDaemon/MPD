@@ -90,7 +90,7 @@ uri_remove_auth(const char *uri) noexcept
 std::string
 uri_squash_dot_segments(const char *uri) noexcept
 {
-	std::forward_list<std::string_view> path = SplitString(std::string_view(uri), '/');
+	std::forward_list<std::string_view> path = SplitString(std::string_view(uri), '/', false);
 	path.remove_if([](const std::string_view &seg) { return seg == "."; });
 	path.reverse();
 
