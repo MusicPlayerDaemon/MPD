@@ -3,6 +3,7 @@
 
 #include "Mpg123DecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
+#include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Builder.hxx"
@@ -10,6 +11,8 @@
 #include "tag/MixRampParser.hxx"
 #include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
@@ -54,6 +57,64 @@ mpd_mpg123_open(mpg123_handle *handle, Path path_fs)
 	}
 
 	return true;
+}
+
+struct mpd_mpg123_iohandle {
+	DecoderClient *client;
+	InputStream &is;
+};
+
+static mpg123_ssize_t
+mpd_mpg123_read(void *_iohandle, void *data, size_t size) noexcept
+{
+	auto &iohandle = *reinterpret_cast<mpd_mpg123_iohandle *>(_iohandle);
+
+	try {
+		return decoder_read_much(iohandle.client, iohandle.is, data, size);
+	} catch (...) {
+		LogError(std::current_exception(), "Read failed");
+		return -1;
+	}
+}
+
+static off_t
+mpd_mpg123_lseek(void *_iohandle, off_t offset, int whence) noexcept
+{
+	auto &iohandle = *reinterpret_cast<mpd_mpg123_iohandle *>(_iohandle);
+
+	if (whence != SEEK_SET)
+		return -1;
+
+	try {
+		iohandle.is.LockSeek(offset);
+		return offset;
+	} catch (...) {
+		LogError(std::current_exception(), "Seek failed");
+		return -1;
+	}
+}
+
+/**
+ * Opens an #InputStream with an existing #mpg123_handle.
+ *
+ * Throws on error.
+ *
+ * @param handle a handle which was created before; on error, this
+ * function will not free it
+ */
+static void
+mpd_mpg123_open_stream(mpg123_handle &handle, mpd_mpg123_iohandle &iohandle)
+{
+	if (int error = mpg123_replace_reader_handle(&handle, mpd_mpg123_read, mpd_mpg123_lseek,
+						     nullptr);
+	    error != MPG123_OK)
+		throw FmtRuntimeError("mpg123_replace_reader() failed: %s",
+				      mpg123_plain_strerror(error));
+
+	if (int error = mpg123_open_handle(&handle, &iohandle);
+	    error != MPG123_OK)
+		throw FmtRuntimeError("mpg123_open_handle() failed: %s",
+				      mpg123_plain_strerror(error));
 }
 
 /**
@@ -175,7 +236,7 @@ mpd_mpg123_meta(DecoderClient &client, mpg123_handle *const handle)
 }
 
 static void
-Decode(DecoderClient &client, mpg123_handle &handle)
+Decode(DecoderClient &client, mpg123_handle &handle, const bool seekable)
 {
 	AudioFormat audio_format;
 	if (!GetAudioFormat(handle, audio_format))
@@ -189,7 +250,7 @@ Decode(DecoderClient &client, mpg123_handle &handle)
 		SongTime::FromScale<uint64_t>(num_samples,
 					      audio_format.sample_rate);
 
-	client.Ready(audio_format, true, duration);
+	client.Ready(audio_format, seekable, duration);
 
 	struct mpg123_frameinfo info;
 	if (mpg123_info(&handle, &info) != MPG123_OK) {
@@ -255,6 +316,31 @@ Decode(DecoderClient &client, mpg123_handle &handle)
 }
 
 static void
+mpd_mpg123_stream_decode(DecoderClient &client, InputStream &is)
+{
+	/* open the file */
+
+	int error;
+	mpg123_handle *const handle = mpg123_new(nullptr, &error);
+	if (handle == nullptr) {
+		FmtError(mpg123_domain,
+			 "mpg123_new() failed: {}",
+			 mpg123_plain_strerror(error));
+		return;
+	}
+
+	AtScopeExit(handle) { mpg123_delete(handle); };
+
+	struct mpd_mpg123_iohandle iohandle{
+		.client = &client,
+		.is = is,
+	};
+
+	mpd_mpg123_open_stream(*handle, iohandle);
+	Decode(client, *handle, is.IsSeekable());
+}
+
+static void
 mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 {
 	/* open the file */
@@ -273,7 +359,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 	if (!mpd_mpg123_open(handle, path_fs))
 		return;
 
-	Decode(client, *handle);
+	Decode(client, *handle, true);
 }
 
 static bool
@@ -306,6 +392,29 @@ Scan(mpg123_handle &handle, TagHandler &handler) noexcept
 }
 
 static bool
+mpd_mpg123_scan_stream(InputStream &is, TagHandler &handler)
+{
+	int error;
+	mpg123_handle *const handle = mpg123_new(nullptr, &error);
+	if (handle == nullptr) {
+		FmtError(mpg123_domain,
+			 "mpg123_new() failed: {}",
+			 mpg123_plain_strerror(error));
+		return false;
+	}
+
+	AtScopeExit(handle) { mpg123_delete(handle); };
+
+	struct mpd_mpg123_iohandle iohandle{
+		.client = nullptr,
+		.is = is,
+	};
+
+	mpd_mpg123_open_stream(*handle, iohandle);
+	return Scan(*handle, handler);
+}
+
+static bool
 mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	int error;
@@ -335,6 +444,8 @@ static const char *const mpg123_suffixes[] = {
 };
 
 constexpr DecoderPlugin mpg123_decoder_plugin =
-	DecoderPlugin("mpg123", mpd_mpg123_file_decode, mpd_mpg123_scan_file)
+	DecoderPlugin("mpg123",
+		      mpd_mpg123_stream_decode, mpd_mpg123_scan_stream,
+		      mpd_mpg123_file_decode, mpd_mpg123_scan_file)
 	.WithInit(mpd_mpg123_init, mpd_mpg123_finish)
 	.WithSuffixes(mpg123_suffixes);
