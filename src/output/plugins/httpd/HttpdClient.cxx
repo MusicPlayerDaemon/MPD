@@ -3,19 +3,19 @@
 
 #include "HttpdClient.hxx"
 #include "HttpdInternal.hxx"
-#include "util/ASCII.hxx"
 #include "util/AllocatedString.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/SpanCast.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringSplit.hxx"
 #include "Log.hxx"
 
 #include <fmt/core.h>
 
 #include <cassert>
-#include <cstring>
 
 using std::string_view_literals::operator""sv;
 
@@ -51,36 +51,31 @@ HttpdClient::BeginResponse() noexcept
 }
 
 bool
-HttpdClient::HandleLine(const char *line) noexcept
+HttpdClient::HandleLine(std::string_view line) noexcept
 {
 	assert(state != State::RESPONSE);
 
 	if (state == State::REQUEST) {
-		if (strncmp(line, "HEAD /", 6) == 0) {
-			line += 6;
+		if (SkipPrefix(line, "HEAD /"sv)) {
 			head_method = true;
-		} else if (strncmp(line, "GET /", 5) == 0) {
-			line += 5;
-		} else {
+		} else if (!SkipPrefix(line, "GET /"sv)) {
 			/* only GET is supported */
 			LogWarning(httpd_output_domain,
 				   "malformed request line from client");
 			return false;
 		}
 
+		const auto [uri, rest] = Split(line, ' ');
+
 		/* blacklist some well-known request paths */
-		if ((strncmp(line, "favicon.ico", 11) == 0 &&
-		     (line[11] == '\0' || line[11] == ' ')) ||
-		    (strncmp(line, "robots.txt", 10) == 0 &&
-		     (line[10] == '\0' || line[10] == ' ')) ||
-		    (strncmp(line, "sitemap.xml", 11) == 0 &&
-		     (line[11] == '\0' || line[11] == ' ')) ||
-		    (strncmp(line, ".well-known/", 12) == 0)) {
+		if (uri == "favicon.ico"sv ||
+		    uri == "robots.txt"sv ||
+		    uri == "sitemap.xml"sv ||
+		    uri.starts_with(".well-known/"sv)) {
 			should_reject = true;
 		}
 
-		line = std::strchr(line, ' ');
-		if (line == nullptr || strncmp(line + 1, "HTTP/", 5) != 0) {
+		if (!rest.starts_with("HTTP/"sv)) {
 			/* HTTP/0.9 without request headers */
 
 			if (head_method)
@@ -94,15 +89,15 @@ HttpdClient::HandleLine(const char *line) noexcept
 		state = State::HEADERS;
 		return true;
 	} else {
-		if (*line == 0) {
+		if (line.empty()) {
 			/* empty line: request is finished */
 
 			BeginResponse();
 			return true;
 		}
 
-		if (StringEqualsCaseASCII(line, "Icy-MetaData: 1", 15) ||
-		    StringEqualsCaseASCII(line, "Icy-MetaData:1", 14)) {
+		if (StringIsEqualIgnoreCase(line, "Icy-MetaData: 1"sv) ||
+		    StringIsEqualIgnoreCase(line, "Icy-MetaData:1"sv)) {
 			/* Send icy metadata */
 			metadata_requested = metadata_supported;
 			return true;
@@ -379,7 +374,7 @@ HttpdClient::OnSocketReady(unsigned flags) noexcept
 }
 
 BufferedSocket::InputResult
-HttpdClient::OnSocketInput(std::span<std::byte> src) noexcept
+HttpdClient::OnSocketInput(std::span<std::byte> _src) noexcept
 {
 	if (state == State::RESPONSE) {
 		LogWarning(httpd_output_domain,
@@ -388,18 +383,15 @@ HttpdClient::OnSocketInput(std::span<std::byte> src) noexcept
 		return InputResult::CLOSED;
 	}
 
-	char *line = (char *)src.data();
-	char *newline = (char *)std::memchr(line, '\n', src.size());
-	if (newline == nullptr)
+	const auto src = ToStringView(_src);
+	auto [line, rest] = Split(src, '\n');
+	if (rest.data() == nullptr)
 		return InputResult::MORE;
 
-	ConsumeInput(newline + 1 - line);
+	ConsumeInput(line.size() + 1);
 
-	if (newline > line && newline[-1] == '\r')
-		--newline;
-
-	/* terminate the string at the end of the line */
-	*newline = 0;
+	if (line.ends_with('\r'))
+		line.remove_suffix(1);
 
 	if (!HandleLine(line)) {
 		LockClose();

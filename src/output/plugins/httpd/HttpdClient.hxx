@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_OUTPUT_HTTPD_CLIENT_HXX
-#define MPD_OUTPUT_HTTPD_CLIENT_HXX
+#pragma once
 
 #include "Page.hxx"
 #include "event/BufferedSocket.hxx"
@@ -11,6 +10,7 @@
 #include <cstddef>
 #include <list>
 #include <queue>
+#include <string_view>
 
 class UniqueSocketDescriptor;
 class HttpdOutput;
@@ -143,7 +143,7 @@ public:
 	/**
 	 * Handle a line of the HTTP request.
 	 */
-	bool HandleLine(const char *line) noexcept;
+	bool HandleLine(std::string_view line) noexcept;
 
 	/**
 	 * Switch the client to #State::RESPONSE.
@@ -185,5 +185,3 @@ protected:
 	void OnSocketError(std::exception_ptr ep) noexcept override;
 	void OnSocketClosed() noexcept override;
 };
-
-#endif
