@@ -277,29 +277,18 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 }
 
 static bool
-mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
+Scan(mpg123_handle &handle, TagHandler &handler) noexcept
 {
-	int error;
-	mpg123_handle *const handle = mpg123_new(nullptr, &error);
-	if (handle == nullptr) {
-		FmtError(mpg123_domain,
-			 "mpg123_new() failed: {}",
-			 mpg123_plain_strerror(error));
-		return false;
-	}
-
-	AtScopeExit(handle) { mpg123_delete(handle); };
-
 	AudioFormat audio_format;
+
 	try {
-		if (!mpd_mpg123_open(handle, path_fs) ||
-		    !GetAudioFormat(*handle, audio_format))
+		if (!GetAudioFormat(handle, audio_format))
 			return false;
 	} catch (...) {
 		return false;
 	}
 
-	const off_t num_samples = mpg123_length(handle);
+	const off_t num_samples = mpg123_length(&handle);
 	if (num_samples <= 0) {
 		return false;
 	}
@@ -314,6 +303,30 @@ mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
 
 	handler.OnDuration(duration);
 	return true;
+}
+
+static bool
+mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
+{
+	int error;
+	mpg123_handle *const handle = mpg123_new(nullptr, &error);
+	if (handle == nullptr) {
+		FmtError(mpg123_domain,
+			 "mpg123_new() failed: {}",
+			 mpg123_plain_strerror(error));
+		return false;
+	}
+
+	AtScopeExit(handle) { mpg123_delete(handle); };
+
+	try {
+		if (!mpd_mpg123_open(handle, path_fs))
+			return false;
+	} catch (...) {
+		return false;
+	}
+
+	return Scan(*handle, handler);
 }
 
 static const char *const mpg123_suffixes[] = {
