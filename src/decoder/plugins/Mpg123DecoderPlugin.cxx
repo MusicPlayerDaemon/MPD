@@ -175,27 +175,13 @@ mpd_mpg123_meta(DecoderClient &client, mpg123_handle *const handle)
 }
 
 static void
-mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
+Decode(DecoderClient &client, mpg123_handle &handle)
 {
-	/* open the file */
-
-	int error;
-	mpg123_handle *const handle = mpg123_new(nullptr, &error);
-	if (handle == nullptr) {
-		FmtError(mpg123_domain,
-			 "mpg123_new() failed: {}",
-			 mpg123_plain_strerror(error));
-		return;
-	}
-
-	AtScopeExit(handle) { mpg123_delete(handle); };
-
 	AudioFormat audio_format;
-	if (!mpd_mpg123_open(handle, path_fs) ||
-	    !GetAudioFormat(*handle, audio_format))
+	if (!GetAudioFormat(handle, audio_format))
 		return;
 
-	const off_t num_samples = mpg123_length(handle);
+	const off_t num_samples = mpg123_length(&handle);
 
 	/* tell MPD core we're ready */
 
@@ -206,7 +192,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 	client.Ready(audio_format, true, duration);
 
 	struct mpg123_frameinfo info;
-	if (mpg123_info(handle, &info) != MPG123_OK) {
+	if (mpg123_info(&handle, &info) != MPG123_OK) {
 		info.vbr = MPG123_CBR;
 		info.bitrate = 0;
 	}
@@ -225,14 +211,14 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 	DecoderCommand cmd;
 	do {
 		/* read metadata */
-		mpd_mpg123_meta(client, handle);
+		mpd_mpg123_meta(client, &handle);
 
 		/* decode */
 
 		unsigned char buffer[8192];
 		size_t nbytes;
-		error = mpg123_read(handle, buffer, sizeof(buffer), &nbytes);
-		if (error != MPG123_OK) {
+		if (int error = mpg123_read(&handle, buffer, sizeof(buffer), &nbytes);
+		    error != MPG123_OK) {
 			if (error != MPG123_DONE)
 				FmtWarning(mpg123_domain,
 					   "mpg123_read() failed: {}",
@@ -244,7 +230,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 		if (info.vbr != MPG123_CBR) {
 			/* FIXME: maybe skip, as too expensive? */
 			/* FIXME: maybe, (info.vbr == MPG123_VBR) ? */
-			if (mpg123_info (handle, &info) != MPG123_OK)
+			if (mpg123_info(&handle, &info) != MPG123_OK)
 				info.bitrate = 0;
 		}
 
@@ -255,7 +241,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 
 		if (cmd == DecoderCommand::SEEK) {
 			off_t c = client.GetSeekFrame();
-			c = mpg123_seek(handle, c, SEEK_SET);
+			c = mpg123_seek(&handle, c, SEEK_SET);
 			if (c < 0)
 				client.SeekError();
 			else {
@@ -266,6 +252,28 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);
+}
+
+static void
+mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
+{
+	/* open the file */
+
+	int error;
+	mpg123_handle *const handle = mpg123_new(nullptr, &error);
+	if (handle == nullptr) {
+		FmtError(mpg123_domain,
+			 "mpg123_new() failed: {}",
+			 mpg123_plain_strerror(error));
+		return;
+	}
+
+	AtScopeExit(handle) { mpg123_delete(handle); };
+
+	if (!mpd_mpg123_open(handle, path_fs))
+		return;
+
+	Decode(client, *handle);
 }
 
 static bool
