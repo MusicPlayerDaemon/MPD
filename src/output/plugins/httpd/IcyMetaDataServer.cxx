@@ -12,7 +12,7 @@
 std::string
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
-			   const char *content_type, int metaint) noexcept
+			   const char *content_type, std::size_t metaint) noexcept
 {
 	return fmt::format("HTTP/1.1 200 OK\r\n"
 			   "icy-notice1:<BR>This stream requires an audio player!<BR>\r\n" /* TODO */
