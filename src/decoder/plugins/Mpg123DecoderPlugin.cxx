@@ -39,13 +39,10 @@ mpd_mpg123_finish() noexcept
  *
  * @param handle a handle which was created before; on error, this
  * function will not free it
- * @param audio_format this parameter is filled after successful
- * return
  * @return true on success
  */
 static bool
-mpd_mpg123_open(mpg123_handle *handle, Path path_fs,
-		AudioFormat &audio_format)
+mpd_mpg123_open(mpg123_handle *handle, Path path_fs)
 {
 	auto np = NarrowPath(path_fs);
 	int error = mpg123_open(handle, np);
@@ -56,12 +53,25 @@ mpd_mpg123_open(mpg123_handle *handle, Path path_fs,
 		return false;
 	}
 
-	/* obtain the audio format */
+	return true;
+}
 
+/**
+ * Convert libmpg123's format to an #AudioFormat instance.
+ *
+ * @param handle a handle which was created before; on error, this
+ * function will not free it
+ * @param audio_format this parameter is filled after successful
+ * return
+ * @return true on success
+ */
+static bool
+GetAudioFormat(mpg123_handle &handle, AudioFormat &audio_format)
+{
 	long rate;
 	int channels, encoding;
-	error = mpg123_getformat(handle, &rate, &channels, &encoding);
-	if (error != MPG123_OK) {
+	if (const int error = mpg123_getformat(&handle, &rate, &channels, &encoding);
+	    error != MPG123_OK) {
 		FmtWarning(mpg123_domain,
 			   "mpg123_getformat() failed: {}",
 			   mpg123_plain_strerror(error));
@@ -181,7 +191,8 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 	AtScopeExit(handle) { mpg123_delete(handle); };
 
 	AudioFormat audio_format;
-	if (!mpd_mpg123_open(handle, path_fs, audio_format))
+	if (!mpd_mpg123_open(handle, path_fs) ||
+	    !GetAudioFormat(*handle, audio_format))
 		return;
 
 	const off_t num_samples = mpg123_length(handle);
@@ -273,9 +284,9 @@ mpd_mpg123_scan_file(Path path_fs, TagHandler &handler) noexcept
 
 	AudioFormat audio_format;
 	try {
-		if (!mpd_mpg123_open(handle, path_fs, audio_format)) {
+		if (!mpd_mpg123_open(handle, path_fs) ||
+		    !GetAudioFormat(*handle, audio_format))
 			return false;
-		}
 	} catch (...) {
 		return false;
 	}
