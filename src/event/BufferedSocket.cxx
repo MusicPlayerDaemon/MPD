@@ -56,7 +56,7 @@ BufferedSocket::ResumeInput() noexcept
 			return true;
 		}
 
-		const auto result = OnSocketInput(buffer.data(), buffer.size());
+		const auto result = OnSocketInput(buffer);
 		switch (result) {
 		case InputResult::MORE:
 			if (input.IsFull()) {

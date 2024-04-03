@@ -10,13 +10,13 @@
 #include <cstring>
 
 BufferedSocket::InputResult
-Client::OnSocketInput(void *data, size_t length) noexcept
+Client::OnSocketInput(std::span<std::byte> src) noexcept
 {
 	if (background_command)
 		return InputResult::PAUSE;
 
-	char *p = (char *)data;
-	char *newline = (char *)std::memchr(p, '\n', length);
+	char *p = (char *)src.data();
+	char *newline = (char *)std::memchr(p, '\n', src.size());
 	if (newline == nullptr)
 		return InputResult::MORE;
 

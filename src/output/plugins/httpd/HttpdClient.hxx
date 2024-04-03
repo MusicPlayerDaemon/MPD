@@ -181,7 +181,7 @@ protected:
 	/* virtual methods from class BufferedSocket */
 	void OnSocketReady(unsigned flags) noexcept override;
 
-	InputResult OnSocketInput(void *data, size_t length) noexcept override;
+	InputResult OnSocketInput(std::span<std::byte> src) noexcept override;
 	void OnSocketError(std::exception_ptr ep) noexcept override;
 	void OnSocketClosed() noexcept override;
 };

@@ -109,11 +109,11 @@ protected:
 	/**
 	 * Data has been received on the socket.
 	 *
-	 * @param data a pointer to the beginning of the buffer; the
+	 * @param src the buffer containing the data; the
 	 * buffer may be modified by the method while it processes the
 	 * data
 	 */
-	virtual InputResult OnSocketInput(void *data, size_t length) noexcept = 0;
+	virtual InputResult OnSocketInput(std::span<std::byte> src) noexcept = 0;
 
 	virtual void OnSocketError(std::exception_ptr ep) noexcept = 0;
 	virtual void OnSocketClosed() noexcept = 0;

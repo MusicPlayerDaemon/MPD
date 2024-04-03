@@ -385,7 +385,7 @@ HttpdClient::OnSocketReady(unsigned flags) noexcept
 }
 
 BufferedSocket::InputResult
-HttpdClient::OnSocketInput(void *data, size_t length) noexcept
+HttpdClient::OnSocketInput(std::span<std::byte> src) noexcept
 {
 	if (state == State::RESPONSE) {
 		LogWarning(httpd_output_domain,
@@ -394,8 +394,8 @@ HttpdClient::OnSocketInput(void *data, size_t length) noexcept
 		return InputResult::CLOSED;
 	}
 
-	char *line = (char *)data;
-	char *newline = (char *)std::memchr(line, '\n', length);
+	char *line = (char *)src.data();
+	char *newline = (char *)std::memchr(line, '\n', src.size());
 	if (newline == nullptr)
 		return InputResult::MORE;
 
