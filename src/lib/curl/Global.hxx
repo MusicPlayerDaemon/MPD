@@ -17,7 +17,6 @@ class CurlGlobal final {
 	CurlMulti multi;
 
 	DeferEvent defer_read_info;
-
 	CoarseTimerEvent timeout_event;
 
 public:
