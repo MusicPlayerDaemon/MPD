@@ -32,7 +32,7 @@ Resolve(const char *node, const char *service,
 #else
 		const char *msg = gai_strerror(error);
 #endif
-		throw FmtRuntimeError("Failed to resolve '{}':'{}': {}",
+		throw FmtRuntimeError("Failed to resolve {:?}:{:?}: {}",
 				      node == nullptr ? "" : node,
 				      service == nullptr ? "" : service,
 				      msg);

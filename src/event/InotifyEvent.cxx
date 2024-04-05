@@ -46,7 +46,7 @@ InotifyEvent::AddWatch(const char *pathname, uint32_t mask)
 {
 	int wd = TryAddWatch(pathname, mask);
 	if (wd < 0)
-		throw FmtErrno("inotify_add_watch('{}') failed", pathname);
+		throw FmtErrno("inotify_add_watch({:?}) failed", pathname);
 
 	return wd;
 }
