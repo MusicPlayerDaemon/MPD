@@ -24,10 +24,12 @@ import androidx.annotation.OptIn;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.MediaSession;
 
+import org.jetbrains.annotations.NotNull;
 import org.musicpd.data.LoggingRepository;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -35,8 +37,10 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class Main extends Service implements Runnable {
+
 	private static final String TAG = "Main";
 	private static final String WAKELOCK_TAG = "mpd:wakelockmain";
+
 	private static final int MAIN_STATUS_ERROR = -1;
 	private static final int MAIN_STATUS_STOPPED = 0;
 	private static final int MAIN_STATUS_STARTED = 1;
@@ -56,6 +60,9 @@ public class Main extends Service implements Runnable {
 
 	@Inject
 	LoggingRepository logging;
+
+	@NotNull
+	public static final String SHUTDOWN_ACTION = "org.musicpd.action.ShutdownMPD";
 
 	static class MainStub extends IMain.Stub {
 		private Main mService;
@@ -126,9 +133,13 @@ public class Main extends Service implements Runnable {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		start();
-		if (intent != null && intent.getBooleanExtra("wakelock", false))
-			setWakelockEnabled(true);
+		if (Objects.equals(intent.getAction(), SHUTDOWN_ACTION)) {
+			stop();
+		} else {
+			start();
+			if (intent.getBooleanExtra("wakelock", false))
+				setWakelockEnabled(true);
+		}
 		return START_STICKY;
 	}
 
@@ -318,5 +329,10 @@ public class Main extends Service implements Runnable {
 			context.startForegroundService(intent);
 		else
 			context.startService(intent);
+	}
+
+	public static void stopService(Context context) {
+		Intent intent = new Intent(context, Main.class);
+		context.stopService(intent);
 	}
 }

@@ -53,6 +53,16 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".AutomationReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.musicpd.action.StartService" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="org.musicpd.action.StopService" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".Main" />
     </application>
