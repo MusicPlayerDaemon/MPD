@@ -1500,7 +1500,7 @@ the database for songs).
     Searches for stickers with the given value.
 
     Other supported operators are:
-    "``<``", "``>``" for strings and "``eq``", "``lt``", "``gt``" to cast the value to an integer.
+    "``<``", "``>``", "``contains``", "``starts_with``" for strings and "``eq``", "``lt``", "``gt``" to cast the value to an integer.
 
 Examples:
 

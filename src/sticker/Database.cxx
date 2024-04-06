@@ -28,6 +28,9 @@ enum sticker_sql_find {
 	STICKER_SQL_FIND_LT_INT,
 	STICKER_SQL_FIND_GT_INT,
 
+	STICKER_SQL_FIND_CONTAINS,
+	STICKER_SQL_FIND_STARTS_WITH,
+
 	STICKER_SQL_FIND_COUNT
 };
 
@@ -68,6 +71,12 @@ static constexpr auto sticker_sql_find = std::array {
 
 	//[STICKER_SQL_FIND_GT_INT] =
 	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND CAST(value AS INT)>?",
+
+	//[STICKER_SQL_FIND_CONTAINS] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value LIKE ('%' || ? || '%')",
+
+	//[STICKER_SQL_FIND_STARTS_WITH] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value LIKE (? || '%')",
 };
 
 static constexpr auto sticker_sql = std::array {
@@ -389,6 +398,20 @@ StickerDatabase::BindFind(const char *type, const char *base_uri,
 	case StickerOperator::GREATER_THAN_INT:
 		sql_str = fmt::format("{} {} {}",
 			sticker_sql_find[STICKER_SQL_FIND_GT_INT], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name, value);
+		return sql;
+
+	case StickerOperator::CONTAINS:
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND_CONTAINS], order_by, offset);
+		sql = Prepare(db, sql_str.c_str());
+		BindAll(sql, type, base_uri, name, value);
+		return sql;
+
+	case StickerOperator::STARTS_WITH:
+		sql_str = fmt::format("{} {} {}",
+			sticker_sql_find[STICKER_SQL_FIND_STARTS_WITH], order_by, offset);
 		sql = Prepare(db, sql_str.c_str());
 		BindAll(sql, type, base_uri, name, value);
 		return sql;
