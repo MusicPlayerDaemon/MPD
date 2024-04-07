@@ -69,7 +69,7 @@ fun MPDApp(
                 StatusScreen(settingsViewModel)
             }
             composable(NavigationItem.Logs.route) {
-                LogView(settingsViewModel.getLogs().collectAsStateWithLifecycle())
+                LogView(settingsViewModel.getLogs().collectAsStateWithLifecycle().value)
             }
             composable(NavigationItem.Settings.route) {
                 MPDSettings(settingsViewModel)
