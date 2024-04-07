@@ -692,10 +692,10 @@ ffmpeg_protocols() noexcept
 	return protocols;
 }
 
-static std::set<std::string, std::less<>>
+static DecoderPlugin::SuffixSet
 ffmpeg_suffixes() noexcept
 {
-	std::set<std::string, std::less<>> suffixes;
+	DecoderPlugin::SuffixSet suffixes;
 
 	void *demuxer_opaque = nullptr;
 	while (const auto input_format = av_demuxer_iterate(&demuxer_opaque)) {

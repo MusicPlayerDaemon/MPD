@@ -4,6 +4,8 @@
 #ifndef MPD_DECODER_PLUGIN_HXX
 #define MPD_DECODER_PLUGIN_HXX
 
+#include "util/StringUtil.hxx"
+
 #include <forward_list>  // IWYU pragma: export
 #include <set>
 #include <string>
@@ -17,6 +19,8 @@ class DecoderClient;
 class DetachedSong;
 
 struct DecoderPlugin {
+	using SuffixSet = std::set<std::string, IgnoreCaseComparator>;
+
 	const char *name;
 
 	/**
@@ -40,7 +44,7 @@ struct DecoderPlugin {
 	 * instead of #suffixes if the supported suffixes can only be
 	 * determined at runtime.
 	 */
-	std::set<std::string, std::less<>> (*suffixes_function)() noexcept = nullptr;
+	SuffixSet (*suffixes_function)() noexcept = nullptr;
 
 	/**
 	 * Return a set of supported protocols.
@@ -159,7 +163,7 @@ struct DecoderPlugin {
 		return copy;
 	}
 
-	constexpr auto WithSuffixes(std::set<std::string, std::less<>> (*_suffixes)() noexcept) const noexcept {
+	constexpr auto WithSuffixes(SuffixSet (*_suffixes)() noexcept) const noexcept {
 		auto copy = *this;
 		copy.suffixes_function = _suffixes;
 		return copy;

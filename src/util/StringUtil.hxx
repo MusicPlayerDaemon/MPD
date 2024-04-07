@@ -4,6 +4,7 @@
 #ifndef STRING_UTIL_HXX
 #define STRING_UTIL_HXX
 
+#include <cctype>
 #include <cstddef>
 #include <string_view>
 
@@ -27,5 +28,23 @@ StringArrayContainsCase(const char *const*haystack,
  */
 void
 ToUpperASCII(char *dest, const char *src, size_t size) noexcept;
+
+/**
+ * Comparator that does case-insensitive comparisons.
+ * Used for comparing suffixes/extensions so that
+ * e.g. .mp3 and .MP3 are treated the same.
+*/
+struct IgnoreCaseComparator {
+	using is_transparent = void;
+
+	bool operator()(std::string_view a, std::string_view b) const {
+		return std::lexicographical_compare(a.begin(), a.end(),
+			b.begin(), b.end(),
+			[](char left, char right) {
+				return std::tolower(left) < std::tolower(right);
+			}
+		);
+	}
+};
 
 #endif
