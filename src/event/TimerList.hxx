@@ -4,11 +4,22 @@
 
 #pragma once
 
+#include <compare>
+
 #include "Chrono.hxx"
 #include "event/Features.h"
 #include "util/IntrusiveTreeSet.hxx"
 
 class FineTimerEvent;
+
+struct custom_compare {
+  auto operator()(const std::chrono::steady_clock::time_point& lhs,
+                  const std::chrono::steady_clock::time_point& rhs) const {
+    return lhs < rhs ? std::strong_ordering::less
+           : lhs == rhs ? std::strong_ordering::equal
+                        : std::strong_ordering::greater;
+  }
+};
 
 /**
  * A list of #FineTimerEvent instances sorted by due time point.
@@ -19,7 +30,7 @@ class TimerList final {
 	};
 
 	IntrusiveTreeSet<FineTimerEvent,
-			 IntrusiveTreeSetOperators<FineTimerEvent, GetDue>> timers;
+			 IntrusiveTreeSetOperators<FineTimerEvent, GetDue, custom_compare>> timers;
 
 public:
 	TimerList();
