@@ -66,6 +66,9 @@ class StickerDatabase {
 		  SQL_FIND_LT_INT,
 		  SQL_FIND_GT_INT,
 
+		  SQL_FIND_CONTAINS,
+		  SQL_FIND_STARTS_WITH,
+
 		  SQL_FIND_COUNT
 	};
 

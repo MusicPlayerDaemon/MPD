@@ -46,6 +46,18 @@ enum class StickerOperator {
 	 * integer value bigger than the specified one.
 	 */
 	GREATER_THAN_INT,
+
+	/**
+	 * Matches if a sticker with the specified name exists and value
+	 * contains given string.
+	 */
+	CONTAINS,
+
+	/**
+	 * Matches if a sticker with the specified name exits and value
+	 * starts with given string.
+	 */
+	STARTS_WITH,
 };
 
 #endif

@@ -439,6 +439,10 @@ handle_sticker(Client &client, Request args, Response &r)
 				op = StickerOperator::LESS_THAN_INT;
 			else if (StringIsEqual(op_s, "gt"))
 				op = StickerOperator::GREATER_THAN_INT;
+			else if (StringIsEqual(op_s, "contains"))
+				op = StickerOperator::CONTAINS;
+			else if (StringIsEqual(op_s, "starts_with"))
+				op = StickerOperator::STARTS_WITH;
 			else {
 				r.FmtError(ACK_ERROR_ARG, "bad operator \"{}\"", op_s);
 				return CommandResult::ERROR;
