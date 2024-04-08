@@ -27,7 +27,7 @@ public class Receiver extends BroadcastReceiver {
 				final boolean wakelock =
 					Preferences.getBoolean(context,
 									Preferences.KEY_WAKELOCK, false);
-				Main.start(context, wakelock);
+				Main.startService(context, wakelock);
 			}
 		}
 	}

@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun connectClient() {
-        val client = Main.Client(this, object : Main.Client.Callback {
+        val client = MainServiceClient(this, object : MainServiceClient.Callback {
             override fun onStopped() {
                 settingsViewModel.updateStatus("", false)
             }
