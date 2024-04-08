@@ -89,15 +89,21 @@ ToStringView(std::span<const std::byte> s) noexcept
 	return ToStringView(FromBytesStrict<const char>(s));
 }
 
-constexpr std::string_view
-ToStringView(std::span<std::byte> s) noexcept
-{
-	return ToStringView(FromBytesStrict<const char>(s));
-}
-
 template<typename T>
 constexpr std::basic_string_view<std::remove_const_t<T>>
 ToStringView(std::span<T> s) noexcept
 {
 	return {s.data(), s.size()};
+}
+
+/* this overload matches std::span<std::byte> (without "const") and is
+   written that way to avoid ambiguities when passing an object that
+   has cast operators for both std::span<std::byte> and
+   std::span<const std::byte> */
+template<typename T>
+constexpr std::string_view
+ToStringView(std::span<T> s) noexcept
+	requires(std::is_same_v<std::remove_const_t<T>, std::byte>)
+{
+	return ToStringView(FromBytesStrict<const char>(s));
 }
