@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cstdlib> // for std::rand()
+#include <deque>
 #include <string>
 
 namespace {
@@ -191,4 +193,64 @@ TEST(IntrusiveTreeSet, RandomOrder)
 			EXPECT_EQ(i.value, expected++);
 		}
 	}
+}
+
+TEST(IntrusiveTreeSet, LargeRandom)
+{
+	std::deque<std::unique_ptr<IntItem>> items;
+	IntrusiveTreeSet<IntItem,
+			 IntrusiveTreeSetOperators<IntItem, IntItem::GetKey>> set;
+
+	std::srand(42);
+	for (unsigned i = 0; i < 1024; ++i) {
+		items.emplace_back(std::make_unique<IntItem>(std::rand()));
+		set.insert(*items.back());
+
+#ifndef NDEBUG
+		set.Check();
+#endif
+	}
+
+	std::sort(items.begin(), items.end(), [](const auto &a, const auto &b){
+		return a->value < b->value;
+	});
+
+	std::size_t idx = 0;
+
+	for (const auto &i : set) {
+		EXPECT_EQ(i.value, items[idx++]->value);
+	}
+
+	while (!set.empty()) {
+		EXPECT_FALSE(items.empty());
+		EXPECT_TRUE(items.front()->is_linked());
+		EXPECT_EQ(items.front()->value, set.front().value);
+
+		// erase the front element
+		set.pop_front();
+		EXPECT_FALSE(items.front()->is_linked());
+		items.pop_front();
+
+#ifndef NDEBUG
+		set.Check();
+#endif
+
+		// erase a random element
+		const auto r = std::next(items.begin(), std::rand() % items.size());
+		EXPECT_TRUE((*r)->is_linked());
+		set.erase(set.iterator_to(**r));
+		EXPECT_FALSE((*r)->is_linked());
+		items.erase(r);
+
+#ifndef NDEBUG
+		set.Check();
+#endif
+
+		idx = 0;
+		for (const auto &i : set) {
+			EXPECT_EQ(i.value, items[idx++]->value);
+		}
+	}
+
+	EXPECT_TRUE(items.empty());
 }
