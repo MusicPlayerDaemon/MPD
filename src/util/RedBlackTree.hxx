@@ -289,6 +289,7 @@ public:
 				assert(successor.parent != this);
 
 				successor.parent->SetChild(Direction::LEFT, *this);
+				successor.SetChild(Direction::RIGHT, &right);
 			}
 
 			p.SetChild(direction_in_parent, successor);
