@@ -275,6 +275,8 @@ public:
 			auto &p = *parent;
 			const auto direction_in_parent = p.GetChildDirection(*this);
 
+			std::swap(color, successor.color);
+
 			successor.SetChild(Direction::LEFT, GetLeft());
 			SetChild(Direction::LEFT, nullptr);
 			SetChild(Direction::RIGHT, successor.GetRight());
