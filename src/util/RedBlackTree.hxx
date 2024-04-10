@@ -173,6 +173,36 @@ struct RedBlackTreeNode {
 		return GetLeftMost(this);
 	}
 
+#ifndef NDEBUG
+	/**
+	 * Determine the "black height" (the number of black nodes in
+	 * any path from the root to the leaves).  This is for
+	 * debugging only.  It walks the whole tree and aborts if the
+	 * black height is not consistent.
+	 */
+	static unsigned BlackHeight(const RedBlackTreeNode *node) noexcept {
+		if (node == nullptr)
+			/* leaf nodes (NIL / nullptr) count as
+			   black */
+			return 1;
+
+		assert(node->parent != nullptr);
+		assert(node->color != Color::HEAD);
+		assert(node->color != Color::RED || node->parent->color != Color::RED);
+
+		assert(node->children[0] == nullptr || node->children[0]->parent == node);
+		assert(node->children[1] == nullptr || node->children[1]->parent == node);
+
+		const unsigned left_height = BlackHeight(node->children[0]);
+		const unsigned right_height = BlackHeight(node->children[1]);
+
+		/* the black height must be equal in all paths */
+		assert(left_height == right_height);
+
+		return left_height + (node->color == Color::BLACK);
+	}
+#endif
+
 private:
 	[[nodiscard]]
 	constexpr static RedBlackTreeNode *GetLeftHandedParent(RedBlackTreeNode *node) noexcept {

@@ -176,6 +176,16 @@ public:
 	[[nodiscard]]
 	IntrusiveTreeSet() noexcept = default;
 
+#ifndef NDEBUG
+	/**
+	 * For debugging only: check the integrity of the red-black
+	 * tree.
+	 */
+	void Check() noexcept {
+		RedBlackTreeNode::BlackHeight(GetRoot());
+	}
+#endif
+
 	[[nodiscard]]
 	constexpr bool empty() const noexcept {
 		return GetRoot() == nullptr;

@@ -182,6 +182,10 @@ TEST(IntrusiveTreeSet, RandomOrder)
 		set.pop_front();
 		EXPECT_FALSE(items[remove].is_linked());
 
+#ifndef NDEBUG
+		set.Check();
+#endif
+
 		expected = remove + 1;
 		for (const auto &i : set) {
 			EXPECT_EQ(i.value, expected++);
