@@ -686,6 +686,11 @@ On songs without ReplayGain tags, the setting
 configured, then no ReplayGain is applied to such songs, and they will
 appear too loud.
 
+The setting ``replaygain_limit`` enables or disables ReplayGain
+limiting.  When enabled (the default), MPD will use the peak from the
+ReplayGain tags to minimize clipping; disabling it will allow clipping
+of some quiet tracks.
+
 ReplayGain is usually implemented with a software volume filter (which
 prevents `Bit-perfect playback`_).  To use a hardware mixer, set
 ``replay_gain_handler`` to ``mixer`` in the ``audio_output`` section

@@ -382,16 +382,6 @@ input {
 #
 #replaygain			"album"
 #
-# This setting enables or disables ReplayGain limiting.
-# MPD calculates actual amplification based on the ReplayGain tags
-# and replaygain_preamp / replaygain_missing_preamp setting.
-# If replaygain_limit is enabled, MPD will use the peak from the
-# ReplayGain tags to minimize clipping.  If replaygain_limit is
-# disabled, MPD will allow clipping of some quiet tracks.
-# By default, this setting is enabled.
-#
-#replaygain_limit		"yes"
-#
 ###############################################################################
 
 # Character Encoding ##########################################################
