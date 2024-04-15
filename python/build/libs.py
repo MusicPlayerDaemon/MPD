@@ -342,6 +342,7 @@ ffmpeg = FfmpegProject(
         '--disable-decoder=kgv1',
         '--disable-decoder=kmvc',
         '--disable-decoder=lagarith',
+        '--disable-decoder=lead',
         '--disable-decoder=loco',
         '--disable-decoder=lscr',
         '--disable-decoder=m101',
