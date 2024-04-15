@@ -784,11 +784,6 @@ Player::ProcessCommand(std::unique_lock<Mutex> &lock) noexcept
 
 		queued = true;
 		pc.CommandFinished();
-
-		if (!decoder_starting && dc.IsIdle())
-			StartDecoder(lock, std::make_shared<MusicPipe>(),
-				     false);
-
 		break;
 
 	case PlayerCommand::PAUSE:
