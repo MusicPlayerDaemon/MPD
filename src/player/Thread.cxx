@@ -367,6 +367,7 @@ Player::StartDecoder(std::unique_lock<Mutex> &lock,
 		     std::shared_ptr<MusicPipe> _pipe,
 		     bool initial_seek_essential) noexcept
 {
+	assert(!decoder_starting);
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
 
