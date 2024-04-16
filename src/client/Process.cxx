@@ -22,7 +22,7 @@ Client::ProcessCommandList(bool list_ok,
 	for (auto &&i : list) {
 		char *cmd = &*i.begin();
 
-		FmtDebug(client_domain, "process command \"{}\"", cmd);
+		FmtDebug(client_domain, "process command {:?}", cmd);
 		auto ret = command_process(*this, n++, cmd);
 		FmtDebug(client_domain, "command returned {}", unsigned(ret));
 		if (IsExpired())
@@ -46,7 +46,7 @@ Client::ProcessLine(char *line) noexcept
 		   letter; this could be a badly routed HTTP
 		   request */
 		FmtWarning(client_domain,
-			   "[{}] malformed command \"{}\"",
+			   "[{}] malformed command {:?}",
 			   num, line);
 		return CommandResult::CLOSE;
 	}
@@ -67,7 +67,7 @@ Client::ProcessLine(char *line) noexcept
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
 		FmtWarning(client_domain,
-			   "[{}] command \"{}\" during idle",
+			   "[{}] command {:?} during idle",
 			   num, line);
 		return CommandResult::CLOSE;
 	}
@@ -116,7 +116,7 @@ Client::ProcessLine(char *line) noexcept
 			const unsigned id = num;
 
 			FmtDebug(client_domain,
-				 "[{}] process command \"{}\"",
+				 "[{}] process command {:?}",
 				 id, line);
 			auto ret = command_process(*this, 0, line);
 			FmtDebug(client_domain,

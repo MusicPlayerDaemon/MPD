@@ -261,7 +261,7 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 	path = std::move(new_path);
 	file = new_file;
 
-	FmtDebug(recorder_domain, "Recording to \"{}\"", path);
+	FmtDebug(recorder_domain, "Recording to {:?}", path);
 }
 
 void

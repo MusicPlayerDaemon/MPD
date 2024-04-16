@@ -22,7 +22,7 @@ GetBufferChunks(const ConfigData &config)
 		buffer_size = param->With([](const char *s){
 			size_t result = ParseSize(s, KILOBYTE);
 			if (result <= 0)
-				throw FmtRuntimeError("buffer size \"{}\" is not a "
+				throw FmtRuntimeError("buffer size {:?} is not a "
 						      "positive integer", s);
 
 			if (result < MIN_BUFFER_SIZE) {
@@ -37,7 +37,7 @@ GetBufferChunks(const ConfigData &config)
 
 	unsigned buffer_chunks = buffer_size / CHUNK_SIZE;
 	if (buffer_chunks >= 1 << 15)
-		throw FmtRuntimeError("buffer size \"{}\" is too big",
+		throw FmtRuntimeError("buffer size {:?} is too big",
 				      buffer_size);
 
 	return buffer_chunks;

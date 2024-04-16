@@ -481,7 +481,7 @@ FfmpegDecode(DecoderClient &client, InputStream *input,
 	const AVCodecDescriptor *codec_descriptor =
 		avcodec_descriptor_get(codec_params.codec_id);
 	if (codec_descriptor != nullptr)
-		FmtDebug(ffmpeg_domain, "codec '{}'",
+		FmtDebug(ffmpeg_domain, "codec {:?}",
 			 codec_descriptor->name);
 
 	const AVCodec *codec = avcodec_find_decoder(codec_params.codec_id);
@@ -590,10 +590,10 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 
 	const auto *input_format = format_context->iformat;
 	if (input_format->long_name == nullptr)
-		FmtDebug(ffmpeg_domain, "detected input format '{}'",
+		FmtDebug(ffmpeg_domain, "detected input format {:?}",
 			 input_format->name);
 	else
-		FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
+		FmtDebug(ffmpeg_domain, "detected input format {:?} ({:?})",
 			 input_format->name, input_format->long_name);
 
 	FfmpegDecode(client, &input, *format_context);
@@ -665,10 +665,10 @@ ffmpeg_uri_decode(DecoderClient &client, const char *uri)
 
 	const auto *input_format = format_context->iformat;
 	if (input_format->long_name == nullptr)
-		FmtDebug(ffmpeg_domain, "detected input format '{}'",
+		FmtDebug(ffmpeg_domain, "detected input format {:?}",
 			 input_format->name);
 	else
-		FmtDebug(ffmpeg_domain, "detected input format '{}' ({})",
+		FmtDebug(ffmpeg_domain, "detected input format {:?} ({:?})",
 			 input_format->name, input_format->long_name);
 
 	FfmpegDecode(client, nullptr, *format_context);

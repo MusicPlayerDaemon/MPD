@@ -145,10 +145,10 @@ decoder_plugin_init_all(const ConfigData &config)
 				decoder_plugins_enabled[i] = true;
 		} catch (const PluginUnavailable &e) {
 			FmtError(decoder_domain,
-				 "Decoder plugin '{}' is unavailable: {}",
+				 "Decoder plugin {:?} is unavailable: {}",
 				 plugin.name, std::current_exception());
 		} catch (...) {
-			std::throw_with_nested(FmtRuntimeError("Failed to initialize decoder plugin '{}'",
+			std::throw_with_nested(FmtRuntimeError("Failed to initialize decoder plugin {:?}",
 							       plugin.name));
 		}
 	}

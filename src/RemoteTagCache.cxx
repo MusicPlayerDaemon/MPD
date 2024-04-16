@@ -47,7 +47,7 @@ RemoteTagCache::Lookup(const std::string &uri) noexcept
 			item->scanner->Start();
 		} catch (...) {
 			FmtError(remote_tag_cache_domain,
-				 "Failed to scan tags of '{}': {}",
+				 "Failed to scan tags of {:?}: {}",
 				 uri, std::current_exception());
 
 			item->scanner.reset();
@@ -113,7 +113,7 @@ void
 RemoteTagCache::Item::OnRemoteTagError(std::exception_ptr e) noexcept
 {
 	FmtError(remote_tag_cache_domain,
-		 "Failed to scan tags of '{}': {}", uri, e);
+		 "Failed to scan tags of {:?}: {}", uri, e);
 
 	scanner.reset();
 

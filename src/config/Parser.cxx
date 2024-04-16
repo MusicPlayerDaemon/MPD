@@ -20,7 +20,7 @@ ParseBool(const char *value)
 	if (StringArrayContainsCase(f, value))
 		return false;
 
-	throw FmtRuntimeError(R"(Not a valid boolean ("yes" or "no"): "{}")", value);
+	throw FmtRuntimeError(R"(Not a valid boolean ("yes" or "no"): {:?})", value);
 }
 
 long

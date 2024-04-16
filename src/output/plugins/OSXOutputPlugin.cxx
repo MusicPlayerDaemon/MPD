@@ -260,7 +260,7 @@ osx_output_parse_channel_map(const char *device_name,
 			continue;
 		}
 
-		throw FmtRuntimeError("{}: invalid character '{}' in channel map",
+		throw FmtRuntimeError("{}: invalid character {:?} in channel map",
 				      device_name, *channel_map_str);
 	}
 
@@ -567,7 +567,7 @@ FindAudioDeviceByName(const char *name)
 			return id;
 	}
 
-	throw FmtRuntimeError("Found no audio device names '{}'", name);
+	throw FmtRuntimeError("Found no audio device names {:?}", name);
 }
 
 static void

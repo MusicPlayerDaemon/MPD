@@ -88,7 +88,7 @@ ListenXdgRuntimeDir(ClientListener &listener) noexcept
 		return true;
 	} catch (...) {
 		FmtError(listen_domain,
-			 "Failed to listen on '{}' (not fatal): {}",
+			 "Failed to listen on {:?} (not fatal): {}",
 			 socket_path, std::current_exception());
 		return false;
 	}

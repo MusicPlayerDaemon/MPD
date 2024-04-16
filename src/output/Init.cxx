@@ -56,7 +56,7 @@ audio_output_detect()
 			continue;
 
 		FmtInfo(output_domain,
-			"Attempting to detect a {} audio device",
+			"Attempting to detect a {:?} audio device",
 			plugin->name);
 		if (ao_plugin_test_default_device(plugin))
 			return plugin;
@@ -154,7 +154,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 		config_audio_format.Clear();
 	}
 
-	log_name = fmt::format("\"{}\" ({})", name, plugin_name);
+	log_name = fmt::format("{:?} ({})", name, plugin_name);
 
 	/* create the normalization filter (if configured) */
 
@@ -173,7 +173,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 		   has been set up already and even an empty one will
 		   work (if only with unexpected behaviour) */
 		FmtError(output_domain,
-			 "Failed to initialize filter chain for '{}': {}",
+			 "Failed to initialize filter chain for {:?}: {}",
 			 name, std::current_exception());
 	}
 }
@@ -223,7 +223,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 						mixer_listener);
 	} catch (...) {
 		FmtError(output_domain,
-			 "Failed to initialize hardware mixer for '{}': {}",
+			 "Failed to initialize hardware mixer for {:?}: {}",
 			 name, std::current_exception());
 	}
 
@@ -235,7 +235,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 						     mixer, 100);
 		else
 			FmtError(output_domain,
-				 "No such mixer for output '{}'", name);
+				 "No such mixer for output {:?}", name);
 	} else if (!StringIsEqual(replay_gain_handler, "software") &&
 		   prepared_replay_gain_filter != nullptr) {
 		throw std::runtime_error("Invalid \"replay_gain_handler\" value");

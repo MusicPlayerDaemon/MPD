@@ -17,7 +17,7 @@ RequireFilterByName(const char *name)
 {
 	const auto *filter = avfilter_get_by_name(name);
 	if (filter == nullptr)
-		throw FmtRuntimeError("No such FFmpeg filter: '{}'", name);
+		throw FmtRuntimeError("No such FFmpeg filter: {:?}", name);
 
 	return *filter;
 }

@@ -12,7 +12,7 @@
 void
 BlockParam::ThrowWithNested() const
 {
-	std::throw_with_nested(FmtRuntimeError("Error in setting \"{}\" on line {}",
+	std::throw_with_nested(FmtRuntimeError("Error in setting {:?} on line {}",
 					       name, line));
 }
 

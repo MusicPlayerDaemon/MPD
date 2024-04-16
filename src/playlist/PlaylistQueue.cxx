@@ -45,7 +45,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 						   loader)) {
 			failures += 1;
 			if (failures < max_log_msgs) {
-				FmtError(playlist_domain, "Failed to load \"{}\".", song->GetURI());
+				FmtError(playlist_domain, "Failed to load {:?}.", song->GetURI());
 			} else if (failures == max_log_msgs) {
 				LogError(playlist_domain, "Further errors for this playlist will not be logged.");
 			}

@@ -453,7 +453,7 @@ ProxyDatabase::Connect()
 
 		std::throw_with_nested(host.empty()
 				       ? std::runtime_error("Failed to connect to remote MPD")
-				       : FmtRuntimeError("Failed to connect to remote MPD '{}'",
+				       : FmtRuntimeError("Failed to connect to remote MPD {:?}",
 							 host));
 	}
 

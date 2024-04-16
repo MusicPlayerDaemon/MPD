@@ -63,10 +63,10 @@ log_init_file(int line)
 	out_fd = open_log_file();
 	if (out_fd < 0) {
 #ifdef _WIN32
-		throw FmtRuntimeError("failed to open log file \"{}\" (config line {})",
+		throw FmtRuntimeError("failed to open log file {:?} (config line {})",
 				      out_path, line);
 #else
-		throw FmtErrno("failed to open log file \"{}\" (config line {})",
+		throw FmtErrno("failed to open log file {:?} (config line {})",
 			       out_path, line);
 #endif
 	}
@@ -92,7 +92,7 @@ parse_log_level(const char *value)
 	else if (StringIsEqual(value, "error"))
 		return LogLevel::ERROR;
 	else
-		throw FmtRuntimeError("unknown log level \"{}\"", value);
+		throw FmtRuntimeError("unknown log level {:?}", value);
 }
 
 #endif

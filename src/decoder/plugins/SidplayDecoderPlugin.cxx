@@ -62,7 +62,7 @@ static void loadRom(const Path rom_path, uint8_t *dump)
 {
 	FileReader romDump(rom_path);
 	if (romDump.Read(std::as_writable_bytes(std::span{dump, rom_size})) != rom_size)
-		throw FmtRuntimeError("Could not load rom dump '{}'", rom_path);
+		throw FmtRuntimeError("Could not load rom dump {:?}", rom_path);
 }
 
 /**
@@ -74,7 +74,7 @@ sidplay_load_songlength_db(const Path path)
 	auto db = std::make_unique<SidDatabase>();
 	bool error = !db->open(path.c_str());
 	if (error)
-		throw FmtRuntimeError("unable to read songlengths file {}: {}",
+		throw FmtRuntimeError("unable to read songlengths file {:?}: {}",
 				      path, db->error());
 
 	return db;

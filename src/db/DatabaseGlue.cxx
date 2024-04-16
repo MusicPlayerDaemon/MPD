@@ -19,14 +19,14 @@ DatabaseGlobalInit(EventLoop &main_event_loop,
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
 	if (plugin == nullptr)
-		throw FmtRuntimeError("No such database plugin: {}",
+		throw FmtRuntimeError("No such database plugin: {:?}",
 				      plugin_name);
 
 	try {
 		return plugin->create(main_event_loop, io_event_loop,
 				      listener, block);
 	} catch (...) {
-		std::throw_with_nested(FmtRuntimeError("Failed to initialize database plugin '{}'",
+		std::throw_with_nested(FmtRuntimeError("Failed to initialize database plugin {:?}",
 						       plugin_name));
 	}
 }

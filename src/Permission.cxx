@@ -52,7 +52,7 @@ ParsePermission(std::string_view s)
 		if (s == i->name)
 			return i->value;
 
-	throw FmtRuntimeError("unknown permission \"{}\"", s);
+	throw FmtRuntimeError("unknown permission {:?}", s);
 }
 
 static unsigned
@@ -86,7 +86,7 @@ initPermissions(const ConfigData &config)
 			const auto [password, permissions] =
 				Split(value, PERMISSION_PASSWORD_CHAR);
 			if (permissions.data() == nullptr)
-				throw FmtRuntimeError("\"{}\" not found in password string",
+				throw FmtRuntimeError("{:?} not found in password string",
 						      PERMISSION_PASSWORD_CHAR);
 
 			permission_passwords.emplace(password,

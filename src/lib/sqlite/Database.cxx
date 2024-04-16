@@ -12,7 +12,7 @@ Database::Database(const char *path)
 	int result = sqlite3_open(path, &db);
 	if (result != SQLITE_OK)
 		throw SqliteError(db, result,
-				  FmtBuffer<1024>("Failed to open sqlite database '{}'",
+				  FmtBuffer<1024>("Failed to open sqlite database {:?}",
 						  path));
 }
 

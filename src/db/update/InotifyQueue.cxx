@@ -40,13 +40,13 @@ InotifyQueue::OnDelay() noexcept
 			}
 		} catch (...) {
 			FmtError(update_domain,
-				 "Failed to enqueue '{}': {}",
+				 "Failed to enqueue {:?}: {}",
 				 uri_utf8, std::current_exception());
 			queue.pop_front();
 			continue;
 		}
 
-		FmtDebug(inotify_domain, "updating '{}' job={}",
+		FmtDebug(inotify_domain, "updating {:?} job={}",
 			 uri_utf8, id);
 
 		queue.pop_front();

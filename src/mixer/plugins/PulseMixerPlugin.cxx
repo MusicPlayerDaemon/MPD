@@ -161,7 +161,7 @@ parse_volume_scale_factor(const char *value) {
 	float factor = ParseFloat(value, &endptr);
 
 	if (endptr == value || *endptr != '\0' || factor < 0.5f || factor > 5.0f)
-		throw FmtRuntimeError("\"{}\" is not a number in the "
+		throw FmtRuntimeError("{:?} is not a number in the "
 				      "range 0.5 to 5.0",
 				      value);
 

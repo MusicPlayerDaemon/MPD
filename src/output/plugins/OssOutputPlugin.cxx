@@ -166,7 +166,7 @@ oss_output_test_default_device() noexcept
 			return true;
 
 		FmtError(oss_output_domain,
-			 "Error opening OSS device \"{}\": {}",
+			 "Error opening OSS device {:?}: {}",
 			 default_devices[i], strerror(errno));
 	}
 
@@ -621,7 +621,7 @@ try {
 	assert(!fd.IsDefined());
 
 	if (!fd.Open(device, O_WRONLY))
-		throw FmtErrno("Error opening OSS device \"{}\"", device);
+		throw FmtErrno("Error opening OSS device {:?}", device);
 
 	OssIoctlExact(fd, SNDCTL_DSP_CHANNELS, effective_channels,
 		      "Failed to set channel count");
@@ -638,7 +638,7 @@ void
 OssOutput::Open(AudioFormat &_audio_format)
 try {
 	if (!fd.Open(device, O_WRONLY))
-		throw FmtErrno("Error opening OSS device \"{}\"", device);
+		throw FmtErrno("Error opening OSS device {:?}", device);
 
 	SetupOrDop(_audio_format);
 } catch (...) {
@@ -676,7 +676,7 @@ OssOutput::Play(std::span<const std::byte> src)
 			return pcm_export->CalcInputSize(ret);
 
 		if (ret < 0 && errno != EINTR)
-			throw FmtErrno("Write error on {}", device);
+			throw FmtErrno("Write error on {:?}", device);
 	}
 }
 

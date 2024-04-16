@@ -110,13 +110,13 @@ OpenALOutput::SetupContext()
 {
 	device = alcOpenDevice(device_name);
 	if (device == nullptr)
-		throw FmtRuntimeError("Error opening OpenAL device \"{}\"",
+		throw FmtRuntimeError("Error opening OpenAL device {:?}",
 				      device_name);
 
 	context = alcCreateContext(device, nullptr);
 	if (context == nullptr) {
 		alcCloseDevice(device);
-		throw FmtRuntimeError("Error creating context for \"{}\"",
+		throw FmtRuntimeError("Error creating context for {:?}",
 				      device_name);
 	}
 }

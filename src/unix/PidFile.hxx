@@ -27,7 +27,7 @@ public:
 
 		fd = OpenFile(path, O_WRONLY|O_CREAT|O_TRUNC, 0666).Steal();
 		if (fd < 0)
-			throw FmtErrno("Failed to create pid file \"{}\"",
+			throw FmtErrno("Failed to create pid file {:?}",
 				       path);
 	}
 

@@ -33,7 +33,7 @@ output_mixer_get_volume(const AudioOutputControl &ao) noexcept
 		return mixer->LockGetVolume();
 	} catch (...) {
 		FmtError(mixer_domain,
-			 "Failed to read mixer for '{}': {}",
+			 "Failed to read mixer for {:?}: {}",
 			 ao.GetName(), std::current_exception());
 		return -1;
 	}
@@ -88,9 +88,9 @@ output_mixer_set_volume(AudioOutputControl &ao, unsigned volume)
 		return SetVolumeResult::OK;
 	} catch (...) {
 		FmtError(mixer_domain,
-			 "Failed to set mixer for '{}': {}",
+			 "Failed to set mixer for {:?}: {}",
 			 ao.GetName(), std::current_exception());
-		std::throw_with_nested(std::runtime_error(FmtBuffer<256>("Failed to set mixer for '{}'",
+		std::throw_with_nested(std::runtime_error(FmtBuffer<256>("Failed to set mixer for {:?}",
 									 ao.GetName())));
 	}
 }

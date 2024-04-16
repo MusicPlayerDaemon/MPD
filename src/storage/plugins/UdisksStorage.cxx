@@ -76,7 +76,7 @@ public:
 			UnmountWait();
 		} catch (...) {
 			FmtError(udisks_domain,
-				 "Failed to unmount '{}': {}",
+				 "Failed to unmount {:?}: {}",
 				 base_uri, std::current_exception());
 		}
 	}

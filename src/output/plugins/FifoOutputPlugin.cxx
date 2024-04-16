@@ -74,7 +74,7 @@ inline void
 FifoOutput::Delete()
 {
 	FmtDebug(fifo_output_domain,
-		 "Removing FIFO \"{}\"", path);
+		 "Removing FIFO {:?}", path);
 
 	try {
 		RemoveFile(path);
@@ -108,7 +108,7 @@ inline void
 FifoOutput::Create()
 {
 	if (!MakeFifo(path, 0666))
-		throw FmtErrno("Couldn't create FIFO \"{}\"", path);
+		throw FmtErrno("Couldn't create FIFO {:?}", path);
 
 	created = true;
 }
@@ -124,11 +124,11 @@ FifoOutput::Check()
 			return;
 		}
 
-		throw FmtErrno("Failed to stat FIFO \"{}\"", path);
+		throw FmtErrno("Failed to stat FIFO {:?}", path);
 	}
 
 	if (!S_ISFIFO(st.st_mode))
-		throw FmtRuntimeError("\"{}\" already exists, but is not a FIFO",
+		throw FmtRuntimeError("{:?} already exists, but is not a FIFO",
 				      path);
 }
 
@@ -139,12 +139,12 @@ try {
 
 	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY, 0).Steal();
 	if (input < 0)
-		throw FmtErrno("Could not open FIFO \"{}\" for reading",
+		throw FmtErrno("Could not open FIFO {:?} for reading",
 			       path);
 
 	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY, 0).Steal();
 	if (output < 0)
-		throw FmtErrno("Could not open FIFO \"{}\" for writing");
+		throw FmtErrno("Could not open FIFO {:?} for writing");
 } catch (...) {
 	CloseFifo();
 	throw;
@@ -175,7 +175,7 @@ FifoOutput::Cancel() noexcept
 
 	if (bytes < 0 && errno != EAGAIN) {
 		FmtError(fifo_output_domain,
-			 "Flush of FIFO \"{}\" failed: {}",
+			 "Flush of FIFO {:?} failed: {}",
 			 path, strerror(errno));
 	}
 }

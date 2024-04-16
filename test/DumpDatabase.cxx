@@ -55,7 +55,7 @@ public:
 	}
 
 	void OnDatabaseSongRemoved(const char *uri) noexcept override {
-		fmt::print("SongRemoved '{}'\n", uri);
+		fmt::print("SongRemoved {:?}\n", uri);
 	}
 };
 

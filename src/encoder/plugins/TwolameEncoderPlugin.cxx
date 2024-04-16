@@ -80,7 +80,7 @@ PreparedTwolameEncoder::PreparedTwolameEncoder(const ConfigBlock &block)
 		quality = float(ParseDouble(value, &endptr));
 
 		if (*endptr != '\0' || quality < -1.0f || quality > 10.0f)
-			throw FmtRuntimeError("quality \"{}\" is not a number in the "
+			throw FmtRuntimeError("quality {:?} is not a number in the "
 					      "range -1 to 10",
 					      value);
 

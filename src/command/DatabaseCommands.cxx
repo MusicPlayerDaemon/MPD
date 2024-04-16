@@ -325,7 +325,7 @@ handle_list(Client &client, Request args, Response &r)
 		/* for compatibility with < 0.12.0 */
 		if (tagType != TAG_ALBUM) {
 			r.FmtError(ACK_ERROR_ARG,
-				   FMT_STRING("should be \"{}\" for 3 arguments"),
+				   FMT_STRING("should be {:?} for 3 arguments"),
 				   tag_item_names[TAG_ALBUM]);
 			return CommandResult::ERROR;
 		}

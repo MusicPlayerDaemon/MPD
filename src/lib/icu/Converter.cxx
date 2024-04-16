@@ -41,7 +41,7 @@ IcuConverter::Create(const char *charset)
 	UConverter *converter = ucnv_open(charset, &code);
 	if (converter == nullptr)
 		throw ICU::MakeError(code,
-				     FmtBuffer<256>(FMT_STRING("Failed to initialize charset '{}'"),
+				     FmtBuffer<256>(FMT_STRING("Failed to initialize charset {:?}"),
 						    charset));
 
 	return std::unique_ptr<IcuConverter>(new IcuConverter(converter));
@@ -54,7 +54,7 @@ IcuConverter::Create(const char *charset)
 			iconv_close(to);
 		if (from != (iconv_t)-1)
 			iconv_close(from);
-		throw FmtErrno(e, FMT_STRING("Failed to initialize charset '{}'"),
+		throw FmtErrno(e, FMT_STRING("Failed to initialize charset {:?}"),
 			       charset);
 	}
 

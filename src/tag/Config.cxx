@@ -44,7 +44,7 @@ TagLoadConfig(const ConfigData &config)
 
 		const auto type = tag_name_parse_i(name);
 		if (type == TAG_NUM_OF_ITEM_TYPES)
-			throw FmtRuntimeError("error parsing metadata item \"{}\"",
+			throw FmtRuntimeError("error parsing metadata item {:?}",
 					      name);
 
 		if (plus)

@@ -55,16 +55,16 @@ input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 			input_plugins_enabled[i] = true;
 		} catch (const PluginUnconfigured &e) {
 			FmtDebug(input_domain,
-				 "Input plugin '{}' is not configured: {}",
+				 "Input plugin {:?} is not configured: {}",
 				 plugin->name, e.what());
 			continue;
 		} catch (const PluginUnavailable &e) {
 			FmtDebug(input_domain,
-				 "Input plugin '{}' is unavailable: {}",
+				 "Input plugin {:?} is unavailable: {}",
 				 plugin->name, e.what());
 			continue;
 		} catch (...) {
-			std::throw_with_nested(FmtRuntimeError("Failed to initialize input plugin '{}'",
+			std::throw_with_nested(FmtRuntimeError("Failed to initialize input plugin {:?}",
 							       plugin->name));
 		}
 	}

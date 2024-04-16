@@ -320,7 +320,7 @@ command_check_request(const struct command *cmd, Response &r,
 {
 	if (cmd->permission != (permission & cmd->permission)) {
 		r.FmtError(ACK_ERROR_PERMISSION,
-			   FMT_STRING("you don't have permission for \"{}\""),
+			   FMT_STRING("you don't have permission for {:?}"),
 			   cmd->cmd);
 		return false;
 	}
@@ -333,17 +333,17 @@ command_check_request(const struct command *cmd, Response &r,
 
 	if (min == max && unsigned(max) != args.size()) {
 		r.FmtError(ACK_ERROR_ARG,
-			   FMT_STRING("wrong number of arguments for \"{}\""),
+			   FMT_STRING("wrong number of arguments for {:?}"),
 			   cmd->cmd);
 		return false;
 	} else if (args.size() < unsigned(min)) {
 		r.FmtError(ACK_ERROR_ARG,
-			   FMT_STRING("too few arguments for \"{}\""),
+			   FMT_STRING("too few arguments for {:?}"),
 			   cmd->cmd);
 		return false;
 	} else if (max >= 0 && args.size() > unsigned(max)) {
 		r.FmtError(ACK_ERROR_ARG,
-			   FMT_STRING("too many arguments for \"{}\""),
+			   FMT_STRING("too many arguments for {:?}"),
 			   cmd->cmd);
 		return false;
 	} else
@@ -357,7 +357,7 @@ command_checked_lookup(Response &r, unsigned permission,
 	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
 		r.FmtError(ACK_ERROR_UNKNOWN,
-			   FMT_STRING("unknown command \"{}\""), cmd_name);
+			   FMT_STRING("unknown command {:?}"), cmd_name);
 		return nullptr;
 	}
 

@@ -38,7 +38,7 @@ public:
 							      ValidateUri(uri).c_str(),
 							      name);
 		if (value.empty()) {
-			response.FmtError(ACK_ERROR_NO_EXIST, "no such sticker: \"{}\"", name);
+			response.FmtError(ACK_ERROR_NO_EXIST, "no such sticker: {:?}", name);
 			return CommandResult::ERROR;
 		}
 
@@ -63,7 +63,7 @@ public:
 			   ? sticker_database.Delete(sticker_type, uri)
 			   : sticker_database.DeleteValue(sticker_type, uri, name);
 		if (!ret) {
-			response.FmtError(ACK_ERROR_NO_EXIST, "no such sticker: \"{}\"", name);
+			response.FmtError(ACK_ERROR_NO_EXIST, "no such sticker: {:?}", name);
 			return CommandResult::ERROR;
 		}
 
@@ -247,13 +247,13 @@ public:
 protected:
 	std::string ValidateUri(const char *uri) override {
 		if (tag_type == TAG_NUM_OF_ITEM_TYPES)
-			throw std::invalid_argument(fmt::format("no such tag: \"{}\"", sticker_type));
+			throw std::invalid_argument(fmt::format("no such tag: {:?}", sticker_type));
 
 		if (!sticker_allowed_tags.Test(tag_type))
-			throw std::invalid_argument(fmt::format("unsupported tag: \"{}\"", sticker_type));
+			throw std::invalid_argument(fmt::format("unsupported tag: {:?}", sticker_type));
 
 		if (!TagExists(database, tag_type, uri))
-			throw std::invalid_argument(fmt::format("no such {}: \"{}\"", sticker_type, uri));
+			throw std::invalid_argument(fmt::format("no such {}: {:?}", sticker_type, uri));
 
 		return {uri};
 	}
@@ -283,7 +283,7 @@ protected:
 		auto normalized = filter.ToExpression();
 
 		if (!FilterMatches(database, filter))
-			throw std::invalid_argument(fmt::format("no matches found: \"{}\"", normalized));
+			throw std::invalid_argument(fmt::format("no matches found: {:?}", normalized));
 
 		return normalized;
 	}
@@ -306,7 +306,7 @@ private:
 
 		const ScopeDatabaseLock protect;
 		if (!playlists.exists(uri))
-			throw std::invalid_argument(fmt::format("no such playlist: \"{}\"", uri));
+			throw std::invalid_argument(fmt::format("no such playlist: {:?}", uri));
 
 		return {uri};
 	}
@@ -369,7 +369,7 @@ handle_sticker(Client &client, Request args, Response &r)
 		handler = std::make_unique<TagHandler>(r, db, sticker_database, tag_type);
 
 	else {
-		r.FmtError(ACK_ERROR_ARG, "unknown sticker domain \"{}\"", sticker_type);
+		r.FmtError(ACK_ERROR_ARG, "unknown sticker domain {:?}", sticker_type);
 		return CommandResult::ERROR;
 	}
 
@@ -413,7 +413,7 @@ handle_sticker(Client &client, Request args, Response &r)
 				sort = s;
 			}
 			else {
-				r.FmtError(ACK_ERROR_ARG, "Unknown sort tag \"{}\"", s);
+				r.FmtError(ACK_ERROR_ARG, "Unknown sort tag {:?}", s);
 				return CommandResult::ERROR;
 			}
 
@@ -444,7 +444,7 @@ handle_sticker(Client &client, Request args, Response &r)
 			else if (StringIsEqual(op_s, "starts_with"))
 				op = StickerOperator::STARTS_WITH;
 			else {
-				r.FmtError(ACK_ERROR_ARG, "bad operator \"{}\"", op_s);
+				r.FmtError(ACK_ERROR_ARG, "bad operator {:?}", op_s);
 				return CommandResult::ERROR;
 			}
 		}

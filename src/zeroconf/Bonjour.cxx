@@ -63,7 +63,7 @@ BonjourHelper::Callback([[maybe_unused]] DNSServiceRef sdRef,
 		helper.Cancel();
 	} else {
 		FmtDebug(bonjour_domain,
-			 "Registered zeroconf service with name '{}'",
+			 "Registered zeroconf service with name {:?}",
 			 name);
 	}
 }

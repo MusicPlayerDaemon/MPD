@@ -151,7 +151,7 @@ ReadServers(SmbclientContext &ctx, const char *uri,
 		ReadServers(ctx, handle, list);
 		ctx.CloseDirectory(handle);
 	} else
-		FmtError(smbclient_domain, "smbc_opendir('{}') failed: {}",
+		FmtError(smbclient_domain, "smbc_opendir({:?}) failed: {}",
 			 uri, strerror(errno));
 }
 

@@ -529,7 +529,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen) noexcept
 	           &lame->version.major, &lame->version.minor) != 2)
 		return false;
 
-	FmtDebug(mad_domain, "detected LAME version {}.{} (\"{}\")",
+	FmtDebug(mad_domain, "detected LAME version {}.{} ({:?})",
 		 lame->version.major, lame->version.minor, lame->encoder);
 
 	/* The reference volume was changed from the 83dB used in the

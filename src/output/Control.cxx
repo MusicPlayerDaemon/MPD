@@ -268,7 +268,7 @@ AudioOutputControl::Open(std::unique_lock<Mutex> &lock,
 			output->mixer->LockOpen();
 		} catch (...) {
 			FmtError(output_domain,
-				 "Failed to open mixer for '{}': {}",
+				 "Failed to open mixer for {:?}: {}",
 				 GetName(), std::current_exception());
 		}
 	}

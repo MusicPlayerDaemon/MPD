@@ -49,13 +49,13 @@ PrefetchSong(InputCacheManager &cache, const char *uri) noexcept
 	if (cache.Contains(uri))
 		return;
 
-	FmtDebug(cache_domain, "Prefetch '{}'", uri);
+	FmtDebug(cache_domain, "Prefetch {:?}", uri);
 
 	try {
 		cache.Prefetch(uri);
 	} catch (...) {
 		FmtError(cache_domain,
-			 "Prefetch '{}' failed: {}",
+			 "Prefetch {:?} failed: {}",
 			 uri, std::current_exception());
 	}
 }

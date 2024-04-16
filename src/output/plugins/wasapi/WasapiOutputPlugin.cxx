@@ -789,7 +789,7 @@ WasapiOutput::ChooseDevice()
 		if (!SafeSilenceTry([this, &id]() { id = std::stoul(device_config); })) {
 			device = SearchDevice(*enumerator, device_config);
 			if (!device)
-				throw FmtRuntimeError("Device '{}' not found",
+				throw FmtRuntimeError("Device {:?} not found",
 						      device_config);
 		} else
 			device = GetDevice(*enumerator, id);
@@ -1007,7 +1007,7 @@ WasapiOutput::EnumerateDevices(IMMDeviceEnumerator &enumerator)
 			continue;
 
 		FmtNotice(wasapi_output_domain,
-			  "Device \"{}\" \"{}\"", i, name.c_str());
+			  "Device {:?} {:?}", i, name.c_str());
 	}
 }
 

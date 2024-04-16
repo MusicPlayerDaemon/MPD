@@ -141,7 +141,7 @@ ConfigData::FindBlock(ConfigBlockOption option,
 	for (const auto &block : GetBlockList(option)) {
 		const char *value2 = block.GetBlockValue(key);
 		if (value2 == nullptr)
-			throw FmtRuntimeError("block without '{}' in line {}",
+			throw FmtRuntimeError("block without {:?} in line {}",
 					      key, block.line);
 
 		if (StringIsEqual(value2, value))

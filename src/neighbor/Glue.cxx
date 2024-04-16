@@ -22,7 +22,7 @@ CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
 {
 	const NeighborPlugin *plugin = GetNeighborPluginByName(plugin_name);
 	if (plugin == nullptr)
-		throw FmtRuntimeError("No such neighbor plugin: {}",
+		throw FmtRuntimeError("No such neighbor plugin: {:?}",
 				      plugin_name);
 
 	return plugin->create(loop, listener, block);
@@ -56,7 +56,7 @@ NeighborGlue::Open()
 			for (auto k = explorers.begin(); k != i; ++k)
 				k->explorer->Close();
 
-			std::throw_with_nested(FmtRuntimeError("Failed to open neighblor plugin '{}'",
+			std::throw_with_nested(FmtRuntimeError("Failed to open neighblor plugin {:?}",
 							       i->name));
 		}
 	}

@@ -67,7 +67,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 
 	const auto uri_utf8 = storage.MapUTF8(directory->GetPath());
 
-	FmtDebug(update_domain, "scanning playlist '{}'", uri_utf8);
+	FmtDebug(update_domain, "scanning playlist {:?}", uri_utf8);
 
 	try {
 		Mutex mutex;
@@ -85,7 +85,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 			editor.LockDeleteDirectory(directory);
 	} catch (...) {
 		FmtError(update_domain,
-			 "Failed to scan playlist '{}': {}",
+			 "Failed to scan playlist {:?}: {}",
 			 uri_utf8, std::current_exception());
 		editor.LockDeleteDirectory(directory);
 	}

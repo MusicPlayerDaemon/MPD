@@ -109,7 +109,7 @@ SimpleDatabase::Check() const
 #ifndef _WIN32
 		/* Check if we can write to the directory */
 		if (!CheckAccess(dirPath, X_OK | W_OK))
-			throw FmtErrno("Can't create db file in \"{}\"", dirPath);
+			throw FmtErrno("Can't create db file in {:?}", dirPath);
 #endif
 
 		return;
@@ -124,7 +124,7 @@ SimpleDatabase::Check() const
 #ifndef _WIN32
 	/* And check that we can write to it */
 	if (!CheckAccess(path, R_OK | W_OK))
-		throw FmtErrno("Can't open db file \"{}\" for reading/writing",
+		throw FmtErrno("Can't open db file {:?} for reading/writing",
 			       path);
 #endif
 }

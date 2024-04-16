@@ -53,11 +53,11 @@ pcm_resample_lsr_global_init(const ConfigBlock &block)
 {
 	const char *converter = block.GetBlockValue("type", "2");
 	if (!lsr_parse_converter(converter))
-		throw FmtRuntimeError("unknown samplerate converter '{}'",
+		throw FmtRuntimeError("unknown samplerate converter {:?}",
 				      converter);
 
 	FmtDebug(libsamplerate_domain,
-		 "libsamplerate converter '{}'",
+		 "libsamplerate converter {:?}",
 		 src_get_name(lsr_converter));
 }
 

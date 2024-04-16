@@ -410,7 +410,7 @@ JackOutput::Connect()
 					      portflags, 0);
 		if (ports[i] == nullptr) {
 			Disconnect();
-			throw FmtRuntimeError("Cannot register output port \"{}\"",
+			throw FmtRuntimeError("Cannot register output port {:?}",
 					      source_ports[i]);
 		}
 	}
@@ -521,7 +521,7 @@ JackOutput::Start()
 			     jports[num_dports] != nullptr;
 		     ++num_dports) {
 			FmtDebug(jack_output_domain,
-				 "destination_port[{}] = '{}'\n",
+				 "destination_port[{}] = {:?}\n",
 				 num_dports, jports[num_dports]);
 			dports[num_dports] = jports[num_dports];
 		}

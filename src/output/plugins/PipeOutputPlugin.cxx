@@ -45,7 +45,7 @@ PipeOutput::Open([[maybe_unused]] AudioFormat &audio_format)
 {
 	fh = popen(cmd.c_str(), "w");
 	if (fh == nullptr)
-		throw FmtErrno("Error opening pipe \"{}\"", cmd);
+		throw FmtErrno("Error opening pipe {:?}", cmd);
 }
 
 std::size_t

@@ -18,7 +18,7 @@ Check(const ConfigBlock &block)
 	for (const auto &i : block.block_params) {
 		if (!i.used)
 			FmtWarning(config_domain,
-				   "option '{}' on line {} was not recognized",
+				   "option {:?} on line {} was not recognized",
 				   i.name, i.line);
 	}
 }

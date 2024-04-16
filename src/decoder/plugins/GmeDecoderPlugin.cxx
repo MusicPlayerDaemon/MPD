@@ -142,7 +142,7 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 
 	AtScopeExit(emu) { gme_delete(emu); };
 
-	FmtDebug(gme_domain, "emulator type '{}'",
+	FmtDebug(gme_domain, "emulator type {:?}",
 		 gme_type_system(gme_type(emu)));
 
 	if (gme_accuracy >= 0)

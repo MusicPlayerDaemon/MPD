@@ -28,7 +28,7 @@ OpenArchiveInputStream(Path path, Mutex &mutex)
 		}
 	} catch (...) {
 		FmtDebug(input_domain,
-			 "not an archive, lookup '{}' failed: {}",
+			 "not an archive, lookup {:?} failed: {}",
 			 path, std::current_exception());
 		return nullptr;
 	}

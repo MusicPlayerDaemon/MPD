@@ -105,14 +105,14 @@ AoOutput::AoOutput(const ConfigBlock &block)
 		driver = ao_driver_id(value);
 
 	if (driver < 0)
-		throw FmtRuntimeError("\"{}\" is not a valid ao driver",
+		throw FmtRuntimeError("{:?} is not a valid ao driver",
 				      value);
 
 	ao_info *ai = ao_driver_info(driver);
 	if (ai == nullptr)
 		throw std::runtime_error("problems getting driver info");
 
-	FmtDebug(ao_output_domain, "using ao driver \"{}\" for \"{}\"\n",
+	FmtDebug(ao_output_domain, "using ao driver {:?} for {:?}\n",
 		 ai->short_name, block.GetBlockValue("name", nullptr));
 
 	value = block.GetBlockValue("options", nullptr);
@@ -120,7 +120,7 @@ AoOutput::AoOutput(const ConfigBlock &block)
 		for (const std::string_view i : IterableSplitString(value, ';')) {
 			const auto [n, v] = Split(Strip(i), '=');
 			if (n.empty() || v.data() == nullptr)
-				throw FmtRuntimeError("problems parsing option \"{}\"",
+				throw FmtRuntimeError("problems parsing option {:?}",
 						      i);
 
 			ao_append_option(&options, std::string{n}.c_str(),

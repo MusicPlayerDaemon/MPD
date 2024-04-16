@@ -106,7 +106,7 @@ get_device_id(const char *device_name)
 	UINT id = strtoul(device_name, &endptr, 0);
 	if (endptr > device_name && *endptr == 0) {
 		if (id >= numdevs)
-			throw FmtRuntimeError("device \"{}\" is not found",
+			throw FmtRuntimeError("device {:?} is not found",
 					      device_name);
 
 		return id;
@@ -127,7 +127,7 @@ get_device_id(const char *device_name)
 			return i;
 	}
 
-	throw FmtRuntimeError("device \"{}\" is not found", device_name);
+	throw FmtRuntimeError("device {:?} is not found", device_name);
 }
 
 WinmmOutput::WinmmOutput(const ConfigBlock &block)

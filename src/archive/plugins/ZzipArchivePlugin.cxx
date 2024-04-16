@@ -27,7 +27,7 @@ struct ZzipDir {
 	explicit ZzipDir(Path path)
 		:dir(zzip_dir_open(NarrowPath(path), nullptr)) {
 		if (dir == nullptr)
-			throw FmtRuntimeError("Failed to open ZIP file {}",
+			throw FmtRuntimeError("Failed to open ZIP file {:?}",
 					      path);
 	}
 
@@ -120,11 +120,11 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 		const auto error = (zzip_error_t)zzip_error(dir->dir);
 		switch (error) {
 		case ZZIP_ENOENT:
-			throw FmtFileNotFound("Failed to open '{}' in ZIP file",
+			throw FmtFileNotFound("Failed to open {:?} in ZIP file",
 					      pathname);
 
 		default:
-			throw FmtRuntimeError("Failed to open '{}' in ZIP file: {}",
+			throw FmtRuntimeError("Failed to open {:?} in ZIP file: {}",
 					      pathname,
 					      zzip_strerror(error));
 		}
@@ -145,7 +145,7 @@ ZzipInputStream::Read(std::unique_lock<Mutex> &, void *ptr, size_t read_size)
 		throw std::runtime_error("zzip_file_read() has failed");
 
 	if (nbytes == 0 && !IsEOF())
-		throw FmtRuntimeError("Unexpected end of file {} at {} of {}",
+		throw FmtRuntimeError("Unexpected end of file {:?} at {} of {}",
 				      GetURI(), GetOffset(), GetSize());
 
 	offset = zzip_tell(file);

@@ -56,7 +56,7 @@ daemonize_kill()
 
 	const pid_t pid = ReadPidFile(pidfile);
 	if (pid < 0)
-		throw FmtErrno("unable to read the pid from file \"{}\"",
+		throw FmtErrno("unable to read the pid from file {:?}",
 			       pidfile);
 
 	if (kill(pid, SIGTERM) < 0)
@@ -94,7 +94,7 @@ daemonize_set_user()
 	    user_uid != getuid() &&
 	    initgroups(user_name, user_gid) == -1) {
 		throw FmtErrno("Failed to set supplementary groups "
-			       "of user \"{}\"",
+			       "of user {:?}",
 			       user_name);
 	}
 #endif
@@ -102,7 +102,7 @@ daemonize_set_user()
 	/* set uid */
 	if (user_uid != (uid_t)-1 && user_uid != getuid() &&
 	    setuid(user_uid) == -1) {
-		throw FmtErrno("Failed to set user \"{}\"", user_name);
+		throw FmtErrno("Failed to set user {:?}", user_name);
 	}
 }
 
@@ -201,7 +201,7 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 	if (user) {
 		struct passwd *pwd = getpwnam(user);
 		if (pwd == nullptr)
-			throw FmtRuntimeError("no such user \"{}\"", user);
+			throw FmtRuntimeError("no such user {:?}", user);
 
 		user_uid = pwd->pw_uid;
 		user_gid = pwd->pw_gid;
@@ -215,7 +215,7 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 	if (group) {
 		struct group *grp = getgrnam(group);
 		if (grp == nullptr)
-			throw FmtRuntimeError("no such group \"{}\"", group);
+			throw FmtRuntimeError("no such group {:?}", group);
 		user_gid = grp->gr_gid;
 		had_group = true;
 	}

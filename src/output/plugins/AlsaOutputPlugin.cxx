@@ -792,14 +792,14 @@ AlsaOutput::Open(AudioFormat &audio_format)
 			       SND_PCM_STREAM_PLAYBACK, mode);
 	if (err < 0)
 		throw Alsa::MakeError(err,
-				      FmtBuffer<256>("Failed to open ALSA device \"{}\"",
+				      FmtBuffer<256>("Failed to open ALSA device {:?}",
 						     GetDevice()));
 
 	const char *pcm_name = snd_pcm_name(pcm);
 	if (pcm_name == nullptr)
 		pcm_name = "?";
 
-	FmtDebug(alsa_output_domain, "opened {} type={}",
+	FmtDebug(alsa_output_domain, "opened {:?} type={}",
 		 pcm_name,
 		 snd_pcm_type_name(snd_pcm_type(pcm)));
 
@@ -830,7 +830,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 			   );
 	} catch (...) {
 		snd_pcm_close(pcm);
-		std::throw_with_nested(FmtRuntimeError("Error opening ALSA device \"{}\"",
+		std::throw_with_nested(FmtRuntimeError("Error opening ALSA device {:?}",
 						       GetDevice()));
 	}
 
@@ -891,11 +891,11 @@ AlsaOutput::Recover(int err) noexcept
 {
 	if (err == -EPIPE) {
 		FmtDebug(alsa_output_domain,
-			 "Underrun on ALSA device \"{}\"",
+			 "Underrun on ALSA device {:?}",
 			 GetDevice());
 	} else if (err == -ESTRPIPE) {
 		FmtDebug(alsa_output_domain,
-			 "ALSA device \"{}\" was suspended",
+			 "ALSA device {:?} was suspended",
 			 GetDevice());
 	}
 

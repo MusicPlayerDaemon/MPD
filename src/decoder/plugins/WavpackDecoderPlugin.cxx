@@ -41,7 +41,7 @@ WavpackOpenInput(Path path, int flags, int norm_offset)
 	auto wpc = WavpackOpenFileInput(np, error,
 					flags, norm_offset);
 	if (wpc == nullptr)
-		throw FmtRuntimeError("failed to open WavPack file \"{}\": {}",
+		throw FmtRuntimeError("failed to open WavPack file {:?}: {}",
 				      path, error);
 
 	return wpc;

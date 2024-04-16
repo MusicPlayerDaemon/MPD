@@ -90,7 +90,7 @@ db_load_internal(LineReader &file, Directory &music_root,
 			if (*old_charset != 0
 			    && strcmp(new_charset, old_charset) != 0)
 				throw FmtRuntimeError("Existing database has charset "
-						      "\"{}\" instead of \"{}\"; "
+						      "{:?} instead of {:?}; "
 						      "discarding database file",
 						      new_charset, old_charset);
 		} else if ((p = StringAfterPrefix(line, DB_TAG_PREFIX))) {
@@ -100,13 +100,13 @@ db_load_internal(LineReader &file, Directory &music_root,
 			const char *name = p;
 			TagType tag = tag_name_parse(name);
 			if (tag == TAG_NUM_OF_ITEM_TYPES)
-				throw FmtRuntimeError("Unrecognized tag '{}', "
+				throw FmtRuntimeError("Unrecognized tag {:?}, "
 						      "discarding database file",
 						      name);
 
 			tags[tag] = true;
 		} else {
-			throw FmtRuntimeError("Malformed line: {}", line);
+			throw FmtRuntimeError("Malformed line: {:?}", line);
 		}
 	}
 

@@ -54,7 +54,7 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 
 	const BlockParam *bp = block.GetBlockParam(name);
 	if (bp != nullptr)
-		throw FmtRuntimeError("\"{}\" is duplicate, first defined on line {}",
+		throw FmtRuntimeError("{:?} is duplicate, first defined on line {}",
 				      name, bp->line);
 
 	block.AddBlockParam(name, value, line);
@@ -102,12 +102,12 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 
 	if (option.deprecated)
 		FmtWarning(config_file_domain,
-			   "config parameter \"{}\" on line {} is deprecated",
+			   "config parameter {:?} on line {} is deprecated",
 			   name, reader.GetLineNumber());
 
 	if (!option.repeatable)
 		if (const auto *block = config_data.GetBlock(o))
-			throw FmtRuntimeError("config parameter \"{}\" is first defined "
+			throw FmtRuntimeError("config parameter {:?} is first defined "
 					      "on line {} and redefined on line {}",
 					      name, block->line,
 					      reader.GetLineNumber());
@@ -134,7 +134,7 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 
 	if (option.deprecated)
 		FmtWarning(config_file_domain,
-			   "config parameter \"{}\" on line {} is deprecated",
+			   "config parameter {:?} on line {} is deprecated",
 			   name, reader.GetLineNumber());
 
 	if (!option.repeatable)

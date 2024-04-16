@@ -153,7 +153,7 @@ pcm_resample_soxr_global_init(const ConfigBlock &block)
 
 	if (recipe == SOXR_INVALID_RECIPE) {
 		assert(quality_string != nullptr);
-		throw FmtRuntimeError("unknown quality setting '{}' in line {}",
+		throw FmtRuntimeError("unknown quality setting {:?} in line {}",
 				      quality_string, block.line);
 	} else if (recipe == SOXR_CUSTOM_RECIPE) {
 		// used to preset possible internal flags, like SOXR_RESET_ON_CLEAR
@@ -177,7 +177,7 @@ pcm_resample_soxr_global_init(const ConfigBlock &block)
 		soxr_quality = soxr_quality_spec(recipe, 0);
 	}
 
-	FmtDebug(soxr_domain, "soxr converter '{}'",
+	FmtDebug(soxr_domain, "soxr converter {:?}",
 		 soxr_quality_name(recipe));
 
 	const unsigned n_threads = block.GetBlockValue("threads", 1);
@@ -202,7 +202,7 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 		throw FmtRuntimeError("soxr initialization has failed: {}",
 				      e);
 
-	FmtDebug(soxr_domain, "soxr engine '{}'", soxr_engine(soxr));
+	FmtDebug(soxr_domain, "soxr engine {:?}", soxr_engine(soxr));
 	if (soxr_use_custom_recipe)
 		FmtDebug(soxr_domain,
 			 "soxr precision={:0.0f}, phase_response={:0.2f}, "

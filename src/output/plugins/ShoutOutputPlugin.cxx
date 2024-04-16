@@ -88,7 +88,7 @@ require_block_string(const ConfigBlock &block, const char *name)
 {
 	const char *value = block.GetBlockValue(name);
 	if (value == nullptr)
-		throw FmtRuntimeError("no \"{}\" defined for shout device defined "
+		throw FmtRuntimeError("no {:?} defined for shout device defined "
 				      "at line {}\n", name, block.line);
 
 	return value;
@@ -123,7 +123,7 @@ ParseShoutTls(const char *value)
 	else if (StringIsEqual(value, "rfc2817"))
 		return SHOUT_TLS_RFC2817;
 	else
-		throw FmtRuntimeError("invalid shout TLS option \"{}\"",
+		throw FmtRuntimeError("invalid shout TLS option {:?}",
 				      value);
 }
 
@@ -146,7 +146,7 @@ ParseShoutProtocol(const char *value, const char *mime_type)
 
 	if (StringIsEqual(value, "shoutcast")) {
 		if (!StringIsEqual(mime_type, "audio/mpeg"))
-			throw FmtRuntimeError("you cannot stream \"{}\" to shoutcast, use mp3",
+			throw FmtRuntimeError("you cannot stream {:?} to shoutcast, use mp3",
 					      mime_type);
 		return SHOUT_PROTOCOL_ICY;
 	} else if (StringIsEqual(value, "icecast1"))
@@ -154,7 +154,7 @@ ParseShoutProtocol(const char *value, const char *mime_type)
 	else if (StringIsEqual(value, "icecast2"))
 		return SHOUT_PROTOCOL_HTTP;
 	else
-		throw FmtRuntimeError("shout protocol \"{}\" is not \"shoutcast\" or "
+		throw FmtRuntimeError("shout protocol {:?} is not \"shoutcast\" or "
 				      "\"icecast1\"or \"icecast2\"",
 				      value);
 }

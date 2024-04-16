@@ -47,7 +47,7 @@ AvahiInit(EventLoop &event_loop, const char *service_name,
 	  const char *service_type, unsigned port)
 {
 	if (!avahi_is_valid_service_name(service_name))
-		throw FmtRuntimeError("Invalid zeroconf_name \"{}\"",
+		throw FmtRuntimeError("Invalid zeroconf_name {:?}",
 				      service_name);
 
 	auto client = shared_avahi_client.lock();

@@ -108,7 +108,7 @@ OssMixer::Open()
 				throw MakeErrno("READ_DEVMASK failed");
 
 			if (((1 << volume_control) & devmask) == 0)
-				throw FmtErrno("mixer control \"{}\" not usable",
+				throw FmtErrno("mixer control {:?} not usable",
 					       control);
 		}
 	} catch (...) {
@@ -134,8 +134,8 @@ OssMixer::GetVolume()
 
 	if (left != right) {
 		FmtWarning(oss_mixer_domain,
-			   "volume for left and right is not the same, \"{}\" and "
-			   "\"{}\"\n", left, right);
+			   "volume for left and right is not the same, {:?} and "
+			   "{:?}\n", left, right);
 	}
 
 	return left;

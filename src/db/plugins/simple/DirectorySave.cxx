@@ -124,7 +124,7 @@ directory_load_subdir(LineReader &file, Directory &parent, std::string_view name
 				break;
 
 			if (!ParseLine(*directory, line))
-				throw FmtRuntimeError("Malformed line: {}", line);
+				throw FmtRuntimeError("Malformed line: {:?}", line);
 		}
 
 		directory_load(file, *directory);
@@ -153,7 +153,7 @@ directory_load(LineReader &file, Directory &directory)
 
 			const std::string_view name = child->GetName();
 			if (!children.emplace(name).second)
-				throw FmtRuntimeError("Duplicate subdirectory '{}'", name);
+				throw FmtRuntimeError("Duplicate subdirectory {:?}", name);
 		} else if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
 			const char *name = p;
 
@@ -168,7 +168,7 @@ directory_load(LineReader &file, Directory &directory)
 			song->in_playlist = in_playlist;
 
 			if (!songs.emplace(song->filename).second)
-				throw FmtRuntimeError("Duplicate song '{}'",
+				throw FmtRuntimeError("Duplicate song {:?}",
 						      name);
 
 			directory.AddSong(std::move(song));
@@ -176,7 +176,7 @@ directory_load(LineReader &file, Directory &directory)
 			const char *name = p;
 			playlist_metadata_load(file, directory.playlists, name);
 		} else {
-			throw FmtRuntimeError("Malformed line: {}", line);
+			throw FmtRuntimeError("Malformed line: {:?}", line);
 		}
 	}
 }
