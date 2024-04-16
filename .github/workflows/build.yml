@@ -59,6 +59,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             ${{ matrix.cxx }} ${{matrix.cc }} \
+            meson \
             ccache \
             libgtest-dev \
             libpcre2-dev \
@@ -94,32 +95,46 @@ jobs:
         with:
           key: ${{ matrix.compiler }}
 
-      - name: Full Build
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: build
-          directory: output/full
-          setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled --force-fallback-for=fmt
-          options: --verbose
-          meson-version: 0.56.0
+      - name: Configure
+        run: |
+          meson setup \
+            -Ddocumentation=disabled \
+            -Dtest=true \
+            -Dsystemd=enabled
+            -Dpcre=enabled \
+            --force-fallback-for=fmt
+            output/full
+
+      - name: Build
+        run: meson compile -C output/full --verbose
 
       - name: Unit Tests
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: test
-          directory: output/full
-          setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled --force-fallback-for=fmt
-          options: --verbose
-          meson-version: 0.56.0
+        run: meson test -C output/full
 
-      - name: Mini Build
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: build
-          directory: output/mini
-          setup-options: -Dbuildtype=minsize -Dauto_features=disabled -Dtest=true -Ddaemon=false -Dinotify=false -Depoll=false -Deventfd=false -Dsignalfd=false -Dtcp=false -Ddsd=false -Ddatabase=false -Dneighbor=false -Dcue=false -Dfifo=false -Dhttpd=false -Dpipe=false -Drecorder=false -Dsnapcast=false --force-fallback-for=fmt
-          options: --verbose
-          meson-version: 0.56.0
+      - name: Configure Mini
+        run: |
+          meson setup \
+            -Dbuildtype=minsize \
+            -Dauto_features=disabled \
+            -Dtest=true \
+            -Ddaemon=false \
+            -Dinotify=false -Depoll=false -Deventfd=false
+            -Dsignalfd=false \
+            -Dtcp=false \
+            -Ddsd=false \
+            -Ddatabase=false \
+            -Dneighbor=false \
+            -Dcue=false \
+            -Dfifo=false \
+            -Dhttpd=false -Dpipe=false -Drecorder=false
+            -Dsnapcast=false \
+            output/mini
+
+      - name: Build Mini
+        run: meson compile -C output/mini --verbose
+
+      - name: Unit Tests Mini
+        run: meson test -C output/mini
 
   build-macos:
     runs-on: macos-latest
@@ -158,23 +173,18 @@ jobs:
             wavpack \
             libmpdclient
 
+      - name: Configure
+        run: |
+          meson setup \
+            -Ddocumentation=disabled \
+            -Dtest=true \
+            output
+
       - name: Build
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: build
-          directory: output
-          setup-options: -Ddocumentation=disabled -Dtest=true
-          options: --verbose
-          meson-version: 0.56.0
+        run: meson compile -C output --verbose
 
       - name: Unit Tests
-        uses: BSFishy/meson-build@v1.0.3
-        with:
-          action: test
-          directory: output
-          setup-options: -Ddocumentation=disabled -Dtest=true
-          options: --verbose
-          meson-version: 0.56.0
+        run: meson test -C output
 
   build-msys2:
     strategy:
