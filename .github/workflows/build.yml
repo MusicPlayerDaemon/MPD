@@ -58,7 +58,6 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             ${{ matrix.cxx }} ${{matrix.cc }} \
             ccache \
-            libfmt-dev \
             libgtest-dev \
             libpcre2-dev \
             libsystemd-dev libdbus-1-dev \
