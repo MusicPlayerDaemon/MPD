@@ -5,12 +5,14 @@
 #include "DatabaseGlue.hxx"
 #include "Interface.hxx"
 #include "config/Data.hxx"
+#include "config/Domain.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/glue/StandardDirectory.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "Log.hxx"
 
 DatabasePtr
 CreateConfiguredDatabase(const ConfigData &config,
@@ -37,8 +39,10 @@ CreateConfiguredDatabase(const ConfigData &config,
 		/* if there is no override, use the cache directory */
 
 		const AllocatedPath cache_dir = GetAppCacheDir();
-		if (cache_dir.IsNull())
+		if (cache_dir.IsNull()) {
+			FmtDebug(config_domain, "No cache directory; disabling the database");
 			return nullptr;
+		}
 
 		const auto db_file = cache_dir / Path::FromFS(PATH_LITERAL("db"));
 		auto db_file_utf8 = db_file.ToUTF8();
