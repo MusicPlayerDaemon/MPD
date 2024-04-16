@@ -98,7 +98,8 @@ dependencies on Debian Bookworm:
       libicu-dev \
       libchromaprint-dev \
       libgcrypt20-dev \
-      libsystemd-dev
+      libsystemd-dev \
+      libpipewire-0.3-dev
       
 
 Now configure the source tree:
