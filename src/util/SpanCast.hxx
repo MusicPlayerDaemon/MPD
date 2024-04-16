@@ -92,6 +92,7 @@ ToStringView(std::span<const std::byte> s) noexcept
 }
 
 template<typename T>
+requires std::is_integral_v<T>
 constexpr std::basic_string_view<std::remove_const_t<T>>
 ToStringView(std::span<T> s) noexcept
 {
