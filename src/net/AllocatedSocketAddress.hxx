@@ -141,6 +141,7 @@ public:
 	 * address.
 	 */
 	void SetLocal(const char *path) noexcept;
+	void SetLocal(std::string_view path) noexcept;
 #endif
 
 #ifdef HAVE_TCP
