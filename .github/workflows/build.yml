@@ -33,12 +33,14 @@ jobs:
   build-linux:
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-20.04]
+        compiler: [gcc11, gcc10]
         include:
-          - os: ubuntu-22.04
+          - compiler: gcc11
+            os: ubuntu-22.04
             cc: gcc-11
             cxx: g++-11
-          - os: ubuntu-20.04
+          - compiler: gcc10
+            os: ubuntu-22.04
             cc: gcc-10
             cxx: g++-10
 
@@ -90,7 +92,7 @@ jobs:
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ matrix.os }}
+          key: ${{ matrix.compiler }}
 
       - name: Full Build
         uses: BSFishy/meson-build@v1.0.3
