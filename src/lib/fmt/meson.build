@@ -1,4 +1,4 @@
-libfmt = dependency('fmt', version: '>= 7', fallback: ['fmt', 'fmt_dep'])
+libfmt = dependency('fmt', version: '>= 9', fallback: ['fmt', 'fmt_dep'])
 
 if compiler.get_id() == 'clang' and compiler.version().version_compare('<15')
   libfmt = declare_dependency(

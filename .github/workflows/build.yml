@@ -98,7 +98,7 @@ jobs:
         with:
           action: build
           directory: output/full
-          setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled
+          setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled --force-fallback-for=fmt
           options: --verbose
           meson-version: 0.56.0
 
@@ -107,7 +107,7 @@ jobs:
         with:
           action: test
           directory: output/full
-          setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled
+          setup-options: -Ddocumentation=disabled -Dtest=true -Dsystemd=enabled -Dpcre=enabled --force-fallback-for=fmt
           options: --verbose
           meson-version: 0.56.0
 
@@ -116,7 +116,7 @@ jobs:
         with:
           action: build
           directory: output/mini
-          setup-options: -Dbuildtype=minsize -Dauto_features=disabled -Dtest=true -Ddaemon=false -Dinotify=false -Depoll=false -Deventfd=false -Dsignalfd=false -Dtcp=false -Ddsd=false -Ddatabase=false -Dneighbor=false -Dcue=false -Dfifo=false -Dhttpd=false -Dpipe=false -Drecorder=false -Dsnapcast=false
+          setup-options: -Dbuildtype=minsize -Dauto_features=disabled -Dtest=true -Ddaemon=false -Dinotify=false -Depoll=false -Deventfd=false -Dsignalfd=false -Dtcp=false -Ddsd=false -Ddatabase=false -Dneighbor=false -Dcue=false -Dfifo=false -Dhttpd=false -Dpipe=false -Drecorder=false -Dsnapcast=false --force-fallback-for=fmt
           options: --verbose
           meson-version: 0.56.0
 

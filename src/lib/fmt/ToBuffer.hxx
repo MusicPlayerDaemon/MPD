@@ -6,9 +6,6 @@
 #include "util/StringBuffer.hxx"
 
 #include <fmt/core.h>
-#if FMT_VERSION < 90000
-#include <fmt/format.h> // for the fmt::buffer::flush() implementation
-#endif
 
 template<std::size_t size>
 StringBuffer<size> &
@@ -35,14 +32,8 @@ StringBuffer<size> &
 FmtToBuffer(StringBuffer<size> &buffer,
 	    const S &format_str, Args&&... args) noexcept
 {
-#if FMT_VERSION >= 90000
 	return VFmtToBuffer(buffer, format_str,
 			    fmt::make_format_args(args...));
-#else
-	return VFmtToBuffer(buffer, fmt::to_string_view(format_str),
-			    fmt::make_args_checked<Args...>(format_str,
-							    args...));
-#endif
 }
 
 template<std::size_t size, typename S, typename... Args>
@@ -50,12 +41,6 @@ template<std::size_t size, typename S, typename... Args>
 auto
 FmtBuffer(const S &format_str, Args&&... args) noexcept
 {
-#if FMT_VERSION >= 90000
 	return VFmtBuffer<size>(format_str,
 				fmt::make_format_args(args...));
-#else
-	return VFmtBuffer<size>(fmt::to_string_view(format_str),
-				fmt::make_args_checked<Args...>(format_str,
-								args...));
-#endif
 }

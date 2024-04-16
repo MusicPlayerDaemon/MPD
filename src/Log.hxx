@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_LOG_HXX
-#define MPD_LOG_HXX
+#pragma once
 
 #include "LogLevel.hxx"
 
 #include <fmt/core.h>
-#if FMT_VERSION >= 80000 && FMT_VERSION < 90000
-#include <fmt/format.h>
-#endif
 
 #include <exception>
 #include <string_view>
@@ -29,14 +25,8 @@ void
 LogFmt(LogLevel level, const Domain &domain,
        const S &format_str, Args&&... args) noexcept
 {
-#if FMT_VERSION >= 90000
 	return LogVFmt(level, domain, format_str,
 		       fmt::make_format_args(args...));
-#else
-	return LogVFmt(level, domain, fmt::to_string_view(format_str),
-		       fmt::make_args_checked<Args...>(format_str,
-						       args...));
-#endif
 }
 
 template<typename S, typename... Args>
@@ -126,5 +116,3 @@ LogError(const std::exception_ptr &ep, const char *msg) noexcept
 {
 	Log(LogLevel::ERROR, ep, msg);
 }
-
-#endif /* LOG_H */
