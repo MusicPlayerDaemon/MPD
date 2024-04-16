@@ -10,8 +10,7 @@
 
 #include <concepts>
 
-template<typename T>
-requires std::convertible_to<T, SocketAddress>
+template<std::convertible_to<SocketAddress> T>
 struct fmt::formatter<T> : formatter<string_view>
 {
 	template<typename FormatContext>
