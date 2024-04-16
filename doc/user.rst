@@ -65,7 +65,8 @@ In any case, you need:
 Each plugin usually needs a codec library, which you also need to
 install. Check the :doc:`plugins` for details about required libraries
 
-For example, the following installs a fairly complete list of build dependencies on Debian Bullseye:
+For example, the following installs a fairly complete list of build
+dependencies on Debian Bookworm:
 
 .. code-block:: none
 
