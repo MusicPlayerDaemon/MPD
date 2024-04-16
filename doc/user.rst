@@ -97,7 +97,8 @@ dependencies on Debian Bookworm:
       libgtest-dev \
       libicu-dev \
       libchromaprint-dev \
-      libgcrypt20-dev
+      libgcrypt20-dev \
+      libsystemd-dev
       
 
 Now configure the source tree:
