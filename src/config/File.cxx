@@ -15,7 +15,7 @@
 #include "util/Domain.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/List.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "io/FileReader.hxx"
 #include "io/BufferedReader.hxx"
 #include "Log.hxx"
