@@ -51,15 +51,13 @@ jobs:
     steps:
       - id: checkout
         uses: actions/checkout@v4
-      - id: cache-ccache
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: ${{ matrix.os }}
+
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             ${{ matrix.cxx }} ${{matrix.cc }} \
+            ccache \
             libfmt-dev \
             libgtest-dev \
             libpcre2-dev \
@@ -89,6 +87,11 @@ jobs:
             libsqlite3-dev \
             libchromaprint-dev \
             libgcrypt20-dev
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ matrix.os }}
 
       - name: Full Build
         uses: BSFishy/meson-build@v1.0.3
