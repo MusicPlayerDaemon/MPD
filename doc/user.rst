@@ -84,7 +84,7 @@ dependencies on Debian Bookworm:
       libsamplerate0-dev libsoxr-dev \
       libbz2-dev libcdio-paranoia-dev libiso9660-dev libmms-dev \
       libzzip-dev \
-      libcurl4-gnutls-dev libyajl-dev libexpat-dev \
+      libcurl4-gnutls-dev libyajl-dev libexpat1-dev \
       libasound2-dev libao-dev libjack-jackd2-dev libopenal-dev \
       libpulse-dev libshout3-dev \
       libsndio-dev \
