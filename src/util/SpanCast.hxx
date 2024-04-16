@@ -64,6 +64,7 @@ AsBytes(std::string_view sv) noexcept
  * Cast a reference to a fixed-size std::span<const std::byte>.
  */
 template<typename T>
+requires std::has_unique_object_representations_v<T>
 constexpr auto
 ReferenceAsBytes(const T &value) noexcept
 {
@@ -71,6 +72,7 @@ ReferenceAsBytes(const T &value) noexcept
 }
 
 template<typename T>
+requires std::has_unique_object_representations_v<T>
 constexpr auto
 ReferenceAsWritableBytes(T &value) noexcept
 {
