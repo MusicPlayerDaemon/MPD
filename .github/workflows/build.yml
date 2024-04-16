@@ -100,9 +100,9 @@ jobs:
           meson setup \
             -Ddocumentation=disabled \
             -Dtest=true \
-            -Dsystemd=enabled
+            -Dsystemd=enabled \
             -Dpcre=enabled \
-            --force-fallback-for=fmt
+            --force-fallback-for=fmt \
             output/full
 
       - name: Build
@@ -118,7 +118,7 @@ jobs:
             -Dauto_features=disabled \
             -Dtest=true \
             -Ddaemon=false \
-            -Dinotify=false -Depoll=false -Deventfd=false
+            -Dinotify=false -Depoll=false -Deventfd=false \
             -Dsignalfd=false \
             -Dtcp=false \
             -Ddsd=false \
@@ -126,7 +126,7 @@ jobs:
             -Dneighbor=false \
             -Dcue=false \
             -Dfifo=false \
-            -Dhttpd=false -Dpipe=false -Drecorder=false
+            -Dhttpd=false -Dpipe=false -Drecorder=false \
             -Dsnapcast=false \
             output/mini
 
