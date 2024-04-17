@@ -137,11 +137,15 @@ public:
 	}
 
 	void CancelRead() noexcept {
-		Schedule(GetScheduledFlags() & ~READ);
+		/* IMPLICIT_FLAGS is erased from the flags so
+		   CancelRead() after ScheduleRead() cancels the whole
+		   event instead of leaving IMPLICIT_FLAGS
+		   scheduled */
+		Schedule(GetScheduledFlags() & ~(READ|IMPLICIT_FLAGS));
 	}
 
 	void CancelWrite() noexcept {
-		Schedule(GetScheduledFlags() & ~WRITE);
+		Schedule(GetScheduledFlags() & ~(WRITE|IMPLICIT_FLAGS));
 	}
 
 	/**
