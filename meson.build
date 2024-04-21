@@ -85,7 +85,6 @@ project(
     'libmpdclient:documentation=false',
     'libmpdclient:test=false',
     'openssl:build_cli=false',
-    'openssl:asm=disabled', # work around "call to undeclared function "asm" on Android
     'opus:docs=disabled',
     'opus:extra-programs=disabled',
     'opus:tests=disabled',
@@ -267,6 +266,10 @@ if is_windows
 endif
 
 if is_android
+  # With ndk27 libcpp doesn't seem to have a rune table defined for the 
+  # localization module, tell it to use the one it ships with
+  common_cppflags += ['-D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE']
+
   subdir('android')
 endif
 
