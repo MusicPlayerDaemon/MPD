@@ -279,3 +279,96 @@ TEST(IntrusiveList, Sort)
 	ASSERT_EQ(&*std::next(list.begin(), 1), &items[2]);
 	ASSERT_EQ(&*std::next(list.begin(), 2), &items[4]);
 }
+
+/**
+ * Call clear_and_dispose(), and let the disposer unlink the last
+ * item.
+ */
+TEST(IntrusiveList, ClearDisposeUnlink)
+{
+	using Item = CharItem<IntrusiveHookMode::TRACK>;
+
+	Item a{'a'}, b{'b'};
+
+	bool a_disposed = false;
+
+	EXPECT_FALSE(a.is_linked());
+	EXPECT_FALSE(b.is_linked());
+
+	IntrusiveList<Item> list;
+	list.push_back(a);
+	list.push_back(b);
+
+	EXPECT_TRUE(a.is_linked());
+	EXPECT_TRUE(b.is_linked());
+
+	list.clear_and_dispose([&](Item *item){
+		EXPECT_FALSE(a.is_linked());
+		EXPECT_TRUE(b.is_linked());
+		EXPECT_EQ(item, &a);
+		EXPECT_FALSE(a_disposed);
+
+		a_disposed = true;
+
+		b.unlink();
+	});
+
+	EXPECT_TRUE(a_disposed);
+	EXPECT_TRUE(list.empty());
+}
+
+/**
+ * Call clear_and_dispose(), and let the disposer push a new item.
+ */
+TEST(IntrusiveList, ClearDisposePush)
+{
+	using Item = CharItem<IntrusiveHookMode::TRACK>;
+
+	Item a{'a'}, b{'b'};
+
+	bool a_disposed = false, b_added = false, b_disposed = false;
+
+	EXPECT_FALSE(a.is_linked());
+	EXPECT_FALSE(b.is_linked());
+
+	IntrusiveList<Item> list;
+	list.push_back(a);
+
+	EXPECT_TRUE(a.is_linked());
+	EXPECT_FALSE(b.is_linked());
+
+	list.clear_and_dispose([&](Item *item){
+		if (!a_disposed) {
+			EXPECT_EQ(item, &a);
+			EXPECT_FALSE(a.is_linked());
+			EXPECT_FALSE(b.is_linked());
+			EXPECT_FALSE(a_disposed);
+			EXPECT_FALSE(b_disposed);
+			EXPECT_FALSE(b_added);
+
+			a_disposed = true;
+
+			list.push_back(b);
+			EXPECT_FALSE(a.is_linked());
+			EXPECT_TRUE(b.is_linked());
+
+			b_added = true;
+		} else if (!b_disposed) {
+			EXPECT_TRUE(b_added);
+			EXPECT_EQ(item, &b);
+			EXPECT_FALSE(a.is_linked());
+			EXPECT_FALSE(b.is_linked());
+			EXPECT_TRUE(a_disposed);
+			EXPECT_FALSE(b_disposed);
+
+			b_disposed = true;
+		} else {
+			FAIL();
+		}
+	});
+
+	EXPECT_TRUE(a_disposed);
+	EXPECT_TRUE(b_added);
+	EXPECT_TRUE(b_disposed);
+	EXPECT_TRUE(list.empty());
+}
