@@ -85,6 +85,7 @@ project(
     'libmpdclient:documentation=false',
     'libmpdclient:test=false',
     'openssl:build_cli=false',
+    'openssl:asm=disabled',
     'opus:docs=disabled',
     'opus:extra-programs=disabled',
     'opus:tests=disabled',
