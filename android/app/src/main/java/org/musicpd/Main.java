@@ -133,11 +133,11 @@ public class Main extends Service implements Runnable {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if (Objects.equals(intent.getAction(), SHUTDOWN_ACTION)) {
+		if (intent != null && Objects.equals(intent.getAction(), SHUTDOWN_ACTION)) {
 			stop();
 		} else {
 			start();
-			if (intent.getBooleanExtra("wakelock", false))
+			if (intent != null && intent.getBooleanExtra("wakelock", false))
 				setWakelockEnabled(true);
 		}
 		return START_STICKY;
