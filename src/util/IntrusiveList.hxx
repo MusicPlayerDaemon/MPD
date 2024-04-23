@@ -13,7 +13,14 @@
 #include <type_traits>
 #include <utility>
 
+/**
+ * Template parameter for #IntrusiveList with compile-time options.
+ */
 struct IntrusiveListOptions {
+	/**
+	 * @param constant_time_size make size() constant-time by caching the
+	 * number of items in a field?
+	 */
 	bool constant_time_size = false;
 
 	/**
@@ -147,8 +154,7 @@ struct IntrusiveListMemberHookTraits {
 };
 
 /**
- * @param constant_time_size make size() constant-time by caching the
- * number of items in a field?
+ * An intrusive doubly-linked circular list.
  */
 template<typename T,
 	 typename HookTraits=IntrusiveListBaseHookTraits<T>,
@@ -269,6 +275,9 @@ public:
 			return std::distance(begin(), end());
 	}
 
+	/**
+	 * Remove all items from the linked list.
+	 */
 	void clear() noexcept {
 		if constexpr (GetHookMode() >= IntrusiveHookMode::TRACK) {
 			/* for SafeLinkIntrusiveListHook, we need to
@@ -282,6 +291,9 @@ public:
 		}
 	}
 
+	/**
+	 * Like clear(), but invoke a disposer function on each item.
+	 */
 	void clear_and_dispose(Disposer<value_type> auto disposer) noexcept {
 		bool is_empty = empty();
 
@@ -299,6 +311,12 @@ public:
 	}
 
 	/**
+	 * Remove all items matching the given predicate and invoke
+	 * the given disposer on it.
+	 *
+	 * Neither the predicate nor the disposer are allowed to
+	 * modify the list (or destruct it).
+	 *
 	 * @return the number of removed items
 	 */
 	std::size_t remove_and_dispose_if(std::predicate<const_reference> auto pred,
