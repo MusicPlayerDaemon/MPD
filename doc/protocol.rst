@@ -623,7 +623,6 @@ Playback options
 
 :command:`volume {CHANGE}`
     Changes volume by amount ``CHANGE``.
-    Deprecated, use :ref:`setvol <command_setvol>` instead.
 
 Controlling playback
 ====================
