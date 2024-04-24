@@ -59,6 +59,8 @@ configure_args += [
     '-Dandroid_ndk=' + ndk_path,
     '-Dandroid_abi=' + android_abi,
     '-Dandroid_strip=' + toolchain.strip,
+    '-Dopenssl:asm=disabled',
+    '-Dwrap_mode=forcefallback'
 ]
 
 from build.meson import configure as run_meson
