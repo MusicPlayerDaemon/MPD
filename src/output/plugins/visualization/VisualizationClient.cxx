@@ -14,14 +14,6 @@
 
 const Domain d_vis_client("vis_client");
 
-inline
-typename std::chrono::microseconds::rep
-NowTicks() {
-	return duration_cast<std::chrono::microseconds>(
-		std::chrono::system_clock::now().time_since_epoch()).count();
-}
-
-
 // Invoked when the client connects and the plugin is in the "closed" state.
 Visualization::VisualizationClient::VisualizationClient(
 	UniqueSocketDescriptor fd,
@@ -53,10 +45,6 @@ void
 Visualization::VisualizationClient::OnPluginOpened(
 	const std::shared_ptr<SoundInfoCache> &pcache)
 {
-	FmtDebug(d_vis_client, "[{}] VisualizationClient::OnPluginOpened("
-		 "this:{},tid:{},state:{})", NowTicks(), (size_t)this,
-		 std::this_thread::get_id(), (int)protocol_state);
-
 	pcm_state = HavePcmData {
 		pcache, Visualization::SoundAnalysis(sound_params, pcache)
 	};
@@ -67,10 +55,6 @@ Visualization::VisualizationClient::OnPluginOpened(
 void
 Visualization::VisualizationClient::OnPluginClosed()
 {
-	FmtDebug(d_vis_client, "[{}] VisualizationClient::OnPluginClosed("
-		 "this:{},tid:{},state:{})", NowTicks(), (size_t)this,
-		 std::this_thread::get_id(), (int)protocol_state);
-
 	if (IsClosed()) {
 		Shutdown();
 		return;
@@ -84,23 +68,14 @@ Visualization::VisualizationClient::OnPluginClosed()
 }
 
 Visualization::VisualizationClient::~VisualizationClient() {
-	FmtDebug(d_vis_client, "[{}] VisualizationClient::~VisualizationClient()"
-		 "this:{},tid:{},state:{})", NowTicks(), (size_t)this,
-		 std::this_thread::get_id(), (int)protocol_state);
 	// This will be invoked on the main thread; the socket & underlying
 	// `SocketEvent` will be torn-down on the I/O thread.
 	timer.Cancel();
 }
 
 BufferedSocket::InputResult
-Visualization::VisualizationClient::OnSocketInput(void *data,
-						  size_t length) noexcept
+Visualization::VisualizationClient::OnSocketInput(std::span<std::byte> src) noexcept
 {
-	FmtDebug(d_vis_client, "[{}] VisualizationClient::OnSocketInput("
-		 "this:{},tid:{},state:{},length:{})", NowTicks(),
-		 (size_t)this, std::this_thread::get_id(),
-			 (int)protocol_state, length);
-
 	// We have data available to be read, and it's present in `data`...
 	if (ProtocolState::Init != protocol_state) {
 		Shutdown();
@@ -109,7 +84,9 @@ Visualization::VisualizationClient::OnSocketInput(void *data,
 
 	// attempt to parse it as a CLIHLO message...
 	ClientHello clihlo;
-	ParseResult parse_result = ParseClihlo(data, length, clihlo);
+	// TODO(sp1ff): IN-PROGRESS
+	// ParseResult parse_result = ParseClihlo(data, length, clihlo);
+	ParseResult parse_result = ParseClihlo(src.data(), src.size(), clihlo);
 	if (ParseResult::NEED_MORE_DATA == parse_result) {
 		return InputResult::MORE;
 	} else if (ParseResult::ERROR == parse_result) {
@@ -118,9 +95,6 @@ Visualization::VisualizationClient::OnSocketInput(void *data,
 		Shutdown();
 		return InputResult::CLOSED;
 	}
-
-	FmtDebug(d_vis_client, "[{}] Got CLIHLO: {}fps, tau={}ms", NowTicks(),
-			clihlo.requested_fps, clihlo.tau);
 
 	if (0 != clihlo.major_version || 1 != clihlo.minor_version) {
 		FmtWarning(d_vis_client, "Unexpected protocol version {}.{} "
@@ -142,14 +116,10 @@ Visualization::VisualizationClient::OnSocketInput(void *data,
 	};
 
 	// Seems legit-- compose our response...
-	ConsumeInput(length);
+	ConsumeInput(src.size());
 
 	next_frame.clear();
 	SerializeSrvhlo((std::byte)0, (std::byte)1, back_inserter(next_frame));
-
-	FmtDebug(d_vis_client, "[{}] Composed a SRVHLO frame, cancelled read, "
-		 "scheduled a write, and shifted to state {}.", NowTicks(),
-			 (int)ProtocolState::SrvHlo);
 
 	// shift state...
 	protocol_state = ProtocolState::SrvHlo;
@@ -168,18 +138,12 @@ Visualization::VisualizationClient::OnSocketError(
 
 void
 Visualization::VisualizationClient::OnSocketClosed() noexcept {
-	FmtInfo(d_vis_client, "[{}] VisualizationClient::OnSocketClosed("
-		"this:{},tid:{})", NowTicks(), (size_t)this, std::this_thread::get_id());
 	Shutdown();
 }
 
 void
 Visualization::VisualizationClient::OnSocketReady(unsigned flags) noexcept
 {
-	FmtDebug(d_vis_client, "[{}] VisualizationClient::OnSocketReady("
-		 "this:{},tid:{},state:{},flags:{})", NowTicks(), (size_t)this,
-		 std::this_thread::get_id(), (int)protocol_state, flags);
-
 	switch (protocol_state) {
 	case ProtocolState::Init: {
 
@@ -246,10 +210,6 @@ Visualization::VisualizationClient::ComposeSoundAnalysisFrame()
 {
 	using namespace std::chrono;
 
-	FmtDebug(d_vis_client, "[{}] VisualizationClient::"
-		 "ComposeSoundAnalysisFrame(this:{},tid:{},state:{})",
-		 NowTicks(), (size_t)this, std::this_thread::get_id(), (int)protocol_state);
-
 	if (!PluginIsOpen()) {
 		protocol_state = ProtocolState::ProtocolClosed;
 		return false;
@@ -299,32 +259,15 @@ Visualization::VisualizationClient::HandleFirstFrame()
 	auto tau = timings->tau;
 	auto freq = timings->freq;
 	if (tau < std::chrono::milliseconds::zero()) {
-		FmtDebug(d_vis_client, "[{}] VisualizationClient::"
-			 "HandleFirstFrame([this:{}]) scheduling a write for "
-			 "{} ms from now & transitioning to state {}.",
-			 NowTicks(), (size_t)this, -tau.count(),
-			 (int)ProtocolState::Waiting);
 		timer.Schedule(std::chrono::milliseconds(-tau));
 		protocol_state = ProtocolState::Waiting;
 	}
 	else {
 		if (ComposeSoundAnalysisFrame()) {
-			FmtDebug(d_vis_client, "[{}] VisualizationClient::"
-				 "HandleFirstFrame(this:{}) carried out sound "
-				 "analysis, scheduled a write & is shifting to "
-				 "state {}.", NowTicks(), (size_t)this,
-				 (int)ProtocolState::FrameReady);
 			event.ScheduleWrite();
 			timer.Schedule(std::chrono::milliseconds(freq));
 			protocol_state = ProtocolState::FrameReady;
 		} else {
-			FmtDebug(d_vis_client, "[{}] VisualizationClient::"
-				 "OnPluginOpened(this:{}) failed to perform "
-				 "sound analysis; cancelling any outstanding "
-				 "writes, scheduling another attempt for {}ms "
-				 "from now & shifting to state {}.",
-				 NowTicks(), (size_t)this, freq.count(),
-				 (int)ProtocolState::Waiting);
 			event.CancelWrite();
 			timer.Schedule(std::chrono::milliseconds(freq));
 			protocol_state = ProtocolState::Waiting;
@@ -418,10 +361,6 @@ Visualization::VisualizationClient::HandleSrvHlo(unsigned flags)
 	if (PluginIsOpen()) {
 		HandleFirstFrame();
 	} else {
-		FmtDebug(d_vis_client, "[{}] VisualizationClient::"
-			 "HandleSrvHlo(): The visualization plugin is "
-			 "closed; shifting to state {}.",
-			 NowTicks(), (int)ProtocolState::ProtocolClosed);
 		protocol_state = ProtocolState::ProtocolClosed;
 		event.CancelWrite();
 	}
@@ -448,23 +387,11 @@ Visualization::VisualizationClient::LogSocketWriteError(
 void
 Visualization::VisualizationClient::OnTimer() noexcept
 {
-	FmtDebug(d_vis_client, "[{}] VisualizationClient::OnTimer(this:{},"
-		 "tid:{},state:{})", NowTicks(), (size_t)this, std::this_thread::get_id(),
-		 (int)protocol_state);
-
 	if (ComposeSoundAnalysisFrame()) {
-		FmtDebug(d_vis_client, "VisualizationClient::OnTimer() "
-			 "carried-out sound analysis, scheduled a write, "
-			 "and shifted to state {}.",
-			 (int)ProtocolState::FrameReady);
 		event.ScheduleWrite();
 		protocol_state = ProtocolState::FrameReady;
 	} else {
 		// Give up for now-- wait for the next timer event
-		FmtDebug(d_vis_client, "VisualizationClient::OnTimer() "
-			 "failed to carry-out sound analysis; cancelling "
-			 "outstanding writes, shifting to state {}.",
-			 (int)ProtocolState::Waiting);
 		event.CancelWrite();
 		protocol_state = ProtocolState::Waiting;
 	}
@@ -520,11 +447,6 @@ Visualization::VisualizationClient::WriteFrame()
 			 "written-out. This should be investigated.",
 			 cb_written, cb_expected);
 	}
-
-	FmtDebug(d_vis_client, "[{}] VisualizationClient::WriteFrame(tid:{},"
-		 "state:{}) wrote {} bytes (of {}); cancelling any outstanding "
-		 "writes & clearing the frame buffer.", NowTicks(), std::this_thread::get_id(),
-		 (int)protocol_state, cb_written, cb_expected);
 
 	event.CancelWrite();
 	next_frame.clear();

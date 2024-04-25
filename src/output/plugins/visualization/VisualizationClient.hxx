@@ -225,7 +225,7 @@ protected:
 	/////////////////////////////////////////////////////////////////////////
 
 	virtual BufferedSocket::InputResult
-	OnSocketInput(void *data, size_t length) noexcept override;
+	OnSocketInput(std::span<std::byte> src) noexcept override;
 	virtual void OnSocketError(std::exception_ptr ep) noexcept override;
 	virtual void OnSocketClosed() noexcept override;
 

@@ -12,7 +12,7 @@ template<>
 struct fmt::formatter<std::thread::id> : formatter<string_view>
 {
 	template<typename FormatContext>
-	auto format(std::thread::id id, FormatContext &ctx) {
+	auto format(std::thread::id id, FormatContext &ctx) const {
 		std::stringstream stm;
 		stm << id;
 		return formatter<string_view>::format(stm.str(), ctx);

@@ -11,6 +11,7 @@ Visualization::ParseResult
 Visualization::ParseClihlo(void *data,
 			   size_t length,
 			   ClientHello &clihlo) noexcept {
+
 	// CLIHLO payload is 6 bytes, header & footer are five more.
 	if (length < sizeof(ClientHello) + 5) {
 		return ParseResult::NEED_MORE_DATA;

@@ -15,13 +15,6 @@ using namespace std::chrono;
 
 const Domain d_sound_info_cache("vis_sound_info_cache");
 
-inline
-typename std::chrono::microseconds::rep
-NowTicks() {
-	return duration_cast<std::chrono::microseconds>(
-		std::chrono::system_clock::now().time_since_epoch()).count();
-}
-
 Visualization::SoundInfoCache::SoundInfoCache(const AudioFormat &audio_format,
 					      const Duration &buf_span):
 	fmt(audio_format),
@@ -57,9 +50,6 @@ Visualization::SoundInfoCache::SoundInfoCache(const AudioFormat &audio_format,
 void
 Visualization::SoundInfoCache::Add(const void *data, size_t size)
 {
-	FmtDebug(d_sound_info_cache, "[{}] SoundInfoCache::add(tid:{},"
-		  "bytes:{})", NowTicks(), std::this_thread::get_id(), size);
-
 	std::lock_guard<Mutex> guard(mutex);
 
 	if (t0.time_since_epoch().count() == 0) {
@@ -159,11 +149,6 @@ Visualization::SoundInfoCache::GetByTime(size_t nsamp, Time t,
 {
 	using std::min;
 
-	FmtDebug(d_sound_info_cache, "[{}] SoundInfoCache::get_by_time"
-		 "(tid:{},t:{}us, delta:{}us)", NowTicks(), std::this_thread::get_id(),
-		 duration_cast<std::chrono::microseconds>(t.time_since_epoch()).count(),
-		 duration_cast<std::chrono::microseconds>(t1 - t).count());
-
 	std::lock_guard<Mutex> guard(mutex);
 
 	size_t cbsamp = nsamp * frame_size;
@@ -171,16 +156,15 @@ Visualization::SoundInfoCache::GetByTime(size_t nsamp, Time t,
 		/* Can't fit the requested number of frames/samples into `buf`--
 		 fail. */
 		FmtWarning(d_sound_info_cache,
-			   "[{}] SoundInfoCache::get_by_time: can't fit {} "
-			   "samples into {} bytes", NowTicks(), nsamp, cbbuf);
+			   "SoundInfoCache::get_by_time: can't fit {} "
+			   "samples into {} bytes", nsamp, cbbuf);
 		return false;
 	}
 
 	if (t > t1) {
 		FmtWarning(d_sound_info_cache,
-			   "[{}] SoundInfoCache::get_by_time: time t {}us is "
+			   "SoundInfoCache::get_by_time: time t {}us is "
 			   "greater than time t1 {}us-- failing.",
-			   NowTicks(),
 			   duration_cast<std::chrono::microseconds>(t.time_since_epoch()).count(),
 			   duration_cast<std::chrono::microseconds>(t1.time_since_epoch()).count());
 		return false;
@@ -199,10 +183,10 @@ Visualization::SoundInfoCache::GetByTime(size_t nsamp, Time t,
 	size_t cb_in_buf = size_t(ceil(delta_t / secs_per_frame)) * frame_size;
 	if (cbsamp > cb_in_buf) {
 		FmtWarning(d_sound_info_cache,
-			   "[{}] SoundInfoCache::get_by_time: the requested "
+			   "SoundInfoCache::get_by_time: the requested "
 			   "number of samples take up {} bytes, but we only "
 			   "have {} bytes in the buffer.",
-			   NowTicks(), cbsamp, cb_in_buf);
+			   cbsamp, cb_in_buf);
 		return false;
 	}
 
