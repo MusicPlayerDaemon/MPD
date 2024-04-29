@@ -103,7 +103,9 @@ public:
 	 * @see SocketAddress::GetLocalRaw()
 	 */
 	[[gnu::pure]]
-	std::string_view GetLocalRaw() const noexcept;
+	std::string_view GetLocalRaw() const noexcept {
+		return static_cast<const SocketAddress>(*this).GetLocalRaw();
+	}
 
 	/**
 	 * @see SocketAddress::GetLocalPath()

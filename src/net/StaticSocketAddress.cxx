@@ -17,16 +17,6 @@ StaticSocketAddress::operator=(SocketAddress other) noexcept
 	return *this;
 }
 
-#ifdef HAVE_UN
-
-std::string_view
-StaticSocketAddress::GetLocalRaw() const noexcept
-{
-	return SocketAddress(*this).GetLocalRaw();
-}
-
-#endif
-
 #ifdef HAVE_TCP
 
 bool
