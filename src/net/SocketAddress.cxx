@@ -2,8 +2,11 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "SocketAddress.hxx"
+
+#ifdef HAVE_TCP
 #include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
+#endif
 
 #include <cassert>
 #include <cstring>
