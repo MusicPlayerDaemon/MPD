@@ -7,7 +7,10 @@
 #include "Features.hxx"
 
 #include <cassert>
+
+#ifdef HAVE_UN
 #include <string_view>
+#endif
 
 /**
  * An OO wrapper for struct sockaddr_storage.
