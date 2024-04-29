@@ -27,6 +27,7 @@ conf.set('HAVE_UN', have_local_socket)
 if have_local_socket
   conf.set('HAVE_STRUCT_UCRED', compiler.has_header_symbol('sys/socket.h', 'struct ucred') and compiler.has_header_symbol('sys/socket.h', 'SO_PEERCRED'))
   conf.set('HAVE_GETPEEREID', compiler.has_function('getpeereid'))
+  net_sources += 'LocalSocketAddress.cxx'
 endif
 
 if not have_tcp and not have_local_socket
