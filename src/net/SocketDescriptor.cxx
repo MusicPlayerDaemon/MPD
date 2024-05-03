@@ -484,6 +484,9 @@ SocketDescriptor::WriteNoWait(std::span<const std::byte> src) const noexcept
 #ifndef _WIN32
 	flags |= MSG_DONTWAIT;
 #endif
+#ifdef __linux__
+	flags |= MSG_NOSIGNAL;
+#endif
 
 	return Send(src, flags);
 }
