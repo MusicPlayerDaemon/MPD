@@ -9,6 +9,8 @@
 
 #include <sys/un.h>
 
+using std::string_view_literals::operator""sv;
+
 TEST(LocalSocketAddress, Path1)
 {
 	const char *path = "/run/foo/bar.socket";
@@ -17,6 +19,7 @@ TEST(LocalSocketAddress, Path1)
 	EXPECT_TRUE(a.IsDefined());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
 	EXPECT_EQ(ToString(a), path);
+	EXPECT_EQ(a.GetLocalRaw(), "/run/foo/bar.socket\0"sv);
 	EXPECT_STREQ(a.GetLocalPath(), path);
 
 	const struct sockaddr *const sa = a;
@@ -32,6 +35,7 @@ TEST(LocalSocketAddress, Path2)
 	EXPECT_TRUE(a.IsDefined());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
 	EXPECT_EQ(ToString(a), path);
+	EXPECT_EQ(a.GetLocalRaw(), "/run/foo/bar.socket\0"sv);
 	EXPECT_STREQ(a.GetLocalPath(), path);
 
 	const struct sockaddr *const sa = a;
@@ -49,6 +53,7 @@ TEST(LocalSocketAddress, Path)
 	EXPECT_TRUE(a.IsDefined());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
 	EXPECT_EQ(ToString(a), path);
+	EXPECT_EQ(a.GetLocalRaw(), "/run/foo/bar.socket\0"sv);
 	EXPECT_STREQ(a.GetLocalPath(), path);
 
 	const auto &sun = *(const struct sockaddr_un *)a.GetAddress();
@@ -66,6 +71,7 @@ TEST(LocalSocketAddress, Abstract1)
 	EXPECT_TRUE(a.IsDefined());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
 	EXPECT_EQ(ToString(a), path);
+	EXPECT_EQ(a.GetLocalRaw(), "\0foo.bar"sv);
 	EXPECT_EQ(a.GetLocalPath(), nullptr);
 
 	const struct sockaddr *const sa = a;
@@ -88,6 +94,7 @@ TEST(LocalSocketAddress, Abstract)
 	EXPECT_TRUE(a.IsDefined());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
 	EXPECT_EQ(ToString(a), path);
+	EXPECT_EQ(a.GetLocalRaw(), "\0foo.bar"sv);
 	EXPECT_EQ(a.GetLocalPath(), nullptr);
 
 	const auto &sun = *(const struct sockaddr_un *)a.GetAddress();
