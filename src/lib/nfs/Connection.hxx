@@ -186,7 +186,7 @@ public:
 	void CancelAndClose(struct nfsfh *fh, NfsCallback &callback) noexcept;
 
 protected:
-	virtual void OnNfsConnectionError(std::exception_ptr &&e) noexcept = 0;
+	virtual void OnNfsConnectionError(std::exception_ptr e) noexcept = 0;
 
 private:
 	void DestroyContext() noexcept;
@@ -203,8 +203,8 @@ private:
 
 	void MountInternal();
 	void BroadcastMountSuccess() noexcept;
-	void BroadcastMountError(std::exception_ptr &&e) noexcept;
-	void BroadcastError(std::exception_ptr &&e) noexcept;
+	void BroadcastMountError(std::exception_ptr e) noexcept;
+	void BroadcastError(std::exception_ptr e) noexcept;
 
 	static void MountCallback(int status, nfs_context *nfs, void *data,
 				  void *private_data) noexcept;

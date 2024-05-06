@@ -589,7 +589,7 @@ NfsConnection::BroadcastMountSuccess() noexcept
 }
 
 void
-NfsConnection::BroadcastMountError(std::exception_ptr &&e) noexcept
+NfsConnection::BroadcastMountError(std::exception_ptr e) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -603,7 +603,7 @@ NfsConnection::BroadcastMountError(std::exception_ptr &&e) noexcept
 }
 
 void
-NfsConnection::BroadcastError(std::exception_ptr &&e) noexcept
+NfsConnection::BroadcastError(std::exception_ptr e) noexcept
 {
 	assert(GetEventLoop().IsInside());
 

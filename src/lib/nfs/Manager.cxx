@@ -27,11 +27,11 @@ public:
 
 protected:
 	/* virtual methods from NfsConnection */
-	void OnNfsConnectionError(std::exception_ptr &&e) noexcept override;
+	void OnNfsConnectionError(std::exception_ptr e) noexcept override;
 };
 
 void
-NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e) noexcept
+NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr e) noexcept
 {
 	FmtError(nfs_domain, "NFS error on '{}:{}': {}",
 		 GetServer(), GetExportName(), e);
