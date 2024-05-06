@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_NFS_LEASE_HXX
-#define MPD_NFS_LEASE_HXX
+#pragma once
+
+#include "util/IntrusiveList.hxx"
 
 #include <exception>
 
-class NfsLease {
+class NfsLease : public IntrusiveListHook<> {
 public:
 	/**
 	 * The #NfsConnection has successfully mounted the server's
@@ -26,5 +27,3 @@ public:
 	 */
 	virtual void OnNfsConnectionDisconnected(std::exception_ptr e) noexcept = 0;
 };
-
-#endif

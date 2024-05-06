@@ -7,9 +7,9 @@
 #include "event/SocketEvent.hxx"
 #include "event/CoarseTimerEvent.hxx"
 #include "event/DeferEvent.hxx"
+#include "util/IntrusiveList.hxx"
 
 #include <string>
-#include <list>
 #include <forward_list>
 #include <exception>
 
@@ -83,7 +83,7 @@ class NfsConnection {
 
 	nfs_context *context;
 
-	typedef std::list<NfsLease *> LeaseList;
+	using LeaseList = IntrusiveList<NfsLease>;
 	LeaseList new_leases, active_leases;
 
 	typedef CancellableList<NfsCallback, CancellableCallback> CallbackList;
@@ -124,12 +124,7 @@ public:
 	[[gnu::nonnull]]
 	NfsConnection(EventLoop &_loop,
 		      std::string_view _server,
-		      std::string_view _export_name) noexcept
-		:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
-		 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
-		 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
-		 server(_server), export_name(_export_name),
-		 context(nullptr) {}
+		      std::string_view _export_name) noexcept;
 
 	/**
 	 * Must be run from EventLoop's thread.

@@ -173,6 +173,15 @@ events_to_libnfs(unsigned i) noexcept
 		((i & SocketEvent::ERROR) ? POLLERR : 0);
 }
 
+NfsConnection::NfsConnection(EventLoop &_loop,
+			     std::string_view _server,
+			     std::string_view _export_name) noexcept
+	:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
+	 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
+	 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
+	 server(_server), export_name(_export_name),
+	 context(nullptr) {}
+
 NfsConnection::~NfsConnection() noexcept
 {
 	assert(GetEventLoop().IsInside());
@@ -190,7 +199,7 @@ NfsConnection::AddLease(NfsLease &lease) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	new_leases.push_back(&lease);
+	new_leases.push_back(lease);
 
 	defer_new_lease.Schedule();
 }
@@ -200,8 +209,7 @@ NfsConnection::RemoveLease(NfsLease &lease) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	new_leases.remove(&lease);
-	active_leases.remove(&lease);
+	lease.unlink();
 }
 
 void
@@ -581,11 +589,10 @@ NfsConnection::BroadcastMountSuccess() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	while (!new_leases.empty()) {
-		auto i = new_leases.begin();
-		active_leases.splice(active_leases.end(), new_leases, i);
-		(*i)->OnNfsConnectionReady();
-	}
+	new_leases.clear_and_dispose([this](auto *lease){
+		active_leases.push_back(*lease);
+		lease->OnNfsConnectionReady();
+	});
 }
 
 void
@@ -593,11 +600,9 @@ NfsConnection::BroadcastMountError(std::exception_ptr e) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	while (!new_leases.empty()) {
-		auto l = new_leases.front();
-		new_leases.pop_front();
+	new_leases.clear_and_dispose([this, &e](auto *l){
 		l->OnNfsConnectionFailed(e);
-	}
+	});
 
 	OnNfsConnectionError(std::move(e));
 }
@@ -607,11 +612,9 @@ NfsConnection::BroadcastError(std::exception_ptr e) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	while (!active_leases.empty()) {
-		auto l = active_leases.front();
-		active_leases.pop_front();
+	active_leases.clear_and_dispose([this, &e](auto *l){
 		l->OnNfsConnectionDisconnected(e);
-	}
+	});
 
 	BroadcastMountError(std::move(e));
 }
