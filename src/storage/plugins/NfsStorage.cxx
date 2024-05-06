@@ -147,11 +147,6 @@ private:
 		SetState(State::CONNECTING);
 	}
 
-	void EnsureConnected() noexcept {
-		if (state != State::READY)
-			Connect();
-	}
-
 	void WaitConnected() {
 		std::unique_lock<Mutex> lock(mutex);
 
