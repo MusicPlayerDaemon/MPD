@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef YAJL_CALLBACKS_HXX
-#define YAJL_CALLBACKS_HXX
+#pragma once
 
 #include "util/Cast.hxx"
 
 #include <string_view>
 
-#include <yajl/yajl_parse.h>
+#include <yajl_parse.h>
 
 namespace Yajl {
 
@@ -59,5 +58,3 @@ struct CallbacksWrapper {
 };
 
 } // namespace Yajl
-
-#endif

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef YAJL_GEN_HXX
-#define YAJL_GEN_HXX
+#pragma once
 
-#include <yajl/yajl_gen.h>
+#include <yajl_gen.h>
 
 #include <algorithm>
 #include <span>
@@ -74,5 +73,3 @@ public:
 };
 
 } // namespace Yajl
-
-#endif
