@@ -3,12 +3,13 @@
 
 #include "Base.hxx"
 
+#include <array>
 #include <cassert>
 
 #include <string.h>
 
-static char nfs_base_server[64];
-static char nfs_base_export_name[256];
+static std::array<char, 64> nfs_base_server;
+static std::array<char, 256> nfs_base_export_name;
 static size_t nfs_base_export_name_length;
 
 void
@@ -20,12 +21,12 @@ nfs_set_base(const char *server, const char *export_name) noexcept
 	const size_t server_length = strlen(server);
 	const size_t export_name_length = strlen(export_name);
 
-	if (server_length >= sizeof(nfs_base_server) ||
-	    export_name_length > sizeof(nfs_base_export_name))
+	if (server_length >= nfs_base_server.size() ||
+	    export_name_length > nfs_base_export_name.size())
 		return;
 
-	memcpy(nfs_base_server, server, server_length + 1);
-	memcpy(nfs_base_export_name, export_name, export_name_length);
+	memcpy(nfs_base_server.data(), server, server_length + 1);
+	memcpy(nfs_base_export_name.data(), export_name, export_name_length);
 	nfs_base_export_name_length = export_name_length;
 }
 
@@ -35,9 +36,9 @@ nfs_check_base(const char *server, const char *path) noexcept
 	assert(server != nullptr);
 	assert(path != nullptr);
 
-	return strcmp(nfs_base_server, server) == 0 &&
-	    memcmp(nfs_base_export_name, path,
-		   nfs_base_export_name_length) == 0 &&
+	return strcmp(nfs_base_server.data(), server) == 0 &&
+		memcmp(nfs_base_export_name.data(), path,
+		       nfs_base_export_name_length) == 0 &&
 		(path[nfs_base_export_name_length] == 0 ||
 		 path[nfs_base_export_name_length] == '/')
 		? path + nfs_base_export_name_length
