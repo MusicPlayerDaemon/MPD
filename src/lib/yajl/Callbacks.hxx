@@ -27,13 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef YAJL_CALLBACKS_HXX
-#define YAJL_CALLBACKS_HXX
+#pragma once
 
 #include "util/Cast.hxx"
 #include "util/StringView.hxx"
 
-#include <yajl/yajl_parse.h>
+#include <yajl_parse.h>
 
 namespace Yajl {
 
@@ -81,5 +80,3 @@ struct CallbacksWrapper {
 };
 
 } // namespace Yajl
-
-#endif

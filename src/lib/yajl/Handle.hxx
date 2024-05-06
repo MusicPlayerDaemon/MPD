@@ -27,10 +27,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef YAJL_HANDLE_HXX
-#define YAJL_HANDLE_HXX
+#pragma once
 
-#include <yajl/yajl_parse.h>
+#include <yajl_parse.h>
 
 #include <utility>
 
@@ -82,5 +81,3 @@ private:
 };
 
 } // namespace Yajl
-
-#endif

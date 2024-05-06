@@ -27,12 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef YAJL_GEN_HXX
-#define YAJL_GEN_HXX
+#pragma once
 
 #include "util/ConstBuffer.hxx"
 
-#include <yajl/yajl_gen.h>
+#include <yajl_gen.h>
 
 #include <algorithm>
 #include <string_view>
@@ -101,5 +100,3 @@ public:
 };
 
 } // namespace Yajl
-
-#endif
