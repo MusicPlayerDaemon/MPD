@@ -102,7 +102,12 @@ nfs
 
 Load music files from a NFS server.  It is used when
 :code:`music_directory` contains a ``nfs://`` URI according to
-RFC2224, for example :samp:`nfs://servername/path`.
+RFC2224, for example :samp:`nfs://servername/path`.  MPD supports the
+libnfs URL arguments as documented in the `libnfs README
+<https://github.com/sahlberg/libnfs/blob/master/README>`__.  For
+example, you can use NFSv4 with the ``version`` argument::
+
+ music_directory "nfs://server/music?version=4"
 
 See :ref:`input_nfs` for more information.
 
@@ -307,7 +312,7 @@ used according to RFC2224. Example:
 
      mpc add nfs://servername/path/filename.ogg
 
-This plugin uses :program:`libnfs`, which supports only NFS version 3.
+This plugin uses :program:`libnfs`.
 Since :program:`MPD` is not allowed to bind to so-called "privileged
 ports", the NFS server needs to enable the ``insecure`` setting;
 example :file:`/etc/exports`:

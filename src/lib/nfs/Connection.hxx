@@ -131,6 +131,7 @@ public:
 	 */
 	[[gnu::nonnull]]
 	NfsConnection(EventLoop &_loop,
+		      nfs_context *_context,
 		      std::string_view _server,
 		      std::string_view _export_name);
 

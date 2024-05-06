@@ -42,6 +42,20 @@ public:
 	}
 
 	/**
+	 * Create a new #NfsConnection, parsing the specified "nfs://"
+	 * URL.
+	 *
+	 * Throws on error.
+	 */
+	[[nodiscard]]
+	NfsConnection &MakeConnection(const char *url);
+
+	/**
+	 * Look up an existing #NfsConnection (or create a new one if
+	 * none matching the given parameters exists).  Unlike
+	 * MakeConnection(), this does not support options in a query
+	 * string.
+	 *
 	 * Throws on error.
 	 */
 	[[nodiscard]]

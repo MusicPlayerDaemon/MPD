@@ -174,16 +174,15 @@ events_to_libnfs(unsigned i) noexcept
 }
 
 NfsConnection::NfsConnection(EventLoop &_loop,
+			     nfs_context *_context,
 			     std::string_view _server,
 			     std::string_view _export_name)
 	:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
 	 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
 	 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
 	 server(_server), export_name(_export_name),
-	 context(nfs_init_context())
+	 context(_context)
 {
-	if (context == nullptr)
-		throw std::runtime_error{"nfs_init_context() failed"};
 }
 
 NfsConnection::~NfsConnection() noexcept
@@ -202,7 +201,7 @@ NfsConnection::~NfsConnection() noexcept
 void
 NfsConnection::AddLease(NfsLease &lease) noexcept
 {
-	assert(GetEventLoop().IsInside());
+	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 	new_leases.push_back(lease);
 
@@ -212,7 +211,7 @@ NfsConnection::AddLease(NfsLease &lease) noexcept
 void
 NfsConnection::RemoveLease(NfsLease &lease) noexcept
 {
-	assert(GetEventLoop().IsInside());
+	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 	lease.unlink();
 }

@@ -40,6 +40,14 @@ nfs_get_event_loop() noexcept
 }
 
 NfsConnection &
+nfs_make_connection(const char *url)
+{
+	assert(in_use > 0);
+
+	return nfs_glue->MakeConnection(url);
+}
+
+NfsConnection &
 nfs_get_connection(std::string_view server,
 		   std::string_view export_name)
 {

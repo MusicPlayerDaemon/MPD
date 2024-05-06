@@ -3,12 +3,17 @@
 
 #include "Manager.hxx"
 #include "Connection.hxx"
+#include "Error.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "event/Loop.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/Domain.hxx"
-#include "util/StringAPI.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
+
+extern "C" {
+#include <nfsc/libnfs.h>
+}
 
 static constexpr Domain nfs_domain("nfs");
 
@@ -20,9 +25,10 @@ class NfsManager::ManagedConnection final
 
 public:
 	ManagedConnection(NfsManager &_manager, EventLoop &_loop,
+			  struct nfs_context *_context,
 			  std::string_view _server,
 			  std::string_view _export_name)
-		:NfsConnection(_loop, _server, _export_name),
+		:NfsConnection(_loop, _context, _server, _export_name),
 		 manager(_manager) {}
 
 protected:
@@ -55,6 +61,28 @@ NfsManager::~NfsManager() noexcept
 }
 
 NfsConnection &
+NfsManager::MakeConnection(const char *url)
+{
+	struct nfs_context *const context = nfs_init_context();
+	if (context == nullptr)
+		throw std::runtime_error{"nfs_init_context() failed"};
+
+	auto *pu = nfs_parse_url_dir(context, url);
+	if (pu == nullptr) {
+		AtScopeExit(context) { nfs_destroy_context(context); };
+		throw NfsClientError(context, "nfs_parse_url_dir() failed");
+	}
+
+	AtScopeExit(pu) { nfs_destroy_url(pu); };
+
+	auto c = new ManagedConnection(*this, GetEventLoop(),
+				       context,
+				       pu->server, pu->path);
+	connections.push_front(*c);
+	return *c;
+}
+
+NfsConnection &
 NfsManager::GetConnection(std::string_view server, std::string_view export_name)
 {
 	assert(GetEventLoop().IsInside());
@@ -64,7 +92,12 @@ NfsManager::GetConnection(std::string_view server, std::string_view export_name)
 		    c.GetExportName() == export_name)
 			return c;
 
+	struct nfs_context *const context = nfs_init_context();
+	if (context == nullptr)
+		throw std::runtime_error{"nfs_init_context() failed"};
+
 	auto c = new ManagedConnection(*this, GetEventLoop(),
+				       context,
 				       server, export_name);
 	connections.push_front(*c);
 	return *c;
