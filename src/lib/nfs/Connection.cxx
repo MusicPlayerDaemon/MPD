@@ -473,6 +473,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 	assert(GetEventLoop().IsInside());
 	assert(deferred_close.empty());
 	assert(mount_state >= MountState::WAITING);
+	assert(!postponed_mount_error);
 
 	const bool was_mounted = mount_state >= MountState::FINISHED;
 	if (!was_mounted || (flags & SocketEvent::HANGUP) != 0)
@@ -492,35 +493,32 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		deferred_close.pop_front();
 	}
 
-	if (!was_mounted && mount_state >= MountState::FINISHED) {
-		if (postponed_mount_error) {
-			PrepareDestroyContext();
-			BroadcastMountError(std::move(postponed_mount_error));
-			return;
-		} else if (result == 0)
-			BroadcastMountSuccess();
-	} else if (result < 0) {
-		/* the connection has failed */
+	try {
+		if (postponed_mount_error)
+			std::rethrow_exception(postponed_mount_error);
 
-		auto e = NfsClientError(context, "NFS connection has failed");
-		BroadcastError(std::make_exception_ptr(e));
+		if (result < 0)
+			throw NfsClientError(context, "NFS connection has failed");
 
+		if (nfs_get_fd(context) < 0)
+			/* this happens when rpc_reconnect_requeue()
+			   is called after the connection broke, but
+			   autoreconnect was disabled - nfs_service()
+			   returns 0 */
+			throw NfsClientError(context, "NFS socket disappeared");
+	} catch (...) {
 		PrepareDestroyContext();
-		return;
-	} else if (nfs_get_fd(context) < 0) {
-		/* this happens when rpc_reconnect_requeue() is called
-		   after the connection broke, but autoreconnect was
-		   disabled - nfs_service() returns 0 */
-
-		auto e = NfsClientError(context, "NFS socket disappeared");
-
-		BroadcastError(std::make_exception_ptr(e));
-
-		PrepareDestroyContext();
+		if (was_mounted)
+			BroadcastError(std::current_exception());
+		else
+			BroadcastMountError(std::current_exception());
 		return;
 	}
 
 	assert(nfs_get_fd(context) >= 0);
+
+	if (!was_mounted && mount_state >= MountState::FINISHED)
+		BroadcastMountSuccess();
 
 #ifndef NDEBUG
 	assert(in_event);
