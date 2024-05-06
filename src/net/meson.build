@@ -4,7 +4,11 @@ have_tcp = get_option('tcp')
 conf.set('HAVE_TCP', have_tcp)
 
 if have_tcp
-  net_sources += 'DscpParser.cxx'
+  net_sources += [
+    'IPv4Address.cxx',
+    'IPv6Address.cxx',
+    'DscpParser.cxx',
+  ]
 endif
 
 if have_tcp and not get_option('ipv6').disabled()
@@ -43,8 +47,6 @@ net = static_library(
   'AddressInfo.cxx',
   'StaticSocketAddress.cxx',
   'AllocatedSocketAddress.cxx',
-  'IPv4Address.cxx',
-  'IPv6Address.cxx',
   'SocketAddress.cxx',
   'SocketUtil.cxx',
   'SocketDescriptor.cxx',
