@@ -142,11 +142,6 @@ jobs:
       - id: checkout
         uses: actions/checkout@v4
 
-      - id: cache-ccache
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: macos
-
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -155,6 +150,7 @@ jobs:
         run: |
           brew install \
             meson ninja \
+            ccache \
             fmt \
             googletest \
             icu4c \
@@ -172,6 +168,11 @@ jobs:
             faad2 \
             wavpack \
             libmpdclient
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: macos
 
       - name: Configure
         run: |

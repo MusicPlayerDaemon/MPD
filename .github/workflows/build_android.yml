@@ -30,18 +30,19 @@ jobs:
       - id: checkout
         uses: actions/checkout@v4
 
-      - id: cache-ccache
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: android
-
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             ninja-build \
+            ccache \
             quilt 
           pip3 install --user meson==1.3.0
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: android
 
       # todo: remove once NDK 27 is out of beta
       - name: Install Beta NDK
