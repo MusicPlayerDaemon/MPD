@@ -9,6 +9,7 @@
 #include "event/DeferEvent.hxx"
 #include "util/IntrusiveList.hxx"
 
+#include <cstdint>
 #include <string>
 #include <forward_list>
 #include <exception>
@@ -100,6 +101,12 @@ class NfsConnection {
 
 	std::exception_ptr postponed_mount_error;
 
+	enum class MountState : uint_least8_t {
+		INITIAL,
+		WAITING,
+		FINISHED,
+	} mount_state = MountState::INITIAL;
+
 #ifndef NDEBUG
 	/**
 	 * True when nfs_service() is being called.
@@ -117,8 +124,6 @@ class NfsConnection {
 	 */
 	bool in_destroy;
 #endif
-
-	bool mount_finished;
 
 public:
 	[[gnu::nonnull]]

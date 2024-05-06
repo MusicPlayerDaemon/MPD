@@ -379,9 +379,11 @@ NfsConnection::DestroyContext() noexcept
 	in_destroy = true;
 #endif
 
-	if (!mount_finished) {
+	if (mount_state == MountState::WAITING) {
 		assert(mount_timeout_event.IsPending());
 		mount_timeout_event.Cancel();
+	} else {
+		assert(!mount_timeout_event.IsPending());
 	}
 
 	/* cancel pending DeferEvent that was scheduled to notify
@@ -469,9 +471,10 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(deferred_close.empty());
+	assert(mount_state >= MountState::WAITING);
 
-	const bool was_mounted = mount_finished;
-	if (!mount_finished || (flags & SocketEvent::HANGUP) != 0)
+	const bool was_mounted = mount_state >= MountState::FINISHED;
+	if (!was_mounted || (flags & SocketEvent::HANGUP) != 0)
 		/* until the mount is finished, the NFS client may use
 		   various sockets, therefore we unregister and
 		   re-register it each time */
@@ -488,7 +491,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		deferred_close.pop_front();
 	}
 
-	if (!was_mounted && mount_finished) {
+	if (!was_mounted && mount_state >= MountState::FINISHED) {
 		if (postponed_mount_error) {
 			DestroyContext();
 			BroadcastMountError(std::move(postponed_mount_error));
@@ -530,8 +533,9 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 {
 	assert(GetEventLoop().IsInside());
 	assert(context == nfs);
+	assert(mount_state == MountState::WAITING);
 
-	mount_finished = true;
+	mount_state = MountState::FINISHED;
 
 	assert(mount_timeout_event.IsPending() || in_destroy);
 	mount_timeout_event.Cancel();
@@ -557,13 +561,14 @@ NfsConnection::MountInternal()
 {
 	assert(GetEventLoop().IsInside());
 	assert(context == nullptr);
+	assert(mount_state == MountState::INITIAL);
 
 	context = nfs_init_context();
 	if (context == nullptr)
 		throw std::runtime_error("nfs_init_context() failed");
 
 	postponed_mount_error = std::exception_ptr();
-	mount_finished = false;
+	mount_state = MountState::WAITING;
 
 	mount_timeout_event.Schedule(NFS_MOUNT_TIMEOUT);
 
@@ -575,6 +580,7 @@ NfsConnection::MountInternal()
 
 	if (nfs_mount_async(context, server.c_str(), export_name.c_str(),
 			    MountCallback, this) != 0) {
+		mount_state = MountState::FINISHED;
 		auto e = NfsClientError(context, "nfs_mount_async() failed");
 		nfs_destroy_context(context);
 		context = nullptr;
@@ -588,6 +594,7 @@ void
 NfsConnection::BroadcastMountSuccess() noexcept
 {
 	assert(GetEventLoop().IsInside());
+	assert(mount_state == MountState::FINISHED);
 
 	new_leases.clear_and_dispose([this](auto *lease){
 		active_leases.push_back(*lease);
@@ -599,6 +606,7 @@ void
 NfsConnection::BroadcastMountError(std::exception_ptr e) noexcept
 {
 	assert(GetEventLoop().IsInside());
+	assert(mount_state == MountState::FINISHED);
 
 	new_leases.clear_and_dispose([this, &e](auto *l){
 		l->OnNfsConnectionFailed(e);
@@ -623,9 +631,9 @@ void
 NfsConnection::OnMountTimeout() noexcept
 {
 	assert(GetEventLoop().IsInside());
-	assert(!mount_finished);
+	assert(mount_state == MountState::WAITING);
 
-	mount_finished = true;
+	mount_state = MountState::FINISHED;
 	DestroyContext();
 
 	BroadcastMountError(std::make_exception_ptr(std::runtime_error("Mount timeout")));
@@ -636,7 +644,7 @@ NfsConnection::RunDeferred() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	if (context == nullptr) {
+	if (mount_state == MountState::INITIAL) {
 		try {
 			MountInternal();
 		} catch (...) {
@@ -645,6 +653,6 @@ NfsConnection::RunDeferred() noexcept
 		}
 	}
 
-	if (mount_finished)
+	if (mount_state >= MountState::FINISHED)
 		BroadcastMountSuccess();
 }
