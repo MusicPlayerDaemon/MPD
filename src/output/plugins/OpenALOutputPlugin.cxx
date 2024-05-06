@@ -7,16 +7,8 @@
 
 #include <unistd.h>
 
-#ifndef __APPLE__
 #include <AL/al.h>
 #include <AL/alc.h>
-#else
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-/* on macOS, OpenAL is deprecated, but since the user asked to enable
-   this plugin, let's ignore the compiler warnings */
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
 
 class OpenALOutput final : AudioOutput {
 	/* should be enough for buffer size = 2048 */

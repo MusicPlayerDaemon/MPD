@@ -35,26 +35,7 @@ set(CMAKE_CXX_FLAGS_INIT "{toolchain.cxxflags} {toolchain.cppflags}")
     __write_cmake_compiler(f, 'C', toolchain.cc)
     __write_cmake_compiler(f, 'CXX', toolchain.cxx)
 
-    if cmake_system_name == 'Darwin':
-        # On macOS, cmake forcibly adds an "-isysroot" flag even if
-        # one is already present in the flags variable; this breaks
-        # cross-compiling for iOS, and can be worked around by setting
-        # the CMAKE_OSX_SYSROOT variable
-        # (https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html).
-        m = re.search(r'-isysroot +(\S+)', toolchain.cflags)
-        if m:
-            sysroot = m.group(1)
-
-            print(f'set(CMAKE_OSX_SYSROOT {sysroot})', file=f)
-
-            # search libraries and headers only in the sysroot, not on
-            # the build host
-            f.write(f"""
-set(CMAKE_FIND_ROOT_PATH "{toolchain.install_prefix};{sysroot}")
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-""")
-    elif cmake_system_name == 'Windows':
+    if cmake_system_name == 'Windows':
             # search libraries and headers only in the sysroot, not on
             # the build host
             f.write(f"""

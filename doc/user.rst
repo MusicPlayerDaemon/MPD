@@ -491,7 +491,11 @@ More information can be found in the :ref:`encoder_plugins` reference.
 Configuring audio outputs
 -------------------------
 
-Audio outputs are devices which actually play the audio chunks produced by :program:`MPD`. You can configure any number of audio output devices, but there must be at least one. If none is configured, :program:`MPD` attempts to auto-detect. Usually, this works quite well with ALSA, OSS and on Mac OS X.
+Audio outputs are devices which actually play the audio chunks
+produced by :program:`MPD`. You can configure any number of audio
+output devices, but there must be at least one. If none is configured,
+:program:`MPD` attempts to auto-detect. Usually, this works quite well
+with ALSA and OSS.
 
 To configure an audio output manually, add one or more
 :code:`audio_output` blocks to :file:`mpd.conf`:
@@ -954,7 +958,7 @@ Do not change these unless you know what you are doing.
 Zeroconf
 ^^^^^^^^
 
-If Zeroconf support (`Avahi <http://avahi.org/>`_ or Apple's Bonjour)
+If Zeroconf support (`Avahi <http://avahi.org/>`_
 was enabled at compile time with :code:`-Dzeroconf=...`,
 :program:`MPD` can announce its presence on the network. The following
 settings control this feature:

@@ -3,19 +3,12 @@
 
 #include "Glue.hxx"
 #include "Helper.hxx"
+#include "avahi/Helper.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "Listen.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-
-#ifdef HAVE_AVAHI
-#include "avahi/Helper.hxx"
-#endif
-
-#ifdef HAVE_BONJOUR
-#include "Bonjour.hxx"
-#endif
 
 #include <climits>
 

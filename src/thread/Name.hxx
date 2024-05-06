@@ -28,11 +28,7 @@ SetThreadName(const char *name) noexcept
 	   requires a non-const pointer argument, which we don't have
 	   here */
 
-#ifdef __APPLE__
-	pthread_setname_np(name);
-#else
 	pthread_setname_np(pthread_self(), name);
-#endif
 #elif defined(HAVE_PRCTL) && defined(PR_SET_NAME)
 	prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
 #else

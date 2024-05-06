@@ -14,10 +14,6 @@ if enable_oss
   mixer_plugins_sources += 'OssMixerPlugin.cxx'
 endif
 
-if is_darwin
-  mixer_plugins_sources += 'OSXMixerPlugin.cxx'
-endif
-
 if pipewire_dep.found()
   mixer_plugins_sources += 'PipeWireMixerPlugin.cxx'
 endif

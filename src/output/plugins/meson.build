@@ -49,13 +49,7 @@ endif
 
 openal_dep = dependency('', required: false)
 if not get_option('openal').disabled()
-  if is_darwin
-    if compiler.has_header('OpenAL/al.h')
-      openal_dep = declare_dependency(link_args: ['-framework', 'OpenAL'])
-    endif
-  else
-    openal_dep = dependency('openal', required: false)
-  endif
+  openal_dep = dependency('openal', required: false)
 
   if openal_dep.found()
     output_plugins_sources += 'OpenALOutputPlugin.cxx'
@@ -68,13 +62,6 @@ output_features.set('HAVE_OPENAL', openal_dep.found())
 if enable_oss
   output_plugins_sources += 'OssOutputPlugin.cxx'
 endif
-
-if is_darwin
-  output_plugins_sources += [
-    'OSXOutputPlugin.cxx',
-  ]
-endif
-output_features.set('HAVE_OSX', is_darwin)
 
 enable_pipe_output = get_option('pipe') and not is_windows
 output_features.set('ENABLE_PIPE_OUTPUT', enable_pipe_output)
@@ -166,7 +153,6 @@ output_plugins = static_library(
   include_directories: inc,
   dependencies: [
     alsa_dep,
-    apple_dep,
     libao_dep,
     libjack_dep,
     pipewire_dep,

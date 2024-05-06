@@ -201,6 +201,6 @@ option('yajl', type: 'feature', description: 'libyajl for YAML support')
 option('zlib', type: 'feature', description: 'zlib support (for database compression)')
 
 option('zeroconf', type: 'combo',
-       choices: ['auto', 'avahi', 'bonjour', 'disabled'],
+       choices: ['auto', 'avahi', 'disabled'],
        value: 'auto',
        description: 'Zeroconf support')
