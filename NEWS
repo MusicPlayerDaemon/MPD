@@ -1,4 +1,6 @@
 ver 0.23.17 (not yet released)
+* storage
+  - nfs: require libnfs 4.0 or later
 * support libfmt 11.1
 
 ver 0.23.16 (2024/12/03)

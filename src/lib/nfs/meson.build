@@ -1,4 +1,4 @@
-nfs_dep = dependency('libnfs', version: '>= 1.11', required: get_option('nfs'))
+nfs_dep = dependency('libnfs', version: '>= 4', required: get_option('nfs'))
 conf.set('ENABLE_NFS', nfs_dep.found())
 if not nfs_dep.found()
   subdir_done()
