@@ -141,8 +141,7 @@ private:
 		assert(state != State::READY);
 		assert(GetEventLoop().IsInside());
 
-		connection = &nfs_get_connection(server.c_str(),
-						 export_name.c_str());
+		connection = &nfs_get_connection(server, export_name);
 		connection->AddLease(*this);
 
 		SetState(State::CONNECTING);

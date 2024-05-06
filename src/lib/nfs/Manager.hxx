@@ -6,6 +6,8 @@
 #include "event/IdleEvent.hxx"
 #include "util/IntrusiveList.hxx"
 
+#include <string_view>
+
 class NfsConnection;
 
 /**
@@ -40,8 +42,8 @@ public:
 	}
 
 	[[gnu::pure]]
-	NfsConnection &GetConnection(const char *server,
-				     const char *export_name) noexcept;
+	NfsConnection &GetConnection(std::string_view server,
+				     std::string_view export_name) noexcept;
 
 private:
 	void ScheduleDelete(ManagedConnection &c) noexcept;

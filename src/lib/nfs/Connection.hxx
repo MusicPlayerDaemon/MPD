@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_NFS_CONNECTION_HXX
-#define MPD_NFS_CONNECTION_HXX
+#pragma once
 
 #include "Cancellable.hxx"
 #include "event/SocketEvent.hxx"
@@ -124,7 +123,8 @@ class NfsConnection {
 public:
 	[[gnu::nonnull]]
 	NfsConnection(EventLoop &_loop,
-		      const char *_server, const char *_export_name) noexcept
+		      std::string_view _server,
+		      std::string_view _export_name) noexcept
 		:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
 		 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
 		 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
@@ -141,13 +141,13 @@ public:
 	}
 
 	[[gnu::pure]]
-	const char *GetServer() const noexcept {
-		return server.c_str();
+	std::string_view GetServer() const noexcept {
+		return server;
 	}
 
 	[[gnu::pure]]
-	const char *GetExportName() const noexcept {
-		return export_name.c_str();
+	std::string_view GetExportName() const noexcept {
+		return export_name;
 	}
 
 	/**
@@ -225,5 +225,3 @@ private:
 	/* DeferEvent callback */
 	void RunDeferred() noexcept;
 };
-
-#endif

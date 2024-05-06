@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_NFS_GLUE_HXX
-#define MPD_NFS_GLUE_HXX
+#pragma once
+
+#include <string_view>
 
 class EventLoop;
 class NfsConnection;
@@ -22,6 +23,5 @@ nfs_get_event_loop() noexcept;
 
 [[gnu::pure]]
 NfsConnection &
-nfs_get_connection(const char *server, const char *export_name) noexcept;
-
-#endif
+nfs_get_connection(std::string_view server,
+		   std::string_view export_name) noexcept;

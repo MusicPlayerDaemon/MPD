@@ -20,8 +20,8 @@ class NfsManager::ManagedConnection final
 
 public:
 	ManagedConnection(NfsManager &_manager, EventLoop &_loop,
-			  const char *_server,
-			  const char *_export_name) noexcept
+			  std::string_view _server,
+			  std::string_view _export_name) noexcept
 		:NfsConnection(_loop, _server, _export_name),
 		 manager(_manager) {}
 
@@ -55,15 +55,13 @@ NfsManager::~NfsManager() noexcept
 }
 
 NfsConnection &
-NfsManager::GetConnection(const char *server, const char *export_name) noexcept
+NfsManager::GetConnection(std::string_view server, std::string_view export_name) noexcept
 {
-	assert(server != nullptr);
-	assert(export_name != nullptr);
 	assert(GetEventLoop().IsInside());
 
 	for (auto &c : connections)
-		if (StringIsEqual(server, c.GetServer()) &&
-		    StringIsEqual(export_name, c.GetExportName()))
+		if (c.GetServer() == server &&
+		    c.GetExportName() == export_name)
 			return c;
 
 	auto c = new ManagedConnection(*this, GetEventLoop(),
