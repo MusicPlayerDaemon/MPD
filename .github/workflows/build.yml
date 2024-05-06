@@ -156,7 +156,6 @@ jobs:
             icu4c \
             ffmpeg \
             libnfs \
-            yajl \
             libupnp \
             libid3tag \
             chromaprint \
