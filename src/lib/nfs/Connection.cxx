@@ -499,6 +499,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		if (postponed_mount_error) {
 			PrepareDestroyContext();
 			BroadcastMountError(std::move(postponed_mount_error));
+			return;
 		} else if (result == 0)
 			BroadcastMountSuccess();
 	} else if (result < 0) {
@@ -508,6 +509,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		BroadcastError(std::make_exception_ptr(e));
 
 		PrepareDestroyContext();
+		return;
 	} else if (nfs_get_fd(context) < 0) {
 		/* this happens when rpc_reconnect_requeue() is called
 		   after the connection broke, but autoreconnect was
@@ -518,9 +520,11 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		BroadcastError(std::make_exception_ptr(e));
 
 		PrepareDestroyContext();
+		return;
 	}
 
-	assert(context == nullptr || nfs_get_fd(context) >= 0);
+	assert(context != nullptr);
+	assert(nfs_get_fd(context) >= 0);
 
 #ifndef NDEBUG
 	assert(in_event);
