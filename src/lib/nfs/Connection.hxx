@@ -80,7 +80,7 @@ class NfsConnection {
 	DeferEvent defer_new_lease;
 	CoarseTimerEvent mount_timeout_event;
 
-	std::string server, export_name;
+	const std::string server, export_name;
 
 	nfs_context *context;
 
