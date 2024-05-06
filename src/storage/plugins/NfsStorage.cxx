@@ -55,10 +55,10 @@ class NfsStorage final
 
 public:
 	NfsStorage(EventLoop &_loop, const char *_base,
-		   std::string &&_server, std::string &&_export_name)
+		   std::string_view _server, std::string_view _export_name)
 		:base(_base),
-		 server(std::move(_server)),
-		 export_name(std::move(_export_name)),
+		 server(_server),
+		 export_name(_export_name),
 		 defer_connect(_loop, BIND_THIS_METHOD(OnDeferredConnect)),
 		 reconnect_timer(_loop, BIND_THIS_METHOD(OnReconnectTimer)) {
 		nfs_init(_loop);
@@ -397,16 +397,16 @@ CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 	if (p == nullptr)
 		return nullptr;
 
-	const char *mount = std::strchr(p, '/');
-	if (mount == nullptr)
+	const char *slash = std::strchr(p, '/');
+	if (slash == nullptr)
 		throw std::runtime_error("Malformed nfs:// URI");
 
-	const std::string server(p, mount);
+	const std::string_view server{p, slash}, mount{slash};
 
 	nfs_set_base(server, mount);
 
 	return std::make_unique<NfsStorage>(event_loop, base,
-					    server.c_str(), mount);
+					    server, mount);
 }
 
 static constexpr const char *nfs_prefixes[] = { "nfs://", nullptr };
