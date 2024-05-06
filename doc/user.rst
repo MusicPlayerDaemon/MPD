@@ -70,7 +70,7 @@ dependencies on Debian Bookworm:
 
 .. code-block:: none
 
-    apt install meson g++ \
+    apt install meson g++ pkgconf \
       libfmt-dev \
       libpcre2-dev \
       libmad0-dev libmpg123-dev libid3tag0-dev \
