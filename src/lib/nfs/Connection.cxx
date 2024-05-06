@@ -190,8 +190,10 @@ NfsConnection::~NfsConnection() noexcept
 	assert(callbacks.IsEmpty());
 	assert(deferred_close.empty());
 
-	if (context != nullptr)
-		DestroyContext();
+	if (context != nullptr) {
+		PrepareDestroyContext();
+		nfs_destroy_context(context);
+	}
 }
 
 void
@@ -369,7 +371,7 @@ NfsConnection::CancelAndClose(struct nfsfh *fh, NfsCallback &callback) noexcept
 }
 
 void
-NfsConnection::DestroyContext() noexcept
+NfsConnection::PrepareDestroyContext() noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
@@ -396,8 +398,10 @@ NfsConnection::DestroyContext() noexcept
 			c.PrepareDestroyContext();
 		});
 
-	nfs_destroy_context(context);
-	context = nullptr;
+#ifndef NDEBUG
+	assert(in_destroy);
+	in_destroy = false;
+#endif
 }
 
 inline void
@@ -493,7 +497,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 
 	if (!was_mounted && mount_state >= MountState::FINISHED) {
 		if (postponed_mount_error) {
-			DestroyContext();
+			PrepareDestroyContext();
 			BroadcastMountError(std::move(postponed_mount_error));
 		} else if (result == 0)
 			BroadcastMountSuccess();
@@ -503,7 +507,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		auto e = NfsClientError(context, "NFS connection has failed");
 		BroadcastError(std::make_exception_ptr(e));
 
-		DestroyContext();
+		PrepareDestroyContext();
 	} else if (nfs_get_fd(context) < 0) {
 		/* this happens when rpc_reconnect_requeue() is called
 		   after the connection broke, but autoreconnect was
@@ -513,7 +517,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 
 		BroadcastError(std::make_exception_ptr(e));
 
-		DestroyContext();
+		PrepareDestroyContext();
 	}
 
 	assert(context == nullptr || nfs_get_fd(context) >= 0);
@@ -581,10 +585,7 @@ NfsConnection::MountInternal()
 	if (nfs_mount_async(context, server.c_str(), export_name.c_str(),
 			    MountCallback, this) != 0) {
 		mount_state = MountState::FINISHED;
-		auto e = NfsClientError(context, "nfs_mount_async() failed");
-		nfs_destroy_context(context);
-		context = nullptr;
-		throw e;
+		throw NfsClientError(context, "nfs_mount_async() failed");
 	}
 
 	ScheduleSocket();
@@ -634,7 +635,7 @@ NfsConnection::OnMountTimeout() noexcept
 	assert(mount_state == MountState::WAITING);
 
 	mount_state = MountState::FINISHED;
-	DestroyContext();
+	PrepareDestroyContext();
 
 	BroadcastMountError(std::make_exception_ptr(std::runtime_error("Mount timeout")));
 }

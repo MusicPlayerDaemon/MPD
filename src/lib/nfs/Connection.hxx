@@ -189,7 +189,7 @@ protected:
 	virtual void OnNfsConnectionError(std::exception_ptr e) noexcept = 0;
 
 private:
-	void DestroyContext() noexcept;
+	void PrepareDestroyContext() noexcept;
 
 	/**
 	 * Wrapper for nfs_close_async().
