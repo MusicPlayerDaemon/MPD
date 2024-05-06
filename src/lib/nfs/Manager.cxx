@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "Manager.hxx"
+#include "Connection.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "event/Loop.hxx"
 #include "util/DeleteDisposer.hxx"
@@ -10,6 +11,24 @@
 #include "Log.hxx"
 
 static constexpr Domain nfs_domain("nfs");
+
+class NfsManager::ManagedConnection final
+	: public NfsConnection,
+	  public IntrusiveListHook<>
+{
+	NfsManager &manager;
+
+public:
+	ManagedConnection(NfsManager &_manager, EventLoop &_loop,
+			  const char *_server,
+			  const char *_export_name) noexcept
+		:NfsConnection(_loop, _server, _export_name),
+		 manager(_manager) {}
+
+protected:
+	/* virtual methods from NfsConnection */
+	void OnNfsConnectionError(std::exception_ptr &&e) noexcept override;
+};
 
 void
 NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e) noexcept
@@ -22,6 +41,9 @@ NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e) noex
 	   object */
 	manager.ScheduleDelete(*this);
 }
+
+NfsManager::NfsManager(EventLoop &_loop) noexcept
+	:idle_event(_loop, BIND_THIS_METHOD(OnIdle)) {}
 
 NfsManager::~NfsManager() noexcept
 {
@@ -48,6 +70,14 @@ NfsManager::GetConnection(const char *server, const char *export_name) noexcept
 				       server, export_name);
 	connections.push_front(*c);
 	return *c;
+}
+
+inline void
+NfsManager::ScheduleDelete(ManagedConnection &c) noexcept
+{
+	connections.erase(connections.iterator_to(c));
+	garbage.push_front(c);
+	idle_event.Schedule();
 }
 
 void
