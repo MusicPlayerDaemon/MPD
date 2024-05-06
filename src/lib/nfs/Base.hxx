@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_NFS_BASE_HXX
-#define MPD_NFS_BASE_HXX
+#include <string_view>
 
 /**
  * Set the "base" NFS server and export name.  This will be the
@@ -12,7 +11,7 @@
  * This is a kludge that is not truly thread-safe.
  */
 void
-nfs_set_base(const char *server, const char *export_name) noexcept;
+nfs_set_base(std::string_view server, std::string_view export_name) noexcept;
 
 /**
  * Check if the given server and path are inside the "base"
@@ -23,5 +22,3 @@ nfs_set_base(const char *server, const char *export_name) noexcept;
 [[gnu::pure]]
 const char *
 nfs_check_base(const char *server, const char *path) noexcept;
-
-#endif

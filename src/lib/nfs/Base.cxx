@@ -3,6 +3,7 @@
 
 #include "Base.hxx"
 
+#include <algorithm> // for std::copy()
 #include <array>
 #include <cassert>
 
@@ -13,21 +14,17 @@ static std::array<char, 256> nfs_base_export_name;
 static size_t nfs_base_export_name_length;
 
 void
-nfs_set_base(const char *server, const char *export_name) noexcept
+nfs_set_base(std::string_view server, std::string_view export_name) noexcept
 {
-	assert(server != nullptr);
-	assert(export_name != nullptr);
-
-	const size_t server_length = strlen(server);
-	const size_t export_name_length = strlen(export_name);
-
-	if (server_length >= nfs_base_server.size() ||
-	    export_name_length > nfs_base_export_name.size())
+	if (server.size() >= nfs_base_server.size() ||
+	    export_name.size() > nfs_base_export_name.size())
 		return;
 
-	memcpy(nfs_base_server.data(), server, server_length + 1);
-	memcpy(nfs_base_export_name.data(), export_name, export_name_length);
-	nfs_base_export_name_length = export_name_length;
+	*std::copy(server.begin(), server.end(),
+		   nfs_base_server.begin()) = '\0';
+	std::copy(export_name.begin(), export_name.end(),
+		  nfs_base_export_name.begin());
+	nfs_base_export_name_length = export_name.size();
 }
 
 const char *

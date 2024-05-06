@@ -403,7 +403,7 @@ CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 
 	const std::string server(p, mount);
 
-	nfs_set_base(server.c_str(), mount);
+	nfs_set_base(server, mount);
 
 	return std::make_unique<NfsStorage>(event_loop, base,
 					    server.c_str(), mount);
