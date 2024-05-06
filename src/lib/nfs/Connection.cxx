@@ -175,12 +175,16 @@ events_to_libnfs(unsigned i) noexcept
 
 NfsConnection::NfsConnection(EventLoop &_loop,
 			     std::string_view _server,
-			     std::string_view _export_name) noexcept
+			     std::string_view _export_name)
 	:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
 	 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
 	 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
 	 server(_server), export_name(_export_name),
-	 context(nullptr) {}
+	 context(nfs_init_context())
+{
+	if (context == nullptr)
+		throw std::runtime_error{"nfs_init_context() failed"};
+}
 
 NfsConnection::~NfsConnection() noexcept
 {
@@ -189,11 +193,10 @@ NfsConnection::~NfsConnection() noexcept
 	assert(active_leases.empty());
 	assert(callbacks.IsEmpty());
 	assert(deferred_close.empty());
+	assert(context != nullptr);
 
-	if (context != nullptr) {
-		PrepareDestroyContext();
-		nfs_destroy_context(context);
-	}
+	socket_event.ReleaseSocket();
+	nfs_destroy_context(context);
 }
 
 void
@@ -348,7 +351,6 @@ inline void
 NfsConnection::InternalClose(struct nfsfh *fh) noexcept
 {
 	assert(GetEventLoop().IsInside());
-	assert(context != nullptr);
 	assert(fh != nullptr);
 
 	nfs_close_async(context, fh, DummyCallback, nullptr);
@@ -374,7 +376,6 @@ void
 NfsConnection::PrepareDestroyContext() noexcept
 {
 	assert(GetEventLoop().IsInside());
-	assert(context != nullptr);
 
 #ifndef NDEBUG
 	assert(!in_destroy);
@@ -410,7 +411,6 @@ NfsConnection::DeferClose(struct nfsfh *fh) noexcept
 	assert(GetEventLoop().IsInside());
 	assert(in_event);
 	assert(in_service);
-	assert(context != nullptr);
 	assert(fh != nullptr);
 
 	deferred_close.push_front(fh);
@@ -420,7 +420,6 @@ void
 NfsConnection::ScheduleSocket() noexcept
 {
 	assert(GetEventLoop().IsInside());
-	assert(context != nullptr);
 
 	const int which_events = nfs_which_events(context);
 
@@ -449,7 +448,6 @@ inline int
 NfsConnection::Service(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
-	assert(context != nullptr);
 
 #ifndef NDEBUG
 	assert(!in_event);
@@ -462,7 +460,6 @@ NfsConnection::Service(unsigned flags) noexcept
 	int result = nfs_service(context, events_to_libnfs(flags));
 
 #ifndef NDEBUG
-	assert(context != nullptr);
 	assert(in_service);
 	in_service = false;
 #endif
@@ -523,7 +520,6 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 		return;
 	}
 
-	assert(context != nullptr);
 	assert(nfs_get_fd(context) >= 0);
 
 #ifndef NDEBUG
@@ -531,8 +527,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 	in_event = false;
 #endif
 
-	if (context != nullptr)
-		ScheduleSocket();
+	ScheduleSocket();
 }
 
 inline void
@@ -568,12 +563,7 @@ inline void
 NfsConnection::MountInternal()
 {
 	assert(GetEventLoop().IsInside());
-	assert(context == nullptr);
 	assert(mount_state == MountState::INITIAL);
-
-	context = nfs_init_context();
-	if (context == nullptr)
-		throw std::runtime_error("nfs_init_context() failed");
 
 	postponed_mount_error = std::exception_ptr();
 	mount_state = MountState::WAITING;

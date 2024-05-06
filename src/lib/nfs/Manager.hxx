@@ -41,9 +41,12 @@ public:
 		return idle_event.GetEventLoop();
 	}
 
-	[[gnu::pure]]
+	/**
+	 * Throws on error.
+	 */
+	[[nodiscard]]
 	NfsConnection &GetConnection(std::string_view server,
-				     std::string_view export_name) noexcept;
+				     std::string_view export_name);
 
 private:
 	void ScheduleDelete(ManagedConnection &c) noexcept;

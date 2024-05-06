@@ -21,7 +21,7 @@ class NfsManager::ManagedConnection final
 public:
 	ManagedConnection(NfsManager &_manager, EventLoop &_loop,
 			  std::string_view _server,
-			  std::string_view _export_name) noexcept
+			  std::string_view _export_name)
 		:NfsConnection(_loop, _server, _export_name),
 		 manager(_manager) {}
 
@@ -55,7 +55,7 @@ NfsManager::~NfsManager() noexcept
 }
 
 NfsConnection &
-NfsManager::GetConnection(std::string_view server, std::string_view export_name) noexcept
+NfsManager::GetConnection(std::string_view server, std::string_view export_name)
 {
 	assert(GetEventLoop().IsInside());
 

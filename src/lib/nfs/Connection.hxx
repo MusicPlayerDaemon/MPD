@@ -82,7 +82,7 @@ class NfsConnection {
 
 	const std::string server, export_name;
 
-	nfs_context *context;
+	nfs_context *const context;
 
 	using LeaseList = IntrusiveList<NfsLease>;
 	LeaseList new_leases, active_leases;
@@ -126,10 +126,13 @@ class NfsConnection {
 #endif
 
 public:
+	/**
+	 * Throws on error.
+	 */
 	[[gnu::nonnull]]
 	NfsConnection(EventLoop &_loop,
 		      std::string_view _server,
-		      std::string_view _export_name) noexcept;
+		      std::string_view _export_name);
 
 	/**
 	 * Must be run from EventLoop's thread.

@@ -41,7 +41,7 @@ nfs_get_event_loop() noexcept
 
 NfsConnection &
 nfs_get_connection(std::string_view server,
-		   std::string_view export_name) noexcept
+		   std::string_view export_name)
 {
 	assert(in_use > 0);
 

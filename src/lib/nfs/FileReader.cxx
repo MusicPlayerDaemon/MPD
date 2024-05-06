@@ -266,8 +266,13 @@ NfsFileReader::OnDeferredOpen() noexcept
 {
 	assert(state == State::DEFER);
 
-	state = State::MOUNT;
+	try {
+		connection = &nfs_get_connection(server, export_name);
+	} catch (...) {
+		OnNfsFileError(std::current_exception());
+		return;
+	}
 
-	connection = &nfs_get_connection(server, export_name);
 	connection->AddLease(*this);
+	state = State::MOUNT;
 }

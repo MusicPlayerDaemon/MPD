@@ -141,7 +141,14 @@ private:
 		assert(state != State::READY);
 		assert(GetEventLoop().IsInside());
 
-		connection = &nfs_get_connection(server, export_name);
+		try {
+			connection = &nfs_get_connection(server, export_name);
+		} catch (...) {
+			SetState(State::DELAY, std::current_exception());
+			reconnect_timer.Schedule(std::chrono::minutes(10));
+			return;
+		}
+
 		connection->AddLease(*this);
 
 		SetState(State::CONNECTING);
