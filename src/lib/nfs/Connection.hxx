@@ -111,18 +111,18 @@ class NfsConnection {
 	/**
 	 * True when nfs_service() is being called.
 	 */
-	bool in_service;
+	bool in_service = false;
 
 	/**
 	 * True when OnSocketReady() is being called.  During that,
 	 * event updates are omitted.
 	 */
-	bool in_event;
+	bool in_event = false;
 
 	/**
 	 * True when DestroyContext() is being called.
 	 */
-	bool in_destroy;
+	bool in_destroy = false;
 #endif
 
 public:

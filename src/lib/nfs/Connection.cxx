@@ -565,16 +565,9 @@ NfsConnection::MountInternal()
 	assert(GetEventLoop().IsInside());
 	assert(mount_state == MountState::INITIAL);
 
-	postponed_mount_error = std::exception_ptr();
 	mount_state = MountState::WAITING;
 
 	mount_timeout_event.Schedule(NFS_MOUNT_TIMEOUT);
-
-#ifndef NDEBUG
-	in_service = false;
-	in_event = false;
-	in_destroy = false;
-#endif
 
 	if (nfs_mount_async(context, server.c_str(), export_name.c_str(),
 			    MountCallback, this) != 0) {
