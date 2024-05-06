@@ -400,6 +400,8 @@ Player::StopDecoder(std::unique_lock<Mutex> &lock) noexcept
 		   pipe */
 		ResetCrossFade();
 	}
+
+	decoder_starting = false;
 }
 
 bool
