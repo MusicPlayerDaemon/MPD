@@ -8,12 +8,15 @@
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
 
+#include <nfsc/libnfs.h> // for struct nfs_stat_64
+
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
 
 #include <fcntl.h>
+#include <sys/stat.h> // for S_ISREG()
 
 NfsFileReader::NfsFileReader() noexcept
 	:defer_open(nfs_get_event_loop(), BIND_THIS_METHOD(OnDeferredOpen))
@@ -180,7 +183,7 @@ NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 }
 
 inline void
-NfsFileReader::StatCallback(const struct stat *_st) noexcept
+NfsFileReader::StatCallback(const struct nfs_stat_64 *_st) noexcept
 {
 	assert(connection != nullptr);
 	assert(fh != nullptr);
@@ -195,12 +198,12 @@ NfsFileReader::StatCallback(const struct stat *_st) noexcept
 	const auto *st = _st;
 #endif
 
-	if (!S_ISREG(st->st_mode)) {
+	if (!S_ISREG(st->nfs_mode)) {
 		OnNfsFileError(std::make_exception_ptr(std::runtime_error("Not a regular file")));
 		return;
 	}
 
-	OnNfsFileOpen(st->st_size);
+	OnNfsFileOpen(st->nfs_size);
 }
 
 void
@@ -219,7 +222,7 @@ NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 		break;
 
 	case State::STAT:
-		StatCallback((const struct stat *)data);
+		StatCallback((const struct nfs_stat_64 *)data);
 		break;
 
 	case State::READ:

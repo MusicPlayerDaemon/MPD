@@ -14,9 +14,8 @@
 #include <span>
 #include <string>
 
-#include <sys/stat.h>
-
 struct nfsfh;
+struct nfs_stat_64;
 class NfsConnection;
 
 /**
@@ -126,7 +125,7 @@ private:
 	void CancelOrClose() noexcept;
 
 	void OpenCallback(nfsfh *_fh) noexcept;
-	void StatCallback(const struct stat *st) noexcept;
+	void StatCallback(const struct nfs_stat_64 *st) noexcept;
 
 	/* virtual methods from NfsLease */
 	void OnNfsConnectionReady() noexcept final;
