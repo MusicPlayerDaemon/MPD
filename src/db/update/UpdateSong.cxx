@@ -41,7 +41,8 @@ try {
 		FmtDebug(update_domain, "reading {}/{}",
 			 directory.GetPath(), name);
 
-		auto new_song = Song::LoadFile(storage, name, directory);
+		auto new_song = Song::LoadFile(storage, name, info,
+					       directory);
 		if (!new_song) {
 			FmtDebug(update_domain,
 				 "ignoring unrecognized file {}/{}",
@@ -63,7 +64,7 @@ try {
 	} else if (info.mtime != song->mtime || walk_discard) {
 		FmtNotice(update_domain, "updating {}/{}",
 			  directory.GetPath(), name);
-		if (song->UpdateFile(storage))
+		if (song->UpdateFile(storage, info))
 			song->mark = true;
 		else
 			FmtDebug(update_domain,

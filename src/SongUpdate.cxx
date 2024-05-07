@@ -34,13 +34,14 @@ Song::IsPluginAvailable() const noexcept
 }
 
 SongPtr
-Song::LoadFile(Storage &storage, std::string_view path_utf8, Directory &parent)
+Song::LoadFile(Storage &storage, std::string_view path_utf8,
+	       const StorageFileInfo &info, Directory &parent)
 {
 	assert(!uri_has_scheme(path_utf8));
 	assert(path_utf8.find('\n') == path_utf8.npos);
 
 	auto song = std::make_unique<Song>(path_utf8, parent);
-	if (!song->UpdateFile(storage))
+	if (!song->UpdateFile(storage, info))
 		return nullptr;
 
 	return song;
@@ -51,13 +52,11 @@ Song::LoadFile(Storage &storage, std::string_view path_utf8, Directory &parent)
 #ifdef ENABLE_DATABASE
 
 bool
-Song::UpdateFile(Storage &storage)
+Song::UpdateFile(Storage &storage, const StorageFileInfo &info)
 {
-	const auto &relative_uri = GetURI();
+	assert(info.IsRegular());
 
-	const auto info = storage.GetInfo(relative_uri.c_str(), true);
-	if (!info.IsRegular())
-		return false;
+	const auto &relative_uri = GetURI();
 
 	TagBuilder tag_builder;
 	auto new_audio_format = AudioFormat::Undefined();

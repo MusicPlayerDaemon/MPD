@@ -14,6 +14,7 @@
 #include <string>
 
 struct Directory;
+struct StorageFileInfo;
 class ExportedSong;
 class DetachedSong;
 class Storage;
@@ -119,6 +120,7 @@ struct Song : IntrusiveListHook<> {
 	 * recognized
 	 */
 	static SongPtr LoadFile(Storage &storage, std::string_view name_utf8,
+				const StorageFileInfo &info,
 				Directory &parent);
 
 	/**
@@ -126,7 +128,7 @@ struct Song : IntrusiveListHook<> {
 	 *
 	 * @return true on success, false if the file was not recognized
 	 */
-	bool UpdateFile(Storage &storage);
+	bool UpdateFile(Storage &storage, const StorageFileInfo &info);
 
 #ifdef ENABLE_ARCHIVE
 	static SongPtr LoadFromArchive(ArchiveFile &archive,
