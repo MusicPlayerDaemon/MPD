@@ -21,7 +21,7 @@ DatabaseDetachSong(const Storage *storage, const LightSong &song) noexcept
 	if (storage != nullptr) {
 		if (!detached.HasRealURI()) {
 			const auto uri = song.GetURI();
-			detached.SetRealURI(storage->MapUTF8(uri.c_str()));
+			detached.SetRealURI(storage->MapUTF8(uri));
 		} else if (uri_is_relative_path(detached.GetRealURI())) {
 			/* if the "RealURI" is relative, translate it
 			   using the song's "URI" attribute, because
@@ -29,7 +29,7 @@ DatabaseDetachSong(const Storage *storage, const LightSong &song) noexcept
 			const auto real_uri =
 				uri_apply_relative(detached.GetRealURI(),
 						   song.GetURI());
-			detached.SetRealURI(storage->MapUTF8(real_uri.c_str()));
+			detached.SetRealURI(storage->MapUTF8(real_uri));
 		}
 	}
 

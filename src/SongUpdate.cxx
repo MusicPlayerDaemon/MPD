@@ -63,10 +63,10 @@ Song::UpdateFile(Storage &storage)
 	auto new_audio_format = AudioFormat::Undefined();
 
 	try {
-		const auto path_fs = storage.MapFS(relative_uri.c_str());
+		const auto path_fs = storage.MapFS(relative_uri);
 		if (path_fs.IsNull()) {
 			const auto absolute_uri =
-				storage.MapUTF8(relative_uri.c_str());
+				storage.MapUTF8(relative_uri);
 			if (!tag_stream_scan(absolute_uri.c_str(), tag_builder,
 					     &new_audio_format))
 				return false;

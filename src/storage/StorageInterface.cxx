@@ -16,5 +16,5 @@ Storage::MapChildFS(std::string_view uri_utf8,
 		    std::string_view child_utf8) const noexcept
 {
 	const auto uri2 = PathTraitsUTF8::Build(uri_utf8, child_utf8);
-	return MapFS(uri2.c_str());
+	return MapFS(uri2);
 }
