@@ -8,7 +8,7 @@
 
 #include "Cast.hxx"
 #include "Concepts.hxx"
-#include "IntrusiveHookMode.hxx"
+#include "IntrusiveHookMode.hxx" // IWYU pragma: export
 #include "MemberPointer.hxx"
 #include "OptionalCounter.hxx"
 
