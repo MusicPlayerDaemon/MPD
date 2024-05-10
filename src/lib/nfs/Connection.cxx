@@ -529,7 +529,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 
 inline void
 NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
-			     [[maybe_unused]] void *data) noexcept
+			     void *data) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(context == nfs);
@@ -541,7 +541,8 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 	mount_timeout_event.Cancel();
 
 	if (status < 0) {
-		auto e = NfsClientError(context, "nfs_mount_async() failed");
+		auto e = NfsClientError(status, context, data,
+					"nfs_mount_async() failed");
 		postponed_mount_error = std::make_exception_ptr(e);
 		return;
 	}
