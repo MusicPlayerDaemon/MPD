@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef MIME_TYPE_HXX
-#define MIME_TYPE_HXX
+#pragma once
 
+#include <functional> // for std::less
 #include <string>
 #include <string_view>
 #include <map>
@@ -25,5 +25,3 @@ GetMimeTypeBase(std::string_view s) noexcept;
  */
 std::map<std::string, std::string, std::less<>>
 ParseMimeTypeParameters(std::string_view mime_type) noexcept;
-
-#endif
