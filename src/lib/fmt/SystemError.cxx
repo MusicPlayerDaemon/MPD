@@ -4,8 +4,6 @@
 #include "SystemError.hxx"
 #include "ToBuffer.hxx"
 
-#include <array>
-
 std::system_error
 VFmtSystemError(std::error_code code,
 		fmt::string_view format_str, fmt::format_args args) noexcept
@@ -15,6 +13,8 @@ VFmtSystemError(std::error_code code,
 }
 
 #ifdef _WIN32
+
+#include <array>
 
 #include <windef.h> // for HWND (needed by winbase.h)
 #include <winbase.h> // for FormatMessageA()
