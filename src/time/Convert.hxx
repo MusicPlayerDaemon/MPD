@@ -2,10 +2,11 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef TIME_CONVERT_HXX
-#define TIME_CONVERT_HXX
+#pragma once
 
 #include <chrono>
+
+struct tm;
 
 /**
  * Convert a UTC-based time point to a UTC-based "struct tm".
@@ -40,5 +41,3 @@ MakeTime(struct tm &tm) noexcept;
 [[gnu::pure]]
 std::chrono::steady_clock::duration
 ToSteadyClockDuration(const struct timeval &tv) noexcept;
-
-#endif
