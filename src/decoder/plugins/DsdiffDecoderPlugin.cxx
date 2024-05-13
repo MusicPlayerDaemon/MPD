@@ -73,24 +73,24 @@ dsdiff_init(const ConfigBlock &block)
 
 static bool
 dsdiff_read_id(DecoderClient *client, InputStream &is,
-	       DsdId *id)
+	       DsdId &id)
 {
-	return decoder_read_full(client, is, id, sizeof(*id));
+	return decoder_read_full(client, is, &id, sizeof(id));
 }
 
 static bool
 dsdiff_read_chunk_header(DecoderClient *client, InputStream &is,
-			 DsdiffChunkHeader *header)
+			 DsdiffChunkHeader &header)
 {
-	return decoder_read_full(client, is, header, sizeof(*header));
+	return decoder_read_full(client, is, &header, sizeof(header));
 }
 
 static bool
 dsdiff_read_payload(DecoderClient *client, InputStream &is,
-		    const DsdiffChunkHeader *header,
+		    const DsdiffChunkHeader &header,
 		    void *data, size_t length)
 {
-	uint64_t size = header->GetSize();
+	uint64_t size = header.GetSize();
 	if (size != (uint64_t)length)
 		return false;
 
@@ -102,12 +102,12 @@ dsdiff_read_payload(DecoderClient *client, InputStream &is,
  */
 static bool
 dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
-		     DsdiffMetaData *metadata,
+		     DsdiffMetaData &metadata,
 		     offset_type end_offset)
 {
 	DsdiffChunkHeader header;
 	while (is.GetOffset() + sizeof(header) <= end_offset) {
-		if (!dsdiff_read_chunk_header(client, is, &header))
+		if (!dsdiff_read_chunk_header(client, is, header))
 			return false;
 
 		offset_type chunk_end_offset = is.GetOffset()
@@ -117,12 +117,12 @@ dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
 
 		if (header.id.Equals("FS  ")) {
 			uint32_t sample_rate;
-			if (!dsdiff_read_payload(client, is, &header,
+			if (!dsdiff_read_payload(client, is, header,
 						 &sample_rate,
 						 sizeof(sample_rate)))
 				return false;
 
-			metadata->sample_rate = FromBE32(sample_rate);
+			metadata.sample_rate = FromBE32(sample_rate);
 		} else if (header.id.Equals("CHNL")) {
 			uint16_t channels;
 			if (header.GetSize() < sizeof(channels) ||
@@ -131,7 +131,7 @@ dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
 			    !dsdlib_skip_to(client, is, chunk_end_offset))
 				return false;
 
-			metadata->channels = FromBE16(channels);
+			metadata.channels = FromBE16(channels);
 		} else if (header.id.Equals("CMPR")) {
 			DsdId type;
 			if (header.GetSize() < sizeof(type) ||
@@ -160,15 +160,15 @@ dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
  */
 static bool
 dsdiff_read_prop(DecoderClient *client, InputStream &is,
-		 DsdiffMetaData *metadata,
-		 const DsdiffChunkHeader *prop_header)
+		 DsdiffMetaData &metadata,
+		 const DsdiffChunkHeader &prop_header)
 {
-	uint64_t prop_size = prop_header->GetSize();
+	uint64_t prop_size = prop_header.GetSize();
 	const offset_type end_offset = is.GetOffset() + prop_size;
 
 	DsdId prop_id;
 	if (prop_size < sizeof(prop_id) ||
-	    !dsdiff_read_id(client, is, &prop_id))
+	    !dsdiff_read_id(client, is, prop_id))
 		return false;
 
 	if (prop_id.Equals("SND "))
@@ -219,13 +219,13 @@ dsdiff_handle_native_tag(DecoderClient *client, InputStream &is,
 
 static bool
 dsdiff_read_metadata_extra(DecoderClient *client, InputStream &is,
-			   DsdiffMetaData *metadata,
-			   DsdiffChunkHeader *chunk_header,
+			   DsdiffMetaData &metadata,
+			   DsdiffChunkHeader &chunk_header,
 			   TagHandler &handler)
 {
 
 	/* skip from DSD data to next chunk header */
-	if (!dsdlib_skip(client, is, metadata->chunk_size))
+	if (!dsdlib_skip(client, is, metadata.chunk_size))
 		return false;
 	if (!dsdiff_read_chunk_header(client, is, chunk_header))
 		return false;
@@ -243,27 +243,27 @@ dsdiff_read_metadata_extra(DecoderClient *client, InputStream &is,
 	   and record their position and size */
 
 	do {
-		offset_type chunk_size = chunk_header->GetSize();
+		offset_type chunk_size = chunk_header.GetSize();
 
 		/* DIIN chunk, is directly followed by other chunks  */
-		if (chunk_header->id.Equals("DIIN"))
+		if (chunk_header.id.Equals("DIIN"))
 			chunk_size = 0;
 
 		/* DIAR chunk - DSDIFF native tag for Artist */
-		if (chunk_header->id.Equals("DIAR")) {
-			chunk_size = chunk_header->GetSize();
+		if (chunk_header.id.Equals("DIAR")) {
+			chunk_size = chunk_header.GetSize();
 			artist_offset = is.GetOffset();
 		}
 
 		/* DITI chunk - DSDIFF native tag for Title */
-		if (chunk_header->id.Equals("DITI")) {
-			chunk_size = chunk_header->GetSize();
+		if (chunk_header.id.Equals("DITI")) {
+			chunk_size = chunk_header.GetSize();
 			title_offset = is.GetOffset();
 		}
 #ifdef ENABLE_ID3TAG
 		/* 'ID3 ' chunk, offspec. Used by sacdextract */
-		if (chunk_header->id.Equals("ID3 ")) {
-			chunk_size = chunk_header->GetSize();
+		if (chunk_header.id.Equals("ID3 ")) {
+			chunk_size = chunk_header.GetSize();
 			id3_offset = is.GetOffset();
 		}
 #endif
@@ -300,8 +300,8 @@ dsdiff_read_metadata_extra(DecoderClient *client, InputStream &is,
  */
 static bool
 dsdiff_read_metadata(DecoderClient *client, InputStream &is,
-		     DsdiffMetaData *metadata,
-		     DsdiffChunkHeader *chunk_header)
+		     DsdiffMetaData &metadata,
+		     DsdiffChunkHeader &chunk_header)
 {
 	DsdiffHeader header;
 	if (!decoder_read_full(client, is, &header, sizeof(header)) ||
@@ -314,17 +314,17 @@ dsdiff_read_metadata(DecoderClient *client, InputStream &is,
 					      chunk_header))
 			return false;
 
-		if (chunk_header->id.Equals("PROP")) {
+		if (chunk_header.id.Equals("PROP")) {
 			if (!dsdiff_read_prop(client, is, metadata,
 					      chunk_header))
 					return false;
-		} else if (chunk_header->id.Equals("DSD ")) {
-			const offset_type chunk_size = chunk_header->GetSize();
-			metadata->chunk_size = chunk_size;
+		} else if (chunk_header.id.Equals("DSD ")) {
+			const offset_type chunk_size = chunk_header.GetSize();
+			metadata.chunk_size = chunk_size;
 			return true;
 		} else {
 			/* ignore unknown chunk */
-			const offset_type chunk_size = chunk_header->GetSize();
+			const offset_type chunk_size = chunk_header.GetSize();
 			const offset_type chunk_end_offset =
 				is.GetOffset() + chunk_size;
 
@@ -415,7 +415,7 @@ dsdiff_stream_decode(DecoderClient &client, InputStream &is)
 
 	DsdiffChunkHeader chunk_header;
 	/* check if it is is a proper DFF file */
-	if (!dsdiff_read_metadata(&client, is, &metadata, &chunk_header))
+	if (!dsdiff_read_metadata(&client, is, metadata, chunk_header))
 		return;
 
 	auto audio_format = CheckAudioFormat(metadata.sample_rate / 8,
@@ -448,7 +448,7 @@ dsdiff_scan_stream(InputStream &is, TagHandler &handler)
 	DsdiffChunkHeader chunk_header;
 
 	/* First check for DFF metadata */
-	if (!dsdiff_read_metadata(nullptr, is, &metadata, &chunk_header))
+	if (!dsdiff_read_metadata(nullptr, is, metadata, chunk_header))
 		return false;
 
 	const auto sample_rate = metadata.sample_rate / 8;
@@ -463,7 +463,7 @@ dsdiff_scan_stream(InputStream &is, TagHandler &handler)
 	handler.OnDuration(songtime);
 
 	/* Read additional metadata and created tags if available */
-	dsdiff_read_metadata_extra(nullptr, is, &metadata, &chunk_header,
+	dsdiff_read_metadata_extra(nullptr, is, metadata, chunk_header,
 				   handler);
 
 	return true;
