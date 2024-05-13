@@ -59,7 +59,13 @@ NfsFileReader::CancelOrClose() noexcept
 	else if (state > State::OPEN)
 		/* one async operation in progress: cancel it and
 		   defer the nfs_close_async() call */
-		connection->CancelAndClose(fh, {}, *this);
+		connection->CancelAndClose(fh,
+#ifdef LIBNFS_API_2
+					   ToDeleteArray(read_buffer.release()),
+#else
+					   {},
+#endif
+					   *this);
 	else if (state > State::MOUNT)
 		/* we don't have a file handle yet - just cancel the
 		   async operation */
@@ -116,7 +122,15 @@ NfsFileReader::Read(uint64_t offset, size_t size)
 {
 	assert(state == State::IDLE);
 
+#ifdef LIBNFS_API_2
+	assert(!read_buffer);
+	// TOOD read into caller-provided buffer
+	read_buffer = std::make_unique<std::byte[]>(size);
+	connection->Read(fh, offset, {read_buffer.get(), size}, *this);
+#else
 	connection->Read(fh, offset, size, *this);
+#endif
+
 	state = State::READ;
 }
 
@@ -200,7 +214,16 @@ NfsFileReader::StatCallback(const struct nfs_stat_64 *st) noexcept
 inline void
 NfsFileReader::ReadCallback(std::size_t nbytes, const void *data) noexcept
 {
+#ifdef LIBNFS_API_2
+	(void)data;
+
+	assert(read_buffer);
+	const auto buffer = std::move(read_buffer);
+
+	OnNfsFileRead({buffer.get(), nbytes});
+#else
 	OnNfsFileRead({static_cast<const std::byte *>(data), nbytes});
+#endif
 }
 
 void

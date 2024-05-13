@@ -26,6 +26,7 @@ ver 0.24 (not yet released)
 * storage
   - curl: optimize database update
   - nfs: require libnfs 4.0 or later
+  - nfs: support libnfs 6 (API version 2)
   - nfs: support libnfs URL arguments
 * input
   - alsa: limit ALSA buffer time to 2 seconds

@@ -14,6 +14,10 @@
 #include <span>
 #include <string>
 
+#ifdef LIBNFS_API_2
+#include <memory>
+#endif
+
 struct nfsfh;
 struct nfs_stat_64;
 class NfsConnection;
@@ -50,6 +54,10 @@ class NfsFileReader : NfsLease, NfsCallback {
 	 * To inject the Open() call into the I/O thread.
 	 */
 	InjectEvent defer_open;
+
+#ifdef LIBNFS_API_2
+	std::unique_ptr<std::byte[]> read_buffer;
+#endif
 
 public:
 	NfsFileReader() noexcept;

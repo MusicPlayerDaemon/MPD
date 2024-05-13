@@ -62,7 +62,13 @@ class NfsConnection {
 		void Open(nfs_context *context, const char *path, int flags);
 		void Stat(nfs_context *context, struct nfsfh *fh);
 		void Read(nfs_context *context, struct nfsfh *fh,
-			  uint64_t offset, size_t size);
+			  uint64_t offset,
+#ifdef LIBNFS_API_2
+			  std::span<std::byte> dest
+#else
+			  std::size_t size
+#endif
+			);
 
 		/**
 		 * Cancel the operation and schedule a call to
@@ -210,7 +216,12 @@ public:
 	/**
 	 * Throws on error.
 	 */
-	void Read(struct nfsfh *fh, uint64_t offset, size_t size,
+	void Read(struct nfsfh *fh, uint64_t offset,
+#ifdef LIBNFS_API_2
+		  std::span<std::byte> dest,
+#else
+		  std::size_t size,
+#endif
 		  NfsCallback &callback);
 
 	/**
