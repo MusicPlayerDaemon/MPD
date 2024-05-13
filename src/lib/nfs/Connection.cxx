@@ -587,6 +587,11 @@ NfsConnection::BroadcastMountSuccess() noexcept
 	assert(mount_state == MountState::FINISHED);
 
 	new_leases.clear_and_dispose([this](auto *lease){
+#ifdef __clang__
+		/* suppress bogus clang-18 -Wunused-lambda-capture warning */
+		(void)this;
+#endif
+
 		active_leases.push_back(*lease);
 		lease->OnNfsConnectionReady();
 	});
