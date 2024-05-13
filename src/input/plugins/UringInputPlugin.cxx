@@ -45,7 +45,7 @@ class UringInputStream final : public AsyncInputStream, Uring::ReadHandler {
 
 public:
 	UringInputStream(EventLoop &event_loop, Uring::Queue &_uring,
-			 const char *path,
+			 std::string_view path,
 			 UniqueFileDescriptor &&_fd,
 			 offset_type _size, Mutex &_mutex)
 		:AsyncInputStream(event_loop,

@@ -66,7 +66,7 @@ class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 
 public:
 	template<typename I>
-	CurlInputStream(EventLoop &event_loop, const char *_url,
+	CurlInputStream(EventLoop &event_loop, std::string_view _url,
 			const Curl::Headers &headers,
 			I &&_icy,
 			Mutex &_mutex);
@@ -76,7 +76,7 @@ public:
 	CurlInputStream(const CurlInputStream &) = delete;
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
 
-	static InputStreamPtr Open(const char *url,
+	static InputStreamPtr Open(std::string_view url,
 				   const Curl::Headers &headers,
 				   Mutex &mutex);
 
@@ -435,7 +435,7 @@ input_curl_finish() noexcept
 
 template<typename I>
 inline
-CurlInputStream::CurlInputStream(EventLoop &event_loop, const char *_url,
+CurlInputStream::CurlInputStream(EventLoop &event_loop, std::string_view _url,
 				 const Curl::Headers &headers,
 				 I &&_icy,
 				 Mutex &_mutex)
@@ -568,7 +568,7 @@ CurlInputStream::DoSeek(offset_type new_offset)
 }
 
 inline InputStreamPtr
-CurlInputStream::Open(const char *url,
+CurlInputStream::Open(std::string_view url,
 		      const Curl::Headers &headers,
 		      Mutex &mutex)
 {
@@ -588,7 +588,7 @@ CurlInputStream::Open(const char *url,
 }
 
 InputStreamPtr
-OpenCurlInputStream(const char *uri, const Curl::Headers &headers,
+OpenCurlInputStream(std::string_view uri, const Curl::Headers &headers,
 		    Mutex &mutex)
 {
 	return CurlInputStream::Open(uri, headers, mutex);

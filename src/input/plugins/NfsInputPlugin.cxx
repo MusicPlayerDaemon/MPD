@@ -25,7 +25,7 @@ class NfsInputStream final : NfsFileReader, public AsyncInputStream {
 	bool reconnect_on_resume = false, reconnecting = false;
 
 public:
-	NfsInputStream(const char *_uri, Mutex &_mutex)
+	NfsInputStream(std::string_view _uri, Mutex &_mutex) noexcept
 		:AsyncInputStream(NfsFileReader::GetEventLoop(),
 				  _uri, _mutex,
 				  NFS_MAX_BUFFERED,

@@ -12,7 +12,7 @@
 
 #include <string.h>
 
-AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
+AsyncInputStream::AsyncInputStream(EventLoop &event_loop, std::string_view _url,
 				   Mutex &_mutex,
 				   size_t _buffer_size,
 				   size_t _resume_at) noexcept
