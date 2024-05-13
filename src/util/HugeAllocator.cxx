@@ -3,6 +3,7 @@
 
 #include "HugeAllocator.hxx"
 #include "system/VmaName.hxx"
+#include "util/RoundPowerOfTwo.hxx"
 
 #include <new>
 
@@ -26,8 +27,7 @@ AlignToPageSize(size_t size) noexcept
 	if (page_size <= 0)
 		return size;
 
-	size_t ps(page_size);
-	return (size + ps - 1) / ps * ps;
+	return RoundUpToPowerOfTwo(size, static_cast<std::size_t>(page_size));
 }
 
 std::span<std::byte>
