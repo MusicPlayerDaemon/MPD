@@ -7,8 +7,10 @@
 #include "storage/FileInfo.hxx"
 #include "net/Init.hxx"
 #include "time/ChronoUtil.hxx"
+#include "time/ISO8601.hxx"
 #include "util/PrintException.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringBuffer.hxx"
 
 #include <memory>
 #include <stdexcept>
@@ -17,7 +19,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 static std::unique_ptr<Storage>
 MakeStorage(EventLoop &event_loop, const char *uri)
@@ -53,17 +54,10 @@ Ls(Storage &storage, const char *path)
 			break;
 		}
 
-		char mtime_buffer[32];
+		StringBuffer<64> mtime_buffer;
 		const char *mtime = "          ";
 		if (!IsNegative(info.mtime)) {
-			time_t t = std::chrono::system_clock::to_time_t(info.mtime);
-			strftime(mtime_buffer, sizeof(mtime_buffer),
-#ifdef _WIN32
-				 "%Y-%m-%d",
-#else
-				 "%F",
-#endif
-				 gmtime(&t));
+			mtime_buffer = FormatISO8601(info.mtime);
 			mtime = mtime_buffer;
 		}
 
