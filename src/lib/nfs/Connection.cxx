@@ -195,6 +195,12 @@ NfsConnection::~NfsConnection() noexcept
 	assert(context != nullptr);
 
 	socket_event.ReleaseSocket();
+
+	/* cancel the timer before calling nfs_destroy_context() so
+	   MountCallback() knows the mount call is being canceled;
+	   checking status==-EINTR would be ambiguous */
+	mount_timeout_event.Cancel();
+
 	nfs_destroy_context(context);
 }
 
@@ -533,6 +539,15 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 {
 	assert(GetEventLoop().IsInside());
 	assert(context == nfs);
+
+	if (!mount_timeout_event.IsPending()) {
+		/* called by nfs_destroy_context() while destructing
+		   this NfsConnection instance */
+		assert(status == -EINTR);
+		assert(mount_state == MountState::FINISHED);
+		return;
+	}
+
 	assert(mount_state == MountState::WAITING);
 
 	mount_state = MountState::FINISHED;
