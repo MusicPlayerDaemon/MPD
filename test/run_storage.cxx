@@ -8,6 +8,7 @@
 #include "net/Init.hxx"
 #include "time/ChronoUtil.hxx"
 #include "util/PrintException.hxx"
+#include "util/StringAPI.hxx"
 
 #include <memory>
 #include <stdexcept>
@@ -112,7 +113,7 @@ try {
 	EventThread io_thread;
 	io_thread.Start();
 
-	if (strcmp(command, "ls") == 0) {
+	if (StringIsEqual(command, "ls")) {
 		if (argc != 4) {
 			fprintf(stderr, "Usage: run_storage ls URI PATH\n");
 			return EXIT_FAILURE;
@@ -124,7 +125,7 @@ try {
 					   storage_uri);
 
 		return Ls(*storage, path);
-	} else if (strcmp(command, "stat") == 0) {
+	} else if (StringIsEqual(command, "stat")) {
 		if (argc != 4) {
 			fprintf(stderr, "Usage: run_storage stat URI PATH\n");
 			return EXIT_FAILURE;
