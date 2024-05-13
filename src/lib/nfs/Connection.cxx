@@ -598,7 +598,7 @@ NfsConnection::BroadcastMountError(std::exception_ptr e) noexcept
 	assert(GetEventLoop().IsInside());
 	assert(mount_state == MountState::FINISHED);
 
-	new_leases.clear_and_dispose([this, &e](auto *l){
+	new_leases.clear_and_dispose([&e](auto *l){
 		l->OnNfsConnectionFailed(e);
 	});
 
@@ -610,7 +610,7 @@ NfsConnection::BroadcastError(std::exception_ptr e) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-	active_leases.clear_and_dispose([this, &e](auto *l){
+	active_leases.clear_and_dispose([&e](auto *l){
 		l->OnNfsConnectionDisconnected(e);
 	});
 
