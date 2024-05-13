@@ -118,11 +118,6 @@ class NfsConnection {
 	 * event updates are omitted.
 	 */
 	bool in_event = false;
-
-	/**
-	 * True when DestroyContext() is being called.
-	 */
-	bool in_destroy = false;
 #endif
 
 public:

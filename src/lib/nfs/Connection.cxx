@@ -382,11 +382,6 @@ NfsConnection::PrepareDestroyContext() noexcept
 {
 	assert(GetEventLoop().IsInside());
 
-#ifndef NDEBUG
-	assert(!in_destroy);
-	in_destroy = true;
-#endif
-
 	if (mount_state == MountState::WAITING) {
 		assert(mount_timeout_event.IsPending());
 		mount_timeout_event.Cancel();
@@ -403,11 +398,6 @@ NfsConnection::PrepareDestroyContext() noexcept
 	callbacks.ForEach([](CancellableCallback &c){
 			c.PrepareDestroyContext();
 		});
-
-#ifndef NDEBUG
-	assert(in_destroy);
-	in_destroy = false;
-#endif
 }
 
 inline void
@@ -552,7 +542,6 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 
 	mount_state = MountState::FINISHED;
 
-	assert(mount_timeout_event.IsPending() || in_destroy);
 	mount_timeout_event.Cancel();
 
 	if (status < 0) {
