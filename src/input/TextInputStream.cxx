@@ -39,7 +39,7 @@ TextInputStream::ReadLine()
 		   character */
 		dest = dest.first(dest.size() - 1);
 
-		size_t nbytes = is->LockRead(dest.data(), dest.size());
+		size_t nbytes = is->LockRead(std::as_writable_bytes(dest));
 
 		buffer.Append(nbytes);
 

@@ -36,7 +36,8 @@ mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)
 	auto *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return decoder_read(data->client, data->is, ptr, size);
+	return decoder_read(data->client, data->is,
+			    {reinterpret_cast<std::byte *>(ptr), static_cast<std::size_t>(size)});
 }
 
 static mpc_bool_t

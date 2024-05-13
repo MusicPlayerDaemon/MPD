@@ -68,10 +68,10 @@ ChromaprintDecoderClient::SubmitAudio(InputStream *,
 
 size_t
 ChromaprintDecoderClient::Read(InputStream &is,
-			       void *buffer, size_t length) noexcept
+			       std::span<std::byte> dest) noexcept
 {
 	try {
-		return is.LockRead(buffer, length);
+		return is.LockRead(dest);
 	} catch (...) {
 		error = std::current_exception();
 		return 0;

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_FFMPEG_IO_CONTEXT_HXX
-#define MPD_FFMPEG_IO_CONTEXT_HXX
+#pragma once
 
 #include "Error.hxx"
 
@@ -10,7 +9,9 @@ extern "C" {
 #include <libavformat/avio.h>
 }
 
+#include <cstddef>
 #include <utility>
+#include <span>
 
 namespace Ffmpeg {
 
@@ -58,9 +59,10 @@ public:
 		return avio_feof(io_context) != 0;
 	}
 
-	size_t Read(void *buffer, size_t size) {
+	size_t Read(std::span<std::byte> dest) {
 		int result = avio_read_partial(io_context,
-					       (unsigned char *)buffer, size);
+					       reinterpret_cast<unsigned char *>(dest.data()),
+					       dest.size());
 		if (result < 0)
 			throw MakeFfmpegError(result, "avio_read() failed");
 
@@ -77,5 +79,3 @@ public:
 };
 
 } // namespace Ffmpeg
-
-#endif

@@ -53,7 +53,7 @@ public:
 	void Update() noexcept override;
 	std::unique_ptr<Tag> ReadTag() noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 };
 
 #endif

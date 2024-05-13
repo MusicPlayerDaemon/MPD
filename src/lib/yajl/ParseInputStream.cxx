@@ -10,7 +10,7 @@ Yajl::ParseInputStream(Handle &handle, InputStream &is)
 {
 	while (true) {
 		unsigned char buffer[4096];
-		const size_t nbytes = is.LockRead(buffer, sizeof(buffer));
+		const size_t nbytes = is.LockRead(std::as_writable_bytes(std::span{buffer}));
 		if (nbytes == 0)
 			break;
 

@@ -29,9 +29,9 @@ public:
 	}
 
 	size_t Read(std::unique_lock<Mutex> &,
-		    void *ptr, size_t read_size) override {
-		size_t nbytes = std::min(remaining, read_size);
-		memcpy(ptr, data, nbytes);
+		    std::span<std::byte> dest) override {
+		size_t nbytes = std::min(remaining, dest.size());
+		memcpy(dest.data(), data, nbytes);
 		data += nbytes;
 		remaining -= nbytes;
 		offset += nbytes;
@@ -60,14 +60,14 @@ TEST(RewindInputStream, Basic)
 	EXPECT_EQ(offset_type(0), ris->GetOffset());
 
 	char buffer[16];
-	size_t nbytes = ris->Read(lock, buffer, 2);
+	size_t nbytes = ris->Read(lock, std::as_writable_bytes(std::span{buffer}.first(2)));
 	EXPECT_EQ(size_t(2), nbytes);
 	EXPECT_EQ('f', buffer[0]);
 	EXPECT_EQ('o', buffer[1]);
 	EXPECT_EQ(offset_type(2), ris->GetOffset());
 	EXPECT_FALSE(ris->IsEOF());
 
-	nbytes = ris->Read(lock, buffer, 2);
+	nbytes = ris->Read(lock, std::as_writable_bytes(std::span{buffer}.first(2)));
 	EXPECT_EQ(size_t(2), nbytes);
 	EXPECT_EQ('o', buffer[0]);
 	EXPECT_EQ(' ', buffer[1]);
@@ -78,7 +78,7 @@ TEST(RewindInputStream, Basic)
 	EXPECT_EQ(offset_type(1), ris->GetOffset());
 	EXPECT_FALSE(ris->IsEOF());
 
-	nbytes = ris->Read(lock, buffer, 2);
+	nbytes = ris->Read(lock, std::as_writable_bytes(std::span{buffer}.first(2)));
 	EXPECT_EQ(size_t(2), nbytes);
 	EXPECT_EQ('o', buffer[0]);
 	EXPECT_EQ('o', buffer[1]);
@@ -89,21 +89,21 @@ TEST(RewindInputStream, Basic)
 	EXPECT_EQ(offset_type(0), ris->GetOffset());
 	EXPECT_FALSE(ris->IsEOF());
 
-	nbytes = ris->Read(lock, buffer, 2);
+	nbytes = ris->Read(lock, std::as_writable_bytes(std::span{buffer}.first(2)));
 	EXPECT_EQ(size_t(2), nbytes);
 	EXPECT_EQ('f', buffer[0]);
 	EXPECT_EQ('o', buffer[1]);
 	EXPECT_EQ(offset_type(2), ris->GetOffset());
 	EXPECT_FALSE(ris->IsEOF());
 
-	nbytes = ris->Read(lock, buffer, sizeof(buffer));
+	nbytes = ris->Read(lock, std::as_writable_bytes(std::span{buffer}));
 	EXPECT_EQ(size_t(2), nbytes);
 	EXPECT_EQ('o', buffer[0]);
 	EXPECT_EQ(' ', buffer[1]);
 	EXPECT_EQ(offset_type(4), ris->GetOffset());
 	EXPECT_FALSE(ris->IsEOF());
 
-	nbytes = ris->Read(lock, buffer, sizeof(buffer));
+	nbytes = ris->Read(lock, std::as_writable_bytes(std::span{buffer}));
 	EXPECT_EQ(size_t(3), nbytes);
 	EXPECT_EQ('b', buffer[0]);
 	EXPECT_EQ('a', buffer[1]);
@@ -115,7 +115,7 @@ TEST(RewindInputStream, Basic)
 	EXPECT_EQ(offset_type(3), ris->GetOffset());
 	EXPECT_FALSE(ris->IsEOF());
 
-	nbytes = ris->Read(lock, buffer, sizeof(buffer));
+	nbytes = ris->Read(lock, std::as_writable_bytes(std::span{buffer}));
 	EXPECT_EQ(size_t(4), nbytes);
 	EXPECT_EQ(' ', buffer[0]);
 	EXPECT_EQ('b', buffer[1]);

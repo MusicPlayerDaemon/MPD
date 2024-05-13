@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_BUFFERED_INPUT_STREAM_BUFFER_HXX
-#define MPD_BUFFERED_INPUT_STREAM_BUFFER_HXX
+#pragma once
 
 #include "InputStream.hxx"
 #include "BufferingInputStream.hxx"
@@ -44,7 +43,7 @@ public:
 	// std::unique_ptr<Tag> ReadTag() override;
 	bool IsAvailable() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 
 private:
 	/* virtual methods from class BufferingInputStream */
@@ -52,5 +51,3 @@ private:
 		InvokeOnAvailable();
 	}
 };
-
-#endif

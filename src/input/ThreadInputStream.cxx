@@ -117,7 +117,7 @@ ThreadInputStream::IsAvailable() const noexcept
 
 inline size_t
 ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
-			void *ptr, size_t read_size)
+			std::span<std::byte> dest)
 {
 	assert(!thread.IsInside());
 
@@ -129,8 +129,8 @@ ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 
 		auto r = buffer.Read();
 		if (!r.empty()) {
-			size_t nbytes = std::min(read_size, r.size());
-			memcpy(ptr, r.data(), nbytes);
+			size_t nbytes = std::min(dest.size(), r.size());
+			memcpy(dest.data(), r.data(), nbytes);
 			buffer.Consume(nbytes);
 			wake_cond.notify_all();
 			offset += nbytes;

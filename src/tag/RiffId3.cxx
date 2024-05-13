@@ -5,6 +5,7 @@
 #include "RiffFormat.hxx"
 #include "input/InputStream.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/SpanCast.hxx"
 
 #include <limits>
 #include <stdexcept>
@@ -19,7 +20,7 @@ riff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 	is.Rewind(lock);
 
 	RiffFileHeader header;
-	is.ReadFull(lock, &header, sizeof(header));
+	is.ReadFull(lock, ReferenceAsWritableBytes(header));
 	if (memcmp(header.id, "RIFF", 4) != 0 ||
 	    (is.KnownSize() && FromLE32(header.size) > is.GetSize()))
 		throw std::runtime_error("Not a RIFF file");
@@ -28,7 +29,7 @@ riff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 		/* read the chunk header */
 
 		RiffChunkHeader chunk;
-		is.ReadFull(lock, &chunk, sizeof(chunk));
+		is.ReadFull(lock, ReferenceAsWritableBytes(chunk));
 
 		size_t size = FromLE32(chunk.size);
 		if (size > size_t(std::numeric_limits<int>::max()))

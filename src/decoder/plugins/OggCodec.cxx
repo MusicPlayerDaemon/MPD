@@ -16,8 +16,8 @@ ogg_codec_detect(DecoderClient *client, InputStream &is)
 	/* oggflac detection based on code in ogg123 and this post
 	 * http://lists.xiph.org/pipermail/flac/2004-December/000393.html
 	 * ogg123 trunk still doesn't have this patch as of June 2005 */
-	unsigned char buf[41];
-	size_t r = decoder_read(client, is, buf, sizeof(buf));
+	std::byte buf[41];
+	size_t r = decoder_read(client, is, buf);
 	if (r < sizeof(buf) || memcmp(buf, "OggS", 4) != 0)
 		return OGG_CODEC_UNKNOWN;
 

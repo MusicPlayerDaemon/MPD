@@ -12,8 +12,7 @@ DecoderBuffer::Fill()
 		/* buffer is full */
 		return false;
 
-	size_t nbytes = decoder_read(client, is,
-				     w.data(), w.size());
+	size_t nbytes = decoder_read(client, is, w);
 	if (nbytes == 0)
 		/* end of file, I/O error or decoder command
 		   received */

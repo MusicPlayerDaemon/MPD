@@ -25,7 +25,7 @@ get_id3v2_footer_size(InputStream &is, std::unique_lock<Mutex> &lock,
 try {
 	id3_byte_t buf[ID3_TAG_QUERYSIZE];
 	is.Seek(lock, offset);
-	is.ReadFull(lock, buf, sizeof(buf));
+	is.ReadFull(lock, std::as_writable_bytes(std::span{buf}));
 
 	return id3_tag_query(buf, sizeof(buf));
 } catch (...) {
@@ -36,7 +36,7 @@ static UniqueId3Tag
 ReadId3Tag(InputStream &is, std::unique_lock<Mutex> &lock)
 try {
 	id3_byte_t query_buffer[ID3_TAG_QUERYSIZE];
-	is.ReadFull(lock, query_buffer, sizeof(query_buffer));
+	is.ReadFull(lock, std::as_writable_bytes(std::span{query_buffer}));
 
 	/* Look for a tag header */
 	long tag_size = id3_tag_query(query_buffer, sizeof(query_buffer));
@@ -56,7 +56,7 @@ try {
 
 	/* now read the remaining bytes */
 	const size_t remaining = tag_size - sizeof(query_buffer);
-	is.ReadFull(lock, end, remaining);
+	is.ReadFull(lock, std::as_writable_bytes(std::span{end, remaining}));
 
 	return UniqueId3Tag(id3_tag_parse(tag_buffer.get(), tag_size));
 } catch (...) {
@@ -77,7 +77,7 @@ static UniqueId3Tag
 ReadId3v1Tag(InputStream &is, std::unique_lock<Mutex> &lock)
 try {
 	id3_byte_t buffer[ID3V1_SIZE];
-	is.ReadFull(lock, buffer, ID3V1_SIZE);
+	is.ReadFull(lock, std::as_writable_bytes(std::span{buffer}));
 
 	return UniqueId3Tag(id3_tag_parse(buffer, ID3V1_SIZE));
 } catch (...) {
@@ -183,7 +183,7 @@ try {
 		return nullptr;
 
 	auto buffer = std::make_unique<id3_byte_t[]>(size);
-	is.ReadFull(lock, buffer.get(), size);
+	is.ReadFull(lock, std::as_writable_bytes(std::span{buffer.get(), size}));
 
 	return UniqueId3Tag(id3_tag_parse(buffer.get(), size));
 } catch (...) {

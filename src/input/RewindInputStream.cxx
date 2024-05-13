@@ -28,7 +28,7 @@ class RewindInputStream final : public ProxyInputStream {
 	 * The origin of this buffer is always the beginning of the
 	 * stream (offset 0).
 	 */
-	char buffer[64 * 1024];
+	std::byte buffer[64 * 1024];
 
 public:
 	explicit RewindInputStream(InputStreamPtr _input)
@@ -46,7 +46,7 @@ public:
 	}
 
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
 
 private:
@@ -61,7 +61,7 @@ private:
 
 size_t
 RewindInputStream::Read(std::unique_lock<Mutex> &lock,
-			void *ptr, size_t read_size)
+			std::span<std::byte> dest)
 {
 	if (ReadingFromBuffer()) {
 		/* buffered read */
@@ -69,18 +69,18 @@ RewindInputStream::Read(std::unique_lock<Mutex> &lock,
 		assert(head == (size_t)offset);
 		assert(tail == (size_t)input->GetOffset());
 
-		if (read_size > tail - head)
-			read_size = tail - head;
+		if (dest.size() > tail - head)
+			dest = dest.first(tail - head);
 
-		memcpy(ptr, buffer + head, read_size);
-		head += read_size;
-		offset += read_size;
+		memcpy(dest.data(), buffer + head, dest.size());
+		head += dest.size();
+		offset += dest.size();
 
-		return read_size;
+		return dest.size();
 	} else {
 		/* pass method call to underlying stream */
 
-		size_t nbytes = input->Read(lock, ptr, read_size);
+		size_t nbytes = input->Read(lock, dest);
 
 		if (std::cmp_greater(input->GetOffset(), sizeof(buffer)))
 			/* disable buffering */
@@ -88,7 +88,7 @@ RewindInputStream::Read(std::unique_lock<Mutex> &lock,
 		else if (tail == (size_t)offset) {
 			/* append to buffer */
 
-			memcpy(buffer + tail, ptr, nbytes);
+			memcpy(buffer + tail, dest.data(), nbytes);
 			tail += nbytes;
 
 			assert(tail == (size_t)input->GetOffset());

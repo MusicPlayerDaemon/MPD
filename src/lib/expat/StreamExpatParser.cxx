@@ -3,6 +3,7 @@
 
 #include "ExpatParser.hxx"
 #include "input/InputStream.hxx"
+#include "util/SpanCast.hxx"
 
 void
 ExpatParser::Parse(InputStream &is)
@@ -10,12 +11,12 @@ ExpatParser::Parse(InputStream &is)
 	assert(is.IsReady());
 
 	while (true) {
-		char buffer[4096];
-		size_t nbytes = is.LockRead(buffer, sizeof(buffer));
+		std::byte buffer[4096];
+		size_t nbytes = is.LockRead(buffer);
 		if (nbytes == 0)
 			break;
 
-		Parse(buffer, nbytes);
+		Parse(ToStringView(std::span{buffer}.first(nbytes)));
 	}
 
 	CompleteParse();

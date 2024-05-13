@@ -4,6 +4,7 @@
 #include "ApeLoader.hxx"
 #include "input/InputStream.hxx"
 #include "util/PackedLittleEndian.hxx"
+#include "util/SpanCast.hxx"
 
 #include <cassert>
 #include <cstdint>
@@ -30,7 +31,7 @@ try {
 	/* determine if file has an apeV2 tag */
 	ApeFooter footer;
 	is.Seek(lock, is.GetSize() - sizeof(footer));
-	is.ReadFull(lock, &footer, sizeof(footer));
+	is.ReadFull(lock, ReferenceAsWritableBytes(footer));
 
 	if (memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
 	    FromLE32(footer.version) != 2000)
@@ -49,12 +50,12 @@ try {
 	remaining -= sizeof(footer);
 	assert(remaining > 10);
 
-	auto buffer = std::make_unique<char[]>(remaining);
-	is.ReadFull(lock, buffer.get(), remaining);
+	auto buffer = std::make_unique<std::byte[]>(remaining);
+	is.ReadFull(lock, {buffer.get(), remaining});
 
 	/* read tags */
 	unsigned n = FromLE32(footer.count);
-	const char *p = buffer.get();
+	const char *p = (const char *)buffer.get();
 	while (n-- && remaining > 10) {
 		size_t size = *(const PackedLE32 *)p;
 		p += 4;

@@ -78,7 +78,7 @@ public:
 	bool IsEOF() const noexcept final;
 	bool IsAvailable() const noexcept final;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override final;
+		    std::span<std::byte> dest) override final;
 
 protected:
 	/**

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_CACHE_INPUT_STREAM_HXX
-#define MPD_CACHE_INPUT_STREAM_HXX
+#pragma once
 
 #include "Lease.hxx"
 #include "input/InputStream.hxx"
@@ -26,11 +25,9 @@ public:
 	// std::unique_ptr<Tag> ReadTag() override;
 	bool IsAvailable() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 
 private:
 	/* virtual methods from class InputCacheLease */
 	void OnInputCacheAvailable() noexcept override;
 };
-
-#endif

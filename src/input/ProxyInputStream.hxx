@@ -50,7 +50,7 @@ public:
 	std::unique_ptr<Tag> ReadTag() noexcept override;
 	bool IsAvailable() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t read_size) override;
+		    std::span<std::byte> dest) override;
 
 protected:
 	/**

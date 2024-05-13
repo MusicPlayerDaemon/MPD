@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_DECODER_BRIDGE_HXX
-#define MPD_DECODER_BRIDGE_HXX
+#pragma once
 
 #include "Client.hxx"
 #include "tag/ReplayGainInfo.hxx"
 #include "MusicChunkPtr.hxx"
 
+#include <cstddef>
 #include <exception>
 #include <memory>
+#include <span>
 
 class PcmConvert;
 struct MusicChunk;
@@ -159,7 +160,7 @@ public:
 	void SeekError() noexcept override;
 	InputStreamPtr OpenUri(const char *uri) override;
 	size_t Read(InputStream &is,
-		    void *buffer, size_t length) noexcept override;
+		    std::span<std::byte> dest) noexcept override;
 	void SubmitTimestamp(FloatDuration t) noexcept override;
 	DecoderCommand SubmitAudio(InputStream *is,
 				   std::span<const std::byte> audio,
@@ -191,5 +192,3 @@ private:
 
 	bool UpdateStreamTag(InputStream *is) noexcept;
 };
-
-#endif

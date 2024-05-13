@@ -7,7 +7,7 @@
 std::size_t
 InputStreamReader::Read(std::span<std::byte> dest)
 {
-	size_t nbytes = is.LockRead(dest.data(), dest.size());
+	size_t nbytes = is.LockRead(dest);
 	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;

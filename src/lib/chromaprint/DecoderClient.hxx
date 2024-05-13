@@ -74,7 +74,7 @@ public:
 	//InputStreamPtr OpenUri(const char *) override;
 
 	size_t Read(InputStream &is,
-		    void *buffer, size_t length) noexcept override;
+		    std::span<std::byte> dest) noexcept override;
 
 	void SubmitTimestamp(FloatDuration) noexcept override {}
 	DecoderCommand SubmitAudio(InputStream *is,

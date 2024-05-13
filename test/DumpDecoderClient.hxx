@@ -33,7 +33,7 @@ public:
 	void SeekError() noexcept override;
 	InputStreamPtr OpenUri(const char *uri) override;
 	size_t Read(InputStream &is,
-		    void *buffer, size_t length) noexcept override;
+		    std::span<std::byte> dest) noexcept override;
 	void SubmitTimestamp(FloatDuration t) noexcept override;
 	DecoderCommand SubmitAudio(InputStream *is,
 				   std::span<const std::byte> audio,

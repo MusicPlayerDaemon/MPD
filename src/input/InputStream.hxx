@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_INPUT_STREAM_HXX
-#define MPD_INPUT_STREAM_HXX
+#pragma once
 
 #include "Offset.hxx"
 #include "Ptr.hxx"
 #include "thread/Mutex.hxx"
 
 #include <cassert>
+#include <cstddef>
 #include <memory>
+#include <span>
 #include <string>
 #include <utility>
 
@@ -350,9 +351,8 @@ public:
 	 * @param size the maximum number of bytes to read
 	 * @return the number of bytes read
 	 */
-	[[gnu::nonnull]]
-	virtual size_t Read(std::unique_lock<Mutex> &lock,
-			    void *ptr, size_t size) = 0;
+	virtual std::size_t Read(std::unique_lock<Mutex> &lock,
+				 std::span<std::byte> dest) = 0;
 
 	/**
 	 * Wrapper for Read() which locks and unlocks the mutex;
@@ -360,8 +360,7 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	[[gnu::nonnull]]
-	size_t LockRead(void *ptr, size_t size);
+	std::size_t LockRead(std::span<std::byte> dest);
 
 	/**
 	 * Reads the whole data from the stream into the caller-supplied buffer.
@@ -374,8 +373,7 @@ public:
 	 * @param size the number of bytes to read
 	 * @return true if the whole data was read, false otherwise.
 	 */
-	[[gnu::nonnull]]
-	void ReadFull(std::unique_lock<Mutex> &lock, void *ptr, size_t size);
+	void ReadFull(std::unique_lock<Mutex> &lock, std::span<std::byte> dest);
 
 	/**
 	 * Wrapper for ReadFull() which locks and unlocks the mutex;
@@ -383,8 +381,7 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	[[gnu::nonnull]]
-	void LockReadFull(void *ptr, size_t size);
+	void LockReadFull(std::span<std::byte> dest);
 
 protected:
 	void InvokeOnReady() noexcept;
@@ -410,5 +407,3 @@ public:
 		is.SetHandler(old_handler);
 	}
 };
-
-#endif

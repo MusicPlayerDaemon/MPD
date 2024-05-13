@@ -48,9 +48,9 @@ BufferedInputStream::IsAvailable() const noexcept
 
 size_t
 BufferedInputStream::Read(std::unique_lock<Mutex> &lock,
-			  void *ptr, size_t s)
+			  std::span<std::byte> dest)
 {
-	size_t nbytes = BufferingInputStream::Read(lock, offset, ptr, s);
+	size_t nbytes = BufferingInputStream::Read(lock, offset, dest);
 	InputStream::offset += nbytes;
 	return nbytes;
 }

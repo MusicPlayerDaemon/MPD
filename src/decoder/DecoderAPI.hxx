@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
+#pragma once
+
 /*! \file
  * \brief The MPD Decoder API
  *
  * This is the public API which is used by decoder plugins to
  * communicate with the mpd core.
  */
-
-#ifndef MPD_DECODER_API_HXX
-#define MPD_DECODER_API_HXX
 
 // IWYU pragma: begin_exports
 
@@ -26,7 +25,9 @@
 
 // IWYU pragma: end_exports
 
+#include <cstddef>
 #include <cstdint>
+#include <span>
 
 /**
  * Throw an instance of this class to stop decoding the current song
@@ -47,13 +48,13 @@ class StopDecoder {};
  */
 size_t
 decoder_read(DecoderClient *decoder, InputStream &is,
-	     void *buffer, size_t length) noexcept;
+	     std::span<std::byte> dest) noexcept;
 
 static inline size_t
 decoder_read(DecoderClient &decoder, InputStream &is,
-	     void *buffer, size_t length) noexcept
+	     std::span<std::byte> dest) noexcept
 {
-	return decoder_read(&decoder, is, buffer, length);
+	return decoder_read(&decoder, is, dest);
 }
 
 /**
@@ -66,7 +67,7 @@ decoder_read(DecoderClient &decoder, InputStream &is,
  */
 size_t
 decoder_read_much(DecoderClient *decoder, InputStream &is,
-		  void *buffer, size_t size) noexcept;
+		  std::span<std::byte> dest) noexcept;
 
 /**
  * Blocking read from the input stream.  Attempts to fill the buffer
@@ -77,7 +78,7 @@ decoder_read_much(DecoderClient *decoder, InputStream &is,
  */
 bool
 decoder_read_full(DecoderClient *decoder, InputStream &is,
-		  void *buffer, size_t size) noexcept;
+		  std::span<std::byte> dest) noexcept;
 
 /**
  * Skip data on the #InputStream.
@@ -86,5 +87,3 @@ decoder_read_full(DecoderClient *decoder, InputStream &is,
  */
 bool
 decoder_skip(DecoderClient *decoder, InputStream &is, size_t size) noexcept;
-
-#endif

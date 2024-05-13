@@ -10,16 +10,14 @@
 size_t
 decoder_read(DecoderClient *client,
 	     InputStream &is,
-	     void *buffer, size_t length) noexcept
+	     std::span<std::byte> dest) noexcept
 {
-	assert(buffer != nullptr);
-
 	/* XXX don't allow client==nullptr */
 	if (client != nullptr)
-		return client->Read(is, buffer, length);
+		return client->Read(is, dest);
 
 	try {
-		return is.LockRead(buffer, length);
+		return is.LockRead(dest);
 	} catch (...) {
 		LogError(std::current_exception());
 		return 0;
@@ -28,20 +26,17 @@ decoder_read(DecoderClient *client,
 
 size_t
 decoder_read_much(DecoderClient *client, InputStream &is,
-		  void *_buffer, size_t size) noexcept
+		  std::span<std::byte> dest) noexcept
 {
-	auto buffer = (uint8_t *)_buffer;
-
 	size_t total = 0;
 
-	while (size > 0 && !is.LockIsEOF()) {
-		size_t nbytes = decoder_read(client, is, buffer, size);
+	while (!dest.empty() && !is.LockIsEOF()) {
+		size_t nbytes = decoder_read(client, is, dest);
 		if (nbytes == 0)
 			return false;
 
+		dest = dest.subspan(nbytes);
 		total += nbytes;
-		buffer += nbytes;
-		size -= nbytes;
 	}
 
 	return total;
@@ -49,17 +44,14 @@ decoder_read_much(DecoderClient *client, InputStream &is,
 
 bool
 decoder_read_full(DecoderClient *client, InputStream &is,
-		  void *_buffer, size_t size) noexcept
+		  std::span<std::byte> dest) noexcept
 {
-	auto buffer = (uint8_t *)_buffer;
-
-	while (size > 0) {
-		size_t nbytes = decoder_read(client, is, buffer, size);
+	while (!dest.empty()) {
+		size_t nbytes = decoder_read(client, is, dest);
 		if (nbytes == 0)
 			return false;
 
-		buffer += nbytes;
-		size -= nbytes;
+		dest = dest.subspan(nbytes);
 	}
 
 	return true;
@@ -69,9 +61,10 @@ bool
 decoder_skip(DecoderClient *client, InputStream &is, size_t size) noexcept
 {
 	while (size > 0) {
-		char buffer[1024];
-		size_t nbytes = decoder_read(client, is, buffer,
-					     std::min(sizeof(buffer), size));
+		std::byte buffer[1024];
+
+		size_t nbytes = decoder_read(client, is,
+					     std::span{buffer, std::min(sizeof(buffer), size)});
 		if (nbytes == 0)
 			return false;
 

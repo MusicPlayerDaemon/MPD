@@ -39,7 +39,7 @@ mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is)
 	std::byte *const end = p + buffer.size();
 
 	while (true) {
-		size_t ret = decoder_read(client, is, p, end - p);
+		size_t ret = decoder_read(client, is, {p, end});
 		if (ret == 0) {
 			if (is.LockIsEOF())
 				/* end of file */

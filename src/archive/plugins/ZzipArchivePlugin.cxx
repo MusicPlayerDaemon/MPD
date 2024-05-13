@@ -107,7 +107,7 @@ public:
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
 };
 
@@ -136,11 +136,11 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 }
 
 size_t
-ZzipInputStream::Read(std::unique_lock<Mutex> &, void *ptr, size_t read_size)
+ZzipInputStream::Read(std::unique_lock<Mutex> &, std::span<std::byte> dest)
 {
 	const ScopeUnlock unlock(mutex);
 
-	zzip_ssize_t nbytes = zzip_file_read(file, ptr, read_size);
+	zzip_ssize_t nbytes = zzip_file_read(file, dest.data(), dest.size());
 	if (nbytes < 0)
 		throw std::runtime_error("zzip_file_read() has failed");
 

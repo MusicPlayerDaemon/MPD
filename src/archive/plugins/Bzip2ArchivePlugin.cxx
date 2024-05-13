@@ -48,7 +48,7 @@ class Bzip2InputStream final : public InputStream {
 
 	bool eof = false;
 
-	char buffer[5000];
+	std::byte buffer[5000];
 
 public:
 	Bzip2InputStream(std::shared_ptr<InputStream> _input,
@@ -62,7 +62,7 @@ public:
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 
 private:
 	void Open();
@@ -114,25 +114,25 @@ Bzip2InputStream::FillBuffer()
 	if (bzstream.avail_in > 0)
 		return true;
 
-	size_t count = input->LockRead(buffer, sizeof(buffer));
+	size_t count = input->LockRead(buffer);
 	if (count == 0)
 		return false;
 
-	bzstream.next_in = buffer;
+	bzstream.next_in = reinterpret_cast<char *>(buffer);
 	bzstream.avail_in = count;
 	return true;
 }
 
 size_t
-Bzip2InputStream::Read(std::unique_lock<Mutex> &, void *ptr, size_t length)
+Bzip2InputStream::Read(std::unique_lock<Mutex> &, std::span<std::byte> dest)
 {
 	if (eof)
 		return 0;
 
 	const ScopeUnlock unlock(mutex);
 
-	bzstream.next_out = (char *)ptr;
-	bzstream.avail_out = length;
+	bzstream.next_out = reinterpret_cast<char *>(dest.data());
+	bzstream.avail_out = dest.size();
 
 	do {
 		const bool had_input = FillBuffer();
@@ -147,11 +147,11 @@ Bzip2InputStream::Read(std::unique_lock<Mutex> &, void *ptr, size_t length)
 		if (bz_result != BZ_OK)
 			throw std::runtime_error("BZ2_bzDecompress() has failed");
 
-		if (!had_input && bzstream.avail_out == length)
+		if (!had_input && bzstream.avail_out == dest.size())
 			throw std::runtime_error("Unexpected end of bzip2 file");
-	} while (bzstream.avail_out == length);
+	} while (bzstream.avail_out == dest.size());
 
-	const size_t nbytes = length - bzstream.avail_out;
+	const size_t nbytes = dest.size() - bzstream.avail_out;
 	offset += nbytes;
 
 	return nbytes;

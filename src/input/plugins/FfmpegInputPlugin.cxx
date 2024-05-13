@@ -34,7 +34,7 @@ public:
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 	void Seek(std::unique_lock<Mutex> &lock,
 		  offset_type offset) override;
 };
@@ -91,13 +91,13 @@ input_ffmpeg_open(const char *uri,
 
 size_t
 FfmpegInputStream::Read(std::unique_lock<Mutex> &,
-			void *ptr, size_t read_size)
+			std::span<std::byte> dest)
 {
 	size_t result;
 
 	{
 		const ScopeUnlock unlock(mutex);
-		result = io.Read(ptr, read_size);
+		result = io.Read(dest);
 	}
 
 	offset += result;

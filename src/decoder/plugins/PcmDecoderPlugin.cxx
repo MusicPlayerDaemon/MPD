@@ -35,7 +35,7 @@ FillBuffer(DecoderClient &client, InputStream &is, B &buffer)
 	if (w.empty())
 		return true;
 
-	size_t nbytes = decoder_read(client, is, w.data(), w.size());
+	size_t nbytes = decoder_read(client, is, w);
 	if (nbytes == 0 && is.LockIsEOF())
 		return false;
 
@@ -157,7 +157,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 
 	client.Ready(audio_format, is.IsSeekable(), total_time);
 
-	StaticFifoBuffer<uint8_t, 4096> buffer;
+	StaticFifoBuffer<std::byte, 4096> buffer;
 
 	/* a buffer for pcm_unpack_24be() large enough to hold the
 	   results for a full source buffer */
@@ -185,9 +185,10 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 			   (audio/L24) to native-endian 24 bit (in 32
 			   bit integers) */
 			pcm_unpack_24be(unpack_buffer,
-					r.data(), r.data() + r.size());
+					reinterpret_cast<const uint8_t *>(r.data()),
+					reinterpret_cast<const uint8_t *>(r.data() + r.size()));
 			r = {
-				(uint8_t *)&unpack_buffer[0],
+				(std::byte *)&unpack_buffer[0],
 				(r.size() / 3) * 4,
 			};
 		}

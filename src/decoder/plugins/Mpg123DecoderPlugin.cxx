@@ -77,7 +77,8 @@ mpd_mpg123_read(void *_iohandle, void *data, size_t size) noexcept
 	auto &iohandle = *reinterpret_cast<mpd_mpg123_iohandle *>(_iohandle);
 
 	try {
-		return decoder_read_much(iohandle.client, iohandle.is, data, size);
+		return decoder_read_much(iohandle.client, iohandle.is,
+					 {reinterpret_cast<std::byte *>(data), size});
 	} catch (...) {
 		LogError(std::current_exception(), "Read failed");
 		return -1;

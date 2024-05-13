@@ -24,9 +24,9 @@ AvioStream::~AvioStream()
 }
 
 inline int
-AvioStream::Read(void *dest, int size)
+AvioStream::Read(std::span<std::byte> dest)
 {
-	const auto nbytes = decoder_read(client, input, dest, size);
+	const auto nbytes = decoder_read(client, input, dest);
 	if (nbytes == 0)
 		return AVERROR_EOF;
 
@@ -74,7 +74,7 @@ AvioStream::_Read(void *opaque, uint8_t *buf, int size)
 {
 	AvioStream &stream = *(AvioStream *)opaque;
 
-	return stream.Read(buf, size);
+	return stream.Read({reinterpret_cast<std::byte *>(buf), static_cast<std::size_t>(size)});
 }
 
 int64_t

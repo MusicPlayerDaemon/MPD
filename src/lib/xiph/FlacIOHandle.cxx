@@ -14,7 +14,7 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 {
 	auto *is = (InputStream *)handle;
 
-	uint8_t *const p0 = (uint8_t *)ptr, *p = p0,
+	std::byte *const p0 = (std::byte *)ptr, *p = p0,
 		*const end = p0 + size * nmemb;
 
 	/* libFLAC is very picky about short reads, and expects the IO
@@ -22,7 +22,7 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 
 	while (p < end) {
 		try {
-			size_t nbytes = is->LockRead(p, end - p);
+			size_t nbytes = is->LockRead({p, end});
 			if (nbytes == 0)
 				/* end of file */
 				break;

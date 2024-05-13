@@ -40,7 +40,7 @@ public:
 	}
 
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
 };
 
@@ -88,13 +88,13 @@ input_smbclient_open(const char *uri,
 
 size_t
 SmbclientInputStream::Read(std::unique_lock<Mutex> &,
-			   void *ptr, size_t read_size)
+			   std::span<std::byte> dest)
 {
 	ssize_t nbytes;
 
 	{
 		const ScopeUnlock unlock(mutex);
-		nbytes = ctx.Read(handle, ptr, read_size);
+		nbytes = ctx.Read(handle, dest.data(), dest.size());
 	}
 
 	if (nbytes < 0)

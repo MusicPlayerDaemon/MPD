@@ -4,6 +4,7 @@
 #include "Aiff.hxx"
 #include "input/InputStream.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/SpanCast.hxx"
 
 #include <cstdint>
 #include <limits>
@@ -30,7 +31,7 @@ aiff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 	is.Rewind(lock);
 
 	aiff_header header;
-	is.ReadFull(lock, &header, sizeof(header));
+	is.ReadFull(lock, ReferenceAsWritableBytes(header));
 	if (memcmp(header.id, "FORM", 4) != 0 ||
 	    (is.KnownSize() && FromBE32(header.size) > is.GetSize()) ||
 	    (memcmp(header.format, "AIFF", 4) != 0 &&
@@ -41,7 +42,7 @@ aiff_seek_id3(InputStream &is, std::unique_lock<Mutex> &lock)
 		/* read the chunk header */
 
 		aiff_chunk_header chunk;
-		is.ReadFull(lock, &chunk, sizeof(chunk));
+		is.ReadFull(lock, ReferenceAsWritableBytes(chunk));
 
 		size_t size = FromBE32(chunk.size);
 		if (size > size_t(std::numeric_limits<int>::max()))

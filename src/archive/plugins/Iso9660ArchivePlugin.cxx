@@ -205,7 +205,7 @@ public:
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 
 	void Seek(std::unique_lock<Mutex> &, offset_type new_offset) override {
 		if (new_offset > size)
@@ -236,14 +236,14 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 
 size_t
 Iso9660InputStream::Read(std::unique_lock<Mutex> &,
-			 void *ptr, size_t read_size)
+			 std::span<std::byte> dest)
 {
 	const offset_type remaining = size - offset;
 	if (remaining == 0)
 		return 0;
 
-	if (std::cmp_greater(read_size, remaining))
-		read_size = remaining;
+	if (std::cmp_greater(dest.size(), remaining))
+		dest = dest.first(remaining);
 
 	auto r = buffer.Read();
 
@@ -256,11 +256,11 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 
 		const lsn_t read_lsn = lsn + offset / ISO_BLOCKSIZE;
 
-		if (read_size >= ISO_BLOCKSIZE && skip == 0) {
+		if (dest.size() >= ISO_BLOCKSIZE && skip == 0) {
 			/* big read - read right into the caller's buffer */
 
-			auto nbytes = iso->SeekRead(ptr, read_lsn,
-						    read_size / ISO_BLOCKSIZE);
+			auto nbytes = iso->SeekRead(dest.data(), read_lsn,
+						    dest.size() / ISO_BLOCKSIZE);
 			if (nbytes <= 0)
 				throw std::runtime_error("Failed to read ISO9660 file");
 
@@ -294,8 +294,8 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 	assert(!r.empty());
 	assert(skip == 0);
 
-	size_t nbytes = std::min(read_size, r.size());
-	memcpy(ptr, r.data(), nbytes);
+	size_t nbytes = std::min(dest.size(), r.size());
+	memcpy(dest.data(), r.data(), nbytes);
 	buffer.Consume(nbytes);
 	offset += nbytes;
 	return nbytes;

@@ -68,20 +68,20 @@ IcyInputStream::ReadTag() noexcept
 
 size_t
 IcyInputStream::Read(std::unique_lock<Mutex> &lock,
-		     void *ptr, size_t read_size)
+		     std::span<std::byte> dest)
 {
 	if (!IsEnabled())
-		return ProxyInputStream::Read(lock, ptr, read_size);
+		return ProxyInputStream::Read(lock, dest);
 
 	while (true) {
-		size_t nbytes = ProxyInputStream::Read(lock, ptr, read_size);
+		size_t nbytes = ProxyInputStream::Read(lock, dest);
 		if (nbytes == 0) {
 			assert(IsEOF());
 			offset = override_offset;
 			return 0;
 		}
 
-		size_t result = parser->ParseInPlace({static_cast<std::byte *>(ptr), nbytes});
+		size_t result = parser->ParseInPlace(dest.first(nbytes));
 		if (result > 0) {
 			override_offset += result;
 			offset = override_offset;

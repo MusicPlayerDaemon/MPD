@@ -395,13 +395,12 @@ DecoderBridge::OpenUri(const char *uri)
 }
 
 size_t
-DecoderBridge::Read(InputStream &is, void *buffer, size_t length) noexcept
+DecoderBridge::Read(InputStream &is, std::span<std::byte> dest) noexcept
 try {
-	assert(buffer != nullptr);
 	assert(dc.state == DecoderState::START ||
 	       dc.state == DecoderState::DECODE);
 
-	if (length == 0)
+	if (dest.empty())
 		return 0;
 
 	std::unique_lock<Mutex> lock(is.mutex);
@@ -416,7 +415,7 @@ try {
 		dc.cond.wait(lock);
 	}
 
-	size_t nbytes = is.Read(lock, buffer, length);
+	size_t nbytes = is.Read(lock, dest);
 	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;

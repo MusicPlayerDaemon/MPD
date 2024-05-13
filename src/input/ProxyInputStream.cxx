@@ -105,11 +105,11 @@ ProxyInputStream::IsAvailable() const noexcept
 
 size_t
 ProxyInputStream::Read(std::unique_lock<Mutex> &lock,
-		       void *ptr, size_t read_size)
+		       std::span<std::byte> dest)
 {
 	set_input_cond.wait(lock, [this]{ return !!input; });
 
-	size_t nbytes = input->Read(lock, ptr, read_size);
+	size_t nbytes = input->Read(lock, dest);
 	CopyAttributes();
 	return nbytes;
 }

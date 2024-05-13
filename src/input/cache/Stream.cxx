@@ -51,7 +51,7 @@ CacheInputStream::IsAvailable() const noexcept
 
 size_t
 CacheInputStream::Read(std::unique_lock<Mutex> &lock,
-		       void *ptr, size_t read_size)
+		       std::span<std::byte> dest)
 {
 	const auto _offset = offset;
 	auto &i = GetCacheItem();
@@ -62,7 +62,7 @@ CacheInputStream::Read(std::unique_lock<Mutex> &lock,
 		const ScopeUnlock unlock(mutex);
 		const std::scoped_lock<Mutex> protect(i.mutex);
 
-		nbytes = i.Read(lock, _offset, ptr, read_size);
+		nbytes = i.Read(lock, _offset, dest);
 	}
 
 	offset += nbytes;

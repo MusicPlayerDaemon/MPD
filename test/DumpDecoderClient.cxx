@@ -60,10 +60,10 @@ DumpDecoderClient::OpenUri(const char *uri)
 }
 
 size_t
-DumpDecoderClient::Read(InputStream &is, void *buffer, size_t length) noexcept
+DumpDecoderClient::Read(InputStream &is, std::span<std::byte> dest) noexcept
 {
 	try {
-		return is.LockRead(buffer, length);
+		return is.LockRead(dest);
 	} catch (...) {
 		return 0;
 	}

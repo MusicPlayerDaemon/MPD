@@ -12,7 +12,8 @@
 inline FLAC__StreamDecoderReadStatus
 FlacInput::Read(FLAC__byte buffer[], size_t *bytes) noexcept
 {
-	size_t r = decoder_read(client, input_stream, (void *)buffer, *bytes);
+	size_t r = decoder_read(client, input_stream,
+				{reinterpret_cast<std::byte *>(buffer), *bytes});
 	*bytes = r;
 
 	if (r == 0) {

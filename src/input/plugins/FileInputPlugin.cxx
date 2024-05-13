@@ -33,7 +33,7 @@ public:
 	}
 
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 	void Seek(std::unique_lock<Mutex> &lock,
 		  offset_type offset) override;
 };
@@ -71,14 +71,13 @@ FileInputStream::Seek(std::unique_lock<Mutex> &,
 }
 
 size_t
-FileInputStream::Read(std::unique_lock<Mutex> &,
-		      void *ptr, size_t read_size)
+FileInputStream::Read(std::unique_lock<Mutex> &, std::span<std::byte> dest)
 {
 	size_t nbytes;
 
 	{
 		const ScopeUnlock unlock(mutex);
-		nbytes = reader.Read({static_cast<std::byte *>(ptr), read_size});
+		nbytes = reader.Read(dest);
 	}
 
 	if (nbytes == 0 && !IsEOF())

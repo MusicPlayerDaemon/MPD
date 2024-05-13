@@ -42,7 +42,7 @@ public:
 #ifdef ENABLE_UPNP
 #include "input/InputStream.hxx"
 size_t
-InputStream::LockRead(void *, size_t)
+InputStream::LockRead(std::span<std::byte>)
 {
 	return 0;
 }

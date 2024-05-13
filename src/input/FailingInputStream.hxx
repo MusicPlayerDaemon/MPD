@@ -38,7 +38,7 @@ public:
 		return false;
 	}
 
-	size_t Read(std::unique_lock<Mutex> &, void *, size_t) override {
+	size_t Read(std::unique_lock<Mutex> &, std::span<std::byte>) override {
 		std::rethrow_exception(error);
 	}
 };

@@ -59,7 +59,7 @@ BufferingInputStream::IsAvailable(size_t offset) const noexcept
 
 size_t
 BufferingInputStream::Read(std::unique_lock<Mutex> &lock, size_t offset,
-			   void *ptr, size_t s)
+			   std::span<std::byte> dest)
 {
 	if (offset >= size())
 		return 0;
@@ -68,8 +68,8 @@ BufferingInputStream::Read(std::unique_lock<Mutex> &lock, size_t offset,
 		auto r = buffer.Read(offset);
 		if (r.HasData()) {
 			/* yay, we have some data */
-			size_t nbytes = std::min(s, r.defined_buffer.size());
-			memcpy(ptr, r.defined_buffer.data(), nbytes);
+			size_t nbytes = std::min(dest.size(), r.defined_buffer.size());
+			memcpy(dest.data(), r.defined_buffer.data(), nbytes);
 			return nbytes;
 		}
 
@@ -148,9 +148,10 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock)
 			   data has been read */
 			constexpr size_t MAX_READ = 64 * 1024;
 
-			size_t nbytes = input->Read(lock, w.data(),
-						    std::min(w.size(),
-							     MAX_READ));
+			if (w.size() > MAX_READ)
+				w = w.first(MAX_READ);
+
+			size_t nbytes = input->Read(lock, w);
 			buffer.Commit(read_offset, read_offset + nbytes);
 
 			client_cond.notify_all();

@@ -18,6 +18,7 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/BitReverse.hxx"
 #include "util/PackedLittleEndian.hxx"
+#include "util/SpanCast.hxx"
 #include "DsdLib.hxx"
 #include "tag/Handler.hxx"
 
@@ -85,7 +86,7 @@ dsf_read_metadata(DecoderClient *client, InputStream &is,
 		  DsfMetaData *metadata)
 {
 	DsfHeader dsf_header;
-	if (!decoder_read_full(client, is, &dsf_header, sizeof(dsf_header)) ||
+	if (!decoder_read_full(client, is, ReferenceAsWritableBytes(dsf_header)) ||
 	    !dsf_header.id.Equals("DSD "))
 		return false;
 
@@ -100,7 +101,7 @@ dsf_read_metadata(DecoderClient *client, InputStream &is,
 	/* read the 'fmt ' chunk of the DSF file */
 	DsfFmtChunk dsf_fmt_chunk;
 	if (!decoder_read_full(client, is,
-			       &dsf_fmt_chunk, sizeof(dsf_fmt_chunk)) ||
+			       ReferenceAsWritableBytes(dsf_fmt_chunk)) ||
 	    !dsf_fmt_chunk.id.Equals("fmt "))
 		return false;
 
@@ -127,7 +128,7 @@ dsf_read_metadata(DecoderClient *client, InputStream &is,
 
 	/* read the 'data' chunk of the DSF file */
 	DsfDataChunk data_chunk;
-	if (!decoder_read_full(client, is, &data_chunk, sizeof(data_chunk)) ||
+	if (!decoder_read_full(client, is, ReferenceAsWritableBytes(data_chunk)) ||
 	    !data_chunk.id.Equals("data"))
 		return false;
 
@@ -264,7 +265,8 @@ dsf_decode_chunk(DecoderClient &client, InputStream &is,
 
 		/* worst-case buffer size */
 		std::byte buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
-		if (!decoder_read_full(&client, is, buffer, block_size))
+		if (!decoder_read_full(&client, is,
+				       std::span{buffer}.first(block_size)))
 			return false;
 
 		if (bitreverse)

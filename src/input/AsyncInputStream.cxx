@@ -166,7 +166,7 @@ AsyncInputStream::IsAvailable() const noexcept
 
 size_t
 AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
-		       void *ptr, size_t read_size)
+		       std::span<std::byte> dest)
 {
 	assert(!GetEventLoop().IsInside());
 
@@ -185,8 +185,8 @@ AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
 		cond_handler.cond.wait(lock);
 	}
 
-	const size_t nbytes = std::min(read_size, r.size());
-	memcpy(ptr, r.data(), nbytes);
+	const size_t nbytes = std::min(dest.size(), r.size());
+	memcpy(dest.data(), r.data(), nbytes);
 	buffer.Consume(nbytes);
 
 	offset += (offset_type)nbytes;

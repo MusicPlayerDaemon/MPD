@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_DECODER_CLIENT_HXX
-#define MPD_DECODER_CLIENT_HXX
+#pragma once
 
 #include "Command.hxx"
 #include "Chrono.hxx"
@@ -93,7 +92,7 @@ public:
 	 * occurs: end of file; error; command (like SEEK or STOP).
 	 */
 	virtual size_t Read(InputStream &is,
-			    void *buffer, size_t length) noexcept = 0;
+			    std::span<std::byte> dest) noexcept = 0;
 
 	/**
 	 * Sets the time stamp for the next data chunk [seconds].  The MPD
@@ -171,5 +170,3 @@ public:
 	 */
 	virtual void SubmitMixRamp(MixRampInfo &&mix_ramp) noexcept = 0;
 };
-
-#endif

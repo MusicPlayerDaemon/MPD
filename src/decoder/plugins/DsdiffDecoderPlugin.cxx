@@ -17,6 +17,7 @@
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/BitReverse.hxx"
 #include "util/PackedBigEndian.hxx"
+#include "util/SpanCast.hxx"
 #include "tag/Handler.hxx"
 #include "DsdLib.hxx"
 
@@ -75,26 +76,26 @@ static bool
 dsdiff_read_id(DecoderClient *client, InputStream &is,
 	       DsdId &id)
 {
-	return decoder_read_full(client, is, &id, sizeof(id));
+	return decoder_read_full(client, is, ReferenceAsWritableBytes(id));
 }
 
 static bool
 dsdiff_read_chunk_header(DecoderClient *client, InputStream &is,
 			 DsdiffChunkHeader &header)
 {
-	return decoder_read_full(client, is, &header, sizeof(header));
+	return decoder_read_full(client, is, ReferenceAsWritableBytes(header));
 }
 
 static bool
 dsdiff_read_payload(DecoderClient *client, InputStream &is,
 		    const DsdiffChunkHeader &header,
-		    void *data, size_t length)
+		    std::span<std::byte> dest)
 {
 	uint64_t size = header.GetSize();
-	if (size != (uint64_t)length)
+	if (size != (uint64_t)dest.size())
 		return false;
 
-	return decoder_read_full(client, is, data, length);
+	return decoder_read_full(client, is, dest);
 }
 
 /**
@@ -118,8 +119,7 @@ dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
 		if (header.id.Equals("FS  ")) {
 			uint32_t sample_rate;
 			if (!dsdiff_read_payload(client, is, header,
-						 &sample_rate,
-						 sizeof(sample_rate)))
+						 ReferenceAsWritableBytes(sample_rate)))
 				return false;
 
 			metadata.sample_rate = FromBE32(sample_rate);
@@ -127,7 +127,7 @@ dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
 			uint16_t channels;
 			if (header.GetSize() < sizeof(channels) ||
 			    !decoder_read_full(client, is,
-					       &channels, sizeof(channels)) ||
+					       ReferenceAsWritableBytes(channels)) ||
 			    !dsdlib_skip_to(client, is, chunk_end_offset))
 				return false;
 
@@ -136,7 +136,7 @@ dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
 			DsdId type;
 			if (header.GetSize() < sizeof(type) ||
 			    !decoder_read_full(client, is,
-					       &type, sizeof(type)) ||
+					       ReferenceAsWritableBytes(type)) ||
 			    !dsdlib_skip_to(client, is, chunk_end_offset))
 				return false;
 
@@ -189,7 +189,7 @@ dsdiff_handle_native_tag(DecoderClient *client, InputStream &is,
 
 	struct dsdiff_native_tag metatag;
 
-	if (!decoder_read_full(client, is, &metatag, sizeof(metatag)))
+	if (!decoder_read_full(client, is, ReferenceAsWritableBytes(metatag)))
 		return;
 
 	uint32_t length = FromBE32(metatag.size);
@@ -203,7 +203,8 @@ dsdiff_handle_native_tag(DecoderClient *client, InputStream &is,
 	char *label;
 	label = string;
 
-	if (!decoder_read_full(client, is, label, (size_t)length))
+	if (!decoder_read_full(client, is,
+			       {reinterpret_cast<std::byte *>(label), (size_t)length}))
 		return;
 
 	handler.OnTag(type, {label, length});
@@ -304,7 +305,7 @@ dsdiff_read_metadata(DecoderClient *client, InputStream &is,
 		     DsdiffChunkHeader &chunk_header)
 {
 	DsdiffHeader header;
-	if (!decoder_read_full(client, is, &header, sizeof(header)) ||
+	if (!decoder_read_full(client, is, ReferenceAsWritableBytes(header)) ||
 	    !header.id.Equals("FRM8") ||
 	    !header.format.Equals("DSD "))
 		return false;
@@ -392,7 +393,8 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 			now_size = now_frames * frame_size;
 		}
 
-		if (!decoder_read_full(&client, is, buffer, now_size))
+		if (!decoder_read_full(&client, is,
+				       std::span{buffer}.first(now_size)))
 			return false;
 
 		const size_t nbytes = now_size;

@@ -84,7 +84,7 @@ class CdioParanoiaInputStream final : public InputStream {
 	/* virtual methods from InputStream */
 	[[nodiscard]] bool IsEOF() const noexcept override;
 	size_t Read(std::unique_lock<Mutex> &lock,
-		    void *ptr, size_t size) override;
+		    std::span<std::byte> dest) override;
 	void Seek(std::unique_lock<Mutex> &lock, offset_type offset) override;
 };
 
@@ -305,7 +305,7 @@ CdioParanoiaInputStream::Seek(std::unique_lock<Mutex> &,
 
 size_t
 CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
-			      void *ptr, size_t length)
+			      std::span<std::byte> dest)
 {
 	/* end of track ? */
 	if (IsEOF())
@@ -342,10 +342,10 @@ CdioParanoiaInputStream::Read(std::unique_lock<Mutex> &,
 	}
 
 	const size_t maxwrite = CDIO_CD_FRAMESIZE_RAW - diff;  //# of bytes pending in current buffer
-	const std::size_t nbytes = std::min(length, maxwrite);
+	const std::size_t nbytes = std::min(dest.size(), maxwrite);
 
 	//skip diff bytes from this lsn
-	memcpy(ptr, ((const char *)rbuf) + diff, nbytes);
+	memcpy(dest.data(), ((const char *)rbuf) + diff, nbytes);
 
 	//update offset
 	offset += nbytes;

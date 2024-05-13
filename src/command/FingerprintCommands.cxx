@@ -70,7 +70,7 @@ private:
 	/* virtual methods from class DecoderClient */
 	InputStreamPtr OpenUri(const char *uri) override;
 	size_t Read(InputStream &is,
-		    void *buffer, size_t length) noexcept override;
+		    std::span<std::byte> dest) noexcept override;
 
 	/* virtual methods from class InputStreamHandler */
 	void OnInputStreamReady() noexcept override {
@@ -274,12 +274,12 @@ GetChromaprintCommand::OpenUri(const char *uri2)
 
 size_t
 GetChromaprintCommand::Read(InputStream &is,
-			    void *buffer, size_t length) noexcept
+			    std::span<std::byte> dest) noexcept
 {
 	/* overriding ChromaprintDecoderClient's implementation to
 	   make it cancellable */
 
-	if (length == 0)
+	if (dest.empty())
 		return 0;
 
 	std::unique_lock<Mutex> lock(mutex);
@@ -295,7 +295,7 @@ GetChromaprintCommand::Read(InputStream &is,
 	}
 
 	try {
-		return is.Read(lock, buffer, length);
+		return is.Read(lock, dest);
 	} catch (...) {
 		ChromaprintDecoderClient::error = std::current_exception();
 		return 0;

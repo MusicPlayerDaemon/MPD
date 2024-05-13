@@ -237,7 +237,7 @@ MadDecoder::FillBuffer() noexcept
 		return false;
 
 	size_t nbytes = decoder_read(client, input_stream,
-				     dest, max_read_size);
+				     {reinterpret_cast<std::byte *>(dest), max_read_size});
 	if (nbytes == 0) {
 		if (was_eof || max_read_size < MAD_BUFFER_GUARD)
 			return false;
@@ -271,7 +271,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag) noexcept
 		mad_stream_skip(&(stream), count);
 
 		if (!decoder_read_full(client, input_stream,
-				       allocated.get() + count, tagsize - count)) {
+				       {reinterpret_cast<std::byte *>(allocated.get() + count), tagsize - count})) {
 			LogDebug(mad_domain, "error parsing ID3 tag");
 			return;
 		}
