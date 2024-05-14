@@ -432,7 +432,6 @@ NfsConnection::ScheduleSocket() noexcept
 		if (!_fd.IsDefined())
 			return;
 
-		_fd.EnableCloseOnExec();
 		socket_event.Open(_fd);
 	}
 
