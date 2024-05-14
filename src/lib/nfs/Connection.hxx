@@ -159,29 +159,74 @@ public:
 	void AddLease(NfsLease &lease) noexcept;
 	void RemoveLease(NfsLease &lease) noexcept;
 
+	/**
+	 * Throws on error.
+	 */
 	void Stat(const char *path, NfsCallback &callback);
+
+	/**
+	 * Throws on error.
+	 */
 	void Lstat(const char *path, NfsCallback &callback);
 
+	/**
+	 * Throws on error.
+	 */
 	void OpenDirectory(const char *path, NfsCallback &callback);
+
+	/**
+	 * Read the next entry from the specified directory.
+	 *
+	 * Unlike the other I/O methods, this method blocks (because
+	 * libnfs has no non-blocking variant of nfs_readdir()) and
+	 * does not throw an exception on error.
+	 */
 	const struct nfsdirent *ReadDirectory(struct nfsdir *dir) noexcept;
+
+	/**
+	 * Close a directory handle returned by OpenDirectory().  This
+	 * method never blocks and never fails.
+	 */
 	void CloseDirectory(struct nfsdir *dir) noexcept;
 
 	/**
-	 * Throws std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Open(const char *path, int flags, NfsCallback &callback);
 
+	/**
+	 * Throws on error.
+	 */
 	void Stat(struct nfsfh *fh, NfsCallback &callback);
 
 	/**
-	 * Throws std::runtime_error on error.
+	 * Throws on error.
 	 */
 	void Read(struct nfsfh *fh, uint64_t offset, size_t size,
 		  NfsCallback &callback);
 
+	/**
+	 * Cancel the asynchronous operation associated with the
+	 * specified #NfsCallback.
+	 *
+	 * After this method returns, the caller may delete the
+	 * #NfsCallback.
+	 *
+	 * Not thread-safe.
+	 */
 	void Cancel(NfsCallback &callback) noexcept;
 
+	/**
+	 * Close the specified file handle asynchronously.
+	 *
+	 * Not thread-safe.
+	 */
 	void Close(struct nfsfh *fh) noexcept;
+
+	/**
+	 * Like Cancel(), but also close the specified NFS file
+	 * handle.
+	 */
 	void CancelAndClose(struct nfsfh *fh, NfsCallback &callback) noexcept;
 
 protected:
