@@ -7,6 +7,7 @@
 #include "event/SocketEvent.hxx"
 #include "event/CoarseTimerEvent.hxx"
 #include "event/DeferEvent.hxx"
+#include "util/DisposablePointer.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <cstdint>
@@ -41,6 +42,12 @@ class NfsConnection {
 		 */
 		struct nfsfh *close_fh;
 
+		/**
+		 * An arbitrary value that will be disposed of after
+		 * cancellation completes.
+		 */
+		DisposablePointer dispose_value;
+
 	public:
 		explicit CancellableCallback(NfsCallback &_callback,
 					     NfsConnection &_connection,
@@ -61,7 +68,8 @@ class NfsConnection {
 		 * Cancel the operation and schedule a call to
 		 * nfs_close_async() with the given file handle.
 		 */
-		void CancelAndScheduleClose(struct nfsfh *fh) noexcept;
+		void CancelAndScheduleClose(struct nfsfh *fh,
+					    DisposablePointer &&_dispose_value) noexcept;
 
 		/**
 		 * Called by NfsConnection::DestroyContext() right
@@ -226,8 +234,12 @@ public:
 	/**
 	 * Like Cancel(), but also close the specified NFS file
 	 * handle.
+	 *
+	 * @param dispose_value an arbitrary value that will be
+	 * disposed of after cancellation completes
 	 */
-	void CancelAndClose(struct nfsfh *fh, NfsCallback &callback) noexcept;
+	void CancelAndClose(struct nfsfh *fh, DisposablePointer dispose_value,
+			    NfsCallback &callback) noexcept;
 
 protected:
 	virtual void OnNfsConnectionError(std::exception_ptr e) noexcept = 0;

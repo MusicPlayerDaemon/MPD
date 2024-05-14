@@ -59,7 +59,7 @@ NfsFileReader::CancelOrClose() noexcept
 	else if (state > State::OPEN)
 		/* one async operation in progress: cancel it and
 		   defer the nfs_close_async() call */
-		connection->CancelAndClose(fh, *this);
+		connection->CancelAndClose(fh, {}, *this);
 	else if (state > State::MOUNT)
 		/* we don't have a file handle yet - just cancel the
 		   async operation */
