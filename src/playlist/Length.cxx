@@ -10,6 +10,7 @@
 #include "SongPrint.hxx"
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
+#include "input/Error.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
 #include "Partition.hxx"
@@ -50,7 +51,7 @@ void
 playlist_file_length(Response &r, Partition &partition,
 		     const SongLoader &loader,
 		     const LocatedUri &uri)
-{
+try {
 	Mutex mutex;
 
 #ifndef ENABLE_DATABASE
@@ -66,4 +67,9 @@ playlist_file_length(Response &r, Partition &partition,
 		throw PlaylistError::NoSuchList();
 
 	playlist_provider_length(r, loader, uri.canonical_uri, *playlist);
+} catch (...) {
+	if (IsFileNotFound(std::current_exception()))
+		throw PlaylistError::NoSuchList();
+
+	throw;
 }

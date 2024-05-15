@@ -8,14 +8,13 @@
 #include "input/LocalOpen.hxx"
 #include "fs/Path.hxx"
 #include "util/UriExtract.hxx"
-#include "Log.hxx"
 
 #include <cassert>
 #include <exception>
 
 static std::unique_ptr<SongEnumerator>
 playlist_open_path_suffix(Path path, Mutex &mutex)
-try {
+{
 	assert(!path.IsNull());
 
 	const auto *suffix = path.GetExtension();
@@ -29,14 +28,11 @@ try {
 	auto is = OpenLocalInputStream(path, mutex);
 	return playlist_list_open_stream_suffix(std::move(is),
 						suffix_utf8);
-} catch (...) {
-	LogError(std::current_exception());
-	return nullptr;
 }
 
 std::unique_ptr<SongEnumerator>
 playlist_open_path(Path path, Mutex &mutex)
-try {
+{
 	assert(!path.IsNull());
 
 	const std::string uri_utf8 = path.ToUTF8Throw();
@@ -45,14 +41,11 @@ try {
 		playlist = playlist_open_path_suffix(path, mutex);
 
 	return playlist;
-} catch (...) {
-	LogError(std::current_exception());
-	return nullptr;
 }
 
 std::unique_ptr<SongEnumerator>
 playlist_open_remote(const char *uri, Mutex &mutex)
-try {
+{
 	assert(uri_has_scheme(uri));
 
 	auto playlist = playlist_list_open_uri(uri, mutex);
@@ -61,7 +54,4 @@ try {
 
 	auto is = InputStream::OpenReady(uri, mutex);
 	return playlist_list_open_stream(std::move(is), uri);
-} catch (...) {
-	LogError(std::current_exception());
-	return nullptr;
 }

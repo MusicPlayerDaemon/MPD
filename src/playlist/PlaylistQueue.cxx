@@ -10,6 +10,7 @@
 #include "queue/Playlist.hxx"
 #include "SongEnumerator.hxx"
 #include "song/DetachedSong.hxx"
+#include "input/Error.hxx"
 #include "thread/Mutex.hxx"
 #include "fs/Traits.hxx"
 #include "Log.hxx"
@@ -61,7 +62,7 @@ playlist_open_into_queue(const LocatedUri &uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
 			 const SongLoader &loader)
-{
+try {
 	Mutex mutex;
 
 	auto playlist = playlist_open_any(uri,
@@ -75,4 +76,9 @@ playlist_open_into_queue(const LocatedUri &uri,
 	playlist_load_into_queue(uri.canonical_uri, *playlist,
 				 start_index, end_index,
 				 dest, pc, loader);
+} catch (...) {
+	if (IsFileNotFound(std::current_exception()))
+		throw PlaylistError::NoSuchList();
+
+	throw;
 }
