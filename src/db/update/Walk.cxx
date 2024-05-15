@@ -17,6 +17,7 @@
 #include "storage/FileInfo.hxx"
 #include "input/InputStream.hxx"
 #include "input/Error.hxx"
+#include "input/WaitReady.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 #include "util/UriExtract.hxx"
@@ -307,18 +308,19 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 }
 
 static void
-LoadExcludeListOrThrow(const Storage &storage, const Directory &directory,
+LoadExcludeListOrThrow(Storage &storage, const Directory &directory,
 		       ExcludeList &exclude_list)
 {
 	Mutex mutex;
-	auto is = InputStream::OpenReady(storage.MapUTF8(PathTraitsUTF8::Build(directory.GetPath(),
-									       ".mpdignore")).c_str(),
-					 mutex);
+	auto is = storage.OpenFile(PathTraitsUTF8::Build(directory.GetPath(),
+							 ".mpdignore"),
+				   mutex);
+	LockWaitReady(*is);
 	exclude_list.Load(std::move(is));
 }
 
 static void
-LoadExcludeListOrLog(const Storage &storage, const Directory &directory,
+LoadExcludeListOrLog(Storage &storage, const Directory &directory,
 		     ExcludeList &exclude_list) noexcept
 {
 	try {
@@ -456,7 +458,7 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root,
 
 static void
 LoadExcludeLists(std::forward_list<ExcludeList> &lists,
-		 const Storage &storage, const Directory &directory) noexcept
+		 Storage &storage, const Directory &directory) noexcept
 {
 	assert(!lists.empty());
 
@@ -468,7 +470,7 @@ LoadExcludeLists(std::forward_list<ExcludeList> &lists,
 }
 
 static auto
-LoadExcludeLists(const Storage &storage, const Directory &directory) noexcept
+LoadExcludeLists(Storage &storage, const Directory &directory) noexcept
 {
 	std::forward_list<ExcludeList> lists;
 	lists.emplace_front();
