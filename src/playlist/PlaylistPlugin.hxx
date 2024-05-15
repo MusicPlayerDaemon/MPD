@@ -30,7 +30,7 @@ struct PlaylistPlugin {
 	 * Deinitialize a plugin which was initialized successfully.
 	 * Optional method.
 	 */
-	void (*finish)() = nullptr;
+	void (*finish)() noexcept = nullptr;
 
 	/**
 	 * Opens the playlist on the specified URI.  This URI has
