@@ -34,6 +34,6 @@ public:
 	virtual const Database *GetDatabase() const noexcept = 0;
 
 	[[gnu::pure]]
-	virtual const Storage *GetStorage() const noexcept = 0;
+	virtual Storage *GetStorage() const noexcept = 0;
 #endif // ENABLE_DATABASE
 };

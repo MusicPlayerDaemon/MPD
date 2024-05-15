@@ -11,7 +11,7 @@
 std::unique_ptr<SongEnumerator>
 playlist_open_any(const LocatedUri &located_uri,
 #ifdef ENABLE_DATABASE
-		  const Storage *storage,
+		  Storage *storage,
 #endif
 		  Mutex &mutex)
 {

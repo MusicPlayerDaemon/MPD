@@ -3,9 +3,12 @@
 
 #include "PlaylistMapper.hxx"
 #include "PlaylistFile.hxx"
+#include "PlaylistRegistry.hxx"
 #include "PlaylistStream.hxx"
 #include "SongEnumerator.hxx"
 #include "Mapper.hxx"
+#include "input/InputStream.hxx"
+#include "input/WaitReady.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/StorageInterface.hxx"
 #include "util/UriUtil.hxx"
@@ -33,7 +36,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex)
  * Load a playlist from the configured music directory.
  */
 static std::unique_ptr<SongEnumerator>
-playlist_open_in_storage(const char *uri, const Storage *storage, Mutex &mutex)
+playlist_open_in_storage(const char *uri, Storage *storage, Mutex &mutex)
 {
 	assert(uri_safe_local(uri));
 
@@ -43,8 +46,9 @@ playlist_open_in_storage(const char *uri, const Storage *storage, Mutex &mutex)
 	if (const auto path = storage->MapFS(uri); !path.IsNull())
 		return playlist_open_path(path, mutex);
 
-	const auto uri2 = storage->MapUTF8(uri);
-	return playlist_open_remote(uri2.c_str(), mutex);
+	auto is = storage->OpenFile(uri, mutex);
+	LockWaitReady(*is);
+	return playlist_list_open_stream(std::move(is), uri);
 }
 
 #endif
@@ -52,7 +56,7 @@ playlist_open_in_storage(const char *uri, const Storage *storage, Mutex &mutex)
 std::unique_ptr<SongEnumerator>
 playlist_mapper_open(const char *uri,
 #ifdef ENABLE_DATABASE
-		     const Storage *storage,
+		     Storage *storage,
 #endif
 		     Mutex &mutex)
 {

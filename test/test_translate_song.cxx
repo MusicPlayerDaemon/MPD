@@ -123,7 +123,7 @@ public:
 		return reinterpret_cast<const Database *>(this);
 	}
 
-	const Storage *GetStorage() const noexcept override {
+	Storage *GetStorage() const noexcept override {
 		return ::storage;
 	}
 #endif // ENABLE_DATABASE

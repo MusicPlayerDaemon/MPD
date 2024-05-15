@@ -26,16 +26,16 @@ class SongLoader {
 
 #ifdef ENABLE_DATABASE
 	const Database *const db;
-	const Storage *const storage;
+	Storage *const storage;
 #endif
 
 public:
 #ifdef ENABLE_DATABASE
 	explicit SongLoader(const IClient &_client) noexcept;
-	SongLoader(const Database *_db, const Storage *_storage) noexcept
+	SongLoader(const Database *_db, Storage *_storage) noexcept
 		:client(nullptr), db(_db), storage(_storage) {}
 	SongLoader(const IClient &_client, const Database *_db,
-		   const Storage *_storage) noexcept
+		   Storage *_storage) noexcept
 		:client(&_client), db(_db), storage(_storage) {}
 #else
 	explicit SongLoader(const IClient &_client) noexcept
@@ -45,7 +45,7 @@ public:
 #endif
 
 #ifdef ENABLE_DATABASE
-	const Storage *GetStorage() const noexcept {
+	Storage *GetStorage() const noexcept {
 		return storage;
 	}
 #endif

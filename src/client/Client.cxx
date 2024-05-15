@@ -99,7 +99,7 @@ Client::GetDatabaseOrThrow() const
 	return partition->instance.GetDatabaseOrThrow();
 }
 
-const Storage *
+Storage *
 Client::GetStorage() const noexcept
 {
 	return partition->instance.storage;

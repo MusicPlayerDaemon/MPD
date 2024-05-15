@@ -22,6 +22,6 @@ class Storage;
 std::unique_ptr<SongEnumerator>
 playlist_mapper_open(const char *uri,
 #ifdef ENABLE_DATABASE
-		     const Storage *storage,
+		     Storage *storage,
 #endif
 		     Mutex &mutex);

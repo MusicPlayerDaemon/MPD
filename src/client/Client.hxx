@@ -248,7 +248,7 @@ public:
 
 #ifdef ENABLE_DATABASE
 	const Database *GetDatabase() const noexcept override;
-	const Storage *GetStorage() const noexcept override;
+	Storage *GetStorage() const noexcept override;
 #endif // ENABLE_DATABASE
 
 private:
