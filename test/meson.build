@@ -218,6 +218,7 @@ if enable_database
     dependencies: [
       event_dep,
       storage_glue_dep,
+      cmdline_dep,
     ],
   )
 

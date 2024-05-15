@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
+#include "cmdline/OptionDef.hxx"
+#include "cmdline/OptionParser.hxx"
 #include "event/Thread.hxx"
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
@@ -11,6 +13,8 @@
 #include "util/PrintException.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
+#include "Log.hxx"
+#include "LogBackend.hxx"
 
 #include <memory>
 #include <stdexcept>
@@ -20,12 +24,54 @@
 #include <stdio.h>
 #include <string.h>
 
-static constexpr auto usage_text = R"(Usage: run_storage COMMAND URI ...
+static constexpr auto usage_text = R"(Usage: run_storage [OPTIONS] COMMAND URI ...
+
+Options:
+  --verbose
 
 Available commands:
   ls URI PATH
   stat URI PATH
 )";
+
+struct CommandLine {
+	bool verbose = false;
+
+	const char *command;
+
+	std::span<const char *const> args;
+};
+
+enum class Option {
+	VERBOSE,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"verbose", 'v', false, "Verbose logging"},
+};
+
+static CommandLine
+ParseCommandLine(int argc, char **argv)
+{
+	CommandLine c;
+
+	OptionParser option_parser(option_defs, argc, argv);
+	while (auto o = option_parser.Next()) {
+		switch (static_cast<Option>(o.index)) {
+		case Option::VERBOSE:
+			c.verbose = true;
+			break;
+		}
+	}
+
+	auto args = option_parser.GetRemaining();
+	if (args.empty())
+		throw std::runtime_error{usage_text};
+
+	c.command = args.front();
+	c.args = args.subspan(1);
+	return c;
+}
 
 class GlobalInit {
 	const ScopeNetInit net_init;
@@ -116,35 +162,32 @@ Stat(Storage &storage, const char *path)
 int
 main(int argc, char **argv)
 try {
-	if (argc < 3) {
-		fputs(usage_text, stderr);
-		return EXIT_FAILURE;
-	}
+	const auto c = ParseCommandLine(argc, argv);
 
-	const char *const command = argv[1];
-	const char *const storage_uri = argv[2];
-
+	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
 	GlobalInit init;
 
-	if (StringIsEqual(command, "ls")) {
-		if (argc != 4) {
+	if (StringIsEqual(c.command, "ls")) {
+		if (c.args.size() != 2) {
 			fputs(usage_text, stderr);
 			return EXIT_FAILURE;
 		}
 
-		const char *const path = argv[3];
+		const char *const storage_uri = c.args[0];
+		const char *const path = c.args[1];
 
 		auto storage = MakeStorage(init.GetEventLoop(),
 					   storage_uri);
 
 		return Ls(*storage, path);
-	} else if (StringIsEqual(command, "stat")) {
-		if (argc != 4) {
+	} else if (StringIsEqual(c.command, "stat")) {
+		if (c.args.size() != 2) {
 			fputs(usage_text, stderr);
 			return EXIT_FAILURE;
 		}
 
-		const char *const path = argv[3];
+		const char *const storage_uri = c.args[0];
+		const char *const path = c.args[1];
 
 		auto storage = MakeStorage(init.GetEventLoop(),
 					   storage_uri);
