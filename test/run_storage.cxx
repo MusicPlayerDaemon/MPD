@@ -20,6 +20,20 @@
 #include <stdio.h>
 #include <string.h>
 
+class GlobalInit {
+	const ScopeNetInit net_init;
+	EventThread io_thread;
+
+public:
+	GlobalInit() {
+		io_thread.Start();
+	}
+
+	EventLoop &GetEventLoop() noexcept {
+		return io_thread.GetEventLoop();
+	}
+};
+
 static std::unique_ptr<Storage>
 MakeStorage(EventLoop &event_loop, const char *uri)
 {
@@ -103,9 +117,7 @@ try {
 	const char *const command = argv[1];
 	const char *const storage_uri = argv[2];
 
-	const ScopeNetInit net_init;
-	EventThread io_thread;
-	io_thread.Start();
+	GlobalInit init;
 
 	if (StringIsEqual(command, "ls")) {
 		if (argc != 4) {
@@ -115,7 +127,7 @@ try {
 
 		const char *const path = argv[3];
 
-		auto storage = MakeStorage(io_thread.GetEventLoop(),
+		auto storage = MakeStorage(init.GetEventLoop(),
 					   storage_uri);
 
 		return Ls(*storage, path);
@@ -127,7 +139,7 @@ try {
 
 		const char *const path = argv[3];
 
-		auto storage = MakeStorage(io_thread.GetEventLoop(),
+		auto storage = MakeStorage(init.GetEventLoop(),
 					   storage_uri);
 
 		return Stat(*storage, path);
