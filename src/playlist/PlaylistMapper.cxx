@@ -56,10 +56,18 @@ playlist_mapper_open(const char *uri,
 #endif
 		     Mutex &mutex)
 {
+	std::exception_ptr spl_error;
+
 	if (spl_valid_name(uri)) {
-		auto playlist = playlist_open_in_playlist_dir(uri, mutex);
-		if (playlist != nullptr)
-			return playlist;
+		try {
+			auto playlist = playlist_open_in_playlist_dir(uri, mutex);
+			if (playlist != nullptr)
+				return playlist;
+		} catch (...) {
+			/* postpone this exception, try playlist in
+			   music_directory first */
+			spl_error = std::current_exception();
+		}
 	}
 
 #ifdef ENABLE_DATABASE
@@ -69,6 +77,9 @@ playlist_mapper_open(const char *uri,
 			return playlist;
 	}
 #endif
+
+	if (spl_error)
+		std::rethrow_exception(spl_error);
 
 	return nullptr;
 }
