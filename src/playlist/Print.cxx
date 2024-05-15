@@ -13,6 +13,7 @@
 #include "thread/Mutex.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
+#include "PlaylistError.hxx"
 
 static void
 playlist_provider_print(Response &r,
@@ -48,7 +49,7 @@ playlist_provider_print(Response &r,
 	}
 }
 
-bool
+void
 playlist_file_print(Response &r, Partition &partition,
 		    const SongLoader &loader,
 		    const LocatedUri &uri,
@@ -68,9 +69,8 @@ playlist_file_print(Response &r, Partition &partition,
 #endif
 					  mutex);
 	if (playlist == nullptr)
-		return false;
+		throw PlaylistError::NoSuchList();
 
 	playlist_provider_print(r, loader, uri.canonical_uri, *playlist,
 				start_index, end_index, detail);
-	return true;
 }
