@@ -20,6 +20,13 @@
 #include <stdio.h>
 #include <string.h>
 
+static constexpr auto usage_text = R"(Usage: run_storage COMMAND URI ...
+
+Available commands:
+  ls URI PATH
+  stat URI PATH
+)";
+
 class GlobalInit {
 	const ScopeNetInit net_init;
 	EventThread io_thread;
@@ -110,7 +117,7 @@ int
 main(int argc, char **argv)
 try {
 	if (argc < 3) {
-		fprintf(stderr, "Usage: run_storage COMMAND URI ...\n");
+		fputs(usage_text, stderr);
 		return EXIT_FAILURE;
 	}
 
@@ -121,7 +128,7 @@ try {
 
 	if (StringIsEqual(command, "ls")) {
 		if (argc != 4) {
-			fprintf(stderr, "Usage: run_storage ls URI PATH\n");
+			fputs(usage_text, stderr);
 			return EXIT_FAILURE;
 		}
 
@@ -133,7 +140,7 @@ try {
 		return Ls(*storage, path);
 	} else if (StringIsEqual(command, "stat")) {
 		if (argc != 4) {
-			fprintf(stderr, "Usage: run_storage stat URI PATH\n");
+			fputs(usage_text, stderr);
 			return EXIT_FAILURE;
 		}
 
@@ -144,7 +151,7 @@ try {
 
 		return Stat(*storage, path);
 	} else {
-		fprintf(stderr, "Unknown command\n");
+		fprintf(stderr, "Unknown command\n\n%s", usage_text);
 		return EXIT_FAILURE;
 	}
 
