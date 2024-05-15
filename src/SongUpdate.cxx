@@ -7,9 +7,12 @@
 #include "db/plugins/simple/Directory.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "input/InputStream.hxx"
+#include "input/WaitReady.hxx"
 #include "decoder/DecoderList.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
+#include "thread/Mutex.hxx"
 #include "tag/Builder.hxx"
 #include "TagFile.hxx"
 #include "TagStream.hxx"
@@ -64,9 +67,10 @@ Song::UpdateFile(Storage &storage, const StorageFileInfo &info)
 	try {
 		const auto path_fs = storage.MapFS(relative_uri);
 		if (path_fs.IsNull()) {
-			const auto absolute_uri =
-				storage.MapUTF8(relative_uri);
-			if (!tag_stream_scan(absolute_uri.c_str(), tag_builder,
+			Mutex mutex;
+			const auto is = storage.OpenFile(relative_uri, mutex);
+			LockWaitReady(*is);
+			if (!tag_stream_scan(*is, tag_builder,
 					     &new_audio_format))
 				return false;
 		} else {
