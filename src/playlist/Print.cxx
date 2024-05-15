@@ -9,6 +9,7 @@
 #include "SongEnumerator.hxx"
 #include "SongPrint.hxx"
 #include "song/DetachedSong.hxx"
+#include "input/Error.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
 #include "Partition.hxx"
@@ -56,7 +57,7 @@ playlist_file_print(Response &r, Partition &partition,
 		    unsigned start_index,
 		    unsigned end_index,
 		    bool detail)
-{
+try {
 	Mutex mutex;
 
 #ifndef ENABLE_DATABASE
@@ -73,4 +74,9 @@ playlist_file_print(Response &r, Partition &partition,
 
 	playlist_provider_print(r, loader, uri.canonical_uri, *playlist,
 				start_index, end_index, detail);
+} catch (...) {
+	if (IsFileNotFound(std::current_exception()))
+		throw PlaylistError::NoSuchList();
+
+	throw;
 }
