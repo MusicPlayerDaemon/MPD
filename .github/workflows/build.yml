@@ -139,7 +139,7 @@ jobs:
   build-msys2:
     strategy:
       matrix:
-        platform: ['MINGW32', 'MINGW64', 'UCRT64']
+        platform: ['MINGW64', 'UCRT64']
     defaults:
       run:
         shell: msys2 {0}
