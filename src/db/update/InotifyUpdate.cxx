@@ -9,6 +9,8 @@
 #include "storage/StorageInterface.hxx"
 #include "input/InputStream.hxx"
 #include "input/Error.hxx"
+#include "input/LocalOpen.hxx"
+#include "input/WaitReady.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "fs/FileInfo.hxx"
@@ -71,8 +73,9 @@ void
 WatchDirectory::LoadExcludeList(Path directory_path) noexcept
 try {
 	Mutex mutex;
-	auto is = InputStream::OpenReady((directory_path / Path::FromFS(".mpdignore")).c_str(),
-					 mutex);
+	auto is = OpenLocalInputStream(directory_path / Path::FromFS(".mpdignore"),
+				       mutex);
+	LockWaitReady(*is);
 	exclude_list.Load(std::move(is));
 } catch (...) {
 	if (!IsFileNotFound(std::current_exception()))
