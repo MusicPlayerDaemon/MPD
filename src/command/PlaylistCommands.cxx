@@ -164,11 +164,8 @@ handle_playlistlength(Client &client, Request args, Response &r)
 #endif
 					   );
 
-	if (playlist_file_length(r, client.GetPartition(), SongLoader(client),
-				name))
-		return CommandResult::OK;
-
-	throw PlaylistError::NoSuchList();
+	playlist_file_length(r, client.GetPartition(), SongLoader(client), name);
+	return CommandResult::OK;
 }
 
 CommandResult
