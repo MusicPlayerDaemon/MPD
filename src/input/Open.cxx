@@ -5,8 +5,8 @@
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "LocalOpen.hxx"
-#include "CondHandler.hxx"
 #include "RewindInputStream.hxx"
+#include "WaitReady.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 
@@ -35,22 +35,7 @@ InputStream::Open(const char *url, Mutex &mutex)
 InputStreamPtr
 InputStream::OpenReady(const char *uri, Mutex &mutex)
 {
-	CondInputStreamHandler handler;
-
 	auto is = Open(uri, mutex);
-	is->SetHandler(&handler);
-
-	{
-		std::unique_lock<Mutex> lock(mutex);
-
-		handler.cond.wait(lock, [&is]{
-			is->Update();
-			return is->IsReady();
-		});
-
-		is->Check();
-	}
-
-	is->SetHandler(nullptr);
+	LockWaitReady(*is);
 	return is;
 }

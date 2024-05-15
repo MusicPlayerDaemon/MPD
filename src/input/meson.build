@@ -28,6 +28,7 @@ input_glue = static_library(
   'input_glue',
   'Init.cxx',
   'Registry.cxx',
+  'WaitReady.cxx',
   'Open.cxx',
   'LocalOpen.cxx',
   'ScanTags.cxx',
