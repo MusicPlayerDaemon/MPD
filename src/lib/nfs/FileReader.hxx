@@ -25,7 +25,7 @@ class NfsConnection;
 /**
  * A helper class which helps with reading from a file.  It obtains a
  * connection lease (#NfsLease), opens the given file, "stats" the
- * file, and finally allos you to read its contents.
+ * file, and finally allows you to read its contents.
  *
  * To get started, derive your class from it and implement the pure
  * virtual methods, construct an instance, and call Open().
