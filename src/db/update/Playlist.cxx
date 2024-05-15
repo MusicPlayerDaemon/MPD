@@ -10,6 +10,7 @@
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"
+#include "input/WaitReady.hxx"
 #include "playlist/PlaylistPlugin.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "playlist/PlaylistStream.hxx"
@@ -65,14 +66,16 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 		/* not modified */
 		return;
 
-	const auto uri_utf8 = storage.MapUTF8(directory->GetPath());
+	const char *const path = directory->GetPath();
 
-	FmtDebug(update_domain, "scanning playlist {:?}", uri_utf8);
+	FmtDebug(update_domain, "scanning playlist {:?}", path);
 
 	try {
 		Mutex mutex;
-		auto e = plugin.open_stream(InputStream::OpenReady(uri_utf8.c_str(),
-								   mutex));
+		auto is = storage.OpenFile(path, mutex);
+		LockWaitReady(*is);
+
+		auto e = plugin.open_stream(std::move(is));
 		if (!e) {
 			/* unsupported URI? roll back.. */
 			editor.LockDeleteDirectory(directory);
@@ -86,7 +89,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &parent, std::string_view name,
 	} catch (...) {
 		FmtError(update_domain,
 			 "Failed to scan playlist {:?}: {}",
-			 uri_utf8, std::current_exception());
+			 path, std::current_exception());
 		editor.LockDeleteDirectory(directory);
 	}
 }
