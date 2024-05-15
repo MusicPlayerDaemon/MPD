@@ -10,6 +10,8 @@
 
 #include <nfsc/libnfs.h> // for struct nfs_stat_64
 
+#include <fmt/core.h>
+
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
@@ -18,14 +20,35 @@
 #include <fcntl.h>
 #include <sys/stat.h> // for S_ISREG()
 
+using std::string_view_literals::operator""sv;
+
 NfsFileReader::NfsFileReader() noexcept
 	:defer_open(nfs_get_event_loop(), BIND_THIS_METHOD(OnDeferredOpen))
 {
 }
 
+NfsFileReader::NfsFileReader(NfsConnection &_connection,
+			     std::string_view _path) noexcept
+	:state(State::DEFER),
+	 path(_path),
+	 connection(&_connection),
+	 defer_open(_connection.GetEventLoop(), BIND_THIS_METHOD(OnDeferredOpen))
+{
+	defer_open.Schedule();
+}
+
 NfsFileReader::~NfsFileReader() noexcept
 {
 	assert(state == State::INITIAL);
+}
+
+std::string
+NfsFileReader::GetAbsoluteUri() const noexcept
+{
+	return fmt::format("nfs://{}{}/{}"sv,
+			   connection != nullptr ? connection->GetServer() : server,
+			   connection != nullptr ? connection->GetExportName() : export_name,
+			   path);
 }
 
 void
@@ -293,12 +316,13 @@ NfsFileReader::OnDeferredOpen() noexcept
 {
 	assert(state == State::DEFER);
 
-	try {
-		connection = &nfs_get_connection(server, export_name);
-	} catch (...) {
-		OnNfsFileError(std::current_exception());
-		return;
-	}
+	if (connection == nullptr)
+		try {
+			connection = &nfs_get_connection(server, export_name);
+		} catch (...) {
+			OnNfsFileError(std::current_exception());
+			return;
+		}
 
 	connection->AddLease(*this);
 	state = State::MOUNT;

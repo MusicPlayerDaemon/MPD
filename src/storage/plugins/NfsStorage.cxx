@@ -12,6 +12,7 @@
 #include "lib/nfs/Connection.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "input/InputStream.hxx"
+#include "input/plugins/NfsInputPlugin.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
@@ -252,9 +253,9 @@ NfsStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 InputStreamPtr
 NfsStorage::OpenFile(std::string_view uri_utf8, Mutex &_mutex)
 {
-	// TODO create NfsInputStream directly
-	auto uri = MapUTF8(uri_utf8);
-	return InputStream::Open(uri.c_str(), _mutex);
+	WaitConnected();
+
+	return OpenNfsInputStream(*connection, uri_utf8, _mutex);
 }
 
 static void

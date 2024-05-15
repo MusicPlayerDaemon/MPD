@@ -31,6 +31,15 @@ public:
 				  NFS_MAX_BUFFERED,
 				  NFS_RESUME_AT) {}
 
+	NfsInputStream(NfsConnection &_connection, std::string_view _path,
+		       Mutex &_mutex) noexcept
+		:NfsFileReader(_connection, _path),
+		 AsyncInputStream(NfsFileReader::GetEventLoop(),
+				  NfsFileReader::GetAbsoluteUri(),
+				  _mutex,
+				  NFS_MAX_BUFFERED,
+				  NFS_RESUME_AT) {}
+
 	~NfsInputStream() override {
 		DeferClose();
 	}
@@ -225,3 +234,10 @@ const InputPlugin input_plugin_nfs = {
 	input_nfs_open,
 	nullptr
 };
+
+InputStreamPtr
+OpenNfsInputStream(NfsConnection &connection, std::string_view path,
+		   Mutex &mutex)
+{
+	return std::make_unique<NfsInputStream>(connection, path, mutex);
+}
