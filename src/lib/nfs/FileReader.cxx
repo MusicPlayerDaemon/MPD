@@ -197,6 +197,12 @@ NfsFileReader::StatCallback(const struct nfs_stat_64 *st) noexcept
 	OnNfsFileOpen(st->nfs_size);
 }
 
+inline void
+NfsFileReader::ReadCallback(std::size_t nbytes, const void *data) noexcept
+{
+	OnNfsFileRead({static_cast<const std::byte *>(data), nbytes});
+}
+
 void
 NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 {
@@ -217,10 +223,7 @@ NfsFileReader::OnNfsCallback(unsigned status, void *data) noexcept
 		break;
 
 	case State::READ:
-		OnNfsFileRead({
-				static_cast<const std::byte *>(data),
-				static_cast<std::size_t>(status),
-			});
+		ReadCallback(static_cast<std::size_t>(status), data);
 		break;
 	}
 }

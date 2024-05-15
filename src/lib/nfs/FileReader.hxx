@@ -126,6 +126,7 @@ private:
 
 	void OpenCallback(nfsfh *_fh) noexcept;
 	void StatCallback(const struct nfs_stat_64 *st) noexcept;
+	void ReadCallback(std::size_t nbytes, const void *data) noexcept;
 
 	/* virtual methods from NfsLease */
 	void OnNfsConnectionReady() noexcept final;
