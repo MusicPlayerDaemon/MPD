@@ -111,17 +111,12 @@ TagScanDatabase(Client &client, const char *uri, TagHandler &handler)
 #ifdef ENABLE_DATABASE
 	}
 
-	{
-		const auto path_fs = storage->MapFS(uri);
-		if (!path_fs.IsNull())
-			return TagScanFile(path_fs, handler);
-	}
+	if (const auto path_fs = storage->MapFS(uri); !path_fs.IsNull())
+		return TagScanFile(path_fs, handler);
 
-	{
-		const auto absolute_uri = storage->MapUTF8(uri);
-		if (uri_has_scheme(absolute_uri))
-			return TagScanStream(absolute_uri.c_str(), handler);
-	}
+	if (const auto absolute_uri = storage->MapUTF8(uri);
+	    uri_has_scheme(absolute_uri))
+		return TagScanStream(absolute_uri.c_str(), handler);
 
 	throw ProtocolError(ACK_ERROR_NO_EXIST, "No such file");
 #endif
