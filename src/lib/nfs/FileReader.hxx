@@ -43,8 +43,7 @@ class NfsFileReader : NfsLease, NfsCallback {
 
 	State state = State::INITIAL;
 
-	std::string server, export_name;
-	const char *path;
+	std::string server, export_name, path;
 
 	NfsConnection *connection;
 

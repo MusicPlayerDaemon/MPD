@@ -156,7 +156,7 @@ NfsFileReader::OnNfsConnectionReady() noexcept
 	assert(state == State::MOUNT);
 
 	try {
-		connection->Open(path, O_RDONLY, *this);
+		connection->Open(path.c_str(), O_RDONLY, *this);
 	} catch (...) {
 		OnNfsFileError(std::current_exception());
 		return;
