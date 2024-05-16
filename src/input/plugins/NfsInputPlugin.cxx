@@ -119,6 +119,10 @@ NfsInputStream::DoSeek(offset_type new_offset)
 
 	next_offset = offset = new_offset;
 	SeekDone();
+
+	if (!IsIdle())
+		CancelRead();
+
 	DoRead();
 }
 
