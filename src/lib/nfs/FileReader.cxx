@@ -138,7 +138,14 @@ void
 NfsFileReader::CancelRead() noexcept
 {
 	if (state == State::READ) {
-		connection->Cancel(*this, nullptr, {});
+		DisposablePointer dispose_value{};
+
+#ifdef LIBNFS_API_2
+		assert(read_buffer);
+		dispose_value = ToDeleteArray(read_buffer.release());
+#endif
+
+		connection->Cancel(*this, nullptr, std::move(dispose_value));
 		state = State::IDLE;
 	}
 }
