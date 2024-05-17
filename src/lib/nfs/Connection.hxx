@@ -232,8 +232,14 @@ public:
 	 * #NfsCallback.
 	 *
 	 * Not thread-safe.
+	 *
+	 * @param fh if not nullptr, then close this NFS file handle
+	 * after cancellation completes
+	 * @param dispose_value an arbitrary value that will be
+	 * disposed of after cancellation completes
 	 */
-	void Cancel(NfsCallback &callback) noexcept;
+	void Cancel(NfsCallback &callback,
+		    struct nfsfh *fh, DisposablePointer dispose_value) noexcept;
 
 	/**
 	 * Close the specified file handle asynchronously.
@@ -241,16 +247,6 @@ public:
 	 * Not thread-safe.
 	 */
 	void Close(struct nfsfh *fh) noexcept;
-
-	/**
-	 * Like Cancel(), but also close the specified NFS file
-	 * handle.
-	 *
-	 * @param dispose_value an arbitrary value that will be
-	 * disposed of after cancellation completes
-	 */
-	void CancelAndClose(struct nfsfh *fh, DisposablePointer dispose_value,
-			    NfsCallback &callback) noexcept;
 
 protected:
 	virtual void OnNfsConnectionError(std::exception_ptr e) noexcept = 0;

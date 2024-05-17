@@ -56,20 +56,20 @@ NfsFileReader::CancelOrClose() noexcept
 		/* no async operation in progress: can close
 		   immediately */
 		connection->Close(fh);
-	else if (state > State::OPEN)
+	else if (state > State::OPEN) {
 		/* one async operation in progress: cancel it and
 		   defer the nfs_close_async() call */
-		connection->CancelAndClose(fh,
+		DisposablePointer dispose_value{};
+
 #ifdef LIBNFS_API_2
-					   ToDeleteArray(read_buffer.release()),
-#else
-					   {},
+		dispose_value = ToDeleteArray(read_buffer.release());
 #endif
-					   *this);
-	else if (state > State::MOUNT)
+
+		connection->Cancel(*this, fh, std::move(dispose_value));
+	} else if (state > State::MOUNT)
 		/* we don't have a file handle yet - just cancel the
 		   async operation */
-		connection->Cancel(*this);
+		connection->Cancel(*this, nullptr, {});
 
 	state = State::INITIAL;
 }
@@ -138,7 +138,7 @@ void
 NfsFileReader::CancelRead() noexcept
 {
 	if (state == State::READ) {
-		connection->Cancel(*this);
+		connection->Cancel(*this, nullptr, {});
 		state = State::IDLE;
 	}
 }

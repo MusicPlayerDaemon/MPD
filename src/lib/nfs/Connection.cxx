@@ -112,7 +112,6 @@ NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh,
 	assert(!open);
 	assert(close_fh == nullptr);
 	assert(!dispose_value);
-	assert(fh != nullptr);
 
 	close_fh = fh;
 	dispose_value = std::move(_dispose_value);
@@ -371,9 +370,12 @@ NfsConnection::Read(struct nfsfh *fh, uint64_t offset,
 }
 
 void
-NfsConnection::Cancel(NfsCallback &callback) noexcept
+NfsConnection::Cancel(NfsCallback &callback,
+		      struct nfsfh *fh,
+		      DisposablePointer dispose_value) noexcept
 {
-	callbacks.Cancel(callback);
+	CancellableCallback &cancel = callbacks.Get(callback);
+	cancel.CancelAndScheduleClose(fh, std::move(dispose_value));
 }
 
 static void
@@ -397,14 +399,6 @@ NfsConnection::Close(struct nfsfh *fh) noexcept
 
 	InternalClose(fh);
 	ScheduleSocket();
-}
-
-void
-NfsConnection::CancelAndClose(struct nfsfh *fh, DisposablePointer dispose_value,
-			      NfsCallback &callback) noexcept
-{
-	CancellableCallback &cancel = callbacks.Get(callback);
-	cancel.CancelAndScheduleClose(fh, std::move(dispose_value));
 }
 
 void
