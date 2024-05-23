@@ -15,7 +15,7 @@ CurlGlobal *CurlInit::instance;
 
 CurlInit::CurlInit(EventLoop &event_loop)
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	if (++ref > 1) {
 		assert(&event_loop == &instance->GetEventLoop());
 		return;
@@ -31,7 +31,7 @@ CurlInit::CurlInit(EventLoop &event_loop)
 
 CurlInit::~CurlInit() noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	if (--ref > 0)
 		return;
 
