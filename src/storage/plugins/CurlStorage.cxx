@@ -109,7 +109,7 @@ public:
 	}
 
 	void Wait() {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		cond.wait(lock, [this]{ return done; });
 
 		if (postponed_error)
@@ -130,7 +130,7 @@ protected:
 	}
 
 	void LockSetDone() {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		SetDone();
 	}
 
@@ -148,7 +148,7 @@ private:
 
 	/* virtual methods from CurlResponseHandler */
 	void OnError(std::exception_ptr e) noexcept final {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		postponed_error = std::move(e);
 		SetDone();
 	}

@@ -151,7 +151,7 @@ UdisksStorage::SetMountPoint(Path mount_point)
 void
 UdisksStorage::LockSetMountPoint(Path mount_point)
 {
-	const std::scoped_lock<Mutex> lock(mutex);
+	const std::scoped_lock lock{mutex};
 	SetMountPoint(mount_point);
 }
 
@@ -183,7 +183,7 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 			return;
 		}
 	} catch (...) {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		mount_error = std::current_exception();
 		want_mount = false;
 		cond.notify_all();
@@ -196,7 +196,7 @@ UdisksStorage::OnListReply(ODBus::Message reply) noexcept
 void
 UdisksStorage::MountWait()
 {
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	if (mounted_storage)
 		/* already mounted */
@@ -239,7 +239,7 @@ try {
 	mount_request.Send(connection, *msg.Get(),
 			   [this](auto o) { return OnMountNotify(std::move(o)); });
 } catch (...) {
-	const std::scoped_lock<Mutex> lock(mutex);
+	const std::scoped_lock lock{mutex};
 	mount_error = std::current_exception();
 	want_mount = false;
 	cond.notify_all();
@@ -258,7 +258,7 @@ try {
 	const char *mount_path = i.GetString();
 	LockSetMountPoint(Path::FromFS(mount_path));
 } catch (...) {
-	const std::scoped_lock<Mutex> lock(mutex);
+	const std::scoped_lock lock{mutex};
 	mount_error = std::current_exception();
 	want_mount = false;
 	cond.notify_all();
@@ -267,7 +267,7 @@ try {
 void
 UdisksStorage::UnmountWait()
 {
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	if (!mounted_storage)
 		/* not mounted */
@@ -296,7 +296,7 @@ try {
 	mount_request.Send(connection, *msg.Get(),
 			   [this](auto u) { return OnUnmountNotify(std::move(u)); });
 } catch (...) {
-	const std::scoped_lock<Mutex> lock(mutex);
+	const std::scoped_lock lock{mutex};
 	mount_error = std::current_exception();
 	mounted_storage.reset();
 	cond.notify_all();
@@ -308,12 +308,12 @@ try {
 	using namespace ODBus;
 	reply.CheckThrowError();
 
-	const std::scoped_lock<Mutex> lock(mutex);
+	const std::scoped_lock lock{mutex};
 	mount_error = {};
 	mounted_storage.reset();
 	cond.notify_all();
 } catch (...) {
-	const std::scoped_lock<Mutex> lock(mutex);
+	const std::scoped_lock lock{mutex};
 	mount_error = std::current_exception();
 	mounted_storage.reset();
 	cond.notify_all();

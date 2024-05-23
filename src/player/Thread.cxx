@@ -923,7 +923,7 @@ PlayerControl::PlayChunk(DetachedSong &song, MusicChunkPtr chunk,
 		return;
 
 	{
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		bit_rate = chunk->bit_rate;
 	}
 
@@ -997,7 +997,7 @@ Player::PlayNextChunk() noexcept
 		} else {
 			/* there are not enough decoded chunks yet */
 
-			std::unique_lock<Mutex> lock(pc.mutex);
+			std::unique_lock lock{pc.mutex};
 
 			if (dc.IsIdle()) {
 				/* the decoder isn't running, abort
@@ -1045,7 +1045,7 @@ Player::PlayNextChunk() noexcept
 		return false;
 	}
 
-	const std::scoped_lock<Mutex> lock(pc.mutex);
+	const std::scoped_lock lock{pc.mutex};
 
 	/* this formula should prevent that the decoder gets woken up
 	   with each chunk; it is more efficient to make it decode a
@@ -1096,7 +1096,7 @@ Player::Run() noexcept
 {
 	pipe = std::make_shared<MusicPipe>();
 
-	std::unique_lock<Mutex> lock(pc.mutex);
+	std::unique_lock lock{pc.mutex};
 
 	StartDecoder(lock, pipe, true);
 	ActivateDecoder();
@@ -1248,7 +1248,7 @@ try {
 
 	MusicBuffer buffer{config.buffer_chunks};
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	while (true) {
 		switch (command) {

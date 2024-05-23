@@ -149,7 +149,7 @@ dump_input_stream(InputStream &is, FileDescriptor out,
 {
 	out.SetBinaryMode();
 
-	std::unique_lock<Mutex> lock(is.mutex);
+	std::unique_lock lock{is.mutex};
 
 	if (seek > 0)
 		is.Seek(lock, seek);
@@ -195,7 +195,7 @@ class DumpRemoteTagHandler final : public RemoteTagHandler {
 
 public:
 	Tag Wait() {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		cond.wait(lock, [this]{ return done; });
 
 		if (error)
@@ -206,14 +206,14 @@ public:
 
 	/* virtual methods from RemoteTagHandler */
 	void OnRemoteTag(Tag &&_tag) noexcept override {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		tag = std::move(_tag);
 		done = true;
 		cond.notify_all();
 	}
 
 	void OnRemoteTagError(std::exception_ptr e) noexcept override {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		error = std::move(e);
 		done = true;
 		cond.notify_all();

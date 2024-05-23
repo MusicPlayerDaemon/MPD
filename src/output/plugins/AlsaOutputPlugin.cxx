@@ -294,13 +294,13 @@ private:
 
 	[[gnu::pure]]
 	bool LockIsActive() const noexcept {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		return active;
 	}
 
 	[[gnu::pure]]
 	bool LockIsActiveAndNotWaiting() const noexcept {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		return active && !waiting;
 	}
 
@@ -366,7 +366,7 @@ private:
 	void LockCaughtError() noexcept {
 		period_buffer.Clear();
 
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		error = std::current_exception();
 		active = false;
 		waiting = false;
@@ -381,7 +381,7 @@ private:
 	 */
 	void OnSilenceTimer() noexcept {
 		{
-			const std::scoped_lock<Mutex> lock(mutex);
+			const std::scoped_lock lock{mutex};
 			assert(active);
 			waiting = false;
 		}
@@ -447,7 +447,7 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 std::map<std::string, std::string, std::less<>>
 AlsaOutput::GetAttributes() const noexcept
 {
-	const std::scoped_lock<Mutex> lock(attributes_mutex);
+	const std::scoped_lock lock{attributes_mutex};
 
 	return {
 		{"allowed_formats", Alsa::ToString(allowed_formats)},
@@ -461,11 +461,11 @@ void
 AlsaOutput::SetAttribute(std::string &&name, std::string &&value)
 {
 	if (name == "allowed_formats") {
-		const std::scoped_lock<Mutex> lock(attributes_mutex);
+		const std::scoped_lock lock{attributes_mutex};
 		allowed_formats = Alsa::AllowedFormat::ParseList(value);
 #ifdef ENABLE_DSD
 	} else if (name == "dop") {
-		const std::scoped_lock<Mutex> lock(attributes_mutex);
+		const std::scoped_lock lock{attributes_mutex};
 		if (value == "0")
 			dop_setting = false;
 		else if (value == "1")
@@ -773,7 +773,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 #endif
 
 	{
-		const std::scoped_lock<Mutex> lock(attributes_mutex);
+		const std::scoped_lock lock{attributes_mutex};
 #ifdef ENABLE_DSD
 		dop = dop_setting;
 #endif
@@ -877,7 +877,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 void
 AlsaOutput::Interrupt() noexcept
 {
-	std::unique_lock<Mutex> lock(mutex);
+	std::scoped_lock lock{mutex};
 
 	/* the "interrupted" flag will prevent
 	   LockWaitWriteAvailable() from actually waiting, and will
@@ -951,7 +951,7 @@ AlsaOutput::CopyRingToPeriodBuffer() noexcept
 
 	period_buffer.AppendBytes(nbytes);
 
-	const std::scoped_lock<Mutex> lock(mutex);
+	const std::scoped_lock lock{mutex};
 	/* notify the OutputThread that there is now
 	   room in ring_buffer */
 	cond.notify_one();
@@ -1069,7 +1069,7 @@ AlsaOutput::DrainInternal()
 void
 AlsaOutput::Drain()
 {
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	if (error)
 		std::rethrow_exception(error);
@@ -1110,7 +1110,7 @@ void
 AlsaOutput::Cancel() noexcept
 {
 	{
-		std::unique_lock<Mutex> lock(mutex);
+		std::lock_guard lock{mutex};
 		interrupted = false;
 	}
 
@@ -1128,7 +1128,7 @@ AlsaOutput::Cancel() noexcept
 #ifdef ENABLE_DSD
 	if (stop_dsd_silence && use_dsd) {
 		/* play some DSD silence instead of snd_pcm_drop() */
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		in_stop_dsd_silence = true;
 		drain = true;
 		cond.wait(lock, [this]{ return !drain || !active; });
@@ -1144,7 +1144,7 @@ AlsaOutput::Cancel() noexcept
 bool
 AlsaOutput::Pause() noexcept
 {
-	std::unique_lock<Mutex> lock(mutex);
+	std::lock_guard lock{mutex};
 	interrupted = false;
 
 	/* not implemented - this override exists only to reset the
@@ -1174,7 +1174,7 @@ AlsaOutput::LockWaitWriteAvailable()
 	const size_t out_block_size = pcm_export->GetOutputBlockSize();
 	const size_t min_available = 2 * out_block_size;
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	while (true) {
 		if (error)
@@ -1265,7 +1265,7 @@ try {
 	}
 
 	{
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 
 		assert(active);
 
@@ -1305,7 +1305,7 @@ try {
 			   smaller than the ALSA-PCM buffer */
 
 			{
-				const std::scoped_lock<Mutex> lock(mutex);
+				const std::scoped_lock lock{mutex};
 				waiting = true;
 				cond.notify_one();
 			}

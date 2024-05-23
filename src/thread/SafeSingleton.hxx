@@ -22,7 +22,7 @@ class SafeSingleton {
 public:
 	template<typename... Args>
 	explicit SafeSingleton(Args&&... args) {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 
 		if (ref == 0)
 			instance = new T(std::forward<Args>(args)...);
@@ -34,7 +34,7 @@ public:
 	}
 
 	~SafeSingleton() noexcept {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		if (--ref > 0)
 			return;
 

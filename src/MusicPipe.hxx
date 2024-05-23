@@ -61,7 +61,7 @@ public:
 	 */
 	[[gnu::pure]]
 	const MusicChunk *Peek() const noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		return head.get();
 	}
 
@@ -85,7 +85,7 @@ public:
 	 */
 	[[gnu::pure]]
 	unsigned GetSize() const noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		return size;
 	}
 

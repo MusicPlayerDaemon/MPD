@@ -52,7 +52,7 @@ TEST(RewindInputStream, Basic)
 	EXPECT_TRUE(ris.get() != sis);
 	EXPECT_TRUE(ris != nullptr);
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	ris->Update();
 	EXPECT_TRUE(ris->IsReady());

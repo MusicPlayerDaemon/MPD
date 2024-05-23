@@ -215,7 +215,7 @@ public:
 
 	[[gnu::pure]]
 	bool LockIsIdle() const noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		return IsIdle();
 	}
 
@@ -225,7 +225,7 @@ public:
 
 	[[gnu::pure]]
 	bool LockIsStarting() const noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		return IsStarting();
 	}
 
@@ -237,13 +237,13 @@ public:
 
 	[[gnu::pure]]
 	bool LockHasFailed() const noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		return HasFailed();
 	}
 
 	[[gnu::pure]]
 	bool LockIsReplayGainEnabled() const noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		return replay_gain_mode != ReplayGainMode::OFF;
 	}
 
@@ -274,7 +274,7 @@ public:
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
 	void LockCheckRethrowError() const {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		CheckRethrowError();
 	}
 
@@ -344,13 +344,13 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(DecoderCommand cmd) noexcept {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		ClearError();
 		SynchronousCommandLocked(lock, cmd);
 	}
 
 	void LockAsynchronousCommand(DecoderCommand cmd) noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		command = cmd;
 		Signal();
 	}

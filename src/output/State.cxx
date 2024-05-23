@@ -27,7 +27,7 @@ audio_output_state_save(BufferedOutputStream &os,
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const auto &ao = outputs.Get(i);
-		const std::scoped_lock<Mutex> lock(ao.mutex);
+		const std::scoped_lock lock{ao.mutex};
 
 		os.Fmt(FMT_STRING(AUDIO_DEVICE_STATE "{}:{}\n"),
 		       (unsigned)ao.IsEnabled(), ao.GetName());

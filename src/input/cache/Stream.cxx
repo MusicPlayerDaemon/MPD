@@ -20,7 +20,7 @@ CacheInputStream::Check()
 	const ScopeUnlock unlock(mutex);
 
 	auto &i = GetCacheItem();
-	const std::scoped_lock<Mutex> protect(i.mutex);
+	const std::scoped_lock protect{i.mutex};
 
 	i.Check();
 }
@@ -44,7 +44,7 @@ CacheInputStream::IsAvailable() const noexcept
 	const ScopeUnlock unlock(mutex);
 
 	auto &i = GetCacheItem();
-	const std::scoped_lock<Mutex> protect(i.mutex);
+	const std::scoped_lock protect{i.mutex};
 
 	return i.IsAvailable(_offset);
 }
@@ -60,7 +60,7 @@ CacheInputStream::Read(std::unique_lock<Mutex> &lock,
 
 	{
 		const ScopeUnlock unlock(mutex);
-		const std::scoped_lock<Mutex> protect(i.mutex);
+		const std::scoped_lock protect{i.mutex};
 
 		nbytes = i.Read(lock, _offset, dest);
 	}
@@ -75,6 +75,6 @@ CacheInputStream::OnInputCacheAvailable() noexcept
 	auto &i = GetCacheItem();
 	const ScopeUnlock unlock(i.mutex);
 
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	InvokeOnAvailable();
 }

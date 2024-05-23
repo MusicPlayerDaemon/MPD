@@ -83,7 +83,7 @@ void
 SmbclientNeighborExplorer::Close() noexcept
 {
 	{
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		quit = true;
 		cond.notify_one();
 	}
@@ -94,7 +94,7 @@ SmbclientNeighborExplorer::Close() noexcept
 NeighborExplorer::List
 SmbclientNeighborExplorer::GetList() const noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	return list;
 }
 
@@ -224,7 +224,7 @@ SmbclientNeighborExplorer::ThreadFunc() noexcept
 {
 	SetThreadName("smbclient");
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	while (!quit) {
 		Run();

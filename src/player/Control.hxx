@@ -224,7 +224,7 @@ public:
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
 	void LockCheckRethrowError() const {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		CheckRethrowError();
 	}
 
@@ -293,7 +293,7 @@ public:
 	}
 
 	void LockSetReplayGainMode(ReplayGainMode _mode) noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		replay_gain_mode = _mode;
 	}
 
@@ -316,7 +316,7 @@ public:
 
 	[[gnu::pure]]
 	SyncInfo LockGetSyncInfo() const noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		return {state, next_song != nullptr};
 	}
 
@@ -338,7 +338,7 @@ private:
 	 * this function.
 	 */
 	void LockSignal() noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		Signal();
 	}
 
@@ -391,7 +391,7 @@ private:
 	}
 
 	void LockCommandFinished() noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		CommandFinished();
 	}
 
@@ -409,7 +409,7 @@ private:
 				unsigned threshold) noexcept;
 
 	bool LockWaitOutputConsumed(unsigned threshold) noexcept {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		return WaitOutputConsumed(lock, threshold);
 	}
 
@@ -448,7 +448,7 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(PlayerCommand cmd) noexcept {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		SynchronousCommand(lock, cmd);
 	}
 
@@ -486,7 +486,7 @@ private:
 	}
 
 	void LockSetOutputError(std::exception_ptr &&_error) noexcept {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		SetOutputError(std::move(_error));
 	}
 

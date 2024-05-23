@@ -272,7 +272,7 @@ TryUriDecode(DecoderBridge &bridge, const char *uri)
 		if (!plugin.SupportsUri(uri))
 			return false;
 
-		std::unique_lock<Mutex> lock(bridge.dc.mutex);
+		std::unique_lock lock{bridge.dc.mutex};
 		bridge.Reset();
 		return DecoderUriDecode(plugin, bridge, uri);
 	});
@@ -296,7 +296,7 @@ decoder_run_stream(DecoderBridge &bridge, const char *uri)
 
 	MaybeLoadReplayGain(bridge, *input_stream);
 
-	std::unique_lock<Mutex> lock(dc.mutex);
+	std::unique_lock lock{dc.mutex};
 
 	bool tried = false;
 	return dc.command == DecoderCommand::STOP ||
@@ -326,10 +326,10 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, std::string_view suffix,
 	DecoderControl &dc = bridge.dc;
 
 	if (plugin.file_decode != nullptr) {
-		const std::scoped_lock<Mutex> protect(dc.mutex);
+		const std::scoped_lock protect{dc.mutex};
 		return decoder_file_decode(plugin, bridge, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
-		std::unique_lock<Mutex> lock(dc.mutex);
+		std::unique_lock lock{dc.mutex};
 		return decoder_stream_decode(plugin, bridge, input_stream,
 					     lock);
 	} else
@@ -354,7 +354,7 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
 	bridge.Reset();
 
 	DecoderControl &dc = bridge.dc;
-	const std::scoped_lock<Mutex> protect(dc.mutex);
+	const std::scoped_lock protect{dc.mutex};
 	return decoder_file_decode(plugin, bridge, path_fs);
 }
 
@@ -545,7 +545,7 @@ DecoderControl::RunThread() noexcept
 {
 	SetThreadName("decoder");
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	do {
 		assert(state == DecoderState::STOP ||

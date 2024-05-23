@@ -95,7 +95,7 @@ NeedChunks(DecoderControl &dc, std::unique_lock<Mutex> &lock) noexcept
 static DecoderCommand
 LockNeedChunks(DecoderControl &dc) noexcept
 {
-	std::unique_lock<Mutex> lock(dc.mutex);
+	std::unique_lock lock{dc.mutex};
 	return NeedChunks(dc, lock);
 }
 
@@ -135,7 +135,7 @@ DecoderBridge::FlushChunk() noexcept
 	if (!chunk->IsEmpty())
 		dc.pipe->Push(std::move(chunk));
 
-	const std::scoped_lock<Mutex> protect(dc.mutex);
+	const std::scoped_lock protect{dc.mutex};
 	dc.client_cond.notify_one();
 }
 
@@ -197,7 +197,7 @@ DecoderBridge::GetVirtualCommand() noexcept
 DecoderCommand
 DecoderBridge::LockGetVirtualCommand() noexcept
 {
-	const std::scoped_lock<Mutex> protect(dc.mutex);
+	const std::scoped_lock protect{dc.mutex};
 	return GetVirtualCommand();
 }
 
@@ -257,7 +257,7 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 		 seekable);
 
 	{
-		const std::scoped_lock<Mutex> protect(dc.mutex);
+		const std::scoped_lock protect{dc.mutex};
 		dc.SetReady(audio_format, seekable, duration);
 	}
 
@@ -283,7 +283,7 @@ DecoderBridge::GetCommand() noexcept
 void
 DecoderBridge::CommandFinished() noexcept
 {
-	const std::scoped_lock<Mutex> protect(dc.mutex);
+	const std::scoped_lock protect{dc.mutex};
 
 	assert(dc.command != DecoderCommand::NONE || initial_seek_running);
 	assert(dc.command != DecoderCommand::SEEK ||
@@ -379,7 +379,7 @@ DecoderBridge::OpenUri(const char *uri)
 	auto is = InputStream::Open(uri, mutex);
 	is->SetHandler(&dc);
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 	while (true) {
 		if (dc.command == DecoderCommand::STOP)
 			throw StopDecoder();
@@ -403,7 +403,7 @@ try {
 	if (dest.empty())
 		return 0;
 
-	std::unique_lock<Mutex> lock(is.mutex);
+	std::unique_lock lock{is.mutex};
 
 	while (true) {
 		if (CheckCancelRead())

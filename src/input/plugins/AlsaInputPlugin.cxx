@@ -222,7 +222,7 @@ AlsaInputStream::DispatchSockets() noexcept
 try {
 	non_block.DispatchSockets(*this, capture_handle);
 
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 
 	auto w = PrepareWriteBuffer();
 	const snd_pcm_uframes_t w_frames = w.size() / frame_size;

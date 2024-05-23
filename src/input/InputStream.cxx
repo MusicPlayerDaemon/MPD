@@ -61,14 +61,14 @@ InputStream::Seek(std::unique_lock<Mutex> &, [[maybe_unused]] offset_type new_of
 void
 InputStream::LockSeek(offset_type _offset)
 {
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 	Seek(lock, _offset);
 }
 
 void
 InputStream::LockSkip(offset_type _offset)
 {
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 	Skip(lock, _offset);
 }
 
@@ -81,7 +81,7 @@ InputStream::ReadTag() noexcept
 std::unique_ptr<Tag>
 InputStream::LockReadTag() noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	return ReadTag();
 }
 
@@ -96,7 +96,7 @@ InputStream::LockRead(std::span<std::byte> dest)
 {
 	assert(!dest.empty());
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 	return Read(lock, dest);
 }
 
@@ -119,14 +119,14 @@ InputStream::LockReadFull(std::span<std::byte> dest)
 {
 	assert(!dest.empty());
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 	ReadFull(lock, dest);
 }
 
 bool
 InputStream::LockIsEOF() const noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	return IsEOF();
 }
 

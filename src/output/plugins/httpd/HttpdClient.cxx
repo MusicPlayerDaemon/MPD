@@ -34,7 +34,7 @@ HttpdClient::Close() noexcept
 void
 HttpdClient::LockClose() noexcept
 {
-	const std::scoped_lock<Mutex> protect(httpd.mutex);
+	const std::scoped_lock protect{httpd.mutex};
 	Close();
 }
 
@@ -224,7 +224,7 @@ HttpdClient::GetBytesTillMetaData() const noexcept
 inline bool
 HttpdClient::TryWrite() noexcept
 {
-	const std::scoped_lock<Mutex> protect(httpd.mutex);
+	const std::scoped_lock protect{httpd.mutex};
 
 	assert(state == State::RESPONSE);
 

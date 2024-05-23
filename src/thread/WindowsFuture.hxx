@@ -70,24 +70,24 @@ private:
 
 public:
 	bool is_ready() const noexcept {
-		std::unique_lock<CriticalSection> lock(mutex);
+		const std::lock_guard lock{mutex};
 		return ready;
 	}
 
 	bool already_retrieved() const noexcept {
-		std::unique_lock<CriticalSection> lock(mutex);
+		const std::lock_guard lock{mutex};
 		return retrieved;
 	}
 
 	void wait() {
-		std::unique_lock<CriticalSection> lock(mutex);
+		std::unique_lock lock{mutex};
 		condition.wait(lock, [this]() { return ready; });
 	}
 
 	template <class Rep, class Period>
 	WinFutureStatus
 	wait_for(const std::chrono::duration<Rep, Period> &timeout_duration) const {
-		std::unique_lock<CriticalSection> lock(mutex);
+		std::unique_lock lock{mutex};
 		// deferred function not support yet
 		if (condition.wait_for(lock, timeout_duration,
 				       [this]() { return ready; })) {
@@ -97,7 +97,7 @@ public:
 	}
 
 	virtual T &get_value() {
-		std::unique_lock<CriticalSection> lock(mutex);
+		std::unique_lock lock{mutex};
 		if (retrieved) {
 			throw WinFutureError(WinFutureErrc::future_already_retrieved);
 		}
@@ -113,7 +113,7 @@ public:
 	}
 
 	void set_value(const T &value) {
-		std::unique_lock<CriticalSection> lock(mutex);
+		const std::lock_guard lock{mutex};
 		if (!std::holds_alternative<std::monostate>(result)) {
 			throw WinFutureError(WinFutureErrc::promise_already_satisfied);
 		}
@@ -123,7 +123,7 @@ public:
 	}
 
 	void set_value(T &&value) {
-		std::unique_lock<CriticalSection> lock(mutex);
+		const std::lock_guard lock{mutex};
 		if (!std::holds_alternative<std::monostate>(result)) {
 			throw WinFutureError(WinFutureErrc::promise_already_satisfied);
 		}
@@ -133,7 +133,7 @@ public:
 	}
 
 	void set_exception(std::exception_ptr eptr) {
-		std::unique_lock<CriticalSection> lock(mutex);
+		const std::lock_guard lock{mutex};
 		if (!std::holds_alternative<std::monostate>(result)) {
 			throw WinFutureError(WinFutureErrc::promise_already_satisfied);
 		}

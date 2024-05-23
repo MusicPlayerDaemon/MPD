@@ -43,7 +43,7 @@ public:
 
 private:
 	bool LockWaitFinished() noexcept {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		return cond.wait_for(lock, timeout, [this]{ return finished; });
 	}
 
@@ -52,7 +52,7 @@ private:
 	 * thread.
 	 */
 	void LockSetFinished() noexcept {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		finished = true;
 		cond.notify_one();
 	}

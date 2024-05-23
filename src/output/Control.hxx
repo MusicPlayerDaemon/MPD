@@ -355,7 +355,7 @@ public:
 	void WaitForCommand(std::unique_lock<Mutex> &lock) noexcept;
 
 	void LockWaitForCommand() noexcept {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		WaitForCommand(lock);
 	}
 
@@ -407,7 +407,7 @@ public:
 	void EnableDisableAsync();
 
 	void LockEnableDisableAsync() {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		EnableDisableAsync();
 	}
 
@@ -482,7 +482,7 @@ public:
 	 * Locking wrapper for ClearTailChunk().
 	 */
 	void LockClearTailChunk(const MusicChunk &chunk) noexcept {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		ClearTailChunk(chunk);
 	}
 

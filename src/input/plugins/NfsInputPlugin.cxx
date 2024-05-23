@@ -138,7 +138,7 @@ NfsInputStream::DoSeek(offset_type new_offset)
 void
 NfsInputStream::OnNfsFileOpen(uint64_t _size) noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 
 	if (reconnecting) {
 		/* reconnect has succeeded */
@@ -158,7 +158,7 @@ NfsInputStream::OnNfsFileOpen(uint64_t _size) noexcept
 void
 NfsInputStream::OnNfsFileRead(std::span<const std::byte> src) noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	assert(!IsBufferFull());
 	assert(IsBufferFull() == (GetBufferSpace() == 0));
 
@@ -172,7 +172,7 @@ NfsInputStream::OnNfsFileRead(std::span<const std::byte> src) noexcept
 void
 NfsInputStream::OnNfsFileError(std::exception_ptr &&e) noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 
 	if (IsPaused()) {
 		/* while we're paused, don't report this error to the

@@ -29,7 +29,7 @@ SmbclientContext::New()
 	SMBCCTX *ctx;
 
 	{
-		const std::scoped_lock<Mutex> protect(global_mutex);
+		const std::scoped_lock protect{global_mutex};
 		ctx = smbc_new_context();
 	}
 

@@ -51,7 +51,7 @@ protected:
 	}
 
 	void CancelThread() noexcept override {
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		cancel = true;
 		cond.notify_one();
 	}
@@ -188,7 +188,7 @@ GetChromaprintCommand::DecodeFile(std::string_view suffix, InputStream &is,
 		return false;
 
 	{
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		if (cancel)
 			throw StopDecoder();
 	}
@@ -257,7 +257,7 @@ GetChromaprintCommand::OpenUri(const char *uri2)
 	auto is = InputStream::Open(uri2, mutex);
 	is->SetHandler(this);
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 	while (true) {
 		if (cancel)
 			throw StopDecoder();
@@ -282,7 +282,7 @@ GetChromaprintCommand::Read(InputStream &is,
 	if (dest.empty())
 		return 0;
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	while (true) {
 		if (cancel)

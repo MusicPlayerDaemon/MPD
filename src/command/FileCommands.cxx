@@ -195,7 +195,7 @@ read_stream_art(Response &r, const std::string_view art_directory,
 
 	std::size_t read_size = 0;
 	if (buffer_size > 0) {
-		std::unique_lock<Mutex> lock(is->mutex);
+		std::unique_lock lock{is->mutex};
 		is->Seek(lock, offset);
 		read_size = is->Read(lock, {buffer.get(), buffer_size});
 	}

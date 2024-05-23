@@ -88,14 +88,14 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 	 expires(std::chrono::seconds(UpnpDiscovery_get_Expires(&disco))),
 	 request(*parent.curl, url.c_str(), *this)
 {
-	const std::scoped_lock<Mutex> protect(parent.mutex);
+	const std::scoped_lock protect{parent.mutex};
 	parent.downloaders.push_back(*this);
 }
 
 void
 UPnPDeviceDirectory::Downloader::Destroy() noexcept
 {
-	const std::scoped_lock<Mutex> protect(parent.mutex);
+	const std::scoped_lock protect{parent.mutex};
 	unlink();
 	delete this;
 }
@@ -189,7 +189,7 @@ AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device) noex
 inline void
 UPnPDeviceDirectory::LockAdd(std::string &&id, ContentDirectoryDescriptor &&d) noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 
 	const auto i = directories.insert_or_assign(std::move(id), std::move(d)).first;
 
@@ -200,7 +200,7 @@ UPnPDeviceDirectory::LockAdd(std::string &&id, ContentDirectoryDescriptor &&d) n
 inline void
 UPnPDeviceDirectory::LockRemove(const std::string_view id) noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 
 	if (auto i = directories.find(id); i != directories.end()) {
 		if (listener != nullptr)
@@ -297,7 +297,7 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 UPnPDeviceDirectory::~UPnPDeviceDirectory() noexcept
 {
 	BlockingCall(GetEventLoop(), [this]() {
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		downloaders.clear_and_dispose(DeleteDisposer());
 	});
 }
@@ -337,7 +337,7 @@ UPnPDeviceDirectory::Search()
 std::vector<ContentDirectoryService>
 UPnPDeviceDirectory::GetDirectories() noexcept
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 
 	ExpireDevices();
 
@@ -356,7 +356,7 @@ UPnPDeviceDirectory::GetDirectories() noexcept
 ContentDirectoryService
 UPnPDeviceDirectory::GetServer(std::string_view friendly_name)
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 
 	ExpireDevices();
 

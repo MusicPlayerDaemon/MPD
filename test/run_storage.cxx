@@ -253,7 +253,7 @@ Cat(Storage &storage, const char *path)
 	auto is = storage.OpenFile(path, mutex);
 	assert(is);
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 	WaitReady(*is, lock);
 	Cat(*is, lock, FileDescriptor{STDOUT_FILENO});
 

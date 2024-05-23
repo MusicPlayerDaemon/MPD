@@ -30,7 +30,7 @@ ThreadInputStream::Stop() noexcept
 		return;
 
 	{
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		close = true;
 		wake_cond.notify_one();
 	}
@@ -53,7 +53,7 @@ ThreadInputStream::ThreadFunc() noexcept
 {
 	FmtThreadName("input:{}", plugin);
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	try {
 		Open();

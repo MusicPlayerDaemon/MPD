@@ -330,7 +330,7 @@ SlesOutput::Play(std::span<const std::byte> src)
 		pause = false;
 	}
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	assert(filled < BUFFER_SIZE);
 
@@ -360,7 +360,7 @@ SlesOutput::Play(std::span<const std::byte> src)
 void
 SlesOutput::Drain()
 {
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	assert(filled < BUFFER_SIZE);
 
@@ -382,7 +382,7 @@ SlesOutput::Cancel() noexcept
 		LogWarning(sles_domain,
 			   "AndroidSimpleBufferQueue.Clear() failed");
 
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	n_queued = 0;
 	filled = 0;
 }
@@ -407,7 +407,7 @@ SlesOutput::Pause()
 inline void
 SlesOutput::PlayedCallback()
 {
-	const std::scoped_lock<Mutex> protect(mutex);
+	const std::scoped_lock protect{mutex};
 	assert(n_queued > 0);
 	--n_queued;
 	cond.notify_one();

@@ -417,7 +417,7 @@ AudioOutputControl::Task() noexcept
 
 	SetThreadTimerSlack(std::chrono::microseconds(100));
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	while (true) {
 		switch (command) {

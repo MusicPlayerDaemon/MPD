@@ -289,7 +289,7 @@ public:
 	}
 
 	void LockRewind() {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 		Rewind(lock);
 	}
 

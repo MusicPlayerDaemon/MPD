@@ -140,7 +140,7 @@ private:
 	void SetState(State _state) noexcept {
 		assert(GetEventLoop().IsInside());
 
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		state = _state;
 		cond.notify_all();
 	}
@@ -148,7 +148,7 @@ private:
 	void SetState(State _state, std::exception_ptr &&e) noexcept {
 		assert(GetEventLoop().IsInside());
 
-		const std::scoped_lock<Mutex> protect(mutex);
+		const std::scoped_lock protect{mutex};
 		state = _state;
 		last_exception = std::move(e);
 		cond.notify_all();
@@ -172,7 +172,7 @@ private:
 	}
 
 	void WaitConnected() {
-		std::unique_lock<Mutex> lock(mutex);
+		std::unique_lock lock{mutex};
 
 		while (true) {
 			switch (state) {

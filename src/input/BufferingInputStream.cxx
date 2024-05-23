@@ -23,7 +23,7 @@ BufferingInputStream::BufferingInputStream(InputStreamPtr _input)
 BufferingInputStream::~BufferingInputStream() noexcept
 {
 	{
-		const std::scoped_lock<Mutex> lock(mutex);
+		const std::scoped_lock lock{mutex};
 		stop = true;
 		wake_cond.notify_one();
 	}
@@ -166,7 +166,7 @@ BufferingInputStream::RunThread() noexcept
 {
 	SetThreadName("buffering");
 
-	std::unique_lock<Mutex> lock(mutex);
+	std::unique_lock lock{mutex};
 
 	try {
 		RunThreadLocked(lock);

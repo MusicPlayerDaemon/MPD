@@ -23,7 +23,7 @@ struct ApeFooter {
 bool
 tag_ape_scan(InputStream &is, const ApeTagCallback& callback)
 try {
-	std::unique_lock<Mutex> lock(is.mutex);
+	std::unique_lock lock{is.mutex};
 
 	if (!is.KnownSize() || !is.CheapSeeking())
 		return false;
