@@ -6,6 +6,7 @@
 
 struct EpollEvents {
 	static constexpr unsigned READ = EPOLLIN;
+	static constexpr unsigned EXCEPTIONAL = EPOLLPRI;
 	static constexpr unsigned WRITE = EPOLLOUT;
 	static constexpr unsigned ERROR = EPOLLERR;
 	static constexpr unsigned HANGUP = EPOLLHUP;
