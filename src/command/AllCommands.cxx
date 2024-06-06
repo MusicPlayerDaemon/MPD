@@ -212,7 +212,8 @@ command_available([[maybe_unused]] const Partition &partition,
 		  [[maybe_unused]] const struct command *cmd) noexcept
 {
 #ifdef ENABLE_SQLITE
-	if (StringIsEqual(cmd->cmd, "sticker"))
+	if (StringIsEqual(cmd->cmd, "sticker") ||
+	    StringIsEqual(cmd->cmd, "stickernames"))
 		return partition.instance.HasStickerDatabase();
 #endif
 
