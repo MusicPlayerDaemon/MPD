@@ -15,7 +15,7 @@ GunzipReader::GunzipReader(Reader &_next)
 
 	int result = inflateInit2(&z, 16 + MAX_WBITS);
 	if (result != Z_OK)
-		throw ZlibError(result);
+		throw MakeZlibError(result, "inflateInit2() failed");
 }
 
 inline bool
@@ -60,7 +60,7 @@ GunzipReader::Read(std::span<std::byte> dest)
 			eof = true;
 			return dest.size() - z.avail_out;
 		} else if (result != Z_OK)
-			throw ZlibError(result);
+			throw MakeZlibError(result, "inflate() failed");
 
 		buffer.Consume(r.size() - z.avail_in);
 

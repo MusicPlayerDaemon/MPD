@@ -3,17 +3,25 @@
 
 #pragma once
 
-#include <exception>
+#include <zlib.h>
 
-class ZlibError final : public std::exception {
-	int code;
+#include <system_error>
 
+class ZlibErrorCategory final : public std::error_category {
 public:
-	explicit ZlibError(int _code) noexcept:code(_code) {}
-
-	int GetCode() const noexcept {
-		return code;
+	const char *name() const noexcept override {
+		return "zlib";
 	}
 
-	const char *what() const noexcept override;
+	std::string message(int condition) const override {
+		return zError(condition);
+	}
 };
+
+inline ZlibErrorCategory zlib_error_category;
+
+inline std::system_error
+MakeZlibError(int code, const char *msg) noexcept
+{
+	return std::system_error(code, zlib_error_category, msg);
+}

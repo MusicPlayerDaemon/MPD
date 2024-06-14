@@ -20,7 +20,7 @@ GzipOutputStream::GzipOutputStream(OutputStream &_next)
 				  windowBits | gzip_encoding,
 				  8, Z_DEFAULT_STRATEGY);
 	if (result != Z_OK)
-		throw ZlibError(result);
+		throw MakeZlibError(result, "deflateInit2() failed");
 }
 
 GzipOutputStream::~GzipOutputStream() noexcept
@@ -42,7 +42,7 @@ GzipOutputStream::SyncFlush()
 
 		int result = deflate(&z, Z_SYNC_FLUSH);
 		if (result != Z_OK)
-			throw ZlibError(result);
+			throw MakeZlibError(result, "deflate() failed");
 
 		if (z.next_out == output)
 			break;
@@ -70,7 +70,7 @@ GzipOutputStream::Finish()
 		if (result == Z_STREAM_END)
 			break;
 		else if (result != Z_OK)
-			throw ZlibError(result);
+			throw MakeZlibError(result, "deflate() failed");
 	}
 }
 
@@ -90,7 +90,7 @@ GzipOutputStream::Write(std::span<const std::byte> src)
 
 		int result = deflate(&z, Z_NO_FLUSH);
 		if (result != Z_OK)
-			throw ZlibError(result);
+			throw MakeZlibError(result, "deflate() failed");
 
 		if (z.next_out > output)
 			next.Write(std::as_bytes(std::span{output}.first(z.next_out - output)));

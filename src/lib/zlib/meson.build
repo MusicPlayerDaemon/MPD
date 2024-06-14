@@ -6,7 +6,6 @@ endif
 
 zlib = static_library(
   'zlib',
-  'Error.cxx',
   'GunzipReader.cxx',
   'GzipOutputStream.cxx',
   'AutoGunzipReader.cxx',
