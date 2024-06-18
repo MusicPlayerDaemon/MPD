@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+using std::string_view_literals::operator""sv;
+
 TEST(ExceptionTest, RuntimeError)
 {
 	ASSERT_EQ(GetFullMessage(std::make_exception_ptr(std::runtime_error("Foo"))), "Foo");
@@ -20,6 +22,22 @@ TEST(ExceptionTest, DerivedError)
 	};
 
 	ASSERT_EQ(GetFullMessage(std::make_exception_ptr(DerivedError("Foo"))), "Foo");
+}
+
+TEST(ExceptionTest, GetFullMessageSanitize)
+{
+	try {
+		try {
+			throw " ABC \n DEF ";
+		} catch (...) {
+			std::throw_with_nested(std::runtime_error{"foo\r\n\tbar"});
+		}
+
+		FAIL();
+	} catch (...) {
+		ASSERT_EQ(GetFullMessage(std::current_exception()),
+			  "foo bar; ABC DEF"sv);
+	}
 }
 
 TEST(ExceptionTest, FindNestedDirect)
