@@ -16,6 +16,7 @@ alsa = static_library(
   'Version.cxx',
   'Error.cxx',
   'AllowedFormat.cxx',
+  'ChannelMap.cxx',
   'HwSetup.cxx',
   'NonBlock.cxx',
   include_directories: inc,

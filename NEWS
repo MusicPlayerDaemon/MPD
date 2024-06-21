@@ -30,6 +30,7 @@ ver 0.24 (not yet released)
   - nfs: support libnfs URL arguments
 * input
   - alsa: limit ALSA buffer time to 2 seconds
+  - alsa: set up a channel map
   - curl: add "connect_timeout" configuration
 * decoder
   - ffmpeg: require FFmpeg 4.0 or later

@@ -4,6 +4,7 @@
 #include "config.h"
 #include "AlsaOutputPlugin.hxx"
 #include "lib/alsa/AllowedFormat.hxx"
+#include "lib/alsa/ChannelMap.hxx"
 #include "lib/alsa/Error.hxx"
 #include "lib/alsa/HwSetup.hxx"
 #include "lib/alsa/NonBlock.hxx"
@@ -551,6 +552,8 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 		 hw_result.buffer_size,
 		 hw_result.period_size);
 
+	Alsa::SetupChannelMap(pcm, audio_format.channels, params);
+
 	AlsaSetupSw(pcm, hw_result.buffer_size - hw_result.period_size,
 		    hw_result.period_size);
 
@@ -820,7 +823,6 @@ AlsaOutput::Open(AudioFormat &audio_format)
 #endif
 
 	PcmExport::Params params;
-	params.alsa_channel_order = true;
 
 	try {
 		SetupOrDop(audio_format, params
