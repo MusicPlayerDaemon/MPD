@@ -601,7 +601,7 @@ if is_android
 else
   target_type = 'executable'
   target_name = 'mpd'
-  install_dir = ''
+  install_dir = get_option('bindir')
 endif
 
 mpd = build_target(
