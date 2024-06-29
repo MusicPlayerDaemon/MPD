@@ -1063,7 +1063,7 @@ The music database
 
     This is currently implemented by searching the directory the file
     resides in for a file called :file:`cover.png`, :file:`cover.jpg`,
-    :file:`cover.tiff` or :file:`cover.bmp`.
+    or :file:`cover.webp`.
 
     Returns the file size and actual number
     of bytes read at the requested offset, followed
