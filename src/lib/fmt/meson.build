@@ -10,6 +10,7 @@ endif
 
 fmt = static_library(
   'fmt',
+  'ExceptionFormatter.cxx',
   'RuntimeError.cxx',
   'SocketAddressFormatter.cxx',
   'SystemError.cxx',
