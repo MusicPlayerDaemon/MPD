@@ -102,6 +102,7 @@ jobs:
             -Dtest=true \
             -Dsystemd=enabled \
             -Dpcre=enabled \
+            --wrap-mode nofallback \
             --force-fallback-for=fmt \
             output/full
 
@@ -128,6 +129,7 @@ jobs:
             -Dfifo=false \
             -Dhttpd=false -Dpipe=false -Drecorder=false \
             -Dsnapcast=false \
+            --wrap-mode nofallback \
             output/mini
 
       - name: Build Mini
