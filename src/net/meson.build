@@ -41,6 +41,7 @@ endif
 net = static_library(
   'net',
   net_sources,
+  'FormatAddress.cxx',
   'ToString.cxx',
   'HostParser.cxx',
   'Resolver.cxx',
