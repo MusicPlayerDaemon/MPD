@@ -13,7 +13,7 @@ template<>
 struct fmt::formatter<AVSampleFormat> : formatter<string_view>
 {
 	template<typename FormatContext>
-	auto format(const AVSampleFormat format, FormatContext &ctx) {
+	auto format(const AVSampleFormat format, FormatContext &ctx) const {
 		const char *name = av_get_sample_fmt_name(format);
 		if (name == nullptr)
 			name = "?";

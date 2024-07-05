@@ -13,7 +13,7 @@ template<std::convertible_to<Path> T>
 struct fmt::formatter<T> : formatter<string_view>
 {
 	template<typename FormatContext>
-	auto format(Path path, FormatContext &ctx) {
+	auto format(Path path, FormatContext &ctx) const {
 		return formatter<string_view>::format(path.ToUTF8(), ctx);
 	}
 };
