@@ -4,6 +4,7 @@
 #include "Log.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "util/Domain.hxx"
+#include "util/Exception.hxx"
 
 #include <fmt/format.h>
 
