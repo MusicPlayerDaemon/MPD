@@ -33,18 +33,26 @@ jobs:
   build-linux:
     strategy:
       matrix:
-        compiler: [gcc14, gcc10]
+        compiler: [gcc14, gcc10, clang]
         include:
           - compiler: gcc14
             os: ubuntu-24.04
             cc: gcc-14
             cxx: g++-14
             packages: g++-14
+            meson_options:
           - compiler: gcc10
             os: ubuntu-24.04
             cc: gcc-10
             cxx: g++-10
             packages: g++-10
+            meson_options:
+          - compiler: clang
+            os: ubuntu-24.04
+            cc: clang
+            cxx: clang++
+            packages: clang
+            meson_options: --force-fallback-for=fmt,gtest
 
     runs-on: ${{ matrix.os }}
 
@@ -106,6 +114,7 @@ jobs:
             -Dsystemd=enabled \
             -Dpcre=enabled \
             --wrap-mode nofallback \
+            ${{ matrix.meson_options }} \
             output/full
 
       - name: Build
@@ -132,6 +141,7 @@ jobs:
             -Dhttpd=false -Dpipe=false -Drecorder=false \
             -Dsnapcast=false \
             --wrap-mode nofallback \
+            ${{ matrix.meson_options }} \
             output/mini
 
       - name: Build Mini
