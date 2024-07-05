@@ -36,11 +36,11 @@ jobs:
         compiler: [gcc11, gcc10]
         include:
           - compiler: gcc11
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             cc: gcc-11
             cxx: g++-11
           - compiler: gcc10
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             cc: gcc-10
             cxx: g++-10
 
