@@ -38,7 +38,7 @@ template<>
 struct fmt::formatter<std::exception_ptr> : formatter<string_view>
 {
 	template<typename FormatContext>
-	auto format(std::exception_ptr e, FormatContext &ctx) {
+	auto format(std::exception_ptr e, FormatContext &ctx) const {
 		return formatter<string_view>::format(GetFullMessage(e), ctx);
 	}
 };
