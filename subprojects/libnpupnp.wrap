@@ -6,5 +6,8 @@ source_hash = d83cadc997a5367030820de6c4a49130b38fe605bf3d0d2c939d7d1c06aa3226
 source_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/libnpupnp_6.1.2-1/libnpupnp-6.1.2.tar.gz
 wrapdb_version = 6.1.2-1
 
+# https://github.com/medoc92/npupnp/commit/bb59a9d961efb3c88999f02204bd7cfb5cb45e54
+diff_files = libnpupnp_gcc14.patch
+
 [provide]
 libnpupnp = libnpupnp_dep
