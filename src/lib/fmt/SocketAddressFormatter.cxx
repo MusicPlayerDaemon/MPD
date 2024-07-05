@@ -5,7 +5,7 @@
 #include "net/ToString.hxx"
 
 auto
-fmt::formatter<SocketAddress>::format(SocketAddress address, format_context &ctx)
+fmt::formatter<SocketAddress>::format(SocketAddress address, format_context &ctx) const
   -> format_context::iterator
 {
 	return formatter<string_view>::format(ToString(address), ctx);
