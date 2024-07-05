@@ -39,10 +39,12 @@ jobs:
             os: ubuntu-24.04
             cc: gcc-14
             cxx: g++-14
+            packages: g++-14
           - compiler: gcc10
             os: ubuntu-24.04
             cc: gcc-10
             cxx: g++-10
+            packages: g++-10
 
     runs-on: ${{ matrix.os }}
 
@@ -58,7 +60,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            ${{ matrix.cxx }} ${{matrix.cc }} \
+            ${{ matrix.packages }} \
             meson \
             ccache \
             libfmt-dev \
