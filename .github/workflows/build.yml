@@ -61,6 +61,7 @@ jobs:
             ${{ matrix.cxx }} ${{matrix.cc }} \
             meson \
             ccache \
+            libfmt-dev \
             libgtest-dev \
             libpcre2-dev \
             libsystemd-dev libdbus-1-dev \
@@ -103,7 +104,6 @@ jobs:
             -Dsystemd=enabled \
             -Dpcre=enabled \
             --wrap-mode nofallback \
-            --force-fallback-for=fmt \
             output/full
 
       - name: Build
