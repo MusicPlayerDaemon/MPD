@@ -304,7 +304,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 	if (s[0] == '!' && s[1] == '=')
 		negated = true;
 	else if (s[0] != '=' || s[1] != '=')
-		throw std::runtime_error("'==' or '!=' expected");
+		throw FmtRuntimeError("Unknown filter operator: {}", s);
 
 	s = StripLeft(s + 2);
 	auto value = ExpectQuoted(s);
