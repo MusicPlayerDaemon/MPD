@@ -23,6 +23,8 @@
 
 #include <fmt/format.h>
 
+#include <iterator> // for std::back_inserter()
+
 static constexpr Domain exception_domain("exception");
 
 void
