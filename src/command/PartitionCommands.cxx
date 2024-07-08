@@ -10,6 +10,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringVerify.hxx"
 
 #include <fmt/format.h>
 
@@ -39,21 +40,15 @@ handle_listpartitions(Client &client, Request, Response &r)
 }
 
 static constexpr bool
-IsValidPartitionChar(char ch)
+IsValidPartitionChar(char ch) noexcept
 {
 	return IsAlphaNumericASCII(ch) || ch == '-' || ch == '_';
 }
 
-[[gnu::pure]]
-static bool
+static constexpr bool
 IsValidPartitionName(const char *name) noexcept
 {
-	do {
-		if (!IsValidPartitionChar(*name))
-			return false;
-	} while (*++name != 0);
-
-	return true;
+	return CheckCharsNonEmpty(name, IsValidPartitionChar);
 }
 
 [[gnu::pure]]

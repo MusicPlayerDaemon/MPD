@@ -10,6 +10,7 @@
 #include "Partition.hxx"
 #include "IdleFlags.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringVerify.hxx"
 
 CommandResult
 handle_enableoutput(Client &client, Request args, Response &r)
@@ -62,22 +63,16 @@ handle_toggleoutput(Client &client, Request args, Response &r)
 	return CommandResult::OK;
 }
 
-static bool
+static constexpr bool
 IsValidAttributeNameChar(char ch) noexcept
 {
 	return IsAlphaNumericASCII(ch) || ch == '_';
 }
 
-[[gnu::pure]]
-static bool
+static constexpr bool
 IsValidAttributeName(const char *s) noexcept
 {
-	do {
-		if (!IsValidAttributeNameChar(*s))
-			return false;
-	} while (*++s);
-
-	return true;
+	return CheckCharsNonEmpty(s, IsValidAttributeNameChar);
 }
 
 CommandResult
