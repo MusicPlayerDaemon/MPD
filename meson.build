@@ -98,10 +98,10 @@ version_cxx = vcs_tag(input: 'src/GitVersion.cxx', output: 'GitVersion.cxx')
 compiler = meson.get_compiler('cpp')
 c_compiler = meson.get_compiler('c')
 
-if compiler.get_id() == 'gcc' and compiler.version().version_compare('<8')
-  warning('Your GCC version is too old.  You need at least version 8.')
-elif compiler.get_id() == 'clang' and compiler.version().version_compare('<7')
-  warning('Your clang version is too old.  You need at least version 7.')
+if compiler.get_id() == 'gcc' and compiler.version().version_compare('<10')
+  warning('Your GCC version is too old.  You need at least version 10.')
+elif compiler.get_id() == 'clang' and compiler.version().version_compare('<11')
+  warning('Your clang version is too old.  You need at least version 11.')
 endif
 
 version_conf = configuration_data()
