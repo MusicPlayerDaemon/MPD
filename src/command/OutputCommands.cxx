@@ -19,8 +19,7 @@ handle_enableoutput(Client &client, Request args, Response &r)
 
 	auto &partition = client.GetPartition();
 
-	if (!audio_output_enable_index(partition.outputs,
-				       partition.mixer_memento,
+	if (!audio_output_enable_index(partition,
 				       device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
@@ -37,8 +36,7 @@ handle_disableoutput(Client &client, Request args, Response &r)
 
 	auto &partition = client.GetPartition();
 
-	if (!audio_output_disable_index(partition.outputs,
-					partition.mixer_memento,
+	if (!audio_output_disable_index(partition,
 					device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
@@ -55,8 +53,7 @@ handle_toggleoutput(Client &client, Request args, Response &r)
 
 	auto &partition = client.GetPartition();
 
-	if (!audio_output_toggle_index(partition.outputs,
-					partition.mixer_memento,
+	if (!audio_output_toggle_index(partition,
 				       device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
+#pragma once
+
 /*
  * Glue functions for controlling the audio outputs over the MPD
  * protocol.  These functions perform extra validation on all
@@ -8,19 +10,14 @@
  *
  */
 
-#ifndef MPD_OUTPUT_COMMAND_HXX
-#define MPD_OUTPUT_COMMAND_HXX
-
-class MultipleOutputs;
-class MixerMemento;
+struct Partition;
 
 /**
  * Enables an audio output.  Returns false if the specified output
  * does not exist.
  */
 bool
-audio_output_enable_index(MultipleOutputs &outputs,
-			  MixerMemento &mixer_memento,
+audio_output_enable_index(Partition &partition,
 			  unsigned idx);
 
 /**
@@ -28,8 +25,7 @@ audio_output_enable_index(MultipleOutputs &outputs,
  * does not exist.
  */
 bool
-audio_output_disable_index(MultipleOutputs &outputs,
-			   MixerMemento &mixer_memento,
+audio_output_disable_index(Partition &partition,
 			   unsigned idx);
 
 /**
@@ -37,8 +33,5 @@ audio_output_disable_index(MultipleOutputs &outputs,
  * does not exist.
  */
 bool
-audio_output_toggle_index(MultipleOutputs &outputs,
-			  MixerMemento &mixer_memento,
+audio_output_toggle_index(Partition &partition,
 			  unsigned idx);
-
-#endif
