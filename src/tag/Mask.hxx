@@ -16,7 +16,7 @@ class TagMask {
 
 	mask_t value;
 
-	explicit constexpr TagMask(uint_least32_t _value) noexcept
+	explicit constexpr TagMask(mask_t _value) noexcept
 		:value(_value) {}
 
 public:
