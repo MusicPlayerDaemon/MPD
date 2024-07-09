@@ -1,13 +1,10 @@
 [wrap-file]
-directory = libnpupnp-6.1.2
-source_url = https://www.lesbonscomptes.com/upmpdcli/downloads/libnpupnp-6.1.2.tar.gz
-source_filename = libnpupnp-6.1.2.tar.gz
-source_hash = d83cadc997a5367030820de6c4a49130b38fe605bf3d0d2c939d7d1c06aa3226
-source_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/libnpupnp_6.1.2-1/libnpupnp-6.1.2.tar.gz
-wrapdb_version = 6.1.2-1
-
-# https://github.com/medoc92/npupnp/commit/bb59a9d961efb3c88999f02204bd7cfb5cb45e54
-diff_files = libnpupnp_gcc14.patch
+directory = libnpupnp-6.1.3
+source_url = https://www.lesbonscomptes.com/upmpdcli/downloads/libnpupnp-6.1.3.tar.gz
+source_filename = libnpupnp-6.1.3.tar.gz
+source_hash = 80c3d5adc388e59057be52c4c33d7708efe05318487c09e342e7a1f4a83aa792
+source_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/libnpupnp_6.1.3-1/libnpupnp-6.1.3.tar.gz
+wrapdb_version = 6.1.3-1
 
 [provide]
 libnpupnp = libnpupnp_dep
