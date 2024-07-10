@@ -14,6 +14,7 @@ test(
     'TestSplitString.cxx',
     'TestStringStrip.cxx',
     'TestTemplateString.cxx',
+    'TestTerminatedArray.cxx',
     'TestUriExtract.cxx',
     'TestUriQueryParser.cxx',
     'TestUriRelative.cxx',
