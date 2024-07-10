@@ -10,7 +10,8 @@
 
 StateFileConfig::StateFileConfig(const ConfigData &config)
 	:path(config.GetPath(ConfigOption::STATE_FILE)),
-	 interval(config.GetUnsigned(ConfigOption::STATE_FILE_INTERVAL,
+	 interval(config.GetDuration(ConfigOption::STATE_FILE_INTERVAL,
+				     std::chrono::seconds{1},
 				     DEFAULT_INTERVAL)),
 	 restore_paused(config.GetBool(ConfigOption::RESTORE_PAUSED, false))
 {

@@ -86,32 +86,17 @@ ConfigData::GetPositive(ConfigOption option, unsigned default_value) const
 }
 
 std::chrono::steady_clock::duration
-ConfigData::GetUnsigned(ConfigOption option,
+ConfigData::GetDuration(ConfigOption option,
+			std::chrono::steady_clock::duration min_value,
 			std::chrono::steady_clock::duration default_value) const
 {
-	return With(option, [default_value](const char *s){
+	return With(option, [min_value, default_value](const char *s){
 		if (s == nullptr)
 			return default_value;
 
 		auto value = ParseDuration(s);
-		if (value < std::chrono::steady_clock::duration{})
-			throw std::runtime_error("Value must not be negative");
-
-		return value;
-	});
-}
-
-std::chrono::steady_clock::duration
-ConfigData::GetPositive(ConfigOption option,
-			std::chrono::steady_clock::duration default_value) const
-{
-	return With(option, [default_value](const char *s){
-		if (s == nullptr)
-			return default_value;
-
-		auto value = ParseDuration(s);
-		if (value <= std::chrono::steady_clock::duration{})
-			throw std::runtime_error("Value must be positive");
+		if (value < min_value)
+			throw std::runtime_error{"Value is too small"};
 
 		return value;
 	});

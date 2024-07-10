@@ -60,15 +60,12 @@ struct ConfigData {
 	unsigned GetUnsigned(ConfigOption option,
 			     unsigned default_value) const;
 
-	std::chrono::steady_clock::duration
-	GetUnsigned(ConfigOption option,
-		    std::chrono::steady_clock::duration default_value) const;
-
 	unsigned GetPositive(ConfigOption option,
 			     unsigned default_value) const;
 
 	std::chrono::steady_clock::duration
-	GetPositive(ConfigOption option,
+	GetDuration(ConfigOption option,
+		    std::chrono::steady_clock::duration min_value,
 		    std::chrono::steady_clock::duration default_value) const;
 
 	bool GetBool(ConfigOption option, bool default_value) const;
