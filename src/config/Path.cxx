@@ -24,7 +24,7 @@ GetHome(const char *user)
 {
 	AllocatedPath result = GetHomeDir(user);
 	if (result.IsNull())
-		throw FmtRuntimeError("no such user: {}", user);
+		throw FmtRuntimeError("no such user: {:?}", user);
 
 	return result;
 }
@@ -91,7 +91,7 @@ ParsePath(const char *path)
 				/ AllocatedPath::FromUTF8Throw(rest);
 		}
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
-		throw FmtRuntimeError("not an absolute path: {}", path);
+		throw FmtRuntimeError("not an absolute path: {:?}", path);
 	} else {
 #endif
 		return AllocatedPath::FromUTF8Throw(path);

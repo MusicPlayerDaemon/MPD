@@ -439,7 +439,7 @@ try {
 	if (!allocated.empty())
 		error_uri = allocated.c_str();
 
-	std::throw_with_nested(FmtRuntimeError("Failed to decode {}",
+	std::throw_with_nested(FmtRuntimeError("Failed to decode {:?}",
 					       error_uri));
 }
 

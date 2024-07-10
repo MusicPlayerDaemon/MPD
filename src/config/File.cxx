@@ -211,7 +211,7 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 			ReadConfigBlock(config_data, reader, name, bo,
 					tokenizer);
 		} else {
-			throw FmtRuntimeError("unrecognized parameter: {}",
+			throw FmtRuntimeError("unrecognized parameter: {:?}",
 					      name);
 		}
 	}
@@ -222,7 +222,7 @@ ReadConfigFile(ConfigData &config_data, Path path)
 {
 	assert(!path.IsNull());
 
-	FmtDebug(config_file_domain, "loading file {}", path);
+	FmtDebug(config_file_domain, "loading file {:?}", path);
 
 	FileReader file(path);
 
@@ -231,7 +231,7 @@ ReadConfigFile(ConfigData &config_data, Path path)
 	try {
 		ReadConfigFile(config_data, reader, path.GetDirectoryName());
 	} catch (...) {
-		std::throw_with_nested(FmtRuntimeError("Error in {} line {}",
+		std::throw_with_nested(FmtRuntimeError("Error in {:?} line {}",
 						       path,
 						       reader.GetLineNumber()));
 	}

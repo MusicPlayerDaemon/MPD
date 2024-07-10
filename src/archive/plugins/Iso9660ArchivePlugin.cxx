@@ -31,7 +31,7 @@ struct Iso9660 {
 	explicit Iso9660(Path path)
 		:iso(iso9660_open(path.c_str())) {
 		if (iso == nullptr)
-			throw FmtRuntimeError("Failed to open ISO9660 file {}",
+			throw FmtRuntimeError("Failed to open ISO9660 file {:?}",
 					      path);
 	}
 
@@ -223,7 +223,7 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 {
 	auto statbuf = iso9660_ifs_stat_translate(iso->iso, pathname);
 	if (statbuf == nullptr)
-		throw FmtRuntimeError("not found in the ISO file: {}",
+		throw FmtRuntimeError("not found in the ISO file: {:?}",
 				      pathname);
 
 	const lsn_t lsn = statbuf->lsn;
