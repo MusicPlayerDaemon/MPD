@@ -191,6 +191,39 @@ ExpectQuoted(const char *&s)
 }
 
 /**
+ * Operator definition used to parse the operator
+ * from the command and create the StringFilter
+ * if it matched the operator prefix.
+ */
+struct OperatorDef {
+	const char *prefix;
+	bool fold_case;
+	bool negated;
+	StringFilter::Position position;
+};
+
+/**
+ * Pre-defined operators with explicit case-sensitivity.
+ */
+static constexpr std::array<OperatorDef, 12> operators = {
+	//            operator prefix     fold case  negated     position
+	OperatorDef { "contains_cs ",     false,     false,      StringFilter::Position::ANYWHERE },
+	OperatorDef { "!contains_cs ",    false,     true,       StringFilter::Position::ANYWHERE },
+	OperatorDef { "contains_ci ",     true,      false,      StringFilter::Position::ANYWHERE },
+	OperatorDef { "!contains_ci ",    true,      true,       StringFilter::Position::ANYWHERE },
+
+	OperatorDef { "starts_with_cs ",  false,     false,      StringFilter::Position::PREFIX },
+	OperatorDef { "!starts_with_cs ", false,     true,       StringFilter::Position::PREFIX },
+	OperatorDef { "starts_with_ci ",  true,      false,      StringFilter::Position::PREFIX },
+	OperatorDef { "!starts_with_ci ", true,      true,       StringFilter::Position::PREFIX },
+
+	OperatorDef { "eq_cs ",           false,     false,      StringFilter::Position::FULL },
+	OperatorDef { "!eq_cs ",          false,     true,       StringFilter::Position::FULL },
+	OperatorDef { "eq_ci ",           true,      false,      StringFilter::Position::FULL },
+	OperatorDef { "!eq_ci ",          true,      true,       StringFilter::Position::FULL },
+};
+
+/**
  * Parse a string operator and its second operand and convert it to a
  * #StringFilter.
  *
@@ -199,6 +232,17 @@ ExpectQuoted(const char *&s)
 static StringFilter
 ParseStringFilter(const char *&s, bool fold_case)
 {
+	for (auto& op: operators) {
+		if (auto after_prefix = StringAfterPrefixIgnoreCase(s, op.prefix)) {
+			s = StripLeft(after_prefix);
+			return StringFilter(
+				ExpectQuoted(s),
+				op.fold_case,
+				op.position,
+				op.negated);
+		}
+	}
+
 	if (auto after_contains = StringAfterPrefixIgnoreCase(s, "contains ")) {
 		s = StripLeft(after_contains);
 		auto value = ExpectQuoted(s);
@@ -260,7 +304,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 	if (s[0] == '!' && s[1] == '=')
 		negated = true;
 	else if (s[0] != '=' || s[1] != '=')
-		throw std::runtime_error("'==' or '!=' expected");
+		throw FmtRuntimeError("Unknown filter operator: {}", s);
 
 	s = StripLeft(s + 2);
 	auto value = ExpectQuoted(s);

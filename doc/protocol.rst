@@ -243,6 +243,43 @@ applies `Unicode normalization <https://unicode.org/reports/tr15/>`__
 and converts all punctuation to ASCII equivalents
 if MPD was compiled with `ICU <https://icu.unicode.org/>`__ support.
 
+Explicit case-sensitivity [#since_0_24]_
+----------------------------------------
+
+.. note:: The following variants of filter operators override the default case sensitivity
+   that is command dependant with explicit case sensitivity.
+
+.. list-table:: Explicitly case-sensitive operators
+   :widths: 33 33 33
+
+   * - Explicitly case-sensitive
+     - Explicitly case-insensitive
+     - Equivalent command dependant
+
+   * - ``eq_cs``
+     - ``eq_ci``
+     - ``==``
+
+   * - ``!eq_cs``
+     - ``!eq_ci``
+     - ``!=``
+
+   * - ``contains_cs``
+     - ``contains_ci``
+     - ``contains``
+
+   * - ``!contains_cs``
+     - ``!contains_ci``
+     - ``!contains``
+
+   * - ``starts_with_cs``
+     - ``starts_with_ci``
+     - ``starts_with``
+
+   * - ``!starts_with_cs``
+     - ``!starts_with_ci``
+     - ``!starts_with``
+
 Prior to MPD 0.21, the syntax looked like this::
 
  find TYPE VALUE
