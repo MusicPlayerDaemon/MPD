@@ -24,60 +24,60 @@ public:
 	using pointer = VT *;
 	using reference = VT &;
 
-	DereferenceIterator() = default;
+	constexpr DereferenceIterator() = default;
 
 	constexpr DereferenceIterator(const IT _original) noexcept
 		:original(_original) {}
 
-	reference operator*() const noexcept {
+	constexpr reference operator*() const noexcept {
 		return static_cast<reference>(**original);
 	}
 
-	pointer operator->() const noexcept {
+	constexpr pointer operator->() const noexcept {
 		return static_cast<pointer>(&**original);
 	}
 
-	auto &operator++() noexcept {
+	constexpr auto &operator++() noexcept {
 		++original;
 		return *this;
 	}
 
-	auto operator++(int) noexcept {
+	constexpr auto operator++(int) noexcept {
 		auto old = *this;
 		original++;
 		return old;
 	}
 
-	auto &operator+=(difference_type n) noexcept {
+	constexpr auto &operator+=(difference_type n) noexcept {
 		original += n;
 		return *this;
 	}
 
-	auto &operator+(difference_type n) const noexcept {
+	constexpr auto &operator+(difference_type n) const noexcept {
 		return original + n;
 	}
 
-	auto &operator--() noexcept {
+	constexpr auto &operator--() noexcept {
 		original = --original;
 		return *this;
 	}
 
-	auto operator--(int) noexcept {
+	constexpr auto operator--(int) noexcept {
 		auto old = *this;
 		original--;
 		return old;
 	}
 
-	auto &operator-=(difference_type n) noexcept {
+	constexpr auto &operator-=(difference_type n) noexcept {
 		original -= n;
 		return *this;
 	}
 
-	auto &operator-(difference_type n) const noexcept {
+	constexpr auto &operator-(difference_type n) const noexcept {
 		return original - n;
 	}
 
-	bool operator==(const DereferenceIterator<IT,VT> &other) const noexcept {
+	constexpr bool operator==(const DereferenceIterator<IT,VT> &other) const noexcept {
 		return original == other.original;
 	}
 };
