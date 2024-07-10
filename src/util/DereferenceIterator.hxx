@@ -53,7 +53,7 @@ public:
 		return *this;
 	}
 
-	auto &operator+(difference_type n) noexcept {
+	auto &operator+(difference_type n) const noexcept {
 		return original + n;
 	}
 
@@ -73,7 +73,7 @@ public:
 		return *this;
 	}
 
-	auto &operator-(difference_type n) noexcept {
+	auto &operator-(difference_type n) const noexcept {
 		return original - n;
 	}
 
