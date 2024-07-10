@@ -138,7 +138,7 @@ static const char *cacert;
 static bool verify_peer, verify_host;
 
 /** Connection settings */
-static long connect_timeout;
+static std::chrono::duration<long> connect_timeout;
 
 /**
  * CURLOPT_VERBOSE - verbose mode
@@ -406,10 +406,11 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	verify_peer = block.GetBlockValue("verify_peer", default_verify);
 	verify_host = block.GetBlockValue("verify_host", default_verify);
 
-	constexpr unsigned default_connection_timeout = 10;
-	unsigned timeout = block.GetBlockValue("connect_timeout",
-					       default_connection_timeout);
-	connect_timeout = static_cast<long>(timeout);
+	constexpr std::chrono::seconds default_connection_timeout{10};
+	connect_timeout = std::chrono::duration_cast<std::chrono::duration<long>>(
+		block.GetDuration("connect_timeout",
+				  std::chrono::seconds{1},
+				  default_connection_timeout));
 
 	verbose = block.GetBlockValue("verbose",verbose);
 

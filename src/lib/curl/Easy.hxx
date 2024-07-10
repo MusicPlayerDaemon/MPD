@@ -8,6 +8,7 @@
 
 #include <curl/curl.h>
 
+#include <chrono>
 #include <cstddef>
 #include <span>
 #include <stdexcept>
@@ -139,12 +140,12 @@ public:
 		SetOption(CURLOPT_PROXY_SSL_VERIFYPEER, value);
 	}
 
-	void SetConnectTimeout(long timeout) {
-		SetOption(CURLOPT_CONNECTTIMEOUT, timeout);
+	void SetConnectTimeout(std::chrono::duration<long> timeout) {
+		SetOption(CURLOPT_CONNECTTIMEOUT, timeout.count());
 	}
 
-	void SetTimeout(long timeout) {
-		SetOption(CURLOPT_TIMEOUT, timeout);
+	void SetTimeout(std::chrono::duration<long> timeout) {
+		SetOption(CURLOPT_TIMEOUT, timeout.count());
 	}
 
 	void SetHeaderFunction(size_t (*function)(char *buffer, size_t size,

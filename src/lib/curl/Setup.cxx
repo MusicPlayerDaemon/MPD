@@ -16,7 +16,7 @@ Setup(CurlEasy &easy)
 #endif
 	easy.SetNoProgress();
 	easy.SetNoSignal();
-	easy.SetConnectTimeout(10);
+	easy.SetConnectTimeout(std::chrono::seconds{10});
 	easy.SetOption(CURLOPT_HTTPAUTH, (long) CURLAUTH_ANY);
 }
 
