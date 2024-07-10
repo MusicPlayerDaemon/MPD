@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_CONFIG_DATA_HXX
-#define MPD_CONFIG_DATA_HXX
+#pragma once
 
 #include "Option.hxx"
 #include "Param.hxx"
@@ -10,6 +9,7 @@
 
 #include <array>
 #include <chrono>
+#include <concepts>
 #include <forward_list>
 
 class AllocatedPath;
@@ -36,7 +36,7 @@ struct ConfigData {
 		return list.empty() ? nullptr : &list.front();
 	}
 
-	template<typename F>
+	template<std::regular_invocable<const char *> F>
 	auto With(ConfigOption option, F &&f) const {
 		const auto *param = GetParam(option);
 		return param != nullptr
@@ -113,7 +113,7 @@ struct ConfigData {
 	 * Exceptions thrown by the function will be nested in one
 	 * that specifies the location of the block.
 	 */
-	template<typename F>
+	template<std::regular_invocable<const ConfigBlock &> F>
 	void WithEach(ConfigBlockOption option, F &&f) const {
 		for (const auto &block : GetBlockList(option)) {
 			block.SetUsed();
@@ -126,5 +126,3 @@ struct ConfigData {
 		}
 	}
 };
-
-#endif

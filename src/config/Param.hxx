@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_CONFIG_PARAM_HXX
-#define MPD_CONFIG_PARAM_HXX
+#pragma once
 
+#include <concepts>
 #include <string>
 
 class AllocatedPath;
@@ -53,7 +53,7 @@ struct ConfigParam {
 	 * Invoke a function with the configured value; if the
 	 * function throws, call ThrowWithNested().
 	 */
-	template<typename F>
+	template<std::regular_invocable<const char *> F>
 	auto With(F &&f) const {
 		try {
 			return f(value.c_str());
@@ -62,5 +62,3 @@ struct ConfigParam {
 		}
 	}
 };
-
-#endif

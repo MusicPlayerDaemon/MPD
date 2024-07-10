@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_CONFIG_BLOCK_HXX
-#define MPD_CONFIG_BLOCK_HXX
+#pragma once
 
+#include <concepts>
 #include <string>
 #include <vector>
 
@@ -45,7 +45,7 @@ struct BlockParam {
 	 * Invoke a function with the configured value; if the
 	 * function throws, call ThrowWithNested().
 	 */
-	template<typename F>
+	template<std::regular_invocable<const char *> F>
 	auto With(F &&f) const {
 		try {
 			return f(value.c_str());
@@ -130,5 +130,3 @@ struct ConfigBlock {
 	[[noreturn]]
 	void ThrowWithNested() const;
 };
-
-#endif
