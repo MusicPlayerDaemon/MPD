@@ -89,3 +89,53 @@ public:
 		return original == other.original;
 	}
 };
+
+/**
+ * A container wrapper that wraps the iterators in a
+ * DereferenceIterator.
+ */
+template<typename CT,
+	 typename VT=std::remove_pointer_t<typename std::remove_reference_t<CT>::value_type>>
+class DereferenceContainerAdapter {
+	CT original;
+
+	/* these aliases allow the underlying container to return a
+	   different type for begin() and end() */
+	using const_end_iterator = DereferenceIterator<decltype(std::declval<CT>().cend()), const VT>;
+	using end_iterator = DereferenceIterator<decltype(std::declval<CT>().end()), VT>;
+
+public:
+	using value_type = VT;
+	using pointer = VT *;
+	using reference = VT &;
+
+	using const_iterator = DereferenceIterator<decltype(std::declval<CT>().cbegin()), const VT>;
+	using iterator = DereferenceIterator<decltype(std::declval<CT>().begin()), VT>;
+
+	explicit constexpr DereferenceContainerAdapter(CT &&_original) noexcept
+		:original(std::move(_original)) {}
+
+	constexpr iterator begin() noexcept {
+		return original.begin();
+	}
+
+	constexpr const_iterator begin() const noexcept {
+		return original.cbegin();
+	}
+
+	constexpr const_iterator cbegin() const noexcept {
+		return original.cbegin();
+	}
+
+	constexpr end_iterator end() noexcept {
+		return original.end();
+	}
+
+	constexpr const_end_iterator end() const noexcept {
+		return original.cend();
+	}
+
+	constexpr const_end_iterator cend() const noexcept {
+		return original.cend();
+	}
+};
