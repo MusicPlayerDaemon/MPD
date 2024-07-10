@@ -13,6 +13,11 @@
 template<typename IT,
 	 typename VT=std::remove_reference_t<decltype(*std::declval<typename std::iterator_traits<IT>::value_type>())>>
 class DereferenceIterator {
+	/* this friend declaration allows the template operator==() to
+	   compare arbitrary specializations */
+	template<typename, typename>
+	friend class DereferenceIterator;
+
 	using Traits = std::iterator_traits<IT>;
 
 	IT original;
@@ -77,7 +82,10 @@ public:
 		return DereferenceIterator{original - n};
 	}
 
-	constexpr bool operator==(const DereferenceIterator<IT,VT> &other) const noexcept {
+	/* this is a template to allow comparisons with sentinel end
+	   iterators */
+	template<typename IT2>
+	constexpr bool operator==(const DereferenceIterator<IT2, VT> &other) const noexcept {
 		return original == other.original;
 	}
 };
