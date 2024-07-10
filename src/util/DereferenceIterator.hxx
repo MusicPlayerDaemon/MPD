@@ -80,8 +80,4 @@ public:
 	bool operator==(const DereferenceIterator<IT,VT> &other) const noexcept {
 		return original == other.original;
 	}
-
-	bool operator!=(const DereferenceIterator<IT,VT> &other) const noexcept {
-		return original != other.original;
-	}
 };
