@@ -37,7 +37,6 @@ decoder_plugin_print(Response &r,
 void
 decoder_list_print(Response &r)
 {
-	const auto f = [&](const auto &plugin)
-		{ return decoder_plugin_print(r, plugin); };
-	decoder_plugins_for_each_enabled(f);
+	for (const auto &plugin : GetEnabledDecoderPlugins())
+		decoder_plugin_print(r, plugin);
 }

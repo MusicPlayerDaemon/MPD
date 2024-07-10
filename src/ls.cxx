@@ -26,10 +26,10 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 			protocols.emplace(uri);
 		});
 
-	decoder_plugins_for_each([&protocols](const auto &plugin){
+	for (const DecoderPlugin &plugin : GetAllDecoderPlugins()) {
 		if (plugin.protocols != nullptr)
 			protocols.merge(plugin.protocols());
-	});
+	};
 
 	for (const auto& protocol : protocols) {
 		fmt::print(fp, " {}", protocol);
@@ -46,10 +46,10 @@ print_supported_uri_schemes(Response &r)
 			protocols.emplace(uri);
 		});
 
-	decoder_plugins_for_each_enabled([&protocols](const auto &plugin){
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
 		if (plugin.protocols != nullptr)
 			protocols.merge(plugin.protocols());
-	});
+	}
 
 	for (const auto& protocol : protocols) {
 		r.Fmt(FMT_STRING("handler: {}\n"), protocol);

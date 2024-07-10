@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_DECODER_LIST_HXX
-#define MPD_DECODER_LIST_HXX
+#pragma once
+
+#include "util/DereferenceIterator.hxx"
+#include "util/FilteredContainer.hxx"
+#include "util/TerminatedArray.hxx"
 
 #include <string_view>
 
@@ -37,13 +40,26 @@ public:
 	}
 };
 
+static inline auto
+GetAllDecoderPlugins() noexcept
+{
+	return DereferenceContainerAdapter{TerminatedArray<const DecoderPlugin *const, nullptr>{decoder_plugins}};
+}
+
+static inline auto
+GetEnabledDecoderPlugins() noexcept
+{
+	const auto all = GetAllDecoderPlugins();
+	return FilteredContainer{all.begin(), all.end(), decoder_plugins_enabled};
+}
+
 template<typename F>
 static inline const DecoderPlugin *
 decoder_plugins_find(F f) noexcept
 {
-	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
-		if (decoder_plugins_enabled[i] && f(*decoder_plugins[i]))
-			return decoder_plugins[i];
+	for (const auto &plugin : GetEnabledDecoderPlugins())
+		if (f(plugin))
+			return &plugin;
 
 	return nullptr;
 }
@@ -52,28 +68,11 @@ template<typename F>
 static inline bool
 decoder_plugins_try(F f)
 {
-	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
-		if (decoder_plugins_enabled[i] && f(*decoder_plugins[i]))
+	for (const auto &plugin : GetEnabledDecoderPlugins())
+		if (f(plugin))
 			return true;
 
 	return false;
-}
-
-template<typename F>
-static inline void
-decoder_plugins_for_each(F f)
-{
-	for (auto i = decoder_plugins; *i != nullptr; ++i)
-		f(**i);
-}
-
-template<typename F>
-static inline void
-decoder_plugins_for_each_enabled(F f)
-{
-	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
-		if (decoder_plugins_enabled[i])
-			f(*decoder_plugins[i]);
 }
 
 /**
@@ -83,5 +82,3 @@ decoder_plugins_for_each_enabled(F f)
 [[gnu::pure]]
 bool
 decoder_plugins_supports_suffix(std::string_view suffix) noexcept;
-
-#endif

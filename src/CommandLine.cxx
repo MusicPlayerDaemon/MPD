@@ -139,7 +139,7 @@ static void version()
 		   "\n"
 		   "Decoder plugins:\n");
 
-	decoder_plugins_for_each([](const DecoderPlugin &plugin){
+	for (const DecoderPlugin &plugin : GetAllDecoderPlugins()) {
 		fmt::print(" [{}]", plugin.name);
 
 		const char *const*suffixes = plugin.suffixes;
@@ -156,7 +156,7 @@ static void version()
 				fmt::print(" {}", i);
 
 		fmt::print("\n");
-	});
+	}
 
 	fmt::print("\n"
 		   "Filters:\n"

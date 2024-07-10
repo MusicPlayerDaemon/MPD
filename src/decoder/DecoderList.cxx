@@ -157,9 +157,8 @@ decoder_plugin_init_all(const ConfigData &config)
 void
 decoder_plugin_deinit_all() noexcept
 {
-	decoder_plugins_for_each_enabled([=](const DecoderPlugin &plugin){
-			plugin.Finish();
-		});
+	for (const auto &plugin : GetEnabledDecoderPlugins())
+		plugin.Finish();
 }
 
 bool
