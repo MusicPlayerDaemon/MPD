@@ -31,12 +31,46 @@
 
 static constexpr Domain decoder_thread_domain("decoder_thread");
 
+enum class DecodeResult {
+	/**
+	 * No plugin supporting this file type was found.
+	 */
+	NO_PLUGIN,
+
+	/**
+	 * A plugin was found, but it does not support streaming.
+	 */
+	NO_STREAM_PLUGIN,
+
+	/**
+	 * A plugin was found, but it did not recgonize the file.
+	 */
+	UNRECOGNIZED_FILE,
+
+	/**
+	 * A "stop" command was found before decoder initialization
+	 * was completed.
+	 */
+	STOP,
+
+	/**
+	 * The file was decoded successfully.
+	 */
+	SUCCESS,
+};
+
+static constexpr bool
+IsFinalDecodeResult(DecodeResult result) noexcept
+{
+	return result >= DecodeResult::STOP;
+}
+
 /**
  * Decode a URI with the given decoder plugin.
  *
  * Caller holds DecoderControl::mutex.
  */
-static bool
+static DecodeResult
 DecoderUriDecode(const DecoderPlugin &plugin,
 		 DecoderBridge &bridge, const char *uri)
 {
@@ -49,7 +83,7 @@ DecoderUriDecode(const DecoderPlugin &plugin,
 	FmtDebug(decoder_thread_domain, "probing plugin {}", plugin.name);
 
 	if (bridge.dc.command == DecoderCommand::STOP)
-		throw StopDecoder();
+		return DecodeResult::STOP;
 
 	{
 		const ScopeUnlock unlock(bridge.dc.mutex);
@@ -64,7 +98,9 @@ DecoderUriDecode(const DecoderPlugin &plugin,
 	assert(bridge.dc.state == DecoderState::START ||
 	       bridge.dc.state == DecoderState::DECODE);
 
-	return bridge.dc.state != DecoderState::START;
+	return bridge.dc.state == DecoderState::START
+	       ? DecodeResult::UNRECOGNIZED_FILE
+	       : DecodeResult::SUCCESS;
 }
 
 /**
@@ -72,7 +108,7 @@ DecoderUriDecode(const DecoderPlugin &plugin,
  *
  * Caller holds DecoderControl::mutex.
  */
-static bool
+static DecodeResult
 decoder_stream_decode(const DecoderPlugin &plugin,
 		      DecoderBridge &bridge,
 		      InputStream &input_stream,
@@ -87,7 +123,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	FmtDebug(decoder_thread_domain, "probing plugin {}", plugin.name);
 
 	if (bridge.dc.command == DecoderCommand::STOP)
-		throw StopDecoder();
+		return DecodeResult::STOP;
 
 	/* rewind the stream, so each plugin gets a fresh start */
 	try {
@@ -108,7 +144,9 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	assert(bridge.dc.state == DecoderState::START ||
 	       bridge.dc.state == DecoderState::DECODE);
 
-	return bridge.dc.state != DecoderState::START;
+	return bridge.dc.state == DecoderState::START
+	       ? DecodeResult::UNRECOGNIZED_FILE
+	       : DecodeResult::SUCCESS;
 }
 
 /**
@@ -116,7 +154,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
  *
  * Caller holds DecoderControl::mutex.
  */
-static bool
+static DecodeResult
 decoder_file_decode(const DecoderPlugin &plugin,
 		    DecoderBridge &bridge, Path path)
 {
@@ -130,7 +168,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	FmtDebug(decoder_thread_domain, "probing plugin {}", plugin.name);
 
 	if (bridge.dc.command == DecoderCommand::STOP)
-		throw StopDecoder();
+		return DecodeResult::STOP;
 
 	{
 		const ScopeUnlock unlock(bridge.dc.mutex);
@@ -145,7 +183,9 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	assert(bridge.dc.state == DecoderState::START ||
 	       bridge.dc.state == DecoderState::DECODE);
 
-	return bridge.dc.state != DecoderState::START;
+	return bridge.dc.state == DecoderState::START
+	       ? DecodeResult::UNRECOGNIZED_FILE
+	       : DecodeResult::SUCCESS;
 }
 
 [[gnu::pure]]
@@ -153,8 +193,6 @@ static bool
 decoder_check_plugin_mime(const DecoderPlugin &plugin,
 			  const InputStream &is) noexcept
 {
-	assert(plugin.stream_decode != nullptr);
-
 	const char *mime_type = is.GetMimeType();
 	return mime_type != nullptr &&
 		plugin.SupportsMimeType(GetMimeTypeBase(mime_type));
@@ -165,56 +203,51 @@ static bool
 decoder_check_plugin_suffix(const DecoderPlugin &plugin,
 			    std::string_view suffix) noexcept
 {
-	assert(plugin.stream_decode != nullptr);
-
 	return !suffix.empty() && plugin.SupportsSuffix(suffix);
 }
 
-[[gnu::pure]]
-static bool
-decoder_check_plugin(const DecoderPlugin &plugin, const InputStream &is,
-		     std::string_view suffix) noexcept
-{
-	return plugin.stream_decode != nullptr &&
-		(decoder_check_plugin_mime(plugin, is) ||
-		 decoder_check_plugin_suffix(plugin, suffix));
-}
-
-static bool
+static DecodeResult
 decoder_run_stream_plugin(DecoderBridge &bridge, InputStream &is,
 			  std::unique_lock<Mutex> &lock,
 			  std::string_view suffix,
-			  const DecoderPlugin &plugin,
-			  bool &tried_r)
+			  const DecoderPlugin &plugin)
 {
-	if (!decoder_check_plugin(plugin, is, suffix))
-		return false;
+	if (!decoder_check_plugin_mime(plugin, is) &&
+	    !decoder_check_plugin_suffix(plugin, suffix))
+		return DecodeResult::NO_PLUGIN;
+
+	if (plugin.stream_decode == nullptr)
+		return DecodeResult::NO_STREAM_PLUGIN;
 
 	bridge.Reset();
 
-	tried_r = true;
 	return decoder_stream_decode(plugin, bridge, is, lock);
 }
 
-static bool
+static DecodeResult
 decoder_run_stream_locked(DecoderBridge &bridge, InputStream &is,
 			  std::unique_lock<Mutex> &lock,
-			  const char *uri, bool &tried_r)
+			  const char *uri)
 {
 	const auto suffix = uri_get_suffix(uri);
 
+	DecodeResult result = DecodeResult::NO_PLUGIN;
 	for (const auto &plugin : GetEnabledDecoderPlugins()) {
-		if (decoder_run_stream_plugin(bridge, is, lock, suffix, plugin, tried_r))
-			return true;
+		const auto r = decoder_run_stream_plugin(bridge, is, lock, suffix, plugin);
+		if (r > result) {
+			result = r;
+			if (IsFinalDecodeResult(result))
+				break;
+		}
 	}
 
-	return false;
+	return result;
 }
 
 /**
  * Try decoding a stream, using the fallback plugin.
  */
-static bool
+static DecodeResult
 decoder_run_stream_fallback(DecoderBridge &bridge, InputStream &is,
 			    std::unique_lock<Mutex> &lock)
 {
@@ -225,8 +258,13 @@ decoder_run_stream_fallback(DecoderBridge &bridge, InputStream &is,
 #else
 	plugin = decoder_plugin_from_name("mad");
 #endif
-	return plugin != nullptr && plugin->stream_decode != nullptr &&
-		decoder_stream_decode(*plugin, bridge, is, lock);
+	if (plugin == nullptr)
+		return DecodeResult::NO_PLUGIN;
+
+	if (plugin->stream_decode == nullptr)
+		return DecodeResult::NO_STREAM_PLUGIN;
+
+	return decoder_stream_decode(*plugin, bridge, is, lock);
 }
 
 /**
@@ -267,9 +305,11 @@ MaybeLoadReplayGain(DecoderBridge &bridge, InputStream &is)
  *
  * DecoderControl::mutex is not be locked by caller.
  */
-static bool
+static DecodeResult
 TryUriDecode(DecoderBridge &bridge, const char *uri)
 {
+	DecodeResult result = DecodeResult::NO_PLUGIN;
+
 	for (const auto &plugin : GetEnabledDecoderPlugins()) {
 		if (!plugin.SupportsUri(uri))
 			continue;
@@ -277,11 +317,15 @@ TryUriDecode(DecoderBridge &bridge, const char *uri)
 		std::unique_lock lock{bridge.dc.mutex};
 		bridge.Reset();
 
-		if (DecoderUriDecode(plugin, bridge, uri))
-			return true;
+		if (const auto r = DecoderUriDecode(plugin, bridge, uri);
+		    r > result) {
+			result = r;
+			if (IsFinalDecodeResult(result))
+				break;
+		}
 	}
 
-	return false;
+	return result;
 }
 
 /**
@@ -289,11 +333,12 @@ TryUriDecode(DecoderBridge &bridge, const char *uri)
  *
  * DecoderControl::mutex is not locked by caller.
  */
-static bool
+static DecodeResult
 decoder_run_stream(DecoderBridge &bridge, const char *uri)
 {
-	if (TryUriDecode(bridge, uri))
-		return true;
+	auto result = TryUriDecode(bridge, uri);
+	if (IsFinalDecodeResult(result))
+		return result;
 
 	DecoderControl &dc = bridge.dc;
 
@@ -304,16 +349,24 @@ decoder_run_stream(DecoderBridge &bridge, const char *uri)
 
 	std::unique_lock lock{dc.mutex};
 
-	if (bridge.dc.command == DecoderCommand::STOP)
-		throw StopDecoder();
+	if (dc.command == DecoderCommand::STOP)
+		return DecodeResult::STOP;
 
-	bool tried = false;
-	return decoder_run_stream_locked(bridge, *input_stream, lock, uri,
-					 tried) ||
-		/* fallback to mp3: this is needed for bastard streams
-		   that don't have a suffix or set the mimeType */
-		(!tried &&
-		 decoder_run_stream_fallback(bridge, *input_stream, lock));
+	if (auto r = decoder_run_stream_locked(bridge, *input_stream, lock, uri);
+	    r > result) {
+		result = r;
+		if (IsFinalDecodeResult(result))
+			return result;
+	}
+
+	/* fallback to mp3: this is needed for bastard streams that
+	   don't have a suffix or set the mimeType */
+	if (auto r = decoder_run_stream_fallback(bridge, *input_stream, lock);
+	    r > result) {
+		result = r;
+	}
+
+	return result;
 }
 
 /**
@@ -321,13 +374,13 @@ decoder_run_stream(DecoderBridge &bridge, const char *uri)
  *
  * DecoderControl::mutex is not locked by caller.
  */
-static bool
+static DecodeResult
 TryDecoderFile(DecoderBridge &bridge, Path path_fs, std::string_view suffix,
 	       InputStream &input_stream,
 	       const DecoderPlugin &plugin)
 {
 	if (!plugin.SupportsSuffix(suffix))
-		return false;
+		return DecodeResult::NO_PLUGIN;
 
 	bridge.Reset();
 
@@ -341,7 +394,7 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, std::string_view suffix,
 		return decoder_stream_decode(plugin, bridge, input_stream,
 					     lock);
 	} else
-		return false;
+		return DecodeResult::NO_STREAM_PLUGIN;
 }
 
 /**
@@ -349,7 +402,7 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, std::string_view suffix,
  *
  * DecoderControl::mutex is not locked by caller.
  */
-static bool
+static DecodeResult
 TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
 		    std::string_view suffix,
 		    const DecoderPlugin &plugin)
@@ -357,7 +410,7 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
 	if (plugin.container_scan == nullptr ||
 	    plugin.file_decode == nullptr ||
 	    !plugin.SupportsSuffix(suffix))
-		return false;
+		return DecodeResult::NO_PLUGIN;
 
 	bridge.Reset();
 
@@ -371,16 +424,22 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
  *
  * DecoderControl::mutex is not locked by caller.
  */
-static bool
+static DecodeResult
 TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
 		    std::string_view suffix)
 {
+	DecodeResult result = DecodeResult::NO_PLUGIN;
+
 	for (const auto &plugin : GetEnabledDecoderPlugins()) {
-		if (TryContainerDecoder(bridge, path_fs, suffix, plugin))
-			return true;
+		if (const auto r = TryContainerDecoder(bridge, path_fs, suffix, plugin);
+		    r > result) {
+			result = r;
+			if (IsFinalDecodeResult(result))
+				break;
+		}
 	}
 
-	return false;
+	return result;
 }
 
 /**
@@ -388,12 +447,12 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
  *
  * DecoderControl::mutex is not locked by caller.
  */
-static bool
+static DecodeResult
 decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 {
 	const char *_suffix = PathTraitsUTF8::GetFilenameSuffix(uri_utf8);
 	if (_suffix == nullptr)
-		return false;
+		return DecodeResult::NO_PLUGIN;
 
 	const std::string_view suffix{_suffix};
 
@@ -402,11 +461,13 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 	try {
 		input_stream = bridge.OpenLocal(path_fs, uri_utf8);
 	} catch (const std::system_error &e) {
-		if (IsPathNotFound(e) &&
+		if (IsPathNotFound(e)) {
 		    /* ENOTDIR means this may be a path inside a
 		       "container" file */
-		    TryContainerDecoder(bridge, path_fs, suffix))
-			return true;
+			const auto result = TryContainerDecoder(bridge, path_fs, suffix);
+			if (IsFinalDecodeResult(result))
+				return result;
+		}
 
 		throw;
 	}
@@ -415,12 +476,17 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 
 	MaybeLoadReplayGain(bridge, *input_stream);
 
+	DecodeResult result = DecodeResult::NO_PLUGIN;
 	for (const auto &plugin : GetEnabledDecoderPlugins()) {
-		if (TryDecoderFile(bridge, path_fs, suffix, *input_stream, plugin))
-			return true;
+		if (const auto r = TryDecoderFile(bridge, path_fs, suffix, *input_stream, plugin);
+		    r > result) {
+			result = r;
+			if (IsFinalDecodeResult(result))
+				break;
+		}
 	}
 
-	return false;
+	return result;
 }
 
 /**
@@ -428,7 +494,7 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
  *
  * DecoderControl::mutex is not locked.
  */
-static bool
+static DecodeResult
 DecoderUnlockedRunUri(DecoderBridge &bridge,
 		      const char *real_uri, Path path_fs)
 try {
@@ -436,7 +502,7 @@ try {
 		? decoder_run_file(bridge, real_uri, path_fs)
 		: decoder_run_stream(bridge, real_uri);
 } catch (StopDecoder) {
-	return true;
+	return DecodeResult::STOP;
 } catch (...) {
 	const char *error_uri = real_uri;
 	const std::string allocated = uri_remove_auth(error_uri);
@@ -458,6 +524,18 @@ static bool
 SongHasVolatileTags(const DetachedSong &song) noexcept
 {
 	return !song.IsFile() && !HasRemoteTagScanner(song.GetRealURI());
+}
+
+[[gnu::pure]]
+static std::runtime_error
+MakeDecoderError(const DetachedSong &song, const char *msg) noexcept
+{
+	const char *error_uri = song.GetURI();
+	const std::string allocated = uri_remove_auth(error_uri);
+	if (!allocated.empty())
+		error_uri = allocated.c_str();
+
+	return FmtRuntimeError("Failed to decode {:?}: {}", error_uri, msg);
 }
 
 /**
@@ -486,7 +564,7 @@ decoder_run_song(DecoderControl &dc,
 	dc.state = DecoderState::START;
 	dc.CommandFinishedLocked();
 
-	bool success;
+	DecodeResult result;
 	{
 		const ScopeUnlock unlock(dc.mutex);
 
@@ -495,21 +573,25 @@ decoder_run_song(DecoderControl &dc,
 			bridge.CheckFlushChunk();
 		};
 
-		success = DecoderUnlockedRunUri(bridge, uri, path_fs);
-
+		result = DecoderUnlockedRunUri(bridge, uri, path_fs);
 	}
 
 	bridge.CheckRethrowError();
 
-	if (success)
-		dc.state = DecoderState::STOP;
-	else {
-		const char *error_uri = song.GetURI();
-		const std::string allocated = uri_remove_auth(error_uri);
-		if (!allocated.empty())
-			error_uri = allocated.c_str();
+	switch (result) {
+	case DecodeResult::NO_PLUGIN:
+		throw MakeDecoderError(song, "no decoder plugin");
 
-		throw FmtRuntimeError("Failed to decode {}", error_uri);
+	case DecodeResult::NO_STREAM_PLUGIN:
+		throw MakeDecoderError(song, "no streaming decoder plugin");
+
+	case DecodeResult::UNRECOGNIZED_FILE:
+		throw MakeDecoderError(song, "unrecognized file");
+
+	case DecodeResult::STOP:
+	case DecodeResult::SUCCESS:
+		dc.state = DecoderState::STOP;
+		break;
 	}
 
 	dc.client_cond.notify_one();
