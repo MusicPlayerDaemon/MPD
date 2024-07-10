@@ -4,6 +4,7 @@
 #pragma once
 
 #include <concepts>
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,9 @@ struct BlockParam {
 	unsigned GetPositiveValue() const;
 
 	bool GetBoolValue() const;
+
+	std::chrono::steady_clock::duration
+	GetDuration(std::chrono::steady_clock::duration min_value) const;
 
 	/**
 	 * Call this method in a "catch" block to throw a nested
@@ -121,6 +125,11 @@ struct ConfigBlock {
 	unsigned GetPositiveValue(const char *name, unsigned default_value) const;
 
 	bool GetBlockValue(const char *name, bool default_value) const;
+
+	std::chrono::steady_clock::duration
+	GetDuration(const char *name,
+		    std::chrono::steady_clock::duration min_value,
+		    std::chrono::steady_clock::duration default_value) const;
 
 	/**
 	 * Call this method in a "catch" block to throw a nested

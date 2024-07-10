@@ -46,6 +46,18 @@ BlockParam::GetBoolValue() const
 	return With(ParseBool);
 }
 
+std::chrono::steady_clock::duration
+BlockParam::GetDuration(std::chrono::steady_clock::duration min_value) const
+{
+	return With([min_value](const char *s){
+		auto duration = ParseDuration(s);
+		if (duration < min_value)
+			throw std::invalid_argument{"Value is too small"};
+
+		return duration;
+	});
+}
+
 const BlockParam *
 ConfigBlock::GetBlockParam(const char *name) const noexcept
 {
@@ -126,6 +138,18 @@ ConfigBlock::GetBlockValue(const char *name, bool default_value) const
 		return default_value;
 
 	return bp->GetBoolValue();
+}
+
+std::chrono::steady_clock::duration
+ConfigBlock::GetDuration(const char *name,
+			 std::chrono::steady_clock::duration min_value,
+			 std::chrono::steady_clock::duration default_value) const
+{
+	const BlockParam *bp = GetBlockParam(name);
+	if (bp == nullptr)
+		return default_value;
+
+	return bp->GetDuration(min_value);
 }
 
 void
