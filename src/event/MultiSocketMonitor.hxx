@@ -12,6 +12,7 @@
 #include <cassert>
 #include <forward_list>
 #include <iterator>
+#include <span>
 
 #ifndef _WIN32
 struct pollfd;
@@ -190,7 +191,7 @@ public:
 	 *
 	 * May only be called from PrepareSockets().
 	 */
-	void ReplaceSocketList(pollfd *pfds, unsigned n) noexcept;
+	void ReplaceSocketList(std::span<pollfd> pfds) noexcept;
 #endif
 
 	/**

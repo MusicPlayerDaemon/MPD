@@ -66,27 +66,26 @@ MultiSocketMonitor::ClearSocketList() noexcept
 #ifndef _WIN32
 
 void
-MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n) noexcept
+MultiSocketMonitor::ReplaceSocketList(std::span<pollfd> pfds) noexcept
 {
 #ifdef USE_EPOLL
 	always_ready_fds.clear();
 #endif
 
-	pollfd *const end = pfds + n;
-
-	UpdateSocketList([pfds, end](SocketDescriptor fd) -> unsigned {
-		auto i = std::find_if(pfds, end, [fd](const struct pollfd &pfd){
+	UpdateSocketList([pfds](SocketDescriptor fd) -> unsigned {
+		auto i = std::find_if(pfds.begin(), pfds.end(), [fd](const struct pollfd &pfd){
 			return pfd.fd == fd.Get();
 		});
-		if (i == end)
+
+		if (i == pfds.end())
 			return 0;
 
 		return std::exchange(i->events, 0);
 	});
 
-	for (auto i = pfds; i != end; ++i)
-		if (i->events != 0)
-			AddSocket(SocketDescriptor(i->fd), i->events);
+	for (const auto &i : pfds)
+		if (i.events != 0)
+			AddSocket(SocketDescriptor(i.fd), i.events);
 }
 
 #endif

@@ -26,7 +26,7 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 			throw Alsa::MakeError(count, "snd_pcm_poll_descriptors() failed");
 	}
 
-	m.ReplaceSocketList(pfds, count);
+	m.ReplaceSocketList({pfds, static_cast<std::size_t>(count)});
 	return Event::Duration(-1);
 }
 
@@ -71,7 +71,7 @@ AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noe
 	if (count < 0)
 		count = 0;
 
-	m.ReplaceSocketList(pfds, count);
+	m.ReplaceSocketList({pfds, static_cast<std::size_t>(count)});
 	return Event::Duration(-1);
 }
 
