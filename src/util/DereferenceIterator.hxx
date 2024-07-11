@@ -53,8 +53,8 @@ public:
 		return *this;
 	}
 
-	constexpr auto &operator+(difference_type n) const noexcept {
-		return original + n;
+	constexpr auto operator+(difference_type n) const noexcept {
+		return DereferenceIterator{original + n};
 	}
 
 	constexpr auto &operator--() noexcept {
@@ -73,8 +73,8 @@ public:
 		return *this;
 	}
 
-	constexpr auto &operator-(difference_type n) const noexcept {
-		return original - n;
+	constexpr auto operator-(difference_type n) const noexcept {
+		return DereferenceIterator{original - n};
 	}
 
 	constexpr bool operator==(const DereferenceIterator<IT,VT> &other) const noexcept {
