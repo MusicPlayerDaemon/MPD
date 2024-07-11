@@ -32,7 +32,7 @@ class AlsaMixerMonitor final : MultiSocketMonitor {
 	AlsaNonBlockMixer non_block;
 
 public:
-	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
+	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer) noexcept
 		:MultiSocketMonitor(_loop),
 		 defer_invalidate_sockets(_loop,
 					  BIND_THIS_METHOD(InvalidateSockets)),
@@ -40,7 +40,7 @@ public:
 		defer_invalidate_sockets.Schedule();
 	}
 
-	~AlsaMixerMonitor() {
+	~AlsaMixerMonitor() noexcept {
 		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
 				MultiSocketMonitor::Reset();
 				defer_invalidate_sockets.Cancel();
@@ -86,11 +86,11 @@ class AlsaMixer final : public Mixer {
 	int desired_volume, resulting_volume;
 
 public:
-	AlsaMixer(EventLoop &_event_loop, MixerListener &_listener)
+	AlsaMixer(EventLoop &_event_loop, MixerListener &_listener) noexcept
 		:Mixer(alsa_mixer_plugin, _listener),
 		 event_loop(_event_loop) {}
 
-	~AlsaMixer() override;
+	~AlsaMixer() noexcept override;
 
 	AlsaMixer(const AlsaMixer &) = delete;
 	AlsaMixer &operator=(const AlsaMixer &) = delete;
@@ -219,7 +219,7 @@ alsa_mixer_init(EventLoop &event_loop, [[maybe_unused]] AudioOutput &ao,
 	return am;
 }
 
-AlsaMixer::~AlsaMixer()
+AlsaMixer::~AlsaMixer() noexcept
 {
 	/* free libasound's config cache */
 	snd_config_update_free_global();
