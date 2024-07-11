@@ -68,9 +68,12 @@ ScanFileTagsNoGeneric(Path path_fs, TagHandler &handler)
 	const auto suffix_utf8 = Path::FromFS(suffix).ToUTF8();
 
 	TagFileScan tfs(path_fs, suffix_utf8.c_str(), handler);
-	return decoder_plugins_try([&](const DecoderPlugin &plugin){
-			return tfs.Scan(plugin);
-		});
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (tfs.Scan(plugin))
+			return true;
+	}
+
+	return false;
 }
 
 bool

@@ -65,7 +65,10 @@ uri_supported_scheme(const char *uri) noexcept
 		if (plugin->SupportsUri(uri))
 			return true;
 
-	return decoder_plugins_try([uri](const auto &plugin){
-		return plugin.SupportsUri(uri);
-	});
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (plugin.SupportsUri(uri))
+			return true;
+	}
+
+	return false;
 }

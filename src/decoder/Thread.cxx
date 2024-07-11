@@ -203,10 +203,12 @@ decoder_run_stream_locked(DecoderBridge &bridge, InputStream &is,
 {
 	const auto suffix = uri_get_suffix(uri);
 
-	const auto f = [&,suffix](const auto &plugin)
-		{ return decoder_run_stream_plugin(bridge, is, lock, suffix, plugin, tried_r); };
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (decoder_run_stream_plugin(bridge, is, lock, suffix, plugin, tried_r))
+			return true;
+	}
 
-	return decoder_plugins_try(f);
+	return false;
 }
 
 /**
@@ -268,14 +270,18 @@ MaybeLoadReplayGain(DecoderBridge &bridge, InputStream &is)
 static bool
 TryUriDecode(DecoderBridge &bridge, const char *uri)
 {
-	return decoder_plugins_try([&bridge, uri](const DecoderPlugin &plugin){
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
 		if (!plugin.SupportsUri(uri))
-			return false;
+			continue;
 
 		std::unique_lock lock{bridge.dc.mutex};
 		bridge.Reset();
-		return DecoderUriDecode(plugin, bridge, uri);
-	});
+
+		if (DecoderUriDecode(plugin, bridge, uri))
+			return true;
+	}
+
+	return false;
 }
 
 /**
@@ -367,13 +373,12 @@ static bool
 TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
 		    std::string_view suffix)
 {
-	return decoder_plugins_try([&bridge, path_fs,
-				    suffix](const DecoderPlugin &plugin){
-					   return TryContainerDecoder(bridge,
-								      path_fs,
-								      suffix,
-								      plugin);
-				   });
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (TryContainerDecoder(bridge, path_fs, suffix, plugin))
+			return true;
+	}
+
+	return false;
 }
 
 /**
@@ -408,15 +413,12 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 
 	MaybeLoadReplayGain(bridge, *input_stream);
 
-	auto &is = *input_stream;
-	return decoder_plugins_try([&bridge, path_fs, suffix,
-				    &is](const DecoderPlugin &plugin){
-					   return TryDecoderFile(bridge,
-								 path_fs,
-								 suffix,
-								 is,
-								 plugin);
-				   });
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (TryDecoderFile(bridge, path_fs, suffix, *input_stream, plugin))
+			return true;
+	}
+
+	return false;
 }
 
 /**

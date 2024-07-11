@@ -35,6 +35,7 @@
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
 
+#include <algorithm> // for std::any_of()
 #include <iterator>
 
 #include <string.h>
@@ -164,7 +165,10 @@ decoder_plugin_deinit_all() noexcept
 bool
 decoder_plugins_supports_suffix(std::string_view suffix) noexcept
 {
-	return decoder_plugins_try([suffix](const DecoderPlugin &plugin){
-			return plugin.SupportsSuffix(suffix);
-		});
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (plugin.SupportsSuffix(suffix))
+			return true;
+	}
+
+	return false;
 }

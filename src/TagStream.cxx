@@ -41,16 +41,20 @@ tag_stream_scan(InputStream &is, TagHandler &handler)
 	if (full_mime != nullptr)
 		mime_base = GetMimeTypeBase(full_mime);
 
-	return decoder_plugins_try([suffix, mime_base, &is,
-				    &handler](const DecoderPlugin &plugin){
-			try {
-				is.LockRewind();
-			} catch (...) {
-			}
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (!CheckDecoderPlugin(plugin, suffix, mime_base))
+			continue;
 
-			return CheckDecoderPlugin(plugin, suffix, mime_base) &&
-				plugin.ScanStream(is, handler);
-		});
+		try {
+			is.LockRewind();
+		} catch (...) {
+		}
+
+		if (plugin.ScanStream(is, handler))
+			return true;
+	}
+
+	return false;
 }
 
 bool

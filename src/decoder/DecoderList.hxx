@@ -64,17 +64,6 @@ decoder_plugins_find(F f) noexcept
 	return nullptr;
 }
 
-template<typename F>
-static inline bool
-decoder_plugins_try(F f)
-{
-	for (const auto &plugin : GetEnabledDecoderPlugins())
-		if (f(plugin))
-			return true;
-
-	return false;
-}
-
 /**
  * Is there at least once #DecoderPlugin that supports the specified
  * file name suffix?

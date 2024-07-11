@@ -152,9 +152,10 @@ GetChromaprintCommand::DecodeStream(InputStream &is)
 {
 	const auto suffix = uri_get_suffix(uri);
 
-	decoder_plugins_try([this, &is, suffix](const DecoderPlugin &plugin){
-		return DecodeStream(is, suffix, plugin);
-	});
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (DecodeStream(is, suffix, plugin))
+			break;
+	}
 }
 
 inline bool
@@ -175,9 +176,12 @@ GetChromaprintCommand::DecodeContainer(std::string_view suffix,
 inline bool
 GetChromaprintCommand::DecodeContainer(std::string_view suffix)
 {
-	return decoder_plugins_try([this, suffix](const DecoderPlugin &plugin){
-		return DecodeContainer(suffix, plugin);
-	});
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (DecodeContainer(suffix, plugin))
+			return true;
+	}
+
+	return false;
 }
 
 inline bool
@@ -230,10 +234,10 @@ GetChromaprintCommand::DecodeFile()
 
 	assert(input_stream);
 
-	auto &is = *input_stream;
-	decoder_plugins_try([this, suffix, &is](const DecoderPlugin &plugin){
-		return DecodeFile(suffix, is, plugin);
-	});
+	for (const auto &plugin : GetEnabledDecoderPlugins()) {
+		if (DecodeFile(suffix, *input_stream, plugin))
+			break;
+	}
 }
 
 void
