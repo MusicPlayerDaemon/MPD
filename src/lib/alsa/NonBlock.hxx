@@ -8,16 +8,30 @@
 
 #include <alsa/asoundlib.h>
 
+#include <span>
+
 class MultiSocketMonitor;
 
 namespace Alsa {
+
+class NonBlock {
+	ReusableArray<pollfd> buffer;
+
+public:
+	std::span<pollfd> Allocate(std::size_t n) noexcept {
+		return {buffer.Get(n), n};
+	}
+
+	std::span<pollfd> CopyReturnedEvents(MultiSocketMonitor &m,
+					     std::size_t n) noexcept;
+};
 
 /**
  * Helper class for #MultiSocketMonitor's virtual methods which
  * manages the file descriptors for a #snd_pcm_t.
  */
 class NonBlockPcm {
-	ReusableArray<pollfd> pfd_buffer;
+	NonBlock base;
 
 public:
 	/**
@@ -40,7 +54,7 @@ public:
  * manages the file descriptors for a #snd_mixer_t.
  */
 class NonBlockMixer {
-	ReusableArray<pollfd> pfd_buffer;
+	NonBlock base;
 
 public:
 	Event::Duration PrepareSockets(MultiSocketMonitor &m,
