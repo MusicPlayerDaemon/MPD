@@ -4,7 +4,7 @@
 #pragma once
 
 #include "event/Chrono.hxx"
-#include "util/ReusableArray.hxx"
+#include "util/AllocatedArray.hxx"
 
 #include <alsa/asoundlib.h>
 
@@ -15,15 +15,15 @@ class MultiSocketMonitor;
 namespace Alsa {
 
 class NonBlock {
-	ReusableArray<pollfd> buffer;
+	AllocatedArray<pollfd> buffer;
 
 public:
 	std::span<pollfd> Allocate(std::size_t n) noexcept {
-		return {buffer.Get(n), n};
+		buffer.ResizeDiscard(n);
+		return buffer;
 	}
 
-	std::span<pollfd> CopyReturnedEvents(MultiSocketMonitor &m,
-					     std::size_t n) noexcept;
+	std::span<pollfd> CopyReturnedEvents(MultiSocketMonitor &m) noexcept;
 };
 
 /**

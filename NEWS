@@ -31,6 +31,7 @@ ver 0.24 (not yet released)
 * input
   - alsa: limit ALSA buffer time to 2 seconds
   - alsa: set up a channel map
+  - alsa: support the alsa-lib 1.2.11 API
   - curl: add "connect_timeout" configuration
 * decoder
   - ffmpeg: require FFmpeg 4.0 or later

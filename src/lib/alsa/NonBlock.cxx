@@ -8,21 +8,23 @@
 namespace Alsa {
 
 std::span<pollfd>
-NonBlock::CopyReturnedEvents(MultiSocketMonitor &m, std::size_t n) noexcept
+NonBlock::CopyReturnedEvents(MultiSocketMonitor &m) noexcept
 {
-	const auto pfds = buffer.Get(n), end = pfds + n;
+	const std::span<pollfd> pfds = buffer;
 
-	auto *i = pfds;
-	m.ForEachReturnedEvent([&i, end](SocketDescriptor s, unsigned events){
-		if (i >= end)
-			return;
+	for (auto &i : pfds)
+		i.revents = 0;
 
-		i->fd = s.Get();
-		i->events = i->revents = events;
-		++i;
+	m.ForEachReturnedEvent([pfds](SocketDescriptor s, unsigned events){
+		for (auto &i : pfds) {
+			if (i.fd == s.Get()) {
+				i.revents = events;
+				return;
+			}
+		}
 	});
 
-	return {pfds, static_cast<std::size_t>(i - pfds)};
+	return pfds;
 
 }
 
@@ -54,11 +56,7 @@ NonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 void
 NonBlockPcm::DispatchSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 {
-	int count = snd_pcm_poll_descriptors_count(pcm);
-	if (count <= 0)
-		return;
-
-	const auto pfds = base.CopyReturnedEvents(m, count);
+	const auto pfds = base.CopyReturnedEvents(m);
 
 	unsigned short dummy;
 	int err = snd_pcm_poll_descriptors_revents(pcm, pfds.data(), pfds.size(), &dummy);
@@ -88,11 +86,7 @@ NonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcep
 void
 NonBlockMixer::DispatchSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept
 {
-	int count = snd_mixer_poll_descriptors_count(mixer);
-	if (count <= 0)
-		return;
-
-	const auto pfds = base.CopyReturnedEvents(m, count);
+	const auto pfds = base.CopyReturnedEvents(m);
 
 	unsigned short dummy;
 	snd_mixer_poll_descriptors_revents(mixer, pfds.data(), pfds.size(), &dummy);
