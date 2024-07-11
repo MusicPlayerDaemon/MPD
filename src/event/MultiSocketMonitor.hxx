@@ -110,9 +110,10 @@ class MultiSocketMonitor
 	std::forward_list<AlwaysReady> always_ready_fds;
 #endif
 
-public:
-	MultiSocketMonitor(EventLoop &_loop) noexcept;
+protected:
+	explicit MultiSocketMonitor(EventLoop &_loop) noexcept;
 
+public:
 	EventLoop &GetEventLoop() const noexcept {
 		return idle_event.GetEventLoop();
 	}
