@@ -44,7 +44,7 @@ public:
 
 	constexpr auto operator++(int) noexcept {
 		auto old = *this;
-		original++;
+		++original;
 		return old;
 	}
 
@@ -58,13 +58,13 @@ public:
 	}
 
 	constexpr auto &operator--() noexcept {
-		original = --original;
+		--original;
 		return *this;
 	}
 
 	constexpr auto operator--(int) noexcept {
 		auto old = *this;
-		original--;
+		--original;
 		return old;
 	}
 
