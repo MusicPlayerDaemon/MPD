@@ -304,10 +304,12 @@ decoder_run_stream(DecoderBridge &bridge, const char *uri)
 
 	std::unique_lock lock{dc.mutex};
 
+	if (bridge.dc.command == DecoderCommand::STOP)
+		throw StopDecoder();
+
 	bool tried = false;
-	return dc.command == DecoderCommand::STOP ||
-		decoder_run_stream_locked(bridge, *input_stream, lock, uri,
-					  tried) ||
+	return decoder_run_stream_locked(bridge, *input_stream, lock, uri,
+					 tried) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
 		(!tried &&
