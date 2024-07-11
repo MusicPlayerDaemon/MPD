@@ -210,7 +210,7 @@ class AlsaOutput final
 	 */
 	std::byte *silence;
 
-	AlsaNonBlockPcm non_block;
+	Alsa::NonBlockPcm non_block;
 
 	/**
 	 * For copying data from OutputThread to IOThread.

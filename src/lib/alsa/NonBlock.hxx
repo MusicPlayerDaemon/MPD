@@ -10,11 +10,13 @@
 
 class MultiSocketMonitor;
 
+namespace Alsa {
+
 /**
  * Helper class for #MultiSocketMonitor's virtual methods which
  * manages the file descriptors for a #snd_pcm_t.
  */
-class AlsaNonBlockPcm {
+class NonBlockPcm {
 	ReusableArray<pollfd> pfd_buffer;
 
 public:
@@ -37,7 +39,7 @@ public:
  * Helper class for #MultiSocketMonitor's virtual methods which
  * manages the file descriptors for a #snd_mixer_t.
  */
-class AlsaNonBlockMixer {
+class NonBlockMixer {
 	ReusableArray<pollfd> pfd_buffer;
 
 public:
@@ -50,3 +52,5 @@ public:
 	 */
 	void DispatchSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept;
 };
+
+} // namespace Alsa

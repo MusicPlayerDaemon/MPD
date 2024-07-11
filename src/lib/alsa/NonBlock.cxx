@@ -5,8 +5,10 @@
 #include "Error.hxx"
 #include "event/MultiSocketMonitor.hxx"
 
+namespace Alsa {
+
 Event::Duration
-AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
+NonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 {
 	int count = snd_pcm_poll_descriptors_count(pcm);
 	if (count <= 0) {
@@ -31,8 +33,7 @@ AlsaNonBlockPcm::PrepareSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 }
 
 void
-AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
-				 snd_pcm_t *pcm)
+NonBlockPcm::DispatchSockets(MultiSocketMonitor &m, snd_pcm_t *pcm)
 {
 	int count = snd_pcm_poll_descriptors_count(pcm);
 	if (count <= 0)
@@ -57,7 +58,7 @@ AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
 }
 
 Event::Duration
-AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept
+NonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept
 {
 	int count = snd_mixer_poll_descriptors_count(mixer);
 	if (count <= 0) {
@@ -76,8 +77,7 @@ AlsaNonBlockMixer::PrepareSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noe
 }
 
 void
-AlsaNonBlockMixer::DispatchSockets(MultiSocketMonitor &m,
-				   snd_mixer_t *mixer) noexcept
+NonBlockMixer::DispatchSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept
 {
 	int count = snd_mixer_poll_descriptors_count(mixer);
 	if (count <= 0)
@@ -98,3 +98,5 @@ AlsaNonBlockMixer::DispatchSockets(MultiSocketMonitor &m,
 	unsigned short dummy;
 	snd_mixer_poll_descriptors_revents(mixer, pfds, i - pfds, &dummy);
 }
+
+} // namespace Alsa

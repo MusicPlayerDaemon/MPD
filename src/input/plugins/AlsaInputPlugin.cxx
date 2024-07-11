@@ -62,7 +62,7 @@ class AlsaInputStream final
 	snd_pcm_t *capture_handle;
 	const size_t frame_size;
 
-	AlsaNonBlockPcm non_block;
+	Alsa::NonBlockPcm non_block;
 
 	InjectEvent defer_invalidate_sockets;
 

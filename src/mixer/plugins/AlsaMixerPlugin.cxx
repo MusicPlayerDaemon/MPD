@@ -29,7 +29,7 @@ class AlsaMixerMonitor final : MultiSocketMonitor {
 
 	snd_mixer_t *mixer;
 
-	AlsaNonBlockMixer non_block;
+	Alsa::NonBlockMixer non_block;
 
 public:
 	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer) noexcept
