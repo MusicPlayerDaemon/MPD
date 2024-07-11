@@ -42,13 +42,13 @@ AlsaNonBlockPcm::DispatchSockets(MultiSocketMonitor &m,
 
 	auto *i = pfds;
 	m.ForEachReturnedEvent([&i, end](SocketDescriptor s, unsigned events){
-			if (i >= end)
-				return;
+		if (i >= end)
+			return;
 
-			i->fd = s.Get();
-			i->events = i->revents = events;
-			++i;
-		});
+		i->fd = s.Get();
+		i->events = i->revents = events;
+		++i;
+	});
 
 	unsigned short dummy;
 	int err = snd_pcm_poll_descriptors_revents(pcm, pfds, i - pfds, &dummy);
@@ -87,13 +87,13 @@ AlsaNonBlockMixer::DispatchSockets(MultiSocketMonitor &m,
 
 	auto *i = pfds;
 	m.ForEachReturnedEvent([&i, end](SocketDescriptor s, unsigned events){
-			if (i >= end)
-				return;
+		if (i >= end)
+			return;
 
-			i->fd = s.Get();
-			i->events = i->revents = events;
-			++i;
-		});
+		i->fd = s.Get();
+		i->events = i->revents = events;
+		++i;
+	});
 
 	unsigned short dummy;
 	snd_mixer_poll_descriptors_revents(mixer, pfds, i - pfds, &dummy);

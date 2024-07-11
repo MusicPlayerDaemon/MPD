@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_ALSA_NON_BLOCK_HXX
-#define MPD_ALSA_NON_BLOCK_HXX
+#pragma once
 
 #include "event/Chrono.hxx"
 #include "util/ReusableArray.hxx"
@@ -51,5 +50,3 @@ public:
 	 */
 	void DispatchSockets(MultiSocketMonitor &m, snd_mixer_t *mixer) noexcept;
 };
-
-#endif
