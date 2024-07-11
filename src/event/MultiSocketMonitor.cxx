@@ -75,14 +75,14 @@ MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n) noexcept
 	pollfd *const end = pfds + n;
 
 	UpdateSocketList([pfds, end](SocketDescriptor fd) -> unsigned {
-			auto i = std::find_if(pfds, end, [fd](const struct pollfd &pfd){
-					return pfd.fd == fd.Get();
-				});
-			if (i == end)
-				return 0;
-
-			return std::exchange(i->events, 0);
+		auto i = std::find_if(pfds, end, [fd](const struct pollfd &pfd){
+			return pfd.fd == fd.Get();
 		});
+		if (i == end)
+			return 0;
+
+		return std::exchange(i->events, 0);
+	});
 
 	for (auto i = pfds; i != end; ++i)
 		if (i->events != 0)
