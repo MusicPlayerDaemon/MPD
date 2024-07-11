@@ -72,10 +72,11 @@ bool input_plugins_enabled[std::max(n_input_plugins, std::size_t(1))];
 bool
 HasRemoteTagScanner(const char *uri) noexcept
 {
-	input_plugins_for_each_enabled(plugin)
-		if (plugin->scan_tags != nullptr &&
-		    plugin->SupportsUri(uri))
+	for (const auto &plugin : GetEnabledInputPlugins()) {
+		if (plugin.scan_tags != nullptr &&
+		    plugin.SupportsUri(uri))
 			return true;
+	}
 
 	return false;
 }

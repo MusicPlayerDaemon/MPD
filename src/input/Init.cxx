@@ -73,7 +73,7 @@ input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 void
 input_stream_global_finish() noexcept
 {
-	input_plugins_for_each_enabled(plugin)
-		if (plugin->finish != nullptr)
-			plugin->finish();
+	for (const auto &plugin : GetEnabledInputPlugins())
+		if (plugin.finish != nullptr)
+			plugin.finish();
 }

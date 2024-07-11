@@ -21,10 +21,12 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 	fmt::print(fp, " file://");
 #endif
 	std::set<std::string, std::less<>> protocols;
-	input_plugins_for_each(plugin)
-		plugin->ForeachSupportedUri([&](const char* uri) {
+
+	for (const auto &plugin : GetAllInputPlugins()) {
+		plugin.ForeachSupportedUri([&](const char* uri) {
 			protocols.emplace(uri);
 		});
+	}
 
 	for (const DecoderPlugin &plugin : GetAllDecoderPlugins()) {
 		if (plugin.protocols != nullptr)
@@ -41,10 +43,12 @@ void
 print_supported_uri_schemes(Response &r)
 {
 	std::set<std::string, std::less<>> protocols;
-	input_plugins_for_each_enabled(plugin)
-		plugin->ForeachSupportedUri([&](const char* uri) {
+
+	for (const auto &plugin : GetEnabledInputPlugins()) {
+		plugin.ForeachSupportedUri([&](const char* uri) {
 			protocols.emplace(uri);
 		});
+	}
 
 	for (const auto &plugin : GetEnabledDecoderPlugins()) {
 		if (plugin.protocols != nullptr)
@@ -61,9 +65,10 @@ uri_supported_scheme(const char *uri) noexcept
 {
 	assert(uri_has_scheme(uri));
 
-	input_plugins_for_each_enabled(plugin)
-		if (plugin->SupportsUri(uri))
+	for (const auto &plugin : GetEnabledInputPlugins()) {
+		if (plugin.SupportsUri(uri))
 			return true;
+	}
 
 	for (const auto &plugin : GetEnabledDecoderPlugins()) {
 		if (plugin.SupportsUri(uri))

@@ -212,8 +212,8 @@ static void version()
 		   " archive"
 #endif
 		);
-	input_plugins_for_each(plugin)
-		fmt::print(" {}", plugin->name);
+	for (const InputPlugin &plugin : GetAllInputPlugins())
+		fmt::print(" {}", plugin.name);
 
 	fmt::print("\n\n"
 		   "Playlist plugins:\n");

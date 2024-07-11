@@ -9,12 +9,11 @@
 std::unique_ptr<RemoteTagScanner>
 InputScanTags(const char *uri, RemoteTagHandler &handler)
 {
-	input_plugins_for_each_enabled(plugin) {
-		if (plugin->scan_tags == nullptr || !plugin->SupportsUri(uri))
+	for (const auto &plugin : GetEnabledInputPlugins()) {
+		if (plugin.scan_tags == nullptr || !plugin.SupportsUri(uri))
 			continue;
 
-		auto scanner = plugin->scan_tags(uri, handler);
-		if (scanner)
+		if (auto scanner = plugin.scan_tags(uri, handler))
 			return scanner;
 	}
 
