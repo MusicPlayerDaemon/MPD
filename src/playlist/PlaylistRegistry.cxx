@@ -84,8 +84,7 @@ playlist_list_global_init(const ConfigData &config)
 		if (param != nullptr)
 			param->SetUsed();
 
-		playlist_plugins_enabled[i] =
-			playlist_plugin_init(playlist_plugins[i], *param);
+		playlist_plugins_enabled[i] = playlist_plugins[i]->Init(*param);
 
 		playlist_plugins_as_folder[i] =
 			param->GetBlockValue("as_directory",
@@ -97,7 +96,7 @@ void
 playlist_list_global_finish() noexcept
 {
 	for (const auto &plugin : GetEnabledPlaylistPlugins()) {
-		playlist_plugin_finish(&plugin);
+		plugin.Finish();
 	}
 }
 

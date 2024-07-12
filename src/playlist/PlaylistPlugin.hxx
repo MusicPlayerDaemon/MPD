@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PLAYLIST_PLUGIN_HXX
-#define MPD_PLAYLIST_PLUGIN_HXX
+#pragma once
 
 #include "input/Ptr.hxx"
 #include "thread/Mutex.hxx"
@@ -117,33 +116,26 @@ struct PlaylistPlugin {
 	 */
 	[[gnu::pure]]
 	bool SupportsMimeType(std::string_view mime_type) const noexcept;
+
+	/**
+	 * Initialize the plugin.
+	 *
+	 * @param block a configuration block for this plugin, or nullptr if none
+	 * is configured
+	 * @return true if the plugin was initialized successfully, false if
+	 * the plugin is not available
+	 */
+	bool Init(const ConfigBlock &block) const {
+		return init != nullptr
+		       ? init(block)
+		       : true;
+	}
+
+	/**
+	 * Deinitialize the plugin which was initialized successfully.
+	 */
+	void Finish() const noexcept {
+		if (finish != nullptr)
+			finish();
+	}
 };
-
-/**
- * Initialize a plugin.
- *
- * @param block a configuration block for this plugin, or nullptr if none
- * is configured
- * @return true if the plugin was initialized successfully, false if
- * the plugin is not available
- */
-static inline bool
-playlist_plugin_init(const PlaylistPlugin *plugin,
-		     const ConfigBlock &block)
-{
-	return plugin->init != nullptr
-		? plugin->init(block)
-		: true;
-}
-
-/**
- * Deinitialize a plugin which was initialized successfully.
- */
-static inline void
-playlist_plugin_finish(const PlaylistPlugin *plugin) noexcept
-{
-	if (plugin->finish != nullptr)
-		plugin->finish();
-}
-
-#endif
