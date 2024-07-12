@@ -188,10 +188,10 @@ static void version()
 #ifdef ENABLE_ARCHIVE
 		   "\n"
 		   "Archive plugins:\n");
-	archive_plugins_for_each(plugin) {
-		fmt::print(" [{}]", plugin->name);
+	for (const auto &plugin : GetAllArchivePlugins()) {
+		fmt::print(" [{}]", plugin.name);
 
-		const char *const*suffixes = plugin->suffixes;
+		const char *const*suffixes = plugin.suffixes;
 		if (suffixes != nullptr)
 			for (; *suffixes != nullptr; ++suffixes)
 				fmt::print(" {}", *suffixes);

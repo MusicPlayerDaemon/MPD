@@ -6,6 +6,7 @@
 #include "archive/Features.h"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
+#include "util/FilteredContainer.hxx"
 #include "util/StringUtil.hxx"
 #include "plugins/Bzip2ArchivePlugin.hxx"
 #include "plugins/Iso9660ArchivePlugin.hxx"
@@ -35,17 +36,21 @@ static constexpr std::size_t n_archive_plugins = std::size(archive_plugins) - 1;
    forbidden in C++ */
 static bool archive_plugins_enabled[std::max(n_archive_plugins, std::size_t(1))];
 
-#define archive_plugins_for_each_enabled(plugin) \
-	archive_plugins_for_each(plugin) \
-		if (archive_plugins_enabled[archive_plugin_iterator - archive_plugins])
+static inline auto
+GetEnabledArchivePlugins() noexcept
+{
+	const auto all = GetAllArchivePlugins();
+	return FilteredContainer{all.begin(), all.end(), archive_plugins_enabled};
+}
 
 const ArchivePlugin *
 archive_plugin_from_suffix(std::string_view suffix) noexcept
 {
-	archive_plugins_for_each_enabled(plugin)
-		if (plugin->suffixes != nullptr &&
-		    StringArrayContainsCase(plugin->suffixes, suffix))
-			return plugin;
+	for (const auto &plugin : GetEnabledArchivePlugins()) {
+		if (plugin.suffixes != nullptr &&
+		    StringArrayContainsCase(plugin.suffixes, suffix))
+			return &plugin;
+	}
 
 	return nullptr;
 }
@@ -53,9 +58,10 @@ archive_plugin_from_suffix(std::string_view suffix) noexcept
 const ArchivePlugin *
 archive_plugin_from_name(const char *name) noexcept
 {
-	archive_plugins_for_each_enabled(plugin)
-		if (strcmp(plugin->name, name) == 0)
-			return plugin;
+	for (const auto &plugin : GetEnabledArchivePlugins()) {
+		if (strcmp(plugin.name, name) == 0)
+			return &plugin;
+	}
 
 	return nullptr;
 }
@@ -67,7 +73,6 @@ archive_plugin_init_all(const ConfigData &config)
 
 	for (unsigned i = 0; archive_plugins[i] != nullptr; ++i) {
 		const auto &plugin = *archive_plugins[i];
-
 		const auto *param =
 			config.FindBlock(ConfigBlockOption::ARCHIVE_PLUGIN,
 					 "name", plugin.name);
@@ -83,9 +88,10 @@ archive_plugin_init_all(const ConfigData &config)
 void
 archive_plugin_deinit_all() noexcept
 {
-	unsigned i = 0;
-	archive_plugins_for_each_enabled(plugin)
-		if (archive_plugins_enabled[i++] && plugin->finish != nullptr)
-			plugin->finish();
+	for (unsigned i = 0; archive_plugins[i] != nullptr; ++i) {
+		const auto &plugin = *archive_plugins[i];
+		if (archive_plugins_enabled[i] && plugin.finish != nullptr)
+			plugin.finish();
+	}
 }
 

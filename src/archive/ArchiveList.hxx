@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_ARCHIVE_LIST_HXX
-#define MPD_ARCHIVE_LIST_HXX
+#pragma once
+
+#include "util/DereferenceIterator.hxx"
+#include "util/TerminatedArray.hxx"
 
 #include <string_view>
 
@@ -11,11 +13,11 @@ struct ArchivePlugin;
 
 extern const ArchivePlugin *const archive_plugins[];
 
-#define archive_plugins_for_each(plugin) \
-	for (const ArchivePlugin *plugin, \
-		*const*archive_plugin_iterator = &archive_plugins[0]; \
-		(plugin = *archive_plugin_iterator) != nullptr; \
-		++archive_plugin_iterator)
+static inline auto
+GetAllArchivePlugins() noexcept
+{
+	return DereferenceContainerAdapter{TerminatedArray<const ArchivePlugin *const, nullptr>{archive_plugins}};
+}
 
 /* interface for using plugins */
 
@@ -43,5 +45,3 @@ public:
 		archive_plugin_deinit_all();
 	}
 };
-
-#endif
