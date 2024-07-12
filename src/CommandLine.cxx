@@ -180,8 +180,9 @@ static void version()
 #ifdef ENABLE_ENCODER
 		   "\n"
 		   "Encoder plugins:\n");
-	encoder_plugins_for_each(plugin)
-		fmt::print(" {}", plugin->name);
+	for (const auto &plugin : GetAllEncoderPlugins()) {
+		fmt::print(" {}", plugin.name);
+	}
 	fmt::print("\n"
 #endif
 

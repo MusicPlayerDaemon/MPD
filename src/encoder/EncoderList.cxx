@@ -46,9 +46,10 @@ constinit const EncoderPlugin *const encoder_plugins[] = {
 const EncoderPlugin *
 encoder_plugin_get(const char *name)
 {
-	encoder_plugins_for_each(plugin)
-		if (strcmp(plugin->name, name) == 0)
-			return plugin;
+	for (const auto &plugin : GetAllEncoderPlugins()) {
+		if (strcmp(plugin.name, name) == 0)
+			return &plugin;
+	}
 
 	return nullptr;
 }
