@@ -248,6 +248,8 @@ static SignedSongTime
 GetDuration(mpg123_handle &handle, const AudioFormat &audio_format) noexcept
 {
 	const off_t num_samples = mpg123_length(&handle);
+	if (num_samples < 0)
+		return SignedSongTime::Negative();
 
 	return SongTime::FromScale<uint64_t>(num_samples,
 					     audio_format.sample_rate);
