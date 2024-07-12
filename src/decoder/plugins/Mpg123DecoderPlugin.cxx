@@ -243,6 +243,16 @@ mpd_mpg123_meta(DecoderClient &client, mpg123_handle *const handle)
 		mpd_mpg123_id3v2(client, *v2);
 }
 
+[[gnu::pure]]
+static SignedSongTime
+GetDuration(mpg123_handle &handle, const AudioFormat &audio_format) noexcept
+{
+	const off_t num_samples = mpg123_length(&handle);
+
+	return SongTime::FromScale<uint64_t>(num_samples,
+					     audio_format.sample_rate);
+}
+
 static void
 Decode(DecoderClient &client, mpg123_handle &handle, const bool seekable)
 {
@@ -250,13 +260,9 @@ Decode(DecoderClient &client, mpg123_handle &handle, const bool seekable)
 	if (!GetAudioFormat(handle, audio_format))
 		return;
 
-	const off_t num_samples = mpg123_length(&handle);
-
 	/* tell MPD core we're ready */
 
-	const auto duration =
-		SongTime::FromScale<uint64_t>(num_samples,
-					      audio_format.sample_rate);
+	const auto duration = GetDuration(handle, audio_format);
 
 	client.Ready(audio_format, seekable, duration);
 
