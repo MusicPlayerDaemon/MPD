@@ -18,6 +18,7 @@
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
 #include "decoder/Features.h"
 #include "input/InputStream.hxx"
+#include "util/FilteredContainer.hxx"
 #include "util/MimeType.hxx"
 #include "util/UriExtract.hxx"
 #include "config/Data.hxx"
@@ -57,9 +58,12 @@ static bool playlist_plugins_enabled[n_playlist_plugins];
 /** which plugins have the "as_folder" option enabled? */
 static bool playlist_plugins_as_folder[n_playlist_plugins];
 
-#define playlist_plugins_for_each_enabled(plugin) \
-	playlist_plugins_for_each(plugin) \
-		if (playlist_plugins_enabled[playlist_plugin_iterator - playlist_plugins])
+static inline auto
+GetEnabledPlaylistPlugins() noexcept
+{
+	const auto all = GetAllPlaylistPlugins();
+	return FilteredContainer{all.begin(), all.end(), playlist_plugins_enabled};
+}
 
 void
 playlist_list_global_init(const ConfigData &config)
@@ -92,8 +96,9 @@ playlist_list_global_init(const ConfigData &config)
 void
 playlist_list_global_finish() noexcept
 {
-	playlist_plugins_for_each_enabled(plugin)
-		playlist_plugin_finish(plugin);
+	for (const auto &plugin : GetEnabledPlaylistPlugins()) {
+		playlist_plugin_finish(&plugin);
+	}
 }
 
 bool
@@ -179,9 +184,9 @@ playlist_list_open_uri(const char *uri, Mutex &mutex)
 static std::unique_ptr<SongEnumerator>
 playlist_list_open_stream_mime2(InputStreamPtr &&is, std::string_view mime)
 {
-	playlist_plugins_for_each_enabled(plugin) {
-		if (plugin->open_stream != nullptr &&
-		    plugin->SupportsMimeType(mime)) {
+	for (const auto &plugin : GetEnabledPlaylistPlugins()) {
+		if (plugin.open_stream != nullptr &&
+		    plugin.SupportsMimeType(mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			try {
@@ -189,7 +194,7 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, std::string_view mime)
 			} catch (...) {
 			}
 
-			auto playlist = plugin->open_stream(std::move(is));
+			auto playlist = plugin.open_stream(std::move(is));
 			if (playlist != nullptr)
 				return playlist;
 		}
@@ -209,9 +214,9 @@ playlist_list_open_stream_mime(InputStreamPtr &&is, std::string_view mime)
 std::unique_ptr<SongEnumerator>
 playlist_list_open_stream_suffix(InputStreamPtr &&is, std::string_view suffix)
 {
-	playlist_plugins_for_each_enabled(plugin) {
-		if (plugin->open_stream != nullptr &&
-		    plugin->SupportsSuffix(suffix)) {
+	for (const auto &plugin : GetEnabledPlaylistPlugins()) {
+		if (plugin.open_stream != nullptr &&
+		    plugin.SupportsSuffix(suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			try {
@@ -219,7 +224,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, std::string_view suffix)
 			} catch (...) {
 			}
 
-			auto playlist = plugin->open_stream(std::move(is));
+			auto playlist = plugin.open_stream(std::move(is));
 			if (playlist != nullptr)
 				return playlist;
 		}
@@ -257,9 +262,9 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 const PlaylistPlugin *
 FindPlaylistPluginBySuffix(std::string_view suffix) noexcept
 {
-	playlist_plugins_for_each_enabled(plugin) {
-		if (plugin->SupportsSuffix(suffix))
-			return plugin;
+	for (const auto &plugin : GetEnabledPlaylistPlugins()) {
+		if (plugin.SupportsSuffix(suffix))
+			return &plugin;
 	}
 
 	return nullptr;

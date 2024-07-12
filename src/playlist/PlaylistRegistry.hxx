@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PLAYLIST_REGISTRY_HXX
-#define MPD_PLAYLIST_REGISTRY_HXX
+#pragma once
 
 #include "input/Ptr.hxx"
 #include "thread/Mutex.hxx"
+#include "util/DereferenceIterator.hxx"
+#include "util/TerminatedArray.hxx"
 
 #include <string_view>
 
@@ -15,11 +16,11 @@ class SongEnumerator;
 
 extern const PlaylistPlugin *const playlist_plugins[];
 
-#define playlist_plugins_for_each(plugin) \
-	for (const PlaylistPlugin *plugin, \
-		*const*playlist_plugin_iterator = &playlist_plugins[0]; \
-		(plugin = *playlist_plugin_iterator) != nullptr; \
-		++playlist_plugin_iterator)
+static inline auto
+GetAllPlaylistPlugins() noexcept
+{
+	return DereferenceContainerAdapter{TerminatedArray<const PlaylistPlugin *const, nullptr>{playlist_plugins}};
+}
 
 /**
  * Initializes all playlist plugins.
@@ -85,5 +86,3 @@ playlist_suffix_supported(std::string_view suffix) noexcept
 {
 	return FindPlaylistPluginBySuffix(suffix) != nullptr;
 }
-
-#endif

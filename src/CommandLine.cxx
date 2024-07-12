@@ -218,8 +218,9 @@ static void version()
 
 	fmt::print("\n\n"
 		   "Playlist plugins:\n");
-	playlist_plugins_for_each(plugin)
-		fmt::print(" {}", plugin->name);
+	for (const auto &plugin : GetAllPlaylistPlugins()) {
+		fmt::print(" {}", plugin.name);
+	}
 
 	fmt::print("\n\n"
 		   "Protocols:\n");
