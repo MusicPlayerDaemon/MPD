@@ -390,20 +390,17 @@ Scan(mpg123_handle &handle, TagHandler &handler) noexcept
 		return false;
 	}
 
-	const off_t num_samples = mpg123_length(&handle);
-	if (num_samples <= 0) {
-		return false;
-	}
-
 	handler.OnAudioFormat(audio_format);
 
 	/* ID3 tag support not yet implemented */
 
-	const auto duration =
-		SongTime::FromScale<uint64_t>(num_samples,
-					      audio_format.sample_rate);
+	if (const off_t num_samples = mpg123_length(&handle); num_samples >= 0) {
+		const auto duration =
+			SongTime::FromScale<uint64_t>(num_samples,
+						      audio_format.sample_rate);
+		handler.OnDuration(duration);
+	}
 
-	handler.OnDuration(duration);
 	return true;
 }
 
