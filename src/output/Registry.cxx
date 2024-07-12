@@ -92,9 +92,10 @@ constinit const AudioOutputPlugin *const audio_output_plugins[] = {
 const AudioOutputPlugin *
 GetAudioOutputPluginByName(const char *name) noexcept
 {
-	audio_output_plugins_for_each(plugin)
-		if (StringIsEqual(plugin->name, name))
-			return plugin;
+	for (const auto &plugin : GetAllAudioOutputPlugins()) {
+		if (StringIsEqual(plugin.name, name))
+			return &plugin;
+	}
 
 	return nullptr;
 }

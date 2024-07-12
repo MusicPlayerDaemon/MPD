@@ -51,15 +51,15 @@ audio_output_detect()
 {
 	LogInfo(output_domain, "Attempt to detect audio output device");
 
-	audio_output_plugins_for_each(plugin) {
-		if (plugin->test_default_device == nullptr)
+	for (const auto &plugin : GetAllAudioOutputPlugins()) {
+		if (plugin.test_default_device == nullptr)
 			continue;
 
 		FmtInfo(output_domain,
 			"Attempting to detect a {:?} audio device",
-			plugin->name);
-		if (ao_plugin_test_default_device(plugin))
-			return plugin;
+			plugin.name);
+		if (ao_plugin_test_default_device(&plugin))
+			return &plugin;
 	}
 
 	throw std::runtime_error("Unable to detect an audio device");

@@ -173,8 +173,9 @@ static void version()
 #endif
 		   "\n\n"
 		   "Output plugins:\n");
-	audio_output_plugins_for_each(plugin)
-		fmt::print(" {}", plugin->name);
+	for (const auto &plugin : GetAllAudioOutputPlugins()) {
+		fmt::print(" {}", plugin.name);
+	}
 	fmt::print("\n"
 
 #ifdef ENABLE_ENCODER
