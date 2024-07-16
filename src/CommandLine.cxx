@@ -84,7 +84,7 @@ enum Option {
 };
 
 static constexpr OptionDef option_defs[] = {
-	{"kill", "kill the currently running mpd session"},
+	{"kill", 'k', "kill the currently running mpd session"},
 	{"no-config", "don't read from config"},
 	{"no-daemon", "don't detach from console"},
 #ifdef __linux__
