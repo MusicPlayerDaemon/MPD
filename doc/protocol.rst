@@ -344,6 +344,7 @@ The following tags are supported by :program:`MPD`:
 * **ensemble**: the ensemble performing this song, e.g. "Wiener Philharmoniker".
 * **movement**: name of the movement, e.g. "Andante con moto".
 * **movementnumber**: movement number, e.g. "2" or "II".
+* **showmovement**: If this tag is set to "1" players supporting this tag will display the `work`, `movement`, and `movementnumber`` instead of the track title.
 * **location**: location of the recording, e.g. "Royal Albert Hall".
 * **grouping**: "used if the sound belongs to a larger category of
   sounds/music" (`from the IDv2.4.0 TIT1 description

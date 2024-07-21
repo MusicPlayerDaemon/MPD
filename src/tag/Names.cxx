@@ -28,6 +28,7 @@ static constexpr struct tag_table tag_item_names_init[] = {
 	{"Work", TAG_WORK},
 	{"Movement", TAG_MOVEMENT},
 	{"MovementNumber", TAG_MOVEMENTNUMBER},
+	{"ShowMovement", TAG_SHOWMOVEMENT},
 	{"Ensemble", TAG_ENSEMBLE},
 	{"Location", TAG_LOCATION},
 	{"Grouping", TAG_GROUPING},
