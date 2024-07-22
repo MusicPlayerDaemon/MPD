@@ -68,10 +68,6 @@ public:
 			return current.data() == other.current.data();
 		}
 
-		constexpr bool operator!=(Iterator other) const noexcept {
-			return !(*this == other);
-		}
-
 		constexpr string_view operator*() const noexcept {
 			return current;
 		}
