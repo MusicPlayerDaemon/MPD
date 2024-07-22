@@ -31,10 +31,6 @@ public:
 		return value == nullptr;
 	}
 
-	constexpr bool operator!=(std::nullptr_t) const noexcept {
-		return value != nullptr;
-	}
-
 	/**
 	 * Check if this is a "nulled" instance.  A "nulled" instance
 	 * must not be used.
