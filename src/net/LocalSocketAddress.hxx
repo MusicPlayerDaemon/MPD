@@ -121,9 +121,4 @@ public:
 	bool operator==(SocketAddress other) const noexcept {
 		return static_cast<const SocketAddress>(*this) == other;
 	}
-
-	[[nodiscard]] [[gnu::pure]]
-	bool operator!=(SocketAddress other) const noexcept {
-		return !(*this == other);
-	}
 };

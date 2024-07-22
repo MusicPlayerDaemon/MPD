@@ -67,12 +67,6 @@ public:
 		return (SocketAddress)*this == std::forward<T>(other);
 	}
 
-	template<typename T>
-	[[gnu::pure]]
-	bool operator!=(T &&other) const noexcept {
-		return !(*this == std::forward<T>(other));
-	}
-
 	[[gnu::const]]
 	static AllocatedSocketAddress Null() noexcept {
 		return AllocatedSocketAddress(nullptr, 0);

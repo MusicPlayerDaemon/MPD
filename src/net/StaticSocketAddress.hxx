@@ -141,8 +141,4 @@ public:
 	bool operator==(SocketAddress other) const noexcept {
 		return (SocketAddress)*this == other;
 	}
-
-	bool operator!=(SocketAddress other) const noexcept {
-		return !(*this == other);
-	}
 };
