@@ -111,10 +111,6 @@ public:
 			return cursor == other.cursor;
 		}
 
-		constexpr bool operator!=(const_iterator other) const noexcept {
-			return cursor != other.cursor;
-		}
-
 		const_iterator &operator++() noexcept {
 			cursor = cursor->ai_next;
 			return *this;
