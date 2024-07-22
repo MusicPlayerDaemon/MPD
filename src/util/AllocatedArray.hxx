@@ -100,10 +100,6 @@ public:
 		return buffer.data() == nullptr;
 	}
 
-	constexpr bool operator!=(std::nullptr_t) const noexcept {
-		return buffer.data() != nullptr;
-	}
-
 	/**
 	 * Returns true if no memory was allocated so far.
 	 */
