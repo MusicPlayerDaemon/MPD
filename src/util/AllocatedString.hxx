@@ -99,10 +99,6 @@ public:
 		return value == nullptr;
 	}
 
-	constexpr bool operator!=(std::nullptr_t) const noexcept {
-		return value != nullptr;
-	}
-
 	operator string_view() const noexcept {
 		return value != nullptr
 			? string_view(value)
