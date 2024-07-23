@@ -8,7 +8,7 @@
 constexpr Event::TimePoint
 TimerList::GetDue::operator()(const FineTimerEvent &timer) const noexcept
 {
-	return timer.due;
+	return timer.GetDue();
 }
 
 TimerList::TimerList() = default;
