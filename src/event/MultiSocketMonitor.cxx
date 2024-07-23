@@ -120,10 +120,6 @@ MultiSocketMonitor::OnIdle() noexcept
 	if (ready) {
 		ready = false;
 		DispatchSockets();
-
-		/* TODO: don't refresh always; require users to call
-		   InvalidateSockets() */
-		refresh = true;
 	}
 
 	if (refresh) {
