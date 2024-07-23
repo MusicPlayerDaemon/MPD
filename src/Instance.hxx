@@ -73,7 +73,7 @@ struct Instance final
 	/**
 	 * A thread running an #EventLoop for non-blocking (bulk) I/O.
 	 */
-	EventThread io_thread{true};
+	EventThread io_thread;
 
 	/**
 	 * Another thread running an #EventLoop for non-blocking
@@ -81,7 +81,7 @@ struct Instance final
 	 * events which require low latency, e.g. for filling hardware
 	 * ring buffers.
 	 */
-	EventThread rtio_thread;
+	EventThread rtio_thread{true};
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 	Systemd::Watchdog systemd_watchdog{event_loop};
