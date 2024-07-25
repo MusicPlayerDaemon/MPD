@@ -48,7 +48,7 @@ ver 0.24 (not yet released)
   - add option "mixramp_analyzer" to scan MixRamp tags on-the-fly
   - "one-shot" consume mode
 * tags
-  - new tags "TitleSort", "Mood"
+  - new tags "TitleSort", "Mood", "ShowMovement"
 * output
   - add option "always_off"
   - alsa: require alsa-lib 1.1 or later
