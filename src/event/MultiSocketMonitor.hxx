@@ -109,6 +109,8 @@ class MultiSocketMonitor
 	 * epoll (epoll_ctl() returns -EPERM).
 	 */
 	std::forward_list<AlwaysReady> always_ready_fds;
+
+	Event::Duration always_ready_timeout;
 #endif
 
 protected:

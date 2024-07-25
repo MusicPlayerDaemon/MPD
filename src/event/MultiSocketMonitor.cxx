@@ -103,7 +103,7 @@ MultiSocketMonitor::Prepare() noexcept
 		constexpr Event::Duration ready_timeout =
 			std::chrono::milliseconds(1);
 		if (timeout < timeout.zero() || timeout > ready_timeout)
-			timeout = ready_timeout;
+			timeout = always_ready_timeout = ready_timeout;
 	}
 #endif
 
@@ -120,6 +120,11 @@ MultiSocketMonitor::OnIdle() noexcept
 	if (ready) {
 		ready = false;
 		DispatchSockets();
+
+#ifdef USE_EPOLL
+		if (!refresh && !always_ready_fds.empty())
+			timeout_event.Schedule(always_ready_timeout);
+#endif
 	}
 
 	if (refresh) {
