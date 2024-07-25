@@ -857,9 +857,12 @@ Player::CheckCrossFade() noexcept
 		return;
 	}
 
-	if (!IsDecoderAtNextSong() || dc.IsStarting())
+	if (!IsDecoderAtNextSong() || dc.IsStarting() || dc.pipe->IsEmpty())
 		/* we need information about the next song before we
 		   can decide */
+		/* the "pipe.empty" check is here so we wait for all
+                   (ReplayGain/MixRamp) metadata to appear, which some
+                   decoders parse only after reporting readiness */
 		return;
 
 	if (!pc.cross_fade.CanCrossFade(pc.total_time, dc.total_time,
