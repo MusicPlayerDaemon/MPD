@@ -23,8 +23,8 @@ template<typename T>
 class CircularBuffer {
 public:
 	using Range = std::span<T>;
-	typedef typename Range::pointer pointer;
-	typedef typename Range::size_type size_type;
+	using pointer = typename Range::pointer;
+	using size_type = typename Range::size_type;
 
 protected:
 	/**
