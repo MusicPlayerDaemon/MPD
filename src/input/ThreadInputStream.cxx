@@ -111,7 +111,7 @@ ThreadInputStream::IsAvailable() const noexcept
 {
 	assert(!thread.IsInside());
 
-	return !buffer.empty() || eof || postponed_exception;
+	return !IsEOF() || postponed_exception;
 }
 
 inline size_t
