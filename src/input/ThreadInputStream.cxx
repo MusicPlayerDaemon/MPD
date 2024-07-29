@@ -131,7 +131,7 @@ ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 			size_t nbytes = std::min(dest.size(), r.size());
 			memcpy(dest.data(), r.data(), nbytes);
 			buffer.Consume(nbytes);
-			wake_cond.notify_all();
+			wake_cond.notify_one();
 			offset += nbytes;
 			return nbytes;
 		}
