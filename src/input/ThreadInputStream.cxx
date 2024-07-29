@@ -2,7 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "ThreadInputStream.hxx"
-#include "CondHandler.hxx"
 #include "thread/Name.hxx"
 
 #include <cassert>
@@ -79,10 +78,12 @@ ThreadInputStream::ThreadFunc() noexcept
 				nbytes = ThreadRead(w);
 			} catch (...) {
 				postponed_exception = std::current_exception();
+				caller_cond.notify_one();
 				InvokeOnAvailable();
 				break;
 			}
 
+			caller_cond.notify_one();
 			InvokeOnAvailable();
 
 			if (nbytes == 0) {
@@ -120,8 +121,6 @@ ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 {
 	assert(!thread.IsInside());
 
-	CondInputStreamHandler cond_handler;
-
 	while (true) {
 		if (postponed_exception)
 			std::rethrow_exception(postponed_exception);
@@ -139,8 +138,7 @@ ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 		if (eof)
 			return 0;
 
-		const ScopeExchangeInputStreamHandler h(*this, &cond_handler);
-		cond_handler.cond.wait(lock);
+		caller_cond.wait(lock);
 	}
 }
 
