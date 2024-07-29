@@ -181,6 +181,14 @@ public:
 		return buffer != nullptr;
 	}
 
+	constexpr operator std::span<T>() noexcept {
+		return buffer;
+	}
+
+	constexpr operator std::span<const T>() noexcept {
+		return buffer;
+	}
+
 	/**
 	 * Returns the number of allocated elements.
 	 */
