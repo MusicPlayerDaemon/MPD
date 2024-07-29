@@ -9,7 +9,7 @@
 #ifndef MPD_IDLE_HXX
 #define MPD_IDLE_HXX
 
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 
 /**
  * Adds idle flag (with bitwise "or") and queues notifications to all

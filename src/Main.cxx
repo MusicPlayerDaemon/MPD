@@ -16,7 +16,7 @@
 #include "command/AllCommands.hxx"
 #include "Partition.hxx"
 #include "tag/Config.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "Log.hxx"
 #include "LogInit.hxx"
 #include "input/Init.hxx"

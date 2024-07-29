@@ -8,7 +8,7 @@
 #include "config/PartitionConfig.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "song/DetachedSong.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "client/Listener.hxx"
 #include "client/Client.hxx"
 #include "input/cache/Manager.hxx"

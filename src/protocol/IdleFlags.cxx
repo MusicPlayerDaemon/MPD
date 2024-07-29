@@ -6,7 +6,7 @@
  *
  */
 
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "util/ASCII.hxx"
 
 #include <cassert>

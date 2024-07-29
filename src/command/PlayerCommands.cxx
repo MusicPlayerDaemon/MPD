@@ -12,7 +12,7 @@
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"

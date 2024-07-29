@@ -28,7 +28,7 @@
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "Log.hxx"
 #include "Mapper.hxx"
 

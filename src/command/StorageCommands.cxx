@@ -16,7 +16,7 @@
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "db/update/Service.hxx"
 #include "TimePrint.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 
 #include <fmt/format.h>
 

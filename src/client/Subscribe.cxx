@@ -3,7 +3,7 @@
 
 #include "Client.hxx"
 #include "Partition.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 
 #include <cassert>
 

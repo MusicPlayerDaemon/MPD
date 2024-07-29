@@ -4,7 +4,7 @@
 #include "config.h"
 #include "Instance.hxx"
 #include "Partition.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "StateFile.hxx"
 #include "Stats.hxx"
 #include "client/List.hxx"

@@ -5,7 +5,7 @@
 #include "Request.hxx"
 #include "Instance.hxx"
 #include "Partition.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "output/Filtered.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"

@@ -8,7 +8,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringVerify.hxx"
 

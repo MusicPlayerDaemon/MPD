@@ -13,7 +13,7 @@
 #include "mixer/Mixer.hxx"
 #include "mixer/Memento.hxx"
 #include "mixer/Listener.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "Partition.hxx"
 
 extern unsigned audio_output_state_version;

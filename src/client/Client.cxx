@@ -6,7 +6,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "BackgroundCommand.hxx"
-#include "IdleFlags.hxx"
+#include "protocol/IdleFlags.hxx"
 #include "config.h"
 
 Client::~Client() noexcept
