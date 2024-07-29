@@ -46,6 +46,14 @@ ThreadInputStream::Start()
 	thread.Start();
 }
 
+void
+ThreadInputStream::ThreadSeek([[maybe_unused]] offset_type new_offset)
+{
+	assert(!IsSeekable());
+
+	throw std::runtime_error{"Not seekable"};
+}
+
 inline void
 ThreadInputStream::ThreadFunc() noexcept
 {
@@ -66,6 +74,24 @@ ThreadInputStream::ThreadFunc() noexcept
 
 	while (!close) {
 		assert(!postponed_exception);
+
+		if (IsSeeking()) {
+			const auto seek_offset_copy = offset = seek_offset;
+			seek_offset = UNKNOWN_SIZE;
+			eof = false;
+			buffer.Clear();
+
+			try {
+				const ScopeUnlock unlock(mutex);
+				ThreadSeek(seek_offset_copy);
+			} catch (...) {
+				postponed_exception = std::current_exception();
+				InvokeOnAvailable();
+				break;
+			}
+
+			offset = seek_offset_copy;
+		}
 
 		auto w = buffer.Write();
 		if (w.empty()) {
@@ -115,6 +141,14 @@ ThreadInputStream::IsAvailable() const noexcept
 	return !IsEOF() || postponed_exception;
 }
 
+void
+ThreadInputStream::Seek([[maybe_unused]] std::unique_lock<Mutex> &lock,
+			offset_type new_offset)
+{
+	seek_offset = new_offset;
+	wake_cond.notify_one();
+}
+
 size_t
 ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 			std::span<std::byte> dest)
@@ -124,6 +158,11 @@ ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 	while (true) {
 		if (postponed_exception)
 			std::rethrow_exception(postponed_exception);
+
+		if (IsSeeking()) {
+			caller_cond.wait(lock);
+			continue;
+		}
 
 		auto r = buffer.Read();
 		if (!r.empty()) {
@@ -147,5 +186,5 @@ ThreadInputStream::IsEOF() const noexcept
 {
 	assert(!thread.IsInside());
 
-	return eof && buffer.empty();
+	return eof && buffer.empty() && !IsSeeking();
 }

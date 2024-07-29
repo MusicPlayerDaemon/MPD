@@ -20,8 +20,6 @@
  * another thread using the regular #InputStream API.  This class
  * manages the thread and the buffer.
  *
- * This works only for "streams": unknown length, no seeking, no tags.
- *
  * The implementation must call Stop() before its destruction
  * completes.  This cannot be done in ~ThreadInputStream() because at
  * this point, the class has been morphed back to #ThreadInputStream
@@ -49,6 +47,8 @@ class ThreadInputStream : public InputStream {
 	HugeArray<std::byte> allocation;
 
 	CircularBuffer<std::byte> buffer{allocation};
+
+	offset_type seek_offset = UNKNOWN_SIZE;
 
 	/**
 	 * Shall the stream be closed?
@@ -81,6 +81,8 @@ public:
 	void Check() final;
 	bool IsEOF() const noexcept final;
 	bool IsAvailable() const noexcept final;
+	void Seek(std::unique_lock<Mutex> &lock,
+		  offset_type new_offset) final;
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    std::span<std::byte> dest) override final;
 
@@ -124,6 +126,16 @@ protected:
 	virtual std::size_t ThreadRead(std::span<std::byte> dest) = 0;
 
 	/**
+	 * The actual Seek() implementation.  This virtual method will
+	 * be called from within the thread.
+	 *
+	 * The #InputStream is not locked.
+	 *
+	 * Throws on error.
+	 */
+	virtual void ThreadSeek(offset_type new_offset);
+
+	/**
 	 * Optional deinitialization before leaving the thread.
 	 *
 	 * The #InputStream is not locked.
@@ -139,5 +151,9 @@ protected:
 	virtual void Cancel() noexcept {}
 
 private:
+	bool IsSeeking() const noexcept {
+		return seek_offset != UNKNOWN_SIZE;
+	}
+
 	void ThreadFunc() noexcept;
 };
