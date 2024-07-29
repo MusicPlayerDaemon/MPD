@@ -10,7 +10,7 @@ TEST(CircularBuffer, Basic)
 {
 	constexpr size_t N = 8;
 	int data[N];
-	CircularBuffer<int> buffer(data, N);
+	CircularBuffer<int> buffer{data};
 
 	EXPECT_EQ(size_t(N), buffer.GetCapacity());
 

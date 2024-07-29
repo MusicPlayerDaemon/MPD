@@ -16,8 +16,7 @@ ThreadInputStream::ThreadInputStream(const char *_plugin,
 	:InputStream(_uri, _mutex),
 	 plugin(_plugin),
 	 thread(BIND_THIS_METHOD(ThreadFunc)),
-	 allocation(_buffer_size),
-	 buffer(&allocation.front(), allocation.size())
+	 allocation(_buffer_size)
 {
 	allocation.SetName("InputStream");
 	allocation.ForkCow(false);

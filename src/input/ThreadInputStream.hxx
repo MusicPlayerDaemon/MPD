@@ -43,7 +43,7 @@ class ThreadInputStream : public InputStream {
 
 	HugeArray<std::byte> allocation;
 
-	CircularBuffer<std::byte> buffer;
+	CircularBuffer<std::byte> buffer{allocation};
 
 	/**
 	 * Shall the stream be closed?

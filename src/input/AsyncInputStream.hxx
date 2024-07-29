@@ -23,7 +23,7 @@ class AsyncInputStream : public InputStream {
 
 	HugeArray<std::byte> allocation;
 
-	CircularBuffer<std::byte> buffer;
+	CircularBuffer<std::byte> buffer{allocation};
 	const size_t resume_at;
 
 	enum class SeekState : uint_least8_t {

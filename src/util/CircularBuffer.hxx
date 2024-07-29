@@ -37,19 +37,18 @@ protected:
 	 */
 	size_type tail = 0;
 
-	const size_type capacity;
-	const pointer data;
+	const std::span<T> buffer;
 
 public:
-	constexpr CircularBuffer(pointer _data, size_type _capacity) noexcept
-		:capacity(_capacity), data(_data) {}
+	explicit constexpr CircularBuffer(Range _buffer) noexcept
+		:buffer(_buffer) {}
 
 	CircularBuffer(const CircularBuffer &other) = delete;
 	CircularBuffer &operator=(const CircularBuffer &other) = delete;
 
 protected:
 	constexpr size_type Next(size_type i) const noexcept {
-		return i + 1 == capacity
+		return i + 1 == buffer.size()
 			? 0
 			: i + 1;
 	}
@@ -60,7 +59,7 @@ public:
 	}
 
 	constexpr size_type GetCapacity() const noexcept {
-		return capacity;
+		return buffer.size();
 	}
 
 	constexpr bool empty() const noexcept {
@@ -77,7 +76,7 @@ public:
 	constexpr size_type GetSize() const noexcept {
 		return head <= tail
 			? tail - head
-			: capacity - head + tail;
+			: buffer.size() - head + tail;
 	}
 
 	/**
@@ -87,7 +86,7 @@ public:
 	constexpr size_type GetSpace() const noexcept {
 		/* space = capacity - size - 1 */
 		return (head <= tail
-			? capacity - tail + head
+			? buffer.size() - tail + head
 			: head - tail)
 			- 1;
 	}
@@ -97,17 +96,17 @@ public:
 	 * When you are finished, call Append().
 	 */
 	constexpr Range Write() noexcept {
-		assert(head < capacity);
-		assert(tail < capacity);
+		assert(head < buffer.size());
+		assert(tail < buffer.size());
 
 		size_type end = tail < head
 			? head - 1
 			/* the "head==0" is there so we don't write
 			   the last cell, as this situation cannot be
 			   represented by head/tail */
-			: capacity - (head == 0);
+			: buffer.size() - (head == 0);
 
-		return Range(data + tail, end - tail);
+		return buffer.subspan(tail, end - tail);
 	}
 
 	/**
@@ -115,15 +114,15 @@ public:
 	 * to the buffer returned by Write().
 	 */
 	constexpr void Append(size_type n) noexcept {
-		assert(head < capacity);
-		assert(tail < capacity);
-		assert(n < capacity);
-		assert(tail + n <= capacity);
+		assert(head < buffer.size());
+		assert(tail < buffer.size());
+		assert(n < buffer.size());
+		assert(tail + n <= buffer.size());
 		assert(head <= tail || tail + n < head);
 
 		tail += n;
 
-		if (tail == capacity) {
+		if (tail == buffer.size()) {
 			assert(head > 0);
 			tail = 0;
 		}
@@ -134,24 +133,24 @@ public:
 	 * writable, to allow modifications while parsing.
 	 */
 	constexpr Range Read() noexcept {
-		assert(head < capacity);
-		assert(tail < capacity);
+		assert(head < buffer.size());
+		assert(tail < buffer.size());
 
-		return Range(data + head, (tail < head ? capacity : tail) - head);
+		return buffer.subspan(head, (tail < head ? buffer.size() : tail) - head);
 	}
 
 	/**
 	 * Marks a chunk as consumed.
 	 */
 	constexpr void Consume(size_type n) noexcept {
-		assert(head < capacity);
-		assert(tail < capacity);
-		assert(n < capacity);
-		assert(head + n <= capacity);
+		assert(head < buffer.size());
+		assert(tail < buffer.size());
+		assert(n < buffer.size());
+		assert(head + n <= buffer.size());
 		assert(tail < head || head + n <= tail);
 
 		head += n;
-		if (head == capacity)
+		if (head == buffer.size())
 			head = 0;
 	}
 };
