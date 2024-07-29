@@ -46,13 +46,13 @@ jobs:
       # todo: remove once NDK 27 is out of beta
       - name: Install Beta NDK
         run: |
-          echo y | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "ndk;27.0.11902837"
+          echo y | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "ndk;27.0.12077973"
             
       - name: Build
         run: |
           mkdir -p output/android
           cd ./output/android
-          ../../android/build.py $ANDROID_SDK_ROOT $ANDROID_SDK_ROOT/ndk/27.0.11902837 arm64-v8a \
+          ../../android/build.py $ANDROID_SDK_ROOT $ANDROID_SDK_ROOT/ndk/27.0.12077973 arm64-v8a \
             --buildtype=debugoptimized -Db_ndebug=true \
             -Dwrap_mode=forcefallback 
 
