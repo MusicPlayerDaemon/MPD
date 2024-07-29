@@ -30,19 +30,19 @@ protected:
 	/**
 	 * The next index to be read.
 	 */
-	size_type head;
+	size_type head = 0;
 
 	/**
 	 * The next index to be written to.
 	 */
-	size_type tail;
+	size_type tail = 0;
 
 	const size_type capacity;
 	const pointer data;
 
 public:
 	constexpr CircularBuffer(pointer _data, size_type _capacity)
-		:head(0), tail(0), capacity(_capacity), data(_data) {}
+		:capacity(_capacity), data(_data) {}
 
 	CircularBuffer(const CircularBuffer &other) = delete;
 
