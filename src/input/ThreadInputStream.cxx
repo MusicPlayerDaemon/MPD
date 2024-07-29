@@ -149,5 +149,5 @@ ThreadInputStream::IsEOF() const noexcept
 {
 	assert(!thread.IsInside());
 
-	return eof;
+	return eof && buffer.empty();
 }
