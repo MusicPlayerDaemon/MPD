@@ -56,6 +56,11 @@ class ThreadInputStream : public InputStream {
 	 */
 	Cond wake_cond;
 
+	/**
+	 * Signalled when the caller shall be woken up.
+	 */
+	Cond caller_cond;
+
 	std::exception_ptr postponed_exception;
 
 	HugeArray<uint8_t> allocation;

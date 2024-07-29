@@ -21,6 +21,7 @@
 #define MPD_ASYNC_INPUT_STREAM_HXX
 
 #include "InputStream.hxx"
+#include "thread/Cond.hxx"
 #include "event/InjectEvent.hxx"
 #include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
@@ -40,6 +41,11 @@ class AsyncInputStream : public InputStream {
 
 	InjectEvent deferred_resume;
 	InjectEvent deferred_seek;
+
+	/**
+	 * Signalled when the caller shall be woken up.
+	 */
+	Cond caller_cond;
 
 	HugeArray<uint8_t> allocation;
 
