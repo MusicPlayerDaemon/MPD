@@ -3,7 +3,6 @@
 
 #include "Memento.hxx"
 #include "output/MultipleOutputs.hxx"
-#include "Idle.hxx"
 #include "util/StringCompare.hxx"
 #include "io/BufferedOutputStream.hxx"
 
