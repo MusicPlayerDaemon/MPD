@@ -258,6 +258,11 @@ public:
 	}
 
 private:
+	void UnregisterSockets() noexcept {
+		MultiSocketMonitor::Reset();
+		defer_invalidate_sockets.Cancel();
+	}
+
 	std::map<std::string, std::string, std::less<>> GetAttributes() const noexcept override;
 	void SetAttribute(std::string &&name, std::string &&value) override;
 
@@ -1103,8 +1108,7 @@ AlsaOutput::CancelInternal() noexcept
 	active = false;
 	waiting = false;
 
-	MultiSocketMonitor::Reset();
-	defer_invalidate_sockets.Cancel();
+	UnregisterSockets();
 	silence_timer.Cancel();
 }
 
@@ -1159,8 +1163,7 @@ AlsaOutput::Close() noexcept
 {
 	/* make sure the I/O thread isn't inside DispatchSockets() */
 	BlockingCall(GetEventLoop(), [this](){
-		MultiSocketMonitor::Reset();
-		defer_invalidate_sockets.Cancel();
+		UnregisterSockets();
 		silence_timer.Cancel();
 	});
 
@@ -1317,8 +1320,7 @@ try {
 			   event (but after setting the "waiting"
 			   flag) */
 			if (!CopyRingToPeriodBuffer()) {
-				MultiSocketMonitor::Reset();
-				defer_invalidate_sockets.Cancel();
+				UnregisterSockets();
 
 				/* just in case Play() doesn't get
 				   called soon enough, schedule a
