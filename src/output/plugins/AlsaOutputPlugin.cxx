@@ -33,6 +33,7 @@
 
 #include <alsa/asoundlib.h>
 
+#include <atomic>
 #include <string>
 #include <forward_list>
 
@@ -222,6 +223,15 @@ class AlsaOutput final
 	 */
 	bool interrupted;
 
+	/**
+	 * Close the ALSA PCM while playback is paused?  This defaults
+         * to true because this allows other applications to use the
+         * PCM while MPD is paused.
+	 */
+	const bool close_on_pause;
+
+	std::atomic_bool paused;
+
 public:
 	AlsaOutput(EventLoop &loop, const ConfigBlock &block);
 
@@ -261,6 +271,7 @@ private:
 	void Close() noexcept override;
 
 	void Interrupt() noexcept override;
+	std::chrono::steady_clock::duration Delay() const noexcept override;
 
 	std::size_t Play(std::span<const std::byte> src) override;
 	void Drain() override;
@@ -414,7 +425,7 @@ GetAlsaOpenMode(const ConfigBlock &block)
 }
 
 AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
-	:AudioOutput(FLAG_ENABLE_DISABLE),
+	:AudioOutput(FLAG_ENABLE_DISABLE|FLAG_PAUSE),
 	 MultiSocketMonitor(_loop),
 	 defer_invalidate_sockets(_loop, BIND_THIS_METHOD(InvalidateSockets)),
 	 silence_timer(_loop, BIND_THIS_METHOD(OnSilenceTimer)),
@@ -422,16 +433,16 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 	 buffer_time(block.GetPositiveValue("buffer_time",
 					    MPD_ALSA_BUFFER_TIME_US)),
 	 period_time(block.GetPositiveValue("period_time", 0U)),
-	 mode(GetAlsaOpenMode(block))
+	 mode(GetAlsaOpenMode(block)),
 #ifdef ENABLE_DSD
-,
 	 dop_setting(block.GetBlockValue("dop", false) ||
 		     /* legacy name from MPD 0.18 and older: */
 		     block.GetBlockValue("dsd_usb", false)),
 	 stop_dsd_silence(block.GetBlockValue("stop_dsd_silence", false)),
 	 thesycon_dsd_workaround(block.GetBlockValue("thesycon_dsd_workaround",
-						     false))
+						     false)),
 #endif
+	close_on_pause(block.GetBlockValue("close_on_pause", true))
 {
 	const char *allowed_formats_string =
 		block.GetBlockValue("allowed_formats", nullptr);
@@ -752,6 +763,8 @@ Play_44_1_Silence(snd_pcm_t *pcm)
 void
 AlsaOutput::Open(AudioFormat &audio_format)
 {
+	paused = false;
+
 #ifdef ENABLE_DSD
 	bool dop;
 #endif
@@ -864,6 +877,15 @@ AlsaOutput::Interrupt() noexcept
 	   instead throw AudioOutputInterrupted */
 	interrupted = true;
 	cond.notify_one();
+}
+
+std::chrono::steady_clock::duration
+AlsaOutput::Delay() const noexcept
+{
+	if (paused)
+		return std::chrono::hours{1};
+
+	return AudioOutput::Delay();
 }
 
 inline int
@@ -1119,9 +1141,13 @@ AlsaOutput::Pause() noexcept
 	std::lock_guard lock{mutex};
 	interrupted = false;
 
-	/* not implemented - this override exists only to reset the
-	   "interrupted" flag */
-	return false;
+	if (close_on_pause)
+		return false;
+
+	// TODO use snd_pcm_pause()?
+
+	paused = true;
+	return true;
 }
 
 void
@@ -1187,6 +1213,8 @@ AlsaOutput::Play(std::span<const std::byte> src)
 {
 	assert(!src.empty());
 	assert(src.size() % in_frame_size == 0);
+
+	paused = false;
 
 	const size_t max_frames = LockWaitWriteAvailable();
 	const size_t max_size = max_frames * in_frame_size;

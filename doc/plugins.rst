@@ -896,6 +896,11 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
        
        Example: "96000:16:* 192000:24:* dsd64:*=dop *:dsd:*".
 
+   * - **close_on_pause yes|no**
+     - Close the ALSA device while playback is paused?  This defaults
+       to *yes* because this allows other applications to use the
+       device while MPD is paused.
+
 The according hardware mixer plugin understands the following settings:
 
 .. list-table::
