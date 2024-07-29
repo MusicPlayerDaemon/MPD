@@ -65,6 +65,80 @@ class AlsaOutput final
 	 */
 	const std::string device;
 
+	std::forward_list<Alsa::AllowedFormat> allowed_formats;
+
+	/**
+	 * Protects #dop_setting and #allowed_formats.
+	 */
+	mutable Mutex attributes_mutex;
+
+	/** the libasound PCM device handle */
+	snd_pcm_t *pcm;
+
+	/**
+	 * The size of one audio frame passed to method play().
+	 */
+	size_t in_frame_size;
+
+	/**
+	 * The size of one audio frame passed to libasound.
+	 */
+	size_t out_frame_size;
+
+	Event::Duration effective_period_duration;
+
+	/**
+	 * This buffer gets allocated after opening the ALSA device.
+	 * It contains silence samples, enough to fill one period (see
+	 * #period_frames).
+	 */
+	std::byte *silence;
+
+	Alsa::NonBlockPcm non_block;
+
+	/**
+	 * For copying data from OutputThread to IOThread.
+	 */
+	using RingBuffer = ::RingBuffer<std::byte>;
+	RingBuffer ring_buffer;
+
+	Alsa::PeriodBuffer period_buffer;
+
+	/**
+	 * Protects #cond, #error, #active, #waiting, #drain.
+	 */
+	mutable Mutex mutex;
+
+	/**
+	 * Used to wait when #ring_buffer is full.  It will be
+	 * signalled each time data is popped from the #ring_buffer,
+	 * making space for more data.
+	 */
+	Cond cond;
+
+	std::exception_ptr error;
+
+	/**
+	 * The size of one period, in number of frames.
+	 */
+	snd_pcm_uframes_t period_frames;
+
+	/**
+	 * If snd_pcm_avail() goes above this value and no more data
+	 * is available in the #ring_buffer, we need to play some
+	 * silence.
+	 */
+	snd_pcm_sframes_t max_avail_frames;
+
+	/** libasound's buffer_time setting (in microseconds) */
+	const unsigned buffer_time;
+
+	/** libasound's period_time setting (in microseconds) */
+	const unsigned period_time;
+
+	/** the mode flags passed to snd_pcm_open */
+	const int mode;
+
 #ifdef ENABLE_DSD
 	/**
 	 * Enable DSD over PCM according to the DoP standard?
@@ -100,49 +174,6 @@ class AlsaOutput final
 
 	bool need_thesycon_dsd_workaround = thesycon_dsd_workaround;
 #endif
-
-	/** libasound's buffer_time setting (in microseconds) */
-	const unsigned buffer_time;
-
-	/** libasound's period_time setting (in microseconds) */
-	const unsigned period_time;
-
-	/** the mode flags passed to snd_pcm_open */
-	const int mode;
-
-	std::forward_list<Alsa::AllowedFormat> allowed_formats;
-
-	/**
-	 * Protects #dop_setting and #allowed_formats.
-	 */
-	mutable Mutex attributes_mutex;
-
-	/** the libasound PCM device handle */
-	snd_pcm_t *pcm;
-
-	/**
-	 * The size of one audio frame passed to method play().
-	 */
-	size_t in_frame_size;
-
-	/**
-	 * The size of one audio frame passed to libasound.
-	 */
-	size_t out_frame_size;
-
-	/**
-	 * The size of one period, in number of frames.
-	 */
-	snd_pcm_uframes_t period_frames;
-
-	Event::Duration effective_period_duration;
-
-	/**
-	 * If snd_pcm_avail() goes above this value and no more data
-	 * is available in the #ring_buffer, we need to play some
-	 * silence.
-	 */
-	snd_pcm_sframes_t max_avail_frames;
 
 	/**
 	 * Is this a buggy alsa-lib version, which needs a workaround
@@ -202,37 +233,6 @@ class AlsaOutput final
 	 * Only initialized while the output is open.
 	 */
 	bool interrupted;
-
-	/**
-	 * This buffer gets allocated after opening the ALSA device.
-	 * It contains silence samples, enough to fill one period (see
-	 * #period_frames).
-	 */
-	std::byte *silence;
-
-	Alsa::NonBlockPcm non_block;
-
-	/**
-	 * For copying data from OutputThread to IOThread.
-	 */
-	using RingBuffer = ::RingBuffer<std::byte>;
-	RingBuffer ring_buffer;
-
-	Alsa::PeriodBuffer period_buffer;
-
-	/**
-	 * Protects #cond, #error, #active, #waiting, #drain.
-	 */
-	mutable Mutex mutex;
-
-	/**
-	 * Used to wait when #ring_buffer is full.  It will be
-	 * signalled each time data is popped from the #ring_buffer,
-	 * making space for more data.
-	 */
-	Cond cond;
-
-	std::exception_ptr error;
 
 public:
 	AlsaOutput(EventLoop &loop, const ConfigBlock &block);
@@ -431,18 +431,19 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 	 defer_invalidate_sockets(_loop, BIND_THIS_METHOD(InvalidateSockets)),
 	 silence_timer(_loop, BIND_THIS_METHOD(OnSilenceTimer)),
 	 device(block.GetBlockValue("device", "")),
+	 buffer_time(block.GetPositiveValue("buffer_time",
+					    MPD_ALSA_BUFFER_TIME_US)),
+	 period_time(block.GetPositiveValue("period_time", 0U)),
+	 mode(GetAlsaOpenMode(block))
 #ifdef ENABLE_DSD
+,
 	 dop_setting(block.GetBlockValue("dop", false) ||
 		     /* legacy name from MPD 0.18 and older: */
 		     block.GetBlockValue("dsd_usb", false)),
 	 stop_dsd_silence(block.GetBlockValue("stop_dsd_silence", false)),
 	 thesycon_dsd_workaround(block.GetBlockValue("thesycon_dsd_workaround",
-						     false)),
+						     false))
 #endif
-	 buffer_time(block.GetPositiveValue("buffer_time",
-					    MPD_ALSA_BUFFER_TIME_US)),
-	 period_time(block.GetPositiveValue("period_time", 0U)),
-	 mode(GetAlsaOpenMode(block))
 {
 	const char *allowed_formats_string =
 		block.GetBlockValue("allowed_formats", nullptr);
