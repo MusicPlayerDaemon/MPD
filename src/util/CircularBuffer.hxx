@@ -41,39 +41,39 @@ protected:
 	const pointer data;
 
 public:
-	constexpr CircularBuffer(pointer _data, size_type _capacity)
+	constexpr CircularBuffer(pointer _data, size_type _capacity) noexcept
 		:capacity(_capacity), data(_data) {}
 
 	CircularBuffer(const CircularBuffer &other) = delete;
 
 protected:
-	constexpr size_type Next(size_type i) const {
+	constexpr size_type Next(size_type i) const noexcept {
 		return i + 1 == capacity
 			? 0
 			: i + 1;
 	}
 
 public:
-	void Clear() {
+	constexpr void Clear() noexcept {
 		head = tail = 0;
 	}
 
-	constexpr size_type GetCapacity() const {
+	constexpr size_type GetCapacity() const noexcept {
 		return capacity;
 	}
 
-	constexpr bool empty() const {
+	constexpr bool empty() const noexcept {
 		return head == tail;
 	}
 
-	constexpr bool IsFull() const {
+	constexpr bool IsFull() const noexcept {
 		return Next(tail) == head;
 	}
 
 	/**
 	 * Returns the number of elements stored in this buffer.
 	 */
-	constexpr size_type GetSize() const {
+	constexpr size_type GetSize() const noexcept {
 		return head <= tail
 			? tail - head
 			: capacity - head + tail;
@@ -83,7 +83,7 @@ public:
 	 * Returns the number of elements that can be added to this
 	 * buffer.
 	 */
-	constexpr size_type GetSpace() const {
+	constexpr size_type GetSpace() const noexcept {
 		/* space = capacity - size - 1 */
 		return (head <= tail
 			? capacity - tail + head
@@ -95,7 +95,7 @@ public:
 	 * Prepares writing.  Returns a buffer range which may be written.
 	 * When you are finished, call Append().
 	 */
-	Range Write() {
+	constexpr Range Write() noexcept {
 		assert(head < capacity);
 		assert(tail < capacity);
 
@@ -113,7 +113,7 @@ public:
 	 * Expands the tail of the buffer, after data has been written
 	 * to the buffer returned by Write().
 	 */
-	void Append(size_type n) {
+	constexpr void Append(size_type n) noexcept {
 		assert(head < capacity);
 		assert(tail < capacity);
 		assert(n < capacity);
@@ -132,7 +132,7 @@ public:
 	 * Return a buffer range which may be read.  The buffer pointer is
 	 * writable, to allow modifications while parsing.
 	 */
-	Range Read() {
+	constexpr Range Read() noexcept {
 		assert(head < capacity);
 		assert(tail < capacity);
 
@@ -142,7 +142,7 @@ public:
 	/**
 	 * Marks a chunk as consumed.
 	 */
-	void Consume(size_type n) {
+	constexpr void Consume(size_type n) noexcept {
 		assert(head < capacity);
 		assert(tail < capacity);
 		assert(n < capacity);
