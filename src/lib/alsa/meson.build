@@ -3,7 +3,7 @@ if not is_linux
   subdir_done()
 endif
 
-libasound_dep = dependency('alsa', version: '>= 1.1', required: get_option('alsa'))
+libasound_dep = dependency('alsa', version: '>= 1.2', required: get_option('alsa'))
 if not libasound_dep.found()
   alsa_dep = dependency('', required: false)
   subdir_done()
