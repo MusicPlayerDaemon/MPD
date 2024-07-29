@@ -4,7 +4,7 @@
 #include "Client.hxx"
 #include "Config.hxx"
 #include "Response.hxx"
-#include "Idle.hxx"
+#include "protocol/IdleFlags.hxx"
 
 #include <fmt/format.h>
 
