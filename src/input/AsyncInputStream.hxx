@@ -18,10 +18,6 @@
  * the regular #InputStream API.
  */
 class AsyncInputStream : public InputStream {
-	enum class SeekState : uint8_t {
-		NONE, SCHEDULED, PENDING
-	};
-
 	InjectEvent deferred_resume;
 	InjectEvent deferred_seek;
 
@@ -29,6 +25,10 @@ class AsyncInputStream : public InputStream {
 
 	CircularBuffer<std::byte> buffer;
 	const size_t resume_at;
+
+	enum class SeekState : uint_least8_t {
+		NONE, SCHEDULED, PENDING
+	} seek_state = SeekState::NONE;
 
 	bool open = true;
 
@@ -38,8 +38,6 @@ class AsyncInputStream : public InputStream {
 	 * buffer is below the threshold again.
 	 */
 	bool paused = false;
-
-	SeekState seek_state = SeekState::NONE;
 
 	/**
 	 * The #Tag object ready to be requested via
