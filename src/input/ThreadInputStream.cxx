@@ -114,7 +114,7 @@ ThreadInputStream::IsAvailable() const noexcept
 	return !IsEOF() || postponed_exception;
 }
 
-inline size_t
+size_t
 ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 			std::span<std::byte> dest)
 {
