@@ -30,7 +30,7 @@ public:
 
 protected:
 	void Open() override;
-	size_t ThreadRead(void *ptr, size_t size) override;
+	std::size_t ThreadRead(std::span<std::byte> dest) override;
 
 	void Close() noexcept override {
 		mmsx_close(mms);
@@ -62,17 +62,17 @@ input_mms_open(const char *url,
 	return m;
 }
 
-size_t
-MmsInputStream::ThreadRead(void *ptr, size_t read_size)
+std::size_t
+MmsInputStream::ThreadRead(std::span<std::byte> dest)
 {
 	/* unfortunately, mmsx_read() blocks until the whole buffer
 	   has been filled; to avoid big latencies, limit the size of
 	   each chunk we read to a reasonable size */
 	constexpr size_t MAX_CHUNK = 16384;
-	if (read_size > MAX_CHUNK)
-		read_size = MAX_CHUNK;
+	if (dest.size() > MAX_CHUNK)
+		dest = dest.first(MAX_CHUNK);
 
-	int nbytes = mmsx_read(nullptr, mms, (char *)ptr, read_size);
+	int nbytes = mmsx_read(nullptr, mms, reinterpret_cast<char *>(dest.data()), dest.size());
 	if (nbytes <= 0) {
 		if (nbytes < 0)
 			throw MakeErrno("mmsx_read() failed");

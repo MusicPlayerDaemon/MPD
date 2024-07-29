@@ -116,7 +116,7 @@ protected:
 	 *
 	 * @return 0 on end-of-file
 	 */
-	virtual size_t ThreadRead(void *ptr, size_t size) = 0;
+	virtual std::size_t ThreadRead(std::span<std::byte> dest) = 0;
 
 	/**
 	 * Optional deinitialization before leaving the thread.

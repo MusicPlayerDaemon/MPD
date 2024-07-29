@@ -76,7 +76,7 @@ ThreadInputStream::ThreadFunc() noexcept
 
 			try {
 				const ScopeUnlock unlock(mutex);
-				nbytes = ThreadRead(w.data(), w.size());
+				nbytes = ThreadRead(w);
 			} catch (...) {
 				postponed_exception = std::current_exception();
 				InvokeOnAvailable();
