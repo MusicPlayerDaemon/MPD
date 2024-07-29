@@ -137,7 +137,7 @@ public:
 	typedef typename Buffer::const_reference const_reference;
 	typedef typename Buffer::iterator iterator;
 
-	constexpr HugeArray() = default;
+	constexpr HugeArray() noexcept = default;
 
 	explicit HugeArray(size_type _size)
 		:buffer(FromBytesFloor<value_type>(HugeAllocate(sizeof(value_type) * _size))) {}
@@ -152,7 +152,7 @@ public:
 		}
 	}
 
-	HugeArray &operator=(HugeArray &&other) noexcept {
+	constexpr HugeArray &operator=(HugeArray &&other) noexcept {
 		using std::swap;
 		swap(buffer, other.buffer);
 		return *this;
@@ -188,37 +188,37 @@ public:
 		return buffer.size();
 	}
 
-	reference front() noexcept {
+	constexpr reference front() noexcept {
 		return buffer.front();
 	}
 
-	const_reference front() const noexcept {
+	constexpr const_reference front() const noexcept {
 		return buffer.front();
 	}
 
-	reference back() noexcept {
+	constexpr reference back() noexcept {
 		return buffer.back();
 	}
 
-	const_reference back() const noexcept {
+	constexpr const_reference back() const noexcept {
 		return buffer.back();
 	}
 
 	/**
 	 * Returns one element.  No bounds checking.
 	 */
-	reference operator[](size_type i) noexcept {
+	constexpr reference operator[](size_type i) noexcept {
 		return buffer[i];
 	}
 
 	/**
 	 * Returns one constant element.  No bounds checking.
 	 */
-	const_reference operator[](size_type i) const noexcept {
+	constexpr const_reference operator[](size_type i) const noexcept {
 		return buffer[i];
 	}
 
-	iterator begin() noexcept {
+	constexpr iterator begin() noexcept {
 		return buffer.begin();
 	}
 
@@ -226,7 +226,7 @@ public:
 		return buffer.begin();
 	}
 
-	iterator end() noexcept {
+	constexpr iterator end() noexcept {
 		return buffer.end();
 	}
 
