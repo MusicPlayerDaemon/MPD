@@ -684,7 +684,7 @@ WasapiOutput::Delay() const noexcept
 {
 	if (paused) {
 		// idle while paused
-		return std::chrono::seconds(1);
+		return std::chrono::steady_clock::duration::max();
 	}
 
 	return std::chrono::steady_clock::duration::zero();

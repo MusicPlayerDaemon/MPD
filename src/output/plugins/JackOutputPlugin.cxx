@@ -155,7 +155,7 @@ public:
 
 	std::chrono::steady_clock::duration Delay() const noexcept override {
 		return pause && !LockWasShutdown()
-			? std::chrono::seconds(1)
+			? std::chrono::steady_clock::duration::max()
 			: std::chrono::steady_clock::duration::zero();
 	}
 

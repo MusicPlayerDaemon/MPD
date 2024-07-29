@@ -762,7 +762,7 @@ PulseOutput::Delay() const noexcept
 	if (pa_stream_is_corked(stream) &&
 	    pa_stream_get_state(stream) == PA_STREAM_READY)
 		/* idle while paused */
-		result = std::chrono::seconds(1);
+		result = std::chrono::steady_clock::duration::max();
 
 	return result;
 }

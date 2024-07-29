@@ -136,6 +136,10 @@ public:
 	 * instead of doing a sleep inside the plugin, because this
 	 * allows MPD to listen to commands meanwhile.
 	 *
+	 * As a special case, this method is allowed to return
+         * std::chrono::steady_clock::duration::max() which lets MPD
+         * sleep forever until a command is received.
+	 *
 	 * @return the duration to wait
 	 */
 	virtual std::chrono::steady_clock::duration Delay() const noexcept {

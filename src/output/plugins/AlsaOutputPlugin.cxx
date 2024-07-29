@@ -883,7 +883,7 @@ std::chrono::steady_clock::duration
 AlsaOutput::Delay() const noexcept
 {
 	if (paused)
-		return std::chrono::hours{1};
+		return std::chrono::steady_clock::duration::max();
 
 	return AudioOutput::Delay();
 }
