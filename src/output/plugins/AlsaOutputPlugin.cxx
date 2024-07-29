@@ -1139,8 +1139,8 @@ AlsaOutput::Cancel() noexcept
 #endif
 
 	BlockingCall(GetEventLoop(), [this](){
-			CancelInternal();
-		});
+		CancelInternal();
+	});
 }
 
 bool
@@ -1159,10 +1159,10 @@ AlsaOutput::Close() noexcept
 {
 	/* make sure the I/O thread isn't inside DispatchSockets() */
 	BlockingCall(GetEventLoop(), [this](){
-			MultiSocketMonitor::Reset();
-			defer_invalidate_sockets.Cancel();
-			silence_timer.Cancel();
-		});
+		MultiSocketMonitor::Reset();
+		defer_invalidate_sockets.Cancel();
+		silence_timer.Cancel();
+	});
 
 	period_buffer.Free();
 	ring_buffer = {};
