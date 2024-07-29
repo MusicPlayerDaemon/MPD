@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_THREAD_INPUT_STREAM_HXX
-#define MPD_THREAD_INPUT_STREAM_HXX
+#pragma once
 
 #include "InputStream.hxx"
 #include "thread/Thread.hxx"
@@ -11,7 +10,7 @@
 #include "util/CircularBuffer.hxx"
 
 #include <cassert>
-#include <cstdint>
+#include <cstddef>
 #include <exception>
 
 /**
@@ -42,9 +41,9 @@ class ThreadInputStream : public InputStream {
 
 	std::exception_ptr postponed_exception;
 
-	HugeArray<uint8_t> allocation;
+	HugeArray<std::byte> allocation;
 
-	CircularBuffer<uint8_t> buffer;
+	CircularBuffer<std::byte> buffer;
 
 	/**
 	 * Shall the stream be closed?
@@ -137,5 +136,3 @@ protected:
 private:
 	void ThreadFunc() noexcept;
 };
-
-#endif
