@@ -45,6 +45,7 @@ public:
 		:capacity(_capacity), data(_data) {}
 
 	CircularBuffer(const CircularBuffer &other) = delete;
+	CircularBuffer &operator=(const CircularBuffer &other) = delete;
 
 protected:
 	constexpr size_type Next(size_type i) const noexcept {
