@@ -42,8 +42,8 @@ static const char default_device[] = "default";
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
 class AlsaOutput final
-	: AudioOutput, MultiSocketMonitor {
-
+	: AudioOutput, MultiSocketMonitor
+{
 	InjectEvent defer_invalidate_sockets;
 
 	/**
