@@ -10,15 +10,15 @@
 
 #include <stdexcept>
 
-static constexpr size_t MMS_BUFFER_SIZE = 256 * 1024;
-
 class MmsInputStream final : public ThreadInputStream {
+	static constexpr std::size_t BUFFER_SIZE = 256 * 1024;
+
 	mmsx_t *mms;
 
 public:
 	MmsInputStream(const char *_uri, Mutex &_mutex)
 		:ThreadInputStream(input_plugin_mms.name, _uri, _mutex,
-				   MMS_BUFFER_SIZE)
+				   BUFFER_SIZE)
 	{
 		Start();
 	}
