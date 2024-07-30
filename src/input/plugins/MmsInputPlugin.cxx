@@ -18,7 +18,9 @@ class MmsInputStream final : public ThreadInputStream {
 public:
 	MmsInputStream(const char *_uri, Mutex &_mutex)
 		:ThreadInputStream(input_plugin_mms.name, _uri, _mutex,
-				   MMS_BUFFER_SIZE) {
+				   MMS_BUFFER_SIZE)
+	{
+		Start();
 	}
 
 	~MmsInputStream() noexcept override {
@@ -57,9 +59,7 @@ static InputStreamPtr
 input_mms_open(const char *url,
 	       Mutex &mutex)
 {
-	auto m = std::make_unique<MmsInputStream>(url, mutex);
-	m->Start();
-	return m;
+	return std::make_unique<MmsInputStream>(url, mutex);
 }
 
 std::size_t
