@@ -7,36 +7,35 @@
 #include "FfmpegInputPlugin.hxx"
 #include "lib/ffmpeg/IOContext.hxx"
 #include "lib/ffmpeg/Init.hxx"
-#include "../InputStream.hxx"
+#include "../ThreadInputStream.hxx"
 #include "PluginUnavailable.hxx"
 #include "../InputPlugin.hxx"
 #include "util/StringAPI.hxx"
 
-class FfmpegInputStream final : public InputStream {
+class FfmpegInputStream final : public ThreadInputStream {
+	static constexpr std::size_t BUFFER_SIZE = 256 * 1024;
+
 	Ffmpeg::IOContext io;
 
 public:
 	FfmpegInputStream(const char *_uri, Mutex &_mutex)
-		:InputStream(_uri, _mutex),
-		 io(_uri, AVIO_FLAG_READ)
+		:ThreadInputStream("ffmpeg", _uri, _mutex, BUFFER_SIZE)
 	{
-		seekable = (io->seekable & AVIO_SEEKABLE_NORMAL) != 0;
-		size = io.GetSize();
-
-		/* hack to make MPD select the "ffmpeg" decoder plugin
-		   - since avio.h doesn't tell us the MIME type of the
-		   resource, we can't select a decoder plugin, but the
-		   "ffmpeg" plugin is quite good at auto-detection */
-		SetMimeType("audio/x-mpd-ffmpeg");
-		SetReady();
+		Start();
 	}
 
-	/* virtual methods from InputStream */
-	[[nodiscard]] bool IsEOF() const noexcept override;
-	size_t Read(std::unique_lock<Mutex> &lock,
-		    std::span<std::byte> dest) override;
-	void Seek(std::unique_lock<Mutex> &lock,
-		  offset_type offset) override;
+	~FfmpegInputStream() noexcept override {
+		Stop();
+	}
+
+	/* virtual methods from ThreadInputStream */
+	void Open() override;
+	std::size_t ThreadRead(std::span<std::byte> dest) override;
+	void ThreadSeek(offset_type offset) override;
+
+	void Close() noexcept override {
+		io = {};
+	}
 };
 
 [[gnu::const]]
@@ -89,38 +88,31 @@ input_ffmpeg_open(const char *uri,
 	return std::make_unique<FfmpegInputStream>(uri, mutex);
 }
 
-size_t
-FfmpegInputStream::Read(std::unique_lock<Mutex> &,
-			std::span<std::byte> dest)
+void
+FfmpegInputStream::Open()
 {
-	size_t result;
+	io = {GetURI(), AVIO_FLAG_READ};
 
-	{
-		const ScopeUnlock unlock(mutex);
-		result = io.Read(dest);
-	}
+	seekable = (io->seekable & AVIO_SEEKABLE_NORMAL) != 0;
+	size = io.GetSize();
 
-	offset += result;
-	return (size_t)result;
+	/* hack to make MPD select the "ffmpeg" decoder plugin - since
+	   avio.h doesn't tell us the MIME type of the resource, we
+	   can't select a decoder plugin, but the "ffmpeg" plugin is
+	   quite good at auto-detection */
+	SetMimeType("audio/x-mpd-ffmpeg");
 }
 
-bool
-FfmpegInputStream::IsEOF() const noexcept
+std::size_t
+FfmpegInputStream::ThreadRead(std::span<std::byte> dest)
 {
-	return io.IsEOF();
+	return io.Read(dest);
 }
 
 void
-FfmpegInputStream::Seek(std::unique_lock<Mutex> &, offset_type new_offset)
+FfmpegInputStream::ThreadSeek(offset_type new_offset)
 {
-	uint64_t result;
-
-	{
-		const ScopeUnlock unlock(mutex);
-		result = io.Seek(new_offset);
-	}
-
-	offset = result;
+	io.Seek(new_offset);
 }
 
 const InputPlugin input_plugin_ffmpeg = {
