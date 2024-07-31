@@ -957,6 +957,10 @@ Whenever possible, ids should be used.
     the server, and the data is gone when the song gets
     removed from the queue.
 
+    Tags received from the server are merged [#since_0_24]_, i.e.
+    only received tags are overwritten, but other tags are not affected
+    (previously they were removed).
+
 .. _command_cleartagid:
 
 :command:`cleartagid {SONGID} [TAG]`
