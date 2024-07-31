@@ -84,11 +84,8 @@ CurlGlobal::CurlGlobal(EventLoop &_loop)
 	:defer_read_info(_loop, BIND_THIS_METHOD(ReadInfo)),
 	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout))
 {
-	multi.SetOption(CURLMOPT_SOCKETFUNCTION, CurlSocket::SocketFunction);
-	multi.SetOption(CURLMOPT_SOCKETDATA, this);
-
-	multi.SetOption(CURLMOPT_TIMERFUNCTION, TimerFunction);
-	multi.SetOption(CURLMOPT_TIMERDATA, this);
+	multi.SetSocketFunction(CurlSocket::SocketFunction, this);
+	multi.SetTimerFunction(TimerFunction, this);
 }
 
 int

@@ -61,6 +61,18 @@ public:
 			throw std::runtime_error(curl_multi_strerror(code));
 	}
 
+	void SetSocketFunction(int (*function)(CURL *easy, curl_socket_t s, int what, void *clientp, void *socketp) noexcept,
+			       void *clientp) {
+		SetOption(CURLMOPT_SOCKETFUNCTION, function);
+		SetOption(CURLMOPT_SOCKETDATA, clientp);
+	}
+
+	void SetTimerFunction(int (*function)(CURLM *multi, long timeout_ms, void *clientp) noexcept,
+			      void *clientp) {
+		SetOption(CURLMOPT_TIMERFUNCTION, function);
+		SetOption(CURLMOPT_TIMERDATA, clientp);
+	}
+
 	void Add(CURL *easy) {
 		auto code = curl_multi_add_handle(handle, easy);
 		if (code != CURLM_OK)
