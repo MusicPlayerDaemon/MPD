@@ -52,6 +52,8 @@ class StickerDatabase {
 		  SQL_TRANSACTION_COMMIT,
 		  SQL_TRANSACTION_ROLLBACK,
 		  SQL_NAMES,
+		  SQL_NAMES_TYPES,
+		  SQL_NAMES_TYPES_BY_TYPE,
 
 		  SQL_COUNT
 	};
@@ -165,6 +167,11 @@ public:
 	 * Uniq and sorted list of all sticker names
 	 */
 	void Names(void (*func)(const char *value, void *user_data), void *user_data);
+
+	/**
+	 * Uniq and sorted list of all sticker names by type
+	 */
+	void NamesTypes(const char *type, void (*func)(const char *value, const char *type, void *user_data), void *user_data);
 
 	using StickerTypeUriPair = std::pair<std::string, std::string>;
 
