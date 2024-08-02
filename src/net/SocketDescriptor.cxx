@@ -6,6 +6,7 @@
 #include "StaticSocketAddress.hxx"
 #include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
+#include "UniqueSocketDescriptor.hxx"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -243,7 +244,15 @@ SocketDescriptor::SetNonBlocking() const noexcept
 	return ioctlsocket(fd, FIONBIO, &val) == 0;
 }
 
-#endif
+#else
+
+UniqueSocketDescriptor
+SocketDescriptor::Duplicate() const noexcept
+{
+	return UniqueSocketDescriptor{FileDescriptor::Duplicate()};
+}
+
+#endif // !_WIN32
 
 bool
 SocketDescriptor::SetOption(int level, int name,

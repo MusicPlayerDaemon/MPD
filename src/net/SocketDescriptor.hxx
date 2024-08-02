@@ -24,6 +24,7 @@ class SocketAddress;
 class StaticSocketAddress;
 class IPv4Address;
 class IPv6Address;
+class UniqueSocketDescriptor;
 
 /**
  * An OO wrapper for a Berkeley or WinSock socket descriptor.
@@ -137,7 +138,10 @@ public:
 
 	using FileDescriptor::SetNonBlocking;
 	using FileDescriptor::SetBlocking;
-	using FileDescriptor::Duplicate;
+
+	[[nodiscard]]
+	UniqueSocketDescriptor Duplicate() const noexcept;
+
 	using FileDescriptor::CheckDuplicate;
 	using FileDescriptor::Close;
 #else
