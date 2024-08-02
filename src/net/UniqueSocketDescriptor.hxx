@@ -26,7 +26,11 @@ public:
 #ifndef _WIN32
 	explicit UniqueSocketDescriptor(FileDescriptor _fd) noexcept
 		:SocketDescriptor(_fd) {}
+
+	explicit UniqueSocketDescriptor(UniqueFileDescriptor &&_fd) noexcept
+		:SocketDescriptor(_fd.Release()) {}
 #endif // !_WIN32
+
 	explicit UniqueSocketDescriptor(int _fd) noexcept
 		:SocketDescriptor(_fd) {}
 
