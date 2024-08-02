@@ -15,6 +15,7 @@
 #include "PlaylistError.hxx"
 #include "db/PlaylistVector.hxx"
 #include "SongLoader.hxx"
+#include "song/Filter.hxx"
 #include "song/DetachedSong.hxx"
 #include "BulkEdit.hxx"
 #include "playlist/Length.hxx"
@@ -26,6 +27,7 @@
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "time/ChronoUtil.hxx"
+#include "util/Exception.hxx"
 #include "util/UriExtract.hxx"
 #include "LocateUri.hxx"
 
@@ -129,7 +131,7 @@ handle_listplaylist(Client &client, Request args, Response &r)
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
 
 	playlist_file_print(r, client.GetPartition(), SongLoader(client),
-			    name, range.start, range.end, false);
+			    name, range.start, range.end, false, nullptr);
 	return CommandResult::OK;
 }
 
@@ -146,7 +148,39 @@ handle_listplaylistinfo(Client &client, Request args, Response &r)
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
 
 	playlist_file_print(r, client.GetPartition(), SongLoader(client),
-			    name, range.start, range.end, true);
+			    name, range.start, range.end, true, nullptr);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_searchplaylist(Client &client, Request args, Response &r)
+{
+	const auto name = LocateUri(UriPluginKind::PLAYLIST, args.front(),
+				    &client
+#ifdef ENABLE_DATABASE
+					   , nullptr
+#endif
+					   );
+	args.shift();
+
+	RangeArg window = RangeArg::All();
+	if (args.size() == 2) {
+		window = args.ParseRange(args.size() - 1);
+		args.pop_back();
+	}
+
+	SongFilter filter;
+	try {
+		filter.Parse(args, true);
+	} catch (...) {
+		r.Error(ACK_ERROR_ARG,
+			GetFullMessage(std::current_exception()).c_str());
+		return CommandResult::ERROR;
+	}
+	filter.Optimize();
+
+	playlist_file_print(r, client.GetPartition(), SongLoader(client),
+				   name, window.start, window.end, true, &filter);
 	return CommandResult::OK;
 }
 
