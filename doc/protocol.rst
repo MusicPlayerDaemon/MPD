@@ -994,6 +994,14 @@ remote playlists (absolute URI with a supported scheme).
     plugins are supported. A range may be specified to list
     only a part of the playlist. [#since_0_24]_
 
+.. _command_searchplaylist:
+
+:command:`searchplaylist {NAME} {FILTER} [{START:END}]`
+    Search the playlist for songs matching
+    ``FILTER`` (see :ref:`Filters <filter_syntax>`).  Playlist
+    plugins are supported. A range may be specified to list
+    only a part of the playlist.
+
 .. _command_listplaylists:
 
 :command:`listplaylists`

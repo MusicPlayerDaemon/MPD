@@ -5,6 +5,7 @@
 
 class Response;
 class SongLoader;
+class SongFilter;
 struct Partition;
 
 /**
@@ -20,4 +21,6 @@ playlist_file_print(Response &r, Partition &partition,
 		    const SongLoader &loader,
 		    const LocatedUri &uri,
 		    unsigned start_index, unsigned end_index,
-		    bool detail);
+		    bool detail,
+		    SongFilter *filter);
+
