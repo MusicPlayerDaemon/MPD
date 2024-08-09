@@ -353,6 +353,10 @@ mpd_mpg123_stream_decode(DecoderClient &client, InputStream &is)
 	};
 
 	mpd_mpg123_open_stream(*handle, iohandle);
+
+	if (is.KnownSize())
+	    mpg123_set_filesize(handle, is.GetSize());
+
 	Decode(client, *handle, is.IsSeekable());
 }
 
