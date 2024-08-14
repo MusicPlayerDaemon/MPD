@@ -17,6 +17,7 @@
 #include "Instance.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ScopeExit.hxx"
+#include "tag/Settings.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Names.hxx"
 #include "sticker/TagSticker.hxx"
@@ -25,6 +26,7 @@
 #include "db/PlaylistInfo.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/DatabaseLock.hxx"
+#include <fmt/format.h>
 #include "song/Filter.hxx"
 
 namespace {
@@ -453,4 +455,21 @@ handle_sticker(Client &client, Request args, Response &r)
 
 	r.Error(ACK_ERROR_ARG, "bad request");
 	return CommandResult::ERROR;
+}
+
+CommandResult
+handle_sticker_types(Client &client, Request args, Response &r)
+{
+	(void) client;
+	(void) args;
+	const auto tag_mask = global_tag_mask & r.GetTagMask();
+
+	r.Fmt("stickertype: filter\n");
+	r.Fmt("stickertype: playlist\n");
+	r.Fmt("stickertype: song\n");
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
+		if (sticker_allowed_tags.Test(TagType(i)) &&
+		    tag_mask.Test(TagType(i)))
+			r.Fmt(FMT_STRING("stickertype: {}\n"), tag_item_names[i]);
+	return CommandResult::OK;
 }
