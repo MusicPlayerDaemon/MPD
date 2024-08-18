@@ -102,6 +102,14 @@ struct playlist {
 	[[gnu::pure]]
 	int GetNextPosition() const noexcept;
 
+	const std::string_view GetLastLoadedPlaylist() const noexcept {
+		return queue.last_loaded_playlist;
+	}
+
+	void SetLastLoadedPlaylist(const char *playlist_name) noexcept {
+		queue.last_loaded_playlist = playlist_name;
+	}
+
 	/**
 	 * Returns the song object which is currently queued.  Returns
 	 * none if there is none (yet?) or if MPD isn't playing.

@@ -544,6 +544,7 @@ Querying :program:`MPD`'s status
       :ref:`audio_output_format` for a detailed explanation.
     - ``updating_db``: ``job id``
     - ``error``: if there is an error, returns message here
+    - ``lastloadedplaylist``: last loaded stored playlist [#since_0_24]_
 
     :program:`MPD` may omit lines which have no (known) value.  Older
     :program:`MPD` versions used to have a "magic" value for
