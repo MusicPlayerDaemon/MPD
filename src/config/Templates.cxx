@@ -58,6 +58,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "auto_update" },
 	{ "auto_update_depth" },
 	{ "mixramp_analyzer" },
+	{ "list_playlists_in_root"},
 };
 
 static constexpr unsigned n_config_param_templates =

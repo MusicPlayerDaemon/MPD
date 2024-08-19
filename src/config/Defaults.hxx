@@ -5,5 +5,6 @@
 #define MPD_CONFIG_DEFAULTS_HXX
 
 static constexpr bool DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS = false;
+static constexpr bool DEFAULT_LIST_PLAYLISTS_IN_ROOT = true;
 
 #endif

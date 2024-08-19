@@ -61,6 +61,7 @@ enum class ConfigOption {
 	AUTO_UPDATE_DEPTH,
 
 	MIXRAMP_ANALYZER,
+	LIST_PLAYLISTS_IN_ROOT,
 
 	MAX
 };

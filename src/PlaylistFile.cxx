@@ -35,6 +35,7 @@ static const char PLAYLIST_COMMENT = '#';
 
 static unsigned playlist_max_length;
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
+bool list_playlists_in_root = DEFAULT_LIST_PLAYLISTS_IN_ROOT;
 
 void
 spl_global_init(const ConfigData &config)
@@ -46,6 +47,10 @@ spl_global_init(const ConfigData &config)
 	playlist_saveAbsolutePaths =
 		config.GetBool(ConfigOption::SAVE_ABSOLUTE_PATHS,
 			       DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS);
+
+	list_playlists_in_root =
+		config.GetBool(ConfigOption::LIST_PLAYLISTS_IN_ROOT,
+			       DEFAULT_LIST_PLAYLISTS_IN_ROOT);
 }
 
 bool

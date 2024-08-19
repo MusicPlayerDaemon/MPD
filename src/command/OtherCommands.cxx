@@ -160,7 +160,8 @@ handle_lsinfo_relative(Client &client, Response &r, const char *uri)
 	(void)client;
 #endif
 
-	if (isRootDirectory(uri)) {
+	if ( list_playlists_in_root &&
+	     isRootDirectory(uri)) {
 		try {
 			print_spl_list(r, ListPlaylistFiles());
 		} catch (...) {

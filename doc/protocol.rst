@@ -1261,7 +1261,8 @@ The music database
 
     When listing the root directory, this currently returns
     the list of stored playlists.  This behavior is
-    deprecated; use "listplaylists" instead.
+    deprecated; use "listplaylists" instead. This behavior can be
+    disabled with the config option ``list_playlists_in_root``.
 
     This command may be used to list metadata of remote
     files (e.g. URI beginning with "http://" or "smb://").

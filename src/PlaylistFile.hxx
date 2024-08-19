@@ -18,6 +18,7 @@ class PlaylistVector;
 typedef std::vector<std::string> PlaylistFileContents;
 
 extern bool playlist_saveAbsolutePaths;
+extern bool list_playlists_in_root;
 
 class PlaylistFileEditor {
 	const AllocatedPath path;

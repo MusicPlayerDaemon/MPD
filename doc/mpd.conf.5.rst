@@ -139,6 +139,10 @@ save_absolute_paths_in_playlists <yes or no>
   This specifies whether relative or absolute paths for song filenames are used
   when saving playlists. The default is "no".
 
+list_playlists_in_root <yes or no>
+  This specifies whether the lsinfo command should list playlists for the root
+  folder.
+
 auto_update <yes or no>
   This specifies the whether to support automatic update of music database
   when files are changed in music_directory. The default is to disable

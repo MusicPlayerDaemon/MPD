@@ -67,6 +67,7 @@ ver 0.24 (not yet released)
 * require libfmt 9 or later
 * documentation: switch to sphinx-rtd-theme
 * require Meson 1.0
+* option to disable listing of playlists with lsinfo in the root folder
 
 ver 0.23.15 (2023/12/20)
 * decoder
