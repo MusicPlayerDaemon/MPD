@@ -132,8 +132,18 @@ public:
 		return address.sin6_family == AF_INET6;
 	}
 
+	/**
+	 * @return the port number in network byte order
+	 */
+	constexpr uint16_t GetPortBE() const noexcept {
+		return address.sin6_port;
+	}
+
+	/**
+	 * @return the port number in host byte order
+	 */
 	constexpr uint16_t GetPort() const noexcept {
-		return FromBE16(address.sin6_port);
+		return FromBE16(GetPortBE());
 	}
 
 	void SetPort(uint16_t port) noexcept {
