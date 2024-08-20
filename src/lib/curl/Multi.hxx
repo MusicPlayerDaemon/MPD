@@ -98,16 +98,12 @@ public:
 		return running_handles;
 	}
 
-	unsigned Wait(int timeout) {
+	unsigned Wait(std::chrono::duration<int, std::chrono::milliseconds::period> timeout) {
 		int numfds;
-		auto code = curl_multi_wait(handle, nullptr, 0, timeout,
+		auto code = curl_multi_wait(handle, nullptr, 0, timeout.count(),
 					    &numfds);
 		if (code != CURLM_OK)
 			throw std::runtime_error(curl_multi_strerror(code));
 		return numfds;
-	}
-
-	unsigned Wait(std::chrono::milliseconds timeout) {
-		return Wait(timeout.count());
 	}
 };
