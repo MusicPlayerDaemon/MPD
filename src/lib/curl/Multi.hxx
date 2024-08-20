@@ -98,7 +98,7 @@ public:
 		return running_handles;
 	}
 
-	unsigned Wait(int timeout=-1) {
+	unsigned Wait(int timeout) {
 		int numfds;
 		auto code = curl_multi_wait(handle, nullptr, 0, timeout,
 					    &numfds);
