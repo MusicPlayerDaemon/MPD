@@ -174,6 +174,13 @@ IsSocketError(const std::system_error &e) noexcept
 
 [[gnu::pure]]
 static inline bool
+IsSocketError(const std::system_error &e, socket_error_t code) noexcept
+{
+	return IsSocketError(e) && e.code().value() == code;
+}
+
+[[gnu::pure]]
+static inline bool
 IsSocketErrorReceiveWouldBlock(const std::system_error &e) noexcept
 {
 	return IsSocketError(e) &&
