@@ -236,9 +236,8 @@ public:
 
 #ifndef _WIN32
 	[[nodiscard]]
-	ssize_t ReadAt(off_t offset,
-		       void *buffer, std::size_t length) const noexcept {
-		return ::pread(fd, buffer, length, offset);
+	ssize_t ReadAt(off_t offset, std::span<std::byte> dest) const noexcept {
+		return ::pread(fd, dest.data(), dest.size(), offset);
 	}
 #endif
 
