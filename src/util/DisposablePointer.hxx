@@ -6,6 +6,15 @@
 
 #include <utility>
 
+#if defined(__GNUC__) && __GNUC__ >= 13
+#pragma GCC diagnostic push
+/* suppress -Wuninitialized; GCC is right, the "dispose" field is
+   sometimes not initialized (if ptr==nullptr), but it's only swapped
+   in the move operator/constructor, and that's okay, we're not going
+   to use it in that case anyway */
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#endif
+
 /**
  * A generic object which is owned by somebody who doesn't know how to
  * dispose of it; to do this, a function pointer for disposing it is
@@ -61,6 +70,10 @@ public:
 			dispose(std::exchange(ptr, nullptr));
 	}
 };
+
+#if defined(__GNUC__) && __GNUC__ >= 13
+#pragma GCC diagnostic pop
+#endif
 
 template<typename T>
 class TypedDisposablePointer : public DisposablePointer {
