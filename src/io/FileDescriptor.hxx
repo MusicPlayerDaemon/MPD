@@ -163,6 +163,15 @@ public:
 	 */
 	void DisableCloseOnExec() const noexcept;
 
+#ifdef __linux__
+	/**
+	 * Set the capacity of the pipe.
+	 *
+	 * This method ignores errors.
+	 */
+	void SetPipeCapacity(unsigned capacity) const noexcept;
+#endif
+
 	/**
 	 * Duplicate this file descriptor.
 	 *

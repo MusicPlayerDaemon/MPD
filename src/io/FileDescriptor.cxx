@@ -213,6 +213,21 @@ FileDescriptor::DisableCloseOnExec() const noexcept
 	fcntl(fd, F_SETFD, old_flags & ~FD_CLOEXEC);
 }
 
+#ifdef __linux__
+
+void
+FileDescriptor::SetPipeCapacity(unsigned capacity) const noexcept
+{
+	/* the canonical type for buffer sizes is "size_t", but since
+           F_SETPIPE_SZ expects an "int" parameter, "size_t" would
+           have the wrong size; "unsigned" is always the same size as
+           "int", but using a signed integer would suggest that
+           negative values are okay when they're not */
+	fcntl(fd, F_SETPIPE_SZ, capacity);
+}
+
+#endif
+
 UniqueFileDescriptor
 FileDescriptor::Duplicate() const noexcept
 {
