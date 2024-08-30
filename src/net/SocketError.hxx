@@ -176,7 +176,7 @@ IsSocketError(const std::system_error &e) noexcept
 static inline bool
 IsSocketError(const std::system_error &e, socket_error_t code) noexcept
 {
-	return IsSocketError(e) && e.code().value() == code;
+	return IsSocketError(e) && static_cast<socket_error_t>(e.code().value()) == code;
 }
 
 [[gnu::pure]]
