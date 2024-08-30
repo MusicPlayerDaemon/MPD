@@ -257,6 +257,13 @@ public:
 	 */
 	void FullRead(std::span<std::byte> dest) const;
 
+#ifndef _WIN32
+	[[nodiscard]]
+	ssize_t WriteAt(off_t offset, std::span<const std::byte> src) const noexcept {
+		return ::pwrite(fd, src.data(), src.size(), offset);
+	}
+#endif
+
 	[[nodiscard]]
 	ssize_t Write(std::span<const std::byte> src) const noexcept {
 		return ::write(fd, src.data(), src.size());
