@@ -1579,6 +1579,9 @@ Examples:
 :command:`stickernames`
     Gets a list of uniq sticker names.
 
+:command:`stickertypes`
+    Shows a list of available sticker types.
+
 Connection settings
 ===================
 
