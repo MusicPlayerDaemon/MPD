@@ -16,5 +16,7 @@ CommandResult
 handle_sticker_names(Client &client, Request request, Response &response);
 CommandResult
 handle_sticker_types(Client &client, Request request, Response &response);
+CommandResult
+handle_sticker_names_types(Client &client, Request request, Response &response);
 
 #endif

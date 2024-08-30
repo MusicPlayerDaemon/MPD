@@ -1590,6 +1590,9 @@ Examples:
 :command:`stickertypes`
     Shows a list of available sticker types.
 
+:command:`stickernamestypes [TYPE]`
+    Gets a list of uniq sticker names and their types.
+
 Connection settings
 ===================
 
