@@ -326,7 +326,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 	if (*s == '(') {
 		auto first = ParseExpression(s, fold_case);
 		if (*s == ')') {
-			++s;
+			s = StripLeft(s + 1);
 			return first;
 		}
 
@@ -340,7 +340,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 			and_filter->AddItem(ParseExpression(s, fold_case));
 
 			if (*s == ')') {
-				++s;
+				s = StripLeft(s + 1);
 				return and_filter;
 			}
 
