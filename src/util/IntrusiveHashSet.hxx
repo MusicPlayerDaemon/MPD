@@ -11,6 +11,21 @@
 #include <concepts> // for std::regular_invocable
 #include <numeric> // for std::accumulate()
 
+template<typename Operators, typename Item>
+concept IntrusiveHashSetOperatorsConcept = requires(const Operators &ops,
+						    const Item &c, const Item &c2)
+{
+	{ ops.get_key(c) } noexcept;
+
+	/* note: no "noexcept" here because std::hash is not
+           noexcept */
+	{ ops.hash(ops.get_key(c)) } -> std::same_as<std::size_t>;
+
+	/* note: no "noexcept" here because std::equal_to is not
+           noexcept */
+	{ ops.equal(ops.get_key(c), ops.get_key(c2)) } -> std::same_as<bool>;
+};
+
 struct IntrusiveHashSetOptions {
 	bool constant_time_size = false;
 
@@ -123,7 +138,7 @@ struct IntrusiveHashSetOperators {
  * `equal`
  */
 template<typename T, std::size_t table_size,
-	 typename Operators,
+	 IntrusiveHashSetOperatorsConcept<T> Operators,
 	 typename HookTraits=IntrusiveHashSetBaseHookTraits<T>,
 	 IntrusiveHashSetOptions options=IntrusiveHashSetOptions{}>
 class IntrusiveHashSet {
