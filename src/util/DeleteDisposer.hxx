@@ -10,7 +10,7 @@
 class DeleteDisposer {
 public:
 	template<typename T>
-	void operator()(T *t) {
+	void operator()(T *t) const noexcept {
 		delete t;
 	}
 };
