@@ -7,6 +7,7 @@
 #include "BufferingInputStream.hxx"
 
 #include <cassert>
+#include <iostream>
 
 /**
  * A "huge" buffer which remembers the (partial) contents of an
@@ -14,8 +15,8 @@
  * a "stream"; see IsEligible() for details.
  */
 class BufferedInputStream final : public InputStream, BufferingInputStream {
-	// TODO: make configurable
-	static constexpr offset_type MAX_SIZE = 128 * 1024 * 1024;
+	// Default 128 MB, set in BufferedInputStream.cxx. Configurable, set from Init.cxx
+	static offset_type MAX_SIZE;
 
 public:
 	BufferedInputStream(InputStreamPtr _input);
@@ -45,6 +46,9 @@ public:
 	size_t Read(std::unique_lock<Mutex> &lock,
 		    std::span<std::byte> dest) override;
 
+	static void SetMaxSize(offset_type maxsize) noexcept {
+		MAX_SIZE = maxsize;
+	}
 private:
 	/* virtual methods from class BufferingInputStream */
 	void OnBufferAvailable() noexcept override {
