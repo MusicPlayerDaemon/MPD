@@ -7,6 +7,7 @@
 #include "HostParser.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringAPI.hxx"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -15,8 +16,6 @@
 #include <netdb.h>
 #include <net/if.h>
 #endif
-
-#include <cstring>
 
 #include <stdio.h>
 
@@ -107,7 +106,7 @@ Resolve(const char *host_and_port, int default_port,
 		} else
 			throw std::runtime_error("Garbage after host name");
 
-		if (ai_is_passive(hints) && strcmp(host, "*") == 0)
+		if (ai_is_passive(hints) && StringIsEqual(host, "*"))
 			host = nullptr;
 	} else {
 		host = nullptr;
