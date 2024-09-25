@@ -8,5 +8,5 @@ auto
 fmt::formatter<std::exception_ptr>::format(std::exception_ptr e, format_context &ctx) const
  -> format_context::iterator
 {
-	return formatter<string_view>::format(GetFullMessage(e), ctx);
+	return formatter<string_view>::format(GetFullMessage(std::move(e)), ctx);
 }
