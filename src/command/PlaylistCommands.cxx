@@ -164,8 +164,10 @@ handle_searchplaylist(Client &client, Request args, Response &r)
 	args.shift();
 
 	RangeArg window = RangeArg::All();
-	if (args.size() == 2) {
+	if (args.size() == 3 && StringIsEqual(args[args.size() - 2], "window")) {
 		window = args.ParseRange(args.size() - 1);
+
+		args.pop_back();
 		args.pop_back();
 	}
 

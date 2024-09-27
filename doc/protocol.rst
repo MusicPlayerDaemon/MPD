@@ -996,7 +996,7 @@ remote playlists (absolute URI with a supported scheme).
 
 .. _command_searchplaylist:
 
-:command:`searchplaylist {NAME} {FILTER} [{START:END}]`
+:command:`searchplaylist {NAME} {FILTER} [window {START:END}]`
     Search the playlist for songs matching
     ``FILTER`` (see :ref:`Filters <filter_syntax>`).  Playlist
     plugins are supported. A range may be specified to list
