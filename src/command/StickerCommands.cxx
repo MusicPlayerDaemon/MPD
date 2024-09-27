@@ -124,6 +124,25 @@ public:
 		return CommandResult::OK;
 	}
 
+	CommandResult NamesTypes(const char *type) {
+		auto data = CallbackContext{
+			.name = "",
+			.sticker_type = sticker_type,
+			.response = response,
+			.is_song = StringIsEqual("song", sticker_type)
+		};
+
+		auto callback = [](const char *found_value, const char *found_type, void *user_data) {
+			auto context = reinterpret_cast<CallbackContext *>(user_data);
+			context->response.Fmt("name: {}\n", found_value);
+			context->response.Fmt("type: {}\n", found_type);
+		};
+
+		sticker_database.NamesTypes(type, callback, &data);
+
+		return CommandResult::OK;
+	}
+
 protected:
 	DomainHandler(Response &_response,
 		      const Database &_database,
@@ -332,6 +351,43 @@ handle_sticker_names(Client &client, Request args, Response &r)
 	std::unique_ptr<DomainHandler> handler = std::make_unique<SongHandler>(r, db, sticker_database);
 
 	return handler->Names();
+}
+
+CommandResult
+handle_sticker_names_types(Client &client, Request args, Response &r)
+{
+	auto &instance = client.GetInstance();
+	if (!instance.HasStickerDatabase()) {
+		r.Error(ACK_ERROR_UNKNOWN, "sticker database is disabled");
+		return CommandResult::ERROR;
+	}
+
+	auto &db = client.GetPartition().GetDatabaseOrThrow();
+	auto &sticker_database = *instance.sticker_database;
+
+	auto type = args.GetOptional(0);
+	std::unique_ptr<DomainHandler> handler = std::make_unique<SongHandler>(r, db, sticker_database);
+
+	if (type == nullptr ||
+	    StringIsEqual(type, "song") ||
+	    StringIsEqual(type, "playlist") ||
+	    StringIsEqual(type, "filter")) {
+		return handler->NamesTypes(type);
+	}
+	auto tag_type = tag_name_parse(type);
+	if (tag_type == TAG_NUM_OF_ITEM_TYPES) {
+		r.FmtError(ACK_ERROR_ARG, "no such tag {:?}", type);
+		return CommandResult::ERROR;
+	}
+	else if (sticker_allowed_tags.Test(tag_type)) {
+		return handler->NamesTypes(type);
+	}
+	else {
+		r.FmtError(ACK_ERROR_ARG, "unsupported tag {:?}", type);
+		return CommandResult::ERROR;
+	}
+	r.FmtError(ACK_ERROR_ARG, "unknown sticker domain {:?}", type);
+	return CommandResult::ERROR;
 }
 
 CommandResult
