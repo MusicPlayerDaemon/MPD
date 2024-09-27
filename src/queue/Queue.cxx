@@ -270,6 +270,7 @@ Queue::Clear() noexcept
 	}
 
 	length = 0;
+	last_loaded_playlist.clear();
 }
 
 static void

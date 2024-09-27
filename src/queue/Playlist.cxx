@@ -359,3 +359,15 @@ playlist::BorderPause(PlayerControl &pc) noexcept
 		listener.OnQueueOptionsChanged();
 	}
 }
+
+const std::string_view
+playlist::GetLastLoadedPlaylist() const noexcept
+{
+	return queue.last_loaded_playlist;
+}
+
+void
+playlist::SetLastLoadedPlaylist(const char *playlist_name) noexcept
+{
+	queue.last_loaded_playlist = playlist_name;
+}
