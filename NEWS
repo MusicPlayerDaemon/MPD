@@ -10,7 +10,7 @@ ver 0.24 (not yet released)
   - show PCRE support in "config" response
   - apply Unicode normalization to case-insensitive filter expressions
   - stickers on playlists and some tag types
-  - new commands "stickernames", "stickertypes", "playlistlength", "searchplaylist"
+  - new commands "stickernames", "stickertypes", "playlistlength", "searchplaylist", "protocol"
   - new "search"/"find" filter "added-since"
   - allow range in listplaylist and listplaylistinfo
   - "sticker find" supports sort and window parameter and new sticker compare operators "eq", "lt" and "gt"
