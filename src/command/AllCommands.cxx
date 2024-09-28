@@ -156,6 +156,7 @@ static constexpr struct command commands[] = {
 	{ "previous", PERMISSION_PLAYER, 0, 0, handle_previous },
 	{ "prio", PERMISSION_PLAYER, 2, -1, handle_prio },
 	{ "prioid", PERMISSION_PLAYER, 2, -1, handle_prioid },
+	{ "protocol", PERMISSION_NONE, 0, -1, handle_protocol },
 	{ "random", PERMISSION_PLAYER, 1, 1, handle_random },
 	{ "rangeid", PERMISSION_ADD, 2, 2, handle_rangeid },
 	{ "readcomments", PERMISSION_READ, 1, 1, handle_read_comments },

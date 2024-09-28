@@ -5,6 +5,7 @@
 
 #include "IClient.hxx"
 #include "Message.hxx"
+#include "ProtocolFeature.hxx"
 #include "command/CommandResult.hxx"
 #include "command/CommandListBuilder.hxx"
 #include "input/LastInputStream.hxx"
@@ -111,6 +112,11 @@ private:
 	 */
 	std::unique_ptr<BackgroundCommand> background_command;
 
+	/**
+	 * Bitmask of protocol features.
+	 */
+	ProtocolFeature protocol_feature = ProtocolFeature::None();
+
 public:
 	Client(EventLoop &loop, Partition &partition,
 	       UniqueSocketDescriptor fd, int uid,
@@ -165,6 +171,29 @@ public:
 
 	void SetPermission(unsigned _permission) noexcept {
 		permission = _permission;
+	}
+
+	ProtocolFeature GetProtocolFeatures() const noexcept {
+		return protocol_feature;
+	}
+
+	void SetProtocolFeatures(ProtocolFeature features, bool enable) noexcept {
+		if (enable)
+			protocol_feature.Set(features);
+		else
+			protocol_feature.Unset(features);
+	}
+
+	void AllProtocolFeatures() noexcept {
+		protocol_feature.SetAll();
+	}
+
+	void ClearProtocolFeatures() noexcept {
+		protocol_feature.Clear();
+	}
+
+	bool ProtocolFeatureEnabled(enum ProtocolFeatureType value) noexcept {
+		return protocol_feature.Test(value);
 	}
 
 	/**
