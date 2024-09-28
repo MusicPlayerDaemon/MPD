@@ -16,6 +16,9 @@ void
 tag_print_types(Response &response) noexcept;
 
 void
+tag_print_types_available(Response &response) noexcept;
+
+void
 tag_print(Response &response, TagType type, std::string_view value) noexcept;
 
 void
