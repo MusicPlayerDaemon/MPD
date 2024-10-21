@@ -19,7 +19,7 @@ StringIsEmpty(const char *string) noexcept
 }
 
 [[gnu::pure]]
-static inline bool
+static constexpr bool
 StringIsEqual(std::string_view a, std::string_view b) noexcept
 {
 	return a == b;
@@ -112,7 +112,7 @@ const char *
 FindStringSuffix(const char *p, const char *suffix) noexcept;
 
 template<typename T>
-bool
+constexpr bool
 SkipPrefix(std::basic_string_view<T> &haystack,
 	   std::basic_string_view<T> needle) noexcept
 {
@@ -123,7 +123,7 @@ SkipPrefix(std::basic_string_view<T> &haystack,
 }
 
 template<typename T>
-bool
+constexpr bool
 RemoveSuffix(std::basic_string_view<T> &haystack,
 	     std::basic_string_view<T> needle) noexcept
 {
