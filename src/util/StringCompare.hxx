@@ -22,8 +22,7 @@ StringIsEmpty(const char *string) noexcept
 static inline bool
 StringIsEqual(std::string_view a, std::string_view b) noexcept
 {
-	return a.size() == b.size() &&
-		StringIsEqual(a.data(), b.data(), b.size());
+	return a == b;
 }
 
 [[gnu::pure]]

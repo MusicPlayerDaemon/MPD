@@ -21,8 +21,7 @@ StringIsEmpty(const wchar_t *string) noexcept
 static inline bool
 StringIsEqual(std::wstring_view a, std::wstring_view b) noexcept
 {
-	return a.size() == b.size() &&
-		StringIsEqual(a.data(), b.data(), b.size());
+	return a == b;
 }
 
 [[gnu::pure]]
