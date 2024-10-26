@@ -17,6 +17,7 @@ ver 0.24 (not yet released)
   - consume only idle flags that were subscribed to
   - volume command is no longer deprecated
   - new "available" subcommand for tagtypes
+  - searching stored playlists respond now with song position
 * database
   - attribute "added" shows when each song was added to the database
   - fix integer overflows with 64-bit inode numbers

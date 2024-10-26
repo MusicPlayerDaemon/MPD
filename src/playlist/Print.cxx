@@ -17,6 +17,8 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "PlaylistError.hxx"
+#include <fmt/format.h>
+#include "client/Response.hxx"
 
 static void
 playlist_provider_print(Response &r,
@@ -69,27 +71,34 @@ playlist_provider_search_print(Response &r,
 
 	unsigned skip = start_index;
 	unsigned n = end_index - start_index;
+	unsigned position = 0;
 
 	while ((song = e.NextSong()) != nullptr) {
 		const bool detail = playlist_check_translate_song(*song, base_uri,
 								  loader);
-		if (!filter->Match(static_cast<LightSong>(*song)))
-			continue;
-
-		if (skip > 0) {
-			--skip;
+		if (!filter->Match(static_cast<LightSong>(*song))) {
+			++position;
 			continue;
 		}
 
-		if (detail)
+		if (skip > 0) {
+			--skip;
+			++position;
+			continue;
+		}
+
+		if (detail) {
 			song_print_info(r, *song);
-		else
+			r.Fmt(FMT_STRING("Pos: {}\n"), position);
+		} else
 			/* fallback if no detail was requested or no
 			   detail was available */
 			song_print_uri(r, *song);
 
 		if (--n == 0)
 			break;
+
+		++position;
 	}
 }
 
