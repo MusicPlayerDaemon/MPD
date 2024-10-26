@@ -1678,6 +1678,12 @@ Connection settings
     Announce that this client is interested in all tag
     types.  This is the default setting for new clients.
 
+.. _command_tagtypes_available:
+
+:command:`tagtypes available`
+    Shows the list of tag types configured
+    by the ``metadata_to_use`` setting.
+
 .. _partition_commands:
 
 Partition commands
