@@ -44,6 +44,7 @@
 #define COMMAND_STATUS_MIXRAMPDELAY	"mixrampdelay"
 #define COMMAND_STATUS_AUDIO		"audio"
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
+#define COMMAND_STATUS_LOADED_PLAYLIST  "lastloadedplaylist"
 
 CommandResult
 handle_play(Client &client, Request args, [[maybe_unused]] Response &r)
@@ -128,7 +129,8 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 			 COMMAND_STATUS_PLAYLIST ": {}\n"
 			 COMMAND_STATUS_PLAYLIST_LENGTH ": {}\n"
 			 COMMAND_STATUS_MIXRAMPDB ": {}\n"
-			 COMMAND_STATUS_STATE ": {}\n"),
+			 COMMAND_STATUS_STATE ": {}\n"
+			 COMMAND_STATUS_LOADED_PLAYLIST ": {}\n"),
 	      (unsigned)playlist.GetRepeat(),
 	      (unsigned)playlist.GetRandom(),
 	      SingleToString(playlist.GetSingle()),
@@ -137,7 +139,8 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 	      playlist.GetVersion(),
 	      playlist.GetLength(),
 	      pc.GetMixRampDb(),
-	      state);
+	      state,
+	      playlist.GetLastLoadedPlaylist());
 
 	if (pc.GetCrossFade() > FloatDuration::zero())
 		r.Fmt(FMT_STRING(COMMAND_STATUS_CROSSFADE ": {}\n"),

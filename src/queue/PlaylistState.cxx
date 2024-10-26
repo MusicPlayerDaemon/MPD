@@ -36,6 +36,7 @@
 #define PLAYLIST_STATE_FILE_CROSSFADE		"crossfade: "
 #define PLAYLIST_STATE_FILE_MIXRAMPDB		"mixrampdb: "
 #define PLAYLIST_STATE_FILE_MIXRAMPDELAY	"mixrampdelay: "
+#define PLAYLIST_STATE_FILE_LOADED_PLAYLIST	"lastloadedplaylist: "
 #define PLAYLIST_STATE_FILE_PLAYLIST_BEGIN	"playlist_begin"
 #define PLAYLIST_STATE_FILE_PLAYLIST_END	"playlist_end"
 
@@ -85,6 +86,8 @@ playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 	       pc.GetMixRampDb());
 	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_MIXRAMPDELAY "{}\n"),
 	       pc.GetMixRampDelay().count());
+	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_LOADED_PLAYLIST "{}\n"),
+	       playlist.GetLastLoadedPlaylist());
 	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n");
 	queue_save(os, playlist.queue);
 	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_END "\n");
@@ -156,6 +159,8 @@ playlist_state_restore(const StateFileConfig &config,
 			   prior to MPD 0.18 */
 			if (IsDigitASCII(*p))
 				pc.SetMixRampDelay(FloatDuration(ParseFloat(p)));
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_LOADED_PLAYLIST))) {
+			playlist.SetLastLoadedPlaylist(p);
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_RANDOM))) {
 			random_mode = StringIsEqual(p, "1");
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CURRENT))) {

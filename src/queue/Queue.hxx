@@ -85,6 +85,9 @@ struct Queue {
 	/** play back songs in random order? */
 	bool random = false;
 
+	/** Last loaded playlist */
+	std::string last_loaded_playlist;
+
 	/** random number generator for shuffle and random mode */
 	LazyRandomEngine rand;
 
