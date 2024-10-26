@@ -21,7 +21,7 @@
 
 static SignedSongTime get_duration(const DetachedSong &song) {
 	const auto duration = song.GetDuration();
-	return duration.IsNegative() ? (SignedSongTime)0 : song.GetDuration();
+	return duration.IsNegative() ? (SignedSongTime)0 : duration;
 }
 
 static void
@@ -36,7 +36,7 @@ playlist_provider_length(Response &r,
 
 	std::unique_ptr<DetachedSong> song;
 	unsigned i = 0;
-	SignedSongTime playtime = (SignedSongTime)0;
+	std::chrono::milliseconds playtime = (std::chrono::milliseconds)0;
 	while ((song = e.NextSong()) != nullptr) {
 		if (playlist_check_translate_song(*song, base_uri,
 						  loader))
@@ -44,7 +44,8 @@ playlist_provider_length(Response &r,
 		i++;
 	}
 	r.Fmt(FMT_STRING("songs: {}\n"), i);
-	r.Fmt(FMT_STRING("playtime: {}\n"), playtime.RoundS());
+	const auto seconds = std::chrono::round<std::chrono::seconds>(playtime);
+	r.Fmt(FMT_STRING("playtime: {}\n"), seconds.count());
 }
 
 void
