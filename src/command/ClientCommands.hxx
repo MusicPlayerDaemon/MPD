@@ -25,4 +25,7 @@ handle_password(Client &client, Request request, Response &response);
 CommandResult
 handle_tagtypes(Client &client, Request request, Response &response);
 
+CommandResult
+handle_protocol(Client &client, Request request, Response &response);
+
 #endif

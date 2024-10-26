@@ -1688,6 +1688,44 @@ Connection settings
     Shows the list of tag types configured
     by the ``metadata_to_use`` setting.
 
+.. _command_protocol:
+
+:command:`protocol`
+    Shows a list of enabled protocol features.
+
+    Available features:
+
+    - ``hide_playlists_in_root``: disables the listing of
+      stored playlists for the :ref:`lsinfo <command_lsinfo>`.
+
+    The following ``protocol`` sub commands configure the
+    protocol features.
+
+.. _command_protocol_disable:
+
+:command:`protocol disable {FEATURE...}`
+    Disables one or more features.
+
+.. _command_protocol_enable:
+
+:command:`protocol enable {FEATURE...}`
+    Enables one or more features.
+
+.. _command_protocol_clear:
+
+:command:`protocol clear`
+    Disables all protocol features.
+
+.. _command_protocol_all:
+
+:command:`protocol all`
+    Enables all protocol features.
+
+.. _command_protocol_available:
+
+:command:`protocol available`
+    Lists all available protocol features.
+
 .. _partition_commands:
 
 Partition commands

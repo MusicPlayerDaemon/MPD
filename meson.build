@@ -379,6 +379,7 @@ sources = [
   'src/client/File.cxx',
   'src/client/Response.cxx',
   'src/client/ThreadBackgroundCommand.cxx',
+  'src/client/ProtocolFeature.cxx',
   'src/Listen.cxx',
   'src/LogInit.cxx',
   'src/ls.cxx',
