@@ -160,7 +160,7 @@ handle_lsinfo_relative(Client &client, Response &r, const char *uri)
 	(void)client;
 #endif
 
-	if (isRootDirectory(uri)) {
+	if (!client.ProtocolFeatureEnabled(PF_HIDE_PLAYLISTS_IN_ROOT) && isRootDirectory(uri)) {
 		try {
 			print_spl_list(r, ListPlaylistFiles());
 		} catch (...) {

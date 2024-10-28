@@ -55,6 +55,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 
 		dest.AppendSong(pc, std::move(*song));
 	}
+	dest.SetLastLoadedPlaylist(uri);
 }
 
 void

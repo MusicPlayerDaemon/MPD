@@ -10,12 +10,14 @@ ver 0.24 (not yet released)
   - show PCRE support in "config" response
   - apply Unicode normalization to case-insensitive filter expressions
   - stickers on playlists and some tag types
-  - new commands "stickernames", "stickertypes", "playlistlength", "searchplaylist"
+  - new commands "stickernames", "stickertypes", "stickernamestypes", "playlistlength", "searchplaylist", "protocol"
   - new "search"/"find" filter "added-since"
   - allow range in listplaylist and listplaylistinfo
-  - "sticker find" supports sort and window parameter and new sticker compare operators "eq", "lt" and "gt"
+  - "sticker find" supports sort and window parameter and new sticker compare operators "eq", "lt", "gt", "contains" and "starts_with"
   - consume only idle flags that were subscribed to
   - volume command is no longer deprecated
+  - new "available" subcommand for tagtypes
+  - searching stored playlists respond now with song position
 * database
   - attribute "added" shows when each song was added to the database
   - fix integer overflows with 64-bit inode numbers

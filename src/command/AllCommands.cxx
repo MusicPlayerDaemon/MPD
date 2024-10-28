@@ -156,6 +156,7 @@ static constexpr struct command commands[] = {
 	{ "previous", PERMISSION_PLAYER, 0, 0, handle_previous },
 	{ "prio", PERMISSION_PLAYER, 2, -1, handle_prio },
 	{ "prioid", PERMISSION_PLAYER, 2, -1, handle_prioid },
+	{ "protocol", PERMISSION_NONE, 0, -1, handle_protocol },
 	{ "random", PERMISSION_PLAYER, 1, 1, handle_random },
 	{ "rangeid", PERMISSION_ADD, 2, 2, handle_rangeid },
 	{ "readcomments", PERMISSION_READ, 1, 1, handle_read_comments },
@@ -189,6 +190,7 @@ static constexpr struct command commands[] = {
 #ifdef ENABLE_SQLITE
 	{ "sticker", PERMISSION_ADMIN, 3, -1, handle_sticker },
 	{ "stickernames", PERMISSION_ADMIN, 0, 0, handle_sticker_names },
+	{ "stickernamestypes", PERMISSION_ADMIN, 0, 1, handle_sticker_names_types },
 	{ "stickertypes", PERMISSION_ADMIN, 0, 0, handle_sticker_types },
 #endif
 	{ "stop", PERMISSION_PLAYER, 0, 0, handle_stop },

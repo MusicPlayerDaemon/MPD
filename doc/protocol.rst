@@ -544,6 +544,7 @@ Querying :program:`MPD`'s status
       :ref:`audio_output_format` for a detailed explanation.
     - ``updating_db``: ``job id``
     - ``error``: if there is an error, returns message here
+    - ``lastloadedplaylist``: last loaded stored playlist [#since_0_24]_
 
     :program:`MPD` may omit lines which have no (known) value.  Older
     :program:`MPD` versions used to have a "magic" value for
@@ -1590,6 +1591,9 @@ Examples:
 :command:`stickertypes`
     Shows a list of available sticker types.
 
+:command:`stickernamestypes [TYPE]`
+    Gets a list of uniq sticker names and their types.
+
 Connection settings
 ===================
 
@@ -1677,6 +1681,50 @@ Connection settings
 :command:`tagtypes all`
     Announce that this client is interested in all tag
     types.  This is the default setting for new clients.
+
+.. _command_tagtypes_available:
+
+:command:`tagtypes available`
+    Shows the list of tag types configured
+    by the ``metadata_to_use`` setting.
+
+.. _command_protocol:
+
+:command:`protocol`
+    Shows a list of enabled protocol features.
+
+    Available features:
+
+    - ``hide_playlists_in_root``: disables the listing of
+      stored playlists for the :ref:`lsinfo <command_lsinfo>`.
+
+    The following ``protocol`` sub commands configure the
+    protocol features.
+
+.. _command_protocol_disable:
+
+:command:`protocol disable {FEATURE...}`
+    Disables one or more features.
+
+.. _command_protocol_enable:
+
+:command:`protocol enable {FEATURE...}`
+    Enables one or more features.
+
+.. _command_protocol_clear:
+
+:command:`protocol clear`
+    Disables all protocol features.
+
+.. _command_protocol_all:
+
+:command:`protocol all`
+    Enables all protocol features.
+
+.. _command_protocol_available:
+
+:command:`protocol available`
+    Lists all available protocol features.
 
 .. _partition_commands:
 
