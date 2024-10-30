@@ -524,6 +524,7 @@ executable(
   include_directories: inc,
   dependencies: [
     filter_glue_dep,
+    cmdline_dep,
   ],
 )
 
