@@ -6,6 +6,7 @@
 #include "LineReader.hxx"
 #include "FileReader.hxx"
 #include "BufferedReader.hxx"
+#include "fs/Path.hxx"
 
 class FileLineReader final : public LineReader {
 	FileReader file_reader;
