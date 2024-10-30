@@ -46,6 +46,9 @@ public:
 
 	/* virtual methods from class Filter */
 	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
+
+private:
+	std::span<const std::byte> ReadOutput();
 };
 
 #endif
