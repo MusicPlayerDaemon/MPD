@@ -41,8 +41,7 @@ OpenWithAformat(const char *graph_string, AudioFormat &in_audio_format)
 	AudioFormat out_audio_format = in_audio_format;
 	auto &aformat = Ffmpeg::MakeAformat(out_audio_format, *graph);
 
-	int error = avfilter_link(&aformat, 0, &buffer_sink, 0);
-	if (error < 0)
+	if (int error = avfilter_link(&aformat, 0, &buffer_sink, 0); error < 0)
 		throw MakeFfmpegError(error, "avfilter_link() failed");
 
 	graph.ParseSingleInOut(graph_string, aformat, buffer_src);
@@ -70,8 +69,7 @@ PreparedFfmpegFilter::Open(AudioFormat &in_audio_format)
 	   the required conversion */
 	auto &aformat = Ffmpeg::MakeAutoAformat(*graph);
 
-	int error = avfilter_link(&aformat, 0, &buffer_sink, 0);
-	if (error < 0)
+	if (int error = avfilter_link(&aformat, 0, &buffer_sink, 0); error < 0)
 		throw MakeFfmpegError(error, "avfilter_link() failed");
 
 	graph.ParseSingleInOut(graph_string, aformat, buffer_src);

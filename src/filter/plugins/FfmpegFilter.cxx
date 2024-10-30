@@ -53,16 +53,14 @@ FfmpegFilter::FilterPCM(std::span<const std::byte> src)
 
 	memcpy(frame.GetData(0), src.data(), src.size());
 
-	int err = av_buffersrc_add_frame(&buffer_src, frame.get());
-	if (err < 0)
+	if (int err = av_buffersrc_add_frame(&buffer_src, frame.get()); err < 0)
 		throw MakeFfmpegError(err, "av_buffersrc_write_frame() failed");
 
 	/* collect filtered data from the FFmpeg audio buffer sink */
 
 	frame.Unref();
 
-	err = av_buffersink_get_frame(&buffer_sink, frame.get());
-	if (err < 0) {
+	if (int err = av_buffersink_get_frame(&buffer_sink, frame.get()); err < 0) {
 		if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
 			return {};
 
