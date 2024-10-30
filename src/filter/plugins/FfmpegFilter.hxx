@@ -30,6 +30,8 @@ class FfmpegFilter final : public Filter {
 	const size_t in_audio_frame_size;
 	const size_t out_audio_frame_size;
 
+	bool flushed = false;
+
 public:
 	/**
 	 * @param _graph a checked and configured AVFilterGraph
@@ -46,6 +48,7 @@ public:
 
 	/* virtual methods from class Filter */
 	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
+	std::span<const std::byte> Flush() override;
 
 private:
 	std::span<const std::byte> ReadOutput();
