@@ -1688,6 +1688,11 @@ Connection settings
     Shows the list of tag types configured
     by the ``metadata_to_use`` setting.
 
+:command:`tagtypes reset {NAME...}`
+    Clear the list of tag types and Re-enable one or more tags
+    from the list of tag types for this client.  These will no
+    longer be hidden from responses to this client.
+
 .. _command_protocol:
 
 :command:`protocol`

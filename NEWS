@@ -16,7 +16,7 @@ ver 0.24 (not yet released)
   - "sticker find" supports sort and window parameter and new sticker compare operators "eq", "lt", "gt", "contains" and "starts_with"
   - consume only idle flags that were subscribed to
   - volume command is no longer deprecated
-  - new "available" subcommand for tagtypes
+  - new "available" and "reset" subcommands for tagtypes
   - searching stored playlists respond now with song position
 * database
   - attribute "added" shows when each song was added to the database

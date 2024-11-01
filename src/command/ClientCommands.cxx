@@ -107,6 +107,10 @@ handle_tagtypes(Client &client, Request request, Response &r)
 	} else if (StringIsEqual(cmd, "available")) {
 		tag_print_types_available(r);
 		return CommandResult::OK;
+	} else if (StringIsEqual(cmd, "reset")) {
+		client.tag_mask = TagMask::None();
+		client.tag_mask |= ParseTagMask(request);
+		return CommandResult::OK;
 	} else {
 		r.Error(ACK_ERROR_ARG, "Unknown sub command");
 		return CommandResult::ERROR;
