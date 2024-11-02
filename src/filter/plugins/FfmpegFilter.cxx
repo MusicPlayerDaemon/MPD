@@ -66,6 +66,9 @@ FfmpegFilter::FilterPCM(ConstBuffer<void> src)
 #endif
 	frame->nb_samples = src.size / in_audio_frame_size;
 
+	frame->pts = pts;
+	pts += frame->nb_samples;
+
 	frame.GetBuffer();
 
 	memcpy(frame.GetData(0), src.data, src.size);

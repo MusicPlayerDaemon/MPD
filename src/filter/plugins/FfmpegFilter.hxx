@@ -17,13 +17,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FFMPEG_FILTER__HXX
-#define MPD_FFMPEG_FILTER__HXX
+#pragma once
 
 #include "filter/Filter.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
 #include "lib/ffmpeg/Filter.hxx"
 #include "lib/ffmpeg/Frame.hxx"
+
+#include <cstdint>
 
 /**
  * A #Filter implementation using FFmpeg's libavfilter.
@@ -46,6 +47,11 @@ class FfmpegFilter final : public Filter {
 	const size_t in_audio_frame_size;
 	const size_t out_audio_frame_size;
 
+	/**
+	 * Presentation timestamp.  A counter for `AVFrame::pts`.
+	 */
+	int_least64_t pts = 0;
+
 public:
 	/**
 	 * @param _graph a checked and configured AVFilterGraph
@@ -63,5 +69,3 @@ public:
 	/* virtual methods from class Filter */
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
-
-#endif

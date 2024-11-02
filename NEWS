@@ -1,6 +1,8 @@
 ver 0.23.16 (not yet released)
 * database
   - fix integer overflows with 64-bit inode numbers
+* filter
+  - ffmpeg: fix for filters producing no output
 * support libfmt 11
 * support ICU 76
 
