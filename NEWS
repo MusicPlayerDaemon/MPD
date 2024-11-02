@@ -46,6 +46,8 @@ ver 0.24 (not yet released)
   - sidplay: require libsidplayfp (drop support for the original sidplay)
   - wavpack: require libwavpack version 5
   - fix MixRamp bug
+* filter
+  - ffmpeg: fix for filters producing no output
 * resampler
   - soxr: require libsoxr 0.1.2 or later
 * player
