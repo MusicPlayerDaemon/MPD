@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "DumpDecoderClient.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Names.hxx"
@@ -18,9 +19,8 @@ DumpDecoderClient::Ready(const AudioFormat audio_format,
 	assert(!initialized);
 	assert(audio_format.IsValid());
 
-	fprintf(stderr, "audio_format=%s duration=%f seekable=%d\n",
-		ToString(audio_format).c_str(),
-		duration.ToDoubleS(), seekable);
+	fmt::print(stderr, "audio_format={} duration={} seekable={}\n",
+		   audio_format, duration.ToDoubleS(), seekable);
 
 	initialized = true;
 }
@@ -81,7 +81,7 @@ DumpDecoderClient::SubmitAudio([[maybe_unused]] InputStream *is,
 {
 	if (kbit_rate != prev_kbit_rate) {
 		prev_kbit_rate = kbit_rate;
-		fprintf(stderr, "%u kbit/s\n", kbit_rate);
+		fmt::print(stderr, "{} kbit/s\n", kbit_rate);
 	}
 
 	[[maybe_unused]] ssize_t nbytes = write(STDOUT_FILENO,
@@ -93,10 +93,10 @@ DecoderCommand
 DumpDecoderClient::SubmitTag([[maybe_unused]] InputStream *is,
 			     Tag &&tag) noexcept
 {
-	fprintf(stderr, "TAG: duration=%f\n", tag.duration.ToDoubleS());
+	fmt::print(stderr, "TAG: duration={}\n", tag.duration.ToDoubleS());
 
 	for (const auto &i : tag)
-		fprintf(stderr, "  %s=%s\n", tag_item_names[i.type], i.value);
+		fmt::print(stderr, "  {}={}\n", tag_item_names[i.type], i.value);
 
 	return GetCommand();
 }
@@ -105,8 +105,8 @@ static void
 DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple) noexcept
 {
 	if (tuple.IsDefined())
-		fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
-			name, (double)tuple.gain, (double)tuple.peak);
+		fmt::print(stderr, "replay_gain[{}]: gain={} peak={}\n",
+			   name, tuple.gain, tuple.peak);
 }
 
 static void
@@ -126,6 +126,6 @@ DumpDecoderClient::SubmitReplayGain(const ReplayGainInfo *rgi) noexcept
 void
 DumpDecoderClient::SubmitMixRamp([[maybe_unused]] MixRampInfo &&mix_ramp) noexcept
 {
-	fprintf(stderr, "MixRamp: start='%s' end='%s'\n",
-		mix_ramp.GetStart(), mix_ramp.GetEnd());
+	fmt::print(stderr, "MixRamp: start={:?} end={:?}\n",
+		   mix_ramp.GetStart(), mix_ramp.GetEnd());
 }

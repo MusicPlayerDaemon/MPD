@@ -5,6 +5,7 @@
 #include "output/Registry.hxx"
 #include "output/OutputPlugin.hxx"
 #include "ConfigGlue.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "event/Thread.hxx"
 #include "fs/Path.hxx"
@@ -26,7 +27,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 struct CommandLine {
 	FromNarrowPath config_path;
@@ -110,8 +110,7 @@ RunOutput(AudioOutput &ao, AudioFormat audio_format,
 	ao.Open(audio_format);
 	AtScopeExit(&ao) { ao.Close(); };
 
-	fprintf(stderr, "audio_format=%s\n",
-		ToString(audio_format).c_str());
+	fmt::print(stderr, "audio_format={}\n", audio_format);
 
 	const size_t in_frame_size = audio_format.GetFrameSize();
 
