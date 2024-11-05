@@ -128,7 +128,7 @@ try {
 
 	while (true) {
 		auto dest = filter->Flush();
-		if (dest.data() == nullptr)
+		if (dest.empty())
 			break;
 		output_fd.FullWrite(dest);
 	}

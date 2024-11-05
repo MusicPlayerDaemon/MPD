@@ -389,7 +389,7 @@ AudioOutputControl::InternalDrain() noexcept
 
 		while (true) {
 			auto buffer = source.Flush();
-			if (buffer.data() == nullptr)
+			if (buffer.empty())
 				break;
 
 			PlayFull(*output, buffer);
