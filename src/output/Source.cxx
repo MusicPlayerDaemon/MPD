@@ -122,7 +122,7 @@ AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 	assert(!chunk.IsEmpty());
 	assert(chunk.CheckFormat(in_audio_format));
 
-	std::span<const std::byte> data(chunk.data, chunk.length);
+	auto data = chunk.ReadData();
 
 	assert(data.size() % in_audio_format.GetFrameSize() == 0);
 

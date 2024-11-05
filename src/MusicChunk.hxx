@@ -127,6 +127,10 @@ struct MusicChunk : MusicChunkInfo {
 	 * @return true if the chunk is full
 	 */
 	bool Expand(AudioFormat af, size_t length) noexcept;
+
+	std::span<const std::byte> ReadData() const noexcept {
+		return {data, length};
+	}
 };
 
 static_assert(sizeof(MusicChunk) == CHUNK_SIZE, "Wrong size");
