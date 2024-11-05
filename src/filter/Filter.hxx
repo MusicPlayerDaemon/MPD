@@ -51,7 +51,13 @@ public:
 	 * Flush pending data and return it.  This should be called
 	 * repeatedly until it returns nullptr.
 	 *
+	 * After calling this method, this object cannot be used again
+         * (not even Reset() is allowed).
+	 *
 	 * Throws on error.
+	 *
+	 * @return pending data (will be invalidated by deleting this
+	 * object or by any call to Flush())
 	 */
 	virtual std::span<const std::byte> Flush() {
 		return {};
