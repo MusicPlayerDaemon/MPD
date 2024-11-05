@@ -191,8 +191,8 @@ private:
 	void CloseFilter() noexcept;
 
 	std::span<const std::byte> GetChunkData(const MusicChunk &chunk,
-				       Filter *replay_gain_filter,
-				       unsigned *replay_gain_serial_p);
+						Filter *replay_gain_filter,
+						unsigned *replay_gain_serial_p);
 
 	std::span<const std::byte> FilterChunk(const MusicChunk &chunk);
 
