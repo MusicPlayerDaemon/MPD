@@ -23,7 +23,7 @@ TwoFilters::FilterPCM(std::span<const std::byte> src)
 std::span<const std::byte>
 TwoFilters::Flush()
 {
-	if (auto result = first->Flush(); result.data() != nullptr)
+	if (auto result = first->Flush(); !result.empty())
 		/* Flush() output from the first Filter must be
 		   filtered by the second Filter */
 		return second->FilterPCM(result);
