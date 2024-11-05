@@ -43,7 +43,7 @@ public:
 	 * @param src the input buffer
 	 * @return the output buffer (will be invalidated by deleting
 	 * this object or any call to Reset(), FilterPCM() or
-	 * Flush())
+	 * Flush()); may be empty if no output is currently available
 	 */
 	virtual std::span<const std::byte> FilterPCM(std::span<const std::byte> src) = 0;
 

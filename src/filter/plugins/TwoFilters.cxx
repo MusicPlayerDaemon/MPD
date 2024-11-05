@@ -10,7 +10,14 @@
 std::span<const std::byte>
 TwoFilters::FilterPCM(std::span<const std::byte> src)
 {
-	return second->FilterPCM(first->FilterPCM(src));
+	if (const auto dest = first->FilterPCM(src); dest.empty()) [[unlikely]]
+		/* no output from the first filter; pass the empty
+                   buffer on, do not call the second filter */
+		return dest;
+	else
+		/* pass output from the first filter to the second
+                   filter and return its result */
+		return second->FilterPCM(dest);
 }
 
 std::span<const std::byte>
