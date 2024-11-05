@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_MUSIC_CHUNK_HXX
-#define MPD_MUSIC_CHUNK_HXX
+#pragma once
 
 #include "MusicChunkPtr.hxx"
 #include "Chrono.hxx"
@@ -12,6 +11,7 @@
 #include "pcm/AudioFormat.hxx"
 #endif
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -130,5 +130,3 @@ struct MusicChunk : MusicChunkInfo {
 };
 
 static_assert(sizeof(MusicChunk) == CHUNK_SIZE, "Wrong size");
-
-#endif
