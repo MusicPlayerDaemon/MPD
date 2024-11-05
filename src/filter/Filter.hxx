@@ -41,9 +41,9 @@ public:
 	 * Throws on error.
 	 *
 	 * @param src the input buffer
-	 * @return the destination buffer on success (will be
-	 * invalidated by deleting this object or the next FilterPCM()
-	 * or Reset() call)
+	 * @return the output buffer (will be invalidated by deleting
+	 * this object or any call to Reset(), FilterPCM() or
+	 * Flush())
 	 */
 	virtual std::span<const std::byte> FilterPCM(std::span<const std::byte> src) = 0;
 
