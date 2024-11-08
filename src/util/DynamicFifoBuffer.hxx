@@ -28,7 +28,7 @@ public:
 	 * Allocate a buffer with the given capacity.
 	 */
 	explicit DynamicFifoBuffer(size_type _capacity) noexcept
-		:ForeignFifoBuffer<T>(new T[_capacity], _capacity) {}
+		:ForeignFifoBuffer<T>(std::span{new T[_capacity], _capacity}) {}
 
 	~DynamicFifoBuffer() noexcept {
 		delete[] GetBuffer();
@@ -51,7 +51,7 @@ public:
 
 		T *old_data = GetBuffer();
 		T *new_data = new T[new_capacity];
-		ForeignFifoBuffer<T>::MoveBuffer(new_data, new_capacity);
+		ForeignFifoBuffer<T>::MoveBuffer({new_data, new_capacity});
 		delete[] old_data;
 	}
 

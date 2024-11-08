@@ -34,8 +34,8 @@ public:
 	explicit constexpr ForeignFifoBuffer(std::nullptr_t) noexcept
 		:buffer() {}
 
-	constexpr ForeignFifoBuffer(T *_data, size_type _capacity) noexcept
-		:buffer(_data, _capacity) {}
+	explicit constexpr ForeignFifoBuffer(Range _buffer) noexcept
+		:buffer(_buffer) {}
 
 	constexpr ForeignFifoBuffer(ForeignFifoBuffer &&src) noexcept
 		:buffer(src.buffer), head(src.head), tail(src.tail) {
@@ -83,20 +83,20 @@ public:
 		head = tail = 0;
 	}
 
-	void SetBuffer(T *_data, size_type _capacity) noexcept {
-		assert(_data != nullptr);
-		assert(_capacity > 0);
+	void SetBuffer(Range _buffer) noexcept {
+		assert(_buffer.data() != nullptr);
+		assert(!_buffer.empty());
 
-		buffer = {_data, _capacity};
+		buffer = _buffer;
 		head = tail = 0;
 	}
 
-	void MoveBuffer(T *new_data, size_type new_capacity) noexcept {
+	void MoveBuffer(Range _buffer) noexcept {
 		const auto r = Read();
-		assert(new_capacity >= r.size());
-		std::move(r.begin(), r.end(), new_data);
+		assert(_buffer.size() >= r.size());
+		std::move(r.begin(), r.end(), _buffer.begin());
 
-		buffer = {new_data, new_capacity};
+		buffer = _buffer;
 		tail -= head;
 		head = 0;
 	}
