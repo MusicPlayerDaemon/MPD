@@ -147,6 +147,8 @@ AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 inline std::span<const std::byte>
 AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 {
+	assert(filter);
+
 	auto data = GetChunkData(chunk, replay_gain_filter.get(),
 				 &replay_gain_serial);
 	if (data.empty())
@@ -197,6 +199,8 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 bool
 AudioOutputSource::Fill(Mutex &mutex)
 {
+	assert(filter);
+
 	if (current_chunk != nullptr && pending_tag == nullptr &&
 	    pending_data.empty())
 		DropCurrentChunk();
