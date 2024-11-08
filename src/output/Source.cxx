@@ -240,7 +240,7 @@ AudioOutputSource::ConsumeData(size_t nbytes) noexcept
 std::span<const std::byte>
 AudioOutputSource::Flush()
 {
-	return filter
-		? filter->Flush()
-		: std::span<const std::byte>{};
+	assert(filter);
+
+	return filter->Flush();
 }
