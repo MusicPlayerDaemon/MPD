@@ -14,5 +14,9 @@ class MultipleOutputs;
 
 void
 printAudioDevices(Response &r, const MultipleOutputs &outputs);
+void
+printAudioDevice(Response &r, const MultipleOutputs &outputs, unsigned idx, bool attributes);
+void
+printAudioDeviceList(Response &r, const MultipleOutputs &outputs);
 
 #endif

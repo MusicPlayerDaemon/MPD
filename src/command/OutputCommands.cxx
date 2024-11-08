@@ -113,3 +113,29 @@ handle_devices(Client &client, [[maybe_unused]] Request args, Response &r)
 	printAudioDevices(r, client.GetPartition().outputs);
 	return CommandResult::OK;
 }
+
+CommandResult
+handle_device(Client &client, [[maybe_unused]] Request args, Response &r)
+{
+	assert(args.size() == 1);
+
+	const unsigned idx = args.ParseUnsigned(0);
+
+	auto &outputs = client.GetPartition().outputs;
+	if (idx >= outputs.Size()) {
+		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
+		return CommandResult::ERROR;
+	}
+
+	printAudioDevice(r, outputs, idx, true);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_devicelist(Client &client, [[maybe_unused]] Request args, Response &r)
+{
+	assert(args.empty());
+
+	printAudioDeviceList(r, client.GetPartition().outputs);
+	return CommandResult::OK;
+}

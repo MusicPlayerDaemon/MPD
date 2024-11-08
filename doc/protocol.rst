@@ -1809,6 +1809,13 @@ Audio output devices
     - ``outputname``: Name of the output. It can be any.
     - ``outputenabled``: Status of the output. 0 if disabled, 1 if enabled.
 
+:command:`outputlist`
+    Shows information about all outputs. This is a more compact version of
+    the `outputs` command that does not print attributes.
+
+:command:`output {ID}`
+    Shows information about specified output.
+
 .. _command_outputset:
 
 :command:`outputset {ID} {NAME} {VALUE}`

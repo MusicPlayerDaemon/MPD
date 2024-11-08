@@ -25,4 +25,10 @@ handle_outputset(Client &client, Request request, Response &response);
 CommandResult
 handle_devices(Client &client, Request request, Response &response);
 
+CommandResult
+handle_device(Client &client, Request request, Response &response);
+
+CommandResult
+handle_devicelist(Client &client, Request request, Response &response);
+
 #endif

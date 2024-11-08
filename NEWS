@@ -18,6 +18,7 @@ ver 0.24 (not yet released)
   - volume command is no longer deprecated
   - new "available" and "reset" subcommands for tagtypes
   - searching stored playlists respond now with song position
+  - new commands "outputlist" and "output"
 * database
   - attribute "added" shows when each song was added to the database
   - fix integer overflows with 64-bit inode numbers

@@ -133,6 +133,8 @@ static constexpr struct command commands[] = {
 	{ "newpartition", PERMISSION_ADMIN, 1, 1, handle_newpartition },
 	{ "next", PERMISSION_PLAYER, 0, 0, handle_next },
 	{ "notcommands", PERMISSION_NONE, 0, 0, handle_not_commands },
+	{ "output", PERMISSION_READ, 1, 1, handle_device },
+	{ "outputlist", PERMISSION_READ, 0, 0, handle_devicelist },
 	{ "outputs", PERMISSION_READ, 0, 0, handle_devices },
 	{ "outputset", PERMISSION_ADMIN, 3, 3, handle_outputset },
 	{ "partition", PERMISSION_READ, 1, 1, handle_partition },
