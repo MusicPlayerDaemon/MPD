@@ -97,9 +97,10 @@ public:
 	}
 
 	void MoveBuffer(T *new_data, size_type new_capacity) noexcept {
-		assert(new_capacity >= tail - head);
+		const auto r = Read();
+		assert(new_capacity >= r.size());
+		std::move(r.begin(), r.end(), new_data);
 
-		std::move(data + head, data + tail, new_data);
 		data = new_data;
 		capacity = new_capacity;
 		tail -= head;
@@ -231,7 +232,8 @@ protected:
 		assert(tail <= capacity);
 		assert(tail >= head);
 
-		std::move(data + head, data + tail, data);
+		const auto r = Read();
+		std::move(r.begin(), r.end(), data);
 
 		tail -= head;
 		head = 0;
