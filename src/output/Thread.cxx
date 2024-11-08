@@ -207,7 +207,7 @@ AudioOutputControl::WaitForDelay(std::unique_lock<Mutex> &lock) noexcept
 	}
 }
 
-bool
+inline bool
 AudioOutputControl::FillSourceOrClose() noexcept
 try {
 	return source.Fill(mutex);
