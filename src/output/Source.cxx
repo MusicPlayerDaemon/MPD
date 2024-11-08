@@ -74,7 +74,7 @@ AudioOutputSource::Cancel() noexcept
 		filter->Reset();
 }
 
-void
+inline void
 AudioOutputSource::OpenFilter(AudioFormat audio_format,
 			      PreparedFilter *prepared_replay_gain_filter,
 			      PreparedFilter *prepared_other_replay_gain_filter,
@@ -144,7 +144,7 @@ AudioOutputSource::GetChunkData(const MusicChunk &chunk,
 	return data;
 }
 
-std::span<const std::byte>
+inline std::span<const std::byte>
 AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 {
 	auto data = GetChunkData(chunk, replay_gain_filter.get(),
