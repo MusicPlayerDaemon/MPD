@@ -7,8 +7,6 @@
 #include "Ring.hxx"
 #include "util/IntrusiveList.hxx"
 
-#include <liburing.h>
-
 namespace Uring {
 
 class Operation;
