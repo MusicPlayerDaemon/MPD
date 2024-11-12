@@ -246,11 +246,6 @@ public:
 		return ::read(fd, dest.data(), dest.size());
 	}
 
-	[[nodiscard]]
-	ssize_t Read(void *buffer, std::size_t length) const noexcept {
-		return ::read(fd, buffer, length);
-	}
-
 	/**
 	 * Read until all of the given buffer has been filled.  Throws
 	 * on error.
@@ -267,11 +262,6 @@ public:
 	[[nodiscard]]
 	ssize_t Write(std::span<const std::byte> src) const noexcept {
 		return ::write(fd, src.data(), src.size());
-	}
-
-	[[nodiscard]]
-	ssize_t Write(const void *buffer, std::size_t length) const noexcept {
-		return ::write(fd, buffer, length);
 	}
 
 	/**

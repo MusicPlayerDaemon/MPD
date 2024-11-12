@@ -250,7 +250,7 @@ FileOutputStream::Write(std::span<const std::byte> src)
 {
 	assert(IsDefined());
 
-	ssize_t nbytes = fd.Write(src.data(), src.size());
+	ssize_t nbytes = fd.Write(src);
 	if (nbytes < 0)
 		throw FmtErrno("Failed to write to {}", GetPath());
 	else if ((size_t)nbytes < src.size())

@@ -267,7 +267,7 @@ void
 FileDescriptor::FullRead(std::span<std::byte> dest) const
 {
 	while (!dest.empty()) {
-		ssize_t nbytes = Read(dest.data(), dest.size());
+		ssize_t nbytes = Read(dest);
 		if (nbytes <= 0) {
 			if (nbytes < 0)
 				throw MakeErrno("Failed to read");
@@ -282,7 +282,7 @@ void
 FileDescriptor::FullWrite(std::span<const std::byte> src) const
 {
 	while (!src.empty()) {
-		ssize_t nbytes = Write(src.data(), src.size());
+		ssize_t nbytes = Write(src);
 		if (nbytes <= 0) {
 			if (nbytes < 0)
 				throw MakeErrno("Failed to write");
