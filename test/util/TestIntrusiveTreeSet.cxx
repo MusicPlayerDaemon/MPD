@@ -26,12 +26,16 @@ struct IntItem final : IntrusiveTreeSetHook<IntrusiveHookMode::TRACK> {
 
 } // anonymous namespace
 
-TEST(IntrusiveTreeSet, Basic)
+template<bool constant_time_size>
+static void
+TestBasic()
 {
 	IntItem a{1}, b{2}, c{3}, d{4}, e{5}, f{1};
 
 	IntrusiveTreeSet<IntItem,
-			 IntrusiveTreeSetOperators<IntItem, IntItem::GetKey>> set;
+		IntrusiveTreeSetOperators<IntItem, IntItem::GetKey>,
+		IntrusiveTreeSetBaseHookTraits<IntItem>,
+		IntrusiveTreeSetOptions{.constant_time_size=constant_time_size}> set;
 
 	EXPECT_EQ(set.size(), 0U);
 	EXPECT_TRUE(set.empty());
@@ -118,6 +122,12 @@ TEST(IntrusiveTreeSet, Basic)
 	EXPECT_EQ(d.value, -1);
 	EXPECT_EQ(e.value, -1);
 	EXPECT_EQ(f.value, 1);
+}
+
+TEST(IntrusiveTreeSet, Basic)
+{
+	TestBasic<false>();
+	TestBasic<true>();
 }
 
 template<int... values>
