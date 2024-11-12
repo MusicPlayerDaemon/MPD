@@ -365,6 +365,8 @@ public:
 
 		SetRoot(root);
 
+		++counter;
+
 		return iterator_to(value);
 	}
 
@@ -374,6 +376,7 @@ public:
 
 		auto *next = RedBlackTreeNode::GetNextNode(i.node);
 		Cast(i.node)->unlink();
+		--counter;
 		return iterator{next};
 	}
 
