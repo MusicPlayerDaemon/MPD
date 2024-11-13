@@ -6,9 +6,9 @@
 #include "io/FileDescriptor.hxx"
 
 static size_t
-ReadOrThrow(FileDescriptor fd, void *buffer, size_t size)
+ReadOrThrow(FileDescriptor fd, std::span<std::byte> dest)
 {
-	auto nbytes = fd.Read(buffer, size);
+	auto nbytes = fd.Read(dest);
 	if (nbytes < 0)
 		throw MakeErrno("Read failed");
 
@@ -23,7 +23,7 @@ ReadFrames(FileDescriptor fd, void *_buffer, std::size_t size,
 
 	size = (size / frame_size) * frame_size;
 
-	size_t nbytes = ReadOrThrow(fd, buffer, size);
+	size_t nbytes = ReadOrThrow(fd, {buffer, size});
 
 	const size_t modulo = nbytes % frame_size;
 	if (modulo > 0) {
