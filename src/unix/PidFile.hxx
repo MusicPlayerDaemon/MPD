@@ -81,7 +81,7 @@ ReadPidFile(Path path) noexcept
 	pid_t pid = -1;
 
 	char buffer[32];
-	auto nbytes = fd.Read(buffer, sizeof(buffer) - 1);
+	auto nbytes = fd.Read(std::as_writable_bytes(std::span{buffer, sizeof(buffer) - 1}));
 	if (nbytes > 0) {
 		buffer[nbytes] = 0;
 
