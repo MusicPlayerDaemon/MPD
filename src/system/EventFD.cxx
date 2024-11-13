@@ -3,6 +3,7 @@
 
 #include "EventFD.hxx"
 #include "system/Error.hxx"
+#include "util/SpanCast.hxx"
 
 #include <cassert>
 
@@ -31,5 +32,5 @@ EventFD::Write() noexcept
 
 	static constexpr eventfd_t value = 1;
 	[[maybe_unused]] ssize_t nbytes =
-		fd.Write(&value, sizeof(value));
+		fd.Write(ReferenceAsBytes(value));
 }

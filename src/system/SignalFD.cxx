@@ -3,6 +3,7 @@
 
 #include "SignalFD.hxx"
 #include "Error.hxx"
+#include "util/SpanCast.hxx"
 
 #include <cassert>
 
@@ -28,7 +29,7 @@ SignalFD::Read() noexcept
 	assert(fd.IsDefined());
 
 	signalfd_siginfo info;
-	return fd.Read(&info, sizeof(info)) > 0
+	return fd.Read(ReferenceAsWritableBytes(info)) > 0
 		? info.ssi_signo
 		: -1;
 }
