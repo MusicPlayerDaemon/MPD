@@ -53,9 +53,9 @@ AudioOutputSource::Close() noexcept
 	assert(in_audio_format.IsValid());
 	in_audio_format.Clear();
 
-	Cancel();
-
 	CloseFilter();
+
+	Cancel();
 }
 
 void
