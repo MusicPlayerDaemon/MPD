@@ -115,14 +115,7 @@ public:
 	[[nodiscard]]
 	bool OpenReadOnly(FileDescriptor dir,
 			  const char *pathname) noexcept;
-#endif
 
-#ifndef _WIN32
-	[[nodiscard]]
-	bool OpenNonBlocking(const char *pathname) noexcept;
-#endif
-
-#ifdef __linux__
 	[[nodiscard]]
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w,
 			       int flags) noexcept;
