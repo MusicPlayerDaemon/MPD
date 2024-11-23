@@ -8,6 +8,10 @@
 #include "IPv6Address.hxx"
 #include "UniqueSocketDescriptor.hxx"
 
+#ifdef __linux__
+#include "io/UniqueFileDescriptor.hxx"
+#endif
+
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
@@ -234,6 +238,24 @@ SocketDescriptor::GetPeerCredentials() const noexcept
 }
 
 #endif
+
+#ifdef __linux__
+
+#ifndef SO_PEERPIDFD
+#define SO_PEERPIDFD 77
+#endif
+
+UniqueFileDescriptor
+SocketDescriptor::GetPeerPidfd() const noexcept
+{
+	int pidfd;
+	if (GetOption(SOL_SOCKET, SO_PEERPIDFD, &pidfd, sizeof(pidfd)) < sizeof(pidfd))
+		return {};
+
+	return UniqueFileDescriptor{pidfd};
+}
+
+#endif // __linux__
 
 #ifdef _WIN32
 
