@@ -1,4 +1,4 @@
-ver 0.23.16 (not yet released)
+ver 0.23.16 (2024/12/03)
 * database
   - fix integer overflows with 64-bit inode numbers
 * filter
