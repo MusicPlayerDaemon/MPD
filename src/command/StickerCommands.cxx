@@ -386,8 +386,6 @@ handle_sticker_names_types(Client &client, Request args, Response &r)
 		r.FmtError(ACK_ERROR_ARG, "unsupported tag {:?}", type);
 		return CommandResult::ERROR;
 	}
-	r.FmtError(ACK_ERROR_ARG, "unknown sticker domain {:?}", type);
-	return CommandResult::ERROR;
 }
 
 CommandResult
