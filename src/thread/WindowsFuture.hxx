@@ -8,6 +8,7 @@
 #include "WindowsCond.hxx"
 
 #include <memory>
+#include <system_error> // for std::error_category
 #include <variant>
 
 enum class WinFutureErrc : int {

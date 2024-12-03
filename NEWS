@@ -20,7 +20,6 @@ ver 0.24 (not yet released)
   - searching stored playlists respond now with song position
 * database
   - attribute "added" shows when each song was added to the database
-  - fix integer overflows with 64-bit inode numbers
   - proxy: require MPD 0.21 or later
   - proxy: require libmpdclient 2.15 or later
 * archive
@@ -46,8 +45,6 @@ ver 0.24 (not yet released)
   - sidplay: require libsidplayfp (drop support for the original sidplay)
   - wavpack: require libwavpack version 5
   - fix MixRamp bug
-* filter
-  - ffmpeg: fix for filters producing no output
 * resampler
   - soxr: require libsoxr 0.1.2 or later
 * player
@@ -71,6 +68,14 @@ ver 0.24 (not yet released)
 * require libfmt 9 or later
 * documentation: switch to sphinx-rtd-theme
 * require Meson 1.0
+
+ver 0.23.16 (2024/12/03)
+* database
+  - fix integer overflows with 64-bit inode numbers
+* filter
+  - ffmpeg: fix for filters producing no output
+* support libfmt 11
+* support ICU 76
 
 ver 0.23.15 (2023/12/20)
 * decoder
