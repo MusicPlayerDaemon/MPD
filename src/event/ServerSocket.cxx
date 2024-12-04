@@ -216,7 +216,6 @@ ServerSocket::Open()
 			continue;
 
 		if (bad != nullptr && i.GetSerial() != bad->GetSerial()) {
-			Close();
 			std::rethrow_exception(last_error);
 		}
 
@@ -257,7 +256,6 @@ ServerSocket::Open()
 	}
 
 	if (bad != nullptr) {
-		Close();
 		std::rethrow_exception(last_error);
 	}
 }
