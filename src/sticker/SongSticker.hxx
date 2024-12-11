@@ -35,6 +35,28 @@ sticker_song_set_value(StickerDatabase &db,
 		       const char *name, const char *value);
 
 /**
+ * Increments a sticker by value in the specified object.  Inserts
+ * the value if object does not exist.
+ *
+ * Throws #SqliteError on error.
+ */
+void
+sticker_song_inc_value(StickerDatabase &db,
+		       const LightSong &song,
+		       const char *name, const char *value);
+
+/**
+ * Decrements a sticker by value in the specified object.  Inserts
+ * the value if object does not exist.
+ *
+ * Throws #SqliteError on error.
+ */
+void
+sticker_song_dec_value(StickerDatabase &db,
+		       const LightSong &song,
+		       const char *name, const char *value);
+
+/**
  * Deletes a sticker from the database.  All values are deleted.
  *
  * Throws #SqliteError on error.

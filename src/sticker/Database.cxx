@@ -48,6 +48,8 @@ enum sticker_sql {
 	STICKER_SQL_NAMES,
 	STICKER_SQL_NAMES_TYPES,
 	STICKER_SQL_NAMES_TYPES_BY_TYPE,
+	STICKER_SQL_INC,
+	STICKER_SQL_DEC,
 
 	STICKER_SQL_COUNT
 };
@@ -115,6 +117,16 @@ static constexpr auto sticker_sql = std::array {
 
 	//[STICKER_SQL_NAMES_TYPES_BY_TYPE]
 	"SELECT name,type FROM sticker WHERE type = ? GROUP BY name,type ORDER BY name",
+
+	//[STICKER_SQL_INC] =
+	"INSERT INTO sticker (type, uri, name, value) VALUES (?, ?, ?, ?) "
+	"ON CONFLICT(type, uri, name) DO "
+	"UPDATE set value = value + ?",
+
+	//[STICKER_SQL_DEC] =
+	"INSERT INTO sticker (type, uri, name, value) VALUES (?, ?, ?, ?) "
+	"ON CONFLICT(type, uri, name) DO "
+	"UPDATE set value = value - ?",
 };
 
 static constexpr const char sticker_sql_create[] =
@@ -278,6 +290,52 @@ StickerDatabase::StoreValue(const char *type, const char *uri,
 
 	if (!UpdateValue(type, uri, name, value))
 		InsertValue(type, uri, name, value);
+}
+
+void
+StickerDatabase::IncValue(const char *type, const char *uri,
+			  const char *name, const char *value)
+{
+	sqlite3_stmt *const s = stmt[STICKER_SQL_INC];
+
+	assert(type != nullptr);
+	assert(uri != nullptr);
+	assert(name != nullptr);
+	assert(*name != 0);
+	assert(value != nullptr);
+
+	BindAll(s, type, uri, name, value, value);
+
+	AtScopeExit(s) {
+		sqlite3_reset(s);
+		sqlite3_clear_bindings(s);
+	};
+
+	ExecuteCommand(s);
+	idle_add(IDLE_STICKER);
+}
+
+void
+StickerDatabase::DecValue(const char *type, const char *uri,
+			  const char *name, const char *value)
+{
+	sqlite3_stmt *const s = stmt[STICKER_SQL_DEC];
+
+	assert(type != nullptr);
+	assert(uri != nullptr);
+	assert(name != nullptr);
+	assert(*name != 0);
+	assert(value != nullptr);
+
+	BindAll(s, type, uri, name, value, value);
+
+	AtScopeExit(s) {
+		sqlite3_reset(s);
+		sqlite3_clear_bindings(s);
+	};
+
+	ExecuteCommand(s);
+	idle_add(IDLE_STICKER);
 }
 
 bool

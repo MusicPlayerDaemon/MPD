@@ -30,6 +30,24 @@ sticker_song_set_value(StickerDatabase &db,
 	db.StoreValue("song", uri.c_str(), name, value);
 }
 
+void
+sticker_song_inc_value(StickerDatabase &db,
+		       const LightSong &song,
+		       const char *name, const char *value)
+{
+	const auto uri = song.GetURI();
+	db.IncValue("song", uri.c_str(), name, value);
+}
+
+void
+sticker_song_dec_value(StickerDatabase &db,
+		       const LightSong &song,
+		       const char *name, const char *value)
+{
+	const auto uri = song.GetURI();
+	db.DecValue("song", uri.c_str(), name, value);
+}
+
 bool
 sticker_song_delete(StickerDatabase &db, const char *uri)
 {

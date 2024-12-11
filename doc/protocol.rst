@@ -1518,6 +1518,20 @@ the database for songs).
     sticker item with that name already exists, it is
     replaced.
 
+.. _command_sticker_inc:
+
+:command:`sticker inc {TYPE} {URI} {NAME} {VALUE}`
+    Adds a sticker value to the specified object.  If a
+    sticker item with that name already exists, it is
+    incremented by supplied value.
+
+.. _command_sticker_dec:
+
+:command:`sticker dec {TYPE} {URI} {NAME} {VALUE}`
+    Adds a sticker value to the specified object.  If a
+    sticker item with that name already exists, it is
+    decremented by supplied value.
+
 .. _command_sticker_delete:
 
 :command:`sticker delete {TYPE} {URI} [NAME]`
