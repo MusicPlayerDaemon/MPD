@@ -301,8 +301,10 @@ StickerDatabase::IncValue(const char *type, const char *uri,
 	assert(type != nullptr);
 	assert(uri != nullptr);
 	assert(name != nullptr);
-	assert(*name != 0);
 	assert(value != nullptr);
+
+	if (StringIsEmpty(name))
+		return;
 
 	BindAll(s, type, uri, name, value, value);
 
@@ -324,8 +326,10 @@ StickerDatabase::DecValue(const char *type, const char *uri,
 	assert(type != nullptr);
 	assert(uri != nullptr);
 	assert(name != nullptr);
-	assert(*name != 0);
 	assert(value != nullptr);
+
+	if (StringIsEmpty(name))
+		return;
 
 	BindAll(s, type, uri, name, value, value);
 
