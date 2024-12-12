@@ -17,6 +17,7 @@
 #include "Instance.hxx"
 #include "util/StringAPI.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 #include "tag/Settings.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Names.hxx"
@@ -456,16 +457,31 @@ handle_sticker(Client &client, Request args, Response &r)
 		return handler->List(uri);
 
 	/* set */
-	if (args.size() == 5 && StringIsEqual(cmd, "set"))
+	if (args.size() == 5 && StringIsEqual(cmd, "set")) {
+		if (StringIsEmpty(sticker_name)) {
+			r.FmtError(ACK_ERROR_ARG, "empty sticker name");
+			return CommandResult::ERROR;
+		}
 		return handler->Set(uri, sticker_name, args[4]);
+	}
 	
 	/* inc */
-	if (args.size() == 5 && StringIsEqual(cmd, "inc"))
+	if (args.size() == 5 && StringIsEqual(cmd, "inc")) {
+		if (StringIsEmpty(sticker_name)) {
+			r.FmtError(ACK_ERROR_ARG, "empty sticker name");
+			return CommandResult::ERROR;
+		}
 		return handler->Inc(uri, sticker_name, args[4]);
+	}
 
 	/* dec */
-	if (args.size() == 5 && StringIsEqual(cmd, "dec"))
+	if (args.size() == 5 && StringIsEqual(cmd, "dec")) {
+		if (StringIsEmpty(sticker_name)) {
+			r.FmtError(ACK_ERROR_ARG, "empty sticker name");
+			return CommandResult::ERROR;
+		}
 		return handler->Dec(uri, sticker_name, args[4]);
+	}
 
 	/* delete */
 	if ((args.size() == 3 || args.size() == 4) && StringIsEqual(cmd, "delete"))
