@@ -58,6 +58,24 @@ public:
 		return CommandResult::OK;
 	}
 
+	virtual CommandResult Inc(const char *uri, const char *name, const char *value) {
+		sticker_database.IncValue(sticker_type,
+					  ValidateUri(uri).c_str(),
+					  name,
+					  value);
+
+		return CommandResult::OK;
+	}
+
+	virtual CommandResult Dec(const char *uri, const char *name, const char *value) {
+		sticker_database.DecValue(sticker_type,
+					  ValidateUri(uri).c_str(),
+					  name,
+					  value);
+
+		return CommandResult::OK;
+	}
+
 	virtual CommandResult Delete(const char *uri, const char *name) {
 		std::string validated_uri = ValidateUri(uri);
 		uri = validated_uri.c_str();
@@ -440,6 +458,14 @@ handle_sticker(Client &client, Request args, Response &r)
 	/* set */
 	if (args.size() == 5 && StringIsEqual(cmd, "set"))
 		return handler->Set(uri, sticker_name, args[4]);
+	
+	/* inc */
+	if (args.size() == 5 && StringIsEqual(cmd, "inc"))
+		return handler->Inc(uri, sticker_name, args[4]);
+
+	/* dec */
+	if (args.size() == 5 && StringIsEqual(cmd, "dec"))
+		return handler->Dec(uri, sticker_name, args[4]);
 
 	/* delete */
 	if ((args.size() == 3 || args.size() == 4) && StringIsEqual(cmd, "delete"))

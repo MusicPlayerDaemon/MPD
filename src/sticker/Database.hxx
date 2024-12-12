@@ -54,6 +54,8 @@ class StickerDatabase {
 		  SQL_NAMES,
 		  SQL_NAMES_TYPES,
 		  SQL_NAMES_TYPES_BY_TYPE,
+		  STICKER_SQL_INC,
+		  STICKER_SQL_DEC,
 
 		  SQL_COUNT
 	};
@@ -118,6 +120,24 @@ public:
 	 */
 	void StoreValue(const char *type, const char *uri,
 			const char *name, const char *value);
+	
+	/**
+	 * Increments a sticker by value in the specified object.  Inserts
+	 * the value if object does not exist.
+	 *
+	 * Throws #SqliteError on error.
+	 */
+	void IncValue(const char *type, const char *uri,
+		      const char *name, const char *value);
+
+	/**
+	 * Decrements a sticker by value in the specified object.  Inserts
+	 * the value if object does not exist.
+	 *
+	 * Throws #SqliteError on error.
+	 */
+	void DecValue(const char *type, const char *uri,
+		      const char *name, const char *value);
 
 	/**
 	 * Deletes a sticker from the database.  All sticker values of the

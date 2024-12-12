@@ -18,6 +18,7 @@ ver 0.24 (not yet released)
   - volume command is no longer deprecated
   - new "available" and "reset" subcommands for tagtypes
   - searching stored playlists respond now with song position
+  - new sticker subcommand "inc" and "dec"
 * database
   - attribute "added" shows when each song was added to the database
   - proxy: require MPD 0.21 or later
