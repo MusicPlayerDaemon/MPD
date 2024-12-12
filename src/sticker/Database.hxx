@@ -43,8 +43,7 @@ class StickerDatabase {
 	enum SQL {
 		  SQL_GET,
 		  SQL_LIST,
-		  SQL_UPDATE,
-		  SQL_INSERT,
+		  SQL_SET,
 		  SQL_DELETE,
 		  SQL_DELETE_VALUE,
 		  SQL_DISTINCT_TYPE_URI,
