@@ -22,6 +22,7 @@
 #include "plugins/ShoutOutputPlugin.hxx"
 #include "plugins/sles/SlesOutputPlugin.hxx"
 #include "plugins/SolarisOutputPlugin.hxx"
+#include "plugins/visualization/VisualizationOutputPlugin.hxx"
 #ifdef ENABLE_WINMM_OUTPUT
 #include "plugins/WinmmOutputPlugin.hxx"
 #endif
@@ -85,6 +86,9 @@ constinit const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_WASAPI_OUTPUT
 	&wasapi_output_plugin,
+#endif
+#ifdef ENABLE_VISUALIZATION_OUTPUT
+	&visualization_output_plugin,
 #endif
 	nullptr
 };

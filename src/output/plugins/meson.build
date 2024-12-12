@@ -147,6 +147,28 @@ else
   wasapi_dep = dependency('', required: false)
 endif
 
+libfftw3_dep = dependency('fftw3f', version: '>= 3.3.8', required: get_option('fftw3'))
+output_features.set('ENABLE_FFTW3', libfftw3_dep.found())
+
+enable_visualization_output = get_option('visualization')
+conf.set('ENABLE_VISUALIZATION_OUTPUT', enable_visualization_output)
+
+output_features.set('ENABLE_VISUALIZATION_OUTPUT', get_option('visualization'))
+if get_option('visualization')
+  if not libfftw3_dep.found()
+    error('libfftw3 not available, but is required for the visualization plugin')
+  endif
+  output_plugins_sources += [
+    'visualization/VisualizationOutputPlugin.cxx',
+    'visualization/SoundAnalysis.cxx',
+    'visualization/SoundInfoCache.cxx',
+    'visualization/VisualizationServer.cxx',
+    'visualization/VisualizationClient.cxx',
+    'visualization/Protocol.cxx',
+  ]
+  output_plugins_deps += [ event_dep, net_dep, libfftw3_dep ]
+endif
+
 output_plugins = static_library(
   'output_plugins',
   output_plugins_sources,
