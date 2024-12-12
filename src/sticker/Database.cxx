@@ -283,10 +283,8 @@ StickerDatabase::StoreValue(const char *type, const char *uri,
 	assert(type != nullptr);
 	assert(uri != nullptr);
 	assert(name != nullptr);
+	assert(*name != 0);
 	assert(value != nullptr);
-
-	if (StringIsEmpty(name))
-		return;
 
 	if (!UpdateValue(type, uri, name, value))
 		InsertValue(type, uri, name, value);
@@ -367,6 +365,7 @@ StickerDatabase::DeleteValue(const char *type, const char *uri,
 
 	assert(type != nullptr);
 	assert(uri != nullptr);
+	assert(name != nullptr);
 
 	BindAll(s, type, uri, name);
 
