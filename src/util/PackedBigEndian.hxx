@@ -111,6 +111,19 @@ public:
 			x = ByteSwap32(x);
 		return x;
 	}
+
+	constexpr auto operator|(PackedBE32 other) noexcept {
+		PackedBE32 result{};
+		result.a = a|other.a;
+		result.b = b|other.b;
+		result.c = c|other.c;
+		result.d = d|other.d;
+		return result;
+	}
+
+	constexpr auto &operator|=(PackedBE32 x) noexcept {
+		return *this = *this | x;
+	}
 };
 
 static_assert(sizeof(PackedBE32) == sizeof(uint32_t), "Wrong size");
