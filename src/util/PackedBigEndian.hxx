@@ -51,6 +51,26 @@ static_assert(sizeof(PackedBE16) == sizeof(uint16_t), "Wrong size");
 static_assert(alignof(PackedBE16) == 1, "Wrong alignment");
 
 /**
+ * A packed big-endian signed 16 bit integer.
+ */
+class PackedSignedBE16 {
+	PackedBE16 u;
+
+public:
+	PackedSignedBE16() = default;
+
+	constexpr PackedSignedBE16(int16_t src) noexcept
+		:u(uint16_t(src)) {}
+
+	constexpr operator int16_t() const noexcept {
+		return (int16_t)(uint16_t)u;
+	}
+};
+
+static_assert(sizeof(PackedSignedBE16) == sizeof(int16_t), "Wrong size");
+static_assert(alignof(PackedSignedBE16) == 1, "Wrong alignment");
+
+/**
  * A packed big-endian 32 bit integer.
  */
 class PackedBE32 {
