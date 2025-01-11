@@ -13,7 +13,7 @@
  * descriptor.
  */
 [[gnu::const]]
-inline StringBuffer<32>
+constexpr StringBuffer<32>
 ProcFdPath(FileDescriptor fd) noexcept
 {
 	return FmtBuffer<32>("/proc/self/fd/{}", fd.Get());
@@ -24,7 +24,7 @@ ProcFdPath(FileDescriptor fd) noexcept
  * descriptor.
  */
 [[gnu::const]]
-inline StringBuffer<32>
+constexpr StringBuffer<32>
 ProcFdinfoPath(FileDescriptor fd) noexcept
 {
 	return FmtBuffer<32>("/proc/self/fdinfo/{}", fd.Get());

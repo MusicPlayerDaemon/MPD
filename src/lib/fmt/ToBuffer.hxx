@@ -8,7 +8,7 @@
 #include <fmt/core.h>
 
 template<std::size_t size>
-StringBuffer<size> &
+constexpr StringBuffer<size> &
 VFmtToBuffer(StringBuffer<size> &buffer,
 	     fmt::string_view format_str, fmt::format_args args) noexcept
 {
@@ -20,7 +20,7 @@ VFmtToBuffer(StringBuffer<size> &buffer,
 
 template<std::size_t size>
 [[nodiscard]] [[gnu::pure]]
-auto
+constexpr auto
 VFmtBuffer(fmt::string_view format_str, fmt::format_args args) noexcept
 {
 	StringBuffer<size> buffer;
@@ -28,7 +28,7 @@ VFmtBuffer(fmt::string_view format_str, fmt::format_args args) noexcept
 }
 
 template<std::size_t size, typename S, typename... Args>
-StringBuffer<size> &
+constexpr StringBuffer<size> &
 FmtToBuffer(StringBuffer<size> &buffer,
 	    const S &format_str, Args&&... args) noexcept
 {
@@ -38,7 +38,7 @@ FmtToBuffer(StringBuffer<size> &buffer,
 
 template<std::size_t size, typename S, typename... Args>
 [[nodiscard]] [[gnu::pure]]
-auto
+constexpr auto
 FmtBuffer(const S &format_str, Args&&... args) noexcept
 {
 	return VFmtBuffer<size>(format_str,
