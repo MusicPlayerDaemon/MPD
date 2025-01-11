@@ -62,7 +62,7 @@ static void
 print_spl_list(Response &r, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
-		r.Fmt(FMT_STRING("playlist: {}\n"), i.name);
+		r.Fmt("playlist: {}\n", i.name);
 
 		if (!IsNegative(i.mtime))
 			time_print(r, "Last-Modified", i.mtime);
@@ -249,7 +249,7 @@ handle_update(Response &r, UpdateService &update,
 	      const char *uri_utf8, bool discard)
 {
 	unsigned ret = update.Enqueue(uri_utf8, discard);
-	r.Fmt(FMT_STRING("updating_db: {}\n"), ret);
+	r.Fmt("updating_db: {}\n", ret);
 	return CommandResult::OK;
 }
 
@@ -259,7 +259,7 @@ handle_update(Response &r, Database &db,
 {
 	unsigned id = db.Update(uri_utf8, discard);
 	if (id > 0) {
-		r.Fmt(FMT_STRING("updating_db: {}\n"), id);
+		r.Fmt("updating_db: {}\n", id);
 		return CommandResult::OK;
 	} else {
 		/* Database::Update() has returned 0 without setting
@@ -326,7 +326,7 @@ handle_getvol(Client &client, Request, Response &r)
 
 	const auto volume = partition.mixer_memento.GetVolume(partition.outputs);
 	if (volume >= 0)
-		r.Fmt(FMT_STRING("volume: {}\n"), volume);
+		r.Fmt("volume: {}\n", volume);
 
 	return CommandResult::OK;
 }
@@ -391,7 +391,7 @@ handle_config(Client &client, [[maybe_unused]] Request args, Response &r)
 	const Storage *storage = client.GetStorage();
 	if (storage != nullptr) {
 		const auto path = storage->MapUTF8("");
-		r.Fmt(FMT_STRING("music_directory: {}\n"), path);
+		r.Fmt("music_directory: {}\n", path);
 	}
 #endif
 
@@ -406,7 +406,7 @@ handle_idle(Client &client, Request args, Response &r)
 		unsigned event = idle_parse_name(i);
 		if (event == 0) {
 			r.FmtError(ACK_ERROR_ARG,
-				   FMT_STRING("Unrecognized idle event: {}"),
+				   "Unrecognized idle event: {}",
 				   i);
 			return CommandResult::ERROR;
 		}

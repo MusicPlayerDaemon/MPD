@@ -99,10 +99,10 @@ db_stats_print(Response &r, const Database &db)
 	unsigned total_duration_s =
 		std::chrono::duration_cast<std::chrono::seconds>(stats.total_duration).count();
 
-	r.Fmt(FMT_STRING("artists: {}\n"
-			 "albums: {}\n"
-			 "songs: {}\n"
-			 "db_playtime: {}\n"),
+	r.Fmt("artists: {}\n"
+	      "albums: {}\n"
+	      "songs: {}\n"
+	      "db_playtime: {}\n",
 	      stats.artist_count,
 	      stats.album_count,
 	      stats.song_count,
@@ -110,7 +110,7 @@ db_stats_print(Response &r, const Database &db)
 
 	const auto update_stamp = db.GetUpdateStamp();
 	if (!IsNegative(update_stamp))
-		r.Fmt(FMT_STRING("db_update: {}\n"),
+		r.Fmt("db_update: {}\n",
 		      std::chrono::system_clock::to_time_t(update_stamp));
 }
 
@@ -125,8 +125,8 @@ stats_print(Response &r, const Partition &partition)
 	const auto uptime = std::chrono::steady_clock::now() - start_time;
 #endif
 
-	r.Fmt(FMT_STRING("uptime: {}\n"
-			 "playtime: {}\n"),
+	r.Fmt("uptime: {}\n"
+	      "playtime: {}\n",
 	      std::chrono::duration_cast<std::chrono::seconds>(uptime).count(),
 	      lround(partition.pc.GetTotalPlayTime().count()));
 

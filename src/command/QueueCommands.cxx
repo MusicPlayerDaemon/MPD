@@ -155,7 +155,7 @@ handle_addid(Client &client, Request args, Response &r)
 
 	partition.instance.LookupRemoteTag(uri);
 
-	r.Fmt(FMT_STRING("Id: {}\n"), added_id);
+	r.Fmt("Id: {}\n", added_id);
 	return CommandResult::OK;
 }
 

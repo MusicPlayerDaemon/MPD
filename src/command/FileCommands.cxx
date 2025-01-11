@@ -85,12 +85,12 @@ handle_listfiles_local(Response &r, Path path_fs)
 			continue;
 
 		if (fi.IsRegular())
-			r.Fmt(FMT_STRING("file: {}\n"
-					 "size: {}\n"),
+			r.Fmt("file: {}\n"
+			      "size: {}\n",
 			      name_utf8,
 			      fi.GetSize());
 		else if (fi.IsDirectory())
-			r.Fmt(FMT_STRING("directory: {}\n"), name_utf8);
+			r.Fmt("directory: {}\n", name_utf8);
 		else
 			continue;
 
@@ -129,7 +129,7 @@ public:
 	void OnPair(StringView _key, StringView _value) noexcept override {
 		const std::string_view key{_key}, value{_value};
 		if (IsValidName(key) && IsValidValue(value))
-			response.Fmt(FMT_STRING("{}: {}\n"), key, value);
+			response.Fmt("{}: {}\n", key, value);
 	}
 };
 
@@ -218,7 +218,7 @@ read_stream_art(Response &r, const std::string_view art_directory,
 		read_size = is->Read(lock, buffer.get(), buffer_size);
 	}
 
-	r.Fmt(FMT_STRING("size: {}\n"), art_file_size);
+	r.Fmt("size: {}\n", art_file_size);
 
 	r.WriteBinary({buffer.get(), read_size});
 
@@ -348,10 +348,10 @@ public:
 			return;
 		}
 
-		response.Fmt(FMT_STRING("size: {}\n"), buffer.size);
+		response.Fmt("size: {}\n", buffer.size);
 
 		if (mime_type != nullptr)
-			response.Fmt(FMT_STRING("type: {}\n"), mime_type);
+			response.Fmt("type: {}\n", mime_type);
 
 		buffer.size -= offset;
 

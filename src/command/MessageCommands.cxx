@@ -87,7 +87,7 @@ handle_channels(Client &client, [[maybe_unused]] Request args, Response &r)
 	}
 
 	for (const auto &channel : channels)
-		r.Fmt(FMT_STRING("channel: {}\n"), channel);
+		r.Fmt("channel: {}\n", channel);
 
 	return CommandResult::OK;
 }
@@ -99,7 +99,7 @@ handle_read_messages(Client &client,
 	assert(args.empty());
 
 	client.ConsumeMessages([&r](const auto &msg){
-		r.Fmt(FMT_STRING("channel: {}\nmessage: {}\n"),
+		r.Fmt("channel: {}\nmessage: {}\n",
 		      msg.GetChannel(), msg.GetMessage());
 	});
 

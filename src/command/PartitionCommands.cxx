@@ -48,7 +48,7 @@ CommandResult
 handle_listpartitions(Client &client, Request, Response &r)
 {
 	for (const auto &partition : client.GetInstance().partitions) {
-		r.Fmt(FMT_STRING("partition: {}\n"), partition.name);
+		r.Fmt("partition: {}\n", partition.name);
 	}
 
 	return CommandResult::OK;

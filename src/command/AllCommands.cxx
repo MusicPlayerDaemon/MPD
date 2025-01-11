@@ -255,7 +255,7 @@ PrintAvailableCommands(Response &r, const Partition &partition,
 
 		if (cmd->permission == (permission & cmd->permission) &&
 		    command_available(partition, cmd))
-			r.Fmt(FMT_STRING("command: {}\n"), cmd->cmd);
+			r.Fmt("command: {}\n", cmd->cmd);
 	}
 
 	return CommandResult::OK;
@@ -268,7 +268,7 @@ PrintUnavailableCommands(Response &r, unsigned permission) noexcept
 		const struct command *cmd = &i;
 
 		if (cmd->permission != (permission & cmd->permission))
-			r.Fmt(FMT_STRING("command: {}\n"), cmd->cmd);
+			r.Fmt("command: {}\n", cmd->cmd);
 	}
 
 	return CommandResult::OK;
@@ -326,7 +326,7 @@ command_check_request(const struct command *cmd, Response &r,
 {
 	if (cmd->permission != (permission & cmd->permission)) {
 		r.FmtError(ACK_ERROR_PERMISSION,
-			   FMT_STRING("you don't have permission for \"{}\""),
+			   "you don't have permission for \"{}\"",
 			   cmd->cmd);
 		return false;
 	}
@@ -339,17 +339,17 @@ command_check_request(const struct command *cmd, Response &r,
 
 	if (min == max && unsigned(max) != args.size) {
 		r.FmtError(ACK_ERROR_ARG,
-			   FMT_STRING("wrong number of arguments for \"{}\""),
+			   "wrong number of arguments for \"{}\"",
 			   cmd->cmd);
 		return false;
 	} else if (args.size < unsigned(min)) {
 		r.FmtError(ACK_ERROR_ARG,
-			   FMT_STRING("too few arguments for \"{}\""),
+			   "too few arguments for \"{}\"",
 			   cmd->cmd);
 		return false;
 	} else if (max >= 0 && args.size > unsigned(max)) {
 		r.FmtError(ACK_ERROR_ARG,
-			   FMT_STRING("too many arguments for \"{}\""),
+			   "too many arguments for \"{}\"",
 			   cmd->cmd);
 		return false;
 	} else
@@ -363,7 +363,7 @@ command_checked_lookup(Response &r, unsigned permission,
 	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
 		r.FmtError(ACK_ERROR_UNKNOWN,
-			   FMT_STRING("unknown command \"{}\""), cmd_name);
+			   "unknown command \"{}\"", cmd_name);
 		return nullptr;
 	}
 

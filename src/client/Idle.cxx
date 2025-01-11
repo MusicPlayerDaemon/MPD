@@ -32,7 +32,7 @@ WriteIdleResponse(Response &r, unsigned flags) noexcept
 	const char *const*idle_names = idle_get_names();
 	for (unsigned i = 0; idle_names[i]; ++i) {
 		if (flags & (1 << i))
-			r.Fmt(FMT_STRING("changed: {}\n"), idle_names[i]);
+			r.Fmt("changed: {}\n", idle_names[i]);
 	}
 
 	r.Write("OK\n");

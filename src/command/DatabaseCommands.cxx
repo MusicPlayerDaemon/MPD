@@ -243,7 +243,7 @@ handle_count(Client &client, Request args, Response &r)
 		group = tag_name_parse_i(s);
 		if (group == TAG_NUM_OF_ITEM_TYPES) {
 			r.FmtError(ACK_ERROR_ARG,
-				   FMT_STRING("Unknown tag type: {}"), s);
+				   "Unknown tag type: {}", s);
 			return CommandResult::ERROR;
 		}
 
@@ -312,7 +312,7 @@ handle_list(Client &client, Request args, Response &r)
 	const auto tagType = tag_name_parse_i(tag_name);
 	if (tagType == TAG_NUM_OF_ITEM_TYPES) {
 		r.FmtError(ACK_ERROR_ARG,
-			   FMT_STRING("Unknown tag type: {}"), tag_name);
+			   "Unknown tag type: {}", tag_name);
 		return CommandResult::ERROR;
 	}
 
@@ -326,7 +326,7 @@ handle_list(Client &client, Request args, Response &r)
 		/* for compatibility with < 0.12.0 */
 		if (tagType != TAG_ALBUM) {
 			r.FmtError(ACK_ERROR_ARG,
-				   FMT_STRING("should be \"{}\" for 3 arguments"),
+				   "should be \"{}\" for 3 arguments",
 				   tag_item_names[TAG_ALBUM]);
 			return CommandResult::ERROR;
 		}
@@ -341,7 +341,7 @@ handle_list(Client &client, Request args, Response &r)
 		const auto group = tag_name_parse_i(s);
 		if (group == TAG_NUM_OF_ITEM_TYPES) {
 			r.FmtError(ACK_ERROR_ARG,
-				   FMT_STRING("Unknown tag type: {}"), s);
+				   "Unknown tag type: {}", s);
 			return CommandResult::ERROR;
 		}
 

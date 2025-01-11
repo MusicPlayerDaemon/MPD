@@ -108,7 +108,7 @@ if libmodplug_dep.found()
   ]
 endif
 
-libopenmpt_dep = dependency('libopenmpt', required: get_option('openmpt'))
+libopenmpt_dep = dependency('libopenmpt', required: get_option('openmpt'), static: true)
 decoder_features.set('ENABLE_OPENMPT', libopenmpt_dep.found())
 decoder_features.set('HAVE_LIBOPENMPT_VERSION_0_5', libopenmpt_dep.version().version_compare('>= 0.5'))
 if libopenmpt_dep.found()

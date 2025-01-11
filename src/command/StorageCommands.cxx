@@ -67,14 +67,14 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 			continue;
 
 		case StorageFileInfo::Type::REGULAR:
-			r.Fmt(FMT_STRING("file: {}\n"
-					 "size: {}\n"),
+			r.Fmt("file: {}\n"
+			      "size: {}\n",
 			      name_utf8,
 			      info.size);
 			break;
 
 		case StorageFileInfo::Type::DIRECTORY:
-			r.Fmt(FMT_STRING("directory: {}\n"), name_utf8);
+			r.Fmt("directory: {}\n", name_utf8);
 			break;
 		}
 
@@ -127,7 +127,7 @@ print_storage_uri(Client &client, Response &r, const Storage &storage)
 			uri = std::move(allocated);
 	}
 
-	r.Fmt(FMT_STRING("storage: {}\n"), uri);
+	r.Fmt("storage: {}\n", uri);
 }
 
 CommandResult
@@ -143,7 +143,7 @@ handle_listmounts(Client &client, [[maybe_unused]] Request args, Response &r)
 
 	const auto visitor = [&client, &r](const char *mount_uri,
 					   const Storage &storage){
-		r.Fmt(FMT_STRING("mount: {}\n"), mount_uri);
+		r.Fmt("mount: {}\n", mount_uri);
 		print_storage_uri(client, r, storage);
 	};
 
