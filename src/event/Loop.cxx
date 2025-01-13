@@ -45,6 +45,7 @@ EventLoop::~EventLoop() noexcept
 
 	assert(defer.empty());
 	assert(idle.empty());
+	assert(next.empty());
 #ifdef HAVE_THREADED_EVENT_LOOP
 	assert(inject.empty());
 #endif
@@ -202,6 +203,14 @@ EventLoop::AddIdle(DeferEvent &e) noexcept
 }
 
 void
+EventLoop::AddNext(DeferEvent &e) noexcept
+{
+	assert(IsInside());
+
+	next.push_back(e);
+}
+
+void
 EventLoop::RunDeferred() noexcept
 {
 	while (!defer.empty() && !quit) {
@@ -295,7 +304,7 @@ EventLoop::Run() noexcept
 
 		/* invoke timers */
 
-		const auto timeout = HandleTimers();
+		Event::Duration timeout = HandleTimers();
 		if (quit)
 			break;
 
@@ -331,7 +340,12 @@ EventLoop::Run() noexcept
 
 		/* wait for new event */
 
+		if (!next.empty())
+			timeout = Event::Duration{0};
+
 		Wait(timeout);
+
+		idle.splice(std::next(idle.begin()), next);
 
 		FlushClockCaches();
 

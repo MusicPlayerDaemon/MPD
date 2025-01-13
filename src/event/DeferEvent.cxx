@@ -21,3 +21,12 @@ DeferEvent::ScheduleIdle() noexcept
 
 	assert(IsPending());
 }
+
+void
+DeferEvent::ScheduleNext() noexcept
+{
+	if (!IsPending())
+		loop.AddNext(*this);
+
+	assert(IsPending());
+}

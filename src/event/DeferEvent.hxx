@@ -49,6 +49,15 @@ public:
 	 */
 	void ScheduleIdle() noexcept;
 
+	/**
+	 * Schedule this event, but only after the next #EventLoop
+	 * iteration (i.e. after the epoll_wait() call, after handling
+	 * all pending I/O events).  This is useful for repeated I/O
+	 * operations that should not occupy the whole #EventLoop,
+	 * starving all other I/O events.
+	 */
+	void ScheduleNext() noexcept;
+
 	void Cancel() noexcept {
 		if (IsPending())
 			unlink();

@@ -67,6 +67,12 @@ class EventLoop final
 	 */
 	DeferList idle;
 
+	/**
+	 * This is like #idle, but gets invoked after the next
+	 * epoll_wait() call.
+	 */
+	DeferList next;
+
 #ifdef HAVE_THREADED_EVENT_LOOP
 	Mutex mutex;
 
@@ -226,6 +232,7 @@ public:
 	 */
 	void AddDefer(DeferEvent &e) noexcept;
 	void AddIdle(DeferEvent &e) noexcept;
+	void AddNext(DeferEvent &e) noexcept;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 	/**
