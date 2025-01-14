@@ -89,6 +89,9 @@ user <username>
    initialization. Do not use this option if you start MPD as an unprivileged
    user.
 
+bind_to_address <address>
+   Set the interface address that mpd listens on. The default is 0.0.0.0 (all interfaces).
+
 port <port>
    This specifies the port that mpd listens on. The default is 6600.
 
