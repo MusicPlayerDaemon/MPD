@@ -14,8 +14,9 @@ class Manager final : public Queue {
 	IdleEvent idle_event;
 
 public:
-	explicit Manager(EventLoop &event_loop)
-		:Queue(1024, 0),
+	explicit Manager(EventLoop &event_loop,
+			 unsigned entries=1024, unsigned flags=0)
+		:Queue(entries, flags),
 		 event(event_loop, BIND_THIS_METHOD(OnSocketReady),
 		       GetFileDescriptor()),
 		 idle_event(event_loop, BIND_THIS_METHOD(OnIdle))
