@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cassert>
+
 namespace Uring {
 
 class CancellableOperation;
@@ -31,6 +33,16 @@ public:
 	 */
 	bool IsUringPending() const noexcept {
 		return cancellable != nullptr;
+	}
+
+	/**
+	 * Returns the data pointer that can be passed to
+	 * io_uring_prep_cancel().
+	 */
+	void *GetUringData() const noexcept {
+		assert(IsUringPending());
+
+		return cancellable;
 	}
 
 	/**
