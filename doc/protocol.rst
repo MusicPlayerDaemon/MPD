@@ -1646,6 +1646,21 @@ Connection settings
 
 .. _command_binarylimit:
 
+:command:`binarylimit` [#since_0_24]_
+
+    Shows the current value of ``binarylimit`` and the min, max, and default binary limit.
+
+    Example:
+
+    .. code-block:: none
+
+      binarylimit
+      binarylimit: 8192
+      binarylimit_min: 64
+      binarylimit_max: 4206592
+      binarylimit_default: 8192
+      OK
+
 :command:`binarylimit SIZE` [#since_0_22_4]_
 
     Set the maximum :ref:`binary response <binary>` size for the

@@ -29,14 +29,23 @@ CommandResult
 handle_binary_limit(Client &client, Request args,
 		    [[maybe_unused]] Response &r)
 {
-	size_t value = args.ParseUnsigned(0, client.GetOutputMaxSize() - 4096);
-	if (value < 64) {
-		r.Error(ACK_ERROR_ARG, "Value too small");
-		return CommandResult::ERROR;
+	const size_t binary_limit_max = client.GetOutputMaxSize() - 4096;
+	if (args.empty()) {
+		r.Fmt(FMT_STRING("binarylimit: {}\nbinarylimit_min: {}\nbinarylimit_max: {}\nbinarylimit_default: {}\n"),
+		      client.binary_limit,
+		      Client::BINARY_LIMIT_MIN,
+		      binary_limit_max,
+		      Client::BINARY_LIMIT_DEFAULT);
 	}
+	else {
+		size_t value = args.ParseUnsigned(0, binary_limit_max);
+		if (value < Client::BINARY_LIMIT_MIN) {
+			r.FmtError(ACK_ERROR_ARG, "Value too small: min = {}", Client::BINARY_LIMIT_MIN);
+			return CommandResult::ERROR;
+		}
 
-	client.binary_limit = value;
-
+		client.binary_limit = value;
+	}
 	return CommandResult::OK;
 }
 

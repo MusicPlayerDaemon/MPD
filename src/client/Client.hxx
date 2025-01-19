@@ -74,7 +74,9 @@ public:
 	 * The maximum number of bytes transmitted in a binary
 	 * response.  Can be changed with the "binarylimit" command.
 	 */
-	size_t binary_limit = 8192;
+	static constexpr size_t BINARY_LIMIT_DEFAULT = 8192;
+	static constexpr size_t BINARY_LIMIT_MIN = 64;
+	size_t binary_limit = BINARY_LIMIT_DEFAULT;
 
 	/**
 	 * This caches the last "albumart" InputStream instance, to
