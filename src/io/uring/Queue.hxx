@@ -49,6 +49,10 @@ protected:
 	void AddPending(struct io_uring_sqe &sqe,
 			Operation &operation) noexcept;
 
+	void SubmitAndGetEvents() {
+		ring.SubmitAndGetEvents();
+	}
+
 public:
 	void Push(struct io_uring_sqe &sqe,
 		  Operation &operation) noexcept {

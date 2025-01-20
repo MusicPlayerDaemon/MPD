@@ -22,6 +22,14 @@ Ring::Submit()
 		throw MakeErrno(-error, "io_uring_submit() failed");
 }
 
+void
+Ring::SubmitAndGetEvents()
+{
+	int error = io_uring_submit_and_get_events(&ring);
+	if (error < 0)
+		throw MakeErrno(-error, "io_uring_submit() failed");
+}
+
 struct io_uring_cqe *
 Ring::WaitCompletion()
 {

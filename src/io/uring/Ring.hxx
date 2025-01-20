@@ -53,8 +53,17 @@ public:
 	 * kernel using io_uring_submit().
 	 *
 	 * Throws on error.
+	 *
+	 * @see io_uring_submit()
 	 */
 	void Submit();
+
+	/**
+	 * Like Submit(), but also flush completions.
+	 *
+	 * @see io_uring_submit_and_get_events()
+	 */
+	void SubmitAndGetEvents();
 
 	/**
 	 * Waits for one completion.
