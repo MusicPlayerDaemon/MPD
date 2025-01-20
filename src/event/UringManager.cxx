@@ -6,6 +6,16 @@
 
 namespace Uring {
 
+Manager::Manager(EventLoop &event_loop,
+		 unsigned entries, unsigned flags)
+	:Queue(entries, flags),
+	 event(event_loop, BIND_THIS_METHOD(OnSocketReady),
+	       GetFileDescriptor()),
+	 idle_event(event_loop, BIND_THIS_METHOD(OnIdle))
+{
+	event.ScheduleRead();
+}
+
 void
 Manager::OnSocketReady(unsigned) noexcept
 {

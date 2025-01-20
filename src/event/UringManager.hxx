@@ -15,14 +15,7 @@ class Manager final : public Queue {
 
 public:
 	explicit Manager(EventLoop &event_loop,
-			 unsigned entries=1024, unsigned flags=0)
-		:Queue(entries, flags),
-		 event(event_loop, BIND_THIS_METHOD(OnSocketReady),
-		       GetFileDescriptor()),
-		 idle_event(event_loop, BIND_THIS_METHOD(OnIdle))
-	{
-		event.ScheduleRead();
-	}
+			 unsigned entries=1024, unsigned flags=0);
 
 	void Submit() override {
 		idle_event.Schedule();
