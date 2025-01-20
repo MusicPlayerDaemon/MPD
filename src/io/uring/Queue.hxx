@@ -64,12 +64,28 @@ public:
 		ring.Submit();
 	}
 
+	/**
+	 * @return true if a completion was dispatched, false if the
+	 * completion queue was empty
+	 */
 	bool DispatchOneCompletion();
 
-	void DispatchCompletions() {
-		while (DispatchOneCompletion()) {}
+	/**
+	 * @return true if at least one completion was dispatched,
+	 * false if the completion queue was empty
+	 */
+	bool DispatchCompletions() {
+		bool result = false;
+		while (DispatchOneCompletion()) {
+			result = true;
+		}
+		return result;
 	}
 
+	/**
+	 * @return true if a completion was dispatched, false if the
+	 * completion queue was empty
+	 */
 	bool WaitDispatchOneCompletion();
 
 	void WaitDispatchCompletions() {
