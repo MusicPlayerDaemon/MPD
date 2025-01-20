@@ -14,6 +14,7 @@ Close(Queue *queue, FileDescriptor fd) noexcept
 	if (auto *s = queue != nullptr ? queue->GetSubmitEntry() : nullptr) {
 		io_uring_prep_close(s, fd.Get());
 		io_uring_sqe_set_data(s, nullptr);
+		io_uring_sqe_set_flags(s, IOSQE_CQE_SKIP_SUCCESS);
 		queue->Submit();
 	} else {
 		/* io_uring not available or queue full: fall back to
