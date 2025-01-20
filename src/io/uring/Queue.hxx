@@ -23,6 +23,7 @@ class Queue {
 
 public:
 	Queue(unsigned entries, unsigned flags);
+	Queue(unsigned entries, struct io_uring_params &params);
 	~Queue() noexcept;
 
 	FileDescriptor GetFileDescriptor() const noexcept {

@@ -26,6 +26,16 @@ public:
 	 */
 	Ring(unsigned entries, unsigned flags);
 
+	/**
+	 * Construct the io_uring using io_uring_queue_init().
+	 *
+	 * Throws on error.
+	 *
+	 * @param params initialization parameters; will also be
+	 * written to by this constructor
+	 */
+	Ring(unsigned entries, struct io_uring_params &params);
+
 	~Ring() noexcept {
 		io_uring_queue_exit(&ring);
 	}

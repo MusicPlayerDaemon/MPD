@@ -15,6 +15,11 @@ Queue::Queue(unsigned entries, unsigned flags)
 {
 }
 
+Queue::Queue(unsigned entries, struct io_uring_params &params)
+	:ring(entries, params)
+{
+}
+
 Queue::~Queue() noexcept
 {
 	operations.clear_and_dispose(DeleteDisposer{});
