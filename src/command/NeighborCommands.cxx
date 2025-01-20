@@ -30,8 +30,8 @@ handle_listneighbors(Client &client, [[maybe_unused]] Request args, Response &r)
 	}
 
 	for (const auto &i : neighbors->GetList())
-		r.Fmt(FMT_STRING("neighbor: {}\n"
-				 "name: {}\n"),
+		r.Fmt("neighbor: {}\n"
+		      "name: {}\n",
 		      i.uri,
 		      i.display_name);
 	return CommandResult::OK;

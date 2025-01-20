@@ -43,7 +43,7 @@ static void
 print_spl_list(Response &r, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
-		r.Fmt(FMT_STRING("playlist: {}\n"), i.name);
+		r.Fmt("playlist: {}\n", i.name);
 
 		if (!IsNegative(i.mtime))
 			time_print(r, "Last-Modified", i.mtime);

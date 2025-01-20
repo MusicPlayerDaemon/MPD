@@ -34,7 +34,7 @@ static void
 PrintDirectoryURI(Response &r, bool base,
 		  const LightDirectory &directory) noexcept
 {
-	r.Fmt(FMT_STRING("directory: {}\n"),
+	r.Fmt("directory: {}\n",
 	      ApplyBaseFlag(directory.GetPath(), base));
 }
 
@@ -64,10 +64,10 @@ print_playlist_in_directory(Response &r, bool base,
 			    const char *name_utf8) noexcept
 {
 	if (base || directory == nullptr)
-		r.Fmt(FMT_STRING("playlist: {}\n"),
+		r.Fmt("playlist: {}\n",
 		      ApplyBaseFlag(name_utf8, base));
 	else
-		r.Fmt(FMT_STRING("playlist: {}/{}\n"),
+		r.Fmt("playlist: {}/{}\n",
 		      directory, name_utf8);
 }
 
@@ -77,9 +77,9 @@ print_playlist_in_directory(Response &r, bool base,
 			    const char *name_utf8) noexcept
 {
 	if (base || directory == nullptr || directory->IsRoot())
-		r.Fmt(FMT_STRING("playlist: {}\n"), name_utf8);
+		r.Fmt("playlist: {}\n", name_utf8);
 	else
-		r.Fmt(FMT_STRING("playlist: {}/{}\n"),
+		r.Fmt("playlist: {}/{}\n",
 		      directory->GetPath(), name_utf8);
 }
 
@@ -183,7 +183,7 @@ PrintUniqueTags(Response &r, std::span<const TagType> tag_types,
 	tag_types = tag_types.subspan(1);
 
 	for (const auto &[key, tag] : map) {
-		r.Fmt(FMT_STRING("{}: {}\n"), name, key);
+		r.Fmt("{}: {}\n", name, key);
 
 		if (!tag_types.empty())
 			PrintUniqueTags(r, tag_types, tag);

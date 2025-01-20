@@ -33,8 +33,8 @@ PrintSearchStats(Response &r, const SearchStats &stats) noexcept
 	unsigned total_duration_s =
 		std::chrono::duration_cast<std::chrono::seconds>(stats.total_duration).count();
 
-	r.Fmt(FMT_STRING("songs: {}\n"
-			 "playtime: {}\n"),
+	r.Fmt("songs: {}\n"
+	      "playtime: {}\n",
 	      stats.n_songs, total_duration_s);
 }
 

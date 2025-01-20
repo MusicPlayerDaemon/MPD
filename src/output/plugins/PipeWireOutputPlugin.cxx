@@ -666,7 +666,7 @@ PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 				::SetVolume(*stream, channels, volume);
 			} catch (...) {
 				FmtError(pipewire_output_domain,
-					 FMT_STRING("Failed to restore volume: {}"),
+					 "Failed to restore volume: {}",
 					 std::current_exception());
 			}
 		}

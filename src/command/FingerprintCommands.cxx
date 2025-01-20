@@ -46,7 +46,7 @@ protected:
 	void Run() override;
 
 	void SendResponse(Response &r) noexcept override {
-		r.Fmt(FMT_STRING("chromaprint: {}\n"),
+		r.Fmt("chromaprint: {}\n",
 		      GetFingerprint());
 	}
 

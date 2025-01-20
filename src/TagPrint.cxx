@@ -15,7 +15,7 @@ tag_print_types(Response &r) noexcept
 	const auto tag_mask = global_tag_mask & r.GetTagMask();
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
 		if (tag_mask.Test(TagType(i)))
-			r.Fmt(FMT_STRING("tagtype: {}\n"), tag_item_names[i]);
+			r.Fmt("tagtype: {}\n", tag_item_names[i]);
 }
 
 void
@@ -29,13 +29,14 @@ tag_print_types_available(Response &r) noexcept
 void
 tag_print(Response &r, TagType type, std::string_view value) noexcept
 {
-	r.Fmt(FMT_STRING("{}: {}\n"), tag_item_names[type], value);
+	const std::string_view value{_value};
+	r.Fmt("{}: {}\n", tag_item_names[type], value);
 }
 
 void
 tag_print(Response &r, TagType type, const char *value) noexcept
 {
-	r.Fmt(FMT_STRING("{}: {}\n"), tag_item_names[type], value);
+	r.Fmt("{}: {}\n", tag_item_names[type], value);
 }
 
 void
@@ -51,8 +52,8 @@ void
 tag_print(Response &r, const Tag &tag) noexcept
 {
 	if (!tag.duration.IsNegative())
-		r.Fmt(FMT_STRING("Time: {}\n"
-				 "duration: {:1.3f}\n"),
+		r.Fmt("Time: {}\n"
+		      "duration: {:1.3f}\n",
 		      tag.duration.RoundS(),
 		      tag.duration.ToDoubleS());
 

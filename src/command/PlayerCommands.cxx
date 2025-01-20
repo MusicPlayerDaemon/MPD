@@ -119,18 +119,18 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 
 	const auto volume = partition.mixer_memento.GetVolume(partition.outputs);
 	if (volume >= 0)
-		r.Fmt(FMT_STRING("volume: {}\n"), volume);
+		r.Fmt("volume: {}\n", volume);
 
-	r.Fmt(FMT_STRING(COMMAND_STATUS_REPEAT ": {}\n"
-			 COMMAND_STATUS_RANDOM ": {}\n"
-			 COMMAND_STATUS_SINGLE ": {}\n"
-			 COMMAND_STATUS_CONSUME ": {}\n"
-			 "partition: {}\n"
-			 COMMAND_STATUS_PLAYLIST ": {}\n"
-			 COMMAND_STATUS_PLAYLIST_LENGTH ": {}\n"
-			 COMMAND_STATUS_MIXRAMPDB ": {}\n"
-			 COMMAND_STATUS_STATE ": {}\n"
-			 COMMAND_STATUS_LOADED_PLAYLIST ": {}\n"),
+	r.Fmt(COMMAND_STATUS_REPEAT ": {}\n"
+	      COMMAND_STATUS_RANDOM ": {}\n"
+	      COMMAND_STATUS_SINGLE ": {}\n"
+	      COMMAND_STATUS_CONSUME ": {}\n"
+	      "partition: {}\n"
+	      COMMAND_STATUS_PLAYLIST ": {}\n"
+	      COMMAND_STATUS_PLAYLIST_LENGTH ": {}\n"
+	      COMMAND_STATUS_MIXRAMPDB ": {}\n"
+	      COMMAND_STATUS_STATE ": {}\n",
+	      COMMAND_STATUS_LOADED_PLAYLIST ": {}\n",
 	      (unsigned)playlist.GetRepeat(),
 	      (unsigned)playlist.GetRandom(),
 	      SingleToString(playlist.GetSingle()),
@@ -143,24 +143,24 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 	      playlist.GetLastLoadedPlaylist());
 
 	if (pc.GetCrossFade() > FloatDuration::zero())
-		r.Fmt(FMT_STRING(COMMAND_STATUS_CROSSFADE ": {}\n"),
+		r.Fmt(COMMAND_STATUS_CROSSFADE ": {}\n",
 		      lround(pc.GetCrossFade().count()));
 
 	if (pc.GetMixRampDelay() > FloatDuration::zero())
-		r.Fmt(FMT_STRING(COMMAND_STATUS_MIXRAMPDELAY ": {}\n"),
+		r.Fmt(COMMAND_STATUS_MIXRAMPDELAY ": {}\n",
 		      pc.GetMixRampDelay().count());
 
 	song = playlist.GetCurrentPosition();
 	if (song >= 0) {
-		r.Fmt(FMT_STRING(COMMAND_STATUS_SONG ": {}\n"
-				 COMMAND_STATUS_SONGID ": {}\n"),
+		r.Fmt(COMMAND_STATUS_SONG ": {}\n"
+		      COMMAND_STATUS_SONGID ": {}\n",
 		      song, playlist.PositionToId(song));
 	}
 
 	if (player_status.state != PlayerState::STOP) {
-		r.Fmt(FMT_STRING(COMMAND_STATUS_TIME ": {}:{}\n"
-				 "elapsed: {:1.3f}\n"
-				 COMMAND_STATUS_BITRATE ": {}\n"),
+		r.Fmt(COMMAND_STATUS_TIME ": {}:{}\n"
+		      "elapsed: {:1.3f}\n"
+		      COMMAND_STATUS_BITRATE ": {}\n",
 		      player_status.elapsed_time.RoundS(),
 		      player_status.total_time.IsNegative()
 		      ? 0U
@@ -169,11 +169,11 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 		      player_status.bit_rate);
 
 		if (!player_status.total_time.IsNegative())
-			r.Fmt(FMT_STRING("duration: {:1.3f}\n"),
+			r.Fmt("duration: {:1.3f}\n",
 				 player_status.total_time.ToDoubleS());
 
 		if (player_status.audio_format.IsDefined())
-			r.Fmt(FMT_STRING(COMMAND_STATUS_AUDIO ": {}\n"),
+			r.Fmt(COMMAND_STATUS_AUDIO ": {}\n",
 			      player_status.audio_format);
 	}
 
@@ -183,7 +183,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 		? update_service->GetId()
 		: 0;
 	if (updateJobId != 0) {
-		r.Fmt(FMT_STRING(COMMAND_STATUS_UPDATING_DB ": {}\n"),
+		r.Fmt(COMMAND_STATUS_UPDATING_DB ": {}\n",
 		      updateJobId);
 	}
 #endif
@@ -191,14 +191,14 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 	try {
 		pc.LockCheckRethrowError();
 	} catch (...) {
-		r.Fmt(FMT_STRING(COMMAND_STATUS_ERROR ": {}\n"),
+		r.Fmt(COMMAND_STATUS_ERROR ": {}\n",
 		      GetFullMessage(std::current_exception()));
 	}
 
 	song = playlist.GetNextPosition();
 	if (song >= 0)
-		r.Fmt(FMT_STRING(COMMAND_STATUS_NEXTSONG ": {}\n"
-				 COMMAND_STATUS_NEXTSONGID ": {}\n"),
+		r.Fmt(COMMAND_STATUS_NEXTSONG ": {}\n"
+		      COMMAND_STATUS_NEXTSONGID ": {}\n",
 		      song, playlist.PositionToId(song));
 
 	return CommandResult::OK;
@@ -341,7 +341,7 @@ CommandResult
 handle_replay_gain_status(Client &client, [[maybe_unused]] Request args,
 			  Response &r)
 {
-	r.Fmt(FMT_STRING("replay_gain_mode: {}\n"),
+	r.Fmt("replay_gain_mode: {}\n",
 	      ToString(client.GetPartition().replay_gain_mode));
 	return CommandResult::OK;
 }

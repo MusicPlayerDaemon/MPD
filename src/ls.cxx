@@ -56,7 +56,7 @@ print_supported_uri_schemes(Response &r)
 	}
 
 	for (const auto& protocol : protocols) {
-		r.Fmt(FMT_STRING("handler: {}\n"), protocol);
+		r.Fmt("handler: {}\n", protocol);
 	}
 }
 
