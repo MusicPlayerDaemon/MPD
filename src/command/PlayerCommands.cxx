@@ -129,7 +129,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 	      COMMAND_STATUS_PLAYLIST ": {}\n"
 	      COMMAND_STATUS_PLAYLIST_LENGTH ": {}\n"
 	      COMMAND_STATUS_MIXRAMPDB ": {}\n"
-	      COMMAND_STATUS_STATE ": {}\n",
+	      COMMAND_STATUS_STATE ": {}\n"
 	      COMMAND_STATUS_LOADED_PLAYLIST ": {}\n",
 	      (unsigned)playlist.GetRepeat(),
 	      (unsigned)playlist.GetRandom(),
