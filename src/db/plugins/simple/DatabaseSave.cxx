@@ -37,13 +37,13 @@ void
 db_save_internal(BufferedOutputStream &os, const Directory &music_root)
 {
 	os.Write(DIRECTORY_INFO_BEGIN "\n");
-	os.Fmt(FMT_STRING(DB_FORMAT_PREFIX "{}\n"), DB_FORMAT);
+	os.Fmt(DB_FORMAT_PREFIX "{}\n", DB_FORMAT);
 	os.Write(DIRECTORY_MPD_VERSION VERSION "\n");
-	os.Fmt(FMT_STRING(DIRECTORY_FS_CHARSET "{}\n"), GetFSCharset());
+	os.Fmt(DIRECTORY_FS_CHARSET "{}\n", GetFSCharset());
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (IsTagEnabled(i))
-			os.Fmt(FMT_STRING(DB_TAG_PREFIX "{}\n"),
+			os.Fmt(DB_TAG_PREFIX "{}\n",
 			       tag_item_names[i]);
 
 	os.Write(DIRECTORY_INFO_END "\n");

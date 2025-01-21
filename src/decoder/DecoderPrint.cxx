@@ -27,7 +27,7 @@ decoder_plugin_print(Response &r,
 
 	if (plugin.suffixes_function != nullptr)
 		for (const auto &i : plugin.suffixes_function())
-			r.Fmt(FMT_STRING("suffix: {}\n"), i);
+			r.Fmt("suffix: {}\n", i);
 
 	if (plugin.mime_types != nullptr)
 		for (p = plugin.mime_types; *p != nullptr; ++p)

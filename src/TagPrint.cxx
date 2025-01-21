@@ -23,11 +23,11 @@ tag_print_types_available(Response &r) noexcept
 {
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
 		if (global_tag_mask.Test(TagType(i)))
-			r.Fmt(FMT_STRING("tagtype: {}\n"), tag_item_names[i]);
+			r.Fmt("tagtype: {}\n", tag_item_names[i]);
 }
 
 void
-tag_print(Response &r, TagType type, std::string_view value) noexcept
+tag_print(Response &r, TagType type, std::string_view _value) noexcept
 {
 	const std::string_view value{_value};
 	r.Fmt("{}: {}\n", tag_item_names[type], value);

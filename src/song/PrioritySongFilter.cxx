@@ -11,7 +11,7 @@
 std::string
 PrioritySongFilter::ToExpression() const noexcept
 {
-	return fmt::format(FMT_STRING("(prio >= {})"), value);
+	return fmt::format("(prio >= {})", value);
 }
 
 bool

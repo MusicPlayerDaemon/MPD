@@ -89,7 +89,7 @@ playlist_provider_search_print(Response &r,
 
 		if (detail) {
 			song_print_info(r, *song);
-			r.Fmt(FMT_STRING("Pos: {}\n"), position);
+			r.Fmt("Pos: {}\n", position);
 		} else
 			/* fallback if no detail was requested or no
 			   detail was available */

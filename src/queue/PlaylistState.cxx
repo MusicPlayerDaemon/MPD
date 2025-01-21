@@ -60,33 +60,33 @@ playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 		default:
 			os.Write(PLAYLIST_STATE_FILE_STATE_PLAY "\n");
 		}
-		os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CURRENT "{}\n"),
+		os.Fmt(PLAYLIST_STATE_FILE_CURRENT "{}\n",
 		       playlist.queue.OrderToPosition(playlist.current));
-		os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_TIME "{}\n"),
+		os.Fmt(PLAYLIST_STATE_FILE_TIME "{}\n",
 		       player_status.elapsed_time.ToDoubleS());
 	} else {
 		os.Write(PLAYLIST_STATE_FILE_STATE_STOP "\n");
 
 		if (playlist.current >= 0)
-			os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CURRENT "{}\n"),
+			os.Fmt(PLAYLIST_STATE_FILE_CURRENT "{}\n",
 			       playlist.queue.OrderToPosition(playlist.current));
 	}
 
-	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_RANDOM "{}\n"),
+	os.Fmt(PLAYLIST_STATE_FILE_RANDOM "{}\n",
 	       (unsigned)playlist.queue.random);
-	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_REPEAT "{}\n"),
+	os.Fmt(PLAYLIST_STATE_FILE_REPEAT "{}\n",
 	       (unsigned)playlist.queue.repeat);
-	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_SINGLE "{}\n"),
+	os.Fmt(PLAYLIST_STATE_FILE_SINGLE "{}\n",
 		   SingleToString(playlist.queue.single));
-	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CONSUME "{}\n"),
+	os.Fmt(PLAYLIST_STATE_FILE_CONSUME "{}\n",
 	       ConsumeToString(playlist.queue.consume));
-	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_CROSSFADE "{}\n"),
+	os.Fmt(PLAYLIST_STATE_FILE_CROSSFADE "{}\n",
 	       pc.GetCrossFade().count());
-	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_MIXRAMPDB "{}\n"),
+	os.Fmt(PLAYLIST_STATE_FILE_MIXRAMPDB "{}\n",
 	       pc.GetMixRampDb());
-	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_MIXRAMPDELAY "{}\n"),
+	os.Fmt(PLAYLIST_STATE_FILE_MIXRAMPDELAY "{}\n",
 	       pc.GetMixRampDelay().count());
-	os.Fmt(FMT_STRING(PLAYLIST_STATE_FILE_LOADED_PLAYLIST "{}\n"),
+	os.Fmt(PLAYLIST_STATE_FILE_LOADED_PLAYLIST "{}\n",
 	       playlist.GetLastLoadedPlaylist());
 	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n");
 	queue_save(os, playlist.queue);

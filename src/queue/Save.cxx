@@ -24,7 +24,7 @@ static void
 queue_save_database_song(BufferedOutputStream &os,
 			 int idx, const DetachedSong &song)
 {
-	os.Fmt(FMT_STRING("{}:{}\n"), idx, song.GetURI());
+	os.Fmt("{}:{}\n", idx, song.GetURI());
 }
 
 static void
@@ -53,7 +53,7 @@ queue_save(BufferedOutputStream &os, const Queue &queue)
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
 		uint8_t prio = queue.GetPriorityAtPosition(i);
 		if (prio != 0)
-			os.Fmt(FMT_STRING(PRIO_LABEL "{}\n"), prio);
+			os.Fmt(PRIO_LABEL "{}\n", prio);
 
 		queue_save_song(os, i, queue.Get(i));
 	}

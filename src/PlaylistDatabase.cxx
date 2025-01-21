@@ -19,9 +19,9 @@ void
 playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv)
 {
 	for (const PlaylistInfo &pi : pv) {
-		os.Fmt(FMT_STRING(PLAYLIST_META_BEGIN "{}\n"), pi.name);
+		os.Fmt(PLAYLIST_META_BEGIN "{}\n", pi.name);
 		if (!IsNegative(pi.mtime))
-			os.Fmt(FMT_STRING("mtime: {}\n"),
+			os.Fmt("mtime: {}\n",
 			       std::chrono::system_clock::to_time_t(pi.mtime));
 		os.Write("playlist_end\n");
 	}

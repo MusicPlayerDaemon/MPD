@@ -38,10 +38,10 @@ storage_state_save(BufferedOutputStream &os, const Instance &instance)
 		if (uri.empty() || StringIsEmpty(mount_uri))
 			return;
 
-		os.Fmt(FMT_STRING(MOUNT_STATE_BEGIN "\n"
-				  MOUNT_STATE_STORAGE_URI "{}\n"
-				  MOUNT_STATE_MOUNTED_URL "{}\n"
-				  MOUNT_STATE_END "\n"),
+		os.Fmt(MOUNT_STATE_BEGIN "\n"
+		       MOUNT_STATE_STORAGE_URI "{}\n"
+		       MOUNT_STATE_MOUNTED_URL "{}\n"
+		       MOUNT_STATE_END "\n",
 		       mount_uri, uri);
 	};
 
@@ -80,7 +80,7 @@ storage_state_restore(const char *line, LineReader &file,
 		return true;
 
 	if (url.empty() || uri.empty()) {
-		LogError(storage_domain, "Missing value in mountpoint state.");	
+		LogError(storage_domain, "Missing value in mountpoint state.");
 		return true;
 	}
 

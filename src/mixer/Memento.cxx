@@ -76,5 +76,5 @@ MixerMemento::LoadSoftwareVolumeState(const char *line, MultipleOutputs &outputs
 void
 MixerMemento::SaveSoftwareVolumeState(BufferedOutputStream &os) const
 {
-	os.Fmt(FMT_STRING(SW_VOLUME_STATE "{}\n"), volume_software_set);
+	os.Fmt(SW_VOLUME_STATE "{}\n", volume_software_set);
 }

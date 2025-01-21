@@ -50,14 +50,14 @@ protocol_features_print(Client &client, Response &r) noexcept
 	const auto protocol_feature = client.GetProtocolFeatures();
 	for (unsigned i = 0; i < PF_NUM_OF_ITEM_TYPES; i++)
 		if (protocol_feature.Test(ProtocolFeatureType(i)))
-			r.Fmt(FMT_STRING("feature: {}\n"), protocol_feature_names[i]);
+			r.Fmt("feature: {}\n", protocol_feature_names[i]);
 }
 
 void
 protocol_features_print_all(Response &r) noexcept
 {
 	for (unsigned i = 0; i < PF_NUM_OF_ITEM_TYPES; i++)
-		r.Fmt(FMT_STRING("feature: {}\n"), protocol_feature_names[i]);
+		r.Fmt("feature: {}\n", protocol_feature_names[i]);
 }
 
 ProtocolFeatureType

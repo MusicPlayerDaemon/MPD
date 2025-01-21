@@ -377,7 +377,7 @@ handle_config(Client &client, [[maybe_unused]] Request args, Response &r)
 #endif
 
 	if (const auto spl_path = map_spl_path(); !spl_path.IsNull())
-		r.Fmt(FMT_STRING("playlist_directory: {}\n"), spl_path.ToUTF8());
+		r.Fmt("playlist_directory: {}\n", spl_path.ToUTF8());
 
 #ifdef HAVE_PCRE
 	r.Write("pcre: 1\n");

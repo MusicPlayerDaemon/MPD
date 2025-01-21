@@ -29,12 +29,12 @@ queue_print_song_info(Response &r, const Queue &queue,
 		      unsigned position)
 {
 	song_print_info(r, queue.Get(position));
-	r.Fmt(FMT_STRING("Pos: {}\nId: {}\n"),
+	r.Fmt("Pos: {}\nId: {}\n",
 	      position, queue.PositionToId(position));
 
 	uint8_t priority = queue.GetPriorityAtPosition(position);
 	if (priority != 0)
-		r.Fmt(FMT_STRING("Prio: {}\n"), priority);
+		r.Fmt("Prio: {}\n", priority);
 }
 
 void
@@ -56,7 +56,7 @@ queue_print_uris(Response &r, const Queue &queue,
 	assert(end <= queue.GetLength());
 
 	for (unsigned i = start; i < end; ++i) {
-		r.Fmt(FMT_STRING("{}:"), i);
+		r.Fmt("{}:", i);
 		song_print_uri(r, queue.Get(i));
 	}
 }
@@ -84,7 +84,7 @@ queue_print_changes_position(Response &r, const Queue &queue,
 
 	for (unsigned i = start; i < end; i++)
 		if (queue.IsNewerAtPosition(i, version))
-			r.Fmt(FMT_STRING("cpos: {}\nId: {}\n"),
+			r.Fmt("cpos: {}\nId: {}\n",
 			      i, queue.PositionToId(i));
 }
 

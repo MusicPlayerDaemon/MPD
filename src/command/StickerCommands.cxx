@@ -458,7 +458,7 @@ handle_sticker(Client &client, Request args, Response &r)
 	/* set */
 	if (args.size() == 5 && StringIsEqual(cmd, "set"))
 		return handler->Set(uri, sticker_name, args[4]);
-	
+
 	/* inc */
 	if (args.size() == 5 && StringIsEqual(cmd, "inc"))
 		return handler->Inc(uri, sticker_name, args[4]);
@@ -550,6 +550,6 @@ handle_sticker_types(Client &client, Request args, Response &r)
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
 		if (sticker_allowed_tags.Test(TagType(i)) &&
 		    tag_mask.Test(TagType(i)))
-			r.Fmt(FMT_STRING("stickertype: {}\n"), tag_item_names[i]);
+			r.Fmt("stickertype: {}\n", tag_item_names[i]);
 	return CommandResult::OK;
 }

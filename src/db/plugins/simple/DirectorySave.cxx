@@ -67,20 +67,20 @@ directory_save(BufferedOutputStream &os, const Directory &directory)
 	if (!directory.IsRoot()) {
 		const char *type = DeviceToTypeString(directory.device);
 		if (type != nullptr)
-			os.Fmt(FMT_STRING(DIRECTORY_TYPE "{}\n"), type);
+			os.Fmt(DIRECTORY_TYPE "{}\n", type);
 
 		if (!IsNegative(directory.mtime))
-			os.Fmt(FMT_STRING(DIRECTORY_MTIME "{}\n"),
+			os.Fmt(DIRECTORY_MTIME "{}\n",
 			       std::chrono::system_clock::to_time_t(directory.mtime));
 
-		os.Fmt(FMT_STRING(DIRECTORY_BEGIN "{}\n"), directory.GetPath());
+		os.Fmt(DIRECTORY_BEGIN "{}\n", directory.GetPath());
 	}
 
 	for (const auto &child : directory.children) {
 		if (child.IsMount())
 			continue;
 
-		os.Fmt(FMT_STRING(DIRECTORY_DIR "{}\n"), child.GetName());
+		os.Fmt(DIRECTORY_DIR "{}\n", child.GetName());
 		directory_save(os, child);
 	}
 
@@ -90,7 +90,7 @@ directory_save(BufferedOutputStream &os, const Directory &directory)
 	playlist_vector_save(os, directory.playlists);
 
 	if (!directory.IsRoot())
-		os.Fmt(FMT_STRING(DIRECTORY_END "{}\n"), directory.GetPath());
+		os.Fmt(DIRECTORY_END "{}\n", directory.GetPath());
 }
 
 static bool

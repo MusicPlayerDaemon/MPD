@@ -43,9 +43,9 @@ playlist_provider_length(Response &r,
 			playtime += get_duration(*song);
 		i++;
 	}
-	r.Fmt(FMT_STRING("songs: {}\n"), i);
+	r.Fmt("songs: {}\n", i);
 	const auto seconds = std::chrono::round<std::chrono::seconds>(playtime);
-	r.Fmt(FMT_STRING("playtime: {}\n"), seconds.count());
+	r.Fmt("playtime: {}\n", seconds.count());
 }
 
 void
