@@ -73,11 +73,11 @@ EnableLogTimestamp() noexcept
 	enable_timestamp = true;
 }
 
+static constexpr size_t LOG_DATE_BUF_SIZE = std::char_traits<char>::length("Jan 22 15:43:14 : ") + 1;
+
 static const char *
-log_date() noexcept
+log_date(char buf[LOG_DATE_BUF_SIZE]) noexcept
 {
-	static constexpr size_t LOG_DATE_BUF_SIZE = std::char_traits<char>::length("Jan 22 15:43:14 : ") + 1;
-	static char buf[LOG_DATE_BUF_SIZE];
 	time_t t = time(nullptr);
 	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M:%S : ", localtime(&t));
 	return buf;
@@ -147,8 +147,9 @@ LogFinishSysLog() noexcept
 static void
 FileLog(const Domain &domain, std::string_view message) noexcept
 {
+	char date_buf[LOG_DATE_BUF_SIZE];
 	fmt::print(stderr, "{}{}: {}\n",
-		   enable_timestamp ? log_date() : "",
+		   enable_timestamp ? log_date(date_buf) : "",
 		   domain.GetName(),
 		   StripRight(message));
 
