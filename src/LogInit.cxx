@@ -130,6 +130,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 
 	if (use_stdout) {
 		out_fd = STDOUT_FILENO;
+		EnableLogTimestamp();
 	} else {
 		const auto *param = config.GetParam(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
