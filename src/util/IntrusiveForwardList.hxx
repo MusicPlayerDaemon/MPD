@@ -9,7 +9,7 @@
 #include "MemberPointer.hxx"
 #include "OptionalCounter.hxx"
 #include "OptionalField.hxx"
-#include "ShallowCopy.hxx"
+#include "TagStructs.hxx"
 
 #include <iterator>
 #include <type_traits>
