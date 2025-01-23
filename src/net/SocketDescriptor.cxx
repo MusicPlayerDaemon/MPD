@@ -252,7 +252,7 @@ SocketDescriptor::GetPeerPidfd() const noexcept
 	if (GetOption(SOL_SOCKET, SO_PEERPIDFD, &pidfd, sizeof(pidfd)) < sizeof(pidfd))
 		return {};
 
-	return UniqueFileDescriptor{pidfd};
+	return UniqueFileDescriptor{AdoptTag{}, pidfd};
 }
 
 #endif // __linux__

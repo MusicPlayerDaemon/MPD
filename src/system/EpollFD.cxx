@@ -5,7 +5,7 @@
 #include "Error.hxx"
 
 EpollFD::EpollFD()
-	:fd(::epoll_create1(EPOLL_CLOEXEC))
+	:fd(AdoptTag{}, ::epoll_create1(EPOLL_CLOEXEC))
 {
 	if (!fd.IsDefined())
 		throw MakeErrno("epoll_create1() failed");

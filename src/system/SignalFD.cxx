@@ -17,7 +17,7 @@ SignalFD::Create(const sigset_t &mask)
 		throw MakeErrno("signalfd() failed");
 
 	if (!fd.IsDefined()) {
-		fd = UniqueFileDescriptor{new_fd};
+		fd = UniqueFileDescriptor{AdoptTag{}, new_fd};
 	}
 
 	assert(new_fd == fd.Get());

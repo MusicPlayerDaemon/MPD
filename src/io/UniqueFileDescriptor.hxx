@@ -4,6 +4,7 @@
 #pragma once
 
 #include "FileDescriptor.hxx" // IWYU pragma: export
+#include "util/TagStructs.hxx"
 
 #include <cassert>
 #include <utility>
@@ -16,10 +17,10 @@ public:
 	UniqueFileDescriptor() noexcept
 		:FileDescriptor(FileDescriptor::Undefined()) {}
 
-	explicit UniqueFileDescriptor(int _fd) noexcept
+	explicit UniqueFileDescriptor(AdoptTag, int _fd) noexcept
 		:FileDescriptor(_fd) {}
 
-	explicit UniqueFileDescriptor(FileDescriptor _fd) noexcept
+	explicit UniqueFileDescriptor(AdoptTag, FileDescriptor _fd) noexcept
 		:FileDescriptor(_fd) {}
 
 	UniqueFileDescriptor(const UniqueFileDescriptor &) = delete;

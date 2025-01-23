@@ -18,7 +18,7 @@ CreateInotify()
 	if (fd < 0)
 		throw MakeErrno("inotify_init1() failed");
 
-	return UniqueFileDescriptor(fd);
+	return UniqueFileDescriptor(AdoptTag{}, fd);
 }
 
 InotifyEvent::InotifyEvent(EventLoop &event_loop, InotifyHandler &_handler)
