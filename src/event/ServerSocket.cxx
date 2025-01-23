@@ -130,7 +130,7 @@ inline void
 ServerSocket::OneServerSocket::Accept() noexcept
 {
 	StaticSocketAddress peer_address;
-	UniqueSocketDescriptor peer_fd(event.GetSocket().AcceptNonBlock(peer_address));
+	UniqueSocketDescriptor peer_fd{AdoptTag{}, event.GetSocket().AcceptNonBlock(peer_address)};
 	if (!peer_fd.IsDefined()) {
 		const SocketErrorMessage msg;
 		FmtError(server_socket_domain,

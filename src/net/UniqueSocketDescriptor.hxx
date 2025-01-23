@@ -4,6 +4,7 @@
 #pragma once
 
 #include "SocketDescriptor.hxx"
+#include "util/TagStructs.hxx"
 
 #ifndef _WIN32
 #include "io/UniqueFileDescriptor.hxx"
@@ -21,17 +22,17 @@ public:
 	UniqueSocketDescriptor() noexcept
 		:SocketDescriptor(SocketDescriptor::Undefined()) {}
 
-	explicit UniqueSocketDescriptor(SocketDescriptor _fd) noexcept
+	explicit UniqueSocketDescriptor(AdoptTag, SocketDescriptor _fd) noexcept
 		:SocketDescriptor(_fd) {}
 #ifndef _WIN32
-	explicit UniqueSocketDescriptor(FileDescriptor _fd) noexcept
+	explicit UniqueSocketDescriptor(AdoptTag, FileDescriptor _fd) noexcept
 		:SocketDescriptor(_fd) {}
 
 	explicit UniqueSocketDescriptor(UniqueFileDescriptor &&_fd) noexcept
 		:SocketDescriptor(_fd.Release()) {}
 #endif // !_WIN32
 
-	explicit UniqueSocketDescriptor(int _fd) noexcept
+	explicit UniqueSocketDescriptor(AdoptTag, int _fd) noexcept
 		:SocketDescriptor(_fd) {}
 
 #ifdef _WIN32
@@ -75,14 +76,14 @@ public:
 	 * @return an "undefined" instance on error
 	 */
 	UniqueSocketDescriptor AcceptNonBlock() const noexcept {
-		return UniqueSocketDescriptor(SocketDescriptor::AcceptNonBlock());
+		return UniqueSocketDescriptor{AdoptTag{}, SocketDescriptor::AcceptNonBlock()};
 	}
 
 	/**
 	 * @return an "undefined" instance on error
 	 */
 	UniqueSocketDescriptor AcceptNonBlock(StaticSocketAddress &address) const noexcept {
-		return UniqueSocketDescriptor(SocketDescriptor::AcceptNonBlock(address));
+		return UniqueSocketDescriptor{AdoptTag{}, SocketDescriptor::AcceptNonBlock(address)};
 	}
 
 #ifndef _WIN32

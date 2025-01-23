@@ -49,7 +49,7 @@ listen_systemd_activation(ClientListener &listener)
 
 	for (int i = SD_LISTEN_FDS_START, end = SD_LISTEN_FDS_START + n;
 	     i != end; ++i)
-		listener.AddFD(UniqueSocketDescriptor(i));
+		listener.AddFD(UniqueSocketDescriptor{AdoptTag{}, i});
 
 	return true;
 }
