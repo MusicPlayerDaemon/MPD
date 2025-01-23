@@ -15,3 +15,10 @@
  * duplicating the referenced objects).
  */
 struct ShallowCopy {};
+
+/**
+ * A tag that signals that the callee shall take ownership of the
+ * object that is being passed to it.  Usually, that owned is an
+ * unmanaged reference and rvalues do not make sense.
+ */
+struct AdoptTag {};
