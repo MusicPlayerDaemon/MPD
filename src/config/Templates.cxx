@@ -58,6 +58,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "auto_update" },
 	{ "auto_update_depth" },
 	{ "mixramp_analyzer" },
+	{ "max_buffered_input_stream_size" },
 };
 
 static constexpr unsigned n_config_param_templates =
