@@ -22,6 +22,14 @@ Ring::Ring(unsigned entries, struct io_uring_params &params)
 }
 
 void
+Ring::SetMaxWorkers(unsigned values[2])
+{
+	if (int error = io_uring_register_iowq_max_workers(&ring, values);
+	    error < 0)
+		throw MakeErrno(-error, "io_uring_register_iowq_max_workers() failed");
+}
+
+void
 Ring::Submit()
 {
 	if (int error = io_uring_submit(&ring);

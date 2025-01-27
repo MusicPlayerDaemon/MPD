@@ -51,6 +51,23 @@ public:
 	}
 
 	/**
+	 * Wrapper for io_uring_register_iowq_max_workers().
+	 *
+	 * Throws on error.
+	 */
+	void SetMaxWorkers(unsigned values[2]);
+
+	/**
+	 * This overload constructs an array for
+	 * io_uring_register_iowq_max_workers() and discards the
+	 * output values.
+	 */
+	void SetMaxWorkers(unsigned bounded, unsigned unbounded) {
+		unsigned values[2] = {bounded, unbounded};
+		SetMaxWorkers(values);
+	}
+
+	/**
 	 * Returns a submit queue entry or nullptr if the submit queue
 	 * is full.
 	 */

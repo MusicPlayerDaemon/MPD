@@ -30,6 +30,14 @@ public:
 		return ring.GetFileDescriptor();
 	}
 
+	void SetMaxWorkers(unsigned values[2]) {
+		ring.SetMaxWorkers(values);
+	}
+
+	void SetMaxWorkers(unsigned bounded, unsigned unbounded) {
+		ring.SetMaxWorkers(bounded, unbounded);
+	}
+
 	struct io_uring_sqe *GetSubmitEntry() noexcept {
 		return ring.GetSubmitEntry();
 	}
