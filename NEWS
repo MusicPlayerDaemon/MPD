@@ -70,6 +70,9 @@ ver 0.24 (not yet released)
 * documentation: switch to sphinx-rtd-theme
 * require Meson 1.0
 
+ver 0.23.17 (not yet released)
+* support libfmt 11.1
+
 ver 0.23.16 (2024/12/03)
 * database
   - fix integer overflows with 64-bit inode numbers

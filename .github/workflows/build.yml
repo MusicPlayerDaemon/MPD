@@ -102,7 +102,7 @@ jobs:
             libgcrypt20-dev
 
       - id: cache-ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.compiler }}
 
