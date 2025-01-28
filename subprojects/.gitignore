@@ -6,4 +6,5 @@
 /sqlite-*/
 /libmicrohttpd*
 /libnpupnp-*/
+/liburing-*/
 /libvorbis-*/
