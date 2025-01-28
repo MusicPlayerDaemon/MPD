@@ -4,4 +4,6 @@
 /fmt-*/
 /googletest-*/
 /sqlite-*/
+/libmicrohttpd*
+/libnpupnp-*/
 /libvorbis-*/
