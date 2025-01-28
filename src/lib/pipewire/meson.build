@@ -1,4 +1,6 @@
-pipewire_dep = dependency('libpipewire-0.3', required: get_option('pipewire'))
+pipewire_dep = dependency('libpipewire-0.3',
+                          include_type: 'system',
+                          required: get_option('pipewire'))
 conf.set('ENABLE_PIPEWIRE', pipewire_dep.found())
 if not pipewire_dep.found()
   subdir_done()
