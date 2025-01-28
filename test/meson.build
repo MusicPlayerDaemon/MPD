@@ -288,6 +288,7 @@ if enable_database
       '../src/LocateUri.cxx',
       include_directories: inc,
       dependencies: [
+        event_dep,
         log_dep,
         tag_dep,
         fs_dep,
