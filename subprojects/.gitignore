@@ -10,9 +10,9 @@
 /libmicrohttpd*
 /libmpdclient/
 /libnpupnp-*/
-/openssl-*/
-/opus-*/
-/sqlite-*/
 /libogg-*/
 /libvorbis-*/
 /liburing-*/
+/openssl-*/
+/opus-*/
+/sqlite-*/

@@ -22,6 +22,7 @@ nfs = static_library(
   'Blocking.cxx',
   include_directories: inc,
   dependencies: [
+    event_dep,
     nfs_dep,
     log_dep,
   ],
@@ -30,6 +31,7 @@ nfs = static_library(
 nfs_dep = declare_dependency(
   link_with: nfs,
   dependencies: [
+    event_dep,
     nfs_dep,
   ],
 )
