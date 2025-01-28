@@ -122,7 +122,6 @@ jobs:
             googletest \
             icu4c \
             ffmpeg \
-            yajl \
             libupnp \
             libid3tag \
             chromaprint \
