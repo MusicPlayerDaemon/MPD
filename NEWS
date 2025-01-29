@@ -5,6 +5,8 @@ ver 0.23.17 (not yet released)
   - nfs: require libnfs 4.0 or later
 * database
   - inotify: trigger update after symlink was created
+* decoder
+  - ffmpeg: prefer over sndfile and audiofile for its DTS-WAV support
 * support libfmt 11.1
 
 ver 0.23.16 (2024/12/03)

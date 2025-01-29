@@ -73,12 +73,6 @@ constexpr const struct DecoderPlugin *decoder_plugins[] = {
 #ifdef ENABLE_OPUS
 	&opus_decoder_plugin,
 #endif
-#ifdef ENABLE_SNDFILE
-	&sndfile_decoder_plugin,
-#endif
-#ifdef ENABLE_AUDIOFILE
-	&audiofile_decoder_plugin,
-#endif
 #ifdef ENABLE_DSD
 	&dsdiff_decoder_plugin,
 	&dsf_decoder_plugin,
@@ -120,6 +114,19 @@ constexpr const struct DecoderPlugin *decoder_plugins[] = {
 #ifdef ENABLE_FFMPEG
 	&ffmpeg_decoder_plugin,
 #endif
+
+	/* these WAV-decoding plugins are below ffmpeg_decoder_plugin
+	   to give FFmpeg a chance to decode DTS-WAV files which is
+	   technically DTS Coherent Acoustics (DCA) stream wrapped in
+	   fake 16-bit stereo samples; neither libsndfile nor
+	   libaudiofile detect this, but FFmpeg does */
+#ifdef ENABLE_SNDFILE
+	&sndfile_decoder_plugin,
+#endif
+#ifdef ENABLE_AUDIOFILE
+	&audiofile_decoder_plugin,
+#endif
+
 	&pcm_decoder_plugin,
 	nullptr
 };
