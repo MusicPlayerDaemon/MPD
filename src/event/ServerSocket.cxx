@@ -105,10 +105,8 @@ static int
 get_remote_uid(SocketDescriptor s) noexcept
 {
 #ifdef HAVE_STRUCT_UCRED
-	struct ucred cred;
-	socklen_t len = sizeof (cred);
-
-	if (getsockopt(s.Get(), SOL_SOCKET, SO_PEERCRED, &cred, &len) < 0)
+	const auto cred = s.GetPeerCredentials();
+	if (cred.pid < 0)
 		return -1;
 
 	return cred.uid;
