@@ -60,7 +60,7 @@ Client::ProcessLine(char *line) noexcept
 
 	if (cmd_list.IsActive() && IsAsyncCommmand(line)) {
 		FmtWarning(client_domain,
-			   "[{}] not possible in comand list: \"{}\"",
+			   "[{}] not possible in comand list: {:?}",
 			   num, line);
 		return CommandResult::CLOSE;
 	}
