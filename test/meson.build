@@ -84,6 +84,7 @@ if zeroconf_dep.found()
     include_directories: inc,
     dependencies: [
       zeroconf_dep,
+      event_dep,
       util_dep,
     ],
   )
@@ -202,6 +203,7 @@ if neighbor_glue_dep.found()
     include_directories: inc,
     dependencies: [
       neighbor_glue_dep,
+      event_dep,
     ],
   )
 endif
@@ -271,6 +273,7 @@ if enable_database
       '../src/LocateUri.cxx',
       include_directories: inc,
       dependencies: [
+        event_dep,
         log_dep,
         tag_dep,
         fs_dep,
@@ -307,6 +310,7 @@ if curl_dep.found()
     include_directories: inc,
     dependencies: [
       curl_dep,
+      event_dep,
     ],
   )
 
