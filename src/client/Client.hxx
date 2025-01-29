@@ -39,6 +39,8 @@ class Client final
 	friend struct ClientPerPartitionListHook;
 	friend class ClientList;
 
+	const std::string name;
+
 	IntrusiveListHook<> list_siblings, partition_siblings;
 
 	CoarseTimerEvent timeout_event;
@@ -51,8 +53,6 @@ class Client final
 	const int uid;
 
 	CommandListBuilder cmd_list;
-
-	const unsigned int num;	/* client number */
 
 	/** is this client waiting for an "idle" response? */
 	bool idle_waiting = false;
@@ -122,7 +122,7 @@ public:
 	Client(EventLoop &loop, Partition &partition,
 	       UniqueSocketDescriptor fd, int uid,
 	       unsigned _permission,
-	       int num) noexcept;
+	       std::string &&_name) noexcept;
 
 	~Client() noexcept;
 

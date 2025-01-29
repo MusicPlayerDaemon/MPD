@@ -9,7 +9,7 @@
 void
 Client::OnSocketError(std::exception_ptr ep) noexcept
 {
-	FmtError(client_domain, "error on client {}: {}", num, ep);
+	FmtError(client_domain, "[{}] error: {}", name, ep);
 
 	SetExpired();
 }

@@ -28,7 +28,7 @@ Client::OnTimeout() noexcept
 		assert(!idle_waiting);
 		assert(!background_command);
 
-		FmtDebug(client_domain, "[{}] timeout", num);
+		FmtDebug(client_domain, "[{}] timeout", name);
 	}
 
 	Close();
