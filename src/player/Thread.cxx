@@ -904,13 +904,15 @@ PlayerControl::LockUpdateSongTag(DetachedSong &song,
 		   streams may change tags dynamically */
 		return;
 
-	song.SetTag(new_tag);
+	if (new_tag != song.GetTag()) {
+		song.SetTag(new_tag);
 
-	LockSetTaggedSong(song);
+		LockSetTaggedSong(song);
 
-	/* the main thread will update the playlist version when he
-	   receives this event */
-	listener.OnPlayerTagModified();
+		/* the main thread will update the playlist version when he
+		   receives this event */
+		listener.OnPlayerTagModified();
+	}
 }
 
 inline void
