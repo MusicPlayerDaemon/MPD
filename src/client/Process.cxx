@@ -52,6 +52,13 @@ Client::ProcessCommandList(bool list_ok,
 	return CommandResult::OK;
 }
 
+[[gnu::pure]]
+static bool
+IsAsyncCommmand(const char *line) noexcept
+{
+	return StringIsEqual(line, "idle") || StringIsEqual(line, "noidle");
+}
+
 CommandResult
 Client::ProcessLine(char *line) noexcept
 {
@@ -63,6 +70,13 @@ Client::ProcessLine(char *line) noexcept
 		   request */
 		FmtWarning(client_domain,
 			   "[{}] malformed command \"{}\"",
+			   num, line);
+		return CommandResult::CLOSE;
+	}
+
+	if (cmd_list.IsActive() && IsAsyncCommmand(line)) {
+		FmtWarning(client_domain,
+			   "[{}] not possible in comand list: \"{}\"",
 			   num, line);
 		return CommandResult::CLOSE;
 	}
