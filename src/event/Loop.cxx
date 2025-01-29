@@ -61,7 +61,8 @@ EventLoop::GetUring() noexcept
 	if (!uring_initialized) {
 		uring_initialized = true;
 		try {
-			uring = std::make_unique<Uring::Manager>(*this);
+			uring = std::make_unique<Uring::Manager>(*this, 1024,
+								 IORING_SETUP_SINGLE_ISSUER);
 		} catch (...) {
 			fprintf(stderr, "Failed to initialize io_uring: ");
 			PrintException(std::current_exception());
