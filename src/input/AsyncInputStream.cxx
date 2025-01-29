@@ -162,13 +162,9 @@ AsyncInputStream::IsAvailable() const noexcept
 inline std::size_t
 AsyncInputStream::ReadFromBuffer(std::span<std::byte> dest) noexcept
 {
-	const auto r = buffer.Read();
-	if (r.empty())
+	const size_t nbytes = buffer.MoveTo(dest);
+	if (nbytes == 0)
 		return 0;
-
-	const size_t nbytes = std::min(dest.size(), r.size());
-	memcpy(dest.data(), r.data(), nbytes);
-	buffer.Consume(nbytes);
 
 	if (buffer.empty())
 		/* when the buffer becomes empty, reset its head and

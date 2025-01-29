@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <algorithm> // for std::move()
 #include <cassert>
 #include <cstddef>
 #include <span>
@@ -152,5 +153,39 @@ public:
 		head += n;
 		if (head == buffer.size())
 			head = 0;
+	}
+
+	/**
+	 * Move data from the buffer to the destination.  This method
+	 * considers ring buffer wraparound.
+	 *
+	 * @return the number of items moved
+	 */
+	constexpr size_type MoveTo(Range dest) noexcept {
+		size_type n = 0;
+
+		auto a = Read();
+		if (a.size() > dest.size())
+			a = a.first(dest.size());
+
+		if (!a.empty()) {
+			dest = {std::move(a.begin(), a.end(), dest.begin()), dest.end()};
+			Consume(a.size());
+			n += a.size();
+
+			if (dest.empty())
+				return n;
+
+			if (auto b = Read(); !b.empty()) {
+				if (b.size() > dest.size())
+					b = b.first(dest.size());
+
+				std::move(b.begin(), b.end(), dest.begin());
+				Consume(b.size());
+				n += b.size();
+			}
+		}
+
+		return n;
 	}
 };
