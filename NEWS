@@ -1,4 +1,6 @@
 ver 0.23.17 (not yet released)
+* protocol
+  - "albumart" tries to send larger chunks if available
 * storage
   - nfs: require libnfs 4.0 or later
 * database
