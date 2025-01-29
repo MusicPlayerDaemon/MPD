@@ -8,7 +8,7 @@ configure_file(output: 'Features.h', configuration: event_features)
 event_sources = []
 
 if uring_dep.found()
-  event_sources += 'UringManager.cxx'
+  event_sources += 'uring/Manager.cxx'
 endif
 
 if is_windows
