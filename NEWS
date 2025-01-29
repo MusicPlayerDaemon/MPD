@@ -1,4 +1,4 @@
-ver 0.23.17 (not yet released)
+ver 0.23.17 (2025/01/29)
 * protocol
   - "albumart" tries to send larger chunks if available
   - explicitly disallow "idle" and "noidle" in command lists
