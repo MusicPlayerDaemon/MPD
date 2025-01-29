@@ -7,6 +7,15 @@
 
 #include <cassert>
 
+bool
+Tag::operator==(const Tag &other) const noexcept {
+	return (this == &other) ? true :
+		duration == other.duration
+		&& has_playlist == other.has_playlist
+		&& num_items == other.num_items
+		&& std::equal(begin(), end(), other.begin(), other.end());
+}
+
 void
 Tag::Clear() noexcept
 {
