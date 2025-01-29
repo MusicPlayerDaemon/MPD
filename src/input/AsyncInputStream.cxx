@@ -200,6 +200,12 @@ AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
 	memcpy(ptr, r.data, nbytes);
 	buffer.Consume(nbytes);
 
+	if (buffer.empty())
+		/* when the buffer becomes empty, reset its head and
+		   tail so the next write can fill the whole buffer
+		   and not just the part after the tail */
+		buffer.Clear();
+
 	offset += (offset_type)nbytes;
 
 	if (paused && buffer.GetSize() < resume_at)
