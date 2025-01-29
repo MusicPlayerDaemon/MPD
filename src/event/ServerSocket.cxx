@@ -102,13 +102,13 @@ private:
 static constexpr Domain server_socket_domain("server_socket");
 
 static int
-get_remote_uid(int fd)
+get_remote_uid(SocketDescriptor s) noexcept
 {
 #ifdef HAVE_STRUCT_UCRED
 	struct ucred cred;
 	socklen_t len = sizeof (cred);
 
-	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &len) < 0)
+	if (getsockopt(s.Get(), SOL_SOCKET, SO_PEERCRED, &cred, &len) < 0)
 		return -1;
 
 	return cred.uid;
@@ -117,10 +117,10 @@ get_remote_uid(int fd)
 	uid_t euid;
 	gid_t egid;
 
-	if (getpeereid(fd, &euid, &egid) == 0)
+	if (getpeereid(s.Get(), &euid, &egid) == 0)
 		return euid;
 #else
-	(void)fd;
+	(void)s;
 #endif
 	return -1;
 #endif
@@ -145,7 +145,7 @@ ServerSocket::OneServerSocket::Accept() noexcept
 			 (const char *)msg);
 	}
 
-	const auto uid = get_remote_uid(peer_fd.Get());
+	const auto uid = get_remote_uid(peer_fd);
 
 	parent.OnAccept(std::move(peer_fd), peer_address, uid);
 }
