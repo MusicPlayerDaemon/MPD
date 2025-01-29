@@ -147,7 +147,7 @@ Queue::MovePostion(unsigned from, unsigned to) noexcept
 void
 Queue::MoveRange(unsigned start, unsigned end, unsigned to) noexcept
 {
-	const auto tmp = std::make_unique<Item[]>(end - start);
+	const auto tmp = std::make_unique_for_overwrite<Item[]>(end - start);
 
 	// Copy the original block [start,end-1]
 	for (unsigned i = start; i < end; i++)

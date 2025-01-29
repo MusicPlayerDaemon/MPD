@@ -47,7 +47,7 @@ try {
 		/* we have enough data already */
 		return UniqueId3Tag(id3_tag_parse(query_buffer, tag_size));
 
-	auto tag_buffer = std::make_unique<id3_byte_t[]>(tag_size);
+	auto tag_buffer = std::make_unique_for_overwrite<id3_byte_t[]>(tag_size);
 
 	/* copy the start of the tag we already have to the allocated
 	   buffer */
@@ -182,7 +182,7 @@ try {
 		/* too large, don't allocate so much memory */
 		return nullptr;
 
-	auto buffer = std::make_unique<id3_byte_t[]>(size);
+	auto buffer = std::make_unique_for_overwrite<id3_byte_t[]>(size);
 	is.ReadFull(lock, std::as_writable_bytes(std::span{buffer.get(), size}));
 
 	return UniqueId3Tag(id3_tag_parse(buffer.get(), size));

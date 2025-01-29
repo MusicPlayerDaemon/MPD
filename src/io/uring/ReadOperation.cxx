@@ -17,7 +17,7 @@ ReadOperation::Start(Queue &queue, FileDescriptor fd, off_t offset,
 
 	handler = &_handler;
 
-	buffer = std::make_unique<std::byte[]>(size);
+	buffer = std::make_unique_for_overwrite<std::byte[]>(size);
 
 	auto &s = queue.RequireSubmitEntry();
 

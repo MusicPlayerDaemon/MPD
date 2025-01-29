@@ -148,7 +148,7 @@ NfsFileReader::Read(uint64_t offset, size_t size)
 #ifdef LIBNFS_API_2
 	assert(!read_buffer);
 	// TOOD read into caller-provided buffer
-	read_buffer = std::make_unique<std::byte[]>(size);
+	read_buffer = std::make_unique_for_overwrite<std::byte[]>(size);
 	connection->Read(fh, offset, {read_buffer.get(), size}, *this);
 #else
 	connection->Read(fh, offset, size, *this);

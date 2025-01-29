@@ -18,7 +18,7 @@ WideCharToMultiByte(unsigned code_page, std::wstring_view src)
 	if (length <= 0)
 		throw MakeLastError("Failed to convert from Unicode");
 
-	auto buffer = std::make_unique<char[]>(length + 1);
+	auto buffer = std::make_unique_for_overwrite<char[]>(length + 1);
 	length = WideCharToMultiByte(code_page, 0, src.data(), src.size(),
 				     buffer.get(), length,
 				     nullptr, nullptr);
@@ -37,7 +37,7 @@ MultiByteToWideChar(unsigned code_page, std::string_view src)
 	if (length <= 0)
 		throw MakeLastError("Failed to convert to Unicode");
 
-	auto buffer = std::make_unique<wchar_t[]>(length + 1);
+	auto buffer = std::make_unique_for_overwrite<wchar_t[]>(length + 1);
 	length = MultiByteToWideChar(code_page, 0, src.data(), src.size(),
 				     buffer.get(), length);
 	if (length <= 0)

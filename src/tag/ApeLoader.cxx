@@ -50,7 +50,7 @@ try {
 	remaining -= sizeof(footer);
 	assert(remaining > 10);
 
-	auto buffer = std::make_unique<std::byte[]>(remaining);
+	auto buffer = std::make_unique_for_overwrite<std::byte[]>(remaining);
 	is.ReadFull(lock, {buffer.get(), remaining});
 
 	/* read tags */
