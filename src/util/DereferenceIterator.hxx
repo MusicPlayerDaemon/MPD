@@ -82,6 +82,10 @@ public:
 		return DereferenceIterator{original - n};
 	}
 
+	constexpr auto operator-(const DereferenceIterator<IT, VT>& other) const noexcept {
+		return std::distance(other.original, original);
+	}
+
 	/* this is a template to allow comparisons with sentinel end
 	   iterators */
 	template<typename IT2>
