@@ -293,6 +293,10 @@ InotifyUpdate::InotifyCallback(int wd, unsigned mask,
 	}
 
 	if ((mask & (IN_CLOSE_WRITE|IN_MOVE|IN_DELETE)) != 0 ||
+	    /* regular file or symlink was created; this check is only
+	       interesting for symlinks because regular files have
+	       usable content only after IN_CLOSE_WRITE */
+	    (mask & (IN_CREATE|IN_ISDIR)) == IN_CREATE ||
 	    /* at the maximum depth, we watch out for newly created
 	       directories */
 	    (directory.GetDepth() == max_depth &&
