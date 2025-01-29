@@ -149,6 +149,27 @@ ThreadInputStream::Seek([[maybe_unused]] std::unique_lock<Mutex> &lock,
 	wake_cond.notify_one();
 }
 
+inline std::size_t
+ThreadInputStream::ReadFromBuffer(std::span<std::byte> dest) noexcept
+{
+	const auto r = buffer.Read();
+	if (r.empty())
+		return 0;
+
+	const size_t nbytes = std::min(dest.size(), r.size());
+	memcpy(dest.data(), r.data(), nbytes);
+	buffer.Consume(nbytes);
+
+	if (buffer.empty())
+		/* when the buffer becomes empty, reset its head and
+		   tail so the next write can fill the whole buffer
+		   and not just the part after the tail */
+		buffer.Clear();
+
+	offset += (offset_type)nbytes;
+	return nbytes;
+}
+
 size_t
 ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 			std::span<std::byte> dest)
@@ -164,21 +185,8 @@ ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 			continue;
 		}
 
-		auto r = buffer.Read();
-		if (!r.empty()) {
-			size_t nbytes = std::min(dest.size(), r.size());
-			memcpy(dest.data(), r.data(), nbytes);
-			buffer.Consume(nbytes);
-
-			if (buffer.empty())
-				/* when the buffer becomes empty,
-				   reset its head and tail so the next
-				   write can fill the whole buffer and
-				   not just the part after the tail */
-				buffer.Clear();
-
+		if (std::size_t nbytes = ReadFromBuffer(dest); nbytes > 0) {
 			wake_cond.notify_one();
-			offset += nbytes;
 			return nbytes;
 		}
 

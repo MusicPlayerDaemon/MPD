@@ -151,6 +151,8 @@ protected:
 	virtual void Cancel() noexcept {}
 
 private:
+	std::size_t ReadFromBuffer(std::span<std::byte> dest) noexcept;
+
 	bool IsSeeking() const noexcept {
 		return seek_offset != UNKNOWN_SIZE;
 	}

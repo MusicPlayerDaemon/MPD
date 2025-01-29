@@ -152,6 +152,7 @@ protected:
 	void SeekDone() noexcept;
 
 private:
+	std::size_t ReadFromBuffer(std::span<std::byte> dest) noexcept;
 	void Resume();
 
 	/* for InjectEvent */
