@@ -5,6 +5,7 @@
 #define MPD_TAG_ITEM_HXX
 
 #include <cstdint>
+#include <cstring>
 
 enum TagType : uint8_t;
 
@@ -22,6 +23,15 @@ struct TagItem {
 	 */
 	char value[1];
 
+	bool operator==(const TagItem &other) const noexcept {
+		return (this == &other) ? true :
+			type == other.type && std::strcmp(value, other.value) == 0;
+	}
+
+private:
+	/* making the constructor private
+	   to only allow construction by TagPoolItem. */
+	friend struct TagPoolItem;
 	TagItem() = default;
 	TagItem(const TagItem &other) = delete;
 	TagItem &operator=(const TagItem &other) = delete;

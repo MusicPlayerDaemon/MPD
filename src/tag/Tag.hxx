@@ -65,6 +65,8 @@ struct Tag {
 		return *this;
 	}
 
+	bool operator==(const Tag &other) const noexcept;
+
 	/**
 	 * Similar to the move operator, but move only the #TagItem
 	 * array.

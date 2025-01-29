@@ -239,6 +239,10 @@ DecoderBridge::UpdateStreamTag(InputStream *is) noexcept
 		/* discard the song tag; we don't need it */
 		song_tag.reset();
 
+	if (stream_tag && tag && *stream_tag == *tag)
+		/* not changed */
+		return false;
+
 	stream_tag = std::move(tag);
 	return true;
 }

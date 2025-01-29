@@ -101,6 +101,10 @@ public:
 			return iterator{cursor - n};
 		}
 
+		constexpr auto operator-(const iterator& other) const noexcept {
+			return std::distance(other.cursor, cursor);
+		}
+
 		reference operator*() const noexcept {
 			return *cursor;
 		}
