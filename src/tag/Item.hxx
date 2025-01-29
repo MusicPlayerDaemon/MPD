@@ -5,6 +5,7 @@
 #define MPD_TAG_ITEM_HXX
 
 #include <cstdint>
+#include <cstring>
 
 enum TagType : uint8_t;
 
@@ -21,6 +22,11 @@ struct TagItem {
 	 * the value of this tag; this is a variable length string
 	 */
 	char value[1];
+
+	bool operator==(const TagItem &other) const noexcept {
+		return (this == &other) ? true :
+			type == other.type && std::strcmp(value, other.value) == 0;
+	}
 
 	TagItem() = default;
 	TagItem(const TagItem &other) = delete;
