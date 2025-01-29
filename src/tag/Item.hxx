@@ -28,6 +28,10 @@ struct TagItem {
 			type == other.type && std::strcmp(value, other.value) == 0;
 	}
 
+private:
+	/* making the constructor private
+	   to only allow construction by TagPoolItem. */
+	friend struct TagPoolItem;
 	TagItem() = default;
 	TagItem(const TagItem &other) = delete;
 	TagItem &operator=(const TagItem &other) = delete;
