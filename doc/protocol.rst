@@ -156,6 +156,9 @@ fails, no more commands are executed and the appropriate
 ``list_OK`` is returned for each
 successful command executed in the command list.
 
+Only synchronous commands can be used in command lists.  Commands that
+suspend execution (``idle`` and ``noidle``) are not allowed.
+
 Ranges
 ======
 

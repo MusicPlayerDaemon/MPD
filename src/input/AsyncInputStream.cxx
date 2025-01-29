@@ -171,8 +171,11 @@ AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
 		Check();
 
 		r = buffer.Read();
-		if (!r.empty() || IsEOF())
+		if (!r.empty())
 			break;
+
+		if (IsEOF())
+			return 0;
 
 		caller_cond.wait(lock);
 	}
@@ -180,6 +183,12 @@ AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
 	const size_t nbytes = std::min(dest.size(), r.size());
 	memcpy(dest.data(), r.data(), nbytes);
 	buffer.Consume(nbytes);
+
+	if (buffer.empty())
+		/* when the buffer becomes empty, reset its head and
+		   tail so the next write can fill the whole buffer
+		   and not just the part after the tail */
+		buffer.Clear();
 
 	offset += (offset_type)nbytes;
 

@@ -197,7 +197,19 @@ read_stream_art(Response &r, const std::string_view art_directory,
 	if (buffer_size > 0) {
 		std::unique_lock lock{is->mutex};
 		is->Seek(lock, offset);
+
+		const bool was_ready = is->IsReady();
+
 		read_size = is->Read(lock, {buffer.get(), buffer_size});
+
+		if (was_ready && read_size < buffer_size / 2)
+			/* the InputStream was ready before, but we
+			   got only very little data; probably just
+			   some data left in the buffer without doing
+			   any I/O; let's wait for the next low-level
+			   read to complete to get more data for the
+			   client */
+			read_size += is->Read(lock, {buffer.get() + read_size, buffer_size - read_size});
 	}
 
 	r.Fmt("size: {}\n", art_file_size);

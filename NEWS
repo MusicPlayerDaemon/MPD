@@ -70,11 +70,16 @@ ver 0.24 (not yet released)
 * documentation: switch to sphinx-rtd-theme
 * require Meson 1.0
 
-ver 0.23.17 (not yet released)
+ver 0.23.17 (2025/01/29)
+* protocol
+  - "albumart" tries to send larger chunks if available
+  - explicitly disallow "idle" and "noidle" in command lists
 * storage
   - nfs: require libnfs 4.0 or later
 * database
   - inotify: trigger update after symlink was created
+* decoder
+  - ffmpeg: prefer over sndfile and audiofile for its DTS-WAV support
 * support libfmt 11.1
 
 ver 0.23.16 (2024/12/03)

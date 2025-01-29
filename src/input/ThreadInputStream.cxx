@@ -169,6 +169,14 @@ ThreadInputStream::Read(std::unique_lock<Mutex> &lock,
 			size_t nbytes = std::min(dest.size(), r.size());
 			memcpy(dest.data(), r.data(), nbytes);
 			buffer.Consume(nbytes);
+
+			if (buffer.empty())
+				/* when the buffer becomes empty,
+				   reset its head and tail so the next
+				   write can fill the whole buffer and
+				   not just the part after the tail */
+				buffer.Clear();
+
 			wake_cond.notify_one();
 			offset += nbytes;
 			return nbytes;
