@@ -10,9 +10,9 @@
 #include "config.h"
 
 static unsigned
-GetPermissions(SocketAddress address, int uid) noexcept
+GetPermissions(SocketAddress address, const SocketPeerCredentials cred) noexcept
 {
-	(void)uid; // TODO: implement option to derive permissions from uid
+	(void)cred; // TODO: implement option to derive permissions from uid
 
 #ifdef HAVE_UN
 	if (address.GetFamily() == AF_LOCAL)
@@ -33,9 +33,8 @@ ClientListener::OnAccept(UniqueSocketDescriptor fd,
 			 SocketAddress address) noexcept
 {
 	const auto cred = fd.GetPeerCredentials();
-	const int uid = cred.IsDefined() ? static_cast<int>(cred.GetUid()) : -1;
 
 	client_new(GetEventLoop(), partition,
-		   std::move(fd), address, uid,
-		   GetPermissions(address, uid));
+		   std::move(fd), address, cred,
+		   GetPermissions(address, cred));
 }

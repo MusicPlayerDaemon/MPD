@@ -21,6 +21,7 @@
 #include <string>
 
 class SocketAddress;
+class SocketPeerCredentials;
 class UniqueSocketDescriptor;
 class EventLoop;
 class Path;
@@ -300,5 +301,6 @@ struct ClientPerPartitionListHook
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   UniqueSocketDescriptor fd, SocketAddress address, int uid,
+	   UniqueSocketDescriptor fd, SocketAddress address,
+	   SocketPeerCredentials cred,
 	   unsigned permission) noexcept;

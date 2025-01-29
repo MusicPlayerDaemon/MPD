@@ -9,6 +9,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "lib/fmt/SocketAddressFormatter.hxx"
+#include "net/PeerCredentials.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "util/SpanCast.hxx"
@@ -39,7 +40,8 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   UniqueSocketDescriptor fd, SocketAddress remote_address, int uid,
+	   UniqueSocketDescriptor fd, SocketAddress remote_address,
+	   SocketPeerCredentials cred,
 	   unsigned permission) noexcept
 {
 	static unsigned int next_client_num;
@@ -53,6 +55,8 @@ client_new(EventLoop &loop, Partition &partition,
 	}
 
 	(void)fd.WriteNoWait(AsBytes(GREETING));
+
+	const int uid = cred.IsDefined() ? static_cast<int>(cred.GetUid()) : -1;
 
 	const unsigned num = next_client_num++;
 	auto *client = new Client(loop, partition, std::move(fd), uid,
