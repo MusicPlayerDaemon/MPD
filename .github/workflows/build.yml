@@ -41,11 +41,11 @@ jobs:
             cxx: g++-14
             packages: g++-14
             meson_options:
-          - compiler: gcc10
+          - compiler: gcc12
             os: ubuntu-24.04
-            cc: gcc-10
-            cxx: g++-10
-            packages: g++-10
+            cc: gcc-12
+            cxx: g++-12
+            packages: g++-12
             meson_options:
           - compiler: clang
             os: ubuntu-24.04

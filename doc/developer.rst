@@ -12,7 +12,7 @@ Code Style
 * indent with tabs (width 8)
 * don't write CPP when you can write C++: use inline functions and constexpr instead of macros
 * comment your code, document your APIs
-* the code should be C++20 compliant, and must compile with :program:`GCC` 10 and :program:`clang` 11
+* the code should be C++20 compliant, and must compile with :program:`GCC` 12 and :program:`clang` 14
 * all code must be exception-safe
 * classes and functions names use CamelCase; variables are lower-case with words separated by underscore
 
