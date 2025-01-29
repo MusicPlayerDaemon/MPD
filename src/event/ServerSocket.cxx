@@ -9,6 +9,7 @@
 #include "net/IPv6Address.hxx"
 #include "net/StaticSocketAddress.hxx"
 #include "net/AllocatedSocketAddress.hxx"
+#include "net/PeerCredentials.hxx"
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
@@ -104,13 +105,6 @@ static constexpr Domain server_socket_domain("server_socket");
 static int
 get_remote_uid(SocketDescriptor s) noexcept
 {
-#ifdef HAVE_STRUCT_UCRED
-	const auto cred = s.GetPeerCredentials();
-	if (cred.pid < 0)
-		return -1;
-
-	return cred.uid;
-#else
 #ifdef HAVE_GETPEEREID
 	uid_t euid;
 	gid_t egid;
@@ -118,9 +112,11 @@ get_remote_uid(SocketDescriptor s) noexcept
 	if (getpeereid(s.Get(), &euid, &egid) == 0)
 		return euid;
 #else
-	(void)s;
-#endif
-	return -1;
+	const auto cred = s.GetPeerCredentials();
+	if (!cred.IsDefined())
+		return -1;
+
+	return cred.GetUid();
 #endif
 }
 

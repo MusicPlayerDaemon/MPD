@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "Features.hxx"
-
 #ifndef _WIN32
 #include "io/FileDescriptor.hxx"
 #endif
@@ -20,6 +18,7 @@
 
 struct msghdr;
 struct iovec;
+class SocketPeerCredentials;
 class SocketAddress;
 class StaticSocketAddress;
 class IPv4Address;
@@ -221,14 +220,12 @@ public:
 	[[gnu::pure]]
 	int GetIntOption(int level, int name, int fallback) const noexcept;
 
-#ifdef HAVE_STRUCT_UCRED
 	/**
-	 * Receive peer credentials (SO_PEERCRED).  On error, the pid
-	 * is -1.
+	 * Receive peer credentials (SO_PEERCRED).  On error, an
+	 * "undefined" object is returned.
 	 */
 	[[gnu::pure]]
-	struct ucred GetPeerCredentials() const noexcept;
-#endif
+	SocketPeerCredentials GetPeerCredentials() const noexcept;
 
 #ifdef __linux__
 	/**
