@@ -187,8 +187,11 @@ AsyncInputStream::Read(std::unique_lock<Mutex> &lock,
 		Check();
 
 		r = buffer.Read();
-		if (!r.empty() || IsEOF())
+		if (!r.empty())
 			break;
+
+		if (IsEOF())
+			return 0;
 
 		caller_cond.wait(lock);
 	}
