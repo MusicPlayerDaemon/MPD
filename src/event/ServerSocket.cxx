@@ -9,7 +9,6 @@
 #include "net/IPv6Address.hxx"
 #include "net/StaticSocketAddress.hxx"
 #include "net/AllocatedSocketAddress.hxx"
-#include "net/PeerCredentials.hxx"
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
@@ -102,16 +101,6 @@ private:
 
 static constexpr Domain server_socket_domain("server_socket");
 
-static int
-get_remote_uid(SocketDescriptor s) noexcept
-{
-	const auto cred = s.GetPeerCredentials();
-	if (!cred.IsDefined())
-		return -1;
-
-	return cred.GetUid();
-}
-
 inline void
 ServerSocket::OneServerSocket::Accept() noexcept
 {
@@ -131,9 +120,7 @@ ServerSocket::OneServerSocket::Accept() noexcept
 			 (const char *)msg);
 	}
 
-	const auto uid = get_remote_uid(peer_fd);
-
-	parent.OnAccept(std::move(peer_fd), peer_address, uid);
+	parent.OnAccept(std::move(peer_fd), peer_address);
 }
 
 void

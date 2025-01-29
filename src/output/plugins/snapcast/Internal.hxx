@@ -184,7 +184,7 @@ private:
 
 	/* virtual methods from class ServerSocket */
 	void OnAccept(UniqueSocketDescriptor fd,
-		      SocketAddress address, int uid) noexcept override;
+		      SocketAddress address) noexcept override;
 };
 
 #endif

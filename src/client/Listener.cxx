@@ -4,6 +4,7 @@
 #include "Listener.hxx"
 #include "Client.hxx"
 #include "Permission.hxx"
+#include "net/PeerCredentials.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "config.h"
@@ -29,8 +30,10 @@ GetPermissions(SocketAddress address, int uid) noexcept
 
 void
 ClientListener::OnAccept(UniqueSocketDescriptor fd,
-			 SocketAddress address, int uid) noexcept
+			 SocketAddress address) noexcept
 {
+	const auto cred = fd.GetPeerCredentials();
+	const int uid = cred.IsDefined() ? static_cast<int>(cred.GetUid()) : -1;
 
 	client_new(GetEventLoop(), partition,
 		   std::move(fd), address, uid,

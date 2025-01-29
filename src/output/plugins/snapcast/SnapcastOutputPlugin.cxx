@@ -95,7 +95,7 @@ SnapcastOutput::AddClient(UniqueSocketDescriptor fd) noexcept
 
 void
 SnapcastOutput::OnAccept(UniqueSocketDescriptor fd,
-			 SocketAddress, int) noexcept
+			 SocketAddress) noexcept
 {
 	/* the listener socket has become readable - a client has
 	   connected */

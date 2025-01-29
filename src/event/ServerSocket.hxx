@@ -134,7 +134,7 @@ public:
 
 protected:
 	virtual void OnAccept(UniqueSocketDescriptor fd,
-			      SocketAddress address, int uid) noexcept = 0;
+			      SocketAddress address) noexcept = 0;
 };
 
 #endif

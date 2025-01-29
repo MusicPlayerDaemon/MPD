@@ -251,7 +251,7 @@ private:
 	void OnDeferredBroadcast() noexcept;
 
 	void OnAccept(UniqueSocketDescriptor fd,
-		      SocketAddress address, int uid) noexcept override;
+		      SocketAddress address) noexcept override;
 };
 
 extern const class Domain httpd_output_domain;
