@@ -167,6 +167,7 @@ test_cxxflags = test_common_flags + [
   '-Wmismatched-tags',
   '-Woverloaded-virtual',
   '-Wsign-promo',
+  '-Wsuggest-override',
   '-Wvolatile',
   '-Wvirtual-inheritance',
 
@@ -178,12 +179,6 @@ test_cxxflags = test_common_flags + [
   '-Wheader-hygiene',
   '-Winconsistent-missing-destructor-override',
 ]
-
-if compiler.get_id() != 'gcc' or compiler.version().version_compare('>=9')
-  # The GCC 8 implementation of this flag is buggy: it complains even
-  # if "final" is present, which implies "override".
-  test_cxxflags += '-Wsuggest-override'
-endif
 
 test_cflags = test_common_flags + [
   '-Wmissing-prototypes',
