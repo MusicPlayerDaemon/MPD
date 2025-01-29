@@ -105,19 +105,11 @@ static constexpr Domain server_socket_domain("server_socket");
 static int
 get_remote_uid(SocketDescriptor s) noexcept
 {
-#ifdef HAVE_GETPEEREID
-	uid_t euid;
-	gid_t egid;
-
-	if (getpeereid(s.Get(), &euid, &egid) == 0)
-		return euid;
-#else
 	const auto cred = s.GetPeerCredentials();
 	if (!cred.IsDefined())
 		return -1;
 
 	return cred.GetUid();
-#endif
 }
 
 inline void

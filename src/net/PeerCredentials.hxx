@@ -20,6 +20,9 @@ class SocketPeerCredentials {
 
 #ifdef HAVE_STRUCT_UCRED
 	struct ucred cred;
+#elif defined(HAVE_GETPEEREID)
+	uid_t uid;
+	gid_t gid;
 #endif
 
 public:
@@ -31,6 +34,9 @@ public:
 		c.cred.pid = 0;
 		c.cred.uid = -1;
 		c.cred.gid = -1;
+#elif defined(HAVE_GETPEEREID)
+		c.uid = static_cast<uid_t>(-1);
+		c.gid = static_cast<gid_t>(-1);
 #endif
 		return c;
 	}
@@ -38,6 +44,9 @@ public:
 	constexpr bool IsDefined() const noexcept {
 #ifdef HAVE_STRUCT_UCRED
 		return cred.pid > 0;
+#elif defined(HAVE_GETPEEREID)
+		return uid != static_cast<uid_t>(-1) ||
+			gid != static_cast<gid_t>(-1);
 #else
 		return false;
 #endif
@@ -54,6 +63,8 @@ public:
 	constexpr auto GetUid() const noexcept {
 #ifdef HAVE_STRUCT_UCRED
 		return cred.uid;
+#elif defined(HAVE_GETPEEREID)
+		return uid;
 #else
 		return -1;
 #endif
@@ -62,6 +73,8 @@ public:
 	constexpr auto GetGid() const noexcept {
 #ifdef HAVE_STRUCT_UCRED
 		return cred.gid;
+#elif defined(HAVE_GETPEEREID)
+		return gid;
 #else
 		return -1;
 #endif

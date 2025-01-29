@@ -13,6 +13,10 @@
 #include "io/UniqueFileDescriptor.hxx"
 #endif
 
+#ifdef HAVE_GETPEEREID
+#include <unistd.h> // for getpeereid()
+#endif
+
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
@@ -235,6 +239,11 @@ SocketDescriptor::GetPeerCredentials() const noexcept
 		      &cred.cred, sizeof(cred.cred)) < sizeof(cred.cred))
 		return SocketPeerCredentials::Undefined();
 	return cred;
+#elif defined(HAVE_GETPEEREID)
+	SocketPeerCredentials cred;
+	return getpeereid(Get(), &cred.uid, &cred.gid) == 0
+		? cred
+		: SocketPeerCredentials::Undefined();
 #else
 	return SocketPeerCredentials::Undefined();
 #endif
