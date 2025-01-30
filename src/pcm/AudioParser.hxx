@@ -6,8 +6,9 @@
  * Parser functions for audio related objects.
  */
 
-#ifndef MPD_AUDIO_PARSER_HXX
-#define MPD_AUDIO_PARSER_HXX
+#pragma once
+
+#include <string_view>
 
 struct AudioFormat;
 
@@ -21,6 +22,4 @@ struct AudioFormat;
  * @param mask if true, then "*" is allowed for any number of items
  */
 AudioFormat
-ParseAudioFormat(const char *src, bool mask);
-
-#endif
+ParseAudioFormat(std::string_view src, bool mask);

@@ -395,8 +395,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 
 		s = StripLeft(s + 2);
 
-		const auto value = ParseAudioFormat(ExpectQuoted(s).c_str(),
-						    mask);
+		const auto value = ParseAudioFormat(ExpectQuoted(s), mask);
 
 		if (*s != ')')
 			throw std::runtime_error("')' expected");

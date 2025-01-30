@@ -9,159 +9,117 @@
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/NumberParser.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringSplit.hxx"
 
 #include <cassert>
 
-#include <string.h>
-#include <stdlib.h>
+using std::string_view_literals::operator""sv;
 
 static uint32_t
-ParseSampleRate(const char *src, bool mask, const char **endptr_r)
+ParseSampleRate(std::string_view src, bool mask)
 {
-	unsigned long value;
-	char *endptr;
-
-	if (mask && *src == '*') {
-		*endptr_r = src + 1;
+	if (mask && src == "*"sv)
 		return 0;
-	}
 
-	value = strtoul(src, &endptr, 10);
-	if (endptr == src) {
+	const auto value = ParseInteger<uint32_t>(src);
+	if (!value)
 		throw std::invalid_argument("Failed to parse the sample rate");
-	} else if (!audio_valid_sample_rate(value))
-		throw FmtInvalidArgument("Invalid sample rate: {}", value);
 
-	*endptr_r = endptr;
-	return value;
+	if (!audio_valid_sample_rate(*value))
+		throw FmtInvalidArgument("Invalid sample rate: {}", *value);
+
+	return *value;
 }
 
 static SampleFormat
-ParseSampleFormat(const char *src, bool mask, const char **endptr_r)
+ParseSampleFormat(std::string_view src, bool mask)
 {
-	unsigned long value;
-	char *endptr;
-	SampleFormat sample_format;
-
-	if (mask && *src == '*') {
-		*endptr_r = src + 1;
+	if (mask && src == "*"sv)
 		return SampleFormat::UNDEFINED;
-	}
-
-	if (*src == 'f') {
-		*endptr_r = src + 1;
+	else if (src == "f"sv)
 		return SampleFormat::FLOAT;
-	}
-
-	if (memcmp(src, "dsd", 3) == 0) {
-		*endptr_r = src + 3;
+	else if (src == "dsd"sv)
 		return SampleFormat::DSD;
-	}
-
-	value = strtoul(src, &endptr, 10);
-	if (endptr == src)
-		throw std::invalid_argument("Failed to parse the sample format");
-
-	switch (value) {
-	case 8:
-		sample_format = SampleFormat::S8;
-		break;
-
-	case 16:
-		sample_format = SampleFormat::S16;
-		break;
-
-	case 24:
-		if (memcmp(endptr, "_3", 2) == 0)
-			/* for backwards compatibility */
-			endptr += 2;
-
-		sample_format = SampleFormat::S24_P32;
-		break;
-
-	case 32:
-		sample_format = SampleFormat::S32;
-		break;
-
-	default:
-		throw FmtInvalidArgument("Invalid sample format: {}", value);
-	}
-
-	assert(audio_valid_sample_format(sample_format));
-
-	*endptr_r = endptr;
-	return sample_format;
+	else if (src == "8"sv)
+		return SampleFormat::S8;
+	else if (src == "16"sv)
+		return SampleFormat::S16;
+	else if (src == "24"sv)
+		return SampleFormat::S24_P32;
+	else if (src == "24_3"sv)
+		/* for backwards compatibility */
+		return SampleFormat::S24_P32;
+	else if (src == "32"sv)
+		return SampleFormat::S32;
+	else
+		throw FmtInvalidArgument("Invalid sample format: {:?}", src);
 }
 
 static uint8_t
-ParseChannelCount(const char *src, bool mask, const char **endptr_r)
+ParseChannelCount(std::string_view src, bool mask)
 {
-	unsigned long value;
-	char *endptr;
-
-	if (mask && *src == '*') {
-		*endptr_r = src + 1;
+	if (mask && src == "*"sv)
 		return 0;
-	}
 
-	value = strtoul(src, &endptr, 10);
-	if (endptr == src)
+	const auto value = ParseInteger<uint_least8_t>(src);
+	if (!value)
 		throw std::invalid_argument("Failed to parse the channel count");
-	else if (!audio_valid_channel_count(value))
-		throw FmtInvalidArgument("Invalid channel count: {}", value);
+	else if (!audio_valid_channel_count(*value))
+		throw FmtInvalidArgument("Invalid channel count: {}", *value);
 
-	*endptr_r = endptr;
-	return value;
+	return *value;
 }
 
 AudioFormat
-ParseAudioFormat(const char *src, bool mask)
+ParseAudioFormat(std::string_view src, bool mask)
 {
 	AudioFormat dest;
 	dest.Clear();
 
-	if (strncmp(src, "dsd", 3) == 0) {
+	if (SkipPrefix(src, "dsd"sv)) {
 		/* allow format specifications such as "dsd64" which
 		   implies the sample rate */
 
-		char *endptr;
-		auto dsd = strtoul(src + 3, &endptr, 10);
-		if (endptr > src + 3 && *endptr == ':' &&
-		    dsd >= 32 && dsd <= 4096 && dsd % 2 == 0) {
-			dest.sample_rate = dsd * 44100 / 8;
-			dest.format = SampleFormat::DSD;
+		const auto [dsd_s, channels_s] = Split(src, ':');
+		if (channels_s.data() == nullptr)
+			throw std::invalid_argument("Channel count missing");
 
-			src = endptr + 1;
-			dest.channels = ParseChannelCount(src, mask, &src);
-			if (*src != 0)
-				throw FmtInvalidArgument("Extra data after channel count: {}",
-							 src);
+		const auto dsd = ParseInteger<uint_least16_t>(dsd_s);
+		if (!dsd)
+			throw std::invalid_argument("Failed to parse the DSD rate");
 
-			return dest;
-		}
+		if (*dsd < 32 || *dsd > 4096)
+			throw std::invalid_argument("Bad DSD rate");
+
+		dest.sample_rate = *dsd * 44100 / 8;
+		dest.format = SampleFormat::DSD;
+		dest.channels = ParseChannelCount(channels_s, mask);
+		return dest;
 	}
 
 	/* parse sample rate */
 
-	dest.sample_rate = ParseSampleRate(src, mask, &src);
+	const auto [sample_rate_s, rest1] = Split(src, ':');
 
-	if (*src++ != ':')
-		throw std::invalid_argument("Sample format missing");
+	dest.sample_rate = ParseSampleRate(sample_rate_s, mask);
 
 	/* parse sample format */
 
-	dest.format = ParseSampleFormat(src, mask, &src);
+	if (rest1.data() == nullptr)
+		throw std::invalid_argument("Sample format missing");
 
-	if (*src++ != ':')
-		throw std::invalid_argument("Channel count missing");
+	const auto [format_s, channels_s] = Split(rest1, ':');
+
+	dest.format = ParseSampleFormat(format_s, mask);
 
 	/* parse channel count */
 
-	dest.channels = ParseChannelCount(src, mask, &src);
+	if (channels_s.data() == nullptr)
+		throw std::invalid_argument("Channel count missing");
 
-	if (*src != 0)
-		throw FmtInvalidArgument("Extra data after channel count: {}",
-					 src);
+	dest.channels = ParseChannelCount(channels_s, mask);
 
 	assert(mask
 	       ? dest.IsMaskValid()
