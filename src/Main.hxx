@@ -61,4 +61,16 @@ win32_app_stopping();
 
 #endif
 
+#ifdef __APPLE__
+
+/**
+ * If program is run as deamon on macos, fork very early to avoid objc runtime issues,
+ * and then calls mpd_main() with specified arguments.
+ * If program is run as a regular application calls mpd_main() immediately.
+ */
+int
+apple_main(int argc, char *argv[]);
+
+#endif
+
 #endif

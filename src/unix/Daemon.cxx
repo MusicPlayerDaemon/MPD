@@ -134,6 +134,8 @@ daemonize_begin(bool detach)
 
 	/* move to a child process */
 
+#ifndef __APPLE__
+
 	pid_t pid = fork();
 	if (pid < 0)
 		throw MakeErrno("fork() failed");
@@ -178,6 +180,8 @@ daemonize_begin(bool detach)
 			       WCOREDUMP(status) ? " (core dumped)" : "");
 
 	std::exit(WEXITSTATUS(status));
+
+#endif
 }
 
 void
