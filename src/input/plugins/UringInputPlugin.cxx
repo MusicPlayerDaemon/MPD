@@ -33,6 +33,7 @@ static const size_t URING_RESUME_AT = 384 * 1024;
 
 static EventLoop *uring_input_event_loop;
 static Uring::Queue *uring_input_queue;
+static bool uring_input_initialized = false;
 
 class UringInputStream final : public AsyncInputStream, Uring::ReadHandler {
 	Uring::Queue &uring;
@@ -163,6 +164,16 @@ UringInputStream::OnReadError(int error) noexcept
 InputStreamPtr
 OpenUringInputStream(const char *path, Mutex &mutex)
 {
+	if (!uring_input_initialized) {
+		BlockingCall(*uring_input_event_loop, [](){
+			if (uring_input_initialized)
+				return;
+
+			uring_input_queue = uring_input_event_loop->GetUring();
+			uring_input_initialized = true;
+		});
+	}
+
 	if (uring_input_queue == nullptr)
 		return nullptr;
 
@@ -187,8 +198,4 @@ void
 InitUringInputPlugin(EventLoop &event_loop) noexcept
 {
 	uring_input_event_loop = &event_loop;
-
-	BlockingCall(event_loop, [](){
-		uring_input_queue = uring_input_event_loop->GetUring();
-	});
 }
