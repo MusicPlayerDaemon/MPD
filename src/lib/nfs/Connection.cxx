@@ -10,6 +10,7 @@
 
 extern "C" {
 #include <nfsc/libnfs.h>
+#include <nfsc/libnfs-raw-nfs4.h>
 }
 
 #include <utility>
@@ -19,6 +20,8 @@ extern "C" {
 #else
 #include <poll.h> /* for POLLIN, POLLOUT */
 #endif
+
+#include <string.h> // for strstr()
 
 static constexpr Event::Duration NFS_MOUNT_TIMEOUT =
 	std::chrono::minutes(1);
@@ -130,10 +133,26 @@ NfsConnection::CancellableCallback::PrepareDestroyContext() noexcept
 	}
 }
 
+/**
+ * Determine whether this is a fatal error and we need to close the
+ * connection and reopen a new one.
+ */
+static constexpr bool
+IsFatalNfsConnectionError(int err, const char *msg) noexcept
+{
+	/* nfsstat3_to_errno() translates NFS4ERR_EXPIRED to ERANGE,
+	   so unfortunately we need to search the error message */
+	return err == -ERANGE && msg != nullptr &&
+	       strstr(msg, "NFS4ERR_EXPIRED") != nullptr;
+}
+
 inline void
 NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 {
 	assert(connection.GetEventLoop().IsInside());
+
+	auto &_connection = connection;
+	const bool is_fatal = IsFatalNfsConnectionError(err, (const char *)data);
 
 	if (!IsCancelled()) {
 		assert(close_fh == nullptr);
@@ -162,6 +181,11 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 
 		connection.callbacks.Remove(*this);
 	}
+
+	if (is_fatal)
+		/* this was a fatal connection error; we need to teat
+		   down the NFS connection */
+		_connection.BroadcastError(std::make_exception_ptr(NfsClientError(-err, (const char *)data)));
 }
 
 void
