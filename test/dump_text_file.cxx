@@ -34,7 +34,6 @@ public:
 	explicit GlobalInit(Path config_path)
 		:config(AutoLoadConfigFile(config_path))
 	{
-		io_thread.Start();
 	}
 };
 

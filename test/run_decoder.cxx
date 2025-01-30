@@ -91,7 +91,6 @@ public:
 		 input_plugins_init(config, io_thread.GetEventLoop()),
 		 decoder_plugins_init(config)
 	{
-		io_thread.Start();
 	}
 };
 

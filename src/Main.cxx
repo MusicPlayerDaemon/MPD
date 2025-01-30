@@ -329,9 +329,6 @@ MainConfigured(const CommandLineOptions &options,
 	Instance instance;
 	global_instance = &instance;
 
-	instance.io_thread.Start();
-	instance.rtio_thread.Start();
-
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance.neighbors = std::make_unique<NeighborGlue>();
 	instance.neighbors->Init(raw_config,

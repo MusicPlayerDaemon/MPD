@@ -28,12 +28,6 @@ class GlobalInit {
 	EventThread io_thread;
 
 public:
-	GlobalInit() {
-		io_thread.Start();
-	}
-
-	~GlobalInit() = default;
-
 	EventLoop &GetEventLoop() {
 		return io_thread.GetEventLoop();
 	}

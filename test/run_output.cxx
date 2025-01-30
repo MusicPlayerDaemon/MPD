@@ -158,7 +158,6 @@ try {
 	const auto config = AutoLoadConfigFile(c.config_path);
 
 	EventThread io_thread;
-	io_thread.Start();
 
 	/* initialize the audio output */
 
