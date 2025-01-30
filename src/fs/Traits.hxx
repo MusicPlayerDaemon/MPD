@@ -130,6 +130,15 @@ struct PathTraitsFS {
 		return IsSeparator(*p);
 	}
 
+	[[gnu::pure]]
+	static bool IsAbsolute(string_view p) noexcept {
+#ifdef _WIN32
+		if (IsDrive(p) && IsSeparator(p[2]))
+			return true;
+#endif
+		return !p.empty() && IsSeparator(p.front());
+	}
+
 	[[gnu::pure]] [[gnu::nonnull]]
 	static bool IsSpecialFilename(const_pointer name) noexcept {
 		return (name[0] == '.' && name[1] == 0) ||
@@ -272,6 +281,15 @@ struct PathTraitsUTF8 {
 			return true;
 #endif
 		return IsSeparator(*p);
+	}
+
+	[[gnu::pure]]
+	static bool IsAbsolute(string_view p) noexcept {
+#ifdef _WIN32
+		if (IsDrive(p) && IsSeparator(p[2]))
+			return true;
+#endif
+		return !p.empty() && IsSeparator(p.front());
 	}
 
 	/**

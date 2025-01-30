@@ -337,7 +337,7 @@ public:
 
 	[[gnu::pure]]
 	bool IsAbsolute() const noexcept {
-		return Traits::IsAbsolute(c_str());
+		return Traits::IsAbsolute(value);
 	}
 };
 

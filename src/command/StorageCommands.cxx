@@ -94,7 +94,7 @@ print_storage_uri(Client &client, Response &r, const Storage &storage)
 	if (uri.empty())
 		return;
 
-	if (PathTraitsUTF8::IsAbsolute(uri.c_str())) {
+	if (PathTraitsUTF8::IsAbsolute(uri)) {
 		/* storage points to local directory */
 
 		if (!client.IsLocal())
