@@ -64,7 +64,6 @@ ver 0.24 (not yet released)
   - build with libsamplerate
   - remove JACK DLL support
 * remove Haiku support
-* remove macOS support
 * remove Boost dependency
 * require libfmt 9 or later
 * documentation: switch to sphinx-rtd-theme

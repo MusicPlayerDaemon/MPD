@@ -477,6 +477,8 @@ subdir('src/net')
 subdir('src/event')
 subdir('src/win32')
 
+subdir('src/apple')
+
 subdir('src/fs/glue')
 
 subdir('src/config')

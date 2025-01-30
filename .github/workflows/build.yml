@@ -150,6 +150,56 @@ jobs:
       - name: Unit Tests Mini
         run: meson test -C output/mini
 
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          brew install \
+            meson ninja \
+            ccache \
+            fmt \
+            googletest \
+            icu4c \
+            ffmpeg \
+            libnfs \
+            libupnp \
+            libid3tag \
+            chromaprint \
+            libsamplerate \
+            libsoxr \
+            flac \
+            opus \
+            libvorbis \
+            faad2 \
+            wavpack \
+            libmpdclient
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: macos
+
+      - name: Configure
+        run: |
+          meson setup \
+            -Ddocumentation=disabled \
+            -Dtest=true \
+            output
+
+      - name: Build
+        run: meson compile -C output --verbose
+
+      - name: Unit Tests
+        run: meson test -C output
+
   build-msys2:
     strategy:
       matrix:
