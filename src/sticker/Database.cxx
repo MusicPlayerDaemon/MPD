@@ -233,10 +233,8 @@ StickerDatabase::StoreValue(const char *type, const char *uri,
 	assert(type != nullptr);
 	assert(uri != nullptr);
 	assert(name != nullptr);
+	assert(*name != 0);
 	assert(value != nullptr);
-
-	if (StringIsEmpty(name))
-		return;
 
 	sqlite3_stmt *const s = stmt[STICKER_SQL_SET];
 
@@ -326,6 +324,7 @@ StickerDatabase::DeleteValue(const char *type, const char *uri,
 
 	assert(type != nullptr);
 	assert(uri != nullptr);
+	assert(name != nullptr);
 
 	BindAll(s, type, uri, name);
 
