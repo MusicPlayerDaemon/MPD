@@ -207,7 +207,6 @@ jobs:
             -Ddocumentation=disabled \
             -Dtest=true \
             -Dpcre=enabled \
-
             --wrap-mode nofallback \
             ${{ matrix.meson_options }} \
             output/full
