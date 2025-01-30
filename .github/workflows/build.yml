@@ -164,6 +164,7 @@ jobs:
               ccache
               fmt
               googletest
+              pcre2
               icu4c
               ffmpeg
               libnfs
