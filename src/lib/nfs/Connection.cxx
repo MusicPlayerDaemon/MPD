@@ -10,7 +10,6 @@
 
 extern "C" {
 #include <nfsc/libnfs.h>
-#include <nfsc/libnfs-raw-nfs4.h>
 }
 
 #include <utility>
