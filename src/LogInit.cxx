@@ -70,8 +70,6 @@ log_init_file(int line)
 			       out_path, line);
 #endif
 	}
-
-	EnableLogTimestamp();
 }
 
 static inline LogLevel
@@ -95,7 +93,22 @@ parse_log_level(const char *value)
 		throw FmtRuntimeError("unknown log level {:?}", value);
 }
 
-#endif
+static inline LogTimestamp
+parse_log_timestamp(const char *value)
+{
+	if (StringIsEqual(value, "none"))
+		return LogTimestamp::NONE;
+	if (StringIsEqual(value, "minutes"))
+		return LogTimestamp::MINUTES;
+	else if (StringIsEqual(value, "seconds"))
+		return LogTimestamp::SECONDS;
+	else if (StringIsEqual(value, "milliseconds"))
+		return LogTimestamp::MILLISECONDS;
+	else
+		throw FmtRuntimeError("unknown log timestamp {:?}. expected one of: none, minutes, seconds, milliseconds", value);
+}
+
+#endif // #ifndef ANDROID
 
 void
 log_early_init(bool verbose) noexcept
@@ -128,9 +141,15 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 				: LogLevel::NOTICE;
 		}));
 
+	LogTimestamp log_timestamp = config.With(ConfigOption::LOG_TIMESTAMP, [](const char *s){
+		return s != nullptr
+		       ? parse_log_timestamp(s)
+		       : LogTimestamp::SECONDS;
+	});
+
 	if (use_stdout) {
 		out_fd = STDOUT_FILENO;
-		EnableLogTimestamp();
+		EnableLogTimestamp(log_timestamp);
 	} else {
 		const auto *param = config.GetParam(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
@@ -158,6 +177,7 @@ log_init(const ConfigData &config, bool verbose, bool use_stdout)
 #endif
 		} else {
 			out_path = param->GetPath();
+			EnableLogTimestamp(log_timestamp);
 			log_init_file(param->line);
 		}
 	}

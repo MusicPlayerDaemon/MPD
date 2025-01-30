@@ -9,11 +9,12 @@
 #include "Version.h"
 #include "config.h"
 
+#include <fmt/chrono.h>
 #include <cassert>
-
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <cstdio>
+#include <cstring>
+#include <chrono>
+#include <functional>
 
 #ifdef HAVE_SYSLOG
 #include <syslog.h>
@@ -50,7 +51,15 @@ ToAndroidLogLevel(LogLevel log_level) noexcept
 
 static LogLevel log_threshold = LogLevel::NOTICE;
 
-static bool enable_timestamp;
+static bool enable_timestamp = false;
+
+static constexpr size_t LOG_DATE_BUF_SIZE = std::char_traits<char>::length("Jan 22 15:43:14.000 : ") + 1;
+
+template<typename DurationType>
+static const char *
+log_date(char buf[LOG_DATE_BUF_SIZE]);
+
+static auto log_time_formatter = log_date<std::chrono::seconds>;
 
 #ifdef HAVE_SYSLOG
 static bool enable_syslog;
@@ -62,8 +71,42 @@ SetLogThreshold(LogLevel _threshold) noexcept
 	log_threshold = _threshold;
 }
 
+template <typename DurationType>
+inline constexpr const char *date_format_of = "";
+
+template<>
+inline constexpr const char *date_format_of<std::chrono::minutes> = "{:%b %d %H:%M} : ";
+template<>
+inline constexpr const char *date_format_of<std::chrono::seconds> = "{:%b %d %H:%M:%S} : ";
+template<>
+inline constexpr const char *date_format_of<std::chrono::milliseconds> = "{:%b %d %H:%M:%S} : ";
+
+template<typename DurationType>
+static const char *
+log_date(char buf[LOG_DATE_BUF_SIZE])
+{
+	using namespace std::chrono;
+
+	/*
+	 * NOTE: fmt of chrono::time_point with %S writes
+	 *       a floating point number of seconds if the
+	 *       duration resolution is less than second
+	 */
+	auto [p, n] = fmt::format_to_n(buf, LOG_DATE_BUF_SIZE, date_format_of<DurationType>,
+				       floor<DurationType>(system_clock::now()));
+	assert(n < LOG_DATE_BUF_SIZE);
+	*p = 0;
+	return buf;
+}
+
+static auto
+null_log_time_formatter = [](char buf[LOG_DATE_BUF_SIZE]) -> const char* {
+	buf[0] = 0;
+	return buf;
+};
+
 void
-EnableLogTimestamp() noexcept
+EnableLogTimestamp(LogTimestamp _log_time_stamp) noexcept
 {
 #ifdef HAVE_SYSLOG
 	assert(!enable_syslog);
@@ -71,19 +114,13 @@ EnableLogTimestamp() noexcept
 	assert(!enable_timestamp);
 
 	enable_timestamp = true;
-}
 
-static constexpr size_t LOG_DATE_STR_LEN = std::char_traits<char>::length("Jan 22 15:43:14");
-static constexpr size_t LOG_DATE_BUF_SIZE = LOG_DATE_STR_LEN + std::char_traits<char>::length(".000 : ") + 1;
-
-static const char *
-log_date(char buf[LOG_DATE_BUF_SIZE]) noexcept
-{
-	timespec t;
-	timespec_get(&t, TIME_UTC);
-	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M:%S : ", localtime(&t.tv_sec));
-	snprintf(&buf[LOG_DATE_STR_LEN], LOG_DATE_BUF_SIZE - LOG_DATE_STR_LEN, ".%03d : ", int(t.tv_nsec / 1e6));
-	return buf;
+	switch (_log_time_stamp) {
+		case LogTimestamp::MINUTES: log_time_formatter = log_date<std::chrono::minutes>; break;
+		case LogTimestamp::SECONDS: log_time_formatter = log_date<std::chrono::seconds>; break;
+		case LogTimestamp::MILLISECONDS: log_time_formatter = log_date<std::chrono::milliseconds>; break;
+		case LogTimestamp::NONE: log_time_formatter = null_log_time_formatter; break;
+	}
 }
 
 #ifdef HAVE_SYSLOG
@@ -152,7 +189,7 @@ FileLog(const Domain &domain, std::string_view message) noexcept
 {
 	char date_buf[LOG_DATE_BUF_SIZE];
 	fmt::print(stderr, "{}{}: {}\n",
-		   enable_timestamp ? log_date(date_buf) : "",
+		   log_time_formatter(date_buf),
 		   domain.GetName(),
 		   StripRight(message));
 

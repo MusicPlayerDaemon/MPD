@@ -13,6 +13,13 @@
 
 class Domain;
 
+enum class LogTimestamp {
+	NONE,
+	MINUTES,
+	SECONDS,
+	MILLISECONDS
+};
+
 void
 Log(LogLevel level, const Domain &domain, std::string_view msg) noexcept;
 
