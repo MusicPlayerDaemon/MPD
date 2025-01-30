@@ -37,8 +37,7 @@ enum sticker_sql_find {
 enum sticker_sql {
 	STICKER_SQL_GET,
 	STICKER_SQL_LIST,
-	STICKER_SQL_UPDATE,
-	STICKER_SQL_INSERT,
+	STICKER_SQL_SET,
 	STICKER_SQL_DELETE,
 	STICKER_SQL_DELETE_VALUE,
 	STICKER_SQL_DISTINCT_TYPE_URI,
@@ -88,10 +87,10 @@ static constexpr auto sticker_sql = std::array {
 	"SELECT value FROM sticker WHERE type=? AND uri=? AND name=?",
 	//[STICKER_SQL_LIST] =
 	"SELECT name,value FROM sticker WHERE type=? AND uri=?",
-	//[STICKER_SQL_UPDATE] =
-	"UPDATE sticker SET value=? WHERE type=? AND uri=? AND name=?",
-	//[STICKER_SQL_INSERT] =
-	"INSERT INTO sticker(type,uri,name,value) VALUES(?, ?, ?, ?)",
+	//[STICKER_SQL_SET] =
+	"INSERT INTO sticker(type, uri, name, value) VALUES(?, ?, ?, ?) "
+	"ON CONFLICT(type, uri, name) DO "
+	"UPDATE set value = ?",
 	//[STICKER_SQL_DELETE] =
 	"DELETE FROM sticker WHERE type=? AND uri=?",
 	//[STICKER_SQL_DELETE_VALUE] =
@@ -227,55 +226,6 @@ StickerDatabase::ListValues(std::map<std::string, std::string, std::less<>> &tab
 	});
 }
 
-bool
-StickerDatabase::UpdateValue(const char *type, const char *uri,
-			     const char *name, const char *value)
-{
-	sqlite3_stmt *const s = stmt[STICKER_SQL_UPDATE];
-
-	assert(type != nullptr);
-	assert(uri != nullptr);
-	assert(name != nullptr);
-	assert(*name != 0);
-	assert(value != nullptr);
-
-	BindAll(s, value, type, uri, name);
-
-	AtScopeExit(s) {
-		sqlite3_reset(s);
-		sqlite3_clear_bindings(s);
-	};
-
-	bool modified = ExecuteModified(s);
-
-	if (modified)
-		idle_add(IDLE_STICKER);
-	return modified;
-}
-
-void
-StickerDatabase::InsertValue(const char *type, const char *uri,
-			     const char *name, const char *value)
-{
-	sqlite3_stmt *const s = stmt[STICKER_SQL_INSERT];
-
-	assert(type != nullptr);
-	assert(uri != nullptr);
-	assert(name != nullptr);
-	assert(*name != 0);
-	assert(value != nullptr);
-
-	BindAll(s, type, uri, name, value);
-
-	AtScopeExit(s) {
-		sqlite3_reset(s);
-		sqlite3_clear_bindings(s);
-	};
-
-	ExecuteCommand(s);
-	idle_add(IDLE_STICKER);
-}
-
 void
 StickerDatabase::StoreValue(const char *type, const char *uri,
 			    const char *name, const char *value)
@@ -288,8 +238,17 @@ StickerDatabase::StoreValue(const char *type, const char *uri,
 	if (StringIsEmpty(name))
 		return;
 
-	if (!UpdateValue(type, uri, name, value))
-		InsertValue(type, uri, name, value);
+	sqlite3_stmt *const s = stmt[STICKER_SQL_SET];
+
+	BindAll(s, type, uri, name, value, value);
+
+	AtScopeExit(s) {
+		sqlite3_reset(s);
+		sqlite3_clear_bindings(s);
+	};
+
+	ExecuteCommand(s);
+	idle_add(IDLE_STICKER);
 }
 
 void
