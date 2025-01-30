@@ -15,6 +15,7 @@
 #include "plugins/NullOutputPlugin.hxx"
 #include "plugins/OpenALOutputPlugin.hxx"
 #include "plugins/OssOutputPlugin.hxx"
+#include "plugins/OSXOutputPlugin.hxx"
 #include "plugins/PipeOutputPlugin.hxx"
 #include "plugins/PipeWireOutputPlugin.hxx"
 #include "plugins/PulseOutputPlugin.hxx"
@@ -58,6 +59,9 @@ constinit const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef HAVE_OPENAL
 	&openal_output_plugin,
+#endif
+#ifdef HAVE_OSX
+	&osx_output_plugin,
 #endif
 #ifdef ENABLE_SOLARIS_OUTPUT
 	&solaris_output_plugin,
