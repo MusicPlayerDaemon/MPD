@@ -151,54 +151,99 @@ jobs:
         run: meson test -C output/mini
 
   build-macos:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        compiler: [clang]
+        include:
+          - compiler: clang
+            os: macos-latest
+            cc: clang
+            cxx: clang++
+            brew_packages: >
+              meson ninja
+              ccache
+              fmt
+              googletest
+              icu4c
+              ffmpeg
+              libnfs
+              libupnp
+              libid3tag
+              chromaprint
+              libsamplerate
+              libsoxr
+              flac
+              opus
+              libvorbis
+              faad2
+              wavpack
+              libmpdclient
+            meson_options: --force-fallback-for=fmt,gtest
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CC: ccache ${{ matrix.cc }}
+      CXX: ccache ${{ matrix.cxx }}
+
     steps:
       - id: checkout
         uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
-
       - name: Install dependencies
         run: |
+          brew update
           brew install \
-            meson ninja \
-            ccache \
-            fmt \
-            googletest \
-            icu4c \
-            ffmpeg \
-            libnfs \
-            libupnp \
-            libid3tag \
-            chromaprint \
-            libsamplerate \
-            libsoxr \
-            flac \
-            opus \
-            libvorbis \
-            faad2 \
-            wavpack \
-            libmpdclient
+            ${{ matrix.brew_packages }}
 
       - id: cache-ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: macos
+          key: ${{ matrix.compiler }}
 
       - name: Configure
         run: |
           meson setup \
             -Ddocumentation=disabled \
             -Dtest=true \
-            output
+            -Dpcre=enabled \
+
+            --wrap-mode nofallback \
+            ${{ matrix.meson_options }} \
+            output/full
 
       - name: Build
-        run: meson compile -C output --verbose
+        run: meson compile -C output/full --verbose
 
       - name: Unit Tests
-        run: meson test -C output
+        run: meson test -C output/full
+
+      - name: Configure Mini
+        run: |
+          meson setup \
+            -Dbuildtype=minsize \
+            -Dauto_features=disabled \
+            -Dtest=true \
+            -Ddaemon=false \
+            -Dinotify=false -Depoll=false -Deventfd=false \
+            -Dsignalfd=false \
+            -Dtcp=false \
+            -Ddsd=false \
+            -Ddatabase=false \
+            -Dneighbor=false \
+            -Dcue=false \
+            -Dfifo=false \
+            -Dhttpd=false -Dpipe=false -Drecorder=false \
+            -Dsnapcast=false \
+            --wrap-mode nofallback \
+            ${{ matrix.meson_options }} \
+            output/mini
+
+      - name: Build Mini
+        run: meson compile -C output/mini --verbose
+
+      - name: Unit Tests Mini
+        run: meson test -C output/mini
 
   build-msys2:
     strategy:
