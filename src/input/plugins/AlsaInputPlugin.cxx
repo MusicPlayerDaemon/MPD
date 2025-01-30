@@ -17,8 +17,8 @@
 #include "event/Call.hxx"
 #include "config/Block.hxx"
 #include "util/Domain.hxx"
-#include "util/ASCII.hxx"
-#include "util/DivideString.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringSplit.hxx"
 #include "pcm/AudioParser.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "Log.hxx"
@@ -32,6 +32,8 @@
 #include <cassert>
 
 #include <string.h>
+
+using std::string_view_literals::operator""sv;
 
 static constexpr Domain alsa_input_domain("alsa");
 
@@ -105,7 +107,7 @@ protected:
 	}
 
 private:
-	void OpenDevice(const SourceSpec &spec);
+	void OpenDevice(const AudioFormat &audio_format);
 	void ConfigureCapture(AudioFormat audio_format);
 
 	void Pause() {
@@ -122,47 +124,44 @@ private:
 
 
 class AlsaInputStream::SourceSpec {
-	const char *uri;
-	const char *device_name;
-	const char *format_string;
+	std::string_view uri;
+	std::string_view device_name;
+	std::string_view format_string;
 	AudioFormat audio_format;
-	DivideString components;
 
 public:
-	explicit SourceSpec(const char *_uri)
+	[[nodiscard]]
+	explicit SourceSpec(std::string_view _uri)
 		: uri(_uri)
-		, components(uri, '?')
 	{
-		if (components.IsDefined()) {
-			device_name = StringAfterPrefixCaseASCII(components.GetFirst(),
-			                                                  ALSA_URI_PREFIX);
-			format_string = StringAfterPrefixCaseASCII(components.GetSecond(),
-			                                                        "format=");
-		}
-		else {
-			device_name = StringAfterPrefixCaseASCII(uri, ALSA_URI_PREFIX);
+		const auto [a, b] = Split(uri, '?');
+		device_name = StringAfterPrefixIgnoreCase(a, ALSA_URI_PREFIX);
+
+		if (b.data() != nullptr)
+			format_string = StringAfterPrefixIgnoreCase(b, "format="sv);
+		else if (global_config.default_format != nullptr)
 			format_string = global_config.default_format;
-		}
+
 		if (IsValidScheme()) {
-			if (*device_name == 0)
+			if (device_name.empty())
 				device_name = global_config.default_device;
-			if (format_string != nullptr)
+			if (format_string.data() != nullptr)
 				audio_format = ParseAudioFormat(format_string, false);
 		}
 	}
 	[[nodiscard]] bool IsValidScheme() const noexcept {
-		return device_name != nullptr;
+		return device_name.data() != nullptr;
 	}
 	[[nodiscard]] bool IsValid() const noexcept {
-		return (device_name != nullptr) && (format_string != nullptr);
+		return device_name.data() != nullptr && format_string.data() != nullptr;
 	}
-	[[nodiscard]] const char *GetURI() const noexcept {
+	[[nodiscard]] std::string_view GetURI() const noexcept {
 		return uri;
 	}
-	[[nodiscard]] const char *GetDeviceName() const noexcept {
+	[[nodiscard]] std::string_view GetDeviceName() const noexcept {
 		return device_name;
 	}
-	[[nodiscard]] const char *GetFormatString() const noexcept {
+	[[nodiscard]] std::string_view GetFormatString() const noexcept {
 		return format_string;
 	}
 	[[nodiscard]] AudioFormat GetAudioFormat() const noexcept {
@@ -182,7 +181,7 @@ AlsaInputStream::AlsaInputStream(EventLoop &_loop,
 	 defer_invalidate_sockets(_loop,
 				  BIND_THIS_METHOD(InvalidateSockets))
 {
-	OpenDevice(spec);
+	OpenDevice(spec.GetAudioFormat());
 
 	SetMimeType(fmt::format("audio/x-mpd-alsa-pcm;format={}",
 				spec.GetFormatString()));
@@ -403,19 +402,19 @@ AlsaInputStream::ConfigureCapture(AudioFormat audio_format)
 }
 
 inline void
-AlsaInputStream::OpenDevice(const SourceSpec &spec)
+AlsaInputStream::OpenDevice(const AudioFormat &audio_format)
 {
 	int err;
 
-	if ((err = snd_pcm_open(&capture_handle, spec.GetDeviceName(),
+	if ((err = snd_pcm_open(&capture_handle, device.c_str(),
 				SND_PCM_STREAM_CAPTURE,
 				SND_PCM_NONBLOCK | global_config.mode)) < 0)
 		throw Alsa::MakeError(err,
 				      FmtBuffer<256>("Failed to open device {}",
-						     spec.GetDeviceName()));
+						     device));
 
 	try {
-		ConfigureCapture(spec.GetAudioFormat());
+		ConfigureCapture(audio_format);
 	} catch (...) {
 		snd_pcm_close(capture_handle);
 		throw;
