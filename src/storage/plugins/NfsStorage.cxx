@@ -239,7 +239,11 @@ std::string
 NfsStorage::MapUTF8(std::string_view uri_utf8) const noexcept
 {
 	if (uri_utf8.empty())
-		return base;
+		/* this special case returns the original "nfs://" URI
+                   with all parameters (they are missing in the "base"
+                   variable); this is important because MapUTF8("") is
+                   called for the state file */
+		return url;
 
 	return PathTraitsUTF8::Build(base, uri_utf8);
 }
