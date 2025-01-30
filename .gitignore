@@ -9,5 +9,3 @@ __pycache__/
 
 /.clangd/
 /compile_commands.json
-
-.DS_store
