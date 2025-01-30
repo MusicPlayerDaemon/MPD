@@ -9,7 +9,7 @@
 #include <string.h>
 
 ThreadInputStream::ThreadInputStream(const char *_plugin,
-				     const char *_uri,
+				     std::string_view _uri,
 				     Mutex &_mutex,
 				     size_t _buffer_size) noexcept
 	:InputStream(_uri, _mutex),

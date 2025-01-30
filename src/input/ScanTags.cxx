@@ -7,7 +7,7 @@
 #include "Registry.hxx"
 
 std::unique_ptr<RemoteTagScanner>
-InputScanTags(const char *uri, RemoteTagHandler &handler)
+InputScanTags(std::string_view uri, RemoteTagHandler &handler)
 {
 	for (const auto &plugin : GetEnabledInputPlugins()) {
 		if (plugin.scan_tags == nullptr || !plugin.SupportsUri(uri))

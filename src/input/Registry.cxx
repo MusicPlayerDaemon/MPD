@@ -70,7 +70,7 @@ static constexpr std::size_t n_input_plugins = std::size(input_plugins) - 1;
 bool input_plugins_enabled[std::max(n_input_plugins, std::size_t(1))];
 
 bool
-HasRemoteTagScanner(const char *uri) noexcept
+HasRemoteTagScanner(std::string_view uri) noexcept
 {
 	for (const auto &plugin : GetEnabledInputPlugins()) {
 		if (plugin.scan_tags != nullptr &&

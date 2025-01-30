@@ -71,7 +71,7 @@ public:
 
 	void SeekError() noexcept override {}
 
-	//InputStreamPtr OpenUri(const char *) override;
+	//InputStreamPtr OpenUri(std::string_view uri) override;
 
 	size_t Read(InputStream &is,
 		    std::span<std::byte> dest) noexcept override;

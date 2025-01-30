@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <string_view>
 
 struct AudioFormat;
 struct Tag;
@@ -80,7 +81,7 @@ public:
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	virtual InputStreamPtr OpenUri(const char *uri) = 0;
+	virtual InputStreamPtr OpenUri(std::string_view uri) = 0;
 
 	/**
 	 * Blocking read from the input stream.

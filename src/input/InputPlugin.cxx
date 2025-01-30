@@ -9,7 +9,7 @@
 #include <iterator>
 
 bool
-InputPlugin::SupportsUri(const char *uri) const noexcept
+InputPlugin::SupportsUri(std::string_view uri) const noexcept
 {
 	assert(prefixes || protocols);
 	if (prefixes != nullptr) {

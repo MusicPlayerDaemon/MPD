@@ -4,7 +4,7 @@
 #include "InputStream.hxx"
 #include "Handler.hxx"
 #include "tag/Tag.hxx"
-#include "util/ASCII.hxx"
+#include "util/StringCompare.hxx"
 
 #include <cassert>
 #include <stdexcept>
@@ -38,17 +38,17 @@ InputStream::SetReady() noexcept
  */
 [[gnu::pure]]
 static bool
-ExpensiveSeeking(const char *uri) noexcept
+ExpensiveSeeking(std::string_view uri) noexcept
 {
-	return StringStartsWithCaseASCII(uri, "http://") ||
-		StringStartsWithCaseASCII(uri, "qobuz://") ||
-		StringStartsWithCaseASCII(uri, "https://");
+	return StringStartsWithIgnoreCase(uri, "http://") ||
+		StringStartsWithIgnoreCase(uri, "qobuz://") ||
+		StringStartsWithIgnoreCase(uri, "https://");
 }
 
 bool
 InputStream::CheapSeeking() const noexcept
 {
-	return IsSeekable() && !ExpensiveSeeking(uri.c_str());
+	return IsSeekable() && !ExpensiveSeeking(uri);
 }
 
 //[[noreturn]]

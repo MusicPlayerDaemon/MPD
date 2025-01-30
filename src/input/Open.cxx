@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 InputStreamPtr
-InputStream::Open(const char *url, Mutex &mutex)
+InputStream::Open(std::string_view url, Mutex &mutex)
 {
 	if (PathTraitsUTF8::IsAbsolute(url)) {
 		const auto path = AllocatedPath::FromUTF8Throw(url);
@@ -32,7 +32,7 @@ InputStream::Open(const char *url, Mutex &mutex)
 }
 
 InputStreamPtr
-InputStream::OpenReady(const char *uri, Mutex &mutex)
+InputStream::OpenReady(std::string_view uri, Mutex &mutex)
 {
 	auto is = Open(uri, mutex);
 	LockWaitReady(*is);

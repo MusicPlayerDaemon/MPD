@@ -90,7 +90,7 @@ public:
 
 class MyChromaprintDecoderClient final : public ChromaprintDecoderClient {
 public:
-	InputStreamPtr OpenUri(const char *) override {
+	InputStreamPtr OpenUri(std::string_view) override {
 		throw std::runtime_error("Not implemented");
 	}
 };

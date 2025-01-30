@@ -17,6 +17,8 @@
 
 #include <memory>
 
+using std::string_view_literals::operator""sv;
+
 static QobuzClient *qobuz_client;
 
 class QobuzInputStream final
@@ -29,7 +31,7 @@ class QobuzInputStream final
 	std::exception_ptr error;
 
 public:
-	QobuzInputStream(const char *_uri, const char *_track_id,
+	QobuzInputStream(std::string_view _uri, std::string_view _track_id,
 			 Mutex &_mutex) noexcept
 		:ProxyInputStream(_uri, _mutex),
 		 track_id(_track_id)
@@ -151,27 +153,23 @@ FinishQobuzInput() noexcept
 }
 
 [[gnu::pure]]
-static const char *
-ExtractQobuzTrackId(const char *uri)
+static std::string_view 
+ExtractQobuzTrackId(std::string_view uri) noexcept
 {
 	// TODO: what's the standard "qobuz://" URI syntax?
-	const char *track_id = StringAfterPrefix(uri, "qobuz://track/");
-	if (track_id == nullptr)
-		return nullptr;
+	if (SkipPrefix(uri, "qobuz://track/"sv))
+		return uri;
 
-	if (*track_id == 0)
-		return nullptr;
-
-	return track_id;
+	return {};
 }
 
 static InputStreamPtr
-OpenQobuzInput(const char *uri, Mutex &mutex)
+OpenQobuzInput(std::string_view uri, Mutex &mutex)
 {
 	assert(qobuz_client != nullptr);
 
-	const char *track_id = ExtractQobuzTrackId(uri);
-	if (track_id == nullptr)
+	const auto track_id = ExtractQobuzTrackId(uri);
+	if (track_id.empty())
 		return nullptr;
 
 	// TODO: validate track_id
@@ -180,12 +178,12 @@ OpenQobuzInput(const char *uri, Mutex &mutex)
 }
 
 static std::unique_ptr<RemoteTagScanner>
-ScanQobuzTags(const char *uri, RemoteTagHandler &handler)
+ScanQobuzTags(std::string_view uri, RemoteTagHandler &handler)
 {
 	assert(qobuz_client != nullptr);
 
-	const char *track_id = ExtractQobuzTrackId(uri);
-	if (track_id == nullptr)
+	const auto track_id = ExtractQobuzTrackId(uri);
+	if (track_id.empty())
 		return nullptr;
 
 	return std::make_unique<QobuzTagScanner>(*qobuz_client, track_id,

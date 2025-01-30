@@ -21,7 +21,7 @@ public:
 	class ResponseParser;
 
 	QobuzTagScanner(QobuzClient &client,
-			const char *track_id,
+			std::string_view track_id,
 			RemoteTagHandler &_handler);
 
 	~QobuzTagScanner() noexcept override;

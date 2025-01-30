@@ -47,7 +47,7 @@ struct InputPlugin {
 	 *
 	 * Throws std::runtime_error on error.
 	 */
-	InputStreamPtr (*open)(const char *uri, Mutex &mutex);
+	InputStreamPtr (*open)(std::string_view uri, Mutex &mutex);
 
 	/**
 	 * return a set of supported protocols
@@ -63,11 +63,11 @@ struct InputPlugin {
 	 *
 	 * @return nullptr if the given URI is not supported.
 	 */
-	std::unique_ptr<RemoteTagScanner> (*scan_tags)(const char *uri,
+	std::unique_ptr<RemoteTagScanner> (*scan_tags)(std::string_view uri,
 						       RemoteTagHandler &handler) = nullptr;
 
 	[[gnu::pure]]
-	bool SupportsUri(const char *uri) const noexcept;
+	bool SupportsUri(std::string_view uri) const noexcept;
 
 	template<typename F>
 	void ForeachSupportedUri(F lambda) const noexcept {

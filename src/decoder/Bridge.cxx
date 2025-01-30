@@ -372,7 +372,7 @@ DecoderBridge::SeekError() noexcept
 }
 
 InputStreamPtr
-DecoderBridge::OpenUri(const char *uri)
+DecoderBridge::OpenUri(std::string_view uri)
 {
 	assert(dc.state == DecoderState::START ||
 	       dc.state == DecoderState::DECODE);

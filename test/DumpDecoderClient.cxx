@@ -54,7 +54,7 @@ DumpDecoderClient::SeekError() noexcept
 }
 
 InputStreamPtr
-DumpDecoderClient::OpenUri(const char *uri)
+DumpDecoderClient::OpenUri(std::string_view uri)
 {
 	return InputStream::OpenReady(uri, mutex);
 }

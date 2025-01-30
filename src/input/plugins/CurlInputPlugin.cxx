@@ -19,9 +19,9 @@
 #include "lib/fmt/ToBuffer.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
-#include "util/ASCII.hxx"
 #include "util/CNumberParser.hxx"
 #include "util/Domain.hxx"
+#include "util/StringCompare.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
 #include "config.h"
@@ -41,6 +41,8 @@
 #include <string.h>
 
 #include <curl/curl.h>
+
+using std::string_view_literals::operator""sv;
 
 /**
  * Do not buffer more than this number of bytes.  It should be a
@@ -596,10 +598,10 @@ OpenCurlInputStream(std::string_view uri, const Curl::Headers &headers,
 }
 
 static InputStreamPtr
-input_curl_open(const char *url, Mutex &mutex)
+input_curl_open(std::string_view url, Mutex &mutex)
 {
-	if (!StringStartsWithCaseASCII(url, "http://") &&
-	    !StringStartsWithCaseASCII(url, "https://"))
+	if (!StringStartsWithIgnoreCase(url, "http://"sv) &&
+	    !StringStartsWithIgnoreCase(url, "https://"sv))
 		return nullptr;
 
 	return CurlInputStream::Open(url, {}, mutex);

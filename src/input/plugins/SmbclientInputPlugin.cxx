@@ -17,7 +17,7 @@ class SmbclientInputStream final : public InputStream {
 	SMBCFILE *const handle;
 
 public:
-	SmbclientInputStream(const char *_uri,
+	SmbclientInputStream(std::string &&_uri,
 			     Mutex &_mutex,
 			     SmbclientContext &&_ctx,
 			     SMBCFILE *_handle, const struct stat &st)
@@ -64,12 +64,13 @@ input_smbclient_init(EventLoop &, const ConfigBlock &)
 }
 
 static InputStreamPtr
-input_smbclient_open(const char *uri,
+input_smbclient_open(std::string_view _uri,
 		     Mutex &mutex)
 {
 	auto ctx = SmbclientContext::New();
 
-	SMBCFILE *handle = ctx.OpenReadOnly(uri);
+	std::string uri{_uri};
+	SMBCFILE *handle = ctx.OpenReadOnly(uri.c_str());
 	if (handle == nullptr)
 		throw MakeErrno("smbc_open() failed");
 
@@ -81,7 +82,7 @@ input_smbclient_open(const char *uri,
 	}
 
 	return std::make_unique<MaybeBufferedInputStream>
-		(std::make_unique<SmbclientInputStream>(uri, mutex,
+		(std::make_unique<SmbclientInputStream>(std::move(uri), mutex,
 							std::move(ctx),
 							handle, st));
 }

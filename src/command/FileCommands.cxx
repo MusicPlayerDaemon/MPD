@@ -146,7 +146,7 @@ find_stream_art(std::string_view directory, Mutex &mutex)
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
 		try {
-			return InputStream::OpenReady(art_file.c_str(), mutex);
+			return InputStream::OpenReady(art_file, mutex);
 		} catch (...) {
 			auto e = std::current_exception();
 			if (!IsFileNotFound(e))

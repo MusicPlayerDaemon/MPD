@@ -213,7 +213,7 @@ input_nfs_finish() noexcept
 }
 
 static InputStreamPtr
-input_nfs_open(const char *uri,
+input_nfs_open(std::string_view uri,
 	       Mutex &mutex)
 {
 	auto is = std::make_unique<NfsInputStream>(uri, mutex);

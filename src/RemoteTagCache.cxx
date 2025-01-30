@@ -36,7 +36,7 @@ RemoteTagCache::Lookup(const std::string &uri) noexcept
 		lock.unlock();
 
 		try {
-			item->scanner = InputScanTags(uri.c_str(), *item);
+			item->scanner = InputScanTags(uri, *item);
 			if (!item->scanner) {
 				/* unsupported */
 				lock.lock();

@@ -16,7 +16,7 @@ class MmsInputStream final : public ThreadInputStream {
 	mmsx_t *mms;
 
 public:
-	MmsInputStream(const char *_uri, Mutex &_mutex)
+	MmsInputStream(std::string_view _uri, Mutex &_mutex)
 		:ThreadInputStream(input_plugin_mms.name, _uri, _mutex,
 				   BUFFER_SIZE)
 	{
@@ -56,8 +56,7 @@ MmsInputStream::Open()
 }
 
 static InputStreamPtr
-input_mms_open(const char *url,
-	       Mutex &mutex)
+input_mms_open(std::string_view url, Mutex &mutex)
 {
 	return std::make_unique<MmsInputStream>(url, mutex);
 }

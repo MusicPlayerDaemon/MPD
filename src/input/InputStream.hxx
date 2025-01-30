@@ -111,14 +111,14 @@ public:
 	 * @return an #InputStream object on success
 	 */
 	[[nodiscard]]
-	static InputStreamPtr Open(const char *uri, Mutex &mutex);
+	static InputStreamPtr Open(std::string_view uri, Mutex &mutex);
 
 	/**
 	 * Just like Open(), but waits for the stream to become ready.
 	 * It is a wrapper for Open(), WaitReady() and Check().
 	 */
 	[[nodiscard]]
-	static InputStreamPtr OpenReady(const char *uri, Mutex &mutex);
+	static InputStreamPtr OpenReady(std::string_view uri, Mutex &mutex);
 
 	/**
 	 * Install a new handler.

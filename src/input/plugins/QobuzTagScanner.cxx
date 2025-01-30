@@ -61,16 +61,16 @@ public:
 };
 
 static std::string
-MakeTrackUrl(QobuzClient &client, const char *track_id)
+MakeTrackUrl(QobuzClient &client, std::string_view track_id)
 {
 	return client.MakeUrl("track", "get",
 			      {
-				      {"track_id", track_id},
+				      {"track_id", std::string{track_id}},
 			      });
 }
 
 QobuzTagScanner::QobuzTagScanner(QobuzClient &client,
-				 const char *track_id,
+				 std::string_view track_id,
 				 RemoteTagHandler &_handler)
 	:request(client.GetCurl(),
 		 MakeTrackUrl(client, track_id).c_str(),

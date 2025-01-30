@@ -47,7 +47,7 @@ class CdioParanoiaInputStream final : public InputStream {
 	lsn_t buffer_lsn;
 
  public:
-	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex,
+	CdioParanoiaInputStream(std::string_view _uri, Mutex &_mutex,
 				cdrom_drive_t *_drv, CdIo_t *_cdio,
 				bool reverse_endian,
 				lsn_t _lsn_from, lsn_t lsn_to)
@@ -171,7 +171,7 @@ cdio_detect_device()
 }
 
 static InputStreamPtr
-input_cdio_open(const char *uri,
+input_cdio_open(std::string_view uri,
 		Mutex &mutex)
 {
 	const auto parsed_uri = parse_cdio_uri(uri);

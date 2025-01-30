@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_INPUT_SCAN_TAGS_HXX
-#define MPD_INPUT_SCAN_TAGS_HXX
+#pragma once
 
 #include <memory>
+#include <string_view>
 
 class RemoteTagScanner;
 class RemoteTagHandler;
@@ -19,6 +19,4 @@ class RemoteTagHandler;
  * by any (enabled) plugin
  */
 std::unique_ptr<RemoteTagScanner>
-InputScanTags(const char *uri, RemoteTagHandler &handler);
-
-#endif
+InputScanTags(std::string_view uri, RemoteTagHandler &handler);

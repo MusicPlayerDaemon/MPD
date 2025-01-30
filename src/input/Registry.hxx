@@ -7,6 +7,8 @@
 #include "util/FilteredContainer.hxx"
 #include "util/TerminatedArray.hxx"
 
+#include <string_view>
+
 /**
  * NULL terminated list of all input plugins which were enabled at
  * compile time.
@@ -30,4 +32,4 @@ GetEnabledInputPlugins() noexcept
 
 [[gnu::pure]]
 bool
-HasRemoteTagScanner(const char *uri) noexcept;
+HasRemoteTagScanner(std::string_view uri) noexcept;

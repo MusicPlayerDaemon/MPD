@@ -68,7 +68,7 @@ private:
 	void DecodeFile();
 
 	/* virtual methods from class DecoderClient */
-	InputStreamPtr OpenUri(const char *uri) override;
+	InputStreamPtr OpenUri(std::string_view uri) override;
 	size_t Read(InputStream &is,
 		    std::span<std::byte> dest) noexcept override;
 
@@ -246,14 +246,14 @@ try {
 	if (!path.IsNull())
 		DecodeFile();
 	else
-		DecodeStream(*OpenUri(uri.c_str()));
+		DecodeStream(*OpenUri(uri));
 
 	ChromaprintDecoderClient::Finish();
 } catch (StopDecoder) {
 }
 
 InputStreamPtr
-GetChromaprintCommand::OpenUri(const char *uri2)
+GetChromaprintCommand::OpenUri(std::string_view uri2)
 {
 	if (cancel)
 		throw StopDecoder();

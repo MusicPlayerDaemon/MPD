@@ -62,7 +62,7 @@ class ThreadInputStream : public InputStream {
 
 public:
 	ThreadInputStream(const char *_plugin,
-			  const char *_uri, Mutex &_mutex,
+			  std::string_view _uri, Mutex &_mutex,
 			  size_t _buffer_size) noexcept;
 
 #ifndef NDEBUG

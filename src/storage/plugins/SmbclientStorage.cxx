@@ -119,8 +119,7 @@ SmbclientStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follo
 InputStreamPtr
 SmbclientStorage::OpenFile(std::string_view uri_utf8, Mutex &file_mutex)
 {
-	auto uri = MapUTF8(uri_utf8);
-	return InputStream::Open(uri.c_str(), file_mutex);
+	return InputStream::Open(MapUTF8(uri_utf8), file_mutex);
 }
 
 std::unique_ptr<StorageDirectoryReader>

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PROXY_INPUT_STREAM_HXX
-#define MPD_PROXY_INPUT_STREAM_HXX
+#pragma once
 
 #include "InputStream.hxx"
 #include "Ptr.hxx"
@@ -26,15 +25,17 @@ protected:
 	InputStreamPtr input;
 
 public:
+	[[nodiscard]]
 	explicit ProxyInputStream(InputStreamPtr _input) noexcept;
 
 	/**
 	 * Construct an instance without an #InputStream instance.
 	 * Once that instance becomes available, call SetInput().
 	 */
-	ProxyInputStream(const char *_uri,
-			 Mutex &_mutex) noexcept
-		:InputStream(_uri, _mutex) {}
+	template<typename U>
+	[[nodiscard]]
+	ProxyInputStream(U &&_uri, Mutex &_mutex) noexcept
+		:InputStream(std::forward<U>(_uri), _mutex) {}
 
 	~ProxyInputStream() noexcept override;
 
@@ -78,5 +79,3 @@ protected:
 		InvokeOnAvailable();
 	}
 };
-
-#endif

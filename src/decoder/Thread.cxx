@@ -227,7 +227,7 @@ decoder_run_stream_plugin(DecoderBridge &bridge, InputStream &is,
 static DecodeResult
 decoder_run_stream_locked(DecoderBridge &bridge, InputStream &is,
 			  std::unique_lock<Mutex> &lock,
-			  const char *uri)
+			  std::string_view uri)
 {
 	const auto suffix = uri_get_suffix(uri);
 

@@ -11,7 +11,6 @@
 #include "fs/Path.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
-#include "util/AllocatedString.hxx"
 #include "util/Math.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -407,10 +406,8 @@ static constexpr WavpackStreamReader64 mpd_is_reader = {
 static InputStreamPtr
 wavpack_open_wvc(DecoderClient &client, std::string_view uri)
 {
-	const AllocatedString wvc_url{uri, "c"sv};
-
 	try {
-		return client.OpenUri(wvc_url.c_str());
+		return client.OpenUri(fmt::format("{}c", uri));
 	} catch (...) {
 		return nullptr;
 	}

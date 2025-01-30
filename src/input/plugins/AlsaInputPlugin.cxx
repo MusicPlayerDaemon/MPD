@@ -90,7 +90,7 @@ public:
 	AlsaInputStream(const AlsaInputStream &) = delete;
 	AlsaInputStream &operator=(const AlsaInputStream &) = delete;
 
-	static InputStreamPtr Create(EventLoop &event_loop, const char *uri,
+	static InputStreamPtr Create(EventLoop &event_loop, std::string_view uri,
 				     Mutex &mutex);
 
 protected:
@@ -194,11 +194,9 @@ AlsaInputStream::AlsaInputStream(EventLoop &_loop,
 }
 
 inline InputStreamPtr
-AlsaInputStream::Create(EventLoop &event_loop, const char *uri,
+AlsaInputStream::Create(EventLoop &event_loop, std::string_view uri,
 			Mutex &mutex)
 {
-	assert(uri != nullptr);
-
 	AlsaInputStream::SourceSpec spec(uri);
 	if (!spec.IsValidScheme())
 		return nullptr;
@@ -451,7 +449,7 @@ alsa_input_init(EventLoop &event_loop, const ConfigBlock &block)
 }
 
 static InputStreamPtr
-alsa_input_open(const char *uri, Mutex &mutex)
+alsa_input_open(std::string_view uri, Mutex &mutex)
 {
 	return AlsaInputStream::Create(*global_config.event_loop, uri,
 				       mutex);
