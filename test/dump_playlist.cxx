@@ -47,6 +47,7 @@ try {
 	const auto config = AutoLoadConfigFile(config_path);
 
 	EventThread io_thread;
+	io_thread.Start();
 
 	const ScopeInputPluginsInit input_plugins_init(config, io_thread.GetEventLoop());
 	const ScopePlaylistPluginsInit playlist_plugins_init(config);

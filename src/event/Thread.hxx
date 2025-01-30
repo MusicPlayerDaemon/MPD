@@ -20,9 +20,7 @@ class EventThread final {
 public:
 	explicit EventThread(bool _realtime=false)
 		:event_loop(ThreadId::Null()), thread(BIND_THIS_METHOD(Run)),
-		 realtime(_realtime) {
-		Start();
-	}
+		 realtime(_realtime) {}
 
 	~EventThread() noexcept {
 		Stop();
@@ -32,11 +30,11 @@ public:
 		return event_loop;
 	}
 
-private:
 	void Start();
 
 	void Stop() noexcept;
 
+private:
 	void Run() noexcept;
 };
 

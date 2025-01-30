@@ -114,6 +114,7 @@ public:
 	GlobalInit(Path config_path)
 		:config(AutoLoadConfigFile(config_path))
 	{
+		io_thread.Start();
 	}
 
 	EventLoop &GetEventLoop() noexcept {

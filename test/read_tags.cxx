@@ -86,6 +86,7 @@ try {
 	const char *path = argv[2];
 
 	EventThread io_thread;
+	io_thread.Start();
 
 	const ScopeInputPluginsInit input_plugins_init(ConfigData(),
 						       io_thread.GetEventLoop());
