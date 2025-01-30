@@ -73,13 +73,16 @@ EnableLogTimestamp() noexcept
 	enable_timestamp = true;
 }
 
-static constexpr size_t LOG_DATE_BUF_SIZE = std::char_traits<char>::length("Jan 22 15:43:14 : ") + 1;
+static constexpr size_t LOG_DATE_STR_LEN = std::char_traits<char>::length("Jan 22 15:43:14");
+static constexpr size_t LOG_DATE_BUF_SIZE = LOG_DATE_STR_LEN + std::char_traits<char>::length(".000 : ") + 1;
 
 static const char *
 log_date(char buf[LOG_DATE_BUF_SIZE]) noexcept
 {
-	time_t t = time(nullptr);
-	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M:%S : ", localtime(&t));
+	timespec t;
+	timespec_get(&t, TIME_UTC);
+	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M:%S : ", localtime(&t.tv_sec));
+	snprintf(&buf[LOG_DATE_STR_LEN], LOG_DATE_BUF_SIZE - LOG_DATE_STR_LEN, ".%03d : ", int(t.tv_nsec / 1e6));
 	return buf;
 }
 
