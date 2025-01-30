@@ -251,6 +251,14 @@ AsyncInputStream::DeferredResume() noexcept
 {
 	const std::scoped_lock protect{mutex};
 
+	if (postponed_exception) {
+		/* do not proceed, first the caller must handle the
+                   pending error */
+		caller_cond.notify_one();
+		InvokeOnAvailable();
+		return;
+	}
+
 	try {
 		Resume();
 	} catch (...) {
@@ -266,6 +274,14 @@ AsyncInputStream::DeferredSeek() noexcept
 	const std::scoped_lock protect{mutex};
 	if (seek_state != SeekState::SCHEDULED)
 		return;
+
+	if (postponed_exception) {
+		/* do not proceed, first the caller must handle the
+                   pending error */
+		caller_cond.notify_one();
+		InvokeOnAvailable();
+		return;
+	}
 
 	try {
 		Resume();
