@@ -10,11 +10,12 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
-#include "util/TruncateString.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/NumberParser.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringSplit.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 #include "config/Block.hxx"
@@ -23,11 +24,9 @@
 #include <cassert>
 #include <cstdint>
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
 #include <cdio/cd_types.h>
+
+using std::string_view_literals::operator""sv;
 
 static constexpr Domain cdio_domain("cdio");
 
@@ -130,40 +129,25 @@ struct CdioUri {
 };
 
 static CdioUri
-parse_cdio_uri(const char *src)
+parse_cdio_uri(std::string_view src)
 {
 	CdioUri dest;
 
-	if (*src == 0) {
-		/* play the whole CD in the default drive */
-		dest.device[0] = 0;
-		dest.track = -1;
-		return dest;
-	}
+	src = StringAfterPrefixIgnoreCase(src, "cdda://"sv);
 
-	const char *slash = std::strrchr(src, '/');
-	if (slash == nullptr) {
-		/* play the whole CD in the specified drive */
-		CopyTruncateString(dest.device, src, sizeof(dest.device));
-		dest.track = -1;
-		return dest;
-	}
+	const auto [device, track] = Split(src, '/');
+	if (device.size() >= sizeof(dest.device))
+		throw std::invalid_argument{"Device name is too long"};
 
-	size_t device_length = slash - src;
-	if (device_length >= sizeof(dest.device))
-		device_length = sizeof(dest.device) - 1;
+	*std::copy(device.begin(), device.end(), dest.device) = '\0';
 
-	memcpy(dest.device, src, device_length);
-	dest.device[device_length] = 0;
+	if (!track.empty()) {
+		auto value = ParseInteger<uint_least16_t>(track);
+		if (!value)
+			throw std::invalid_argument{"Bad track number"};
 
-	const char *track = slash + 1;
-
-	char *endptr;
-	dest.track = strtoul(track, &endptr, 10);
-	if (*endptr != 0)
-		throw std::runtime_error("Malformed track number");
-
-	if (endptr == track)
+		dest.track = *value;
+	} else
 		/* play the whole CD */
 		dest.track = -1;
 
@@ -190,9 +174,6 @@ static InputStreamPtr
 input_cdio_open(const char *uri,
 		Mutex &mutex)
 {
-	uri = StringAfterPrefixIgnoreCase(uri, "cdda://");
-	assert(uri != nullptr);
-
 	const auto parsed_uri = parse_cdio_uri(uri);
 
 	/* get list of CD's supporting CD-DA */
