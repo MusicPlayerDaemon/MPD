@@ -677,6 +677,8 @@ try {
 
 #ifdef _WIN32
 	return win32_main(argc, argv);
+#elif __APPLE__
+	return apple_main(argc, argv);
 #else
 	return mpd_main(argc, argv);
 #endif
