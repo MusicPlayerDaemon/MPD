@@ -31,6 +31,11 @@ FlacInput::Read(FLAC__byte buffer[], size_t *bytes) noexcept
 inline FLAC__StreamDecoderSeekStatus
 FlacInput::Seek(FLAC__uint64 absolute_byte_offset) noexcept
 {
+	if (client != nullptr && client->GetCommand() == DecoderCommand::STOP)
+		/* do not seek if we're supposed to stop playback (or
+                   if an error has occurred) */
+		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
+
 	if (!input_stream.IsSeekable())
 		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 
