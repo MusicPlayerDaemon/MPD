@@ -161,15 +161,11 @@ jobs:
             cxx: clang++
             brew_packages: >
               meson ninja
-              pkgconf
               ccache
               expat
               fmt
               googletest
-              pcre2
-              icu4c
               ffmpeg
-              libnfs
               libupnp
               libid3tag
               chromaprint
@@ -179,7 +175,6 @@ jobs:
               opus
               libvorbis
               faad2
-              sqlite
               wavpack
               libmpdclient
             meson_options: --force-fallback-for=fmt,gtest
