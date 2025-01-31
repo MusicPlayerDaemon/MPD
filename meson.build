@@ -48,7 +48,7 @@ project(
     'libnpupnp:warning_level=0',
     'liburing:warning_level=0',
     'sqlite3:warning_level=0',
-    'oggiopus:werror=false',
+    'ogg:werror=false',
     'ogg:warning_level=0',
     'openssl:werror=false',
     'openssl:warning_level=0',
