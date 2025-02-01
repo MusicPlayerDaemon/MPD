@@ -147,6 +147,12 @@ public:
 	explicit EventLoop(ThreadId _thread);
 
 	EventLoop():EventLoop(ThreadId::GetCurrent()) {}
+
+	void SetThread(ThreadId _thread) noexcept {
+		assert(thread.IsNull());
+
+		thread = _thread;
+	}
 #else
 	EventLoop();
 #endif

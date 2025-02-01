@@ -39,6 +39,8 @@ EventThread::Run() noexcept
 {
 	SetThreadName(realtime ? "rtio" : "io");
 
+	event_loop.SetThread(ThreadId::GetCurrent());
+
 	if (realtime) {
 		SetThreadTimerSlack(std::chrono::microseconds(10));
 
