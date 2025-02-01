@@ -7,10 +7,6 @@ configure_file(output: 'Features.h', configuration: event_features)
 
 event_sources = []
 
-if uring_dep.found()
-  event_sources += 'uring/Manager.cxx'
-endif
-
 if is_windows
   event_sources += 'WinSelectBackend.cxx'
 elif is_linux and get_option('epoll')

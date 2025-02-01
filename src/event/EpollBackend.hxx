@@ -38,6 +38,10 @@ class EpollBackend
 public:
 	EpollBackend() = default;
 
+	FileDescriptor GetFileDescriptor() const noexcept {
+		return epoll.GetFileDescriptor();
+	}
+
 	auto ReadEvents(int timeout_ms) noexcept {
 		EpollBackendResult result;
 		int ret = epoll.Wait(result.events.data(), result.events.size(),
