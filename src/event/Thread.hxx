@@ -11,16 +11,15 @@
  * A thread which runs an #EventLoop.
  */
 class EventThread final {
-	EventLoop event_loop;
+	EventLoop event_loop{ThreadId::Null()};
 
-	Thread thread;
+	Thread thread{BIND_THIS_METHOD(Run)};
 
 	const bool realtime;
 
 public:
 	explicit EventThread(bool _realtime=false)
-		:event_loop(ThreadId::Null()), thread(BIND_THIS_METHOD(Run)),
-		 realtime(_realtime) {}
+		:realtime(_realtime) {}
 
 	~EventThread() noexcept {
 		Stop();
