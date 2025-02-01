@@ -605,7 +605,7 @@ if is_android
   ]
 
   android_abi = get_option('android_abi')
-  install_dir = meson.current_source_dir() / 'android/app/src/main/jnilibs' / android_abi
+  install_dir = meson.current_source_dir() / 'android/app/src/main/jniLibs' / android_abi
 else
   target_type = 'executable'
   target_name = 'mpd'
