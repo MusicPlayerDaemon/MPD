@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "org.musicpd"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "org.musicpd"
         minSdk = 24
-        targetSdk = 30
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
         vectorDrawables {
@@ -61,15 +61,15 @@ android {
 }
 
 dependencies {
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation(platform("androidx.compose:compose-bom:2025.01.01"))
 
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.activity:activity-compose:1.10.0")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.navigation:navigation-compose:2.8.6")
 
     implementation("com.github.alorma:compose-settings-ui-m3:1.0.3")
     implementation("com.github.alorma:compose-settings-storage-preferences:1.0.3")
@@ -79,12 +79,12 @@ dependencies {
     ksp("com.google.dagger:dagger-compiler:2.49")
     ksp("com.google.dagger:hilt-compiler:2.49")
 
-    implementation("androidx.media3:media3-session:1.2.0")
+    implementation("androidx.media3:media3-session:1.5.1")
 
     // Android Studio Preview support
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
 }
