@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef EPOLL_FD_HXX
-#define EPOLL_FD_HXX
+#pragma once
 
 #include "io/UniqueFileDescriptor.hxx"
 
@@ -24,6 +23,10 @@ public:
 
 	EpollFD(EpollFD &&) = default;
 	EpollFD &operator=(EpollFD &&) = default;
+
+	FileDescriptor GetFileDescriptor() const noexcept {
+		return fd;
+	}
 
 	int Wait(epoll_event *events, int maxevents, int timeout) noexcept {
 		return ::epoll_wait(fd.Get(), events, maxevents, timeout);
@@ -53,5 +56,3 @@ public:
 		return Control(EPOLL_CTL_DEL, _fd, nullptr);
 	}
 };
-
-#endif
