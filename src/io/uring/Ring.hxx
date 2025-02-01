@@ -102,6 +102,16 @@ public:
 	struct io_uring_cqe *WaitCompletion();
 
 	/**
+	 * Submit requests and wait for one completion (or a timeout).
+	 * Wrapper for io_uring_submit_and_wait_timeout().
+	 *
+	 * Throws on error.
+	 *
+	 * @return a completion queue entry or nullptr on EAGAIN/ETIME
+	 */
+	struct io_uring_cqe *SubmitAndWaitCompletion(struct __kernel_timespec &timeout);
+
+	/**
 	 * Peek one completion (non-blocking).
 	 *
 	 * Throws on error.
