@@ -1,16 +1,19 @@
 *.iml
 .gradle
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+## moved the following into .idea/.gitignore
+#/.idea/caches
+#/.idea/libraries
+#/.idea/modules.xml
+#/.idea/workspace.xml
+#/.idea/navEditor.xml
+#/.idea/assetWizardSettings.xml
+## --
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+# both were used: different spelling
 app/src/main/jnilibs/
+app/src/main/jniLibs/
