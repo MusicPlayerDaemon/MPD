@@ -1,10 +1,10 @@
-fs = import('fs')
-
 project(
   'libid3tag', 'c',
   version: '0.15.1b',
   license: 'GPLv2+',
 )
+
+fs = import('fs')
 
 compiler = meson.get_compiler('c')
 
@@ -36,6 +36,6 @@ copy = fs.copyfile('id3tag.h', 'include/id3tag.h')
 
 libid3tag_dep = declare_dependency(
   link_with: libid3tag,
-  dependencies: [copy]
+  dependencies: [copy],
   include_directories: include_directories('include'),
 )
