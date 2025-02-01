@@ -27,6 +27,7 @@
 #include "io/uring/Features.h"
 #ifdef HAVE_URING
 #include <memory>
+struct io_uring_params;
 namespace Uring { class Queue; class Manager; }
 #endif
 
@@ -133,10 +134,6 @@ class EventLoop final
 	bool busy = true;
 #endif
 
-#ifdef HAVE_URING
-	bool uring_initialized = false;
-#endif
-
 	ClockCache<std::chrono::steady_clock> steady_clock_cache;
 
 public:
@@ -185,8 +182,27 @@ public:
 		steady_clock_cache.flush();
 	}
 
+	void SetVolatile() noexcept;
+
 #ifdef HAVE_URING
-	[[gnu::pure]]
+	/**
+	 * Try to enable io_uring support.  If this method succeeds,
+	 * GetUring() can be used to obtain a pointer to the queue
+	 * instance.
+	 *
+	 * Throws on error.
+	 */
+	void EnableUring(unsigned entries, unsigned flags);
+	void EnableUring(unsigned entries, struct io_uring_params &params);
+
+	void DisableUring() noexcept;
+
+	/**
+	 * Returns a pointer to the io_uring queue instance or nullptr
+	 * if io_uring support is not available (or was not enabled
+	 * using EnableUring()).
+	 */
+	[[nodiscard]] [[gnu::const]]
 	Uring::Queue *GetUring() noexcept;
 #endif
 

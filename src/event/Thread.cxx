@@ -9,6 +9,11 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#ifdef HAVE_URING
+#include "util/ScopeExit.hxx"
+#include <liburing.h>
+#endif
+
 static constexpr Domain event_domain("event");
 
 void
@@ -51,7 +56,27 @@ EventThread::Run() noexcept
 				"RTIOThread could not get realtime scheduling, continuing anyway: {}",
 				std::current_exception());
 		}
+	} else {
+#ifdef HAVE_URING
+		try {
+			event_loop.EnableUring(1024, IORING_SETUP_SINGLE_ISSUER);
+		} catch (...) {
+			FmtInfo(event_domain,
+				"Failed to initialize io_uring: {}",
+				std::current_exception());
+		}
+#endif
 	}
+
+#ifdef HAVE_URING
+	AtScopeExit(this) {
+		/* make sure that the Uring::Manager gets destructed
+		   from within the EventThread, or else its
+		   destruction in another thread will cause assertion
+		   failures */
+		event_loop.DisableUring();
+	};
+#endif
 
 	event_loop.Run();
 }

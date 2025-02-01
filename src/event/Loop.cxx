@@ -13,8 +13,6 @@
 
 #ifdef HAVE_URING
 #include "uring/Manager.hxx"
-#include "util/PrintException.hxx"
-#include <stdio.h>
 #endif
 
 EventLoop::EventLoop(
@@ -53,26 +51,46 @@ EventLoop::~EventLoop() noexcept
 	assert(ready_sockets.empty());
 }
 
+void
+EventLoop::SetVolatile() noexcept
+{
 #ifdef HAVE_URING
+	if (uring)
+		uring->SetVolatile();
+#endif
+}
+
+#ifdef HAVE_URING
+
+void
+EventLoop::EnableUring(unsigned entries, unsigned flags)
+{
+	assert(!uring);
+
+	uring = std::make_unique<Uring::Manager>(*this, entries, flags);
+}
+
+void
+EventLoop::EnableUring(unsigned entries, struct io_uring_params &params)
+{
+	assert(!uring);
+
+	uring = std::make_unique<Uring::Manager>(*this, entries, params);
+}
+
+void
+EventLoop::DisableUring() noexcept
+{
+	uring.reset();
+}
 
 Uring::Queue *
 EventLoop::GetUring() noexcept
 {
-	if (!uring_initialized) {
-		uring_initialized = true;
-		try {
-			uring = std::make_unique<Uring::Manager>(*this, 1024,
-								 IORING_SETUP_SINGLE_ISSUER);
-		} catch (...) {
-			fprintf(stderr, "Failed to initialize io_uring: ");
-			PrintException(std::current_exception());
-		}
-	}
-
 	return uring.get();
 }
 
-#endif
+#endif // HAVE_URING
 
 bool
 EventLoop::AddFD(int fd, unsigned events, SocketEvent &event) noexcept
@@ -278,17 +296,6 @@ EventLoop::Run() noexcept
 	assert(busy);
 
 	wake_event.Schedule(SocketEvent::READ);
-#endif
-
-#ifdef HAVE_URING
-	AtScopeExit(this) {
-		/* make sure that the Uring::Manager gets destructed
-		   from within the EventThread, or else its
-		   destruction in another thread will cause assertion
-		   failures */
-		uring.reset();
-		uring_initialized = false;
-	};
 #endif
 
 #ifdef HAVE_THREADED_EVENT_LOOP

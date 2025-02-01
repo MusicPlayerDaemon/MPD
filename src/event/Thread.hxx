@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_EVENT_THREAD_HXX
-#define MPD_EVENT_THREAD_HXX
+#pragma once
 
 #include "Loop.hxx"
 #include "thread/Thread.hxx"
@@ -36,5 +35,3 @@ public:
 private:
 	void Run() noexcept;
 };
-
-#endif /* MAIN_NOTIFY_H */
