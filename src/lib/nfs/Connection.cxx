@@ -103,11 +103,25 @@ NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 
 inline void
 NfsConnection::CancellableCallback::Read(nfs_context *ctx, struct nfsfh *fh,
-					 uint64_t offset, size_t size)
+					 uint64_t offset,
+#ifdef LIBNFS_API_2
+					 std::span<std::byte> dest
+#else
+					 std::size_t size
+#endif
+	)
 {
 	assert(connection.GetEventLoop().IsInside());
 
-	int result = nfs_pread_async(ctx, fh, offset, size, Callback, this);
+	int result = nfs_pread_async(ctx, fh,
+#ifdef LIBNFS_API_2
+				     dest.data(), dest.size(),
+#endif
+				     offset,
+#ifndef LIBNFS_API_2
+				     size,
+#endif
+				     Callback, this);
 	if (result < 0)
 		throw FormatRuntimeError("nfs_pread_async() failed: %s",
 					 nfs_get_error(ctx));
@@ -329,7 +343,12 @@ NfsConnection::Stat(struct nfsfh *fh, NfsCallback &callback)
 }
 
 void
-NfsConnection::Read(struct nfsfh *fh, uint64_t offset, size_t size,
+NfsConnection::Read(struct nfsfh *fh, uint64_t offset,
+#ifdef LIBNFS_API_2
+		    std::span<std::byte> dest,
+#else
+		    std::size_t size,
+#endif
 		    NfsCallback &callback)
 {
 	assert(GetEventLoop().IsInside());
@@ -337,7 +356,13 @@ NfsConnection::Read(struct nfsfh *fh, uint64_t offset, size_t size,
 
 	auto &c = callbacks.Add(callback, *this, false);
 	try {
-		c.Read(context, fh, offset, size);
+		c.Read(context, fh, offset,
+#ifdef LIBNFS_API_2
+		       dest
+#else
+		       size
+#endif
+			);
 	} catch (...) {
 		callbacks.Remove(c);
 		throw;

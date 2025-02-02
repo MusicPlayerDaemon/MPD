@@ -129,7 +129,15 @@ NfsFileReader::Read(uint64_t offset, size_t size)
 {
 	assert(state == State::IDLE);
 
+#ifdef LIBNFS_API_2
+	assert(!read_buffer);
+	// TOOD read into caller-provided buffer
+	read_buffer = std::make_unique<std::byte[]>(size);
+	connection->Read(fh, offset, {read_buffer.get(), size}, *this);
+#else
 	connection->Read(fh, offset, size, *this);
+#endif
+
 	state = State::READ;
 }
 
@@ -137,7 +145,12 @@ void
 NfsFileReader::CancelRead() noexcept
 {
 	if (state == State::READ) {
+#ifdef LIBNFS_API_2
+		assert(read_buffer);
+		read_buffer.release();
+#endif
 		connection->Cancel(*this);
+
 		state = State::IDLE;
 	}
 }
