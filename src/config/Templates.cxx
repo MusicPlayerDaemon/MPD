@@ -25,6 +25,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "bind_to_address", true },
 	{ "port" },
 	{ "log_level" },
+	{ "log_timestamp" },
 	{ "zeroconf_name" },
 	{ "zeroconf_enabled" },
 	{ "password", true },
