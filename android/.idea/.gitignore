@@ -1,0 +1,27 @@
+# Default ignored files
+#
+# https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems
+
+/shelf/
+/workspace.xml
+# this on may contain local paths
+# if user changed location of gradle
+/gradle.xml
+/modules.xml
+# this one contains local emulator path
+# so exposes a full path on use machine
+/deploymentTargetSelector.xml
+# device selection list
+# looks like local?
+/other.xml
+/usage.statistics.xml
+
+# these moved here 
+# from upper level
+# .gitignore
+# not sure if still relevant
+# as per the link at the top
+/caches
+/libraries
+/navEditor.xml
+/assetWizardSettings.xml
