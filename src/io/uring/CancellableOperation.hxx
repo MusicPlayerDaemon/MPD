@@ -48,14 +48,19 @@ public:
 		new_operation.cancellable = this;
 	}
 
-	void OnUringCompletion(int res) noexcept {
+	void OnUringCompletion(int res, bool more) noexcept {
 		if (operation == nullptr)
 			return;
 
 		assert(operation->cancellable == this);
-		operation->cancellable = nullptr;
 
-		std::exchange(operation, nullptr)->OnUringCompletion(res);
+		if (more) {
+			operation->OnUringCompletion(res);
+		} else {
+			operation->cancellable = nullptr;
+
+			std::exchange(operation, nullptr)->OnUringCompletion(res);
+		}
 	}
 };
 

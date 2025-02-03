@@ -57,9 +57,12 @@ Queue::DispatchOneCompletion(struct io_uring_cqe &cqe) noexcept
 	void *data = io_uring_cqe_get_data(&cqe);
 	if (data != nullptr) {
 		auto *c = (CancellableOperation *)data;
-		c->OnUringCompletion(cqe.res);
-		c->unlink();
-		delete c;
+		const bool more = cqe.flags & IORING_CQE_F_MORE;
+		c->OnUringCompletion(cqe.res, more);
+		if (!more) {
+			c->unlink();
+			delete c;
+		}
 	}
 
 	ring.SeenCompletion(cqe);
