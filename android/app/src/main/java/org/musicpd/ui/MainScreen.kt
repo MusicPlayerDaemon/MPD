@@ -1,10 +1,7 @@
 package org.musicpd.ui
 
-import MPDSettings
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
