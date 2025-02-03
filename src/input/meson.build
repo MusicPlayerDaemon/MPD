@@ -12,6 +12,7 @@ input_api = static_library(
   include_directories: inc,
   dependencies: [
     thread_dep,
+    nfs_dep,
   ],
 )
 
