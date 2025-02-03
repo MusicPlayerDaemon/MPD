@@ -19,4 +19,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+# both were used: different spelling
 app/src/main/jnilibs/
+app/src/main/jniLibs/
