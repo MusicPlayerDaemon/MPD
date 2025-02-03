@@ -36,4 +36,25 @@ OpenWriteOnly(FileDescriptor directory, const char *name, int flags=0);
 UniqueFileDescriptor
 OpenDirectory(FileDescriptor directory, const char *name, int flags=0);
 
+struct opwn_how;
+struct FileAt;
+
+/**
+ * Wrapper for openat2() which converts the returned file descriptor
+ * to a #UniqueFileDescriptor.
+ *
+ * Returns an "undefined" instance on error and sets errno.
+ */
+UniqueFileDescriptor
+TryOpen(FileAt file, const struct open_how &how) noexcept;
+
+/**
+ * Wrapper for openat2() which converts the returned file descriptor
+ * to a #UniqueFileDescriptor.
+ *
+ * Throws on error.
+ */
+UniqueFileDescriptor
+Open(FileAt file, const struct open_how &how);
+
 #endif
