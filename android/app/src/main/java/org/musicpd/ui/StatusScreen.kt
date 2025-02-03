@@ -1,6 +1,7 @@
 package org.musicpd.ui
 
 import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,54 +25,36 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import org.musicpd.R
+import org.musicpd.utils.openAppSettings
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun StatusScreen(settingsViewModel: SettingsViewModel) {
-    val storagePermissionState = rememberPermissionState(
-        Manifest.permission.READ_EXTERNAL_STORAGE
-    )
-
-    if (storagePermissionState.status.shouldShowRationale) {
-        Column(
-            Modifier
-                .padding(4.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(stringResource(id = R.string.external_files_permission_request))
-            Button(onClick = { }) {
-                Text("Request permission")
-            }
-        }
+    val storagePermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(
+            Manifest.permission.READ_MEDIA_AUDIO
+        )
     } else {
-        Column(
-            Modifier
-                .padding(4.dp)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            NetworkAddress()
-            ServerStatus(settingsViewModel)
-            if (!storagePermissionState.status.isGranted) {
-                OutlinedButton(
-                    onClick = { storagePermissionState.launchPermissionRequest() }, Modifier
-                        .padding(4.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        "Request external storage permission",
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-            }
-        }
+        rememberPermissionState(
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+    }
+
+    Column(
+        Modifier
+            .padding(4.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        NetworkAddress()
+        ServerStatus(settingsViewModel)
+        AudioMediaPermission(storagePermissionState)
     }
 }
 
@@ -114,6 +97,46 @@ fun ServerStatus(settingsViewModel: SettingsViewModel) {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Text(text = statusUiState.statusMessage)
+        }
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun AudioMediaPermission(storagePermissionState: PermissionState) {
+    val permissionStatus = storagePermissionState.status
+    if (!permissionStatus.isGranted) {
+        val context = LocalContext.current
+        Column(
+            Modifier
+                .padding(4.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                stringResource(id = R.string.external_files_permission_request),
+                Modifier.padding(16.dp)
+            )
+            if (storagePermissionState.status.shouldShowRationale) {
+                Button(onClick = {
+                    storagePermissionState.launchPermissionRequest()
+                }) {
+                    Text("Request permission")
+                }
+            } else {
+                OutlinedButton(
+                    onClick = {
+                        openAppSettings(context, context.packageName)
+                    },
+                    Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        stringResource(id = R.string.title_open_app_info),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
         }
     }
 }
