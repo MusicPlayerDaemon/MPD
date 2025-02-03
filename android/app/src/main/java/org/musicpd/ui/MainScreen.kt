@@ -2,8 +2,8 @@ package org.musicpd.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -37,7 +37,7 @@ sealed class NavigationItem(val route: String, val label: String, val icon: Imag
     data object Logs : NavigationItem(
         Screen.LOGS.name,
         "Logs",
-        Icons.Default.List)
+        Icons.AutoMirrored.Filled.List)
     data object Settings : NavigationItem(
         Screen.SETTINGS.name,
         "Settings",
