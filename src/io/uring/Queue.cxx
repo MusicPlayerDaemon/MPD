@@ -104,14 +104,13 @@ Queue::WaitDispatchOneCompletion()
 }
 
 bool
-Queue::SubmitAndWaitDispatchOneCompletion(struct __kernel_timespec &timeout)
+Queue::SubmitAndWaitDispatchCompletions(struct __kernel_timespec &timeout)
 {
 	auto *cqe = ring.SubmitAndWaitCompletion(timeout);
 	if (cqe == nullptr)
 		return false;
 
-	DispatchOneCompletion(*cqe);
-	return true;
+	return DispatchCompletions(*cqe) > 0;
 }
 
 } // namespace Uring

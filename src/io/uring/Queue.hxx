@@ -101,7 +101,7 @@ public:
 		while (WaitDispatchOneCompletion()) {}
 	}
 
-	bool SubmitAndWaitDispatchOneCompletion(struct __kernel_timespec &timeout);
+	bool SubmitAndWaitDispatchCompletions(struct __kernel_timespec &timeout);
 
 private:
 	static void _DispatchOneCompletion(const struct io_uring_cqe &cqe) noexcept;
