@@ -223,11 +223,14 @@ tarball and change into the directory.  Then, instead of
    -Dwrap_mode=forcefallback \
    -Dandroid_debug_keystore=$HOME/.android/debug.keystore
  cd ../../android
- ./gradlew assembleDebug
+ ./gradlew assemble{ABI}Debug
+
+In the argument to `gradlew`, replace `{ABI}` with the build ABI.
+The `productFlavor` names defined in `build.android.kts` match the ABI.
 
 :envvar:`SDK_PATH` is the absolute path where you installed the
 Android SDK; :envvar:`NDK_PATH` is the Android NDK installation path;
-ABI is the Android ABI to be built, e.g. ":code:`arm64-v8a`".
+ABI is the Android ABI to be built, e.g. ":code:`x86`, `x86_64`, `armeabi`, `armeabi-v7a`, `arm64-v8a`".
 
 This downloads various library sources, and then configures and builds :program:`MPD`. 
 

@@ -18,11 +18,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        ndk {
-            // Specifies the ABI configurations of your native
-            // libraries Gradle should build and package with your app.
-            abiFilters += "arm64-v8a"
-        }
     }
 
     buildFeatures {
@@ -46,12 +41,29 @@ android {
             )
         }
     }
+    // flavors
+    flavorDimensions += "base"
+    productFlavors {
+        create("arm64-v8a") {
+            ndk {
+                // ABI to include in package
+                //noinspection ChromeOsAbiSupport
+                abiFilters += listOf("arm64-v8a")
+            }
+        }
+        create("x86_64") {
+            ndk {
+                // ABI to include in package
+                abiFilters += listOf("x86_64")
+            }
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_9
         targetCompatibility = JavaVersion.VERSION_1_9
     }
     kotlinOptions {
-        jvmTarget = "9"
+        jvmTarget = JavaVersion.VERSION_1_9.toString()
     }
     packaging {
         resources {

@@ -2,10 +2,13 @@
 
 Notes and resources for MPD android maintainers.
 
+## Build
+
+See [Compiling for Android](https://github.com/MusicPlayerDaemon/MPD/blob/45cb098cd765af12316f8dca5635ef10a852e013/doc/user.rst#compiling-for-android)
+
 ## Android studio
 
 ### Version control
-
 
 git ignoring .idea directory completely until a good reason emerges not to
 
@@ -17,10 +20,9 @@ git ignoring .idea directory completely until a good reason emerges not to
 
 *  [Include prebuilt native libraries (developer.android.com)](https://developer.android.com/studio/projects/gradle-external-native-builds#jniLibs)
 
+## Permissions
 
-### Permissions
-
-#### Files access
+### Files access
 
 The required permission depends on android SDK version:
 
@@ -29,7 +31,7 @@ The required permission depends on android SDK version:
     else
         Manifest.permission.READ_EXTERNAL_STORAGE
 
-#### Permission request
+### Permission request
 
 [Request runtime permissions](https://developer.android.com/training/permissions/requesting)
 

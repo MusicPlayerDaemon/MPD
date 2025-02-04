@@ -70,3 +70,11 @@ ninja = shutil.which("ninja")
 subprocess.check_call([ninja], env=toolchain.env)
 
 subprocess.check_call([ninja, 'install'], env=toolchain.env)
+
+print("""
+-------------------------------------
+## To build the android app:
+# cd ../../android
+# ./gradlew assemble{}Debug
+-------------------------------------
+""".format(android_abi.capitalize()))
