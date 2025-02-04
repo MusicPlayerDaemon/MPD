@@ -51,8 +51,8 @@ Queue::AddPending(struct io_uring_sqe &sqe,
 	io_uring_sqe_set_data(&sqe, c);
 }
 
-void
-Queue::DispatchOneCompletion(struct io_uring_cqe &cqe) noexcept
+inline void
+Queue::_DispatchOneCompletion(const struct io_uring_cqe &cqe) noexcept
 {
 	void *data = io_uring_cqe_get_data(&cqe);
 	if (data != nullptr) {
@@ -64,7 +64,12 @@ Queue::DispatchOneCompletion(struct io_uring_cqe &cqe) noexcept
 			delete c;
 		}
 	}
+}
 
+void
+Queue::DispatchOneCompletion(struct io_uring_cqe &cqe) noexcept
+{
+	_DispatchOneCompletion(cqe);
 	ring.SeenCompletion(cqe);
 }
 
@@ -77,6 +82,14 @@ Queue::DispatchOneCompletion()
 
 	DispatchOneCompletion(*cqe);
 	return true;
+}
+
+inline unsigned
+Queue::DispatchCompletions(struct io_uring_cqe &_cqe) noexcept
+{
+	return ring.VisitCompletions(&_cqe, [](const struct io_uring_cqe &cqe){
+		_DispatchOneCompletion(cqe);
+	});
 }
 
 bool
