@@ -36,6 +36,15 @@ if get_option('manpages')
     install: true,
     install_dir: [join_paths(get_option('mandir'), 'man1'), join_paths(get_option('mandir'), 'man5')],
   )
+  custom_target(
+    'Conf example',
+    input: 'mpdconf.example',
+    output: 'mpdconf.example',
+    command: ['cp', '@INPUT@', '@OUTPUT@'],
+    build_by_default: true,
+    install: true,
+    install_dir: join_paths(get_option('datadir'), 'doc')
+  )
 endif
 
 if get_option('doxygen')

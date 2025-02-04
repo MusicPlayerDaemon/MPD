@@ -105,6 +105,19 @@ log_level <level>
 
    The default is :samp:`notice`.
 
+log_timestamp <none|minutes|seconds|milliseconds>
+   Log messages are prefixed with a timestamp when
+   written to a log file or to stdout (but not when written
+   to syslog or to systemd log).
+   The following time formats are available:
+
+   - :samp:`none`: "message" (without timestamp)
+   - :samp:`minutes`: "Jan 30 17:11 : message"
+   - :samp:`seconds`: "Jan 30 17:11:32 : message"
+   - :samp:`milliseconds`: "Jan 30 17:11:32.271 : message"
+
+   The default is :samp:`seconds`.
+
 follow_outside_symlinks <yes or no>
   Control if MPD will follow symbolic links pointing outside the music dir. You
   must recreate the database after changing this option. The default is "yes".
