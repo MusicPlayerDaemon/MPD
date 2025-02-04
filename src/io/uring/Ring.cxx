@@ -51,7 +51,7 @@ Ring::WaitCompletion()
 	struct io_uring_cqe *cqe;
 	if (int error = io_uring_wait_cqe(&ring, &cqe);
 	    error < 0) {
-		if (error == -EAGAIN)
+		if (error == -EAGAIN || error == -EINTR)
 			return nullptr;
 
 		throw MakeErrno(-error, "io_uring_wait_cqe() failed");
@@ -66,7 +66,7 @@ Ring::SubmitAndWaitCompletion(struct __kernel_timespec &timeout)
 	struct io_uring_cqe *cqe;
 	if (int error = io_uring_submit_and_wait_timeout(&ring, &cqe, 1, &timeout, nullptr);
 	    error < 0) {
-		if (error == -ETIME || error == -EAGAIN)
+		if (error == -ETIME || error == -EAGAIN || error == -EINTR)
 			return nullptr;
 
 		throw MakeErrno(-error, "io_uring_submit_and_wait_timeout() failed");
@@ -80,7 +80,7 @@ Ring::PeekCompletion()
 {
 	struct io_uring_cqe *cqe;
 	if (int error = io_uring_peek_cqe(&ring, &cqe); error < 0) {
-		if (error == -EAGAIN)
+		if (error == -EAGAIN || error == -EINTR)
 			return nullptr;
 
 		throw MakeErrno(-error, "io_uring_peek_cqe() failed");
