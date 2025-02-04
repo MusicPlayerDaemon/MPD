@@ -10,6 +10,8 @@
 #include <cassert>
 #include <utility>
 
+#include <errno.h> // for ECANCELED
+
 namespace Uring {
 
 class CancellableOperation
@@ -26,7 +28,8 @@ public:
 	}
 
 	~CancellableOperation() noexcept {
-		assert(operation == nullptr);
+		if (operation != nullptr)
+			operation->OnUringCompletion(-ECANCELED);
 	}
 
 	void Cancel(Operation &_operation) noexcept {
