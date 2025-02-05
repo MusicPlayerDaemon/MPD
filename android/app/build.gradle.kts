@@ -57,6 +57,12 @@ android {
                 abiFilters += listOf("x86_64")
             }
         }
+        create("universal") {
+            ndk {
+                // ABI to include in package
+                abiFilters += listOf("arm64-v8a", "x86_64")
+            }
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_9

@@ -225,8 +225,10 @@ tarball and change into the directory.  Then, instead of
  cd ../../android
  ./gradlew assemble{ABI}Debug
 
-In the argument to `gradlew`, replace `{ABI}` with the build ABI.
+In the argument to `gradlew`, replace `{ABI}` with the build ABI or `Universal`.
 The `productFlavor` names defined in `build.android.kts` match the ABI.
+A universal apk (includes both arm64-v8a and x86_64)
+
 
 :envvar:`SDK_PATH` is the absolute path where you installed the
 Android SDK; :envvar:`NDK_PATH` is the Android NDK installation path;
