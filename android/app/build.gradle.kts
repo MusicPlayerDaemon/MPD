@@ -44,6 +44,26 @@ android {
     // flavors
     flavorDimensions += "base"
     productFlavors {
+        create("fail-test") {
+            // To test System.loadLibrary("mpd") failure
+            // exclude the native lib from the package
+            packaging {
+                jniLibs {
+                    // it appears the 'excludes' is applied to all flavors
+                    // even if it's only inside this flavor.
+                    // this filters by task name to apply the exclusion only
+                    // for this flavor name.
+                    // (clearing the 'abiFilters' will only create a universal apk
+                    // with all of the abi versions)
+                    gradle.startParameter.getTaskNames().forEach { task ->
+                        if (task.contains("fail-test", ignoreCase = true)) {
+                            println("NOTICE: excluding libmpd.so from package $task for testing")
+                            excludes += "**/libmpd.so"
+                        }
+                    }
+                }
+            }
+        }
         create("arm64-v8a") {
             ndk {
                 // ABI to include in package
