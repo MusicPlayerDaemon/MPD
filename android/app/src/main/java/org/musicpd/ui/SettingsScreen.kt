@@ -1,3 +1,5 @@
+package org.musicpd.ui
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -14,7 +16,6 @@ import com.alorma.compose.settings.storage.preferences.rememberPreferenceBoolean
 import com.alorma.compose.settings.ui.SettingsSwitch
 import org.musicpd.Preferences
 import org.musicpd.R
-import org.musicpd.ui.SettingsViewModel
 
 @Composable
 fun MPDSettings(settingsViewModel: SettingsViewModel) {

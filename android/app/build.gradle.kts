@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.dagger.hilt.android)
 }
 
 android {
@@ -18,11 +18,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        ndk {
-            // Specifies the ABI configurations of your native
-            // libraries Gradle should build and package with your app.
-            abiFilters += "arm64-v8a"
-        }
     }
 
     buildFeatures {
@@ -31,7 +26,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.7"
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
 
     buildTypes {
@@ -46,12 +41,55 @@ android {
             )
         }
     }
+    // flavors
+    flavorDimensions += "base"
+    productFlavors {
+        create("fail-test") {
+            // To test System.loadLibrary("mpd") failure
+            // exclude the native lib from the package
+            packaging {
+                jniLibs {
+                    // it appears the 'excludes' is applied to all flavors
+                    // even if it's only inside this flavor.
+                    // this filters by task name to apply the exclusion only
+                    // for this flavor name.
+                    // (clearing the 'abiFilters' will only create a universal apk
+                    // with all of the abi versions)
+                    gradle.startParameter.getTaskNames().forEach { task ->
+                        if (task.contains("fail-test", ignoreCase = true)) {
+                            println("NOTICE: excluding libmpd.so from package $task for testing")
+                            excludes += "**/libmpd.so"
+                        }
+                    }
+                }
+            }
+        }
+        create("arm64-v8a") {
+            ndk {
+                // ABI to include in package
+                //noinspection ChromeOsAbiSupport
+                abiFilters += listOf("arm64-v8a")
+            }
+        }
+        create("x86_64") {
+            ndk {
+                // ABI to include in package
+                abiFilters += listOf("x86_64")
+            }
+        }
+        create("universal") {
+            ndk {
+                // ABI to include in package
+                abiFilters += listOf("arm64-v8a", "x86_64")
+            }
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_9
         targetCompatibility = JavaVersion.VERSION_1_9
     }
     kotlinOptions {
-        jvmTarget = "9"
+        jvmTarget = JavaVersion.VERSION_1_9.toString()
     }
     packaging {
         resources {
@@ -61,30 +99,30 @@ android {
 }
 
 dependencies {
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation(platform("androidx.compose:compose-bom:2025.01.01"))
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(platform(libs.androidx.compose.bom))
 
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.activity:activity-compose:1.10.0")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
-    implementation("androidx.navigation:navigation-compose:2.8.6")
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
 
-    implementation("com.github.alorma:compose-settings-ui-m3:1.0.3")
-    implementation("com.github.alorma:compose-settings-storage-preferences:1.0.3")
-    implementation("com.google.accompanist:accompanist-permissions:0.33.2-alpha")
+    implementation(libs.compose.settings.ui.m3)
+    implementation(libs.compose.settings.storage.preferences)
+    implementation(libs.accompanist.permissions)
 
-    implementation("com.google.dagger:hilt-android:2.49")
-    ksp("com.google.dagger:dagger-compiler:2.49")
-    ksp("com.google.dagger:hilt-compiler:2.49")
+    implementation(libs.hilt.android)
+    ksp(libs.dagger.compiler)
+    ksp(libs.hilt.compiler)
 
-    implementation("androidx.media3:media3-session:1.5.1")
+    implementation(libs.androidx.media3.session)
 
     // Android Studio Preview support
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation(libs.androidx.appcompat)
 }
