@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.musicpd.Loader
 import org.musicpd.MainServiceClient
 import org.musicpd.Preferences
 import org.musicpd.data.LoggingRepository
@@ -17,6 +18,7 @@ class SettingsViewModel @Inject constructor(
     private var loggingRepository: LoggingRepository
 ) : ViewModel() {
     private var mClient: MainServiceClient? = null
+    val mpdLoader = Loader
 
     data class StatusUiState(
         val statusMessage: String = "",

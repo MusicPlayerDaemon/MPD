@@ -59,6 +59,9 @@ class Main : Service(), Runnable {
         }
     }
 
+    private lateinit var mpdApp: MPDApplication
+    private lateinit var mpdLoader: Loader
+
     private var mThread: Thread? = null
     private var mStatus = MAIN_STATUS_STOPPED
     private var mAbort = false
@@ -102,6 +105,11 @@ class Main : Service(), Runnable {
         override fun unregisterCallback(cb: IMainCallback) {
             mService.unregisterCallback(cb)
         }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        mpdLoader = Loader
     }
 
     @Synchronized
@@ -152,19 +160,6 @@ class Main : Service(), Runnable {
     }
 
     override fun run() {
-        if (!Loader.loaded) {
-            val error = """
-                Failed to load the native MPD library.
-                Report this problem to us, and include the following information:
-                SUPPORTED_ABIS=${java.lang.String.join(", ", *Build.SUPPORTED_ABIS)}
-                PRODUCT=${Build.PRODUCT}
-                FINGERPRINT=${Build.FINGERPRINT}
-                error=${Loader.error}
-                """.trimIndent()
-            setStatus(MAIN_STATUS_ERROR, error)
-            stopSelf()
-            return
-        }
         synchronized(this) {
             if (mAbort) return
             setStatus(MAIN_STATUS_STARTED, null)
@@ -245,7 +240,9 @@ class Main : Service(), Runnable {
                 .setContentIntent(contentIntent)
                 .build()
 
-        mThread = Thread(this).apply { start() }
+        if (mpdLoader.isLoaded) {
+            mThread = Thread(this).apply { start() }
+        }
 
         val player = MPDPlayer(Looper.getMainLooper())
         mMediaSession = MediaSession.Builder(this, player).build()

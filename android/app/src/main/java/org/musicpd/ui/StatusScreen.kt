@@ -1,13 +1,18 @@
 package org.musicpd.ui
 
 import android.Manifest
+import android.content.Context
 import android.os.Build
+import android.util.TypedValue
+import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.Button
@@ -20,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -53,13 +59,24 @@ fun StatusScreen(settingsViewModel: SettingsViewModel) {
         verticalArrangement = Arrangement.Center
     ) {
         NetworkAddress()
-        ServerStatus(settingsViewModel)
+        ServerStatus(settingsViewModel, storagePermissionState)
         AudioMediaPermission(storagePermissionState)
+        MPDLoaderStatus(settingsViewModel)
     }
 }
 
+@ColorInt
+fun getThemeColorAttribute(context: Context, @AttrRes attr: Int): Int {
+    val value = TypedValue()
+    if (context.theme.resolveAttribute(attr, value, true)) {
+        return value.data
+    }
+    return android.graphics.Color.BLACK
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ServerStatus(settingsViewModel: SettingsViewModel) {
+fun ServerStatus(settingsViewModel: SettingsViewModel, storagePermissionState: PermissionState) {
     val context = LocalContext.current
 
     val statusUiState by settingsViewModel.statusUIState.collectAsState()
@@ -72,21 +89,35 @@ fun ServerStatus(settingsViewModel: SettingsViewModel) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Circle,
                     contentDescription = "",
-                    tint = if (statusUiState.running) Color(0xFFB8F397) else Color(0xFFFFDAD6)
+                    tint = Color(
+                        getThemeColorAttribute(
+                            context,
+                            if (statusUiState.running) R.attr.appColorPositive else R.attr.appColorNegative
+                        )
+                    ),
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .alpha(0.6f)
                 )
-                Text(text = if (statusUiState.running) "Running" else "Stopped")
+                Text(text = stringResource(id = if (statusUiState.running) R.string.running else R.string.stopped))
             }
-            Button(onClick = {
-                if (statusUiState.running)
-                    settingsViewModel.stopMPD()
-                else
-                    settingsViewModel.startMPD(context)
-            }) {
-                Text(text = if (statusUiState.running) "Stop MPD" else "Start MPD")
+            Button(
+                onClick = {
+                    if (statusUiState.running)
+                        settingsViewModel.stopMPD()
+                    else
+                        settingsViewModel.startMPD(context)
+                },
+                enabled = settingsViewModel.mpdLoader.isLoaded
+                        && storagePermissionState.status.isGranted
+            ) {
+                Text(
+                    text = stringResource(id = if (statusUiState.running) R.string.stopMPD else R.string.startMPD)
+                )
             }
         }
         Row(
@@ -137,6 +168,21 @@ fun AudioMediaPermission(storagePermissionState: PermissionState) {
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun MPDLoaderStatus(settingsViewModel: SettingsViewModel) {
+    val loader = settingsViewModel.mpdLoader
+    if (!loader.isLoaded) {
+        val context = LocalContext.current
+        SelectionContainer {
+            Text(
+                loader.loadFailureMessage(context),
+                Modifier.padding(16.dp),
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }

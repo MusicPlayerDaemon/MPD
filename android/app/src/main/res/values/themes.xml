@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.MPD" parent="android:Theme.Material.Light.NoActionBar" />
+    <color name="red_500">#F44336</color>
+    <color name="red_900">#B71C1C</color>
+    <color name="green_300">#81C784</color>
+    <color name="green_700">#388E3C</color>
+
+    <color name="colorErrorOnLight">@color/red_900</color>
+    <color name="colorErrorOnDark">@color/red_500</color>
+
+    <color name="colorSuccessOnLight">@color/green_700</color>
+    <color name="colorSuccessOnDark">@color/green_300</color>
+
+    <attr name="appColorNegative" format="color|reference" />
+    <attr name="appColorPositive" format="color|reference" />
+
+    <style name="Theme.MPD" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="appColorNegative">@color/colorErrorOnLight</item>
+        <item name="appColorPositive">@color/colorSuccessOnLight</item>
+    </style>
 </resources>
