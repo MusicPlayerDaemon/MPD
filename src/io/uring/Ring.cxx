@@ -61,10 +61,10 @@ Ring::WaitCompletion()
 }
 
 struct io_uring_cqe *
-Ring::SubmitAndWaitCompletion(struct __kernel_timespec &timeout)
+Ring::SubmitAndWaitCompletion(struct __kernel_timespec *timeout)
 {
 	struct io_uring_cqe *cqe;
-	if (int error = io_uring_submit_and_wait_timeout(&ring, &cqe, 1, &timeout, nullptr);
+	if (int error = io_uring_submit_and_wait_timeout(&ring, &cqe, 1, timeout, nullptr);
 	    error < 0) {
 		if (error == -ETIME || error == -EAGAIN || error == -EINTR)
 			return nullptr;

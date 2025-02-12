@@ -297,23 +297,25 @@ ExportTimeoutMS(Event::Duration timeout) noexcept
 
 #ifdef HAVE_URING
 
-static constexpr struct __kernel_timespec
-ExportTimeoutKernelTimespec(Event::Duration timeout) noexcept
+static struct __kernel_timespec *
+ExportTimeoutKernelTimespec(Event::Duration timeout, struct __kernel_timespec &buffer) noexcept
 {
 	if (timeout < timeout.zero())
-		// TODO if there is no time, there should be no timeout at all
-		return { .tv_sec = 24 * 3600 };
+		return nullptr;
 
-	if (timeout >= std::chrono::duration_cast<Event::Duration>(std::chrono::hours{24})) [[unlikely]]
-		return {
+	if (timeout >= std::chrono::duration_cast<Event::Duration>(std::chrono::hours{24})) [[unlikely]] {
+		buffer = {
 			.tv_sec = std::chrono::ceil<std::chrono::duration<__kernel_time64_t>>(timeout).count(),
 		};
+		return &buffer;
+	}
 
 	const auto nsec = std::chrono::ceil<std::chrono::nanoseconds>(timeout);
-	return {
+	buffer = {
 		.tv_sec = nsec.count() / 1000000000,
 		.tv_nsec = nsec.count() % 1000000000,
 	};
+	return &buffer;
 }
 
 #endif
@@ -424,7 +426,8 @@ EventLoop::Run() noexcept
 			   consume all events to rearm it */
 
 			if (!epoll_ready) {
-				auto kernel_timeout = ExportTimeoutKernelTimespec(timeout);
+				struct __kernel_timespec timeout_buffer;
+				auto *kernel_timeout = ExportTimeoutKernelTimespec(timeout, timeout_buffer);
 				Uring::Queue &uring_queue = *uring;
 				uring_queue.SubmitAndWaitDispatchCompletions(kernel_timeout);
 			}

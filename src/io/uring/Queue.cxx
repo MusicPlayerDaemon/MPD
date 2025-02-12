@@ -104,7 +104,7 @@ Queue::WaitDispatchOneCompletion()
 }
 
 bool
-Queue::SubmitAndWaitDispatchCompletions(struct __kernel_timespec &timeout)
+Queue::SubmitAndWaitDispatchCompletions(struct __kernel_timespec *timeout)
 {
 	auto *cqe = ring.SubmitAndWaitCompletion(timeout);
 	if (cqe == nullptr)

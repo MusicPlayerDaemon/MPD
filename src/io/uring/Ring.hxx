@@ -109,7 +109,7 @@ public:
 	 *
 	 * @return a completion queue entry or nullptr on EAGAIN/ETIME
 	 */
-	struct io_uring_cqe *SubmitAndWaitCompletion(struct __kernel_timespec &timeout);
+	struct io_uring_cqe *SubmitAndWaitCompletion(struct __kernel_timespec *timeout);
 
 	/**
 	 * Peek one completion (non-blocking).
