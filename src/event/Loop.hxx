@@ -328,6 +328,16 @@ private:
 	 */
 	bool Poll(Event::Duration timeout) noexcept;
 
+#ifdef HAVE_URING
+	void UringWait(Event::Duration timeout) noexcept;
+#endif
+
+	/**
+	 * Wait for I/O (socket) events, either using Poll() or
+	 * UringWait().
+	 */
+	void Wait(Event::Duration timeout) noexcept;
+
 #ifdef HAVE_THREADED_EVENT_LOOP
 	void OnSocketReady(unsigned flags) noexcept;
 #endif

@@ -338,6 +338,53 @@ EventLoop::Poll(Event::Duration timeout) noexcept
 	return poll_result.GetSize() > 0;
 }
 
+#ifdef HAVE_URING
+
+inline void
+EventLoop::UringWait(Event::Duration timeout) noexcept
+{
+	assert(uring);
+
+	/* use io_uring_enter() and invoke epoll_wait() only if it's
+           reported to be ready */
+
+	if (!uring_poll) [[unlikely]] {
+		/* start polling on the epoll file descriptor */
+		uring_poll = std::make_unique<UringPoll>(*this);
+		uring_poll->Start();
+	}
+
+	/* repeat epoll_wait() until it returns no more events; this
+           is a temporary workaround because
+           io_uring_prep_poll_multishot() is edge-triggered, so we
+           have to consume all events to rearm it */
+
+	if (!epoll_ready) {
+		struct __kernel_timespec timeout_buffer;
+		auto *kernel_timeout = ExportTimeoutKernelTimespec(timeout, timeout_buffer);
+		Uring::Queue &uring_queue = *uring;
+		uring_queue.SubmitAndWaitDispatchCompletions(kernel_timeout);
+	}
+
+	if (epoll_ready) {
+		/* invoke epoll_wait() */
+		epoll_ready = Poll(Event::Duration{0});
+	}
+}
+
+#endif // HAVE_URING
+
+inline void
+EventLoop::Wait(Event::Duration timeout) noexcept
+{
+#ifdef HAVE_URING
+	if (uring)
+		return UringWait(timeout);
+#endif
+
+	Poll(timeout);
+}
+
 void
 EventLoop::Run() noexcept
 {
@@ -405,40 +452,7 @@ EventLoop::Run() noexcept
 		if (!next.empty())
 			timeout = Event::Duration{0};
 
-#ifdef HAVE_URING
-		if (uring) {
-			/* use io_uring_enter() and invoke
-			   epoll_wait() only if it's reported
-			   to be ready */
-
-			if (!uring_poll) [[unlikely]] {
-				/* start polling on the epoll
-				   file descriptor */
-				uring_poll = std::make_unique<UringPoll>(*this);
-				uring_poll->Start();
-			}
-
-			/* repeat epoll_wait() until it
-			   returns no more events; this is a
-			   temporary workaround because
-			   io_uring_prep_poll_multishot() is
-			   edge-triggered, so we have to
-			   consume all events to rearm it */
-
-			if (!epoll_ready) {
-				struct __kernel_timespec timeout_buffer;
-				auto *kernel_timeout = ExportTimeoutKernelTimespec(timeout, timeout_buffer);
-				Uring::Queue &uring_queue = *uring;
-				uring_queue.SubmitAndWaitDispatchCompletions(kernel_timeout);
-			}
-
-			if (epoll_ready) {
-				/* invoke epoll_wait() */
-				epoll_ready = Poll(Event::Duration{0});
-			}
-		} else
-#endif
-			Poll(timeout);
+		Wait(timeout);
 
 		idle.splice(std::next(idle.begin()), next);
 
