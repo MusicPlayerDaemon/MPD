@@ -321,7 +321,7 @@ ExportTimeoutKernelTimespec(Event::Duration timeout, struct __kernel_timespec &b
 #endif
 
 inline bool
-EventLoop::Wait(Event::Duration timeout) noexcept
+EventLoop::Poll(Event::Duration timeout) noexcept
 {
 	const auto poll_result =
 		poll_backend.ReadEvents(ExportTimeoutMS(timeout));
@@ -434,11 +434,11 @@ EventLoop::Run() noexcept
 
 			if (epoll_ready) {
 				/* invoke epoll_wait() */
-				epoll_ready = Wait(Event::Duration{0});
+				epoll_ready = Poll(Event::Duration{0});
 			}
 		} else
 #endif
-			Wait(timeout);
+			Poll(timeout);
 
 		idle.splice(std::next(idle.begin()), next);
 

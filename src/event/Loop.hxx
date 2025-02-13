@@ -326,7 +326,7 @@ private:
 	 *
 	 * @return true if one or more sockets have become ready
 	 */
-	bool Wait(Event::Duration timeout) noexcept;
+	bool Poll(Event::Duration timeout) noexcept;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 	void OnSocketReady(unsigned flags) noexcept;
