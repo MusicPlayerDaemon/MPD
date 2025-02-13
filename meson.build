@@ -171,6 +171,8 @@ test_cxxflags = test_common_flags + [
   '-Wvolatile',
   '-Wvirtual-inheritance',
 
+  '-Wno-missing-field-initializers',
+
   # a vtable without a dtor is just fine
   '-Wno-non-virtual-dtor',
 

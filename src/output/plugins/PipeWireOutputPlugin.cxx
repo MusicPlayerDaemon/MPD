@@ -24,8 +24,6 @@
 #pragma GCC diagnostic push
 /* oh no, libspa likes to cast away "const"! */
 #pragma GCC diagnostic ignored "-Wcast-qual"
-/* suppress more annoying warnings */
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
 #include <pipewire/pipewire.h>
