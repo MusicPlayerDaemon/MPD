@@ -30,10 +30,10 @@ static constexpr Domain config_file_domain("config_file");
  * Read a string value as the last token of a line.  Throws on error.
  */
 static auto
-ExpectValueAndEnd(Tokenizer &tokenizer)
+ExpectValueAndEnd(Tokenizer &tokenizer, bool repeatable)
 {
 	auto value = tokenizer.NextString();
-	if (!value)
+	if (!repeatable && !value)
 		throw std::runtime_error("Value missing");
 
 	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT)
@@ -50,7 +50,7 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 	const char *name = tokenizer.NextWord();
 	assert(name != nullptr);
 
-	auto value = ExpectValueAndEnd(tokenizer);
+	auto value = ExpectValueAndEnd(tokenizer, false);
 
 	const BlockParam *bp = block.GetBlockParam(name);
 	if (bp != nullptr)
@@ -137,14 +137,23 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 			   "config parameter {:?} on line {} is deprecated",
 			   name, reader.GetLineNumber());
 
+	auto value = ExpectValueAndEnd(tokenizer, option.repeatable);
+
 	if (!option.repeatable)
 		/* if the option is not repeatable, override the old
 		   value by removing it first */
 		config_data.GetParamList(o).clear();
+	else if(!value)
+	{
+		/* if it is a repeatable param and the value is empty
+		   clear the old values to allow resetting it */
+		config_data.GetParamList(o).clear();
+		return;
+	}
 
 	/* now parse the block or the value */
 
-	config_data.AddParam(o, ConfigParam(ExpectValueAndEnd(tokenizer),
+	config_data.AddParam(o, ConfigParam(value,
 					    reader.GetLineNumber()));
 }
 
@@ -174,7 +183,7 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 			// TODO: detect recursion
 			// TODO: Config{Block,Param} have only line number but no file name
 			const auto pattern = AllocatedPath::Apply(directory,
-								  AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
+								  AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer, false)));
 			for (const auto &path : ListWildcard(pattern))
 				ReadConfigFile(config_data, path);
 			continue;
@@ -182,7 +191,7 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 
 		if (StringIsEqual(name, "include_optional")) {
 			const auto pattern = AllocatedPath::Apply(directory,
-								  AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer)));
+								  AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer, false)));
 
 			std::forward_list<AllocatedPath> l;
 			try {

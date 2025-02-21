@@ -795,6 +795,10 @@ brackets if you want to configure a port::
 
  bind_to_address "[::1]:6602"
 
+To reset the previous assignments just set an empty value:
+
+ bind_to_address
+
 To bind to a local socket (UNIX domain socket), specify an absolute
 path or a path starting with a tilde (~).  Some clients default to
 connecting to :file:`/run/mpd/socket` so this may be a good
