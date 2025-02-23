@@ -22,6 +22,9 @@ flacPrintErroredState(FLAC__StreamDecoderState state) noexcept
 	case FLAC__STREAM_DECODER_SEARCH_FOR_FRAME_SYNC:
 	case FLAC__STREAM_DECODER_READ_FRAME:
 	case FLAC__STREAM_DECODER_END_OF_STREAM:
+#if FLAC_API_VERSION_CURRENT >= 14
+	case FLAC__STREAM_DECODER_END_OF_LINK:
+#endif
 		return;
 
 	case FLAC__STREAM_DECODER_OGG_ERROR:
@@ -109,6 +112,12 @@ flac_decoder_new() noexcept
 		LogDebug(flac_domain,
 			 "FLAC__stream_decoder_set_metadata_respond() has failed");
 
+#if FLAC_API_VERSION_CURRENT >= 14
+	if(!FLAC__stream_decoder_set_decode_chained_stream(sd.get(), true))
+		LogDebug(flac_domain,
+			 "FLAC__stream_decoder_set_decode_chained_stream() has failed");
+#endif
+
 	return sd;
 }
 
@@ -192,6 +201,16 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 		case FLAC__STREAM_DECODER_READ_FRAME:
 			/* continue decoding */
 			break;
+
+#if FLAC_API_VERSION_CURRENT >= 14
+		case FLAC__STREAM_DECODER_END_OF_LINK:
+			if (!FLAC__stream_decoder_finish_link(flac_dec)) {
+				LogError(flac_domain, "FLAC__stream_decoder_finish_link() failed");
+				return;
+			}
+
+			break;
+#endif
 
 		case FLAC__STREAM_DECODER_END_OF_STREAM:
 			/* regular end of stream */
