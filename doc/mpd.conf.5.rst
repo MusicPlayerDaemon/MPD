@@ -17,9 +17,18 @@ Each line in the configuration file contains a setting name and its value, e.g.:
 
 Lines starting with ``#`` are treated as comments and ignored.
 
-For settings which specify a filesystem path, the tilde is expanded:
+For settings that specify a file system path, the tilde ('~') is expanded to $HOME.
+In addition, the following path expansions are supported:
+
+- `$HOME`
+- `$XDG_CONFIG_HOME`
+- `$XDG_MUSIC_DIR`
+- `$XDG_CACHE_HOME`
+- `$XDG_RUNTIME_DIR`
 
 :code:`music_directory "~/Music"`
+
+:code:`db_file "$XDG_CONFIG_HOME/mpd/database"`
 
 Some of the settings are grouped in blocks with curly braces, e.g. per-plugin settings:
 

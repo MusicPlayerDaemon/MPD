@@ -5,6 +5,7 @@
 #include "Data.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
+#include "fs/XDG.hxx"
 #include "fs/glue/StandardDirectory.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringSplit.hxx"
@@ -90,6 +91,29 @@ ParsePath(const char *path)
 			return GetHome(std::string{user}.c_str())
 				/ AllocatedPath::FromUTF8Throw(rest);
 		}
+#ifdef USE_XDG
+	} else if (path[0] == '$') {
+		++path;
+
+		const auto [env_var, rest] = Split(std::string_view{path}, '/');
+
+	        AllocatedPath xdg_path(nullptr);
+		if (env_var == "HOME") {
+			xdg_path = GetConfiguredHome();
+		} else if (env_var == "XDG_CONFIG_HOME") {
+			xdg_path = GetUserConfigDir();
+		} else if (env_var == "XDG_MUSIC_DIR") {
+			xdg_path = GetUserMusicDir();
+		} else if (env_var == "XDG_CACHE_HOME") {
+			xdg_path = GetUserCacheDir();
+		} else if (env_var == "XDG_RUNTIME_DIR") {
+			xdg_path = GetUserRuntimeDir();
+		} else {
+			throw FmtRuntimeError("environment variable not supported: {:?}", env_var);
+		}
+
+		return xdg_path / AllocatedPath::FromUTF8Throw(rest);
+#endif
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FmtRuntimeError("not an absolute path: {:?}", path);
 	} else {

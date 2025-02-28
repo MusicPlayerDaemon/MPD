@@ -10,6 +10,7 @@
 # be disabled and audio files will only be accepted over ipc socket (using
 # file:// protocol) or streaming files over an accepted protocol.
 #
+#music_directory		"$XDG_MUSIC_DIR"
 #music_directory		"~/music"
 #
 # This setting sets the MPD internal playlist directory. The purpose of this
@@ -17,6 +18,7 @@
 # playlist files not created by the server but only if they are in the MPD
 # format. This setting defaults to playlist saving being disabled.
 #
+#playlist_directory		"$XDG_CONFIG_HOME/mpd/playlists"
 #playlist_directory		"~/.mpd/playlists"
 #
 # This setting sets the location of the MPD database. This file is used to
@@ -25,6 +27,7 @@
 # MPD to accept files over ipc socket (using file:// protocol) or streaming
 # files over an accepted protocol.
 #
+#db_file			"$XDG_CACHE_HOME/mpd/database"
 #db_file			"~/.mpd/database"
 
 # These settings are the locations for the daemon log files for the daemon.
@@ -35,6 +38,7 @@
 # If you use systemd, do not configure a log_file.  With systemd, MPD
 # defaults to the systemd journal, which is fine.
 #
+#log_file			"$XDG_CACHE_HOME/mpd/log"
 #log_file			"~/.mpd/log"
 
 # This setting sets the location of the file which stores the process ID
@@ -43,6 +47,7 @@
 #
 # If you use systemd, do not configure a pid_file.
 #
+#pid_file			"$XDG_RUNTIME_DIR/mpd/mpd.pid"
 #pid_file			"~/.mpd/pid"
 
 # This setting sets the location of the file which contains information about
@@ -50,11 +55,13 @@
 # it was brought down. This setting is disabled by default and the server
 # state will be reset on server start up.
 #
+#state_file			"$XDG_RUNTIME_DIR/mpd/state"
 #state_file			"~/.mpd/state"
 #
 # The location of the sticker database.  This is a database which
 # manages dynamic information attached to songs.
 #
+#sticker_file			"$XDG_CACHE_HOME/sticker.sql"
 #sticker_file			"~/.mpd/sticker.sql"
 #
 ###############################################################################
@@ -85,6 +92,7 @@
 #bind_to_address		"any"
 #
 # And for Unix Socket
+#bind_to_address		"$XDG_RUNTIME_DIR/mpd/socket"
 #bind_to_address		"~/.mpd/socket"
 #
 # This setting is the TCP port that is desired for the daemon to get assigned

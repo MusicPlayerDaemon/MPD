@@ -250,9 +250,17 @@ Each line in the configuration file contains a setting name and its value, e.g.:
 
 Lines starting with ``#`` are treated as comments and ignored.
 
-For settings which specify a filesystem path, the tilde is expanded:
+For settings that specify a file system path, the tilde ('~') is expanded to $HOME. In addition, the following path expansions are supported:
+
+- `$HOME`
+- `$XDG_CONFIG_HOME`
+- `$XDG_MUSIC_DIR`
+- `$XDG_CACHE_HOME`
+- `$XDG_RUNTIME_DIR`
 
 :code:`music_directory "~/Music"`
+
+:code:`db_file "$XDG_CONFIG_HOME/mpd/database"`
 
 Some of the settings are grouped in blocks with curly braces, e.g. per-plugin settings:
 
@@ -1210,8 +1218,11 @@ Mounting is only possible with the simple database plugin and a :code:`cache_dir
 
     database {
       plugin "simple"
-      path "~/.mpd/db"
-      cache_directory "~/.mpd/cache"
+      path "$XDG_CACHE_HOME/mpd/database"
+      cache_directory "$XDG_CACHE_HOME/mpd/"
+      # or you can also use relative or absolute paths
+      # path "~/.mpd/db"
+      # cache_directory "~/.mpd/cache"
     }
         
 This requires migrating from the old :code:`db_file` setting to a database section. The cache directory must exist, and :program:`MPD` will put one file per mount there, which will be reused when the same storage is used again later.
