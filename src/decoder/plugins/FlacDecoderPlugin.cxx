@@ -22,6 +22,9 @@ flacPrintErroredState(FLAC__StreamDecoderState state) noexcept
 	case FLAC__STREAM_DECODER_SEARCH_FOR_FRAME_SYNC:
 	case FLAC__STREAM_DECODER_READ_FRAME:
 	case FLAC__STREAM_DECODER_END_OF_STREAM:
+#if FLAC_API_VERSION_CURRENT >= 14
+	case FLAC__STREAM_DECODER_END_OF_LINK:
+#endif
 		return;
 
 	case FLAC__STREAM_DECODER_OGG_ERROR:
@@ -216,6 +219,12 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 		case FLAC__STREAM_DECODER_UNINITIALIZED:
 			/* we shouldn't see this, ever - bail out */
 			return;
+
+#if FLAC_API_VERSION_CURRENT >= 14
+		case FLAC__STREAM_DECODER_END_OF_LINK:
+			/* TODO support FLAC 1.5 chained streams */
+			return;
+#endif
 		}
 
 		if (!FLAC__stream_decoder_process_single(flac_dec) &&
