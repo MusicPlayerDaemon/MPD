@@ -8,6 +8,16 @@
 #include <optional>
 #include <string_view>
 
+/**
+ * A std::from_chars() wrapper taking a std::string_view.  How
+ * annoying that the C++ standard library doesn't allow this!
+ */
+inline std::from_chars_result
+FromChars(std::string_view s, std::integral auto &value, int base=10) noexcept
+{
+	return std::from_chars(s.data(), s.data() + s.size(), value, base);
+}
+
 template<std::integral T>
 [[gnu::pure]]
 std::optional<T>
