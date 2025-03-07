@@ -18,6 +18,17 @@ FromChars(std::string_view s, std::integral auto &value, int base=10) noexcept
 	return std::from_chars(s.data(), s.data() + s.size(), value, base);
 }
 
+/**
+ * A wrapper for FromChars() which translates the #from_chars_result
+ * to a boolean (true on success, false on error).
+ */
+inline bool
+ParseIntegerTo(std::string_view s, std::integral auto &value, int base=10) noexcept
+{
+	auto [ptr, ec] = FromChars(s, value, base);
+	return ptr == s.data() + s.size() && ec == std::errc{};
+}
+
 template<std::integral T>
 [[gnu::pure]]
 std::optional<T>
