@@ -52,6 +52,13 @@ public:
 	}
 
 	/**
+	 * Is the inotify file descriptor still open?
+	 */
+	bool IsDefined() const noexcept {
+		return event.IsDefined();
+	}
+
+	/**
 	 * Re-enable polling the inotify file descriptor after it was
 	 * disabled by Disable().
 	 */
