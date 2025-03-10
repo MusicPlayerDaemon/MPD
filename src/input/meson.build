@@ -35,7 +35,6 @@ input_glue = static_library(
   'ScanTags.cxx',
   'Reader.cxx',
   'TextInputStream.cxx',
-  'ProxyInputStream.cxx',
   'RewindInputStream.cxx',
   'BufferingInputStream.cxx',
   'BufferedInputStream.cxx',
