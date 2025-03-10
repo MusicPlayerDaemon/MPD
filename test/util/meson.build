@@ -3,7 +3,6 @@ test(
   executable(
     'TestUtil',
     'TestCircularBuffer.cxx',
-    'TestDivideString.cxx',
     'TestException.cxx',
     'TestIntrusiveForwardList.cxx',
     'TestIntrusiveHashSet.cxx',

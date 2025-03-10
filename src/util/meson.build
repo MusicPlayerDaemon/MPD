@@ -8,7 +8,6 @@ util = static_library(
   'StringUtil.cxx',
   'StringCompare.cxx',
   'WStringCompare.cxx',
-  'DivideString.cxx',
   'SplitString.cxx',
   'Tokenizer.cxx',
   'UriExtract.cxx',
