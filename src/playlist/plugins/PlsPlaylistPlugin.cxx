@@ -9,12 +9,14 @@
 #include "song/DetachedSong.hxx"
 #include "tag/Builder.hxx"
 #include "util/ASCII.hxx"
+#include "util/NumberParser.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringSplit.hxx"
 #include "util/StringStrip.hxx"
-#include "util/DivideString.hxx"
 
 #include <string>
 
-#include <stdlib.h>
+using std::string_view_literals::operator""sv;
 
 static bool
 FindPlaylistSection(TextInputStream &is)
@@ -50,28 +52,27 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 
 	std::vector<Entry> entries;
 
-	char *line;
-	while ((line = is.ReadLine()) != nullptr) {
-		line = Strip(line);
+	char *_line;
+	while ((_line = is.ReadLine()) != nullptr) {
+		std::string_view line = Strip(std::string_view{_line});
 
-		if (*line == 0 || *line == ';')
+		if (line.empty() || line.front() == ';')
 			continue;
 
-		if (*line == '[')
+		if (line.front() == '[')
 			/* another section starts; we only want
 			   [Playlist], so stop here */
 			break;
 
-		const DivideString ds(line, '=', true);
-		if (!ds.IsDefined())
+		auto [name, value] = Split(line, '=');
+		if (value.data() == nullptr)
 			continue;
 
-		const char *const name = ds.GetFirst();
-		const char *const value = ds.GetSecond();
+		name = Strip(name);
+		value = Strip(value);
 
-		if (StringEqualsCaseASCII(name, "NumberOfEntries")) {
-			n_entries = strtoul(value, nullptr, 10);
-			if (n_entries == 0)
+		if (StringIsEqualIgnoreCase(name, "NumberOfEntries"sv)) {
+			if (!ParseIntegerTo(value, n_entries) || n_entries == 0)
 				/* empty file - nothing remains to be
 				   done */
 				return true;
@@ -79,26 +80,29 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 			if (n_entries > MAX_ENTRIES)
 				n_entries = MAX_ENTRIES;
 			entries.resize(n_entries);
-		} else if (StringEqualsCaseASCII(name, "File", 4)) {
-			unsigned i = strtoul(name + 4, nullptr, 10);
+		} else if (SkipPrefixIgnoreCase(name, "File"sv)) {
+			unsigned i = 0;
+			ParseIntegerTo(name, i);
 			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
 				if (entries.size() < i)
 					entries.resize(i);
 				entries[i - 1].file = value;
 			}
-		} else if (StringEqualsCaseASCII(name, "Title", 5)) {
-			unsigned i = strtoul(name + 5, nullptr, 10);
+		} else if (SkipPrefixIgnoreCase(name, "Title"sv)) {
+			unsigned i = 0;
+			ParseIntegerTo(name, i);
 			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
 				if (entries.size() < i)
 					entries.resize(i);
 				entries[i - 1].title = value;
 			}
-		} else if (StringEqualsCaseASCII(name, "Length", 6)) {
-			unsigned i = strtoul(name + 6, nullptr, 10);
+		} else if (SkipPrefixIgnoreCase(name, "Length"sv)) {
+			unsigned i = 0;
+			ParseIntegerTo(name, i);
 			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
 				if (entries.size() < i)
 					entries.resize(i);
-				entries[i - 1].length = atoi(value);
+				ParseIntegerTo(value, entries[i - 1].length);
 			}
 		}
 	}
