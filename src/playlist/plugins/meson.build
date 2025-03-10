@@ -8,7 +8,7 @@ playlist_plugins_deps = [
   log_dep,
   expat_dep,
   flac_dep,
-  input_api_dep,
+  input_basic_dep,
   config_dep,
 ]
 

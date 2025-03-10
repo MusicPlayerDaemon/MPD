@@ -5,10 +5,6 @@ input_api = static_library(
   'Error.cxx',
   'InputPlugin.cxx',
   'InputStream.cxx',
-  'ThreadInputStream.cxx',
-  'AsyncInputStream.cxx',
-  'ProxyInputStream.cxx',
-  'LastInputStream.cxx',
   include_directories: inc,
   dependencies: [
     thread_dep,
@@ -19,6 +15,31 @@ input_api = static_library(
 input_api_dep = declare_dependency(
   link_with: input_api,
   dependencies: [
+    thread_dep,
+  ],
+)
+
+input_basic = static_library(
+  'input_basic',
+  'AsyncInputStream.cxx',
+  'LastInputStream.cxx',
+  'ProxyInputStream.cxx',
+  'RewindInputStream.cxx',
+  'TextInputStream.cxx',
+  'ThreadInputStream.cxx',
+  include_directories: inc,
+  dependencies: [
+    input_api_dep,
+    thread_dep,
+    event_dep,
+  ],
+)
+
+input_basic_dep = declare_dependency(
+  link_with: input_basic,
+  dependencies: [
+    input_api_dep,
+    thread_dep,
     event_dep,
   ],
 )
@@ -34,8 +55,6 @@ input_glue = static_library(
   'LocalOpen.cxx',
   'ScanTags.cxx',
   'Reader.cxx',
-  'TextInputStream.cxx',
-  'RewindInputStream.cxx',
   'BufferingInputStream.cxx',
   'BufferedInputStream.cxx',
   'MaybeBufferedInputStream.cxx',
@@ -45,6 +64,8 @@ input_glue = static_library(
   'cache/Stream.cxx',
   include_directories: inc,
   dependencies: [
+    input_api_dep,
+    input_basic_dep,
     log_dep,
   ],
 )
@@ -52,6 +73,8 @@ input_glue = static_library(
 input_glue_dep = declare_dependency(
   link_with: input_glue,
   dependencies: [
+    input_api_dep,
+    input_basic_dep,
     input_plugins_dep,
     fs_dep,
     config_dep,

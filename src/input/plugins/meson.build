@@ -68,6 +68,8 @@ input_plugins = static_library(
   input_plugins_sources,
   include_directories: inc,
   dependencies: [
+    input_api_dep,
+    input_basic_dep,
     log_dep,
     alsa_dep,
     curl_dep,
