@@ -1,4 +1,6 @@
 ver 0.24.1 (not yet released)
+* output
+  - sndio: fix rounding error in volume calculation
 
 ver 0.24 (2025/03/11)
 * protocol

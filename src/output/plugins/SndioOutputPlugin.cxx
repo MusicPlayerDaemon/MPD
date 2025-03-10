@@ -139,12 +139,12 @@ SndioOutput::Play(std::span<const std::byte> src)
 void
 SndioOutput::SetVolume(unsigned int volume)
 {
-	sio_setvol(hdl, volume * SIO_MAXVOL / 100);
+	sio_setvol(hdl, (volume * SIO_MAXVOL + 50) / 100);
 }
 
 static inline unsigned int
 RawToPercent(int raw_volume) {
-	return raw_volume < 0 ? 100 : raw_volume * 100 / SIO_MAXVOL;
+	return raw_volume < 0 ? 100 : (raw_volume * 100 + SIO_MAXVOL / 2) / SIO_MAXVOL;
 }
 
 void
