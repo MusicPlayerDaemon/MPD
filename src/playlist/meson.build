@@ -17,6 +17,9 @@ playlist_glue = static_library(
   'playlist_glue',
   'PlaylistRegistry.cxx',
   include_directories: inc,
+  dependencies: [
+    input_api_dep,
+  ],
 )
 
 playlist_glue_dep = declare_dependency(

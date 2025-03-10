@@ -8,6 +8,8 @@ playlist_plugins_deps = [
   log_dep,
   expat_dep,
   flac_dep,
+  input_api_dep,
+  config_dep,
 ]
 
 playlist_features.set('ENABLE_CUE', get_option('cue'))
@@ -43,7 +45,7 @@ endif
 playlist_features.set('ENABLE_SOUNDCLOUD', enable_soundcloud)
 if enable_soundcloud
   playlist_plugins_sources += 'SoundCloudPlaylistPlugin.cxx'
-  playlist_plugins_deps += yajl_dep
+  playlist_plugins_deps += [yajl_dep, input_glue_dep]
 endif
 
 playlist_plugins = static_library(
