@@ -132,3 +132,25 @@ RemoveSuffix(std::basic_string_view<T> &haystack,
 		haystack.remove_suffix(needle.size());
 	return match;
 }
+
+template<typename T>
+constexpr bool
+SkipPrefixIgnoreCase(std::basic_string_view<T> &haystack,
+		     std::basic_string_view<T> needle) noexcept
+{
+	bool match = StringStartsWithIgnoreCase(haystack, needle);
+	if (match)
+		haystack.remove_prefix(needle.size());
+	return match;
+}
+
+template<typename T>
+constexpr bool
+RemoveSuffixIgnoreCase(std::basic_string_view<T> &haystack,
+		       std::basic_string_view<T> needle) noexcept
+{
+	bool match = StringEndsWithIgnoreCase(haystack, needle);
+	if (match)
+		haystack.remove_suffix(needle.size());
+	return match;
+}
