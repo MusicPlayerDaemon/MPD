@@ -107,6 +107,11 @@ class EventLoop final
 #endif // HAVE_URING
 
 #ifdef HAVE_THREADED_EVENT_LOOP
+#if defined(USE_EVENTFD) && defined(HAVE_URING)
+	class UringWake;
+	std::unique_ptr<UringWake> uring_wake;
+#endif
+
 	/**
 	 * A reference to the thread that is currently inside Run().
 	 */
@@ -339,6 +344,7 @@ private:
 	void Wait(Event::Duration timeout) noexcept;
 
 #ifdef HAVE_THREADED_EVENT_LOOP
+	void OnWake() noexcept;
 	void OnSocketReady(unsigned flags) noexcept;
 #endif
 
