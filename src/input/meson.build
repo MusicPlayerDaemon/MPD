@@ -23,6 +23,7 @@ input_basic = static_library(
   'input_basic',
   'AsyncInputStream.cxx',
   'LastInputStream.cxx',
+  'MemoryInputStream.cxx',
   'ProxyInputStream.cxx',
   'RewindInputStream.cxx',
   'TextInputStream.cxx',
