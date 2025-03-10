@@ -6,6 +6,7 @@ subdir('util')
 subdir('net')
 subdir('time')
 subdir('tag')
+subdir('playlist')
 
 executable(
   'read_conf',
