@@ -121,7 +121,7 @@ jobs:
         run: meson compile -C output/full --verbose
 
       - name: Unit Tests
-        run: meson test -C output/full
+        run: meson test -C output/full --print-errorlogs
 
       - name: Configure Mini
         run: |
@@ -148,7 +148,7 @@ jobs:
         run: meson compile -C output/mini --verbose
 
       - name: Unit Tests Mini
-        run: meson test -C output/mini
+        run: meson test -C output/mini --print-errorlogs
 
   build-macos:
     strategy:
@@ -219,7 +219,7 @@ jobs:
         run: meson compile -C output/full --verbose
 
       - name: Unit Tests
-        run: meson test -C output/full
+        run: meson test -C output/full --print-errorlogs
 
       - name: Configure Mini
         run: |
@@ -246,7 +246,7 @@ jobs:
         run: meson compile -C output/mini --verbose
 
       - name: Unit Tests Mini
-        run: meson test -C output/mini
+        run: meson test -C output/mini --print-errorlogs
 
   build-msys2:
     strategy:
