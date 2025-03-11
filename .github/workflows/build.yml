@@ -265,6 +265,7 @@ jobs:
           msystem: ${{matrix.platform}}
           pacboy: >-
             cc:p
+            ccache:p
             cmake:p
             dbus:p
             faad2:p
@@ -290,6 +291,11 @@ jobs:
             shine:p
             twolame:p
             yajl:p
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.platform }}
 
       - name: Compile and Test
         run: |
