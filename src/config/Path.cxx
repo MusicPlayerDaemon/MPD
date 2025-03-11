@@ -12,6 +12,8 @@
 
 #include <cassert>
 
+using std::string_view_literals::operator""sv;
+
 #ifndef _WIN32
 #include <pwd.h>
 
@@ -98,15 +100,15 @@ ParsePath(const char *path)
 		const auto [env_var, rest] = Split(std::string_view{path}, '/');
 
 	        AllocatedPath xdg_path(nullptr);
-		if (env_var == "HOME") {
+		if (env_var == "HOME"sv) {
 			xdg_path = GetConfiguredHome();
-		} else if (env_var == "XDG_CONFIG_HOME") {
+		} else if (env_var == "XDG_CONFIG_HOME"sv) {
 			xdg_path = GetUserConfigDir();
-		} else if (env_var == "XDG_MUSIC_DIR") {
+		} else if (env_var == "XDG_MUSIC_DIR"sv) {
 			xdg_path = GetUserMusicDir();
-		} else if (env_var == "XDG_CACHE_HOME") {
+		} else if (env_var == "XDG_CACHE_HOME"sv) {
 			xdg_path = GetUserCacheDir();
-		} else if (env_var == "XDG_RUNTIME_DIR") {
+		} else if (env_var == "XDG_RUNTIME_DIR"sv) {
 			xdg_path = GetUserRuntimeDir();
 		} else {
 			throw FmtRuntimeError("environment variable not supported: {:?}", env_var);
