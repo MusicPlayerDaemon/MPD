@@ -104,7 +104,7 @@ jobs:
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.compiler }}
+          key: ${{ matrix.os }}-${{ matrix.compiler }}
 
       - name: Configure
         run: |
@@ -203,7 +203,7 @@ jobs:
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.compiler }}
+          key: ${{ matrix.os }}-${{ matrix.compiler }}
 
       - name: Configure
         run: |
