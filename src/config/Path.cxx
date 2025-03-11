@@ -80,17 +80,12 @@ ParsePath(std::string_view path)
 		if (path.empty())
 			return GetConfiguredHome();
 
-		if (path.front() == '/') {
-			path.remove_prefix(1);
+		const auto [user, rest] = Split(path, '/');
+		const auto home = user.empty()
+			? GetConfiguredHome()
+			: GetHome(std::string{user}.c_str());
 
-			return GetConfiguredHome() /
-				AllocatedPath::FromUTF8Throw(path);
-		} else {
-			const auto [user, rest] = Split(path, '/');
-
-			return GetHome(std::string{user}.c_str())
-				/ AllocatedPath::FromUTF8Throw(rest);
-		}
+		return home / AllocatedPath::FromUTF8Throw(rest);
 	} else if (path.starts_with('$')) {
 		path.remove_prefix(1);
 
