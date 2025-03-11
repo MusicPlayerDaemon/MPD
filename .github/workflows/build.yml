@@ -297,7 +297,27 @@ jobs:
         with:
           key: ${{ matrix.platform }}
 
-      - name: Compile and Test
+      - name: Configure
         run: |
-          meson setup "${{github.workspace}}/build" -Dbzip2=disabled -Dcdio_paranoia=disabled -Dchromaprint=disabled -Ddocumentation=disabled -Dfluidsynth=disabled -Dicu=disabled -Diso9660=disabled -Dmikmod=disabled -Dmpg123=disabled -Dnfs=disabled -Dsidplay=disabled -Dudisks=disabled -Dupnp=disabled -Dwavpack=disabled -Dzzip=disabled -Dtest=true -Dwarning_level=3
-          meson compile -C "${{github.workspace}}/build" --verbose
+          meson setup \
+            -Dbzip2=disabled \
+            -Dcdio_paranoia=disabled \
+            -Dchromaprint=disabled \
+            -Ddocumentation=disabled \
+            -Dfluidsynth=disabled \
+            -Dicu=disabled \
+            -Diso9660=disabled \
+            -Dmikmod=disabled \
+            -Dmpg123=disabled \
+            -Dnfs=disabled \
+            -Dsidplay=disabled \
+            -Dudisks=disabled \
+            -Dupnp=disabled \
+            -Dwavpack=disabled \
+            -Dzzip=disabled \
+            -Dtest=true \
+            -Dwarning_level=3 \
+            "${{github.workspace}}/build"
+
+      - name: Build
+        run: meson compile -C "${{github.workspace}}/build" --verbose
