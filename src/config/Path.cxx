@@ -114,6 +114,9 @@ ParsePath(std::string_view path)
 
 		const auto [name, rest] = Split(path, '/');
 		const auto value = GetVariable(name);
+		if (value.IsNull())
+			throw FmtRuntimeError("No value for variable: {:?}", name);
+
 		return value / AllocatedPath::FromUTF8Throw(rest);
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FmtRuntimeError("not an absolute path: {:?}", path);
