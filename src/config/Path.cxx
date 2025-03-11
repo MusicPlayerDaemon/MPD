@@ -93,7 +93,6 @@ ParsePath(const char *path)
 			return GetHome(std::string{user}.c_str())
 				/ AllocatedPath::FromUTF8Throw(rest);
 		}
-#ifdef USE_XDG
 	} else if (path[0] == '$') {
 		++path;
 
@@ -102,6 +101,7 @@ ParsePath(const char *path)
 	        AllocatedPath xdg_path(nullptr);
 		if (env_var == "HOME"sv) {
 			xdg_path = GetConfiguredHome();
+#ifdef USE_XDG
 		} else if (env_var == "XDG_CONFIG_HOME"sv) {
 			xdg_path = GetUserConfigDir();
 		} else if (env_var == "XDG_MUSIC_DIR"sv) {
@@ -110,12 +110,12 @@ ParsePath(const char *path)
 			xdg_path = GetUserCacheDir();
 		} else if (env_var == "XDG_RUNTIME_DIR"sv) {
 			xdg_path = GetUserRuntimeDir();
+#endif
 		} else {
 			throw FmtRuntimeError("Unknown variable: {:?}", env_var);
 		}
 
 		return xdg_path / AllocatedPath::FromUTF8Throw(rest);
-#endif
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FmtRuntimeError("not an absolute path: {:?}", path);
 	} else {
