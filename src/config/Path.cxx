@@ -70,6 +70,29 @@ InitPathParser(const ConfigData &config) noexcept
 #endif
 }
 
+#ifndef _WIN32
+
+static AllocatedPath
+GetVariable(std::string_view name)
+{
+	if (name == "HOME"sv)
+		return GetConfiguredHome();
+#ifdef USE_XDG
+	else if (name == "XDG_CONFIG_HOME"sv)
+		return GetUserConfigDir();
+	else if (name == "XDG_MUSIC_DIR"sv)
+		return GetUserMusicDir();
+	else if (name == "XDG_CACHE_HOME"sv)
+		return GetUserCacheDir();
+	else if (name == "XDG_RUNTIME_DIR"sv)
+		return GetUserRuntimeDir();
+#endif
+	else
+		throw FmtRuntimeError("Unknown variable: {:?}", name);
+}
+
+#endif
+
 AllocatedPath
 ParsePath(std::string_view path)
 {
@@ -89,26 +112,9 @@ ParsePath(std::string_view path)
 	} else if (path.starts_with('$')) {
 		path.remove_prefix(1);
 
-		const auto [env_var, rest] = Split(path, '/');
-
-	        AllocatedPath xdg_path(nullptr);
-		if (env_var == "HOME"sv) {
-			xdg_path = GetConfiguredHome();
-#ifdef USE_XDG
-		} else if (env_var == "XDG_CONFIG_HOME"sv) {
-			xdg_path = GetUserConfigDir();
-		} else if (env_var == "XDG_MUSIC_DIR"sv) {
-			xdg_path = GetUserMusicDir();
-		} else if (env_var == "XDG_CACHE_HOME"sv) {
-			xdg_path = GetUserCacheDir();
-		} else if (env_var == "XDG_RUNTIME_DIR"sv) {
-			xdg_path = GetUserRuntimeDir();
-#endif
-		} else {
-			throw FmtRuntimeError("Unknown variable: {:?}", env_var);
-		}
-
-		return xdg_path / AllocatedPath::FromUTF8Throw(rest);
+		const auto [name, rest] = Split(path, '/');
+		const auto value = GetVariable(name);
+		return value / AllocatedPath::FromUTF8Throw(rest);
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FmtRuntimeError("not an absolute path: {:?}", path);
 	} else {
