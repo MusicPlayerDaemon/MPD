@@ -264,3 +264,83 @@ TEST(IntrusiveTreeSet, LargeRandom)
 
 	EXPECT_TRUE(items.empty());
 }
+
+struct ZeroIntItem final : IntrusiveTreeSetHook<IntrusiveHookMode::TRACK> {
+	int value = 0;
+
+	struct GetKey {
+		constexpr int operator()(const ZeroIntItem &item) const noexcept {
+			return item.value;
+		}
+	};
+};
+
+/**
+ * Fill a tree with many all-zero values.  This verifies the
+ * robustness of the RedBlackTree implementation for this corner case.
+ */
+TEST(IntrusiveTreeSet, Zero)
+{
+	std::array<ZeroIntItem, 1024> items;
+
+	IntrusiveTreeSet<ZeroIntItem,
+			 IntrusiveTreeSetOperators<ZeroIntItem, ZeroIntItem::GetKey>> set;
+
+	set.insert(items[0]);
+	set.insert(items[5]);
+	set.insert(items[10]);
+	set.insert(items[15]);
+	set.insert(items[20]);
+	set.insert(items[25]);
+	set.insert(items[30]);
+	set.insert(items[1]);
+	set.insert(items[2]);
+	set.insert(items[3]);
+	set.insert(items[31]);
+	set.insert(items[4]);
+	set.insert(items[6]);
+	set.insert(items[7]);
+	set.insert(items[21]);
+	set.insert(items[22]);
+	set.insert(items[23]);
+	set.insert(items[24]);
+	set.insert(items[26]);
+	set.insert(items[8]);
+	set.insert(items[9]);
+	set.insert(items[11]);
+	set.insert(items[12]);
+	set.insert(items[13]);
+	set.insert(items[14]);
+	set.insert(items[27]);
+	set.insert(items[28]);
+	set.insert(items[29]);
+	set.insert(items[16]);
+	set.insert(items[17]);
+	set.insert(items[18]);
+	set.insert(items[19]);
+
+	for (std::size_t i = 32; i < items.size(); ++i)
+		set.insert(items[i]);
+
+	EXPECT_EQ(set.size(), items.size());
+
+	for (const auto &i : items) {
+		EXPECT_TRUE(i.is_linked());
+	}
+
+	for (const auto &i : set) {
+		EXPECT_EQ(i.value, 0);
+	}
+
+	for (auto &i : items) {
+		EXPECT_TRUE(i.is_linked());
+		set.erase(set.iterator_to(i));
+		EXPECT_FALSE(i.is_linked());
+
+#ifndef NDEBUG
+		set.Check();
+#endif
+	}
+
+	EXPECT_TRUE(set.empty());
+}
