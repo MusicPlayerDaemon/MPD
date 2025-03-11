@@ -111,7 +111,7 @@ ParsePath(const char *path)
 		} else if (env_var == "XDG_RUNTIME_DIR"sv) {
 			xdg_path = GetUserRuntimeDir();
 		} else {
-			throw FmtRuntimeError("environment variable not supported: {:?}", env_var);
+			throw FmtRuntimeError("Unknown variable: {:?}", env_var);
 		}
 
 		return xdg_path / AllocatedPath::FromUTF8Throw(rest);
