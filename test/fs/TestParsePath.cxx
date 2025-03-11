@@ -6,6 +6,7 @@
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/glue/StandardDirectory.hxx"
+#include "fs/XDG.hxx" // for USE_XDG
 
 #include <gtest/gtest.h>
 
