@@ -226,19 +226,41 @@ ParseConfigLine(std::string_view line, std::string_view dir_name,
 static AllocatedPath
 GetUserDir(const char *name) noexcept
 try {
-	AllocatedPath result = nullptr;
-	auto config_dir = GetUserConfigDir();
-	if (config_dir.IsNull())
-		return result;
+#ifdef __APPLE__
+    // On macOS, first try to get the directory from the environment variable.
+    if (const auto path = GetExistingEnvDirectory(name); path != nullptr)
+        return AllocatedPath{path};
 
-	FileLineReader input{config_dir / Path::FromFS("user-dirs.dirs")};
-	char *line;
-	while ((line = input.ReadLine()) != nullptr)
-		if (ParseConfigLine(line, name, result))
-			return result;
-	return result;
+    // If the env variable is not set, return default directories.
+    if (const auto home = GetHomeDir(); !home.IsNull()) {
+        AllocatedPath defaultPath = nullptr;
+        std::string_view sv_name{name};
+        if (sv_name == "XDG_MUSIC_DIR")
+            defaultPath = home / Path::FromFS("Music");
+        else if (sv_name == "XDG_CACHE_HOME")
+        	defaultPath = home / Path::FromFS("Library/Caches");
+        else if (sv_name == "XDG_RUNTIME_DIR")
+        	defaultPath = home / Path::FromFS("Library/Application Support");
+
+        if (!defaultPath.IsNull() && IsValidDir(defaultPath))
+            return defaultPath;
+    }
+    return nullptr;
+#else
+    AllocatedPath result = nullptr;
+    auto config_dir = GetUserConfigDir();
+    if (config_dir.IsNull())
+        return result;
+
+    FileLineReader input{config_dir / Path::FromFS("user-dirs.dirs")};
+    char *line;
+    while ((line = input.ReadLine()) != nullptr)
+        if (ParseConfigLine(line, name, result))
+            return result;
+    return result;
+#endif
 } catch (const std::exception &e) {
-	return nullptr;
+    return nullptr;
 }
 
 #endif

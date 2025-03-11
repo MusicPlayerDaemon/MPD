@@ -5,7 +5,7 @@
 #define MPD_FS_XDG_HXX
 
 // Use X Desktop guidelines where applicable
-#if !defined(__APPLE__) && !defined(_WIN32) && !defined(ANDROID)
+#if !defined(_WIN32) && !defined(ANDROID)
 #define USE_XDG
 #endif
 
