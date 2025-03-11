@@ -12,15 +12,15 @@ For basic installation instructions
 
 # Users
 
-- [Manual](http://www.musicpd.org/doc/user/)
-- [Forum](http://forum.musicpd.org/)
+- [Manual](https://mpd.readthedocs.io/en/stable/user.html)
+- [Forum](https://github.com/MusicPlayerDaemon/MPD/discussions)
 - [IRC](ircs://irc.libera.chat:6697/#mpd)
 - [Bug tracker](https://github.com/MusicPlayerDaemon/MPD/issues/)
 
 # Developers
 
-- [Protocol specification](http://www.musicpd.org/doc/protocol/)
-- [Developer manual](http://www.musicpd.org/doc/developer/)
+- [Protocol specification](https://mpd.readthedocs.io/en/latest/protocol.html)
+- [Developer manual](https://mpd.readthedocs.io/en/latest/developer.html)
 
 # Legal
 
