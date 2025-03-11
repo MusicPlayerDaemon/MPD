@@ -71,32 +71,30 @@ InitPathParser(const ConfigData &config) noexcept
 }
 
 AllocatedPath
-ParsePath(const char *path)
+ParsePath(std::string_view path)
 {
-	assert(path != nullptr);
-
 #ifndef _WIN32
-	if (path[0] == '~') {
-		++path;
+	if (path.starts_with('~')) {
+		path.remove_prefix(1);
 
-		if (*path == '\0')
+		if (path.empty())
 			return GetConfiguredHome();
 
-		if (*path == '/') {
-			++path;
+		if (path.front() == '/') {
+			path.remove_prefix(1);
 
 			return GetConfiguredHome() /
 				AllocatedPath::FromUTF8Throw(path);
 		} else {
-			const auto [user, rest] = Split(std::string_view{path}, '/');
+			const auto [user, rest] = Split(path, '/');
 
 			return GetHome(std::string{user}.c_str())
 				/ AllocatedPath::FromUTF8Throw(rest);
 		}
-	} else if (path[0] == '$') {
-		++path;
+	} else if (path.starts_with('$')) {
+		path.remove_prefix(1);
 
-		const auto [env_var, rest] = Split(std::string_view{path}, '/');
+		const auto [env_var, rest] = Split(path, '/');
 
 	        AllocatedPath xdg_path(nullptr);
 		if (env_var == "HOME"sv) {
