@@ -1,3 +1,5 @@
+ver 0.24.1 (not yet released)
+
 ver 0.24 (2025/03/11)
 * protocol
   - new command "searchcount" (case-insensitive "count")
