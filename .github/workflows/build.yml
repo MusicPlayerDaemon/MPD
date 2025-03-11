@@ -320,3 +320,6 @@ jobs:
 
       - name: Build
         run: meson compile -C "${{github.workspace}}/build" --verbose
+
+      - name: Unit Tests
+        run: meson test -C "${{github.workspace}}/build" --print-errorlogs
