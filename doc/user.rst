@@ -161,7 +161,7 @@ This section is about the latter.
 You need:
 
 * `mingw-w64 <http://mingw-w64.org/doku.php>`__
-* `Meson 0.56.0 <http://mesonbuild.com/>`__ and `Ninja
+* `Meson 1.0.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * cmake
 * pkg-config
