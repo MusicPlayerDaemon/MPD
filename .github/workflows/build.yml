@@ -316,7 +316,6 @@ jobs:
             -Dwavpack=disabled \
             -Dzzip=disabled \
             -Dtest=true \
-            -Dwarning_level=3 \
             "${{github.workspace}}/build"
 
       - name: Build
