@@ -13,3 +13,19 @@ test(
   ),
   protocol: 'gtest',
 )
+
+test(
+  'TestParsePath',
+  executable(
+    'TestParsePath',
+    'TestParsePath.cxx',
+    '../../src/config/Path.cxx',
+    include_directories: inc,
+    dependencies: [
+      fmt_dep,
+      fs_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
