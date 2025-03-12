@@ -23,7 +23,6 @@
 #endif
 
 #ifdef USE_XDG
-#include "util/StringSplit.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringCompare.hxx"
 #include "io/FileLineReader.hxx"
@@ -39,7 +38,7 @@
 #include "Main.hxx"
 #endif
 
-#ifdef USE_XDG
+#if defined(USE_XDG) || defined(__APPLE__)
 #include "Version.h" // for PACKAGE_NAME
 #define APP_FILENAME PATH_LITERAL(PACKAGE_NAME)
 static constexpr Path app_filename = Path::FromFS(APP_FILENAME);
@@ -248,13 +247,11 @@ GetUserConfigDir() noexcept
 {
 #if defined(_WIN32)
 	return GetStandardDir(CSIDL_LOCAL_APPDATA);
-#elif defined(USE_XDG)
-	// Check for $XDG_CONFIG_HOME
+#elif defined(USE_XDG) || defined(__APPLE__)
 	if (const auto path = GetExistingEnvDirectory("XDG_CONFIG_HOME");
 	    path != nullptr)
 		return AllocatedPath{path};
 
-	// Check for $HOME/.config
 	if (const auto home = GetHomeDir(); !home.IsNull()) {
 		auto fallback = home / Path::FromFS(".config");
 		if (IsValidDir(fallback))
@@ -274,6 +271,18 @@ GetUserMusicDir() noexcept
 	return GetStandardDir(CSIDL_MYMUSIC);
 #elif defined(USE_XDG)
 	return GetUserDir("XDG_MUSIC_DIR");
+#elif defined(__APPLE__)
+	if (const auto path = GetExistingEnvDirectory("XDG_MUSIC_DIR");
+	    path != nullptr)
+		return AllocatedPath{path};
+
+	if (const auto home = GetHomeDir(); !home.IsNull()) {
+		auto fallback = home / Path::FromFS("Music");
+		if (IsValidDir(fallback))
+			return fallback;
+	}
+
+	return nullptr;
 #elif defined(ANDROID)
 	return Environment::getExternalStoragePublicDirectory(Java::GetEnv(),
 							      "Music");
@@ -286,16 +295,26 @@ AllocatedPath
 GetUserCacheDir() noexcept
 {
 #ifdef USE_XDG
-	// Check for $XDG_CACHE_HOME
 	if (const auto path = GetExistingEnvDirectory("XDG_CACHE_HOME");
 	    path != nullptr)
 		return AllocatedPath{path};
 
-	// Check for $HOME/.cache
 	if (const auto home = GetHomeDir(); !home.IsNull())
 		if (auto fallback = home / Path::FromFS(".cache");
 		    IsValidDir(fallback))
 			return fallback;
+
+	return nullptr;
+#elif defined(__APPLE__)
+	if (const auto path = GetExistingEnvDirectory("XDG_CACHE_HOME");
+	    path != nullptr)
+		return AllocatedPath{path};
+
+	if (const auto home = GetHomeDir(); !home.IsNull()) {
+		auto fallback = home / Path::FromFS("Library/Caches");
+		if (IsValidDir(fallback))
+			return fallback;
+	}
 
 	return nullptr;
 #elif defined(ANDROID)
@@ -308,7 +327,7 @@ GetUserCacheDir() noexcept
 AllocatedPath
 GetAppCacheDir() noexcept
 {
-#ifdef USE_XDG
+#ifdef defined(USE_XDG) || defined(__APPLE__)
 	if (const auto user_dir = GetUserCacheDir(); !user_dir.IsNull()) {
 		auto dir = user_dir / app_filename;
 		CreateDirectoryNoThrow(dir);
@@ -330,6 +349,18 @@ GetUserRuntimeDir() noexcept
 	if (const auto path = GetExistingEnvDirectory("XDG_RUNTIME_DIR");
 	    path != nullptr)
 		return AllocatedPath{path};
+#elif defined(__APPLE__)
+	if (const auto path = GetExistingEnvDirectory("XDG_RUNTIME_DIR");
+	    path != nullptr)
+		return AllocatedPath{path};
+
+	if (const auto home = GetHomeDir(); !home.IsNull()) {
+		auto fallback = home / Path::FromFS("Library/Application Support");
+		if (IsValidDir(fallback))
+			return fallback;
+	}
+
+	return nullptr;
 #endif
 
 	return nullptr;
@@ -346,7 +377,7 @@ GetAppRuntimeDir() noexcept
 			return AllocatedPath::FromFS(dir);
 #endif
 
-#ifdef USE_XDG
+#ifdef defined(USE_XDG) || defined(__APPLE__)
 	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
 		auto dir = user_dir / app_filename;
 		CreateDirectoryNoThrow(dir);

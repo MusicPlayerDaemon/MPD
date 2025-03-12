@@ -77,7 +77,6 @@ GetVariable(std::string_view name)
 {
 	if (name == "HOME"sv)
 		return GetConfiguredHome();
-#ifdef USE_XDG
 	else if (name == "XDG_CONFIG_HOME"sv)
 		return GetUserConfigDir();
 	else if (name == "XDG_MUSIC_DIR"sv)
@@ -86,7 +85,6 @@ GetVariable(std::string_view name)
 		return GetUserCacheDir();
 	else if (name == "XDG_RUNTIME_DIR"sv)
 		return GetUserRuntimeDir();
-#endif
 	else
 		throw FmtRuntimeError("Unknown variable: {:?}", name);
 }
