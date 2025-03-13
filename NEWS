@@ -1,6 +1,7 @@
 ver 0.24.1 (not yet released)
 * output
   - sndio: fix rounding error in volume calculation
+* log: include year in time stamp
 * fix build failure in the "id3tag" Meson subproject
 
 ver 0.24 (2025/03/11)
