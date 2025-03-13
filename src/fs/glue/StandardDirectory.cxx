@@ -23,7 +23,6 @@
 #endif
 
 #ifdef USE_XDG
-#include "util/StringSplit.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringCompare.hxx"
 #include "io/FileLineReader.hxx"
