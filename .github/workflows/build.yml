@@ -3,6 +3,11 @@ on:
   workflow_dispatch:
   push:
     paths-ignore:
+      - 'AUTHORS'
+      - 'COPYING'
+      - 'LICENSES/**'
+      - 'NEWS'
+      - 'README.md'
       - 'android/**'
       - 'build/**'
       - 'doc/**'
@@ -15,6 +20,11 @@ on:
       - v0.23.x
   pull_request:
     paths-ignore:
+      - 'AUTHORS'
+      - 'COPYING'
+      - 'LICENSES/**'
+      - 'NEWS'
+      - 'README.md'
       - 'android/**'
       - 'build/**'
       - 'doc/**'

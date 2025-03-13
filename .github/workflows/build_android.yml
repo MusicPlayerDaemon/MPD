@@ -3,6 +3,11 @@ on:
   workflow_dispatch:
   push:
     paths-ignore:
+      - 'AUTHORS'
+      - 'COPYING'
+      - 'LICENSES/**'
+      - 'NEWS'
+      - 'README.md'
       - 'build/**'
       - 'doc/**'
       - 'subprojects/**'
@@ -12,6 +17,11 @@ on:
       - master
   pull_request:
     paths-ignore:
+      - 'AUTHORS'
+      - 'COPYING'
+      - 'LICENSES/**'
+      - 'NEWS'
+      - 'README.md'
       - 'build/**'
       - 'doc/**'
       - 'subprojects/**'
