@@ -106,7 +106,7 @@ static void version()
 	fmt::print("Music Player Daemon " VERSION " ({})"
 		   "\n"
 		   "Copyright 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-		   "Copyright 2008-2021 Max Kellermann <max.kellermann@gmail.com>\n"
+		   "Copyright 2008-2025 Max Kellermann <max.kellermann@gmail.com>\n"
 		   "This is free software; see the source for copying conditions.  There is NO\n"
 		   "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n",
 		   GIT_VERSION);
