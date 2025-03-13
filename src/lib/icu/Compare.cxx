@@ -49,7 +49,7 @@ IcuCompare::operator==(const char *haystack) const noexcept
 	try {
 		auto w_haystack = MultiByteToWideChar(CP_UTF8, haystack);
 		return CompareStringEx(LOCALE_NAME_INVARIANT,
-				       LINGUISTIC_IGNORECASE|NORM_IGNORECASE,
+				       NORM_IGNORECASE,
 				       w_haystack.c_str(), -1,
 				       needle.c_str(), -1,
 				       nullptr, nullptr, 0) == CSTR_EQUAL;
