@@ -104,10 +104,10 @@ TEST_F(StringFilterTest, Normalize)
 	const StringFilter f{"1①H", true, StringFilter::Position::FULL, false};
 
 	EXPECT_TRUE(f.Match("1①H"));
-	EXPECT_TRUE(f.Match("¹₁H"));
 
 #ifndef _WIN32
 	// fails with Windows CompareStringEx()
+	EXPECT_TRUE(f.Match("¹₁H"));
 	EXPECT_TRUE(f.Match("①1ℌ"));
 	EXPECT_TRUE(f.Match("①1ℍ"));
 #endif
