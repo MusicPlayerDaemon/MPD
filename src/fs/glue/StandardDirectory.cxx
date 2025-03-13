@@ -38,7 +38,7 @@
 #include "Main.hxx"
 #endif
 
-#ifdef USE_XDG
+#if defined(USE_XDG) || defined(__APPLE__)
 #include "Version.h" // for PACKAGE_NAME
 #define APP_FILENAME PATH_LITERAL(PACKAGE_NAME)
 static constexpr Path app_filename = Path::FromFS(APP_FILENAME);
@@ -261,6 +261,14 @@ GetUserConfigDir() noexcept
 	}
 
 	return nullptr;
+#elif defined(__APPLE__)
+	if (const auto home = GetHomeDir(); !home.IsNull()) {
+		auto fallback = home / Path::FromFS("Library/Application Support");
+		if (IsValidDir(fallback))
+			return fallback;
+	}
+
+	return nullptr;
 #else
 	return nullptr;
 #endif
@@ -271,6 +279,14 @@ GetUserMusicDir() noexcept
 {
 #if defined(_WIN32)
 	return GetStandardDir(CSIDL_MYMUSIC);
+#elif defined(__APPLE__)
+	if (const auto home = GetHomeDir(); !home.IsNull()) {
+		auto fallback = home / Path::FromFS("Music");
+		if (IsValidDir(fallback))
+			return fallback;
+	}
+
+	return nullptr;
 #elif defined(USE_XDG)
 	return GetUserDir("XDG_MUSIC_DIR");
 #elif defined(ANDROID)
@@ -297,6 +313,13 @@ GetUserCacheDir() noexcept
 			return fallback;
 
 	return nullptr;
+#elif defined(__APPLE__)
+	if (const auto home = GetHomeDir(); !home.IsNull())
+		if (auto fallback = home / Path::FromFS("Library/Caches");
+		    IsValidDir(fallback))
+			return fallback;
+
+	return nullptr;
 #elif defined(ANDROID)
 	return context->GetCacheDir(Java::GetEnv());
 #else
@@ -307,7 +330,7 @@ GetUserCacheDir() noexcept
 AllocatedPath
 GetAppCacheDir() noexcept
 {
-#ifdef USE_XDG
+#if defined(USE_XDG) || defined(__APPLE__)
 	if (const auto user_dir = GetUserCacheDir(); !user_dir.IsNull()) {
 		auto dir = user_dir / app_filename;
 		CreateDirectoryNoThrow(dir);
@@ -329,6 +352,13 @@ GetUserRuntimeDir() noexcept
 	if (const auto path = GetExistingEnvDirectory("XDG_RUNTIME_DIR");
 	    path != nullptr)
 		return AllocatedPath{path};
+
+#elif defined(__APPLE__)
+	if (const auto home = GetHomeDir(); !home.IsNull()) {
+		auto fallback = home / Path::FromFS("Library/Application Support");
+		if (IsValidDir(fallback))
+			return fallback;
+	}
 #endif
 
 	return nullptr;
@@ -345,7 +375,7 @@ GetAppRuntimeDir() noexcept
 			return AllocatedPath::FromFS(dir);
 #endif
 
-#ifdef USE_XDG
+#if defined(USE_XDG_) || defined(__APPLE__)
 	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
 		auto dir = user_dir / app_filename;
 		CreateDirectoryNoThrow(dir);

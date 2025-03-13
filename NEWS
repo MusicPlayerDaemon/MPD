@@ -2,6 +2,7 @@ ver 0.24.1 (not yet released)
 * output
   - sndio: fix rounding error in volume calculation
 * log: include year in time stamp
+* macOS: implement standard directories
 * fix build failure in the "id3tag" Meson subproject
 * doc: use "sphinx_rtd_theme" only if it is installed
 
