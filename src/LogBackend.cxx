@@ -3,11 +3,14 @@
 
 #include "LogBackend.hxx"
 #include "Log.hxx"
+#include "lib/fmt/Unsafe.hxx"
 #include "util/Compiler.h"
 #include "util/Domain.hxx"
 #include "util/StringStrip.hxx"
 #include "Version.h"
 #include "config.h"
+
+#include <fmt/chrono.h>
 
 #include <cassert>
 
@@ -18,6 +21,8 @@
 #ifdef HAVE_SYSLOG
 #include <syslog.h>
 #endif
+
+using std::string_view_literals::operator""sv;
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -73,14 +78,13 @@ EnableLogTimestamp() noexcept
 	enable_timestamp = true;
 }
 
-static const char *
+static std::string_view
 log_date() noexcept
 {
 	static constexpr size_t LOG_DATE_BUF_SIZE = std::char_traits<char>::length("Jan 22 15:43:14 : ") + 1;
 	static char buf[LOG_DATE_BUF_SIZE];
 	time_t t = time(nullptr);
-	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M:%S : ", localtime(&t));
-	return buf;
+	return FmtUnsafeSV(buf, "{:%b %d %H:%M:%S} : "sv, fmt::localtime(t));
 }
 
 #ifdef HAVE_SYSLOG
@@ -148,7 +152,7 @@ static void
 FileLog(const Domain &domain, std::string_view message) noexcept
 {
 	fmt::print(stderr, "{}{}: {}\n",
-		   enable_timestamp ? log_date() : "",
+		   enable_timestamp ? log_date() : ""sv,
 		   domain.GetName(),
 		   StripRight(message));
 
