@@ -105,6 +105,13 @@ todo_include_todos = False
 #
 html_theme = 'sphinx_rtd_theme'
 
+try:
+    __import__(html_theme)
+except ModuleNotFoundError:
+    import sys
+    print(f"Warning: Sphinx theme {html_theme!r} not available, falling back to the default theme", file=sys.stderr)
+    del html_theme
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.

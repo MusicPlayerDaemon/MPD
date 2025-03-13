@@ -3,6 +3,7 @@ ver 0.24.1 (not yet released)
   - sndio: fix rounding error in volume calculation
 * log: include year in time stamp
 * fix build failure in the "id3tag" Meson subproject
+* doc: use "sphinx_rtd_theme" only if it is installed
 
 ver 0.24 (2025/03/11)
 * protocol
