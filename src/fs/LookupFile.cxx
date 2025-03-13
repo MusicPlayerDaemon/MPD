@@ -43,11 +43,29 @@ LookupFile(Path pathname)
 		} catch (const std::system_error &e) {
 			if (!IsPathNotFound(e))
 				throw;
+
+#ifdef _WIN32
+			if (idx == 0)
+				/* on Windows, the semantics are
+				   different for empty strings:
+				   GetFileAttributesExA() fails with
+				   ERROR_PATH_NOT_FOUND, and the
+				   IsPathNotFound() check above would
+				   not rethrow the exception, but the
+				   empty string would lead to an
+				   integer overflow in the code below,
+				   so we need to make this a special
+				   case on Windows */
+				throw;
+#endif
+
 		}
 
 		//find one dir up
 		if (slash != nullptr)
 			*slash = '/';
+
+		assert(idx > 0);
 
 		slash = FindSlash(&buffer.front(), idx - 1);
 		if (slash == nullptr)
