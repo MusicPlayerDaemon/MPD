@@ -8,6 +8,7 @@
 
 #include <cstdlib> // for std::rand()
 #include <deque>
+#include <set>
 #include <string>
 
 namespace {
@@ -207,13 +208,24 @@ TEST(IntrusiveTreeSet, RandomOrder)
 
 TEST(IntrusiveTreeSet, LargeRandom)
 {
+	std::set<int> dedup;
 	std::deque<std::unique_ptr<IntItem>> items;
 	IntrusiveTreeSet<IntItem,
 			 IntrusiveTreeSetOperators<IntItem, IntItem::GetKey>> set;
 
 	std::srand(42);
 	for (unsigned i = 0; i < 1024; ++i) {
-		items.emplace_back(std::make_unique<IntItem>(std::rand()));
+		/* prevent duplicates to avoid different ordering of
+		   identical values in the std::deque and in the
+		   IntrusiveTreeSet */
+		int value;
+		while (true) {
+			value = std::rand();
+			if (dedup.insert(value).second)
+				break;
+		}
+
+		items.emplace_back(std::make_unique<IntItem>(value));
 		set.insert(*items.back());
 
 #ifndef NDEBUG
