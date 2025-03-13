@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
+#include "net/Init.hxx"
 #include "net/IPv4Address.hxx"
 #include "net/ToString.hxx"
 #include "util/Compiler.h"
@@ -96,18 +97,24 @@ ToString(const struct in_addr &a)
 
 TEST(IPv4Address, Octets)
 {
+	const ScopeNetInit net_init;
+
 	static constexpr auto a = IPv4Address(11, 22, 33, 44, 1234);
 	EXPECT_EQ(ToString(a.GetAddress()), "11.22.33.44");
 }
 
 TEST(IPv4Address, Any)
 {
+	const ScopeNetInit net_init;
+
 	EXPECT_EQ(ToString(IPv4Address(1234).GetAddress()), "0.0.0.0");
 	EXPECT_EQ(ToString(IPv4Address(1234)), "0.0.0.0:1234");
 }
 
 TEST(IPv4Address, Port)
 {
+	const ScopeNetInit net_init;
+
 	EXPECT_EQ(IPv4Address(0).GetPort(), 0);
 	EXPECT_EQ(IPv4Address(1).GetPort(), 1);
 	EXPECT_EQ(IPv4Address(1234).GetPort(), 1234);
@@ -116,12 +123,16 @@ TEST(IPv4Address, Port)
 
 TEST(IPv4Address, Loopback)
 {
+	const ScopeNetInit net_init;
+
 	static constexpr auto a = IPv4Address(IPv4Address::Loopback(), 1234);
 	EXPECT_EQ(ToString(a.GetAddress()), "127.0.0.1");
 }
 
 TEST(IPv4Address, MaskFromPrefix)
 {
+	const ScopeNetInit net_init;
+
 	EXPECT_EQ(ToString(IPv4Address::MaskFromPrefix(0).GetAddress()), "0.0.0.0");
 	EXPECT_EQ(ToString(IPv4Address::MaskFromPrefix(4).GetAddress()), "240.0.0.0");
 	EXPECT_EQ(ToString(IPv4Address::MaskFromPrefix(8).GetAddress()), "255.0.0.0");

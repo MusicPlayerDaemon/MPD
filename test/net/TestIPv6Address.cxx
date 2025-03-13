@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
+#include "net/Init.hxx"
 #include "net/IPv6Address.hxx"
 #include "net/ToString.hxx"
 #include "util/Compiler.h"
@@ -93,6 +94,8 @@ ToString(const struct in6_addr &a)
 
 TEST(IPv6Address, Octets)
 {
+	const ScopeNetInit net_init;
+
 	static constexpr auto a = IPv6Address(0x1110, 0x2220, 0x3330, 0x4440,
 					      0x5550, 0x6660, 0x7770, 0x8880,
 					      1234);
@@ -101,12 +104,16 @@ TEST(IPv6Address, Octets)
 
 TEST(IPv6Address, Any)
 {
+	const ScopeNetInit net_init;
+
 	EXPECT_EQ(ToString(IPv6Address(1234).GetAddress()), "::");
 	EXPECT_EQ(ToString(IPv6Address(1234)), "[::]:1234");
 }
 
 TEST(IPv6Address, Port)
 {
+	const ScopeNetInit net_init;
+
 	EXPECT_EQ(IPv6Address(0).GetPort(), 0);
 	EXPECT_EQ(IPv6Address(1).GetPort(), 1);
 	EXPECT_EQ(IPv6Address(1234).GetPort(), 1234);
@@ -115,6 +122,8 @@ TEST(IPv6Address, Port)
 
 TEST(IPv6Address, MaskFromPrefix)
 {
+	const ScopeNetInit net_init;
+
 	EXPECT_EQ(ToString(IPv6Address::MaskFromPrefix(0).GetAddress()), "::");
 	EXPECT_EQ(ToString(IPv6Address::MaskFromPrefix(1).GetAddress()), "8000::");
 	EXPECT_EQ(ToString(IPv6Address::MaskFromPrefix(8).GetAddress()), "ff00::");
