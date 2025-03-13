@@ -109,20 +109,14 @@ TEST_F(StringFilterTest, Normalize)
 	EXPECT_TRUE(f.Match("①1ℍ"));
 	EXPECT_FALSE(f.Match("21H"));
 
-#ifndef _WIN32
-	// fails with Windows CompareStringEx()
 	EXPECT_TRUE(StringFilter("ǆ", true, StringFilter::Position::FULL, false).Match("dž"));
-#endif
 
 	EXPECT_TRUE(StringFilter("\u212b", true, StringFilter::Position::FULL, false).Match("\u0041\u030a"));
 	EXPECT_TRUE(StringFilter("\u212b", true, StringFilter::Position::FULL, false).Match("\u00c5"));
 
 	EXPECT_TRUE(StringFilter("\u1e69", true, StringFilter::Position::FULL, false).Match("\u0073\u0323\u0307"));
 
-#ifndef _WIN32
-	// fails with Windows CompareStringEx()
 	EXPECT_TRUE(StringFilter("\u1e69", true, StringFilter::Position::FULL, false).Match("\u0073\u0307\u0323"));
-#endif
 }
 
 #endif
