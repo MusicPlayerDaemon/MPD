@@ -1407,6 +1407,10 @@ from io_uring's advantages.
 * "Cannot allocate memory" usually means that your memlock limit
   (``ulimit -l`` in bash or ``LimitMEMLOCK`` in systemd) is too low.
   64 MB is a reasonable value for this limit.
+* "Permission denied" on a system with SELinux enabled may mean
+  that MPD is restricted from using the io_uring facility. You
+  should also see an AVC denial reported by SELinux. A policy
+  adjustment will be necessary to give MPD access to io_uring.
 * Your Linux kernel might be too old and does not support io_uring.
 
 Error "bind to '0.0.0.0:6600' failed (continuing anyway, because binding to '[::]:6600' succeeded)"
