@@ -118,6 +118,10 @@ public:
 		ready_flags = flags;
 	}
 
+	void ClearReadyFlags(unsigned flags) noexcept {
+		ready_flags &= ~flags;
+	}
+
 	/**
 	 * @return true on success, false on error (with errno set if
 	 * USE_EPOLL is defined)
