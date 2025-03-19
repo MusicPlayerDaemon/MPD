@@ -56,6 +56,24 @@ PartitionWithout(const std::basic_string_view<T> haystack,
 	};
 }
 
+template<typename T>
+constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
+PartitionWithout(const std::basic_string_view<T> haystack,
+		 const typename std::basic_string_view<T>::const_pointer separator) noexcept
+{
+	return PartitionWithout(haystack, separator - haystack.data());
+}
+
+template<typename T>
+requires(!std::is_same_v<typename std::basic_string_view<T>::const_pointer,
+	typename std::basic_string_view<T>::const_iterator>)
+constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
+PartitionWithout(const std::basic_string_view<T> haystack,
+		 const typename std::basic_string_view<T>::const_iterator separator) noexcept
+{
+	return PartitionWithout(haystack, separator - haystack.begin());
+}
+
 /**
  * Split the string at the first occurrence of the given character.
  * If the character is not found, then the first value is the whole
