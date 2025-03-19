@@ -8,6 +8,10 @@
 
 #include <utility>
 
+#ifndef CFErrorDomain
+typedef CFStringRef CFErrorDomain;
+#endif
+
 namespace Apple {
 
 class ErrorRef {
