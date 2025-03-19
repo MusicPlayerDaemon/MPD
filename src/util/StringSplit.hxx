@@ -7,6 +7,11 @@
 #include <string_view>
 #include <type_traits>
 
+/**
+ * Partition the string_view at the specified position, returning one
+ * string_view until the given position and one beginning at the given
+ * position.
+ */
 template<typename T>
 constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
 Partition(const std::basic_string_view<T> haystack,
@@ -36,6 +41,10 @@ Partition(const std::basic_string_view<T> haystack,
 	return Partition(haystack, i - haystack.begin());
 }
 
+/**
+ * Like Partition(), but exclude the given position from the second
+ * string_view.
+ */
 template<typename T>
 constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
 PartitionWithout(const std::basic_string_view<T> haystack,
