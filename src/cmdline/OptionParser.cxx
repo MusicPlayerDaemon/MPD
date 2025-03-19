@@ -6,6 +6,8 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
+#include <cstring>
+
 static const char *
 Shift(std::span<const char *const> &s) noexcept
 {
