@@ -78,3 +78,46 @@ OptionParser::Next()
 
 	return {-1, nullptr};
 }
+
+const char *
+OptionParser::PeekOptionValue(const std::string &longOption)
+{
+    const OptionDef *target = nullptr;
+    for (const auto &def : options) {
+        if (def.HasLongOption() && longOption == def.GetLongOption()) {
+            target = &def;
+            break;
+        }
+    }
+    if (!target)
+        throw FmtRuntimeError("Unknown option definition: {}", longOption);
+
+    auto args_copy = args;
+    while (!args_copy.empty()) {
+        const char *arg = args_copy.front();
+        args_copy = args_copy.subspan(1);
+
+        if (arg[0] == '-' && arg[1] == '-') {
+            const char *opt = arg + 2;
+            if (strncmp(opt, longOption.c_str(), longOption.size()) == 0) {
+                const char c = opt[longOption.size()];
+                if (c == '\0') {
+                    // Option was given without an attached value.
+                    // If the option expects a value, then the value should be the next argument.
+                    if (target->HasValue()) {
+                        if (args_copy.empty())
+                            throw FmtRuntimeError("Value expected after --{}", longOption);
+                        return args_copy.front();
+                    }
+
+                    // For flag options, return an empty string (indicating the option is present).
+                    return "";
+                } else if (c == '=') {
+                    return opt + longOption.size() + 1;
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}

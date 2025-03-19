@@ -54,6 +54,16 @@ public:
 		return {remaining_head, remaining_tail};
 	}
 
+	/**
+	 * Peeks the value of a specified long option without advancing the parser state.
+	 *
+	 * @param longOption The long name of the option (without the leading "--").
+	 * @return The value attached to the option, an empty string if the option is a flag,
+	 *         or nullptr if the option is not present.
+	 * @throws FmtRuntimeError if a value is expected but not provided.
+	 */
+	const char *PeekOptionValue(const std::string &longOption);
+
 private:
 	const char *CheckShiftValue(const char *s, const OptionDef &option);
 	Result IdentifyOption(const char *s);
