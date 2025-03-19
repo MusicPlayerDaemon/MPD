@@ -7,7 +7,7 @@
 #include "OptionDef.hxx"
 
 #include <span>
-#include <cstring>
+#include <string>
 
 /**
  * Command line option parser.
