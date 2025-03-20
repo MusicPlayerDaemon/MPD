@@ -159,11 +159,11 @@ EventLoop::EnableUring(unsigned entries, struct io_uring_params &params)
 void
 EventLoop::DisableUring() noexcept
 {
-	uring.reset();
 #if defined(HAVE_THREADED_EVENT_LOOP) && defined(USE_EVENTFD)
 	uring_wake.reset();
 #endif
 	uring_poll.reset();
+	uring.reset();
 }
 
 Uring::Queue *
