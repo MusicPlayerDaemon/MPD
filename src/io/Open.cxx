@@ -6,9 +6,12 @@
 #include "lib/fmt/SystemError.hxx"
 
 #ifdef __linux__
+#include "system/linux/Features.h"
+#ifdef HAVE_OPENAT2
 #include "FileAt.hxx"
 #include "system/linux/openat2.h"
-#endif
+#endif // HAVE_OPENAT2
+#endif // __linux__
 
 #include <fcntl.h>
 
@@ -98,6 +101,8 @@ OpenDirectory(FileDescriptor directory, const char *name, int flags)
 	return fd;
 }
 
+#ifdef HAVE_OPENAT2
+
 UniqueFileDescriptor
 TryOpen(FileAt file, const struct open_how &how) noexcept
 {
@@ -114,5 +119,7 @@ Open(FileAt file, const struct open_how &how)
 
 	return fd;
 }
+
+#endif // HAVE_OPENAT2
 
 #endif // __linux__
