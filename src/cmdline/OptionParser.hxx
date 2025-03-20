@@ -7,7 +7,7 @@
 #include "OptionDef.hxx"
 
 #include <span>
-#include <string>
+#include <string_view>
 
 /**
  * Command line option parser.
@@ -63,7 +63,7 @@ public:
 	 *         or nullptr if the option is not present.
 	 * @throws FmtRuntimeError if a value is expected but not provided.
 	 */
-	const char *PeekOptionValue(const std::string &longOption);
+	const char *PeekOptionValue(std::string_view s);
 
 private:
 	const char *CheckShiftValue(const char *s, const OptionDef &option);
