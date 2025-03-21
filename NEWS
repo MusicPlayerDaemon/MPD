@@ -1,4 +1,4 @@
-ver 0.24.1 (not yet released)
+ver 0.24.1 (2025/03/21)
 * input
   - curl: fix malformed "Range" header
 * output
