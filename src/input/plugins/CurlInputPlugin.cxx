@@ -579,7 +579,7 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 
 	if (offset > 0)
 		request->GetEasy().SetOption(CURLOPT_RANGE,
-					     fmt::format_int{offset}.c_str());
+					     FmtBuffer<40>("{}-"sv, offset).c_str());
 
 	StartRequest();
 }
