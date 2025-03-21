@@ -6,6 +6,8 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
+#include <string_view>
+
 static const char *
 Shift(std::span<const char *const> &s) noexcept
 {
@@ -77,4 +79,56 @@ OptionParser::Next()
 	}
 
 	return {-1, nullptr};
+}
+
+const char *
+OptionParser::PeekOptionValue(std::string_view s)
+{
+    const OptionDef *target = nullptr;
+    for (const auto &def : options) {
+        if (def.HasLongOption() && s == def.GetLongOption()) {
+            target = &def;
+            break;
+        }
+    }
+    if (!target)
+        throw FmtRuntimeError("Unknown option definition: {}", s);
+
+    // Work on a copy of the argument list so we don't modify the parser state.
+    auto args_copy = args;
+
+    while (!args_copy.empty()) {
+        const char *arg = args_copy.front();
+        args_copy = args_copy.subspan(1);
+
+        if (arg[0] == '-' && arg[1] == '-') {
+            const char *opt = arg + 2;
+            std::string_view opt_view(opt);
+
+            // Look for '=' to distinguish between --option and --option=value
+            size_t eq_pos = opt_view.find('=');
+            std::string_view name = (eq_pos == std::string_view::npos)
+                                        ? opt_view
+                                        : opt_view.substr(0, eq_pos);
+            if (name == s) {
+                if (eq_pos != std::string_view::npos) {
+                    // Return the value after '='.
+                    return opt + eq_pos + 1;
+                } else {
+                    // Option was provided without an attached value.
+                    // If the option expects a value, then the value is the next argument.
+                    if (target->HasValue()) {
+                        if (args_copy.empty())
+                            throw FmtRuntimeError("Value expected after --{}", s);
+                        return args_copy.front();
+                    }
+
+                    // For flag options, return an empty string (indicating the option is present).
+                    return "";
+                }
+            }
+        }
+    }
+
+    return nullptr;
 }
