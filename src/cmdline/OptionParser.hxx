@@ -7,6 +7,7 @@
 #include "OptionDef.hxx"
 
 #include <span>
+#include <string_view>
 
 /**
  * Command line option parser.
@@ -53,6 +54,16 @@ public:
 	std::span<const char *const> GetRemaining() const noexcept {
 		return {remaining_head, remaining_tail};
 	}
+
+	/**
+	 * Peeks the value of a specified long option without advancing the parser state.
+	 *
+	 * @param longOption The long name of the option (without the leading "--").
+	 * @return The value attached to the option, an empty string if the option is a flag,
+	 *         or nullptr if the option is not present.
+	 * @throws FmtRuntimeError if a value is expected but not provided.
+	 */
+	const char *PeekOptionValue(std::string_view s);
 
 private:
 	const char *CheckShiftValue(const char *s, const OptionDef &option);

@@ -3,9 +3,18 @@
 
 #include "Main.hxx"
 #include "Instance.hxx"
-#include "CommandLine.hxx"
 #include "net/Init.hxx"
 #include "config/Data.hxx"
+
+#ifdef ENABLE_DAEMON
+#include "CommandLine.hxx"
+#include "cmdline/OptionDef.hxx"
+#include "cmdline/OptionParser.hxx"
+
+static constexpr OptionDef option_defs[] = {
+	{"no-daemon", "don't detach from console"},
+};
+#endif
 
 static int service_argc;
 static char **service_argv;
@@ -16,12 +25,9 @@ int apple_main(int argc, char *argv[])
 	service_argv = argv;
 
 #ifdef ENABLE_DAEMON
-	CommandLineOptions options;
-	ConfigData raw_config;
+	OptionParser parser(option_defs, argc, argv);
 
-	ParseCommandLine(argc, argv, options, raw_config);
-
-	if (options.daemon) {
+	if (parser.PeekOptionValue("no-daemon") == nullptr) {
 		// Fork before any Objective-C runtime initializations
 		pid_t pid = fork();
 		if (pid < 0)
