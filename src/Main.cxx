@@ -294,7 +294,7 @@ Instance::BeginShutdownPartitions() noexcept
 	}
 }
 
-static inline void
+void
 MainConfigured(const CommandLineOptions &options,
 	       const ConfigData &raw_config)
 {

@@ -32,7 +32,11 @@ int apple_main(int argc, char *argv[])
 			_exit(0);
 		}
 	}
-#endif
 
+	MainConfigured(options, raw_config);
+
+	return EXIT_SUCCESS;
+#else
 	return mpd_main(argc, argv);
+#endif
 }
