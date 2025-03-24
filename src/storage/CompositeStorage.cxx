@@ -9,6 +9,7 @@
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 
+#include <exception> // for std::exception_ptr
 #include <set>
 #include <stdexcept>
 
