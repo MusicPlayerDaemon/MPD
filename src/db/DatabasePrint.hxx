@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_DB_PRINT_H
-#define MPD_DB_PRINT_H
+#pragma once
 
 #include <cstdint>
 #include <span>
@@ -12,6 +11,7 @@ class SongFilter;
 struct DatabaseSelection;
 struct Partition;
 class Response;
+struct RangeArg;
 
 /**
  * @param full print attributes/tags
@@ -29,6 +29,5 @@ PrintSongUris(Response &r, Partition &partition,
 void
 PrintUniqueTags(Response &r, Partition &partition,
 		std::span<const TagType> tag_types,
-		const SongFilter *filter);
-
-#endif
+		const SongFilter *filter,
+		RangeArg window);

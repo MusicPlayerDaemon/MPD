@@ -315,6 +315,14 @@ handle_list(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
+	RangeArg window = RangeArg::All();
+	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "window")) {
+		window = args.ParseRange(args.size() - 1);
+
+		args.pop_back();
+		args.pop_back();
+	}
+
 	std::unique_ptr<SongFilter> filter;
 	std::vector<TagType> tag_types;
 
@@ -373,7 +381,8 @@ handle_list(Client &client, Request args, Response &r)
 
 	PrintUniqueTags(r, client.GetPartition(),
 			{&tag_types.front(), tag_types.size()},
-			filter.get());
+			filter.get(),
+			window);
 	return CommandResult::OK;
 }
 

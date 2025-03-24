@@ -177,28 +177,38 @@ PrintSongUris(Response &r, Partition &partition,
 
 static void
 PrintUniqueTags(Response &r, std::span<const TagType> tag_types,
-		const RecursiveMap<std::string> &map) noexcept
+		const RecursiveMap<std::string> &map,
+		const RangeArg window) noexcept
 {
 	const char *const name = tag_item_names[tag_types.front()];
 	tag_types = tag_types.subspan(1);
 
+	unsigned next_position = 0;
 	for (const auto &[key, tag] : map) {
+		const unsigned position = next_position++;
+		if (position < window.start)
+			continue;
+		else if (position >= window.end)
+			break;
+
 		r.Fmt("{}: {}\n", name, key);
 
 		if (!tag_types.empty())
-			PrintUniqueTags(r, tag_types, tag);
+			PrintUniqueTags(r, tag_types, tag, RangeArg::All());
 	}
 }
 
 void
 PrintUniqueTags(Response &r, Partition &partition,
 		std::span<const TagType> tag_types,
-		const SongFilter *filter)
+		const SongFilter *filter,
+		const RangeArg window)
 {
 	const Database &db = partition.GetDatabaseOrThrow();
 
 	const DatabaseSelection selection("", true, filter);
 
 	PrintUniqueTags(r, tag_types,
-			db.CollectUniqueTags(selection, tag_types));
+			db.CollectUniqueTags(selection, tag_types),
+			window);
 }
