@@ -21,6 +21,29 @@
 
 #include <sys/eventfd.h>
 
+class EventLoop::UringPoll final : Uring::Operation {
+	EventLoop &event_loop;
+
+public:
+	UringPoll(EventLoop &_event_loop) noexcept
+		:event_loop(_event_loop) {}
+
+	void Start();
+
+private:
+	void OnUringCompletion(int res) noexcept override {
+		(void)res; // TODO
+
+		event_loop.epoll_ready = true;
+
+		if (!IsUringPending()) [[unlikely]]
+			/* for some reason, the kernel has stopped our
+			   poll operation (no IORING_CQE_F_MORE):
+			   restart the poll */
+			Start();
+	}
+};
+
 /**
  * Read from the eventfd using io_uring and invoke
  * EventLoop::OnWake().
@@ -103,29 +126,6 @@ EventLoop::SetVolatile() noexcept
 }
 
 #ifdef HAVE_URING
-
-class EventLoop::UringPoll final : Uring::Operation {
-	EventLoop &event_loop;
-
-public:
-	UringPoll(EventLoop &_event_loop) noexcept
-		:event_loop(_event_loop) {}
-
-	void Start();
-
-private:
-	void OnUringCompletion(int res) noexcept override {
-		(void)res; // TODO
-
-		event_loop.epoll_ready = true;
-
-		if (!IsUringPending()) [[unlikely]]
-			/* for some reason, the kernel has stopped our
-			   poll operation (no IORING_CQE_F_MORE):
-			   restart the poll */
-			Start();
-	}
-};
 
 inline void
 EventLoop::UringPoll::Start()
