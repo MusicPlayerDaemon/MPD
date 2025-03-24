@@ -8,6 +8,7 @@
 #include <fmt/format.h>
 
 #include <cstdarg>
+#include <iterator> // for std:back_inserter()
 
 #include <string.h>
 

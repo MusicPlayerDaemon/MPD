@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_INPUT_CACHE_MANAGER_HXX
-#define MPD_INPUT_CACHE_MANAGER_HXX
+#pragma once
 
 #include "thread/Mutex.hxx"
 #include "util/IntrusiveHashSet.hxx"
 #include "util/IntrusiveList.hxx"
+
+#include <string_view>
 
 class InputStream;
 class InputCacheItem;
@@ -79,5 +80,3 @@ private:
 	 */
 	bool EvictOldestUnused() noexcept;
 };
-
-#endif

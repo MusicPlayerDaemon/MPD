@@ -8,6 +8,8 @@
 #include "config/Block.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 
+#include <exception> // for std::throw_with_nested()
+
 DatabasePtr
 DatabaseGlobalInit(EventLoop &main_event_loop,
 		   EventLoop &io_event_loop,

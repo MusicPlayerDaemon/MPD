@@ -7,6 +7,8 @@
 #include "fs/AllocatedPath.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 
+#include <exception> // for std::throw_with_nested()
+
 #include <stdlib.h>
 
 void

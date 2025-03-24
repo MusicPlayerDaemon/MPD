@@ -14,6 +14,7 @@
 #include "util/UriUtil.hxx"
 
 #include <cassert>
+#include <exception> // for std::exception_ptr
 
 /**
  * Load a playlist from the configured playlist directory.

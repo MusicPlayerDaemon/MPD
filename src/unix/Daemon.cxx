@@ -16,6 +16,7 @@
 
 #ifndef _WIN32
 #include <csignal>
+#include <cstdlib> // for std::exit()
 #include <sys/wait.h>
 #include <pwd.h>
 #include <grp.h>

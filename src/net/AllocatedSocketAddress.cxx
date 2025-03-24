@@ -5,6 +5,8 @@
 #include "IPv4Address.hxx"
 #include "IPv6Address.hxx"
 
+#include <algorithm> // for std:copy()
+
 #include <string.h>
 
 #ifdef HAVE_UN
