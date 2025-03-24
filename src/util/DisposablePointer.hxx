@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cstddef> // for std::nullptr_t
 #include <utility>
 
 #if defined(__GNUC__) && __GNUC__ >= 13
