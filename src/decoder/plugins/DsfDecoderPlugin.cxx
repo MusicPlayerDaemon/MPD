@@ -21,6 +21,7 @@
 #include "util/SpanCast.hxx"
 #include "DsdLib.hxx"
 #include "tag/Handler.hxx"
+#include "util/Compiler.h"
 
 #include <string.h>
 
