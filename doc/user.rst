@@ -58,7 +58,7 @@ and unpack it (or `clone the git repository
 In any case, you need:
 
 * a C++20 compiler (e.g. GCC 12 or clang 14)
-* `Meson 1.0 <http://mesonbuild.com/>`__ and `Ninja
+* `Meson 1.2 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * pkg-config 
 
@@ -161,7 +161,7 @@ This section is about the latter.
 You need:
 
 * `mingw-w64 <http://mingw-w64.org/doku.php>`__
-* `Meson 1.0.0 <http://mesonbuild.com/>`__ and `Ninja
+* `Meson 1.2 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * cmake
 * pkg-config
@@ -201,7 +201,7 @@ You need:
 
 * Android SDK (sdk platform 34, build tools 34.0.0)
 * `Android NDK r27 <https://developer.android.com/ndk/downloads>`_
-* `Meson 1.0 <http://mesonbuild.com/>`__ and `Ninja
+* `Meson 1.2 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * cmake
 * pkg-config
