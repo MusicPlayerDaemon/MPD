@@ -9,6 +9,8 @@
 #include "util/CharUtil.hxx"
 #include "util/StringAPI.hxx"
 
+#include <algorithm> // for std:copy()
+
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
