@@ -4,8 +4,8 @@
 #pragma once
 
 #include <cassert>
+#include <cstddef>
 #include <new>
-#include <type_traits>
 #include <utility>
 
 /**
@@ -16,9 +16,7 @@
  */
 template<class T>
 class Manual {
-	using Storage = std::aligned_storage_t<sizeof(T), alignof(T)>;
-
-	Storage storage;
+	alignas(T) std::byte data[sizeof(T)];
 
 #ifndef NDEBUG
 	bool initialized = false;
@@ -48,7 +46,7 @@ public:
 	void Construct(Args&&... args) {
 		assert(!initialized);
 
-		::new(&storage) T(std::forward<Args>(args)...);
+		::new(data) T(std::forward<Args>(args)...);
 
 #ifndef NDEBUG
 		initialized = true;
@@ -69,13 +67,13 @@ public:
 	reference Get() noexcept {
 		assert(initialized);
 
-		return *std::launder(reinterpret_cast<pointer>(&storage));
+		return *std::launder(reinterpret_cast<pointer>(data));
 	}
 
 	const_reference Get() const noexcept {
 		assert(initialized);
 
-		return *std::launder(reinterpret_cast<const_pointer>(&storage));
+		return *std::launder(reinterpret_cast<const_pointer>(data));
 	}
 
 	operator reference() noexcept {
