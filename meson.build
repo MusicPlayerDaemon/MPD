@@ -6,11 +6,11 @@ project(
   default_options: [
     'c_std=c11',
     'build.c_std=c11',
-    'cpp_std=c++20',
-    'build.cpp_std=c++20',
+    'cpp_std=c++23',
+    'build.cpp_std=c++23',
     'warning_level=3',
 
-    'fmt:cpp_std=c++20',
+    'fmt:cpp_std=c++23',
 
     # If we build those libraries as Meson subproject, they shall be
     # linked statically into the MPD executable.

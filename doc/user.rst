@@ -57,7 +57,7 @@ and unpack it (or `clone the git repository
 
 In any case, you need:
 
-* a C++20 compiler (e.g. GCC 12 or clang 14)
+* a C++23 compiler (e.g. GCC 12 or clang 14)
 * `Meson 1.2 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * pkg-config 
