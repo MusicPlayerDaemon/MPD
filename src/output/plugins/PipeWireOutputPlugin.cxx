@@ -505,11 +505,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 
 	if (target != nullptr && target_id == PW_ID_ANY)
 		pw_properties_setf(props,
-#if PW_CHECK_VERSION(0, 3, 64)
 				   PW_KEY_TARGET_OBJECT,
-#else
-				   PW_KEY_NODE_TARGET,
-#endif
 				   "%s", target);
 
 #ifdef PW_KEY_NODE_RATE
