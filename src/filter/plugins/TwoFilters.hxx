@@ -24,7 +24,8 @@ public:
 		 second(std::forward<S>(_second)) {}
 
 	void Reset() noexcept override {
-		first->Reset();
+		if (first)
+			first->Reset();
 		second->Reset();
 	}
 

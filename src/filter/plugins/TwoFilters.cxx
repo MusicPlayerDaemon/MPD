@@ -10,6 +10,9 @@
 std::span<const std::byte>
 TwoFilters::FilterPCM(std::span<const std::byte> src)
 {
+	if (!first)
+		throw std::runtime_error("First filter is null.");
+
 	if (const auto dest = first->FilterPCM(src); dest.empty()) [[unlikely]]
 		/* no output from the first filter; pass the empty
                    buffer on, do not call the second filter */
