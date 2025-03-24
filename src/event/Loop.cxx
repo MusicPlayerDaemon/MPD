@@ -356,8 +356,9 @@ ExportTimeoutKernelTimespec(Event::Duration timeout, struct __kernel_timespec &b
 		return nullptr;
 
 	if (timeout >= std::chrono::duration_cast<Event::Duration>(std::chrono::hours{24})) [[unlikely]] {
+		using tv_sec_t = std::decay_t<decltype(buffer.tv_sec)>;
 		buffer = {
-			.tv_sec = std::chrono::ceil<std::chrono::duration<__kernel_time64_t>>(timeout).count(),
+			.tv_sec = std::chrono::ceil<std::chrono::duration<tv_sec_t>>(timeout).count(),
 		};
 		return &buffer;
 	}

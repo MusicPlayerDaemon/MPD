@@ -3,6 +3,7 @@ ver 0.24.2 (not yet released)
   - io_uring: fix stuck seek after I/O error
 * decoder
   - flac: enable chained Ogg decoding
+* Linux: fix build failure with ancient kernel headers
 
 ver 0.24.1 (2025/03/21)
 * input
