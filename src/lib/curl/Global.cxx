@@ -5,9 +5,9 @@
 #include "Request.hxx"
 #include "event/Loop.hxx"
 #include "event/SocketEvent.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
+#include <utility> // for std::unreachable()
 
 /**
  * Monitor for one socket created by CURL.
@@ -75,8 +75,7 @@ private:
 			return SocketEvent::READ|SocketEvent::WRITE;
 		}
 
-		assert(false);
-		gcc_unreachable();
+		std::unreachable();
 	}
 };
 
