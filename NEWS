@@ -1,4 +1,6 @@
 ver 0.24.2 (not yet released)
+* decoder
+  - flac: enable chained Ogg decoding
 
 ver 0.24.1 (2025/03/21)
 * input
