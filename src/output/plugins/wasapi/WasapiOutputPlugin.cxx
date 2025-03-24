@@ -36,6 +36,7 @@
 #include <cinttypes>
 #include <cmath>
 #include <optional>
+#include <utility> // for std::unreachable()
 #include <variant>
 
 #include <audioclient.h>
@@ -68,7 +69,7 @@ GetChannelMask(const uint8_t channels) noexcept
 	case 8:
 		return KSAUDIO_SPEAKER_7POINT1_SURROUND;
 	default:
-		gcc_unreachable();
+		std::unreachable();
 	}
 }
 
@@ -959,7 +960,7 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 				device_format.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
 				break;
 			default:
-				gcc_unreachable();
+				std::unreachable();
 			}
 		}
 		break;

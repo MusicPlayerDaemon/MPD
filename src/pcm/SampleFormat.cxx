@@ -3,7 +3,7 @@
 
 #include "SampleFormat.hxx"
 
-#include <cassert>
+#include <utility> // for std::unreachable()
 
 const char *
 sample_format_to_string(SampleFormat format) noexcept
@@ -31,7 +31,5 @@ sample_format_to_string(SampleFormat format) noexcept
 		return "dsd";
 	}
 
-	/* unreachable */
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }

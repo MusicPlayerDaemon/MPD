@@ -56,8 +56,7 @@ DecoderControl::IsCurrentSong(const DetachedSong &_song) const noexcept
 		return song->IsSame(_song);
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
 
 void
@@ -105,7 +104,7 @@ DecoderControl::Seek(std::unique_lock<Mutex> &lock, SongTime t)
 	switch (state) {
 	case DecoderState::START:
 	case DecoderState::ERROR:
-		gcc_unreachable();
+		std::unreachable();
 
 	case DecoderState::STOP:
 		/* TODO: if this happens, the caller should be given a

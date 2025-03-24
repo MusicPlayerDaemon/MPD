@@ -4,11 +4,11 @@
 #pragma once
 
 #include "pcm/SampleFormat.hxx"
-#include "util/Compiler.h"
 
 #include <alsa/asoundlib.h>
 
 #include <cassert>
+#include <utility> // for std::unreachable()
 
 /**
  * Convert MPD's #SampleFormat enum to libasound's snd_pcm_format_t
@@ -42,8 +42,7 @@ ToAlsaPcmFormat(SampleFormat sample_format) noexcept
 		return SND_PCM_FORMAT_FLOAT;
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
 
 /**

@@ -11,6 +11,7 @@
 #include "Log.hxx"
 
 #include <exception>
+#include <utility> // for std::unreachable()
 
 #include <sndfile.h>
 
@@ -171,8 +172,7 @@ sndfile_read_frames(SNDFILE *sf, SampleFormat format,
 		return sf_readf_float(sf, (float *)buffer, n_frames);
 
 	default:
-		assert(false);
-		gcc_unreachable();
+		std::unreachable();
 	}
 }
 

@@ -6,8 +6,9 @@
 #include "AudioFormat.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
-#include "util/Compiler.h"
 #include "util/SpanCast.hxx"
+
+#include <utility> // for std::unreachable()
 
 #include <stdio.h>
 
@@ -64,7 +65,7 @@ ToString(const MixRampData &mr, FloatDuration total_time,
 		return EndToString(mr.end, total_time);
 	}
 
-	gcc_unreachable();
+	std::unreachable();
 }
 
 std::string

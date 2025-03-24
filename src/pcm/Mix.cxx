@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <utility> // for std::unreachable()
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::value_type
@@ -112,8 +113,7 @@ pcm_add_vol(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
 		return true;
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
@@ -191,8 +191,7 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 		return true;
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
 
 bool

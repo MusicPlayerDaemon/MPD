@@ -8,6 +8,7 @@
 #include "util/SpanCast.hxx"
 
 #include <cassert>
+#include <utility> // for std::unreachable()
 
 void
 PcmChannelsConverter::Open(SampleFormat _format,
@@ -47,8 +48,7 @@ PcmChannelsConverter::Convert(std::span<const std::byte> src) noexcept
 	case SampleFormat::UNDEFINED:
 	case SampleFormat::S8:
 	case SampleFormat::DSD:
-		assert(false);
-		gcc_unreachable();
+		std::unreachable();
 
 	case SampleFormat::S16:
 		return std::as_bytes(pcm_convert_channels_16(buffer, dest_channels,
@@ -71,6 +71,5 @@ PcmChannelsConverter::Convert(std::span<const std::byte> src) noexcept
 								FromBytesStrict<const float>(src)));
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }

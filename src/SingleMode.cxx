@@ -2,10 +2,10 @@
 // Copyright The Music Player Daemon Project
 
 #include "SingleMode.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 #include <stdexcept>
+#include <utility> // for std::unreachable()
 
 #include <string.h>
 
@@ -23,8 +23,7 @@ SingleToString(SingleMode mode) noexcept
 		return "oneshot";
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
 
 SingleMode

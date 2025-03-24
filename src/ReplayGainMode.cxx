@@ -2,10 +2,10 @@
 // Copyright The Music Player Daemon Project
 
 #include "ReplayGainMode.hxx"
-#include "util/Compiler.h"
 
 #include <cassert>
 #include <stdexcept>
+#include <utility> // for std::unreachable()
 
 #include <string.h>
 
@@ -26,8 +26,7 @@ ToString(ReplayGainMode mode) noexcept
 		return "album";
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
 
 ReplayGainMode

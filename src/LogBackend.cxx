@@ -4,7 +4,6 @@
 #include "LogBackend.hxx"
 #include "Log.hxx"
 #include "lib/fmt/Unsafe.hxx"
-#include "util/Compiler.h"
 #include "util/Domain.hxx"
 #include "util/StringStrip.hxx"
 #include "Version.h"
@@ -13,6 +12,7 @@
 #include <fmt/chrono.h>
 
 #include <cassert>
+#include <utility> // for std::unreachable()
 
 #include <stdio.h>
 #include <string.h>
@@ -47,8 +47,7 @@ ToAndroidLogLevel(LogLevel log_level) noexcept
 		return ANDROID_LOG_ERROR;
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
 
 #else
@@ -120,8 +119,7 @@ ToSysLogLevel(LogLevel log_level) noexcept
 		return LOG_ERR;
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
 
 static void

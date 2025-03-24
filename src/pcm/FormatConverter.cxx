@@ -7,6 +7,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 
 #include <cassert>
+#include <utility> // for std::unreachable()
 
 void
 PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format)
@@ -16,8 +17,7 @@ PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format)
 
 	switch (_dest_format) {
 	case SampleFormat::UNDEFINED:
-		assert(false);
-		gcc_unreachable();
+		std::unreachable();
 
 	case SampleFormat::S8:
 	case SampleFormat::DSD:
@@ -51,8 +51,7 @@ PcmFormatConverter::Convert(std::span<const std::byte> src) noexcept
 	case SampleFormat::UNDEFINED:
 	case SampleFormat::S8:
 	case SampleFormat::DSD:
-		assert(false);
-		gcc_unreachable();
+		std::unreachable();
 
 	case SampleFormat::S16:
 		return std::as_bytes(pcm_convert_to_16(buffer, dither,
@@ -75,6 +74,5 @@ PcmFormatConverter::Convert(std::span<const std::byte> src) noexcept
 							  src));
 	}
 
-	assert(false);
-	gcc_unreachable();
+	std::unreachable();
 }
