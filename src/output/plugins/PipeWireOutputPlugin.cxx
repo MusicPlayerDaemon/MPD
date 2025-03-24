@@ -611,7 +611,7 @@ PipeWireOutput::Close() noexcept
 
 inline void
 PipeWireOutput::StateChanged(enum pw_stream_state state,
-			     [[maybe_unused]] const char *error) noexcept
+			     const char *error) noexcept
 {
 	const bool was_disconnected = disconnected;
 	disconnected = state == PW_STREAM_STATE_ERROR ||
