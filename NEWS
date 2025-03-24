@@ -1,6 +1,8 @@
 ver 0.25 (not yet released)
 * protocol
   - implement "window" parameter for command "list"
+* output
+  - pipewire: add option "reconnect_stream"
 
 ver 0.24.2 (not yet released)
 * input

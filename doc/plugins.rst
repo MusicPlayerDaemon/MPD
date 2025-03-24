@@ -1159,6 +1159,9 @@ Connect to a `PipeWire <https://pipewire.org/>`_ server.  Requires
    * - **remote NAME**
      - The name of the remote to connect to.  The default is
        ``pipewire-0``.
+   * - **reconnect_stream yes|no**
+     - Try to reconnect the PipeWire stream when the sink is removed.
+       The default is ``yes``.
    * - **dsd yes|no**
      - Enable DSD playback.  This requires PipeWire 0.38.
 
