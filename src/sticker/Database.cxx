@@ -12,6 +12,7 @@
 
 #include <fmt/format.h>
 #include <cassert>
+#include <exception> // for std::throw_with_nested()
 #include <iterator>
 #include <array>
 #include <stdexcept>
