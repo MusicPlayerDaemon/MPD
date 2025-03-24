@@ -73,4 +73,14 @@ apple_main(int argc, char *argv[]);
 
 #endif
 
+struct CommandLineOptions;
+struct ConfigData;
+
+/**
+ * Run MPD with the specified command line options and configuration.
+ */
+void
+MainConfigured(const CommandLineOptions &options,
+           const ConfigData &raw_config);
+
 #endif
