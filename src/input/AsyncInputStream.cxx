@@ -64,7 +64,7 @@ AsyncInputStream::Resume()
 void
 AsyncInputStream::Check()
 {
-	if (postponed_exception)
+	if (postponed_exception) [[unlikely]]
 		std::rethrow_exception(std::exchange(postponed_exception,
 						     std::exception_ptr()));
 }
@@ -251,7 +251,7 @@ AsyncInputStream::DeferredResume() noexcept
 {
 	const std::scoped_lock protect{mutex};
 
-	if (postponed_exception) {
+	if (postponed_exception) [[unlikely]] {
 		/* do not proceed, first the caller must handle the
                    pending error */
 		caller_cond.notify_one();
@@ -275,7 +275,7 @@ AsyncInputStream::DeferredSeek() noexcept
 	if (seek_state != SeekState::SCHEDULED)
 		return;
 
-	if (postponed_exception) {
+	if (postponed_exception) [[unlikely]] {
 		/* do not proceed, first the caller must handle the
                    pending error */
 		seek_state = SeekState::NONE;
