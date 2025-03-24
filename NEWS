@@ -1,4 +1,6 @@
 ver 0.24.2 (not yet released)
+* input
+  - io_uring: fix stuck seek after I/O error
 * decoder
   - flac: enable chained Ogg decoding
 

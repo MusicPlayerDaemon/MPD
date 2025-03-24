@@ -278,6 +278,7 @@ AsyncInputStream::DeferredSeek() noexcept
 	if (postponed_exception) {
 		/* do not proceed, first the caller must handle the
                    pending error */
+		seek_state = SeekState::NONE;
 		caller_cond.notify_one();
 		InvokeOnAvailable();
 		return;
