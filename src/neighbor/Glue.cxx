@@ -10,6 +10,7 @@
 #include "config/Block.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 
+#include <exception> // for std::throw_with_nested()
 #include <stdexcept>
 
 NeighborGlue::NeighborGlue() noexcept = default;
