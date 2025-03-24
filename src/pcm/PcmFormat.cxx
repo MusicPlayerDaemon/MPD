@@ -6,6 +6,7 @@
 #include "Traits.hxx"
 #include "FloatConvert.hxx"
 #include "ShiftConvert.hxx"
+#include "util/Compiler.h"
 #include "util/SpanCast.hxx"
 #include "util/TransformN.hxx"
 
