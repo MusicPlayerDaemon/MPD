@@ -18,7 +18,10 @@
  */
 template<class T, std::size_t max>
 class StaticVector {
-	using Storage = std::aligned_storage_t<sizeof(T), alignof(T)>;
+	struct alignas(T) Storage {
+		std::byte data[sizeof(T)];
+	};
+
 	using Array = std::array<Storage, max>;
 
 public:
@@ -36,11 +39,11 @@ private:
 	Array array;
 
 	static constexpr pointer Launder(Storage *storage) noexcept {
-		return std::launder(reinterpret_cast<pointer>(storage));
+		return std::launder(reinterpret_cast<pointer>(storage->data));
 	}
 
 	static constexpr const_pointer Launder(const Storage *storage) noexcept {
-		return std::launder(reinterpret_cast<const_pointer>(storage));
+		return std::launder(reinterpret_cast<const_pointer>(storage->data));
 	}
 
 public:
