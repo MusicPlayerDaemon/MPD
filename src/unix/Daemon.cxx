@@ -8,6 +8,8 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/SystemError.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "io/FileDescriptor.hxx"
+#include "util/SpanCast.hxx"
 
 #include <csignal>
 #include <cstdlib> // for std::exit()
@@ -40,7 +42,7 @@ static bool had_group = false;
  * The write end of a pipe that is used to notify the parent process
  * that initialization has finished and that it should detach.
  */
-static int detach_fd = -1;
+static FileDescriptor detach_fd = FileDescriptor::Undefined();
 
 void
 daemonize_kill()
@@ -122,8 +124,9 @@ daemonize_begin(bool detach)
 
 	/* create a pipe to synchronize the parent and the child */
 
-	int fds[2];
-	if (pipe(fds) < 0)
+	FileDescriptor p;
+
+	if (!FileDescriptor::CreatePipe(p, detach_fd))
 		throw MakeErrno("pipe() failed");
 
 	/* move to a child process */
@@ -138,8 +141,7 @@ daemonize_begin(bool detach)
 		/* in the child process */
 
 		pidfile2.Close();
-		close(fds[0]);
-		detach_fd = fds[1];
+		p.Close();
 
 		/* detach from the current session */
 		setsid();
@@ -150,10 +152,10 @@ daemonize_begin(bool detach)
 
 	/* in the parent process */
 
-	close(fds[1]);
+	detach_fd.Close();
 
 	int result;
-	ssize_t nbytes = read(fds[0], &result, sizeof(result));
+	ssize_t nbytes = p.Read(ReferenceAsWritableBytes(result));
 	if (nbytes == (ssize_t)sizeof(result)) {
 		/* the child process was successful */
 		pidfile2.Write(pid);
@@ -181,12 +183,12 @@ daemonize_begin(bool detach)
 void
 daemonize_commit()
 {
-	if (detach_fd >= 0) {
+	if (detach_fd.IsDefined()) {
 		/* tell the parent process to let go of us and exit
 		   indicating success */
-		int result = 0;
-		write(detach_fd, &result, sizeof(result));
-		close(detach_fd);
+		static constexpr int result = 0;
+		(void)detach_fd.Write(ReferenceAsBytes(result));
+		detach_fd.Close();
 	} else
 		/* the pidfile was not written by the parent because
 		   there is no parent - do it now */
