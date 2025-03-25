@@ -16,11 +16,12 @@
 #include "fs/FileInfo.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
+#include "util/DeleteDisposer.hxx"
+#include "util/IntrusiveList.hxx"
 #include "Log.hxx"
 
 #include <cassert>
 #include <cstring>
-#include <forward_list>
 #include <string>
 
 #include <sys/inotify.h>
@@ -37,7 +38,7 @@ static constexpr unsigned IN_MASK =
 	IN_ATTRIB|IN_CLOSE_WRITE|IN_CREATE|IN_DELETE|IN_DELETE_SELF
 	|IN_MOVE|IN_MOVE_SELF;
 
-class InotifyUpdate::Directory final : public InotifyWatch {
+class InotifyUpdate::Directory final : public InotifyWatch, public IntrusiveListHook<> {
 	InotifyQueue &queue;
 
 	Directory *parent;
@@ -46,7 +47,7 @@ class InotifyUpdate::Directory final : public InotifyWatch {
 
 	ExcludeList exclude_list;
 
-	std::forward_list<Directory> children;
+	IntrusiveList<Directory> children;
 
 	const unsigned remaining_depth;
 
@@ -65,6 +66,10 @@ public:
 		 parent(&_parent), name(std::forward<N>(_name)),
 		 exclude_list(_parent.exclude_list),
 		 remaining_depth(_parent.remaining_depth - 1) {}
+
+	~Directory() noexcept {
+		children.clear_and_dispose(DeleteDisposer{});
+	}
 
 	Directory(const Directory &) = delete;
 	Directory &operator=(const Directory &) = delete;
@@ -113,10 +118,8 @@ InotifyUpdate::Directory::Delete() noexcept
 		return;
 	}
 
-	/* remove it from the parent, which effectively deletes it */
-	parent->children.remove_if([this](const Directory &child){
-		return &child == this;
-	});
+	parent->children.erase_and_dispose(parent->children.iterator_to(*this),
+					   DeleteDisposer{});
 }
 
 AllocatedPath
@@ -171,10 +174,9 @@ try {
 		if (!fi.IsDirectory())
 			continue;
 
-		auto &child = children.emplace_front(*this, name_fs);
-
-		if (!child.TryAddWatch(child_path_fs.c_str(), IN_MASK)) {
-			children.pop_front();
+		auto *child = new Directory(*this, name_fs);
+		if (!child->TryAddWatch(child_path_fs.c_str(), IN_MASK)) {
+			delete child;
 
 			const int e = errno;
 			if (e == EEXIST) {
@@ -188,8 +190,9 @@ try {
 			continue;
 		}
 
-		child.LoadExcludeList(child_path_fs);
-		child.RecursiveWatchSubdirectories(child_path_fs);
+		children.push_back(*child);
+		child->LoadExcludeList(child_path_fs);
+		child->RecursiveWatchSubdirectories(child_path_fs);
 	}
 } catch (...) {
 	LogError(std::current_exception());
