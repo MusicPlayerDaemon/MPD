@@ -37,21 +37,22 @@ static constexpr unsigned IN_MASK =
 	IN_ATTRIB|IN_CLOSE_WRITE|IN_CREATE|IN_DELETE|IN_DELETE_SELF
 	|IN_MOVE|IN_MOVE_SELF;
 
-struct WatchDirectory final : InotifyWatch {
+class InotifyUpdate::Directory final : public InotifyWatch {
 	InotifyQueue &queue;
 
-	WatchDirectory *parent;
+	Directory *parent;
 
 	const AllocatedPath name;
 
 	ExcludeList exclude_list;
 
-	std::forward_list<WatchDirectory> children;
+	std::forward_list<Directory> children;
 
 	const unsigned remaining_depth;
 
+public:
 	template<typename N>
-	WatchDirectory(InotifyManager &_manager, InotifyQueue &_queue,
+	Directory(InotifyManager &_manager, InotifyQueue &_queue,
 		       N &&_name,
 		       unsigned _remaining_depth)
 		:InotifyWatch(_manager), queue(_queue),
@@ -59,14 +60,14 @@ struct WatchDirectory final : InotifyWatch {
 		 remaining_depth(_remaining_depth) {}
 
 	template<typename N>
-	WatchDirectory(WatchDirectory &_parent, N &&_name)
+	Directory(Directory &_parent, N &&_name)
 		:InotifyWatch(_parent.GetManager()), queue(_parent.queue),
 		 parent(&_parent), name(std::forward<N>(_name)),
 		 exclude_list(_parent.exclude_list),
 		 remaining_depth(_parent.remaining_depth - 1) {}
 
-	WatchDirectory(const WatchDirectory &) = delete;
-	WatchDirectory &operator=(const WatchDirectory &) = delete;
+	Directory(const Directory &) = delete;
+	Directory &operator=(const Directory &) = delete;
 
 	void LoadExcludeList(Path directory_path) noexcept;
 
@@ -76,8 +77,8 @@ struct WatchDirectory final : InotifyWatch {
 	void RecursiveWatchSubdirectories(Path path_fs) noexcept;
 
 private:
-	const WatchDirectory &GetRoot() const noexcept {
-		const WatchDirectory *directory = this;
+	const Directory &GetRoot() const noexcept {
+		const Directory *directory = this;
 		while (directory->parent != nullptr)
 			directory = directory->parent;
 		return *directory;
@@ -90,7 +91,7 @@ protected:
 };
 
 void
-WatchDirectory::LoadExcludeList(Path directory_path) noexcept
+InotifyUpdate::Directory::LoadExcludeList(Path directory_path) noexcept
 try {
 	Mutex mutex;
 	auto is = OpenLocalInputStream(directory_path / Path::FromFS(".mpdignore"),
@@ -103,7 +104,7 @@ try {
 }
 
 void
-WatchDirectory::Delete() noexcept
+InotifyUpdate::Directory::Delete() noexcept
 {
 	if (parent == nullptr) {
 		LogWarning(inotify_domain,
@@ -113,13 +114,13 @@ WatchDirectory::Delete() noexcept
 	}
 
 	/* remove it from the parent, which effectively deletes it */
-	parent->children.remove_if([this](const WatchDirectory &child){
+	parent->children.remove_if([this](const Directory &child){
 		return &child == this;
 	});
 }
 
 AllocatedPath
-WatchDirectory::GetUriFS() const noexcept
+InotifyUpdate::Directory::GetUriFS() const noexcept
 {
 	if (parent == nullptr)
 		return nullptr;
@@ -141,7 +142,7 @@ SkipFilename(Path name) noexcept
 }
 
 void
-WatchDirectory::RecursiveWatchSubdirectories(const Path path_fs) noexcept
+InotifyUpdate::Directory::RecursiveWatchSubdirectories(const Path path_fs) noexcept
 try {
 	assert(!path_fs.IsNull());
 
@@ -208,14 +209,14 @@ InotifyUpdate::~InotifyUpdate() noexcept = default;
 inline void
 InotifyUpdate::Start(Path path)
 {
-	root = std::make_unique<WatchDirectory>(inotify_manager, queue, path, max_depth);
+	root = std::make_unique<Directory>(inotify_manager, queue, path, max_depth);
 	root->AddWatch(path.c_str(), IN_MASK);
 	root->LoadExcludeList(path);
 	root->RecursiveWatchSubdirectories(path);
 }
 
 void
-WatchDirectory::OnInotify(unsigned mask, const char *) noexcept
+InotifyUpdate::Directory::OnInotify(unsigned mask, const char *) noexcept
 {
 	const auto uri_fs = GetUriFS();
 

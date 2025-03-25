@@ -10,7 +10,6 @@
 
 class Path;
 class Storage;
-struct WatchDirectory;
 
 /**
  * Glue code between InotifySource and InotifyQueue.
@@ -21,7 +20,8 @@ class InotifyUpdate final {
 
 	const unsigned max_depth;
 
-	std::unique_ptr<WatchDirectory> root;
+	class Directory;
+	std::unique_ptr<Directory> root;
 
 public:
 	InotifyUpdate(EventLoop &loop, UpdateService &update,
