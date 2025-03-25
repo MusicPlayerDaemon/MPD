@@ -7,7 +7,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "lib/fmt/SystemError.hxx"
-#include "lib/fmt/ToBuffer.hxx"
+#include "lib/fmt/Unsafe.hxx"
 #include "io/FileDescriptor.hxx"
 #include "util/SpanCast.hxx"
 
@@ -54,9 +54,8 @@ public:
 		if (!fd.IsDefined())
 			return;
 
-		const auto s = FmtBuffer<64>("{}\n", pid);
-
-		(void)fd.Write(AsBytes(std::string_view{s}));
+		char buffer[32];
+		(void)fd.Write(AsBytes(FmtUnsafeSV(buffer, "{}\n", pid)));
 		fd.Close();
 	}
 
