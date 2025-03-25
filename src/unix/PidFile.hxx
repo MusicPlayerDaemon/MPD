@@ -1,32 +1,30 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PID_FILE_HXX
-#define MPD_PID_FILE_HXX
+#pragma once
 
 #include "lib/fmt/PathFormatter.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "lib/fmt/SystemError.hxx"
-#include "lib/fmt/ToBuffer.hxx"
+#include "lib/fmt/Unsafe.hxx"
+#include "io/FileDescriptor.hxx"
+#include "util/SpanCast.hxx"
 
 #include <cassert>
 
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <fcntl.h>
 
 class PidFile {
-	int fd;
+	FileDescriptor fd;
 
 public:
 	PidFile(const AllocatedPath &path):fd(-1) {
 		if (path.IsNull())
 			return;
 
-		fd = OpenFile(path, O_WRONLY|O_CREAT|O_TRUNC, 0666).Steal();
-		if (fd < 0)
+		fd = OpenFile(path, O_WRONLY|O_CREAT|O_TRUNC, 0666).Release();
+		if (!fd.IsDefined())
 			throw FmtErrno("Failed to create pid file {:?}",
 				       path);
 	}
@@ -34,36 +32,35 @@ public:
 	PidFile(const PidFile &) = delete;
 
 	void Close() noexcept {
-		if (fd < 0)
+		if (!fd.IsDefined())
 			return;
 
-		close(fd);
+		fd.Close();
 	}
 
 	void Delete(const AllocatedPath &path) noexcept {
-		if (fd < 0) {
+		if (!fd.IsDefined()) {
 			assert(path.IsNull());
 			return;
 		}
 
 		assert(!path.IsNull());
 
-		close(fd);
+		fd.Close();
 		unlink(path.c_str());
 	}
 
 	void Write(pid_t pid) noexcept {
-		if (fd < 0)
+		if (!fd.IsDefined())
 			return;
 
-		const auto s = FmtBuffer<64>("{}\n", pid);
-
-		write(fd, s.c_str(), strlen(s.c_str()));
-		close(fd);
+		char buffer[32];
+		(void)fd.Write(AsBytes(FmtUnsafeSV(buffer, "{}\n", pid)));
+		fd.Close();
 	}
 
 	void Write() noexcept {
-		if (fd < 0)
+		if (!fd.IsDefined())
 			return;
 
 		Write(getpid());
@@ -93,5 +90,3 @@ ReadPidFile(Path path) noexcept
 
 	return pid;
 }
-
-#endif

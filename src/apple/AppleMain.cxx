@@ -2,19 +2,14 @@
 // Copyright The Music Player Daemon Project
 
 #include "Main.hxx"
-#include "Instance.hxx"
 #include "CommandLine.hxx"
-#include "net/Init.hxx"
 #include "config/Data.hxx"
+#include "system/Error.hxx"
 
-static int service_argc;
-static char **service_argv;
+#include <unistd.h> // for fork()
 
 int apple_main(int argc, char *argv[])
 {
-	service_argc = argc;
-	service_argv = argv;
-
 #ifdef ENABLE_DAEMON
 	CommandLineOptions options;
 	ConfigData raw_config;
@@ -32,7 +27,11 @@ int apple_main(int argc, char *argv[])
 			_exit(0);
 		}
 	}
-#endif
 
+	MainConfigured(options, raw_config);
+
+	return EXIT_SUCCESS;
+#else
 	return mpd_main(argc, argv);
+#endif
 }
