@@ -62,7 +62,7 @@ daemonize_kill()
 }
 
 void
-daemonize_close_stdin()
+daemonize_close_stdin() noexcept
 {
 	close(STDIN_FILENO);
 	open("/dev/null", O_RDONLY);
@@ -225,7 +225,7 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 }
 
 void
-daemonize_finish()
+daemonize_finish() noexcept
 {
 	if (!pidfile.IsNull()) {
 		unlink(pidfile.c_str());
