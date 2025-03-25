@@ -25,6 +25,8 @@
 
 #include <sys/inotify.h>
 #include <dirent.h>
+#include <errno.h>
+#include <string.h> // for strerror()
 
 static constexpr unsigned IN_MASK =
 	IN_ONLYDIR|
@@ -160,8 +162,6 @@ try {
 
 	DirectoryReader dir(path_fs);
 	while (dir.ReadEntry()) {
-		int ret;
-
 		const Path name_fs = dir.GetEntry();
 		if (SkipFilename(name_fs))
 			continue;
@@ -182,13 +182,11 @@ try {
 		if (!fi.IsDirectory())
 			continue;
 
-		try {
-			ret = inotify_event.AddWatch(child_path_fs.c_str(),
-						     IN_MASK);
-		} catch (...) {
+		const int ret = inotify_event.TryAddWatch(child_path_fs.c_str(), IN_MASK);
+		if (ret < 0) {
 			FmtError(inotify_domain,
 				 "Failed to register {}: {}",
-				 child_path_fs, std::current_exception());
+				 child_path_fs, strerror(errno));
 			continue;
 		}
 
