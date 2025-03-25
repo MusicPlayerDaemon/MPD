@@ -7,14 +7,8 @@
 #include "net/Init.hxx"
 #include "config/Data.hxx"
 
-static int service_argc;
-static char **service_argv;
-
 int apple_main(int argc, char *argv[])
 {
-	service_argc = argc;
-	service_argv = argv;
-
 #ifdef ENABLE_DAEMON
 	CommandLineOptions options;
 	ConfigData raw_config;
