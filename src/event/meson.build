@@ -16,7 +16,10 @@ else
 endif
 
 if enable_inotify
-  event_sources += 'InotifyEvent.cxx'
+  event_sources += [
+    'InotifyEvent.cxx',
+    'InotifyManager.cxx',
+  ]
 endif
 
 event = static_library(
