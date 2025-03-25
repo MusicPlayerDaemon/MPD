@@ -198,15 +198,14 @@ try {
 			/* already being watched */
 			continue;
 
-		parent.children.emplace_front(parent,
-					      name_fs,
-					      ret);
-		auto *child = &parent.children.front();
-		child->LoadExcludeList(child_path_fs);
+		auto &child = parent.children.emplace_front(parent,
+							    name_fs,
+							    ret);
+		child.LoadExcludeList(child_path_fs);
 
-		AddToMap(*child);
+		AddToMap(child);
 
-		RecursiveWatchSubdirectories(*child, child_path_fs, depth);
+		RecursiveWatchSubdirectories(child, child_path_fs, depth);
 	}
 } catch (...) {
 	LogError(std::current_exception());
