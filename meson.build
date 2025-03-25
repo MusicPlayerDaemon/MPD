@@ -445,12 +445,6 @@ if is_windows
   ]
 endif
 
-if is_darwin
-  sources += [
-    'src/apple/AppleMain.cxx',
-  ]
-endif
-
 if not is_android
   sources += [
     'src/CommandLine.cxx',
