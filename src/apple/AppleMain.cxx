@@ -5,6 +5,8 @@
 #include "CommandLine.hxx"
 #include "config/Data.hxx"
 
+#include <unistd.h> // for fork()
+
 int apple_main(int argc, char *argv[])
 {
 #ifdef ENABLE_DAEMON
