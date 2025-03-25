@@ -2,9 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "Main.hxx"
-#include "Instance.hxx"
 #include "CommandLine.hxx"
-#include "net/Init.hxx"
 #include "config/Data.hxx"
 
 int apple_main(int argc, char *argv[])
