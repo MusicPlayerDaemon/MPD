@@ -1088,7 +1088,10 @@ Player::SongBorder() noexcept
 
 	const bool border_pause = pc.ApplyBorderPause();
 	if (border_pause) {
+		const ScopeUnlock unlock(pc.mutex);
+
 		paused = true;
+
 		pc.listener.OnBorderPause();
 
 		/* drain all outputs to guarantee the current song is
