@@ -29,6 +29,10 @@
 #include <string.h> // for strerror()
 
 static constexpr unsigned IN_MASK =
+#ifdef IN_MASK_CREATE
+	// since Linux 4.18
+	IN_MASK_CREATE|
+#endif
 	IN_ONLYDIR|
 	IN_ATTRIB|IN_CLOSE_WRITE|IN_CREATE|IN_DELETE|IN_DELETE_SELF
 	|IN_MOVE|IN_MOVE_SELF;
@@ -184,9 +188,15 @@ try {
 
 		const int ret = inotify_event.TryAddWatch(child_path_fs.c_str(), IN_MASK);
 		if (ret < 0) {
+			const int e = errno;
+			if (e == EEXIST) {
+				/* already registered (see IN_MASK_CREATE) */
+				continue;
+			}
+
 			FmtError(inotify_domain,
 				 "Failed to register {}: {}",
-				 child_path_fs, strerror(errno));
+				 child_path_fs, strerror(e));
 			continue;
 		}
 
