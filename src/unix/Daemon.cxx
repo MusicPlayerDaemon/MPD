@@ -3,30 +3,23 @@
 
 #include "config.h"
 #include "Daemon.hxx"
+#include "PidFile.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/SystemError.hxx"
 #include "fs/AllocatedPath.hxx"
 
-#ifndef _WIN32
-#include "PidFile.hxx"
-#endif
-
-#include <fcntl.h>
-
-#ifndef _WIN32
 #include <csignal>
 #include <cstdlib> // for std::exit()
+
+#include <fcntl.h>
 #include <sys/wait.h>
 #include <pwd.h>
 #include <grp.h>
-#endif
 
 #ifndef WCOREDUMP
 #define WCOREDUMP(v) 0
 #endif
-
-#ifndef _WIN32
 
 /** the Unix user name which MPD runs as */
 static char *user_name;
@@ -239,5 +232,3 @@ daemonize_finish()
 
 	free(user_name);
 }
-
-#endif
