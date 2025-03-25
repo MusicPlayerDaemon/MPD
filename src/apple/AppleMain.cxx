@@ -4,6 +4,7 @@
 #include "Main.hxx"
 #include "CommandLine.hxx"
 #include "config/Data.hxx"
+#include "system/Error.hxx"
 
 #include <unistd.h> // for fork()
 
