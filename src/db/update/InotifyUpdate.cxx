@@ -40,7 +40,7 @@ static constexpr unsigned IN_MASK =
 struct WatchDirectory {
 	WatchDirectory *parent;
 
-	AllocatedPath name;
+	const AllocatedPath name;
 
 	int descriptor;
 
