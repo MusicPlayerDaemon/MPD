@@ -375,7 +375,7 @@ GetAppRuntimeDir() noexcept
 			return AllocatedPath::FromFS(dir);
 #endif
 
-#if defined(USE_XDG_) || defined(__APPLE__)
+#if defined(USE_XDG) || defined(__APPLE__)
 	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
 		auto dir = user_dir / app_filename;
 		CreateDirectoryNoThrow(dir);

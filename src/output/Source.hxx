@@ -101,6 +101,15 @@ class AudioOutputSource {
 	 */
 	std::span<const std::byte> pending_data;
 
+	/**
+	 * Has #filter been flushed?  If true, then no method calls
+	 * (other than Flush()) are allowed on this #Filter according
+	 * to the API definition.
+	 *
+	 * This field is only initialized if #filter is not nullptr.
+	 */
+	bool filter_flushed;
+
 public:
 	AudioOutputSource() noexcept;
 	~AudioOutputSource() noexcept;

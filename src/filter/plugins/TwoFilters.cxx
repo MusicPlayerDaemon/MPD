@@ -7,9 +7,22 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringBuffer.hxx"
 
+void
+TwoFilters::Reset() noexcept
+{
+	assert(first);
+	assert(second);
+
+	first->Reset();
+	second->Reset();
+}
+
 std::span<const std::byte>
 TwoFilters::FilterPCM(std::span<const std::byte> src)
 {
+	assert(first);
+	assert(second);
+
 	if (const auto dest = first->FilterPCM(src); dest.empty()) [[unlikely]]
 		/* no output from the first filter; pass the empty
                    buffer on, do not call the second filter */
@@ -58,6 +71,10 @@ TwoFilters::Flush()
 			   filtered by the second Filter */
 			return second->FilterPCM(result);
 
+		/* the first filter is flushed completely and we don't
+		   need it anymore; any further method calls that
+		   would use it are illegal according to the Filter
+		   API docs */
 		first.reset();
 	}
 
