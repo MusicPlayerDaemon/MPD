@@ -71,6 +71,10 @@ TwoFilters::Flush()
 			   filtered by the second Filter */
 			return second->FilterPCM(result);
 
+		/* the first filter is flushed completely and we don't
+		   need it anymore; any further method calls that
+		   would use it are illegal according to the Filter
+		   API docs */
 		first.reset();
 	}
 
