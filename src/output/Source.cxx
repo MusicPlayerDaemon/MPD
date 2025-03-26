@@ -31,7 +31,7 @@ AudioOutputSource::Open(const AudioFormat audio_format, const MusicPipe &_pipe,
 
 	/* (re)open the filter */
 
-	if (filter && audio_format != in_audio_format)
+	if (filter && (filter_flushed || audio_format != in_audio_format))
 		/* the filter must be reopened on all input format
 		   changes */
 		CloseFilter();
@@ -70,7 +70,7 @@ AudioOutputSource::Cancel() noexcept
 	if (other_replay_gain_filter)
 		other_replay_gain_filter->Reset();
 
-	if (filter)
+	if (filter && !filter_flushed)
 		filter->Reset();
 }
 
@@ -101,6 +101,7 @@ try {
 	}
 
 	filter = prepared_filter.Open(audio_format);
+	filter_flushed = false;
 } catch (...) {
 	CloseFilter();
 	throw;
@@ -150,6 +151,7 @@ inline std::span<const std::byte>
 AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 {
 	assert(filter);
+	assert(!filter_flushed);
 
 	auto data = GetChunkData(chunk, replay_gain_filter.get(),
 				 &replay_gain_serial);
@@ -202,6 +204,7 @@ bool
 AudioOutputSource::Fill(Mutex &mutex)
 {
 	assert(filter);
+	assert(!filter_flushed);
 
 	if (current_chunk != nullptr && pending_tag == nullptr &&
 	    pending_data.empty())
@@ -234,6 +237,7 @@ void
 AudioOutputSource::ConsumeData(size_t nbytes) noexcept
 {
 	assert(filter);
+	assert(!filter_flushed);
 
 	pending_data = pending_data.subspan(nbytes);
 
@@ -252,5 +256,6 @@ AudioOutputSource::Flush()
 {
 	assert(filter);
 
+	filter_flushed = true;
 	return filter->Flush();
 }
