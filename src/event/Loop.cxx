@@ -17,9 +17,7 @@
 #include "io/uring/Queue.hxx"
 #endif
 
-#if defined(HAVE_THREADED_EVENT_LOOP) && defined(USE_EVENTFD) && defined(HAVE_URING)
-
-#include <sys/eventfd.h>
+#ifdef HAVE_URING
 
 class EventLoop::UringPoll final : Uring::Operation {
 	EventLoop &event_loop;
@@ -43,6 +41,10 @@ private:
 			Start();
 	}
 };
+
+#if defined(HAVE_THREADED_EVENT_LOOP) && defined(USE_EVENTFD)
+
+#include <sys/eventfd.h>
 
 /**
  * Read from the eventfd using io_uring and invoke
@@ -78,7 +80,8 @@ private:
 	}
 };
 
-#endif // USE_EVENTFD && HAVE_URING
+#endif // USE_EVENTFD
+#endif // HAVE_URING
 
 EventLoop::EventLoop(
 #ifdef HAVE_THREADED_EVENT_LOOP
