@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_TWO_FILTERS_HXX
-#define MPD_TWO_FILTERS_HXX
+#pragma once
 
 #include "filter/Filter.hxx"
 #include "filter/Prepared.hxx"
@@ -23,11 +22,8 @@ public:
 		 first(std::forward<F>(_first)),
 		 second(std::forward<S>(_second)) {}
 
-	void Reset() noexcept override {
-		first->Reset();
-		second->Reset();
-	}
-
+	// virtual methods from class Filter
+	void Reset() noexcept override;
 	std::span<const std::byte> FilterPCM(std::span<const std::byte> src) override;
 	std::span<const std::byte> ReadMore() override;
 	std::span<const std::byte> Flush() override;
@@ -68,5 +64,3 @@ ChainFilters(F &&first, S &&second, N &&second_name) noexcept
 						    std::forward<S>(second),
 						    std::forward<N>(second_name));
 }
-
-#endif

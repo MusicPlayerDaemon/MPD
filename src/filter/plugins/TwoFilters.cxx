@@ -7,6 +7,13 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringBuffer.hxx"
 
+void
+TwoFilters::Reset() noexcept
+{
+	first->Reset();
+	second->Reset();
+}
+
 std::span<const std::byte>
 TwoFilters::FilterPCM(std::span<const std::byte> src)
 {
