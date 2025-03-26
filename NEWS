@@ -1,3 +1,5 @@
+ver 0.24.3 (not yet released)
+
 ver 0.24.2 (2025/03/26)
 * input
   - io_uring: fix stuck seek after I/O error
