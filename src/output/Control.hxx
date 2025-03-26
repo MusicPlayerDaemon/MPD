@@ -131,6 +131,32 @@ class AudioOutputControl {
 	} command = Command::NONE;
 
 	/**
+	 * The current state of #source (an #AudioOutputSource
+	 * object).  This is used to keep track of whether it needs to
+	 * be (re)initialized.
+	 */
+	enum class SourceState : uint_least8_t {
+		/**
+		 * #source is closed and cannot be used.
+		 * InternalOpen() will open it once #Command::OPEN
+		 * gets received.
+		 */
+		CLOSED,
+
+		/**
+		 * #source is open and usable.
+		 */
+		OPEN,
+
+		/**
+		 * #source is open, but has been flushed (via
+		 * InternalDrain() / Command::DRAIN).  It cannot be
+		 * used until it is reopened.
+		 */
+		FLUSHED,
+	} source_state = SourceState::CLOSED;
+
+	/**
 	 * Will this output receive tags from the decoder?  The
 	 * default is true, but it may be configured to false to
 	 * suppress sending tags to the output.

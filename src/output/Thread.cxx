@@ -128,6 +128,8 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 					output->prepared_replay_gain_filter.get(),
 					output->prepared_other_replay_gain_filter.get(),
 					*output->prepared_filter);
+
+			source_state = SourceState::OPEN;
 		} catch (...) {
 			std::throw_with_nested(FmtRuntimeError("Failed to open filter for {}",
 							       GetLogName()));
@@ -136,6 +138,7 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 		try {
 			InternalOpen2(f);
 		} catch (...) {
+			source_state = SourceState::CLOSED;
 			source.Close();
 			throw;
 		}
@@ -173,6 +176,7 @@ AudioOutputControl::InternalClose(bool drain) noexcept
 		output->Close(drain);
 	}
 
+	source_state = SourceState::CLOSED;
 	source.Close();
 }
 
@@ -210,6 +214,8 @@ AudioOutputControl::WaitForDelay(std::unique_lock<Mutex> &lock) noexcept
 inline bool
 AudioOutputControl::FillSourceOrClose() noexcept
 try {
+	assert(source_state == SourceState::OPEN);
+
 	return source.Fill(mutex);
 } catch (...) {
 	FmtError(output_domain,
@@ -222,6 +228,8 @@ try {
 inline bool
 AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 {
+	assert(source_state == SourceState::OPEN);
+
 	// ensure pending tags are flushed in all cases
 	const auto *tag = source.ReadTag();
 	if (tags && tag != nullptr) {
@@ -280,6 +288,8 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 inline bool
 AudioOutputControl::InternalPlay(std::unique_lock<Mutex> &lock) noexcept
 {
+	assert(source_state == SourceState::OPEN);
+
 	if (!FillSourceOrClose())
 		/* no chunk available */
 		return false;
@@ -378,6 +388,10 @@ PlayFull(FilteredAudioOutput &output, std::span<const std::byte> buffer)
 inline void
 AudioOutputControl::InternalDrain() noexcept
 {
+	assert(source_state == SourceState::OPEN);
+
+	source_state = SourceState::FLUSHED;
+
 	/* after this method finishes, there's nothing left to be
 	   drained */
 	playing = false;
@@ -428,7 +442,8 @@ AudioOutputControl::Task() noexcept
 			/* no pending command: play (or wait for a
 			   command) */
 
-			if (open && allow_play && !caught_interrupted &&
+			if (open && source_state == SourceState::OPEN &&
+			    allow_play && !caught_interrupted &&
 			    InternalPlay(lock))
 				/* don't wait for an event if there
 				   are more chunks in the pipe */
@@ -490,7 +505,8 @@ AudioOutputControl::Task() noexcept
 				   AudioOutputSource because its data
 				   have been invalidated by stopping
 				   the actual playback */
-				source.Cancel();
+				if (source_state == SourceState::OPEN)
+					source.Cancel();
 				InternalPause(lock);
 			} else {
 				InternalClose(false);
@@ -509,7 +525,8 @@ AudioOutputControl::Task() noexcept
 		case Command::CANCEL:
 			caught_interrupted = false;
 
-			source.Cancel();
+			if (source_state == SourceState::OPEN)
+				source.Cancel();
 
 			if (open) {
 				playing = false;
@@ -522,7 +539,8 @@ AudioOutputControl::Task() noexcept
 
 		case Command::KILL:
 			InternalDisable();
-			source.Cancel();
+			if (source_state == SourceState::OPEN)
+				source.Cancel();
 			CommandFinished();
 			return;
 		}
