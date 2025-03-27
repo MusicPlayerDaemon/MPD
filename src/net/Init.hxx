@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "SocketError.hxx"
-
 #ifdef _WIN32
+#include "SocketError.hxx"
 #include <winsock2.h>
 #endif
 
