@@ -5,6 +5,8 @@
  * CD-Audio handling (requires libcdio_paranoia)
  */
 
+#include <cstddef>
+
 #include "CdioParanoiaInputPlugin.hxx"
 #include "lib/cdio/Paranoia.hxx"
 #include "lib/fmt/RuntimeError.hxx"
