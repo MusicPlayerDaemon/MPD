@@ -14,16 +14,18 @@
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "lib/fmt/AudioFormatFormatter.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/PrintException.hxx"
+
+#include <fmt/core.h>
 
 #include <cassert>
 #include <stdexcept>
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -41,29 +43,26 @@ public:
 	}
 
 	void OnDuration(SongTime duration) noexcept override {
-		printf("duration=%f\n", duration.ToDoubleS());
+		fmt::print("duration={}\n", duration.ToDoubleS());
 	}
 
 	void OnTag(TagType type, std::string_view value) noexcept override {
-		printf("[%s]=%.*s\n", tag_item_names[type],
-		       int(value.size()), value.data());
+		fmt::print("[{}]={:?}\n", tag_item_names[type], value);
 		empty = false;
 	}
 
 	void OnPair(std::string_view key, std::string_view value) noexcept override {
-		printf("\"%.*s\"=%.*s\n",
-		       int(key.size()), key.data(),
-		       int(value.size()), value.data());
+		fmt::print("{:?}={:?}\n", key, value);
 	}
 
 	void OnAudioFormat(AudioFormat af) noexcept override {
-		printf("%s\n", ToString(af).c_str());
+		fmt::print("{}\n", af);
 	}
 
 	void OnPicture(const char *mime_type,
 		       std::span<const std::byte> buffer) noexcept override {
-		printf("picture mime='%s' size=%zu\n",
-		       mime_type, buffer.size());
+		fmt::print("picture mime={:?} size={}\n",
+			   mime_type, buffer.size());
 	}
 };
 
@@ -78,7 +77,7 @@ try {
 #endif
 
 	if (argc != 3) {
-		fprintf(stderr, "Usage: read_tags DECODER FILE\n");
+		fmt::print(stderr, "Usage: read_tags DECODER FILE\n");
 		return EXIT_FAILURE;
 	}
 
@@ -95,7 +94,7 @@ try {
 
 	plugin = decoder_plugin_from_name(decoder_name);
 	if (plugin == nullptr) {
-		fprintf(stderr, "No such decoder: %s\n", decoder_name);
+		fmt::print(stderr, "No such decoder: {:?}\n", decoder_name);
 		return EXIT_FAILURE;
 	}
 
@@ -117,7 +116,7 @@ try {
 	}
 
 	if (!success) {
-		fprintf(stderr, "Failed to read tags\n");
+		fmt::print(stderr, "Failed to read tags\n");
 		return EXIT_FAILURE;
 	}
 

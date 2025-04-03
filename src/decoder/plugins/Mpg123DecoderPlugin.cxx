@@ -14,6 +14,7 @@
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/IterableSplitString.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
@@ -166,7 +167,16 @@ AddTagItem(TagBuilder &tag, TagType type, const mpg123_string &s)
 	assert(s.size >= s.fill);
 	assert(s.fill > 0);
 
-	tag.AddItem(type, {s.p, s.fill - 1});
+	/* "fill" includes the closing null byte; strip it here */
+	const std::string_view all_values{s.p, s.fill - 1};
+
+	/* a mpg123_string can contain multiple values, each separated
+	   by a null byte */
+	for (const std::string_view value : IterableSplitString(all_values, '\0'))
+		/* we need this "empty" check because there is no
+		   value after the last null terminator */
+		if (!value.empty())
+			tag.AddItem(type, value);
 }
 
 static void

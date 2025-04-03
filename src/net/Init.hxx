@@ -1,12 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Copyright The Music Player Daemon Project
+// SPDX-License-Identifier: BSD-2-Clause
+// author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef NET_INIT_HXX
-#define NET_INIT_HXX
-
-#include "SocketError.hxx"
+#pragma once
 
 #ifdef _WIN32
+#include "SocketError.hxx"
 #include <winsock2.h>
 #endif
 
@@ -28,5 +26,3 @@ public:
 	ScopeNetInit() {}
 #endif
 };
-
-#endif

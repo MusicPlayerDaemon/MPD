@@ -42,6 +42,16 @@
 class OssOutput final : AudioOutput {
 	Manual<PcmExport> pcm_export;
 
+	const char *const device;
+
+	FileDescriptor fd = FileDescriptor::Undefined();
+
+	/**
+	 * The effective audio format settings of the OSS device.
+	 * This is needed by Reopen() after Cancel().
+	 */
+	int effective_channels, effective_speed, effective_samplesize;
+
 #ifdef ENABLE_OSS_DSD
 	/**
 	 * Enable DSD over PCM according to the DoP standard?
@@ -53,14 +63,11 @@ class OssOutput final : AudioOutput {
 	const bool dop_setting;
 #endif
 
-	FileDescriptor fd = FileDescriptor::Undefined();
-	const char *device;
-
 	/**
-	 * The effective audio format settings of the OSS device.
-	 * This is needed by Reopen() after Cancel().
+	 * Has Drain() been called?  If not, then Close() will use
+	 * SNDCTL_DSP_RESET to omit the implicit sync on close().
 	 */
-	int effective_channels, effective_speed, effective_samplesize;
+	bool drain = false;
 
 	static constexpr unsigned oss_flags = FLAG_ENABLE_DISABLE;
 
@@ -71,16 +78,17 @@ public:
 #endif
 			   )
 		:AudioOutput(oss_flags),
-#ifdef ENABLE_OSS_DSD
-		 dop_setting(dop),
-#endif
 		 device(_device)
+#ifdef ENABLE_OSS_DSD
+		, dop_setting(dop)
+#endif
 	{
 	}
 
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
+	// virtual methods from class AudioOutput
 	void Enable() override {
 		pcm_export.Construct();
 	}
@@ -90,12 +98,10 @@ public:
 	}
 
 	void Open(AudioFormat &audio_format) override;
-
-	void Close() noexcept override {
-		DoClose();
-	}
+	void Close() noexcept override;
 
 	std::size_t Play(std::span<const std::byte> src) override;
+	void Drain() noexcept override;
 	void Cancel() noexcept override;
 
 private:
@@ -269,10 +275,11 @@ oss_try_ioctl_r(FileDescriptor fd, unsigned long request, int *value_r,
 	if (ret >= 0)
 		return true;
 
-	if (errno == EINVAL)
+	const int err = errno;
+	if (err == EINVAL)
 		return false;
 
-	throw MakeErrno(msg);
+	throw MakeErrno(err, msg);
 }
 
 /**
@@ -641,16 +648,47 @@ try {
 		throw FmtErrno("Error opening OSS device {:?}", device);
 
 	SetupOrDop(_audio_format);
+
+	drain = false;
 } catch (...) {
 	DoClose();
 	throw;
 }
 
 void
+OssOutput::Close() noexcept
+{
+	if (!fd.IsDefined())
+		return;
+
+	if (!drain)
+		/* if Drain() has not been called, then the caller
+		   wishes to close as quickly as possible, so let's
+		   skip the implicit sync on close */
+		ioctl(fd.Get(), SNDCTL_DSP_RESET, 0);
+
+	fd.Close();
+}
+
+void
+OssOutput::Drain() noexcept
+{
+	/* enable the "drain" flag; the actual sync happens later in
+	   Close() */
+	drain = true;
+}
+
+void
 OssOutput::Cancel() noexcept
 {
+	drain = false;
+
 	if (fd.IsDefined()) {
 		ioctl(fd.Get(), SNDCTL_DSP_RESET, 0);
+
+		/* after SNDCTL_DSP_RESET, we can't use the file
+		   handle anymore; closing it here, to be reopened by
+		   the next Play() call */
 		DoClose();
 	}
 
@@ -662,7 +700,7 @@ OssOutput::Play(std::span<const std::byte> src)
 {
 	assert(!src.empty());
 
-	/* reopen the device since it was closed by dropBufferedAudio */
+	/* reopen the device since it was closed by Cancel() */
 	if (!fd.IsDefined())
 		Reopen();
 
@@ -672,11 +710,27 @@ OssOutput::Play(std::span<const std::byte> src)
 
 	while (true) {
 		const ssize_t ret = fd.Write(e);
-		if (ret > 0)
+		if (ret > 0) [[likely]]
 			return pcm_export->CalcInputSize(ret);
 
-		if (ret < 0 && errno != EINTR)
-			throw FmtErrno("Write error on {:?}", device);
+		if (ret == 0) [[unlikely]]
+			// can this ever happen?  What now?
+			continue;
+
+		const int err = errno;
+		if (err == EINTR)
+			/* interrupted by a signal - try again */
+			continue;
+
+		if (err == EAGAIN) {
+			/* we opened the device in non-blocking mode
+			   and the OSS FIFO is full */
+			const int w = fd.WaitWritable(1000);
+			if (w >= 0)
+				continue;
+		}
+
+		throw FmtErrno(err, "Write error on {:?}", device);
 	}
 }
 

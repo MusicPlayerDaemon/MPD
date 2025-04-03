@@ -88,6 +88,10 @@
 #include "lib/dbus/Init.hxx"
 #endif
 
+#if defined(ENABLE_DAEMON) && defined(__APPLE__)
+#include "system/Error.hxx"
+#endif
+
 #ifdef ENABLE_SYSTEMD_DAEMON
 #include <systemd/sd-daemon.h>
 #endif
