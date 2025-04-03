@@ -1,4 +1,6 @@
 ver 0.24.3 (not yet released)
+* decoder
+  - mpg123: fix trailing space in tag values
 
 ver 0.24.2 (2025/03/26)
 * input
