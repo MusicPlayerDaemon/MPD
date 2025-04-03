@@ -62,6 +62,12 @@ class OssOutput final : AudioOutput {
 	const bool dop_setting;
 #endif
 
+	/**
+	 * Has Drain() been called?  If not, then Close() will use
+	 * SNDCTL_DSP_RESET to omit the implicit sync on close().
+	 */
+	bool drain = false;
+
 	static constexpr unsigned oss_flags = FLAG_ENABLE_DISABLE;
 
 public:
@@ -81,6 +87,7 @@ public:
 	static AudioOutput *Create(EventLoop &event_loop,
 				   const ConfigBlock &block);
 
+	// virtual methods from class AudioOutput
 	void Enable() override {
 		pcm_export.Construct();
 	}
@@ -90,12 +97,10 @@ public:
 	}
 
 	void Open(AudioFormat &audio_format) override;
-
-	void Close() noexcept override {
-		DoClose();
-	}
+	void Close() noexcept override;
 
 	std::size_t Play(std::span<const std::byte> src) override;
+	void Drain() noexcept override;
 	void Cancel() noexcept override;
 
 private:
@@ -643,14 +648,41 @@ try {
 		throw FmtErrno("Error opening OSS device {:?}", device);
 
 	SetupOrDop(_audio_format);
+
+	drain = false;
 } catch (...) {
 	DoClose();
 	throw;
 }
 
 void
+OssOutput::Close() noexcept
+{
+	if (!fd.IsDefined())
+		return;
+
+	if (!drain)
+		/* if Drain() has not been called, then the caller
+		   wishes to close as quickly as possible, so let's
+		   skip the implicit sync on close */
+		ioctl(fd.Get(), SNDCTL_DSP_RESET, 0);
+
+	fd.Close();
+}
+
+void
+OssOutput::Drain() noexcept
+{
+	/* enable the "drain" flag; the actual sync happens later in
+	   Close() */
+	drain = true;
+}
+
+void
 OssOutput::Cancel() noexcept
 {
+	drain = false;
+
 	if (fd.IsDefined()) {
 		ioctl(fd.Get(), SNDCTL_DSP_RESET, 0);
 
