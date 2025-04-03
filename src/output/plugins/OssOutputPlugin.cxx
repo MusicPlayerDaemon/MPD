@@ -710,14 +710,19 @@ OssOutput::Play(std::span<const std::byte> src)
 
 	while (true) {
 		const ssize_t ret = fd.Write(e);
-		if (ret > 0)
+		if (ret > 0) [[likely]]
 			return pcm_export->CalcInputSize(ret);
 
-		if (ret < 0) {
-			const int err = errno;
-			if (err != EINTR)
-				throw FmtErrno(err, "Write error on {:?}", device);
-		}
+		if (ret == 0) [[unlikely]]
+			// can this ever happen?  What now?
+			continue;
+
+		const int err = errno;
+		if (err == EINTR)
+			/* interrupted by a signal - try again */
+			continue;
+
+		throw FmtErrno(err, "Write error on {:?}", device);
 	}
 }
 
