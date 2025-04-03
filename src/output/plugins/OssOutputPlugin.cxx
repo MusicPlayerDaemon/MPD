@@ -722,6 +722,14 @@ OssOutput::Play(std::span<const std::byte> src)
 			/* interrupted by a signal - try again */
 			continue;
 
+		if (err == EAGAIN) {
+			/* we opened the device in non-blocking mode
+			   and the OSS FIFO is full */
+			const int w = fd.WaitWritable(1000);
+			if (w >= 0)
+				continue;
+		}
+
 		throw FmtErrno(err, "Write error on {:?}", device);
 	}
 }
