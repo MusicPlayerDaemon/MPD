@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <yajl_gen.h>
+#include <yajl/yajl_gen.h>
 
 #include <algorithm>
 #include <span>

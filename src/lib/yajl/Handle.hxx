@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <yajl_parse.h>
+#include <yajl/yajl_parse.h>
 
 #include <utility>
 
