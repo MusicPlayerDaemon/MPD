@@ -53,7 +53,7 @@ class OssOutput final : AudioOutput {
 #endif
 
 	FileDescriptor fd = FileDescriptor::Undefined();
-	const char *device;
+	const char *const device;
 
 	/**
 	 * The effective audio format settings of the OSS device.
