@@ -41,6 +41,16 @@
 class OssOutput final : AudioOutput {
 	Manual<PcmExport> pcm_export;
 
+	const char *const device;
+
+	FileDescriptor fd = FileDescriptor::Undefined();
+
+	/**
+	 * The effective audio format settings of the OSS device.
+	 * This is needed by Reopen() after Cancel().
+	 */
+	int effective_channels, effective_speed, effective_samplesize;
+
 #ifdef ENABLE_OSS_DSD
 	/**
 	 * Enable DSD over PCM according to the DoP standard?
@@ -52,15 +62,6 @@ class OssOutput final : AudioOutput {
 	const bool dop_setting;
 #endif
 
-	FileDescriptor fd = FileDescriptor::Undefined();
-	const char *const device;
-
-	/**
-	 * The effective audio format settings of the OSS device.
-	 * This is needed by Reopen() after Cancel().
-	 */
-	int effective_channels, effective_speed, effective_samplesize;
-
 	static constexpr unsigned oss_flags = FLAG_ENABLE_DISABLE;
 
 public:
@@ -70,10 +71,10 @@ public:
 #endif
 			   )
 		:AudioOutput(oss_flags),
-#ifdef ENABLE_OSS_DSD
-		 dop_setting(dop),
-#endif
 		 device(_device)
+#ifdef ENABLE_OSS_DSD
+		, dop_setting(dop)
+#endif
 	{
 	}
 
