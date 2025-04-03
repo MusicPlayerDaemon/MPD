@@ -653,6 +653,10 @@ OssOutput::Cancel() noexcept
 {
 	if (fd.IsDefined()) {
 		ioctl(fd.Get(), SNDCTL_DSP_RESET, 0);
+
+		/* after SNDCTL_DSP_RESET, we can't use the file
+		   handle anymore; closing it here, to be reopened by
+		   the next Play() call */
 		DoClose();
 	}
 
@@ -664,7 +668,7 @@ OssOutput::Play(std::span<const std::byte> src)
 {
 	assert(!src.empty());
 
-	/* reopen the device since it was closed by dropBufferedAudio */
+	/* reopen the device since it was closed by Cancel() */
 	if (!fd.IsDefined())
 		Reopen();
 
