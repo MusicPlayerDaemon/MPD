@@ -72,6 +72,9 @@ gme = CmakeProject(
         '-DENABLE_UBSAN=OFF',
         '-DZLIB_INCLUDE_DIR=OFF',
         '-DCMAKE_DISABLE_FIND_PACKAGE_SDL2=ON',
+
+        # cmake 4 complains about gme's cmake_minimum_required=2.6
+        '-DCMAKE_POLICY_VERSION_MINIMUM=3.5',
     ],
 )
 
