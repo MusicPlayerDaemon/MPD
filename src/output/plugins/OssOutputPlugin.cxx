@@ -268,10 +268,11 @@ oss_try_ioctl_r(FileDescriptor fd, unsigned long request, int *value_r,
 	if (ret >= 0)
 		return true;
 
-	if (errno == EINVAL)
+	const int err = errno;
+	if (err == EINVAL)
 		return false;
 
-	throw MakeErrno(msg);
+	throw MakeErrno(err, msg);
 }
 
 /**
@@ -675,8 +676,11 @@ OssOutput::Play(std::span<const std::byte> src)
 		if (ret > 0)
 			return pcm_export->CalcInputSize(ret);
 
-		if (ret < 0 && errno != EINTR)
-			throw FmtErrno("Write error on {:?}", device);
+		if (ret < 0) {
+			const int err = errno;
+			if (err != EINTR)
+				throw FmtErrno(err, "Write error on {:?}", device);
+		}
 	}
 }
 
