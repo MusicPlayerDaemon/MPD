@@ -15,6 +15,7 @@ on:
       - 'win32/**'
     branches:
       - master
+      - v0.24.x
   pull_request:
     paths-ignore:
       - 'AUTHORS'
@@ -29,6 +30,7 @@ on:
       - 'win32/**'
     branches:
       - master
+      - v0.24.x
 
 permissions:
   contents: read #  to fetch code (actions/checkout)
