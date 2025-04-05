@@ -6,6 +6,7 @@
 #include "Buffer.hxx"
 #include "Silence.hxx"
 #include "Traits.hxx"
+#include "config.h" // for ENABLE_DSD
 
 #include <array>
 #include <algorithm>
@@ -260,3 +261,17 @@ pcm_convert_channels_float(PcmBuffer &buffer,
 	return ConvertChannels<SampleFormat::FLOAT>(buffer, dest_channels,
 						    src_channels, src);
 }
+
+#ifdef ENABLE_DSD
+
+std::span<const std::byte>
+pcm_convert_channels_dsd(PcmBuffer &buffer,
+			 unsigned dest_channels,
+			 unsigned src_channels,
+			 std::span<const std::byte> src) noexcept
+{
+	return ConvertChannels<SampleFormat::DSD>(buffer, dest_channels,
+						  src_channels, src);
+}
+
+#endif // ENABLE_DSD

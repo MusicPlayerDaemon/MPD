@@ -8,6 +8,7 @@ ver 0.24.3 (not yet released)
   - output: fix error "Resource temporarily unavailable"
 * Windows
   - fix cross build on Linux when WINE is not installed
+* DSD: support channel conversion
 
 ver 0.24.2 (2025/03/26)
 * input

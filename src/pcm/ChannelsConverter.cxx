@@ -6,6 +6,7 @@
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/SpanCast.hxx"
+#include "config.h" // for ENABLE_DSD
 
 #include <cassert>
 
@@ -16,6 +17,7 @@ PcmChannelsConverter::Open(SampleFormat _format,
 	assert(_format != SampleFormat::UNDEFINED);
 
 	switch (_format) {
+	case SampleFormat::DSD:
 	case SampleFormat::S16:
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
@@ -46,9 +48,16 @@ PcmChannelsConverter::Convert(std::span<const std::byte> src) noexcept
 	switch (format) {
 	case SampleFormat::UNDEFINED:
 	case SampleFormat::S8:
-	case SampleFormat::DSD:
 		assert(false);
 		gcc_unreachable();
+
+	case SampleFormat::DSD:
+#ifdef ENABLE_DSD
+		return pcm_convert_channels_dsd(buffer, dest_channels, src_channels, src);
+#else
+		assert(false);
+		gcc_unreachable();
+#endif
 
 	case SampleFormat::S16:
 		return std::as_bytes(pcm_convert_channels_16(buffer, dest_channels,

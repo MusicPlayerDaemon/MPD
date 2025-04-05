@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PCM_CHANNELS_HXX
-#define MPD_PCM_CHANNELS_HXX
+#pragma once
 
+#include <cstddef> // for std::byte
 #include <cstdint>
 #include <span>
 
@@ -70,4 +70,17 @@ pcm_convert_channels_float(PcmBuffer &buffer,
 			   unsigned src_channels,
 			   std::span<const float> src) noexcept;
 
-#endif
+/**
+ * Changes the number of channels in DSD data.
+ *
+ * @param buffer the destination pcm_buffer object
+ * @param dest_channels the number of channels requested
+ * @param src_channels the number of channels in the source buffer
+ * @param src the source PCM buffer
+ * @return the destination buffer
+ */
+std::span<const std::byte>
+pcm_convert_channels_dsd(PcmBuffer &buffer,
+			 unsigned dest_channels,
+			 unsigned src_channels,
+			 std::span<const std::byte> src) noexcept;
