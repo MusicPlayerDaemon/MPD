@@ -1,6 +1,8 @@
 ver 0.24.3 (not yet released)
 * decoder
   - mpg123: fix trailing space in tag values
+* tags
+  - libid3tag: fix Meson subproject configure error
 * oss
   - output: fix error "Resource temporarily unavailable"
 * Windows
