@@ -33,7 +33,20 @@ StereoToMono(typename Traits::value_type _a,
 	return typename Traits::value_type((a + b) / 2);
 }
 
-template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
+static typename Traits::value_type
+StereoToMono(typename Traits::value_type _a,
+	     [[maybe_unused]] typename Traits::value_type _b) noexcept
+	requires(!ArithmeticSampleTraits<Traits>)
+{
+	/* this fallback specialization discards the second channel;
+	   it is only implemented for DSD, and this static_assert
+	   makes sure it's never used for anything else */
+	static_assert(F == SampleFormat::DSD);
+	return _a;
+}
+
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 StereoToMono(typename Traits::pointer dest,
 	     std::span<const typename Traits::value_type> _src) noexcept
@@ -66,6 +79,30 @@ NToStereo(typename Traits::pointer dest,
 		/* TODO: this is actually only mono ... */
 		*dest++ = value;
 		*dest++ = value;
+	}
+
+	return dest;
+}
+
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
+static typename Traits::pointer
+NToStereo(typename Traits::pointer dest,
+	  unsigned src_channels,
+	  std::span<const typename Traits::value_type> _src) noexcept
+	requires(!ArithmeticSampleTraits<Traits>)
+{
+	/* this fallback specialization discards all but the first two
+	   channels; it is only implemented for DSD, and this
+	   static_assert makes sure it's never used for anything
+	   else */
+	static_assert(F == SampleFormat::DSD);
+
+	assert(_src.size() % src_channels == 0);
+
+	for (auto src = _src.begin(), end = _src.end(); src != end;) {
+		*dest++ = *src++;
+		*dest++ = *src++;
+		src += src_channels - 2;
 	}
 
 	return dest;
@@ -121,6 +158,38 @@ NToM(typename Traits::pointer dest,
 		/* TODO: this is actually only mono ... */
 		for (unsigned c = 0; c < dest_channels; ++c)
 			*dest++ = value;
+	}
+
+	return dest;
+}
+
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
+static typename Traits::pointer
+NToM(typename Traits::pointer dest,
+     unsigned dest_channels,
+     unsigned src_channels,
+     std::span<const typename Traits::value_type> _src) noexcept
+	requires(!ArithmeticSampleTraits<Traits>)
+{
+	/* this fallback specialization discards does not do any
+	   arithmetic; it is only implemented for DSD, and this
+	   static_assert makes sure it's never used for anything
+	   else */
+	static_assert(F == SampleFormat::DSD);
+
+	assert(_src.size() % src_channels == 0);
+
+	if (dest_channels < src_channels) {
+		for (auto src = _src.begin(), end = _src.end(); src != end;) {
+			dest = std::copy_n(src, dest_channels, dest);
+			src += src_channels;
+		}
+	} else {
+		for (auto src = _src.begin(), end = _src.end(); src != end;) {
+			dest = std::copy_n(src, src_channels, dest);
+			src += src_channels;
+			dest = std::fill_n(dest, dest_channels - src_channels, Traits::SILENCE);
+		}
 	}
 
 	return dest;
