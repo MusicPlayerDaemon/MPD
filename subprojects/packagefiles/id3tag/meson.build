@@ -32,5 +32,8 @@ libid3tag = static_library(
 
 libid3tag_dep = declare_dependency(
   link_with: libid3tag,
+  dependencies: [
+    dependency('zlib'),
+  ],
   include_directories: include_directories('.'),
 )

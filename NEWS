@@ -3,6 +3,7 @@ ver 0.24.3 (not yet released)
   - mpg123: fix trailing space in tag values
 * tags
   - libid3tag: fix Meson subproject configure error
+  - libid3tag: add missing zlib dependency to Meson subproject
 * oss
   - output: fix error "Resource temporarily unavailable"
 * Windows
