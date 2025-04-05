@@ -141,13 +141,13 @@ ConvertChannels(PcmBuffer &buffer,
 	if (src_channels == 1 && dest_channels == 2)
 		MonoToStereo(dest, src);
 	else if (src_channels == 2 && dest_channels == 1)
-		StereoToMono<F>(dest, src);
+		StereoToMono<F, Traits>(dest, src);
 	else if (dest_channels == 2)
-		NToStereo<F>(dest, src_channels, src);
+		NToStereo<F, Traits>(dest, src_channels, src);
 	else if (src_channels == 2 && dest_channels > 2)
 		StereoToN<F, Traits>(dest, dest_channels, src);
 	else
-		NToM<F>(dest, dest_channels, src_channels, src);
+		NToM<F, Traits>(dest, dest_channels, src_channels, src);
 
 	return { dest, dest_size };
 }
