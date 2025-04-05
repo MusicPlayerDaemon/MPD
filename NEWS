@@ -3,6 +3,8 @@ ver 0.24.3 (not yet released)
   - mpg123: fix trailing space in tag values
 * oss
   - output: fix error "Resource temporarily unavailable"
+* Windows
+  - fix cross build on Linux when WINE is not installed
 
 ver 0.24.2 (2025/03/26)
 * input
