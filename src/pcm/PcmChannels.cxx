@@ -22,7 +22,7 @@ MonoToStereo(D dest, S src) noexcept
 
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static typename Traits::value_type
 StereoToMono(typename Traits::value_type _a,
 	     typename Traits::value_type _b) noexcept
@@ -33,7 +33,7 @@ StereoToMono(typename Traits::value_type _a,
 	return typename Traits::value_type((a + b) / 2);
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 StereoToMono(typename Traits::pointer dest,
 	     std::span<const typename Traits::value_type> _src) noexcept
@@ -48,7 +48,7 @@ StereoToMono(typename Traits::pointer dest,
 	return dest;
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 NToStereo(typename Traits::pointer dest,
 	  unsigned src_channels,
@@ -76,7 +76,7 @@ NToStereo(typename Traits::pointer dest,
  * the first two channels (front left and front right), and the
  * remaining (surround) channels are filled with silence.
  */
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 StereoToN(typename Traits::pointer dest,
 	  unsigned dest_channels,
@@ -102,7 +102,7 @@ StereoToN(typename Traits::pointer dest,
 	return dest;
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 NToM(typename Traits::pointer dest,
      unsigned dest_channels,
@@ -126,7 +126,7 @@ NToM(typename Traits::pointer dest,
 	return dest;
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
 static std::span<const typename Traits::value_type>
 ConvertChannels(PcmBuffer &buffer,
 		unsigned dest_channels,

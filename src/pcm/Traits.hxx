@@ -5,6 +5,7 @@
 
 #include "SampleFormat.hxx"
 
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 
@@ -156,3 +157,29 @@ struct SampleTraits<SampleFormat::DSD> {
 	 */
 	static constexpr value_type SILENCE{0x69};
 };
+
+template<typename Traits>
+concept AnySampleTraits = requires {
+	typename Traits::value_type;
+	{ typename Traits::pointer{} } -> std::same_as<typename Traits::value_type *>;
+	{ typename Traits::const_pointer{} } -> std::same_as<const typename Traits::value_type *>;
+	{ Traits::SAMPLE_SIZE } -> std::same_as<const std::size_t &>;
+	{ Traits::SILENCE } -> std::same_as<const typename Traits::value_type &>;
+} && Traits::SAMPLE_SIZE == sizeof(typename Traits::value_type);
+
+template<typename Traits>
+concept ArithmeticSampleTraits = AnySampleTraits<Traits> && requires {
+	typename Traits::sum_type;
+	typename Traits::long_type;
+	{ Traits::MIN } -> std::same_as<const typename Traits::value_type &>;
+	{ Traits::MAX } -> std::same_as<const typename Traits::value_type &>;
+} && sizeof(typename Traits::sum_type) >= sizeof(typename Traits::value_type) &&
+	sizeof(typename Traits::long_type) >= sizeof(typename Traits::sum_type);
+
+template<typename Traits>
+concept IntegerSampleTraits = ArithmeticSampleTraits<Traits> && requires {
+	{ typename Traits::value_type{} } -> std::integral;
+	{ typename Traits::sum_type{} } -> std::integral;
+	{ typename Traits::long_type{} } -> std::integral;
+	{ Traits::BITS } -> std::same_as<const unsigned &>;
+} && Traits::BITS <= sizeof(typename Traits::value_type) * 8;

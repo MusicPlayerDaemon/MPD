@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PCM_UTILS_H
-#define MPD_PCM_UTILS_H
+#include "Traits.hxx"
 
 #include <cstdint>
 #include <limits>
 
 enum class SampleFormat : uint8_t;
-template<SampleFormat F> struct SampleTraits;
 
 /**
  * Check if the value is within the range of the provided bit size,
  * and caps it if necessary.
  */
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 constexpr typename Traits::value_type
 PcmClamp(typename Traits::long_type x) noexcept
 {
@@ -32,5 +30,3 @@ PcmClamp(typename Traits::long_type x) noexcept
 
 	return T(x);
 }
-
-#endif

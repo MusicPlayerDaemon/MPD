@@ -58,11 +58,11 @@ struct Convert32To16 {
 	}
 };
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 struct PortableFloatToInteger
 	: PerSampleConvert<FloatToIntegerSampleConvert<F, Traits>> {};
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 struct FloatToInteger : PortableFloatToInteger<F, Traits> {};
 
 /**
@@ -109,7 +109,7 @@ AllocateConvert(PcmBuffer &buffer, C convert,
 	return { dest, src.size() };
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 static std::span<const typename Traits::value_type>
 AllocateFromFloat(PcmBuffer &buffer, std::span<const float> src)
 {

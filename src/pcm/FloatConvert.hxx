@@ -10,7 +10,7 @@
 /**
  * Convert from float to an integer sample format.
  */
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 struct FloatToIntegerSampleConvert {
 	typedef SampleTraits<SampleFormat::FLOAT> SrcTraits;
 	typedef Traits DstTraits;
@@ -30,7 +30,7 @@ struct FloatToIntegerSampleConvert {
 /**
  * Convert from an integer sample format to float.
  */
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 struct IntegerToFloatSampleConvert {
 	typedef SampleTraits<SampleFormat::FLOAT> DstTraits;
 	typedef Traits SrcTraits;
