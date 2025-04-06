@@ -714,6 +714,10 @@ ffmpeg_suffixes() noexcept
 			suffixes.emplace("dsf");
 		} else if (StringIsEqual(codec->name, "dst")) {
 			suffixes.emplace("dst");
+		} else if (StringStartsWith(codec->name, "wma")) {
+			/* there are codecs "wmav1", "wmav2" etc. and
+			   they usually come in "*.wma" files */
+			suffixes.emplace("wma");
 		}
 	}
 
