@@ -4,8 +4,6 @@ project(
   license: 'GPLv2+',
 )
 
-fs = import('fs')
-
 compiler = meson.get_compiler('c')
 
 conf = configuration_data()
@@ -32,10 +30,10 @@ libid3tag = static_library(
   'genre.c', 'frame.c', 'crc.c', 'util.c', 'tag.c', 'file.c',
 )
 
-copy = fs.copyfile('id3tag.h', 'include/id3tag.h')
-
 libid3tag_dep = declare_dependency(
   link_with: libid3tag,
-  dependencies: [copy],
-  include_directories: include_directories('include'),
+  dependencies: [
+    dependency('zlib'),
+  ],
+  include_directories: include_directories('.'),
 )

@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import platform
 
@@ -55,8 +56,9 @@ pkgconfig = {format_meson_cross_file_command(toolchain.pkg_config)}
         if toolchain.is_windows and platform.system() != 'Windows':
             f.write(f"windres = {format_meson_cross_file_command(toolchain.windres)}\n")
 
-            # Run unit tests with WINE when cross-building for Windows
-            print("exe_wrapper = 'wine'", file=f)
+            if shutil.which('wine') is not None:
+                # Run unit tests with WINE when cross-building for Windows
+                print("exe_wrapper = 'wine'", file=f)
 
         f.write(f"""
 [properties]

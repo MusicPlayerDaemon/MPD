@@ -14,7 +14,7 @@
 #include <cmath>
 #include <utility> // for std::unreachable()
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 static typename Traits::value_type
 PcmAddVolume(PcmDither &dither,
 	     typename Traits::value_type _a, typename Traits::value_type _b,
@@ -28,7 +28,7 @@ PcmAddVolume(PcmDither &dither,
 				  Traits::BITS>(c);
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 static void
 PcmAddVolume(PcmDither &dither,
 	     typename Traits::pointer a,
@@ -40,7 +40,7 @@ PcmAddVolume(PcmDither &dither,
 					       volume1, volume2);
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 static void
 PcmAddVolumeVoid(PcmDither &dither,
 		 void *a, const void *b, size_t size,
@@ -116,7 +116,7 @@ pcm_add_vol(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
 	std::unreachable();
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static constexpr typename Traits::value_type
 PcmAdd(typename Traits::value_type _a, typename Traits::value_type _b) noexcept
 {
@@ -125,7 +125,7 @@ PcmAdd(typename Traits::value_type _a, typename Traits::value_type _b) noexcept
 	return PcmClamp<F, Traits>(a + b);
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static void
 PcmAdd(typename Traits::pointer a,
        typename Traits::const_pointer b,
@@ -135,7 +135,7 @@ PcmAdd(typename Traits::pointer a,
 		a[i] = PcmAdd<F, Traits>(a[i], b[i]);
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static void
 PcmAddVoid(void *a, const void *b, size_t size) noexcept
 {

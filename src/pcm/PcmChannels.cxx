@@ -6,6 +6,7 @@
 #include "Buffer.hxx"
 #include "Silence.hxx"
 #include "Traits.hxx"
+#include "config.h" // for ENABLE_DSD
 
 #include <array>
 #include <algorithm>
@@ -22,7 +23,7 @@ MonoToStereo(D dest, S src) noexcept
 
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static typename Traits::value_type
 StereoToMono(typename Traits::value_type _a,
 	     typename Traits::value_type _b) noexcept
@@ -33,7 +34,20 @@ StereoToMono(typename Traits::value_type _a,
 	return typename Traits::value_type((a + b) / 2);
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
+static typename Traits::value_type
+StereoToMono(typename Traits::value_type _a,
+	     [[maybe_unused]] typename Traits::value_type _b) noexcept
+	requires(!ArithmeticSampleTraits<Traits>)
+{
+	/* this fallback specialization discards the second channel;
+	   it is only implemented for DSD, and this static_assert
+	   makes sure it's never used for anything else */
+	static_assert(F == SampleFormat::DSD);
+	return _a;
+}
+
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 StereoToMono(typename Traits::pointer dest,
 	     std::span<const typename Traits::value_type> _src) noexcept
@@ -48,7 +62,7 @@ StereoToMono(typename Traits::pointer dest,
 	return dest;
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 NToStereo(typename Traits::pointer dest,
 	  unsigned src_channels,
@@ -71,12 +85,36 @@ NToStereo(typename Traits::pointer dest,
 	return dest;
 }
 
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
+static typename Traits::pointer
+NToStereo(typename Traits::pointer dest,
+	  unsigned src_channels,
+	  std::span<const typename Traits::value_type> _src) noexcept
+	requires(!ArithmeticSampleTraits<Traits>)
+{
+	/* this fallback specialization discards all but the first two
+	   channels; it is only implemented for DSD, and this
+	   static_assert makes sure it's never used for anything
+	   else */
+	static_assert(F == SampleFormat::DSD);
+
+	assert(_src.size() % src_channels == 0);
+
+	for (auto src = _src.begin(), end = _src.end(); src != end;) {
+		*dest++ = *src++;
+		*dest++ = *src++;
+		src += src_channels - 2;
+	}
+
+	return dest;
+}
+
 /**
  * Convert stereo to N channels (where N > 2).  Left and right map to
  * the first two channels (front left and front right), and the
  * remaining (surround) channels are filled with silence.
  */
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 StereoToN(typename Traits::pointer dest,
 	  unsigned dest_channels,
@@ -102,7 +140,7 @@ StereoToN(typename Traits::pointer dest,
 	return dest;
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, ArithmeticSampleTraits Traits=SampleTraits<F>>
 static typename Traits::pointer
 NToM(typename Traits::pointer dest,
      unsigned dest_channels,
@@ -126,7 +164,39 @@ NToM(typename Traits::pointer dest,
 	return dest;
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
+static typename Traits::pointer
+NToM(typename Traits::pointer dest,
+     unsigned dest_channels,
+     unsigned src_channels,
+     std::span<const typename Traits::value_type> _src) noexcept
+	requires(!ArithmeticSampleTraits<Traits>)
+{
+	/* this fallback specialization discards does not do any
+	   arithmetic; it is only implemented for DSD, and this
+	   static_assert makes sure it's never used for anything
+	   else */
+	static_assert(F == SampleFormat::DSD);
+
+	assert(_src.size() % src_channels == 0);
+
+	if (dest_channels < src_channels) {
+		for (auto src = _src.begin(), end = _src.end(); src != end;) {
+			dest = std::copy_n(src, dest_channels, dest);
+			src += src_channels;
+		}
+	} else {
+		for (auto src = _src.begin(), end = _src.end(); src != end;) {
+			dest = std::copy_n(src, src_channels, dest);
+			src += src_channels;
+			dest = std::fill_n(dest, dest_channels - src_channels, Traits::SILENCE);
+		}
+	}
+
+	return dest;
+}
+
+template<SampleFormat F, AnySampleTraits Traits=SampleTraits<F>>
 static std::span<const typename Traits::value_type>
 ConvertChannels(PcmBuffer &buffer,
 		unsigned dest_channels,
@@ -141,13 +211,13 @@ ConvertChannels(PcmBuffer &buffer,
 	if (src_channels == 1 && dest_channels == 2)
 		MonoToStereo(dest, src);
 	else if (src_channels == 2 && dest_channels == 1)
-		StereoToMono<F>(dest, src);
+		StereoToMono<F, Traits>(dest, src);
 	else if (dest_channels == 2)
-		NToStereo<F>(dest, src_channels, src);
+		NToStereo<F, Traits>(dest, src_channels, src);
 	else if (src_channels == 2 && dest_channels > 2)
 		StereoToN<F, Traits>(dest, dest_channels, src);
 	else
-		NToM<F>(dest, dest_channels, src_channels, src);
+		NToM<F, Traits>(dest, dest_channels, src_channels, src);
 
 	return { dest, dest_size };
 }
@@ -191,3 +261,17 @@ pcm_convert_channels_float(PcmBuffer &buffer,
 	return ConvertChannels<SampleFormat::FLOAT>(buffer, dest_channels,
 						    src_channels, src);
 }
+
+#ifdef ENABLE_DSD
+
+std::span<const std::byte>
+pcm_convert_channels_dsd(PcmBuffer &buffer,
+			 unsigned dest_channels,
+			 unsigned src_channels,
+			 std::span<const std::byte> src) noexcept
+{
+	return ConvertChannels<SampleFormat::DSD>(buffer, dest_channels,
+						  src_channels, src);
+}
+
+#endif // ENABLE_DSD

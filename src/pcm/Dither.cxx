@@ -3,7 +3,6 @@
 
 #include "Dither.hxx"
 #include "Prng.hxx"
-#include "Traits.hxx"
 
 template<typename T, T MIN, T MAX, unsigned scale_bits>
 inline T
@@ -58,7 +57,7 @@ PcmDither::DitherShift(ST sample) noexcept
 	return Dither<ST, MIN, MAX, SBITS - DBITS>(sample);
 }
 
-template<typename ST, typename DT>
+template<IntegerSampleTraits ST, IntegerSampleTraits DT>
 inline typename DT::value_type
 PcmDither::DitherConvert(typename ST::value_type sample) noexcept
 {
@@ -71,7 +70,7 @@ PcmDither::DitherConvert(typename ST::value_type sample) noexcept
 		      scale_bits>(sample);
 }
 
-template<typename ST, typename DT>
+template<IntegerSampleTraits ST, IntegerSampleTraits DT>
 inline void
 PcmDither::DitherConvert(typename DT::pointer dest,
 			 typename ST::const_pointer src,

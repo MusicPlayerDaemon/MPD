@@ -46,9 +46,9 @@ qobuz_feature = get_option('qobuz')
 if qobuz_feature.disabled()
   enable_qobuz = false
 else
-  enable_qobuz = curl_dep.found() and yajl_dep.found() and crypto_md5_dep.found()
+  enable_qobuz = curl_dep.found() and nlohmann_json_dep.found() and crypto_md5_dep.found()
   if not enable_qobuz and qobuz_feature.enabled()
-    error('Qobuz requires CURL, libyajl and libgcrypt')
+    error('Qobuz requires CURL, nlohmann_json and libgcrypt')
   endif
 endif
 input_features.set('ENABLE_QOBUZ', enable_qobuz)
@@ -78,7 +78,7 @@ input_plugins = static_library(
     libmms_dep,
     nfs_dep,
     smbclient_dep,
-    yajl_dep,
+    nlohmann_json_dep,
     crypto_md5_dep,
   ],
 )

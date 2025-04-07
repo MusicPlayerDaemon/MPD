@@ -146,7 +146,7 @@ GenerateCtable(int t) noexcept
 
 static constexpr auto ctables = GenerateArray<CTABLES>(GenerateCtable);
 
-template<typename Traits=SampleTraits<SampleFormat::S24_P32>>
+template<ArithmeticSampleTraits Traits=SampleTraits<SampleFormat::S24_P32>>
 static constexpr auto
 CalculateCtableS24Value(size_t i, size_t j) noexcept
 {

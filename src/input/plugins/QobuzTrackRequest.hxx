@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef QOBUZ_TRACK_REQUEST_HXX
-#define QOBUZ_TRACK_REQUEST_HXX
+#pragma once
 
-#include "lib/curl/Delegate.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/Request.hxx"
+#include "lib/curl/StringHandler.hxx"
 
 class QobuzClient;
 struct QobuzSession;
@@ -17,7 +16,7 @@ public:
 	virtual void OnQobuzTrackError(std::exception_ptr error) noexcept = 0;
 };
 
-class QobuzTrackRequest final : DelegateCurlResponseHandler {
+class QobuzTrackRequest final : StringCurlResponseHandler {
 	CurlSlist request_headers;
 
 	CurlRequest request;
@@ -38,13 +37,7 @@ public:
 	}
 
 private:
-	/* virtual methods from DelegateCurlResponseHandler */
-	std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
-						       Curl::Headers &&headers) override;
-	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
-
 	/* virtual methods from CurlResponseHandler */
+	void OnEnd() override;
 	void OnError(std::exception_ptr e) noexcept override;
 };
-
-#endif

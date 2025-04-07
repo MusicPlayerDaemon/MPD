@@ -108,7 +108,6 @@ option('smbclient', type: 'feature', value: 'disabled', description: 'SMB suppor
 #
 
 option('qobuz', type: 'feature', description: 'Qobuz client')
-option('soundcloud', type: 'feature', description: 'SoundCloud client')
 
 #
 # Archive plugins
@@ -195,9 +194,9 @@ option('dbus', type: 'feature', description: 'D-Bus support')
 option('expat', type: 'feature', description: 'Expat XML support')
 option('icu', type: 'feature', description: 'Use libicu for Unicode')
 option('iconv', type: 'feature', description: 'Use iconv() for character set conversion')
+option('nlohmann_json', type: 'feature', description: 'nlohmann_json for JSON support')
 option('pcre', type: 'feature', description: 'Enable regular expression support (using libpcre)')
 option('sqlite', type: 'feature', description: 'SQLite database support (for stickers)')
-option('yajl', type: 'feature', description: 'libyajl for YAML support')
 option('zlib', type: 'feature', description: 'zlib support (for database compression)')
 
 option('zeroconf', type: 'combo',

@@ -4,8 +4,12 @@
 #include "QobuzClient.hxx"
 #include "lib/crypto/MD5.hxx"
 
+#include <fmt/core.h>
+
 #include <cassert>
 #include <stdexcept>
+
+using std::string_view_literals::operator""sv;
 
 namespace {
 
@@ -152,10 +156,7 @@ QobuzClient::MakeUrl(const char *object, const char *method,
 {
 	assert(!query.empty());
 
-	std::string uri(base_url);
-	uri += object;
-	uri.push_back('/');
-	uri += method;
+	auto uri = fmt::format("{}{}/{}"sv, base_url, object, method);
 
 	QueryStringBuilder q;
 	for (const auto &[key, url] : query)
@@ -171,10 +172,7 @@ QobuzClient::MakeSignedUrl(const char *object, const char *method,
 {
 	assert(!query.empty());
 
-	std::string uri(base_url);
-	uri += object;
-	uri.push_back('/');
-	uri += method;
+	auto uri = fmt::format("{}{}/{}"sv, base_url, object, method);
 
 	QueryStringBuilder q;
 	std::string concatenated_query(object);

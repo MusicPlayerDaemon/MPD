@@ -22,7 +22,9 @@ PcmConvert::PcmConvert(const AudioFormat _src_format,
 	assert(dest_format.IsValid());
 
 	AudioFormat format = _src_format;
-	if (format.format == SampleFormat::DSD) {
+	if (format.format == SampleFormat::DSD &&
+	    (dest_format.format != SampleFormat::DSD ||
+	     format.sample_rate != dest_format.sample_rate)) {
 #ifdef ENABLE_DSD
 		dsd2pcm_float = dest_format.format == SampleFormat::FLOAT;
 		format.format = dsd2pcm_float

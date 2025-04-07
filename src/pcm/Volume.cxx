@@ -50,7 +50,7 @@ PcmVolumeConvert(typename STraits::value_type _sample, int volume) noexcept
 	return result;
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 static inline typename Traits::value_type
 pcm_volume_sample(PcmDither &dither,
 		  typename Traits::value_type _sample,
@@ -63,7 +63,7 @@ pcm_volume_sample(PcmDither &dither,
 				  Traits::BITS>(sample * volume);
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
+template<SampleFormat F, IntegerSampleTraits Traits=SampleTraits<F>>
 static void
 pcm_volume_change(PcmDither &dither,
 		  typename Traits::pointer dest,

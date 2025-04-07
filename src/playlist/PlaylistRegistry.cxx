@@ -9,7 +9,6 @@
 #include "plugins/ExtM3uPlaylistPlugin.hxx"
 #include "plugins/M3uPlaylistPlugin.hxx"
 #include "plugins/XspfPlaylistPlugin.hxx"
-#include "plugins/SoundCloudPlaylistPlugin.hxx"
 #include "plugins/PlsPlaylistPlugin.hxx"
 #include "plugins/AsxPlaylistPlugin.hxx"
 #include "plugins/RssPlaylistPlugin.hxx"
@@ -35,9 +34,6 @@ constinit const PlaylistPlugin *const playlist_plugins[] = {
 	&xspf_playlist_plugin,
 	&asx_playlist_plugin,
 	&rss_playlist_plugin,
-#endif
-#ifdef ENABLE_SOUNDCLOUD
-	&soundcloud_playlist_plugin,
 #endif
 #ifdef ENABLE_FLAC
 	&flac_playlist_plugin,
