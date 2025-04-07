@@ -81,6 +81,7 @@ jobs:
             ${{ matrix.packages }} \
             meson \
             ccache \
+            nlohmann-json3-dev \
             libfmt-dev \
             libgtest-dev \
             libpcre2-dev \
@@ -146,6 +147,7 @@ jobs:
             -Ddsd=false \
             -Ddatabase=false \
             -Dneighbor=false \
+            -Dnlohmann_json=enabled \
             -Dcue=false \
             -Dfifo=false \
             -Dhttpd=false -Dpipe=false -Drecorder=false \
@@ -186,6 +188,7 @@ jobs:
               libsamplerate
               libsoxr
               flac
+              nlohmann-json
               opus
               libvorbis
               faad2
@@ -219,6 +222,7 @@ jobs:
         run: |
           meson setup \
             -Ddocumentation=disabled \
+            -Dnlohmann_json=enabled \
             -Dtest=true \
             -Dpcre=enabled \
             --wrap-mode nofallback \
@@ -295,6 +299,7 @@ jobs:
             libsoxr:p
             libvorbis:p
             meson:p
+            nlohmann-json:p
             ninja:p
             opus:p
             pulseaudio:p
@@ -320,6 +325,7 @@ jobs:
             -Dmikmod=disabled \
             -Dmpg123=disabled \
             -Dnfs=disabled \
+            -Dnlohmann_json=enabled \
             -Dsidplay=disabled \
             -Dudisks=disabled \
             -Dupnp=disabled \
