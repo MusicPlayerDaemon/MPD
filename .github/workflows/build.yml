@@ -101,7 +101,7 @@ jobs:
             libsamplerate0-dev libsoxr-dev \
             libbz2-dev libcdio-paranoia-dev libiso9660-dev libmms-dev \
             libzzip-dev \
-            libyajl-dev libexpat-dev \
+            libexpat-dev \
             libasound2-dev libao-dev libjack-jackd2-dev libopenal-dev \
             libpulse-dev libshout3-dev \
             libsndio-dev \
@@ -305,7 +305,6 @@ jobs:
             pulseaudio:p
             shine:p
             twolame:p
-            yajl:p
 
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1.2
