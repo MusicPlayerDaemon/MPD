@@ -91,13 +91,13 @@ Always write your code against the latest git:
 
 .. code-block:: none
 
-    git clone git://github.com/MusicPlayerDaemon/MPD
+    git clone https://github.com/MusicPlayerDaemon/MPD.git
 
 If you already have a clone, update it:
 
 .. code-block:: none
 
-    git pull --rebase git://github.com/MusicPlayerDaemon/MPD master
+    git pull --rebase https://github.com/MusicPlayerDaemon/MPD.git master
 
 You can do without :code:`--rebase`, but we recommend that you rebase
 your repository on the "master" repository all the time.
