@@ -14,6 +14,7 @@
 /libsndfile-*/
 /libvorbis-*/
 /liburing-*/
+/nlohmann_json-*/
 /openssl-*/
 /opus-*/
 /sqlite-*/
