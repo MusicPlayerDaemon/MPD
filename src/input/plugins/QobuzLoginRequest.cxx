@@ -5,58 +5,13 @@
 #include "QobuzErrorParser.hxx"
 #include "QobuzSession.hxx"
 #include "lib/curl/Form.hxx"
-#include "lib/yajl/Callbacks.hxx"
 
 #include <fmt/core.h>
+#include <nlohmann/json.hpp>
 
 #include <cassert>
 
 using std::string_view_literals::operator""sv;
-
-using Wrapper = Yajl::CallbacksWrapper<QobuzLoginRequest::ResponseParser>;
-static constexpr yajl_callbacks parse_callbacks = {
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	Wrapper::String,
-	Wrapper::StartMap,
-	Wrapper::MapKey,
-	Wrapper::EndMap,
-	nullptr,
-	nullptr,
-};
-
-class QobuzLoginRequest::ResponseParser final : public YajlResponseParser {
-	enum class State {
-		NONE,
-		USER_AUTH_TOKEN,
-	} state = State::NONE;
-
-	QobuzSession session;
-
-public:
-	explicit ResponseParser() noexcept
-		:YajlResponseParser(&parse_callbacks, nullptr, this) {}
-
-	QobuzSession &&GetSession();
-
-	/* yajl callbacks */
-	bool String(std::string_view value) noexcept;
-	bool StartMap() noexcept;
-	bool MapKey(std::string_view value) noexcept;
-	bool EndMap() noexcept;
-};
-
-inline QobuzSession &&
-QobuzLoginRequest::ResponseParser::GetSession()
-{
-	if (session.user_auth_token.empty())
-		throw std::runtime_error("No user_auth_token in login response");
-
-	return std::move(session);
-}
 
 static Curl::Headers
 MakeLoginForm(const char *app_id,
@@ -112,98 +67,30 @@ QobuzLoginRequest::~QobuzLoginRequest() noexcept
 	request.StopIndirect();
 }
 
-std::unique_ptr<CurlResponseParser>
-QobuzLoginRequest::MakeParser(unsigned status, Curl::Headers &&headers)
+static void
+from_json(const nlohmann::json &j, QobuzSession &session)
 {
-	if (status != 200)
-		return std::make_unique<QobuzErrorParser>(status, headers);
-
-	auto i = headers.find("content-type");
-	if (i == headers.end() || i->second.find("/json") == i->second.npos)
-		throw std::runtime_error("Not a JSON response from Qobuz");
-
-	return std::make_unique<ResponseParser>();
+	j.at("user_auth_token"sv).get_to(session.user_auth_token);
+	if (session.user_auth_token.empty())
+		throw std::runtime_error("No user_auth_token in login response");
 }
 
 void
-QobuzLoginRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
+QobuzLoginRequest::OnEnd()
 {
-	assert(dynamic_cast<ResponseParser *>(p.get()) != nullptr);
-	auto &rp = (ResponseParser &)*p;
-	handler.OnQobuzLoginSuccess(rp.GetSession());
+	const auto &r = GetResponse();
+	if (r.status != 200)
+		ThrowQobuzError(r);
+
+	if (auto i = r.headers.find("content-type");
+	    i == r.headers.end() || i->second.find("/json") == i->second.npos)
+		throw std::runtime_error("Not a JSON response from Qobuz");
+
+	handler.OnQobuzLoginSuccess(nlohmann::json::parse(r.body));
 }
 
 void
 QobuzLoginRequest::OnError(std::exception_ptr e) noexcept
 {
 	handler.OnQobuzLoginError(e);
-}
-
-inline bool
-QobuzLoginRequest::ResponseParser::String(std::string_view value) noexcept
-{
-	switch (state) {
-	case State::NONE:
-		break;
-
-	case State::USER_AUTH_TOKEN:
-		session.user_auth_token = value;
-		break;
-	}
-
-	return true;
-}
-
-inline bool
-QobuzLoginRequest::ResponseParser::StartMap() noexcept
-{
-	switch (state) {
-	case State::NONE:
-		break;
-
-	case State::USER_AUTH_TOKEN:
-		break;
-	}
-
-	return true;
-}
-
-inline bool
-QobuzLoginRequest::ResponseParser::MapKey(std::string_view value) noexcept
-{
-	switch (state) {
-	case State::NONE:
-		if (value == "user_auth_token"sv)
-			state = State::USER_AUTH_TOKEN;
-
-		break;
-
-	case State::USER_AUTH_TOKEN:
-		break;
-	}
-
-
-	return true;
-}
-
-inline bool
-QobuzLoginRequest::ResponseParser::EndMap() noexcept
-{
-	switch (state) {
-	case State::NONE:
-		break;
-
-	case State::USER_AUTH_TOKEN:
-		break;
-	}
-
-	switch (state) {
-	case State::NONE:
-		break;
-
-	case State::USER_AUTH_TOKEN:
-		break;
-	}
-
-	return true;
 }

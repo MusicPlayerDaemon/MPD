@@ -4,51 +4,11 @@
 #include "QobuzTrackRequest.hxx"
 #include "QobuzErrorParser.hxx"
 #include "QobuzClient.hxx"
-#include "lib/yajl/Callbacks.hxx"
 
 #include <fmt/core.h>
+#include <nlohmann/json.hpp>
 
 using std::string_view_literals::operator""sv;
-
-using Wrapper = Yajl::CallbacksWrapper<QobuzTrackRequest::ResponseParser>;
-static constexpr yajl_callbacks parse_callbacks = {
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	Wrapper::String,
-	nullptr,
-	Wrapper::MapKey,
-	Wrapper::EndMap,
-	nullptr,
-	nullptr,
-};
-
-class QobuzTrackRequest::ResponseParser final : public YajlResponseParser {
-	enum class State {
-		NONE,
-		URL,
-	} state = State::NONE;
-
-	std::string url;
-
-public:
-	explicit ResponseParser() noexcept
-		:YajlResponseParser(&parse_callbacks, nullptr, this) {}
-
-	std::string &&GetUrl() {
-		if (url.empty())
-			throw std::runtime_error("No url in track response");
-
-		return std::move(url);
-	}
-
-	/* yajl callbacks */
-	bool String(std::string_view value) noexcept;
-	bool MapKey(std::string_view value) noexcept;
-	bool EndMap() noexcept;
-};
 
 static std::string
 MakeTrackUrl(QobuzClient &client, const char *track_id)
@@ -79,64 +39,22 @@ QobuzTrackRequest::~QobuzTrackRequest() noexcept
 	request.StopIndirect();
 }
 
-std::unique_ptr<CurlResponseParser>
-QobuzTrackRequest::MakeParser(unsigned status,
-			      Curl::Headers &&headers)
+void
+QobuzTrackRequest::OnEnd()
 {
-	if (status != 200)
-		return std::make_unique<QobuzErrorParser>(status, headers);
+	const auto &r = GetResponse();
+	if (r.status != 200)
+		ThrowQobuzError(r);
 
-	auto i = headers.find("content-type");
-	if (i == headers.end() || i->second.find("/json") == i->second.npos)
+	if (auto i = r.headers.find("content-type");
+	    i == r.headers.end() || i->second.find("/json") == i->second.npos)
 		throw std::runtime_error("Not a JSON response from Qobuz");
 
-	return std::make_unique<ResponseParser>();
-}
-
-void
-QobuzTrackRequest::FinishParser(std::unique_ptr<CurlResponseParser> p)
-{
-	assert(dynamic_cast<ResponseParser *>(p.get()) != nullptr);
-	auto &rp = (ResponseParser &)*p;
-	handler.OnQobuzTrackSuccess(rp.GetUrl());
+	handler.OnQobuzTrackSuccess(nlohmann::json::parse(r.body).at("url"sv).get<std::string>());
 }
 
 void
 QobuzTrackRequest::OnError(std::exception_ptr e) noexcept
 {
 	handler.OnQobuzTrackError(e);
-}
-
-inline bool
-QobuzTrackRequest::ResponseParser::String(std::string_view value) noexcept
-{
-	switch (state) {
-	case State::NONE:
-		break;
-
-	case State::URL:
-		url = value;
-		break;
-	}
-
-	return true;
-}
-
-inline bool
-QobuzTrackRequest::ResponseParser::MapKey(std::string_view value) noexcept
-{
-	if (value == "url"sv)
-		state = State::URL;
-	else
-		state = State::NONE;
-
-	return true;
-}
-
-inline bool
-QobuzTrackRequest::ResponseParser::EndMap() noexcept
-{
-	state = State::NONE;
-
-	return true;
 }

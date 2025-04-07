@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include "lib/curl/Delegate.hxx"
 #include "lib/curl/Request.hxx"
+#include "lib/curl/StringHandler.hxx"
 
-class CurlRequest;
 struct QobuzSession;
 
 class QobuzLoginHandler {
@@ -15,7 +14,7 @@ public:
 	virtual void OnQobuzLoginError(std::exception_ptr error) noexcept = 0;
 };
 
-class QobuzLoginRequest final : DelegateCurlResponseHandler {
+class QobuzLoginRequest final : StringCurlResponseHandler {
 	CurlRequest request;
 
 	QobuzLoginHandler &handler;
@@ -37,11 +36,7 @@ public:
 	}
 
 private:
-	/* virtual methods from DelegateCurlResponseHandler */
-	std::unique_ptr<CurlResponseParser> MakeParser(unsigned status,
-						       Curl::Headers &&headers) override;
-	void FinishParser(std::unique_ptr<CurlResponseParser> p) override;
-
 	/* virtual methods from CurlResponseHandler */
+	void OnEnd() override;
 	void OnError(std::exception_ptr e) noexcept override;
 };
