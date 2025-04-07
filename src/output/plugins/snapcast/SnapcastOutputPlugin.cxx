@@ -22,8 +22,8 @@
 #include "zeroconf/Helper.hxx"
 #endif
 
-#ifdef HAVE_YAJL
-#include "lib/yajl/Gen.hxx"
+#ifdef HAVE_NLOHMANN_JSON
+#include <nlohmann/json.hpp>
 #endif
 
 #include <cassert>
@@ -209,7 +209,7 @@ SnapcastOutput::Delay() const noexcept
 		: std::chrono::steady_clock::duration::zero();
 }
 
-#ifdef HAVE_YAJL
+#ifdef HAVE_NLOHMANN_JSON
 
 static constexpr struct {
 	TagType type;
@@ -224,7 +224,7 @@ static constexpr struct {
 };
 
 static bool
-TranslateTagType(Yajl::Gen &gen, const Tag &tag, TagType type,
+TranslateTagType(nlohmann::json &json, const Tag &tag, TagType type,
 		 const char *name) noexcept
 {
 	// TODO: support multiple values?
@@ -232,29 +232,19 @@ TranslateTagType(Yajl::Gen &gen, const Tag &tag, TagType type,
 	if (value == nullptr)
 		return false;
 
-	gen.String(name);
-	gen.String(value);
+	json.emplace(name, value);
 	return true;
 }
 
-static std::string
+static nlohmann::json
 ToJson(const Tag &tag) noexcept
 {
-	Yajl::Gen gen(nullptr);
-	gen.OpenMap();
-
-	bool empty = true;
+	auto json = nlohmann::json::object();
 
 	for (const auto [type, name] : snapcast_tags)
-		if (TranslateTagType(gen, tag, type, name))
-			empty = false;
+		TranslateTagType(json, tag, type, name);
 
-	if (empty)
-		return {};
-
-	gen.CloseMap();
-
-	return std::string{ToStringView(gen.GetBuffer())};
+	return json;
 }
 
 #endif
@@ -262,7 +252,7 @@ ToJson(const Tag &tag) noexcept
 void
 SnapcastOutput::SendTag(const Tag &tag)
 {
-#ifdef HAVE_YAJL
+#ifdef HAVE_NLOHMANN_JSON
 	if (!LockHasClients())
 		return;
 
@@ -270,12 +260,12 @@ SnapcastOutput::SendTag(const Tag &tag)
 	if (json.empty())
 		return;
 
-	const auto payload = std::as_bytes(std::span{json});
+	const auto payload = json.dump();
 
 	const std::scoped_lock protect{mutex};
 	// TODO: enqueue StreamTags, don't send directly
 	for (auto &client : clients)
-		client.SendStreamTags(payload);
+		client.SendStreamTags(AsBytes(payload));
 #else
 	(void)tag;
 #endif

@@ -7,6 +7,7 @@ ver 0.24.3 (not yet released)
   - libid3tag: add missing zlib dependency to Meson subproject
 * output
   - oss: fix error "Resource temporarily unavailable"
+  - snapcast: use nlohmann_json instead of yajl to generate JSON tags
 * Windows
   - fix cross build on Linux when WINE is not installed
 * DSD: support channel conversion

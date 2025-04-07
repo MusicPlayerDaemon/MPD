@@ -120,9 +120,9 @@ if get_option('snapcast')
     'snapcast/SnapcastOutputPlugin.cxx',
     'snapcast/Client.cxx',
   ]
-  output_plugins_deps += [ event_dep, net_dep, yajl_dep, zeroconf_dep ]
+  output_plugins_deps += [ event_dep, net_dep, nlohmann_json_dep, zeroconf_dep ]
 
-  output_features.set('HAVE_YAJL', yajl_dep.found())
+  output_features.set('HAVE_NLOHMANN_JSON', nlohmann_json_dep.found())
 
   need_wave_encoder = true
 endif
