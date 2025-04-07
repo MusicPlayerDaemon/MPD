@@ -5,8 +5,8 @@ ver 0.24.3 (not yet released)
 * tags
   - libid3tag: fix Meson subproject configure error
   - libid3tag: add missing zlib dependency to Meson subproject
-* oss
-  - output: fix error "Resource temporarily unavailable"
+* output
+  - oss: fix error "Resource temporarily unavailable"
 * Windows
   - fix cross build on Linux when WINE is not installed
 * DSD: support channel conversion
