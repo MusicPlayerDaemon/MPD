@@ -1,6 +1,8 @@
 ver 0.24.3 (not yet released)
 * input
   - qobuz: use nlohmann_json instead of yajl
+* playlist
+  - soundcloud: remove defunct plugin
 * decoder
   - ffmpeg: support WMA
   - mpg123: fix trailing space in tag values

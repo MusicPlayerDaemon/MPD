@@ -1415,20 +1415,6 @@ rss
 ---
 Reads music links from :file:`.rss` files.
 
-soundcloud
-----------
-
-Download playlist from SoundCloud. It accepts URIs starting with soundcloud://.
-
-.. list-table::
-   :widths: 20 80
-   :header-rows: 1
-
-   * - Setting
-     - Description
-   * - **apikey KEY**
-     - An API key to access the SoundCloud servers.
-
 xspf
 ----
 Reads XSPF playlist files. 
