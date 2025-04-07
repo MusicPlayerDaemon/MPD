@@ -148,6 +148,10 @@ public:
 		SetOption(CURLOPT_TIMEOUT, timeout.count());
 	}
 
+	void SetMaxFileSize(curl_off_t size) {
+		SetOption(CURLOPT_MAXFILESIZE_LARGE, size);
+	}
+
 	void SetHeaderFunction(size_t (*function)(char *buffer, size_t size,
 						  size_t nitems,
 						  void *userdata),
