@@ -31,12 +31,8 @@ static constexpr yajl_callbacks parse_callbacks = {
 class QobuzLoginRequest::ResponseParser final : public YajlResponseParser {
 	enum class State {
 		NONE,
-		DEVICE,
-		DEVICE_ID,
 		USER_AUTH_TOKEN,
 	} state = State::NONE;
-
-	unsigned map_depth = 0;
 
 	QobuzSession session;
 
@@ -58,9 +54,6 @@ QobuzLoginRequest::ResponseParser::GetSession()
 {
 	if (session.user_auth_token.empty())
 		throw std::runtime_error("No user_auth_token in login response");
-
-	if (session.device_id.empty())
-		throw std::runtime_error("No device id in login response");
 
 	return std::move(session);
 }
@@ -151,11 +144,6 @@ QobuzLoginRequest::ResponseParser::String(std::string_view value) noexcept
 {
 	switch (state) {
 	case State::NONE:
-	case State::DEVICE:
-		break;
-
-	case State::DEVICE_ID:
-		session.device_id = value;
 		break;
 
 	case State::USER_AUTH_TOKEN:
@@ -173,11 +161,6 @@ QobuzLoginRequest::ResponseParser::StartMap() noexcept
 	case State::NONE:
 		break;
 
-	case State::DEVICE:
-	case State::DEVICE_ID:
-		++map_depth;
-		break;
-
 	case State::USER_AUTH_TOKEN:
 		break;
 	}
@@ -192,19 +175,7 @@ QobuzLoginRequest::ResponseParser::MapKey(std::string_view value) noexcept
 	case State::NONE:
 		if (value == "user_auth_token"sv)
 			state = State::USER_AUTH_TOKEN;
-		else if (value == "device"sv) {
-			state = State::DEVICE;
-			map_depth = 0;
-		}
 
-		break;
-
-	case State::DEVICE:
-		if (value == "id"sv)
-			state = State::DEVICE_ID;
-		break;
-
-	case State::DEVICE_ID:
 		break;
 
 	case State::USER_AUTH_TOKEN:
@@ -222,24 +193,12 @@ QobuzLoginRequest::ResponseParser::EndMap() noexcept
 	case State::NONE:
 		break;
 
-	case State::DEVICE_ID:
-		state = State::DEVICE;
-		break;
-
-	case State::DEVICE:
 	case State::USER_AUTH_TOKEN:
 		break;
 	}
 
 	switch (state) {
 	case State::NONE:
-	case State::DEVICE_ID:
-		break;
-
-	case State::DEVICE:
-		assert(map_depth > 0);
-		if (--map_depth == 0)
-			state = State::NONE;
 		break;
 
 	case State::USER_AUTH_TOKEN:
