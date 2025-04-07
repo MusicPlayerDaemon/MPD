@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef QOBUZ_TRACK_REQUEST_HXX
-#define QOBUZ_TRACK_REQUEST_HXX
+#pragma once
 
 #include "lib/curl/Delegate.hxx"
 #include "lib/curl/Slist.hxx"
@@ -46,5 +45,3 @@ private:
 	/* virtual methods from CurlResponseHandler */
 	void OnError(std::exception_ptr e) noexcept override;
 };
-
-#endif

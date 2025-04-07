@@ -7,6 +7,8 @@
 #include "lib/curl/Form.hxx"
 #include "lib/yajl/Callbacks.hxx"
 
+#include <fmt/core.h>
+
 #include <cassert>
 
 using std::string_view_literals::operator""sv;
@@ -92,12 +94,10 @@ MakeLoginUrl(CURL *curl,
 	     const char *password,
 	     const char *device_manufacturer_id)
 {
-	std::string url(base_url);
-	url += "user/login?";
-	url += EncodeForm(curl,
-			  MakeLoginForm(app_id, username, email, password,
-					device_manufacturer_id));
-	return url;
+	return fmt::format("{}user/login?{}"sv, base_url,
+			   EncodeForm(curl,
+				      MakeLoginForm(app_id, username, email, password,
+						    device_manufacturer_id)));
 }
 
 QobuzLoginRequest::QobuzLoginRequest(CurlGlobal &curl,

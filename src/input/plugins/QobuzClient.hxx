@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef QOBUZ_CLIENT_HXX
-#define QOBUZ_CLIENT_HXX
+#pragma once
 
 #include "QobuzSession.hxx"
 #include "QobuzLoginRequest.hxx"
@@ -96,5 +95,3 @@ private:
 	void OnQobuzLoginSuccess(QobuzSession &&session) noexcept override;
 	void OnQobuzLoginError(std::exception_ptr error) noexcept override;
 };
-
-#endif

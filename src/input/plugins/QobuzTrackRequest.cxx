@@ -6,6 +6,8 @@
 #include "QobuzClient.hxx"
 #include "lib/yajl/Callbacks.hxx"
 
+#include <fmt/core.h>
+
 using std::string_view_literals::operator""sv;
 
 using Wrapper = Yajl::CallbacksWrapper<QobuzTrackRequest::ResponseParser>;
@@ -67,8 +69,8 @@ QobuzTrackRequest::QobuzTrackRequest(QobuzClient &client,
 		 *this),
 	 handler(_handler)
 {
-	request_headers.Append(("X-User-Auth-Token:"
-				+ session.user_auth_token).c_str());
+	request_headers.Append(fmt::format("X-User-Auth-Token:{}"sv,
+					   session.user_auth_token).c_str());
 	request.GetEasy().SetRequestHeaders(request_headers.Get());
 }
 
