@@ -44,6 +44,8 @@ extern "C" {
 
 #include <string.h>
 
+using std::string_view_literals::operator""sv;
+
 /**
  * Muxer options to be passed to avformat_open_input().
  */
@@ -683,10 +685,10 @@ ffmpeg_protocols() noexcept
 	void *opaque = nullptr;
 	while ((format = av_demuxer_iterate(&opaque)) != nullptr) {
 		if (StringIsEqual(format->name, "rtsp")) {
-			protocols.emplace("rtsp://");
-			protocols.emplace("rtsps://");
+			protocols.emplace("rtsp://"sv);
+			protocols.emplace("rtsps://"sv);
 		} else if (StringIsEqual(format->name, "rtp"))
-			protocols.emplace("rtp://");
+			protocols.emplace("rtp://"sv);
 	}
 
 	return protocols;
@@ -708,16 +710,16 @@ ffmpeg_suffixes() noexcept
 
 	void *codec_opaque = nullptr;
 	while (const auto codec = av_codec_iterate(&codec_opaque)) {
-		if (StringStartsWith(codec->name, "dsd_")) {
+		if (StringStartsWith(codec->name, "dsd_"sv)) {
 			/* FFmpeg was compiled with DSD support */
-			suffixes.emplace("dff");
-			suffixes.emplace("dsf");
+			suffixes.emplace("dff"sv);
+			suffixes.emplace("dsf"sv);
 		} else if (StringIsEqual(codec->name, "dst")) {
-			suffixes.emplace("dst");
-		} else if (StringStartsWith(codec->name, "wma")) {
+			suffixes.emplace("dst"sv);
+		} else if (StringStartsWith(codec->name, "wma"sv)) {
 			/* there are codecs "wmav1", "wmav2" etc. and
 			   they usually come in "*.wma" files */
-			suffixes.emplace("wma");
+			suffixes.emplace("wma"sv);
 		}
 	}
 
