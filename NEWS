@@ -1,3 +1,5 @@
+ver 0.24.4 (not yet released)
+
 ver 0.24.3 (2025/04/09)
 * input
   - qobuz: use nlohmann_json instead of yajl
