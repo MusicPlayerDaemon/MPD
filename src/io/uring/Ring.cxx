@@ -10,8 +10,16 @@ namespace Uring {
 Ring::Ring(unsigned entries, unsigned flags)
 {
 	if (int error = io_uring_queue_init(entries, &ring, flags);
-	    error < 0)
-		throw MakeErrno(-error, "io_uring_queue_init() failed");
+	    error < 0) {
+		if (error == -EINVAL && (flags & ~iouring_setup_mask)) {
+		    flags &= iouring_setup_mask;
+			if (error = io_uring_queue_init(entries, &ring, flags);
+			    error < 0)
+				throw MakeErrno(-error, "io_uring_queue_init() failed (fallback)");
+			}
+		else
+			throw MakeErrno(-error, "io_uring_queue_init() failed");
+		}
 }
 
 Ring::Ring(unsigned entries, struct io_uring_params &params)

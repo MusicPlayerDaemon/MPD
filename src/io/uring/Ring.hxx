@@ -18,6 +18,16 @@ namespace Uring {
 class Ring {
 	struct io_uring ring;
 
+// io_uring_setup() flags supported by Linux kernel 5.6
+unsigned iouring_setup_mask = (
+	IORING_SETUP_IOPOLL |
+	IORING_SETUP_SQPOLL |
+	IORING_SETUP_SQ_AFF |
+	IORING_SETUP_CQSIZE |
+	IORING_SETUP_CLAMP |
+	IORING_SETUP_ATTACH_WQ
+	);
+
 public:
 	/**
 	 * Construct the io_uring using io_uring_queue_init().
