@@ -6,6 +6,7 @@
 #include "thread/Slack.hxx"
 #include "thread/Util.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
+#include "system/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -59,7 +60,16 @@ EventThread::Run() noexcept
 	} else {
 #ifdef HAVE_URING
 		try {
-			event_loop.EnableUring(1024, IORING_SETUP_SINGLE_ISSUER);
+			try {
+				event_loop.EnableUring(1024, IORING_SETUP_SINGLE_ISSUER);
+			} catch (const std::system_error &e) {
+				if (IsErrno(e, EINVAL))
+					/* try without IORING_SETUP_SINGLE_ISSUER
+					   (that flag requires Linux kernel 6.0) */
+					event_loop.EnableUring(1024, 0);
+				else
+					throw;
+			}
 		} catch (...) {
 			FmtInfo(event_domain,
 				"Failed to initialize io_uring: {}",

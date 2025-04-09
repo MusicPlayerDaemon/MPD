@@ -10,6 +10,7 @@ if host_machine.system() != 'linux' or is_android
 endif
 
 liburing = dependency('liburing',
+                      version: '>= 2.3',
                       include_type: 'system',
                       required: get_option('io_uring'))
 uring_features.set('HAVE_URING', liburing.found())

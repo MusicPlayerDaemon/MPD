@@ -311,7 +311,7 @@ EncoderToShout(shout_t *shout_conn, Encoder &encoder)
 	while (true) {
 		std::byte buffer[32768];
 		const auto e = encoder.Read(std::span{buffer});
-		if (e.empty() == 0)
+		if (e.empty())
 			return;
 
 		int err = shout_send(shout_conn,

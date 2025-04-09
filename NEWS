@@ -6,7 +6,7 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.3 (not yet released)
+ver 0.24.3 (2025/04/09)
 * input
   - qobuz: use nlohmann_json instead of yajl
 * playlist
@@ -19,7 +19,10 @@ ver 0.24.3 (not yet released)
   - libid3tag: add missing zlib dependency to Meson subproject
 * output
   - oss: fix error "Resource temporarily unavailable"
+  - shout: fix hang on activating shout output
   - snapcast: use nlohmann_json instead of yajl to generate JSON tags
+* Linux
+  - allow using io_uring on Linux kernels older than 6.0
 * Windows
   - fix cross build on Linux when WINE is not installed
 * DSD: support channel conversion
