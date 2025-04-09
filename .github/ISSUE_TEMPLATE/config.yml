@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: User manual
+    url: https://mpd.readthedocs.io/en/stable/user.html
+    about: Read the manual and its troubleshooting chapter
+  - name: Help forum
+    url: https://github.com/MusicPlayerDaemon/MPD/discussions
+    about: Please ask and answer questions here.
+  - name: IRC Channel
+    url: ircs://irc.libera.chat:6697/#mpd
+    about: Please ask and answer questions here.
