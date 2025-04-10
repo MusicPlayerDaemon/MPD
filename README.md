@@ -12,7 +12,7 @@ For basic installation instructions
 
 # Users
 
-- [Manual](https://mpd.readthedocs.io/en/stable/user.html)
+- [Manual](https://mpd.readthedocs.io/en/stable/user.html), or see `/usr/share/doc/mpd/html` in your installation
 - [Forum](https://github.com/MusicPlayerDaemon/MPD/discussions)
 - [IRC](ircs://irc.libera.chat:6697/#mpd)
 - [Bug tracker](https://github.com/MusicPlayerDaemon/MPD/issues/)
