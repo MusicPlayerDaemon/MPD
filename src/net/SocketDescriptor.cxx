@@ -369,6 +369,8 @@ SocketDescriptor::SetTcpFastOpen(int qlen) const noexcept
 
 #endif
 
+#ifdef HAVE_TCP
+
 bool
 SocketDescriptor::AddMembership(const IPv4Address &address) const noexcept
 {
@@ -376,6 +378,8 @@ SocketDescriptor::AddMembership(const IPv4Address &address) const noexcept
 	return setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
 			  &r, sizeof(r)) == 0;
 }
+
+#ifdef HAVE_IPV6
 
 bool
 SocketDescriptor::AddMembership(const IPv6Address &address) const noexcept
@@ -386,6 +390,8 @@ SocketDescriptor::AddMembership(const IPv6Address &address) const noexcept
 			  &r, sizeof(r)) == 0;
 }
 
+#endif // HAVE_IPV6
+
 bool
 SocketDescriptor::AddMembership(SocketAddress address) const noexcept
 {
@@ -393,8 +399,10 @@ SocketDescriptor::AddMembership(SocketAddress address) const noexcept
 	case AF_INET:
 		return AddMembership(IPv4Address(address));
 
+#ifdef HAVE_IPV6
 	case AF_INET6:
 		return AddMembership(IPv6Address(address));
+#endif
 
 	default:
 		errno = EINVAL;
@@ -402,7 +410,9 @@ SocketDescriptor::AddMembership(SocketAddress address) const noexcept
 	}
 }
 
-#endif
+#endif // HAVE_TCP
+
+#endif // __linux__
 
 bool
 SocketDescriptor::Bind(SocketAddress address) const noexcept

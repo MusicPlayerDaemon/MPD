@@ -5,9 +5,6 @@
 #include "MadDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "tag/Id3Scan.hxx"
-#include "tag/Id3ReplayGain.hxx"
-#include "tag/Id3MixRamp.hxx"
 #include "tag/Handler.hxx"
 #include "tag/ReplayGainParser.hxx"
 #include "tag/MixRampParser.hxx"
@@ -20,10 +17,14 @@
 #include <mad.h>
 
 #ifdef ENABLE_ID3TAG
+#include "tag/Id3MixRamp.hxx"
+#include "tag/Id3Parse.hxx"
+#include "tag/Id3ReplayGain.hxx"
+#include "tag/Id3Scan.hxx"
 #include "tag/Id3Unique.hxx"
-#include <id3tag.h>
 #endif
 
+#include <algorithm> // for std::copy_n()
 #include <cassert>
 
 #include <stdlib.h>
@@ -257,21 +258,19 @@ inline void
 MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag) noexcept
 {
 #ifdef ENABLE_ID3TAG
-	std::unique_ptr<id3_byte_t[]> allocated;
+	std::unique_ptr<std::byte[]> allocated;
 
 	const id3_length_t count = stream.bufend - stream.this_frame;
 
-	const id3_byte_t *id3_data;
+	const std::byte *id3_data = reinterpret_cast<const std::byte *>(stream.this_frame);
 	if (tagsize <= count) {
-		id3_data = stream.this_frame;
 		mad_stream_skip(&(stream), tagsize);
 	} else {
-		allocated = std::make_unique_for_overwrite<id3_byte_t[]>(tagsize);
-		memcpy(allocated.get(), stream.this_frame, count);
+		allocated = std::make_unique_for_overwrite<std::byte[]>(tagsize);
+		std::byte *dest = std::copy_n(id3_data, count, allocated.get());
 		mad_stream_skip(&(stream), count);
 
-		if (!decoder_read_full(client, input_stream,
-				       {reinterpret_cast<std::byte *>(allocated.get() + count), tagsize - count})) {
+		if (!decoder_read_full(client, input_stream, {dest, tagsize - count})) {
 			LogDebug(mad_domain, "error parsing ID3 tag");
 			return;
 		}
@@ -279,7 +278,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag) noexcept
 		id3_data = allocated.get();
 	}
 
-	const UniqueId3Tag id3_tag(id3_tag_parse(id3_data, tagsize));
+	const UniqueId3Tag id3_tag = id3_tag_parse(std::span{id3_data, tagsize});
 	if (id3_tag == nullptr)
 		return;
 
