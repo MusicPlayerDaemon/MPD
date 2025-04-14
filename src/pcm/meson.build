@@ -1,3 +1,5 @@
+pcm_features = configuration_data()
+
 pcm_basic_sources = [
   'CheckAudioFormat.cxx',
   'AudioFormat.cxx',
@@ -54,14 +56,14 @@ pcm_sources = [
 ]
 
 libsamplerate_dep = dependency('samplerate', version: '>= 0.1.3', required: get_option('libsamplerate'))
+pcm_features.set('ENABLE_LIBSAMPLERATE', libsamplerate_dep.found())
 if libsamplerate_dep.found()
-  conf.set('ENABLE_LIBSAMPLERATE', true)
   pcm_sources += 'LibsamplerateResampler.cxx'
 endif
 
 soxr_dep = dependency('soxr', version: '>= 0.1.2', required: get_option('soxr'))
+pcm_features.set('ENABLE_SOXR', soxr_dep.found())
 if soxr_dep.found()
-  conf.set('ENABLE_SOXR', true)
   pcm_sources += 'SoxrResampler.cxx'
 endif
 
@@ -82,3 +84,5 @@ pcm = static_library(
 pcm_dep = declare_dependency(
   link_with: pcm,
 )
+
+configure_file(output: 'Features.h', configuration: pcm_features)

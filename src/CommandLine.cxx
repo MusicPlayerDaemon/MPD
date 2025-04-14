@@ -8,6 +8,7 @@
 #include "LogInit.hxx"
 #include "Log.hxx"
 #include "config/File.hxx"
+#include "pcm/Features.h" // for ENABLE_LIBSAMPLERATE, ENABLE_SOXR
 #include "lib/icu/Features.h" // for HAVE_ICU, HAVE_ICONV
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
