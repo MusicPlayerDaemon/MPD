@@ -8,6 +8,7 @@
 #include "LogInit.hxx"
 #include "Log.hxx"
 #include "config/File.hxx"
+#include "lib/icu/Features.h" // for HAVE_ICU, HAVE_ICONV
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "output/Registry.hxx"

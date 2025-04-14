@@ -4,6 +4,7 @@
 
 /* include the .cxx file to get access to internal functions */
 #include "tag/IcyMetaDataParser.cxx"
+#include "lib/icu/Converter.hxx" // for HAVE_ICU_CONVERTER
 
 #include <gtest/gtest.h>
 

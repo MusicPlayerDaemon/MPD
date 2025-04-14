@@ -2,8 +2,8 @@
 // Copyright The Music Player Daemon Project
 
 #include "Collate.hxx"
+#include "lib/icu/Features.h" // for HAVE_ICU
 #include "util/AllocatedString.hxx"
-#include "config.h"
 
 #ifdef HAVE_ICU
 #include "Error.hxx"

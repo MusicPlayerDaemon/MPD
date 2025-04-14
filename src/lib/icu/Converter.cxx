@@ -4,7 +4,6 @@
 #include "Converter.hxx"
 #include "util/AllocatedString.hxx"
 #include "lib/fmt/ToBuffer.hxx"
-#include "config.h"
 
 #include <fmt/format.h>
 

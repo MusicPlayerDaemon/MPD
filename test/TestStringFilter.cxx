@@ -2,8 +2,8 @@
 // Copyright The Music Player Daemon Project
 
 #include "song/StringFilter.hxx"
+#include "lib/icu/Features.h" // for HAVE_ICU
 #include "lib/icu/Init.hxx"
-#include "config.h"
 
 #include <gtest/gtest.h>
 

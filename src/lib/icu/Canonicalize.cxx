@@ -2,7 +2,6 @@
 // Copyright The Music Player Daemon Project
 
 #include "Canonicalize.hxx"
-#include "config.h"
 
 #ifdef HAVE_ICU_CANONICALIZE
 

@@ -6,7 +6,6 @@
 
 #include "lib/icu/Converter.hxx"
 #include "tag/Tag.hxx"
-#include "config.h"
 
 #include <cstddef>
 #include <memory>

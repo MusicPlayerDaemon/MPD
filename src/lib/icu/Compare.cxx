@@ -5,7 +5,6 @@
 #include "Canonicalize.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
-#include "config.h"
 
 #ifdef _WIN32
 #include "Win32.hxx"

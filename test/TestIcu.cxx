@@ -2,7 +2,6 @@
  * Unit tests for src/util/
  */
 
-#include "config.h"
 #include "lib/icu/Converter.hxx"
 #include "util/AllocatedString.hxx"
 

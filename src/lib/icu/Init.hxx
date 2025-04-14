@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_ICU_INIT_HXX
-#define MPD_ICU_INIT_HXX
+#pragma once
 
-#include "config.h"
+#include "lib/icu/Features.h" // for HAVE_ICU
 
 #ifdef HAVE_ICU
 
@@ -34,5 +33,3 @@ public:
 	ScopeIcuInit(const ScopeIcuInit &) = delete;
 	ScopeIcuInit &operator=(const ScopeIcuInit &) = delete;
 };
-
-#endif

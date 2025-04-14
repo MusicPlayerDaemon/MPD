@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_ICU_CONVERTER_HXX
-#define MPD_ICU_CONVERTER_HXX
+#pragma once
 
-#include "config.h"
+#include "lib/icu/Features.h" // for HAVE_ICU, HAVE_ICONV
 
 #ifdef HAVE_ICU
 #include "thread/Mutex.hxx"
@@ -76,7 +75,5 @@ public:
 	 */
 	AllocatedString FromUTF8(std::string_view s) const;
 };
-
-#endif
 
 #endif

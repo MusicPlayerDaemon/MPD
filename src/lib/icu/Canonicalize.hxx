@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "config.h"
+#include "lib/icu/Features.h" // for HAVE_ICU
 
 #ifdef HAVE_ICU
 #define HAVE_ICU_CANONICALIZE
