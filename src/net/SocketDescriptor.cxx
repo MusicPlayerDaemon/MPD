@@ -8,6 +8,7 @@
 #include "IPv6Address.hxx"
 #include "UniqueSocketDescriptor.hxx"
 #include "PeerCredentials.hxx"
+#include "net/Features.hxx" // for HAVE_TCP, HAVE_IPV6, HAVE_UN, ...
 
 #ifdef __linux__
 #include "io/UniqueFileDescriptor.hxx"

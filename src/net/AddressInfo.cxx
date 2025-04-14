@@ -2,7 +2,7 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "AddressInfo.hxx"
-#include "Features.hxx"
+#include "net/Features.hxx" // for HAVE_UN
 
 #include <array>
 #include <cassert>

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Features.hxx" // for HAVE_STRUCT_UCRED
+#include "net/Features.hxx" // for HAVE_STRUCT_UCRED
 
 #include <type_traits> // for std::is_trivial_v
 

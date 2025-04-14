@@ -2,9 +2,9 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "ToString.hxx"
-#include "Features.hxx"
 #include "SocketAddress.hxx"
 #include "IPv4Address.hxx"
+#include "net/Features.hxx" // for HAVE_TCP, HAVE_IPV6, HAVE_UN
 
 #include <fmt/core.h>
 

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PERMISSION_HXX
-#define MPD_PERMISSION_HXX
+#pragma once
 
-#include "config.h"
+#include "net/Features.hxx" // for HAVE_TCP, HAVE_UN
 
 #include <optional>
 
@@ -44,5 +43,3 @@ GetPermissionsFromAddress(SocketAddress address) noexcept;
 
 void
 initPermissions(const ConfigData &config);
-
-#endif

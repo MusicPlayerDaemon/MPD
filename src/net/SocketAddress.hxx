@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Features.hxx"
+#include "net/Features.hxx" // for HAVE_TCP, HAVE_UN
 
 #ifdef _WIN32
 #include <winsock2.h> // IWYU pragma: export

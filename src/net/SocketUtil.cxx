@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "SocketUtil.hxx"
 #include "SocketAddress.hxx"
 #include "SocketError.hxx"
 #include "UniqueSocketDescriptor.hxx"
+#include "net/Features.hxx" // for HAVE_UN, HAVE_STRUCT_UCRED
 
 #include <sys/stat.h>
 

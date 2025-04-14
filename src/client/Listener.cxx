@@ -4,10 +4,10 @@
 #include "Listener.hxx"
 #include "Client.hxx"
 #include "Permission.hxx"
+#include "net/Features.hxx" // for HAVE_TCP, HAVE_UN
 #include "net/PeerCredentials.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
-#include "config.h"
 
 static unsigned
 GetPermissions(SocketAddress address, const SocketPeerCredentials cred) noexcept

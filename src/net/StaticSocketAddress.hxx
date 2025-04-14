@@ -4,7 +4,7 @@
 #pragma once
 
 #include "SocketAddress.hxx" // IWYU pragma: export
-#include "Features.hxx"
+#include "net/Features.hxx" // for HAVE_TCP, HAVE_UN
 
 #include <cassert>
 
