@@ -247,9 +247,8 @@ mpd_mpg123_meta(DecoderClient &client, InputStream *is,
 	if ((mpg123_meta_check(handle) & MPG123_NEW_ID3) == 0)
 		return;
 
-	mpg123_id3v1 *v1;
 	mpg123_id3v2 *v2;
-	if (mpg123_id3(handle, &v1, &v2) != MPG123_OK)
+	if (mpg123_id3(handle, nullptr, &v2) != MPG123_OK)
 		return;
 
 	if (v2 != nullptr)
