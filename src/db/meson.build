@@ -1,3 +1,7 @@
+db_features = configuration_data()
+db_features.set('ENABLE_DATABASE', enable_database)
+configure_file(output: 'Features.hxx', configuration: db_features)
+
 db_api = static_library(
   'db_api',
   'DatabaseLock.cxx',

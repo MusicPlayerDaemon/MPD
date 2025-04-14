@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_STATE_FILE_HXX
-#define MPD_STATE_FILE_HXX
+#pragma once
 
 #include "StateFileConfig.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "event/FarTimerEvent.hxx"
-#include "config.h"
 
 #include <string>
 
@@ -65,5 +64,3 @@ private:
 	/* callback for #timer_event */
 	void OnTimeout() noexcept;
 };
-
-#endif /* STATE_FILE_H */

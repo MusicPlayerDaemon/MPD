@@ -13,6 +13,7 @@
 #include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "db/DatabaseSong.hxx"
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"

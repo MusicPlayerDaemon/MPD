@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
+#include "config.h" // for HAVE_PCRE
 #include "OtherCommands.hxx"
 #include "Request.hxx"
 #include "FileCommands.hxx"
@@ -32,6 +32,7 @@
 #include "Log.hxx"
 #include "Mapper.hxx"
 
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #ifdef ENABLE_DATABASE
 #include "DatabaseCommands.hxx"
 #include "db/Interface.hxx"

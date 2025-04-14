@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_LOCATE_URI_HXX
-#define MPD_LOCATE_URI_HXX
+#pragma once
 
-#include "config.h"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "fs/AllocatedPath.hxx"
 
 #ifdef _WIN32
@@ -79,5 +78,3 @@ LocateUri(UriPluginKind kind,
 	  , const Storage *storage
 #endif
 	  );
-
-#endif

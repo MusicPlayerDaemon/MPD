@@ -3,8 +3,8 @@
 
 #pragma once
 
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "thread/Mutex.hxx"
-#include "config.h"
 
 #include <memory>
 

@@ -5,10 +5,9 @@
  * Maps directory and song objects to file system paths.
  */
 
-#ifndef MPD_MAPPER_HXX
-#define MPD_MAPPER_HXX
+#pragma once
 
-#include "config.h"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 
 #include <string>
 
@@ -61,5 +60,3 @@ map_spl_path() noexcept;
 [[gnu::pure]]
 AllocatedPath
 map_spl_utf8_to_fs(const char *name) noexcept;
-
-#endif

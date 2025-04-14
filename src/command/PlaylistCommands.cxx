@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "PlaylistCommands.hxx"
 #include "PositionArg.hxx"
 #include "Request.hxx"
 #include "Instance.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "db/Interface.hxx"
 #include "db/Selection.hxx"
 #include "db/DatabasePlaylist.hxx"

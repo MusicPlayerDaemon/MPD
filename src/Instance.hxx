@@ -5,6 +5,7 @@
 #define MPD_INSTANCE_HXX
 
 #include "config.h"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "event/Loop.hxx"
 #include "event/Thread.hxx"
 #include "event/MaskMonitor.hxx"

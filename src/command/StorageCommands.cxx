@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "StorageCommands.hxx"
 #include "Request.hxx"
 #include "time/ChronoUtil.hxx"
@@ -13,6 +12,7 @@
 #include "storage/Registry.hxx"
 #include "storage/CompositeStorage.hxx"
 #include "storage/FileInfo.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "db/update/Service.hxx"
 #include "TimePrint.hxx"

@@ -6,7 +6,6 @@
 #include "PlaylistStream.hxx"
 #include "PlaylistMapper.hxx"
 #include "SongEnumerator.hxx"
-#include "config.h"
 
 #include <utility> // for std::unreachable()
 

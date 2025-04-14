@@ -6,6 +6,7 @@
 #include "TagFile.hxx"
 #include "tag/Generic.hxx"
 #include "song/LightSong.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "db/Interface.hxx"
 #include "storage/StorageInterface.hxx"
 #include "client/Client.hxx"

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_SONG_LOADER_HXX
-#define MPD_SONG_LOADER_HXX
+#pragma once
 
-#include "config.h"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 
 #include <cstddef>
 
@@ -65,5 +64,3 @@ private:
 	[[gnu::nonnull]]
 	DetachedSong LoadFile(const char *path_utf8, Path path_fs) const;
 };
-
-#endif

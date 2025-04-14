@@ -8,6 +8,7 @@
 #include "ProtocolFeature.hxx"
 #include "command/CommandResult.hxx"
 #include "command/CommandListBuilder.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "input/LastInputStream.hxx"
 #include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"

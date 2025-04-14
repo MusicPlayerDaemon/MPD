@@ -49,6 +49,7 @@
 #include "unix/Daemon.hxx"
 #endif
 
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
 #include "db/Configured.hxx"

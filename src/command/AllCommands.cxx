@@ -25,6 +25,7 @@
 #include "Instance.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "util/Tokenizer.hxx"
 #include "util/StaticVector.hxx"
 #include "util/StringAPI.hxx"

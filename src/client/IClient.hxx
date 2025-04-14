@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "config.h"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 
 class Path;
 class Database;

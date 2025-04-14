@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "CommandError.hxx"
 #include "PlaylistError.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "db/DatabaseError.hxx"
 #include "client/Response.hxx"
 #include "Log.hxx"

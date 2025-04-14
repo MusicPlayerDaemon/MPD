@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "FileCommands.hxx"
 #include "Request.hxx"
 #include "protocol/Ack.hxx"
@@ -15,6 +14,7 @@
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "TagAny.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "db/Interface.hxx"
 #include "song/LightSong.hxx"
 #include "storage/StorageInterface.hxx"

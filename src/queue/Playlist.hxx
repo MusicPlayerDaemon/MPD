@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PLAYLIST_HXX
-#define MPD_PLAYLIST_HXX
+#pragma once
 
 #include "SingleMode.hxx"
 #include "ConsumeMode.hxx"
+#include "db/Features.hxx" // for ENABLE_DATABASE
 #include "queue/Queue.hxx"
-#include "config.h"
 
 enum TagType : uint8_t;
 struct Tag;
@@ -380,5 +379,3 @@ private:
 	 */
 	unsigned MoveOrderToCurrent(unsigned old_order) noexcept;
 };
-
-#endif
