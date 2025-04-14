@@ -161,7 +161,7 @@ GetAudioFormat(mpg123_handle &handle, AudioFormat &audio_format)
 }
 
 static void
-AddTagItem(TagBuilder &tag, TagType type, const mpg123_string &s)
+AddTagItem(TagBuilder &tag, TagType type, const mpg123_string &s) noexcept
 {
 	assert(s.p != nullptr);
 	assert(s.size >= s.fill);
@@ -180,14 +180,14 @@ AddTagItem(TagBuilder &tag, TagType type, const mpg123_string &s)
 }
 
 static void
-AddTagItem(TagBuilder &tag, TagType type, const mpg123_string *s)
+AddTagItem(TagBuilder &tag, TagType type, const mpg123_string *s) noexcept
 {
 	if (s != nullptr)
 		AddTagItem(tag, type, *s);
 }
 
 static void
-mpd_mpg123_id3v2_tag(DecoderClient &client, const mpg123_id3v2 &id3v2)
+mpd_mpg123_id3v2_tag(DecoderClient &client, const mpg123_id3v2 &id3v2) noexcept
 {
 	TagBuilder tag;
 
@@ -204,7 +204,7 @@ mpd_mpg123_id3v2_tag(DecoderClient &client, const mpg123_id3v2 &id3v2)
 }
 
 static void
-mpd_mpg123_id3v2_extras(DecoderClient &client, const mpg123_id3v2 &id3v2)
+mpd_mpg123_id3v2_extras(DecoderClient &client, const mpg123_id3v2 &id3v2) noexcept
 {
 	ReplayGainInfo replay_gain;
 	replay_gain.Clear();
@@ -232,14 +232,14 @@ mpd_mpg123_id3v2_extras(DecoderClient &client, const mpg123_id3v2 &id3v2)
 }
 
 static void
-mpd_mpg123_id3v2(DecoderClient &client, const mpg123_id3v2 &id3v2)
+mpd_mpg123_id3v2(DecoderClient &client, const mpg123_id3v2 &id3v2) noexcept
 {
 	mpd_mpg123_id3v2_tag(client, id3v2);
 	mpd_mpg123_id3v2_extras(client, id3v2);
 }
 
 static void
-mpd_mpg123_meta(DecoderClient &client, mpg123_handle *const handle)
+mpd_mpg123_meta(DecoderClient &client, mpg123_handle *const handle) noexcept
 {
 	if ((mpg123_meta_check(handle) & MPG123_NEW_ID3) == 0)
 		return;
