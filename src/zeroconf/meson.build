@@ -59,7 +59,7 @@ else
   conf.set('HAVE_AVAHI', true)
   
   zeroconf = static_library(
-    'zeroconf_bonjour',
+    'zeroconf_avahi',
     'Glue.cxx',
     'Helper.cxx',
     include_directories: inc,
