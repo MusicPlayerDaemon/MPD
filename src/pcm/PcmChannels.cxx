@@ -6,7 +6,7 @@
 #include "Buffer.hxx"
 #include "Silence.hxx"
 #include "Traits.hxx"
-#include "config.h" // for ENABLE_DSD
+#include "pcm/Features.h" // for ENABLE_DSD
 
 #include <array>
 #include <algorithm>

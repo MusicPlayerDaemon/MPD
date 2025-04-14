@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
+#include "config.h" // for ENABLE_FFMPEG
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
 #include "Domain.hxx"
 #include "decoder/Features.h"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "config/Data.hxx"

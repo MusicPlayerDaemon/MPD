@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_ALSA_ALLOWED_FORMAT_HXX
-#define MPD_ALSA_ALLOWED_FORMAT_HXX
+#pragma once
 
 #include "pcm/AudioFormat.hxx"
-#include "config.h"
+#include "pcm/Features.h" // for ENABLE_DSD
 
 #include <forward_list>
 #include <string>
@@ -41,5 +40,3 @@ std::string
 ToString(const std::forward_list<AllowedFormat> &allowed_formats) noexcept;
 
 } // namespace Alsa
-
-#endif

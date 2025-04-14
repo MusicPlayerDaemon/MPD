@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "WavpackDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "tag/Handler.hxx"
 #include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"

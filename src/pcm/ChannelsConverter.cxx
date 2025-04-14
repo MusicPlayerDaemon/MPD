@@ -3,10 +3,10 @@
 
 #include "ChannelsConverter.hxx"
 #include "PcmChannels.hxx"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/SpanCast.hxx"
-#include "config.h" // for ENABLE_DSD
 
 #include <cassert>
 #include <utility> // for std::unreachable()

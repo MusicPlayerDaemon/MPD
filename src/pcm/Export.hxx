@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef PCM_EXPORT_HXX
-#define PCM_EXPORT_HXX
+#pragma once
 
 #include "SampleFormat.hxx"
 #include "Buffer.hxx"
-#include "config.h"
+#include "pcm/Features.h" // for ENABLE_DSD
 
 #ifdef ENABLE_DSD
 #include "Dsd16.hxx"
@@ -230,5 +229,3 @@ public:
 	[[gnu::pure]]
 	size_t CalcInputSize(size_t dest_size) const noexcept;
 };
-
-#endif

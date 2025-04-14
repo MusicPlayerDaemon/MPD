@@ -15,6 +15,7 @@
 #include "mixer/plugins/WasapiMixerPlugin.hxx"
 #include "output/Error.hxx"
 #include "pcm/Export.hxx"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "thread/Cond.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Name.hxx"
@@ -30,7 +31,6 @@
 #include "win32/HResult.hxx"
 #include "win32/WinEvent.hxx"
 #include "Log.hxx"
-#include "config.h"
 
 #include <algorithm>
 #include <cinttypes>

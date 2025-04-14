@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "OSXOutputPlugin.hxx"
 #include "apple/AudioObject.hxx"
 #include "apple/AudioUnit.hxx"
@@ -14,6 +13,7 @@
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"
 #include "pcm/Export.hxx"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/ByteOrder.hxx"

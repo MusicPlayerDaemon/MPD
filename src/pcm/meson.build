@@ -1,4 +1,5 @@
 pcm_features = configuration_data()
+pcm_features.set('ENABLE_DSD', get_option('dsd'))
 
 pcm_basic_sources = [
   'CheckAudioFormat.cxx',

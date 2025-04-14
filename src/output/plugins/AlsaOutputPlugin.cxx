@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "AlsaOutputPlugin.hxx"
 #include "lib/alsa/AllowedFormat.hxx"
 #include "lib/alsa/ChannelMap.hxx"
@@ -15,6 +14,7 @@
 #include "../Error.hxx"
 #include "mixer/plugins/AlsaMixerPlugin.hxx"
 #include "pcm/Export.hxx"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "time/PeriodClock.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

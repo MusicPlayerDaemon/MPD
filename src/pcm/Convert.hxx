@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef PCM_CONVERT_HXX
-#define PCM_CONVERT_HXX
+#pragma once
 
 #include "FormatConverter.hxx"
 #include "ChannelsConverter.hxx"
 #include "GlueResampler.hxx"
 #include "AudioFormat.hxx"
-#include "config.h"
+#include "pcm/Features.h" // for ENABLE_DSD
 
 #ifdef ENABLE_DSD
 #include "PcmDsd.hxx"
@@ -74,5 +73,3 @@ public:
 
 void
 pcm_convert_global_init(const ConfigData &config);
-
-#endif

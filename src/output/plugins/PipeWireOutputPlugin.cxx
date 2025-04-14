@@ -7,6 +7,7 @@
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
 #include "mixer/plugins/PipeWireMixerPlugin.hxx"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "pcm/Silence.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "system/Error.hxx"
@@ -18,7 +19,6 @@
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 #include "tag/Format.hxx"
-#include "config.h" // for ENABLE_DSD
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push

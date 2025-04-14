@@ -312,8 +312,6 @@ conf.set('ENABLE_DATABASE', enable_database)
 enable_inotify = get_option('inotify') and is_linux and enable_database
 conf.set('ENABLE_INOTIFY', enable_inotify)
 
-conf.set('ENABLE_DSD', get_option('dsd'))
-
 inc = include_directories(
   'src',
 

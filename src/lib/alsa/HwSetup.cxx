@@ -10,8 +10,8 @@
 #include "util/ByteOrder.hxx"
 #include "util/Domain.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "Log.hxx"
-#include "config.h"
 
 static constexpr Domain alsa_output_domain("alsa_output");
 

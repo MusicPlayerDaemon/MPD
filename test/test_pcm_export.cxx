@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "pcm/Export.hxx"
+#include "pcm/Features.h" // for ENABLE_DSD
 #include "pcm/Traits.hxx"
 #include "util/ByteOrder.hxx"
 
