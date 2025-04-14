@@ -454,6 +454,11 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 static bool
 Scan(mpg123_handle &handle, TagHandler &handler) noexcept
 {
+#ifdef ENABLE_ID3TAG
+	/* prepare for using mpg123_id3_raw() later */
+	mpg123_param(&handle, MPG123_ADD_FLAGS, MPG123_STORE_RAW_ID3, 0);
+#endif
+
 	AudioFormat audio_format;
 
 	try {
@@ -465,7 +470,10 @@ Scan(mpg123_handle &handle, TagHandler &handler) noexcept
 
 	handler.OnAudioFormat(audio_format);
 
-	/* ID3 tag support not yet implemented */
+#ifdef ENABLE_ID3TAG
+	if (const auto tag = ParseId3(handle))
+		scan_id3_tag(tag.get(), handler);
+#endif // ENABLE_ID3TAG
 
 	if (const off_t num_samples = mpg123_length(&handle); num_samples >= 0) {
 		const auto duration =
