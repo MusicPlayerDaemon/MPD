@@ -38,7 +38,7 @@ main(int argc, [[maybe_unused]] char **argv)
 	       "{\n"
 	       "  assert(name != nullptr);\n"
 	       "\n"
-	       "  switch (*name) {\n");
+	       "  switch (*name++) {\n");
 
 	char first = 0;
 
@@ -50,7 +50,7 @@ main(int argc, [[maybe_unused]] char **argv)
 			printf("  case '%c':\n", first);
 		}
 
-		printf("    if (strcmp(name + 1, \"%.*s\") == 0) return TagType(%u);\n",
+		printf("    if (strcmp(name, \"%.*s\") == 0) return TagType(%u);\n",
 		       int(name.size() - 1), name.data() + 1, unsigned(tag));
 	}
 
