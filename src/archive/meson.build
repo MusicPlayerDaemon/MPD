@@ -12,9 +12,9 @@ archive_api_dep = declare_dependency(
 
 subdir('plugins')
 
+archive_features.set('ENABLE_ARCHIVE', found_archive_plugin)
 configure_file(output: 'Features.h', configuration: archive_features)
 
-conf.set('ENABLE_ARCHIVE', found_archive_plugin)
 if not found_archive_plugin
   archive_glue_dep = dependency('', required: false)
   subdir_done()

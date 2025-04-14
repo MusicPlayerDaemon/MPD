@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#include "config.h"
 #include "tag/Tag.hxx"
 #include "ConfigGlue.hxx"
 #include "event/Thread.hxx"
 #include "input/Init.hxx"
+#include "archive/Features.h" // for ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"

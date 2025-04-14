@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_UPDATE_WALK_HXX
-#define MPD_UPDATE_WALK_HXX
+#pragma once
 
 #include "Config.hxx"
 #include "Editor.hxx"
-#include "config.h"
+#include "archive/Features.h" // for ENABLE_ARCHIVE
 
 #include <atomic>
 #include <string_view>
@@ -166,5 +165,3 @@ private:
 
 	void UpdateUri(Directory &root, const char *uri) noexcept;
 };
-
-#endif

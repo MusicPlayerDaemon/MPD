@@ -18,6 +18,7 @@
 #include "TagStream.hxx"
 #include "util/UriExtract.hxx"
 
+#include "archive/Features.h" // for ENABLE_ARCHIVE
 #ifdef ENABLE_ARCHIVE
 #include "TagArchive.hxx"
 #endif

@@ -11,6 +11,7 @@
 #include "plugins/UringInputPlugin.hxx"
 #endif
 
+#include "archive/Features.h" // for ENABLE_ARCHIVE
 #ifdef ENABLE_ARCHIVE
 #include "plugins/ArchiveInputPlugin.hxx"
 #endif

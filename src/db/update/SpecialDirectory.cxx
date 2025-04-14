@@ -2,10 +2,14 @@
 // Copyright The Music Player Daemon Project
 
 #include "db/plugins/simple/Directory.hxx"
-#include "archive/ArchiveList.hxx"
 #include "decoder/DecoderList.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "fs/Traits.hxx"
+
+#include "archive/Features.h" // for ENABLE_ARCHIVE
+#ifdef ENABLE_ARCHIVE
+#include "archive/ArchiveList.hxx"
+#endif
 
 [[gnu::pure]]
 static bool

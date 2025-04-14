@@ -53,6 +53,7 @@
 #include "encoder/EncoderPlugin.hxx"
 #endif
 
+#include "archive/Features.h" // for ENABLE_ARCHIVE
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"

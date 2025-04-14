@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_SONG_HXX
-#define MPD_SONG_HXX
+#pragma once
 
 #include "Ptr.hxx"
 #include "Chrono.hxx"
+#include "archive/Features.h" // for ENABLE_ARCHIVE
 #include "tag/Tag.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "util/IntrusiveList.hxx"
-#include "config.h"
 
 #include <string>
 
@@ -147,5 +146,3 @@ struct Song : IntrusiveListHook<> {
 	[[gnu::pure]]
 	ExportedSong Export() const noexcept;
 };
-
-#endif

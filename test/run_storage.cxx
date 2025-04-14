@@ -27,8 +27,8 @@
 #include "Log.hxx"
 #include "LogBackend.hxx"
 #include "TagSave.hxx"
-#include "config.h"
 
+#include "archive/Features.h" // for ENABLE_ARCHIVE
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
 #endif
