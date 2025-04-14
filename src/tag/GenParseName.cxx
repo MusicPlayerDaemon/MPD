@@ -50,8 +50,8 @@ main(int argc, [[maybe_unused]] char **argv)
 			printf("  case '%c':\n", first);
 		}
 
-		printf("    if (strcmp(name, \"%.*s\") == 0) return TagType(%u);\n",
-		       int(name.size() - 1), name.data() + 1, unsigned(tag));
+		printf("    if (strcmp(name, ((const char *)\"%.*s\") + 1) == 0) return TagType(%u);\n",
+		       int(name.size()), name.data(), unsigned(tag));
 	}
 
 	printf("    break;\n\n");
