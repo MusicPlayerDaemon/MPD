@@ -8,8 +8,9 @@ generate_parse_name = executable(
 parse_name_cxx = custom_target(
   'RunGenParseName',
   output: ['ParseName2.cxx'],
+  capture: true,
   command : [
-    generate_parse_name, '@OUTPUT@',
+    generate_parse_name,
   ],
 )
 
