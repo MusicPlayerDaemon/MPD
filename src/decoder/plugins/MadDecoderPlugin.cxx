@@ -5,9 +5,6 @@
 #include "MadDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "tag/Id3Scan.hxx"
-#include "tag/Id3ReplayGain.hxx"
-#include "tag/Id3MixRamp.hxx"
 #include "tag/Handler.hxx"
 #include "tag/ReplayGainParser.hxx"
 #include "tag/MixRampParser.hxx"
@@ -20,8 +17,10 @@
 #include <mad.h>
 
 #ifdef ENABLE_ID3TAG
+#include "tag/Id3MixRamp.hxx"
+#include "tag/Id3ReplayGain.hxx"
+#include "tag/Id3Scan.hxx"
 #include "tag/Id3Unique.hxx"
-#include <id3tag.h>
 #endif
 
 #include <cassert>
