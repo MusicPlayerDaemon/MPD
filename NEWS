@@ -1,4 +1,6 @@
 ver 0.24.4 (not yet released)
+* decoder
+  - mpg123: support Icy stream tags
 
 ver 0.24.3 (2025/04/09)
 * input

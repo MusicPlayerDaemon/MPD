@@ -187,7 +187,8 @@ AddTagItem(TagBuilder &tag, TagType type, const mpg123_string *s) noexcept
 }
 
 static void
-mpd_mpg123_id3v2_tag(DecoderClient &client, const mpg123_id3v2 &id3v2) noexcept
+mpd_mpg123_id3v2_tag(DecoderClient &client, InputStream *is,
+		     const mpg123_id3v2 &id3v2) noexcept
 {
 	TagBuilder tag;
 
@@ -200,7 +201,7 @@ mpd_mpg123_id3v2_tag(DecoderClient &client, const mpg123_id3v2 &id3v2) noexcept
 	for (size_t i = 0, n = id3v2.comments; i < n; ++i)
 		AddTagItem(tag, TAG_COMMENT, id3v2.comment_list[i].text);
 
-	client.SubmitTag(nullptr, tag.Commit());
+	client.SubmitTag(is, tag.Commit());
 }
 
 static void
@@ -232,14 +233,16 @@ mpd_mpg123_id3v2_extras(DecoderClient &client, const mpg123_id3v2 &id3v2) noexce
 }
 
 static void
-mpd_mpg123_id3v2(DecoderClient &client, const mpg123_id3v2 &id3v2) noexcept
+mpd_mpg123_id3v2(DecoderClient &client, InputStream *is,
+		 const mpg123_id3v2 &id3v2) noexcept
 {
-	mpd_mpg123_id3v2_tag(client, id3v2);
+	mpd_mpg123_id3v2_tag(client, is, id3v2);
 	mpd_mpg123_id3v2_extras(client, id3v2);
 }
 
 static void
-mpd_mpg123_meta(DecoderClient &client, mpg123_handle *const handle) noexcept
+mpd_mpg123_meta(DecoderClient &client, InputStream *is,
+		mpg123_handle *const handle) noexcept
 {
 	if ((mpg123_meta_check(handle) & MPG123_NEW_ID3) == 0)
 		return;
@@ -250,7 +253,7 @@ mpd_mpg123_meta(DecoderClient &client, mpg123_handle *const handle) noexcept
 		return;
 
 	if (v2 != nullptr)
-		mpd_mpg123_id3v2(client, *v2);
+		mpd_mpg123_id3v2(client, is, *v2);
 }
 
 [[gnu::pure]]
@@ -266,7 +269,8 @@ GetDuration(mpg123_handle &handle, const AudioFormat &audio_format) noexcept
 }
 
 static void
-Decode(DecoderClient &client, mpg123_handle &handle, const bool seekable)
+Decode(DecoderClient &client, InputStream *is,
+       mpg123_handle &handle, const bool seekable)
 {
 	AudioFormat audio_format;
 	if (!GetAudioFormat(handle, audio_format))
@@ -298,7 +302,7 @@ Decode(DecoderClient &client, mpg123_handle &handle, const bool seekable)
 	DecoderCommand cmd;
 	do {
 		/* read metadata */
-		mpd_mpg123_meta(client, &handle);
+		mpd_mpg123_meta(client, is, &handle);
 
 		/* decode */
 
@@ -323,7 +327,7 @@ Decode(DecoderClient &client, mpg123_handle &handle, const bool seekable)
 
 		/* send to MPD */
 
-		cmd = client.SubmitAudio(nullptr, std::span{buffer, nbytes},
+		cmd = client.SubmitAudio(is, std::span{buffer, nbytes},
 					 info.bitrate);
 
 		if (cmd == DecoderCommand::SEEK) {
@@ -367,7 +371,7 @@ mpd_mpg123_stream_decode(DecoderClient &client, InputStream &is)
 	if (is.KnownSize())
 		mpg123_set_filesize(handle, is.GetSize());
 
-	Decode(client, *handle, is.IsSeekable());
+	Decode(client, &is, *handle, is.IsSeekable());
 }
 
 static void
@@ -389,7 +393,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 	if (!mpd_mpg123_open(handle, path_fs))
 		return;
 
-	Decode(client, *handle, true);
+	Decode(client, nullptr, *handle, true);
 }
 
 static bool
