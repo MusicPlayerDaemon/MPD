@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_SERVER_SOCKET_HXX
-#define MPD_SERVER_SOCKET_HXX
+#pragma once
 
-#include "config.h"
+#include "net/Features.hxx" // for HAVE_TCP
 
 #include <cassert>
 #include <list>
@@ -136,5 +135,3 @@ protected:
 	virtual void OnAccept(UniqueSocketDescriptor fd,
 			      SocketAddress address) noexcept = 0;
 };
-
-#endif
