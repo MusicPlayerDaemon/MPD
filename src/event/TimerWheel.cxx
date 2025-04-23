@@ -21,8 +21,6 @@ void
 TimerWheel::Insert(CoarseTimerEvent &t,
 		   Event::TimePoint now) noexcept
 {
-	assert(now >= last_time);
-
 	auto &list = t.GetDue() > now
 		? buckets[BucketIndexAt(t.GetDue())]
 		/* if this timer is already due, insert it into the
