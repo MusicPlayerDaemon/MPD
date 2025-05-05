@@ -1,6 +1,7 @@
 from typing import Sequence, Union
 import os
 import sys
+from tempfile import NamedTemporaryFile
 import urllib.request
 
 from .verify import verify_file_digest
@@ -52,8 +53,8 @@ def download_and_verify(urls: Union[str, Sequence[str]], md5: str, parent_path: 
     except FileNotFoundError:
         pass
 
-    tmp_path = path + '.tmp'
+    with NamedTemporaryFile(dir=parent_path) as tmp:
+        __download_and_verify_to(__to_string_sequence(urls), md5, tmp.name)
+        os.link(tmp.name, path)
 
-    __download_and_verify_to(__to_string_sequence(urls), md5, tmp_path)
-    os.rename(tmp_path, path)
     return path
