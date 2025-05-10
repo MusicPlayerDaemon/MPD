@@ -6,6 +6,7 @@
  */
 
 #include "CdioParanoiaInputPlugin.hxx"
+#include "CdioParanoiaMusicBrainzTags.hxx"
 #include "lib/cdio/Paranoia.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "../InputStream.hxx"
@@ -35,6 +36,7 @@ static unsigned speed = 0;
 
 /* Default to full paranoia, but allow skipping sectors. */
 static int mode_flags = PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP;
+static bool musicbrainz_tags_enabled = true;
 
 class CdioParanoiaInputStream final : public InputStream {
 	cdrom_drive_t *const drv;
@@ -88,7 +90,7 @@ class CdioParanoiaInputStream final : public InputStream {
 };
 
 static void
-input_cdio_init(EventLoop &, const ConfigBlock &block)
+input_cdio_init(EventLoop &event_loop, const ConfigBlock &block)
 {
 	const char *value = block.GetBlockValue("default_byte_order");
 	if (value != nullptr) {
@@ -121,6 +123,18 @@ input_cdio_init(EventLoop &, const ConfigBlock &block)
 		else
 			mode_flags |= PARANOIA_MODE_NEVERSKIP;
 	}
+	if (const auto *param = block.GetBlockParam("musicbrainz_tags"))
+		musicbrainz_tags_enabled = param->GetBoolValue();
+
+	if (musicbrainz_tags_enabled)
+		MusicBrainzCDTagCache::createInstance(event_loop);
+}
+
+static void
+input_cdio_finish() noexcept
+{
+	if (musicbrainz_tags_enabled)
+		MusicBrainzCDTagCache::deleteInstance();
 }
 
 struct CdioUri {
@@ -340,6 +354,24 @@ CdioParanoiaInputStream::IsEOF() const noexcept
 	return offset >= size;
 }
 
+static std::unique_ptr<RemoteTagScanner>
+cdio_musicbrainz_remote_tags (std::string_view uri, RemoteTagHandler &handler)
+{
+	if (!musicbrainz_tags_enabled)
+		return nullptr;
+
+	const auto parsed_uri = parse_cdio_uri(uri);
+
+	const AllocatedPath device = parsed_uri.device[0] != 0
+		? AllocatedPath::FromFS(parsed_uri.device)
+		: cdio_detect_device();
+
+	if (device.IsNull())
+		return nullptr;
+
+	return std::make_unique<MusicBrainzTagScanner>(uri, handler, device.ToUTF8());
+}
+
 static constexpr const char *cdio_paranoia_prefixes[] = {
 	"cdda://",
 	nullptr
@@ -349,7 +381,8 @@ const InputPlugin input_plugin_cdio_paranoia = {
 	"cdio_paranoia",
 	cdio_paranoia_prefixes,
 	input_cdio_init,
-	nullptr,
+	input_cdio_finish,
 	input_cdio_open,
-	nullptr
+	nullptr,
+	cdio_musicbrainz_remote_tags,
 };

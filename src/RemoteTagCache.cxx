@@ -27,16 +27,22 @@ void
 RemoteTagCache::Lookup(const std::string &uri) noexcept
 {
 	std::unique_lock lock{mutex};
+	auto item = new Item(*this, uri);
+
+	item->scanner = InputScanTags(uri, *item);
+
+	if (item->scanner != nullptr && item->scanner->DisableTagCaching())
+	{
+		map.remove_and_dispose_key(uri, DeleteDisposer());
+	}
 
 	auto [tag, value] = map.insert_check(uri);
 	if (value) {
-		auto item = new Item(*this, uri);
 		map.insert_commit(tag, *item);
 		waiting_list.push_back(*item);
 		lock.unlock();
 
 		try {
-			item->scanner = InputScanTags(uri, *item);
 			if (!item->scanner) {
 				/* unsupported */
 				lock.lock();
