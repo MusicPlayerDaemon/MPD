@@ -29,7 +29,7 @@
 
 using std::string_view_literals::operator""sv;
 
-static constexpr Domain cdio_domain("cdio");
+constexpr Domain cdio_domain("cdio");
 
 static bool default_reverse_endian;
 static unsigned speed = 0;

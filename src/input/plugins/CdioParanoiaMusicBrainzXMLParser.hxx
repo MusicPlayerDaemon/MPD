@@ -1,9 +1,6 @@
 #pragma once
 
 #include "CdioParanoiaMusicBrainzTags.hxx"
+#include <map>
 
-class MusicBrainzXMLParser
-{
-public:
-	std::map<int, MusicBrainzCDTagCache::TrackInfo> parse(std::string& body);
-};
+std::map<int, MusicBrainzCDTagCache::TrackInfo> musicBrainzXMLParser (std::string& body);

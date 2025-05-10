@@ -3,10 +3,42 @@
 
 #include <vector>
 
+/***********************************************/
+/*                                             */
+/* A significant portion of the sources below  */
+/*	has been copied from cd-discid:            */
+/*                                             */
+/* https://github.com/taem/cd-discid           */
+/*                                             */
+/***********************************************/
+
+// Original disclaimer:
+
+/*
+ * Copyright (c) 1999-2003 Robert Woodcock <rcw@debian.org>
+ * Copyright (c) 2009-2013 Timur Birsh <taem@linukz.org>
+ * This code is hereby licensed for public consumption under either the
+ * GNU GPL v2 or greater, or Larry Wall's Artistic license - your choice.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Porting credits:
+ * Solaris: David Champion <dgc@uchicago.edu>
+ * FreeBSD: Niels Bakker <niels@bakker.net>
+ * OpenBSD: Marcus Daniel <danielm@uni-muenster.de>
+ * NetBSD: Chris Gilbert <chris@NetBSD.org>
+ * MacOSX: Evan Jones <ejones@uwaterloo.ca> http://www.eng.uwaterloo.ca/~ejones/
+ *         Thomas Klausner <tk@giga.or.at>
+ * DragonFly: Thomas Klausner <tk@giga.or.at>, http://pkgsrc.se/audio/cd-discid
+ * IRIX: https://github.com/canavan, https://github.com/taem/cd-discid/issues/4
+ */
+
 extern "C" {
 #include <libavutil/sha.h>
 #include <libavutil/base64.h>
-
+#include <libavutil/mem.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h> /* close() */
@@ -24,16 +56,6 @@ extern "C" {
 #include <sys/cdrom.h>
 #define cdte_track_address      cdte_addr.lba
 #define DEVICE_NAME             "/dev/cd0"
-
-#elif defined(sun) && defined(unix) && defined(__SVR4)
-#include <sys/cdio.h>
-#define CD_MSF_OFFSET   150
-#define CD_FRAMES       75
-/* According to David Schweikert <dws@ee.ethz.ch>, cd-discid needs this
- * to compile on Solaris */
-#define cdte_track_address      cdte_addr.lba
-#define DEVICE_NAME             "/dev/vol/aliases/cdrom0"
-
 /* __FreeBSD_kernel__ is needed for properly compiling on Debian GNU/kFreeBSD
    Look at http://glibc-bsd.alioth.debian.org/porting/PORTING for more info */
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
@@ -84,86 +106,90 @@ extern "C" {
 #define cdrom_tocentry          CDTrackInfo
 #define cdte_track_address      trackStartAddress
 #define DEVICE_NAME             "/dev/rdisk1"
-
-#elif defined(__sgi)
-#include <dmedia/cdaudio.h>
-#define CD_FRAMES               75               /* per second */
-#define CD_MSF_OFFSET           150              /* MSF offset of first frame */
-#define cdrom_tochdr            CDSTATUS
-#define cdth_trk0               first
-#define cdth_trk1               last
-#define close                   CDclose
-struct cdrom_tocentry
-{
-	int cdte_track_address;
-};
-#define DEVICE_NAME             "/dev/scsi/sc0d4l0"
 #else
 #error "Your OS isn't supported yet."
 #endif  /* os selection */
 }
 
-static char*
+static std::string
 makeMusicBrainzIdWith(int firstTrack, int lastTrack, int leadIn, std::vector<int> frameOffsets)
 {
 	struct AVSHA* sha1 = av_sha_alloc();
-	const int numBitsSha1 = 160;
-	const int digestSize = numBitsSha1 / 8;
+	const unsigned int numBitsSha1 = 160;
+	const unsigned int digestSize = numBitsSha1 / 8;
+	const unsigned int tempSize = 32;
 	uint8_t digest[digestSize];
-	const int tempSize = 32;
 	char temp[tempSize];
+	const unsigned int maxNumberOfTracks = 100; // from Musicbrainz API
 
-	av_sha_init(sha1, numBitsSha1);
+	try {
+		av_sha_init(sha1, numBitsSha1);
 
-	snprintf(temp, tempSize, "%02X", firstTrack);
-	av_sha_update(sha1, (const uint8_t*)temp, strlen(temp));
-
-	snprintf(temp, tempSize, "%02X", lastTrack);
-	av_sha_update(sha1, (const uint8_t*)temp, strlen(temp));
-
-	for (size_t i = 0; i < 100; ++i)
-	{
-		int offset = 0;
-
-		if (i < frameOffsets.size())
-			offset = frameOffsets[i] + leadIn;
-		snprintf(temp, tempSize, "%08X", offset);
+		snprintf(temp, tempSize, "%02X", firstTrack);
 		av_sha_update(sha1, (const uint8_t*)temp, strlen(temp));
-	}
-	av_sha_final(sha1, digest);
-	free(sha1);
 
-	const int outputSize = 128;
-	char *output = new char[outputSize];
+		snprintf(temp, tempSize, "%02X", lastTrack);
+		av_sha_update(sha1, (const uint8_t*)temp, strlen(temp));
 
-	av_base64_encode(output, outputSize, digest, digestSize);
-
-	for (size_t i = 0; i < strlen(output); ++i)
-	{
-		switch (output[i])
+		for (size_t i = 0; i < maxNumberOfTracks; ++i)
 		{
-		case '=':
-			output[i] = '-';
-			break;
-		case '/':
-			output[i] = '_';
-			break;
-		case '+':
-			output[i] = '.';
-			break;
-		default:
-			break;
+			int offset = 0;
+
+			if (i < frameOffsets.size())
+				offset = frameOffsets[i] + leadIn;
+			snprintf(temp, tempSize, "%08X", offset);
+			av_sha_update(sha1, (const uint8_t*)temp, strlen(temp));
 		}
+		av_sha_final(sha1, digest);
+	} catch (...) {
+		av_free(sha1);
+		sha1 = nullptr;
 	}
+	if (sha1 != nullptr)
+		av_free(sha1);
 
-	return output;
+	const unsigned int outputSize = 128;
+	char *output = new char[outputSize];
+	std::string result;
+
+	try {
+		av_base64_encode(output, outputSize, digest, digestSize);
+
+		for (size_t i = 0; i < strlen(output); ++i)
+		{
+			switch (output[i])
+			{
+			case '=':
+				output[i] = '-';
+				break;
+			case '/':
+				output[i] = '_';
+				break;
+			case '+':
+				output[i] = '.';
+				break;
+			default:
+				break;
+			}
+		}
+		result = std::string(output);
+	} catch (...) {
+		delete [] output;
+		output = nullptr;
+	}
+	if (output != nullptr)
+		delete [] output;
+
+	return result;
 }
-
-// getCurrentCDId is ported from https://github.com/taem/cd-discid
 
 std::string
 CDIODiscID::getCurrentCDId (std::string device)
 {
+	/******************************************/
+	/*       code copied from cd-discid       */
+	/******************************************/
+
 	int len;
 	int i;
 	long int cksum = 0;
@@ -171,15 +197,8 @@ CDIODiscID::getCurrentCDId (std::string device)
 	unsigned char last = 1;
 	const char *devicename = device.c_str();
 	struct cdrom_tocentry *TocEntry;
-#ifndef __sgi
 	int drive;
 	struct cdrom_tochdr hdr;
-#else
-	CDPLAYER *drive;
-	CDTRACKINFO info;
-	cdrom_tochdr hdr;
-#endif
-	//char *command = argv[0];
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 	struct ioc_read_toc_entry t;
@@ -187,17 +206,10 @@ CDIODiscID::getCurrentCDId (std::string device)
 	dk_cd_read_disc_info_t discInfoParams;
 #endif
 
-#if defined(__sgi)
-	drive = CDopen(devicename, "r");
-	if (drive == 0) {
-		return {};
-	}
-#else
 	drive = open(devicename, O_RDONLY | O_NONBLOCK);
 	if (drive < 0) {
 		return {};
 	}
-#endif
 
 #if defined(__APPLE__)
 	memset(&discInfoParams, 0, sizeof(discInfoParams));
@@ -206,10 +218,6 @@ CDIODiscID::getCurrentCDId (std::string device)
 	if (ioctl(drive, DKIOCCDREADDISCINFO, &discInfoParams) < 0
 			|| discInfoParams.bufferLength != sizeof(hdr)) {
 		return {};
-	}
-#elif defined(__sgi)
-	if (CDgetstatus(drive, &hdr) == 0) {
-		return {}
 	}
 #else
 	if (ioctl(drive, CDROMREADTOCHDR, &hdr) < 0) {
@@ -261,14 +269,6 @@ CDIODiscID::getCurrentCDId (std::string device)
 	 * of leadout from the start+length of the last track instead
 	 */
 	TocEntry[last].cdte_track_address = htonl(ntohl(TocEntry[last-1].trackSize) + ntohl(TocEntry[last-1].trackStartAddress));
-#elif defined(__sgi)
-	for (i = 0; i < last; i++) {
-		if (CDgettrackinfo(drive, i + 1, &info) == 0) {
-			return {};
-		}
-		TocEntry[i].cdte_track_address = info.start_min*60*CD_FRAMES + info.start_sec*CD_FRAMES + info.start_frame;
-	}
-	TocEntry[last].cdte_track_address = TocEntry[last - 1].cdte_track_address + info.total_min*60*CD_FRAMES + info.total_sec*CD_FRAMES + info.total_frame;
 #else   /* FreeBSD, Linux, Solaris */
 	for (i = 0; i < last; i++) {
 		/* tracks start with 1, but I must start with 0 on OpenBSD */
@@ -300,19 +300,10 @@ CDIODiscID::getCurrentCDId (std::string device)
 		cksum += cddb_sum((TocEntry[i].cdte_track_address + CD_MSF_OFFSET) / CD_FRAMES);
 	}
 
-	/*
-	 *totaltime = ((TocEntry[last].cdte_track_address + CD_MSF_OFFSET) / CD_FRAMES) -
-	 *    ((TocEntry[0].cdte_track_address + CD_MSF_OFFSET) / CD_FRAMES);
-	 */
+	/********************************/
+	/*       End of cd-discid       */
+	/********************************/
 
-	/*
-	 *[> print discid <]
-	 *if (!musicbrainz)
-	 *    printf("%08lx ", (cksum % 0xff) << 24 | totaltime << 8 | last);
-	 */
-
-	/* print number of tracks */
-	//printf("%d", last);
 	int numTracks = last;
 	int firstTrackNumber = 1;
 
@@ -321,12 +312,8 @@ CDIODiscID::getCurrentCDId (std::string device)
 	if (last > 0)
 		frameOffsets.push_back(TocEntry[last].cdte_track_address);
 
-	/* print frame offsets of all tracks */
 	for (i = 0; i < last; i++)
-	{
-		//printf(" %d", TocEntry[i].cdte_track_address + CD_MSF_OFFSET);
 		frameOffsets.push_back(TocEntry[i].cdte_track_address);
-	}
 
 	free(TocEntry);
 
@@ -335,11 +322,7 @@ CDIODiscID::getCurrentCDId (std::string device)
 
 	auto musicId = makeMusicBrainzIdWith(firstTrackNumber, lastTrack, leadIn, frameOffsets);
 
-	std::string musicIdString(musicId);
-
-	delete [] musicId;
-
-	return musicIdString;
+	return musicId;
 }
 
 int

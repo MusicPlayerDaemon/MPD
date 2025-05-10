@@ -7,9 +7,13 @@
 #include "input/RemoteTagScanner.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <map>
 #include <set>
+
+extern const Domain cdio_domain;
 
 class MusicBrainzCDTagCache
 {
@@ -78,7 +82,7 @@ private:
 
 	static MusicBrainzCDTagCache *instance;
 
-	std::map<int, std::set<Listener*> > listeners;
+	std::map<int, std::set<Listener*>> listeners;
 	Mutex mutex;
 	CurlInit curl;
 	std::unique_ptr<CurlRequest> request;
@@ -86,7 +90,7 @@ private:
 	std::string device;
 
 	class ResponseHandler
-	: public StringCurlResponseHandler
+		: public StringCurlResponseHandler
 	{
 	public: // CurlResponseHandler
 		/* virtual methods from CurlResponseHandler */
@@ -100,6 +104,7 @@ private:
 
 		void OnError(std::exception_ptr ) noexcept override
 		{
+			FmtError(cdio_domain, "Couldn't fetch tags from MusicBrainz");
 		}
 
 	};
@@ -108,8 +113,8 @@ private:
 };
 
 class MusicBrainzTagScanner final
-: public RemoteTagScanner
-, public MusicBrainzCDTagCache::Listener
+	: public RemoteTagScanner
+	, public MusicBrainzCDTagCache::Listener
 {
 	RemoteTagHandler &handler;
 	std::string_view uri;

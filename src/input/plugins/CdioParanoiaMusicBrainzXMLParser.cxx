@@ -231,7 +231,7 @@ mbz_char_data (void *user_data, const XML_Char *s, int len)
 }
 
 std::map<int, MusicBrainzCDTagCache::TrackInfo>
-MusicBrainzXMLParser::parse(std::string& body)
+musicBrainzXMLParser(std::string& body)
 {
 	MBZParser mbzParser;
 	{

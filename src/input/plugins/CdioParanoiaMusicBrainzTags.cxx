@@ -57,7 +57,18 @@ MusicBrainzCDTagCache::cancelRequest (Listener* listener)
 bool
 MusicBrainzCDTagCache::insertedCdChanged ()
 {
-	auto cdId = CDIODiscID::getCurrentCDId(device);
+	std::string cdId;
+
+	try {
+		cdId = CDIODiscID::getCurrentCDId(device);
+	} catch (...) {
+		if (lastCdId.length() > 0)
+		{
+			lastCdId = {};
+			return true;
+		}
+		return false;
+	}
 
 	if (cdId.length() == 0)
 	{
@@ -108,9 +119,11 @@ MusicBrainzCDTagCache::requestMusicBrainzTags()
 bool
 MusicBrainzCDTagCache::makeTrackInfoFromXml (std::string& body)
 {
-	MusicBrainzXMLParser parser;
-
-	tracks = parser.parse(body);
+	try {
+		tracks = musicBrainzXMLParser(body);
+	} catch (...) {
+		tracks.clear();
+	}
 
 	return tracks.size() > 0;
 }
