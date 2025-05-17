@@ -182,6 +182,9 @@ try {
 		size = aiff_seek_id3(is, lock);
 	}
 
+	if (size == 0)
+		return nullptr;
+
 	if (size > 4 * 1024 * 1024)
 		/* too large, don't allocate so much memory */
 		return nullptr;
