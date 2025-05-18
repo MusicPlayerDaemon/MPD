@@ -642,4 +642,22 @@ if alsa_dep.found()
   )
 endif
 
+#
+# Musicbrainz
+#
+
+if curl_dep.found() and expat_dep.found()
+  executable(
+    'MusicbrainzFetch',
+    'MusicbrainzFetch.cxx',
+    'ShutdownHandler.cxx',
+    include_directories: inc,
+    dependencies: [
+      curl_dep,
+      event_dep,
+      expat_dep,
+    ],
+  )
+endif
+
 subdir('fs')
