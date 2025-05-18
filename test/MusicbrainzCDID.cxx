@@ -1,5 +1,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "lib/cdio/Paranoia.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 #include "util/NumberParser.hxx"
@@ -9,10 +10,22 @@
 #include <cstdint>
 #include <vector>
 
+#if defined(__linux__)
+#define LINUX__FRAME_OFFSETS_FROM_IOCTL 1
+#else
+#define LINUX__FRAME_OFFSETS_FROM_IOCTL 0
+#endif
+
 extern "C" {
 #include <libavutil/sha.h>
 #include <libavutil/base64.h>
 #include <libavutil/mem.h>
+
+#if LINUX__FRAME_OFFSETS_FROM_IOCTL
+#include <linux/cdrom.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#endif
 }
 
 #include <stdio.h>
@@ -93,6 +106,63 @@ makeMusicBrainzIdWithOffsets (const TrackOffsets& trackOffsets)
 	return outputString;
 }
 
+#if LINUX__FRAME_OFFSETS_FROM_IOCTL
+static const TrackOffsets
+getTrackOffsetsFromDevice_ioctl (const AllocatedPath& device)
+{
+	int drive = open(device.c_str(), O_RDONLY | O_NONBLOCK);
+
+	if (drive < 0)
+		throw std::runtime_error("Failed to open drive");
+
+	AtScopeExit(drive) { close(drive); };
+
+	struct cdrom_tochdr hdr;
+
+	if (ioctl(drive, CDROMREADTOCHDR, &hdr) < 0)
+		throw std::runtime_error("Failed to call ioctl for drive");
+
+	int last = (int)hdr.cdth_trk1;
+	size_t len = ((size_t)last + 1) * sizeof(struct cdrom_tocentry);
+	struct cdrom_tocentry *tocEntry = (cdrom_tocentry*)malloc(len);
+
+	if (tocEntry == nullptr)
+		throw std::runtime_error("malloc call for cdrom_tocentry failed.");
+
+	AtScopeExit(tocEntry) { free(tocEntry); };
+
+	int i = 0;
+	for (; i < last; i++)
+	{
+		tocEntry[i].cdte_track = i + 1;
+		tocEntry[i].cdte_format = CDROM_LBA;
+
+		if (ioctl(drive, CDROMREADTOCENTRY, &tocEntry[i]) < 0)
+			throw FmtRuntimeError("ioctl call on drive failed for entry {}", i);
+	}
+
+	tocEntry[last].cdte_track = CDROM_LEADOUT;
+	tocEntry[last].cdte_format = CDROM_LBA;
+
+	if (ioctl(drive, CDROMREADTOCENTRY, &tocEntry[i]) < 0)
+		throw FmtRuntimeError("ioctl call on drive failed for entry {}", i);
+
+	TrackOffsets trackOffsets;
+	const int numTracks = last;
+
+	if (last > 0)
+		trackOffsets.frameOffsets.push_back(tocEntry[last].cdte_addr.lba);
+
+	for (i = 0; i < last; i++)
+		trackOffsets.frameOffsets.push_back(tocEntry[i].cdte_addr.lba);
+
+	trackOffsets.leadIn = CDIO_PREGAP_SECTORS;
+	trackOffsets.firstTrackNumber = 1;
+	trackOffsets.lastTrackNumber = numTracks + trackOffsets.firstTrackNumber - 1;
+
+	return trackOffsets;
+}
+#else
 static const TrackOffsets
 getTrackOffsetsFromDevice_cdio (const AllocatedPath& device)
 {
@@ -144,6 +214,7 @@ getTrackOffsetsFromDevice_cdio (const AllocatedPath& device)
 
 	return trackOffsets;
 }
+#endif
 
 static AllocatedPath
 cdio_detect_device()
@@ -213,7 +284,11 @@ try {
 	if (device.IsNull())
 		throw std::runtime_error("Unable find or access a CD-ROM drive with an audio CD in it.");
 
+#if LINUX__FRAME_OFFSETS_FROM_IOCTL
+	auto trackOffsets = getTrackOffsetsFromDevice_ioctl(device);
+#else
 	auto trackOffsets = getTrackOffsetsFromDevice_cdio(device);
+#endif
 
 	if (!trackOffsets.isValid())
 		throw std::runtime_error("Disc track offsets found are invalid.");
