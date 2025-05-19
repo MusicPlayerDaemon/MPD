@@ -84,7 +84,11 @@ log_date() noexcept
 	static constexpr size_t LOG_DATE_BUF_SIZE = std::char_traits<char>::length("2025-01-22T15:43:14 ") + 1;
 	static char buf[LOG_DATE_BUF_SIZE];
 	time_t t = time(nullptr);
-	return FmtUnsafeSV(buf, "{:%FT%T} "sv, fmt::localtime(t));
+	const auto *tm = std::localtime(&t);
+	if (tm == nullptr)
+		return {};
+
+	return FmtUnsafeSV(buf, "{:%FT%T} "sv, *tm);
 }
 
 #ifdef HAVE_SYSLOG
