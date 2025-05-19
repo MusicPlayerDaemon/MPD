@@ -241,7 +241,7 @@ AudioOutputControl::Open(std::unique_lock<Mutex> &&lock,
 	if (open && audio_format == request.audio_format) {
 		assert(request.pipe == &mp || (always_on && pause));
 
-		if (!pause)
+		if (!pause && !should_reopen)
 			/* already open, already the right parameters
 			   - nothing needs to be done */
 			return true;

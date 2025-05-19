@@ -5,6 +5,7 @@ ver 0.24.4 (not yet released)
 * tags
   - id3: fix assertion failure with broken AIFF/RIFF ID3 chunks
 * output
+  - fix resuming playback after it was paused by "single" mode
   - alsa: fix compiler warning with alsa-lib 1.2.14
 
 ver 0.24.3 (2025/04/09)

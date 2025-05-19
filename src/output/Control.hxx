@@ -210,6 +210,15 @@ class AudioOutputControl {
 	bool pause = false;
 
 	/**
+	 * Should the device be reopened?  This is set to true after
+	 * the #AudioOutputSource got flushed because reopening is
+	 * necessary after a flush.
+	 *
+	 * Protected by #mutex.
+	 */
+	bool should_reopen = false;
+
+	/**
 	 * When this flag is set, the output thread will not do any
 	 * playback.  It will wait until the flag is cleared.
 	 *

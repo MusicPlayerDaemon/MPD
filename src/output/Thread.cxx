@@ -111,6 +111,8 @@ inline void
 AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 				 const MusicPipe &pipe) noexcept
 {
+	should_reopen = false;
+
 	/* enable the device (just in case the last enable has failed) */
 	if (!InternalEnable())
 		return;
@@ -391,6 +393,10 @@ AudioOutputControl::InternalDrain() noexcept
 	assert(source_state == SourceState::OPEN);
 
 	source_state = SourceState::FLUSHED;
+
+	/* after a flush, we can't play until the source is
+	   reopened */
+	should_reopen = true;
 
 	/* after this method finishes, there's nothing left to be
 	   drained */
