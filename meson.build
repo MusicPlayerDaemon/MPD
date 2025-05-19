@@ -90,6 +90,7 @@ project(
     'lame:tools=disabled',
     'libmpdclient:documentation=false',
     'libmpdclient:test=false',
+    'libsndfile:examples=false',
     'libsndfile:external_libs=disabled',
     'libsndfile:mpeg=disabled',
     'libsndfile:programs=false',
