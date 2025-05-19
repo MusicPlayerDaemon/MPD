@@ -78,10 +78,10 @@ VgmstreamFileDecode(DecoderClient &client, Path path_fs)
 	const AudioFormat audio_format = VgmstreamGetFormat(lib);
 	assert(audio_format.IsValid());
 
-	const auto song_time =
+	auto song_time =
 		SongTime::FromScale(lib->format->play_samples, lib->format->sample_rate);
 
-	client.Ready(audio_format, false, song_time);
+	client.Ready(audio_format, true, song_time);
 
 	std::vector<int32_t> unpack_buffer;
 
@@ -103,6 +103,17 @@ VgmstreamFileDecode(DecoderClient &client, Path path_fs)
 			const std::span span(static_cast<std::byte *>(lib->decoder->buf),
 					     lib->decoder->buf_bytes);
 			cmd = client.SubmitAudio(nullptr, span, 0);
+		}
+
+		if (cmd == DecoderCommand::SEEK) {
+			libvgmstream_seek(lib,
+					  static_cast<int64_t>(client.GetSeekFrame()));
+			client.CommandFinished();
+			song_time =
+				SongTime::FromScale(libvgmstream_get_play_position(lib),
+						    lib->format->sample_rate);
+			client.SubmitTimestamp(song_time);
+			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);
 }
