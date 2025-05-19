@@ -14,6 +14,7 @@ project(
 
     # If we build those libraries as Meson subproject, they shall be
     # linked statically into the MPD executable.
+    'default_library=static',
     'curl:default_library=static',
     'expat:default_library=static',
     'flac:default_library=static',
