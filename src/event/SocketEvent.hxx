@@ -153,6 +153,22 @@ public:
 	}
 
 	/**
+	 * Like CancelRead(), but leave IMPLICIT_FLAGS scheduled (do
+	 * not schedule them if nothing is scheduled currently).
+	 */
+	void CancelOnlyRead() noexcept {
+		Schedule(GetScheduledFlags() & ~READ);
+	}
+
+	/**
+	 * Like CancelWrite(), but leave IMPLICIT_FLAGS scheduled (do
+	 * not schedule them if nothing is scheduled currently).
+	 */
+	void CancelOnlyWrite() noexcept {
+		Schedule(GetScheduledFlags() & ~WRITE);
+	}
+
+	/**
 	 * Schedule only the #IMPLICIT_FLAGS without #READ and #WRITE.
 	 */
 	void ScheduleImplicit() noexcept {
