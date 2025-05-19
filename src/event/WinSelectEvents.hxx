@@ -15,4 +15,11 @@ struct WinSelectEvents {
 	static constexpr unsigned WRITE = 2;
 	static constexpr unsigned ERROR = 0;
 	static constexpr unsigned HANGUP = 0;
+
+	/**
+	 * A mask containing all events which indicate a dead socket
+	 * connection (i.e. error or hangup).  It may still be
+	 * possible to receive pending data from the socket buffer.
+	 */
+	static constexpr unsigned DEAD_MASK = ERROR|HANGUP;
 };

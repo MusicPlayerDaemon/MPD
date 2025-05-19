@@ -9,4 +9,11 @@ struct PollEvents {
 	static constexpr unsigned WRITE = POLLOUT;
 	static constexpr unsigned ERROR = POLLERR;
 	static constexpr unsigned HANGUP = POLLHUP;
+
+	/**
+	 * A mask containing all events which indicate a dead socket
+	 * connection (i.e. error or hangup).  It may still be
+	 * possible to receive pending data from the socket buffer.
+	 */
+	static constexpr unsigned DEAD_MASK = ERROR|HANGUP;
 };
