@@ -1,4 +1,4 @@
-ver 0.24.4 (not yet released)
+ver 0.24.4 (2025/05/20)
 * protocol
   - fix stuck "getfingerprint" with io_uring
 * decoder
