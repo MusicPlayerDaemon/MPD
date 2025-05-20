@@ -462,7 +462,7 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool Open(std::unique_lock<Mutex> &lock,
+	bool Open(std::unique_lock<Mutex> &&lock,
 		  AudioFormat audio_format, const MusicPipe &mp) noexcept;
 
 	/**
