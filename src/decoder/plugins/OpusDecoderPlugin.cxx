@@ -117,7 +117,7 @@ public:
 	explicit MPDOpusDecoder(DecoderReader &reader)
 		:OggDecoder(reader) {}
 
-	~MPDOpusDecoder();
+	~MPDOpusDecoder() noexcept;
 
 	MPDOpusDecoder(const MPDOpusDecoder &) = delete;
 	MPDOpusDecoder &operator=(const MPDOpusDecoder &) = delete;
@@ -149,7 +149,8 @@ protected:
 	void OnOggEnd() override;
 };
 
-MPDOpusDecoder::~MPDOpusDecoder()
+inline
+MPDOpusDecoder::~MPDOpusDecoder() noexcept
 {
 	delete[] output_buffer;
 

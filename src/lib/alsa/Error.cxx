@@ -4,7 +4,7 @@
 #include "Error.hxx"
 
 #include <stdarg.h>
-#include <alsa/error.h>
+#include <alsa/asoundlib.h>
 
 namespace Alsa {
 

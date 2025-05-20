@@ -229,7 +229,7 @@ AudioOutputControl::EnableDisableAsync()
 }
 
 inline bool
-AudioOutputControl::Open(std::unique_lock<Mutex> &lock,
+AudioOutputControl::Open(std::unique_lock<Mutex> &&lock,
 			 const AudioFormat audio_format,
 			 const MusicPipe &mp) noexcept
 {
@@ -241,7 +241,7 @@ AudioOutputControl::Open(std::unique_lock<Mutex> &lock,
 	if (open && audio_format == request.audio_format) {
 		assert(request.pipe == &mp || (always_on && pause));
 
-		if (!pause)
+		if (!pause && !should_reopen)
 			/* already open, already the right parameters
 			   - nothing needs to be done */
 			return true;
@@ -263,7 +263,8 @@ AudioOutputControl::Open(std::unique_lock<Mutex> &lock,
 	const bool open2 = open;
 
 	if (open2 && output->mixer != nullptr) {
-		const ScopeUnlock unlock(mutex);
+		lock.unlock();
+
 		try {
 			output->mixer->LockOpen();
 		} catch (...) {
@@ -305,7 +306,7 @@ AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 	if (enabled && really_enabled) {
 		if (force || !fail_timer.IsDefined() ||
 		    fail_timer.Check(REOPEN_AFTER * 1000)) {
-			return Open(lock, audio_format, mp);
+			return Open(std::move(lock), audio_format, mp);
 		}
 	} else if (IsOpen())
 		CloseWait(lock);

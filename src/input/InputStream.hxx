@@ -105,9 +105,6 @@ public:
 	 *
 	 * @param mutex a mutex that is used to protect this object; must be
 	 * locked before calling any of the public methods
-	 * @param cond a cond that gets signalled when the state of
-	 * this object changes; may be nullptr if the caller doesn't want to get
-	 * notifications
 	 * @return an #InputStream object on success
 	 */
 	[[nodiscard]]

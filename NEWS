@@ -6,10 +6,17 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.4 (not yet released)
+ver 0.24.4 (2025/05/20)
+* protocol
+  - fix stuck "getfingerprint" with io_uring
 * decoder
   - mpg123: support Icy stream tags
   - mpg123: use libid3tag to parse stream tags
+* tags
+  - id3: fix assertion failure with broken AIFF/RIFF ID3 chunks
+* output
+  - fix resuming playback after it was paused by "single" mode
+  - alsa: fix compiler warning with alsa-lib 1.2.14
 
 ver 0.24.3 (2025/04/09)
 * input
