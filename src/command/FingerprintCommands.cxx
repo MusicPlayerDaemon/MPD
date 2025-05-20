@@ -234,6 +234,8 @@ GetChromaprintCommand::DecodeFile()
 
 	assert(input_stream);
 
+	input_stream->SetHandler(this);
+
 	for (const auto &plugin : GetEnabledDecoderPlugins()) {
 		if (DecodeFile(suffix, *input_stream, plugin))
 			break;

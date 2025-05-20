@@ -1,4 +1,6 @@
 ver 0.24.4 (not yet released)
+* protocol
+  - fix stuck "getfingerprint" with io_uring
 * decoder
   - mpg123: support Icy stream tags
   - mpg123: use libid3tag to parse stream tags
