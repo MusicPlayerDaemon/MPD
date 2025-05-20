@@ -93,12 +93,6 @@ StringFindAny(const char *haystack, const char *accept) noexcept
 	return strpbrk(haystack, accept);
 }
 
-static inline char *
-StringToken(char *str, const char *delim) noexcept
-{
-	return strtok(str, delim);
-}
-
 [[gnu::nonnull]]
 static inline void
 UnsafeCopyString(char *dest, const char *src) noexcept
