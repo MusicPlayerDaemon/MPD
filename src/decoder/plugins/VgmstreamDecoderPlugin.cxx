@@ -22,7 +22,7 @@ extern "C" {
 
 static constexpr Domain vgmstream_domain("vgmstream");
 
-static libvgmstream_config_t cfg = {};
+static libvgmstream_config_t vgmstream_config = {};
 
 static bool
 VgmstreamInit(const ConfigBlock &block)
@@ -32,6 +32,17 @@ VgmstreamInit(const ConfigBlock &block)
 	unsigned minor = version >> 16 & 0xFF;
 	unsigned patch = version & 0xFFFF;
 	FmtDebug(vgmstream_domain, "vgmstream {}.{}.{}", major, minor, patch);
+
+	vgmstream_config.ignore_loop = block.GetBlockValue("ignore_loop", false);
+	vgmstream_config.force_loop = block.GetBlockValue("force_loop", false);
+	vgmstream_config.really_force_loop =
+		block.GetBlockValue("really_force_loop", false);
+	vgmstream_config.ignore_fade = block.GetBlockValue("ignore_fade", false);
+
+	// same defaults as plugins shipped with vgmstream
+	vgmstream_config.loop_count = block.GetBlockValue("loop_count", 2.0);
+	vgmstream_config.fade_time = block.GetBlockValue("fade_time", 10.0);
+	vgmstream_config.fade_delay = block.GetBlockValue("fade_delay", 0.0);
 
 	return true;
 }
@@ -69,7 +80,7 @@ VgmstreamFileDecode(DecoderClient &client, Path path_fs)
 
 	AtScopeExit(file) { libstreamfile_close(file); };
 
-	libvgmstream_t *lib = libvgmstream_create(file, 0, &cfg);
+	libvgmstream_t *lib = libvgmstream_create(file, 0, &vgmstream_config);
 	if (lib == nullptr)
 		return;
 
@@ -127,7 +138,7 @@ VgmstreamScanFile(Path path_fs, TagHandler &handler) noexcept
 
 	AtScopeExit(file) { libstreamfile_close(file); };
 
-	libvgmstream_t *lib = libvgmstream_create(file, 0, &cfg);
+	libvgmstream_t *lib = libvgmstream_create(file, 0, &vgmstream_config);
 	if (lib == nullptr)
 		return false;
 
