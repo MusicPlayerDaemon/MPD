@@ -4,21 +4,33 @@
 #include "VgmstreamDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "Log.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "pcm/Pack.hxx"
+#include "song/DetachedSong.hxx"
+#include "tag/Builder.hxx"
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 
 extern "C" {
 #include <vgmstream/libvgmstream.h>
 }
 
 #include <cassert>
+
+#define SUBSONG_PREFIX "song_"
+
+struct VgmstreamContainerPath {
+	AllocatedPath path;
+	int subsong;
+};
 
 static constexpr Domain vgmstream_domain("vgmstream");
 
@@ -71,16 +83,48 @@ VgmstreamGetFormat(const libvgmstream_t *lib)
 	return audio_format;
 }
 
+static int
+ParseSubsongName(const char *base) noexcept
+{
+	base = StringAfterPrefix(base, SUBSONG_PREFIX);
+	if (base == nullptr)
+		return 0;
+
+	char *endptr;
+	const auto track = strtol(base, &endptr, 10);
+	if (endptr == base || *endptr != '.')
+		return 0;
+
+	return static_cast<int>(track);
+}
+
+/**
+ * returns the file path stripped of any /song_xxx.* subsong suffix
+ * and the track number (or 0 if no "song_xxx" suffix is present).
+ */
+static VgmstreamContainerPath
+ParseContainerPath(Path path_fs)
+{
+	const Path base = path_fs.GetBase();
+	int track;
+	if (base.IsNull() || (track = ParseSubsongName(NarrowPath(base))) < 1)
+		return {AllocatedPath(path_fs), 0};
+
+	return {path_fs.GetDirectoryName(), track};
+}
+
 static void
 VgmstreamFileDecode(DecoderClient &client, Path path_fs)
 {
-	libstreamfile_t *file = libstreamfile_open_from_stdio(path_fs.c_str());
+	const auto [path, subsong] = ParseContainerPath(path_fs);
+
+	libstreamfile_t *file = libstreamfile_open_from_stdio(path.c_str());
 	if (file == nullptr)
 		return;
 
 	AtScopeExit(file) { libstreamfile_close(file); };
 
-	libvgmstream_t *lib = libvgmstream_create(file, 0, &vgmstream_config);
+	libvgmstream_t *lib = libvgmstream_create(file, subsong, &vgmstream_config);
 	if (lib == nullptr)
 		return;
 
@@ -130,15 +174,15 @@ VgmstreamFileDecode(DecoderClient &client, Path path_fs)
 }
 
 static bool
-VgmstreamScanFile(Path path_fs, TagHandler &handler) noexcept
+VgmstreamScanSong(Path path, int subsong, TagHandler &handler) noexcept
 {
-	libstreamfile_t *file = libstreamfile_open_from_stdio(path_fs.c_str());
+	libstreamfile_t *file = libstreamfile_open_from_stdio(path.c_str());
 	if (file == nullptr)
 		return false;
 
 	AtScopeExit(file) { libstreamfile_close(file); };
 
-	libvgmstream_t *lib = libvgmstream_create(file, 0, &vgmstream_config);
+	libvgmstream_t *lib = libvgmstream_create(file, subsong, &vgmstream_config);
 	if (lib == nullptr)
 		return false;
 
@@ -152,6 +196,52 @@ VgmstreamScanFile(Path path_fs, TagHandler &handler) noexcept
 		handler.OnTag(TAG_TITLE, lib->format->stream_name);
 
 	return true;
+}
+
+static bool
+VgmstreamScanFile(Path path_fs, TagHandler &handler) noexcept
+{
+	const auto [path, subsong] = ParseContainerPath(path_fs);
+	return VgmstreamScanSong(path, subsong, handler);
+}
+
+static std::forward_list<DetachedSong>
+VgmstreamContainerScan(Path path_fs)
+{
+	std::forward_list<DetachedSong> list;
+	const auto [path, subsong] = ParseContainerPath(path_fs);
+
+	libstreamfile_t *file = libstreamfile_open_from_stdio(path.c_str());
+	if (file == nullptr)
+		return list;
+
+	AtScopeExit(file) { libstreamfile_close(file); };
+
+	libvgmstream_t *lib = libvgmstream_create(file, subsong, &cfg);
+	if (lib == nullptr)
+		return list;
+
+	AtScopeExit(lib) { libvgmstream_free(lib); };
+
+	if (lib->format->subsong_count < 2)
+		return list;
+
+	const Path subsong_suffix = Path::FromFS(path_fs.GetExtension());
+
+	TagBuilder tag_builder;
+
+	auto tail = list.before_begin();
+	for (int i = 1; i <= lib->format->subsong_count; ++i) {
+		AddTagHandler h(tag_builder);
+		VgmstreamScanSong(path, i, h);
+
+		auto track_name =
+			fmt::format(SUBSONG_PREFIX "{:03}.{}", i, subsong_suffix);
+		tail = list.emplace_after(tail, std::move(track_name),
+					  tag_builder.Commit());
+	}
+
+	return list;
 }
 
 static std::set<std::string, std::less<>>
@@ -171,4 +261,5 @@ VgmstreamSuffixes() noexcept
 constexpr DecoderPlugin vgmstream_decoder_plugin =
 	DecoderPlugin("vgmstream", VgmstreamFileDecode, VgmstreamScanFile)
 		.WithInit(VgmstreamInit)
+		.WithContainer(VgmstreamContainerScan)
 		.WithSuffixes(VgmstreamSuffixes);
