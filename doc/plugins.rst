@@ -594,6 +594,32 @@ sndfile
 
 Decodes WAV and AIFF files using `libsndfile <http://www.mega-nerd.com/libsndfile/>`_.
 
+vgmstream
+---------
+
+Decodes various video game music file formats using `vgmstream <https://vgmstream.org/>`_.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **ignore_loop yes|no**
+     - Ignore file loop points.
+   * - **force_loop yes|no**
+     - Loop the whole file if no loop points are present.
+   * - **really_force_loop yes|no**
+     - Loop the whole file even if loop points are present.
+   * - **ignore_fade yes|no**
+     - Don't fade out after looping.
+   * - **loop_count**
+     - The number of times to loop. Fractional values are allowed. Defaults to 2.
+   * - **fade_time**
+     - The fade period after the target loop count. Defaults to 10.
+   * - **fade_delay**
+     - The fade delay after the target loop count. Defaults to 0.
+
 
 vorbis
 ------
