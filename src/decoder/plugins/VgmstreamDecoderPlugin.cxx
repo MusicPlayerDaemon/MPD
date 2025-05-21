@@ -14,6 +14,8 @@
 #include "song/DetachedSong.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Handler.hxx"
+#include "tag/ParseName.hxx"
+#include "tag/ReplayGainParser.hxx"
 #include "util/Domain.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/ScopeExit.hxx"
@@ -113,6 +115,59 @@ ParseContainerPath(Path path_fs)
 	return {path_fs.GetDirectoryName(), track};
 }
 
+static bool
+VgmstreamScanTagFile(Path path, TagHandler &handler, ReplayGainInfo *rgi) noexcept
+{
+	bool found_title = false;
+
+	const auto tags_path = AllocatedPath::Build(path.GetDirectoryName(), "!tags.m3u");
+	const std::string tags_path_utf8 = tags_path.ToUTF8();
+	libstreamfile_t *tags_file =
+		libstreamfile_open_from_stdio(tags_path_utf8.c_str());
+	if (tags_file == nullptr)
+		return false;
+
+	AtScopeExit(tags_file) { libstreamfile_close(tags_file); };
+
+	libvgmstream_tags_t *tags = libvgmstream_tags_init(tags_file);
+	if (tags == nullptr)
+		return false;
+
+	AtScopeExit(tags) { libvgmstream_tags_free(tags); };
+
+	libvgmstream_tags_find(tags, path.GetBase().c_str());
+
+	while (libvgmstream_tags_next_tag(tags)) {
+		handler.OnPair(tags->key, tags->val);
+
+		if (rgi)
+			ParseReplayGainTag(*rgi, tags->key, tags->val);
+
+		const TagType type = tag_name_parse_i(tags->key);
+		if (type != TAG_NUM_OF_ITEM_TYPES)
+			handler.OnTag(type, tags->val);
+
+		if (type == TAG_TITLE)
+			found_title = true;
+	}
+
+	return found_title;
+}
+
+static void
+VgmstreamScanTags(Path path, const libvgmstream_t *lib, TagHandler &handler,
+		  ReplayGainInfo *rgi) noexcept
+{
+	// check if out-of-band metadata exists
+	const bool found_title = VgmstreamScanTagFile(path, handler, rgi);
+
+	/* while out-of-band metadata is preferable, fall back to checking if there's a
+	   title stored in-band. this is particularly important for subsongs, which would
+	   otherwise have no useful title available */
+	if (!found_title && *lib->format->stream_name)
+		handler.OnTag(TAG_TITLE, lib->format->stream_name);
+}
+
 static void
 VgmstreamFileDecode(DecoderClient &client, Path path_fs)
 {
@@ -137,6 +192,23 @@ VgmstreamFileDecode(DecoderClient &client, Path path_fs)
 		SongTime::FromScale(lib->format->play_samples, lib->format->sample_rate);
 
 	client.Ready(audio_format, true, song_time);
+
+	auto rgi = ReplayGainInfo::Undefined();
+
+	TagBuilder tag_builder;
+	AddTagHandler h(tag_builder);
+
+	VgmstreamScanTags(path, lib, h, &rgi);
+
+	if (rgi.IsDefined())
+		client.SubmitReplayGain(&rgi);
+
+	if (!tag_builder.empty()) {
+		Tag tag = tag_builder.Commit();
+		auto cmd = client.SubmitTag(nullptr, std::move(tag));
+		if (cmd != DecoderCommand::NONE)
+			throw cmd;
+	}
 
 	std::vector<int32_t> unpack_buffer;
 
@@ -192,8 +264,7 @@ VgmstreamScanSong(Path path, int subsong, TagHandler &handler) noexcept
 		SongTime::FromScale(lib->format->play_samples, lib->format->sample_rate));
 	handler.OnAudioFormat(VgmstreamGetFormat(lib));
 
-	if (*lib->format->stream_name)
-		handler.OnTag(TAG_TITLE, lib->format->stream_name);
+	VgmstreamScanTags(path, lib, handler, nullptr);
 
 	return true;
 }
@@ -217,7 +288,7 @@ VgmstreamContainerScan(Path path_fs)
 
 	AtScopeExit(file) { libstreamfile_close(file); };
 
-	libvgmstream_t *lib = libvgmstream_create(file, subsong, &cfg);
+	libvgmstream_t *lib = libvgmstream_create(file, subsong, &vgmstream_config);
 	if (lib == nullptr)
 		return list;
 
