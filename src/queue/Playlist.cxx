@@ -161,23 +161,6 @@ playlist::UpdateQueuedSong(PlayerControl &pc,
 }
 
 void
-playlist::PlayOrder(PlayerControl &pc, unsigned order)
-{
-	playing = true;
-	queued = -1;
-
-	const DetachedSong &song = queue.GetOrder(order);
-
-	FmtDebug(playlist_domain, "play {}:{:?}", order, song.GetURI());
-
-	current = order;
-
-	pc.Play(std::make_unique<DetachedSong>(song));
-
-	SongStarted();
-}
-
-void
 playlist::SyncWithPlayer(PlayerControl &pc) noexcept
 {
 	if (!playing)

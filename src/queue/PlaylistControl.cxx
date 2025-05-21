@@ -64,6 +64,23 @@ playlist::MoveOrderToCurrent(unsigned old_order) noexcept
 }
 
 void
+playlist::PlayOrder(PlayerControl &pc, unsigned order)
+{
+	playing = true;
+	queued = -1;
+
+	const DetachedSong &song = queue.GetOrder(order);
+
+	FmtDebug(playlist_domain, "play {}:{:?}", order, song.GetURI());
+
+	current = order;
+
+	pc.Play(std::make_unique<DetachedSong>(song));
+
+	SongStarted();
+}
+
+void
 playlist::PlayPosition(PlayerControl &pc, int song)
 {
 	pc.LockClearError();
