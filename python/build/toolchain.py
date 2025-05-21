@@ -162,7 +162,7 @@ class MingwToolchain:
         self.cppflags = '-isystem ' + os.path.join(install_prefix, 'include') + \
                         ' -DWINVER=0x0600 -D_WIN32_WINNT=0x0600'
         self.ldflags = '-L' + os.path.join(install_prefix, 'lib') + \
-                       ' -static-libstdc++ -static-libgcc'
+                       ' -static'
         self.libs = ''
 
         # Explicitly disable _FORTIFY_SOURCE because it is broken with
