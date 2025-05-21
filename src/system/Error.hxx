@@ -5,11 +5,46 @@
 
 #include <system_error> // IWYU pragma: export
 #include <utility>
+#include <array>
 
 #ifdef _WIN32
 
+#include <windef.h>         // for HWND (needed by winbase.h)
 #include <errhandlingapi.h> // for GetLastError()
+#include <stringapiset.h>   // for WideCharToMultiByte()
+#include <winbase.h>        // for FormatMessageW()
 #include <winerror.h>
+
+class LocaleSafeSystemCategory : public std::error_category {
+public:
+	[[gnu::const]]
+	const char *name() const noexcept override {
+		return "locale-safe system error category";
+	}
+
+	std::string message(int code) const override {
+		std::array<wchar_t, 512> wbuffer;
+		const auto length = FormatMessageW(
+			FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			nullptr, code, 0, wbuffer.data(), wbuffer.size(), nullptr);
+		if (length > 0) [[likely]] {
+			std::array<char, 512> buffer;
+			const auto utf8_length = WideCharToMultiByte(
+				CP_UTF8, 0, wbuffer.data(), length, buffer.data(),
+				buffer.size(), nullptr, nullptr);
+			if (utf8_length > 0) [[likely]] {
+				return std::string(buffer.data(), utf8_length);
+			}
+		}
+		return {};
+	}
+
+	[[gnu::const]]
+	static inline const std::error_category &instance() noexcept {
+		static const LocaleSafeSystemCategory category{};
+		return category;
+	}
+};
 
 /**
  * Returns the error_category to be used to wrap WIN32 GetLastError()
@@ -19,10 +54,8 @@
  * TODO: verify
  */
 [[gnu::const]]
-static inline const std::error_category &
-LastErrorCategory() noexcept
-{
-	return std::system_category();
+static inline const std::error_category &LastErrorCategory() noexcept {
+	return LocaleSafeSystemCategory::instance();
 }
 
 [[gnu::pure]]
