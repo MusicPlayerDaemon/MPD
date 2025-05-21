@@ -155,6 +155,10 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.Stop(pc);
 	}
 
+	void PlayAny() {
+		return playlist.PlayAny(pc);
+	}
+
 	void PlayPosition(int position) {
 		return playlist.PlayPosition(pc, position);
 	}

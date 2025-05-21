@@ -81,61 +81,58 @@ playlist::PlayOrder(PlayerControl &pc, unsigned order)
 }
 
 void
-playlist::PlayPosition(PlayerControl &pc, int song)
+playlist::PlayAny(PlayerControl &pc)
+{
+	if (queue.IsEmpty())
+		return;
+
+	if (playing) {
+		/* already playing: unpause playback, just in
+		   case it was paused, and return */
+		pc.LockSetPause(false);
+		return;
+	}
+
+	pc.LockClearError();
+	stop_on_error = false;
+	error_count = 0;
+
+	/* select a song: "current" song, or the first one */
+	unsigned order = current >= 0
+		? static_cast<unsigned>(current)
+		: 0;
+
+	PlayOrder(pc, order);
+}
+
+void
+playlist::PlayPosition(PlayerControl &pc, unsigned position)
 {
 	pc.LockClearError();
 
-	unsigned i = song;
-	if (song == -1) {
-		/* play any song ("current" song, or the first song */
-
-		if (queue.IsEmpty())
-			return;
-
-		if (playing) {
-			/* already playing: unpause playback, just in
-			   case it was paused, and return */
-			pc.LockSetPause(false);
-			return;
-		}
-
-		/* select a song: "current" song, or the first one */
-		i = current >= 0
-			? current
-			: 0;
-	} else if (!queue.IsValidPosition(song))
+	if (!queue.IsValidPosition(position))
 		throw PlaylistError::BadRange();
 
+	unsigned order = position;
 	if (queue.random) {
-		if (song >= 0)
-			/* "i" is currently the song position (which
-			   would be equal to the order number in
-			   no-random mode); convert it to a order
-			   number, because random mode is enabled */
-			i = queue.PositionToOrder(song);
-
-		i = MoveOrderToCurrent(i);
+		order = queue.PositionToOrder(position);
+		order = MoveOrderToCurrent(order);
 	}
 
 	stop_on_error = false;
 	error_count = 0;
 
-	PlayOrder(pc, i);
+	PlayOrder(pc, order);
 }
 
 void
-playlist::PlayId(PlayerControl &pc, int id)
+playlist::PlayId(PlayerControl &pc, unsigned id)
 {
-	if (id == -1) {
-		PlayPosition(pc, id);
-		return;
-	}
-
-	int song = queue.IdToPosition(id);
-	if (song < 0)
+	int position = queue.IdToPosition(id);
+	if (position < 0)
 		throw PlaylistError::NoSuchSong();
 
-	PlayPosition(pc, song);
+	PlayPosition(pc, static_cast<unsigned>(position));
 }
 
 void

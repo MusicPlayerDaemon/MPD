@@ -286,9 +286,17 @@ public:
 	void Stop(PlayerControl &pc) noexcept;
 
 	/**
+	 * Play any song ("current" song, or the first song.  Resumes
+	 * playback if paused.
+	 *
 	 * Throws on error.
 	 */
-	void PlayPosition(PlayerControl &pc, int position);
+	void PlayAny(PlayerControl &pc);
+
+	/**
+	 * Throws on error.
+	 */
+	void PlayPosition(PlayerControl &pc, unsigned position);
 
 	/**
 	 * Throws on error.
@@ -298,7 +306,7 @@ public:
 	/**
 	 * Throws on error.
 	 */
-	void PlayId(PlayerControl &pc, int id);
+	void PlayId(PlayerControl &pc, unsigned id);
 
 	/**
 	 * Throws on error.
