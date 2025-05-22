@@ -32,6 +32,12 @@ unsigned
 ParsePositive(const char *s);
 
 /**
+ * Throws on error.
+ */
+double
+ParseDouble(const char *s);
+
+/**
  * Parse a string as a byte size.
  *
  * Throws on error.

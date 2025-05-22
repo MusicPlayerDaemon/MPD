@@ -34,6 +34,8 @@ struct BlockParam {
 
 	bool GetBoolValue() const;
 
+	double GetDoubleValue() const;
+
 	std::chrono::steady_clock::duration
 	GetDuration(std::chrono::steady_clock::duration min_value) const;
 
@@ -125,6 +127,8 @@ struct ConfigBlock {
 	unsigned GetPositiveValue(const char *name, unsigned default_value) const;
 
 	bool GetBlockValue(const char *name, bool default_value) const;
+
+	double GetBlockValue(const char *name, double default_value) const;
 
 	std::chrono::steady_clock::duration
 	GetDuration(const char *name,
