@@ -642,4 +642,35 @@ if alsa_dep.found()
   )
 endif
 
+#
+# Musicbrainz
+#
+
+if curl_dep.found() and expat_dep.found()
+  executable(
+    'MusicbrainzFetch',
+    'MusicbrainzFetch.cxx',
+    'ShutdownHandler.cxx',
+    include_directories: inc,
+    dependencies: [
+      curl_dep,
+      event_dep,
+      expat_dep,
+    ],
+  )
+endif
+
+if libcdio_paranoia_dep.found() and ffmpeg_dep.found()
+  executable(
+    'MusicbrainzCDID',
+    'MusicbrainzCDID.cxx',
+    include_directories: inc,
+    dependencies: [
+      libcdio_paranoia_dep,
+      ffmpeg_dep,
+      config_dep,
+    ],
+  )
+endif
+
 subdir('fs')
