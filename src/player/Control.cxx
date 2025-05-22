@@ -98,7 +98,7 @@ PlayerControl::Kill() noexcept
 	listener.OnPlayerStateChanged();
 }
 
-void
+inline void
 PlayerControl::PauseLocked(std::unique_lock<Mutex> &lock) noexcept
 {
 	if (state != PlayerState::STOP) {
@@ -223,9 +223,9 @@ PlayerControl::LockEnqueueSong(std::unique_ptr<DetachedSong> song) noexcept
 	EnqueueSongLocked(lock, std::move(song));
 }
 
-void
+inline void
 PlayerControl::EnqueueSongLocked(std::unique_lock<Mutex> &lock,
-				 std::unique_ptr<DetachedSong> song) noexcept
+				 std::unique_ptr<DetachedSong> &&song) noexcept
 {
 	assert(song != nullptr);
 	assert(next_song == nullptr);
@@ -235,9 +235,9 @@ PlayerControl::EnqueueSongLocked(std::unique_lock<Mutex> &lock,
 	SynchronousCommand(lock, PlayerCommand::QUEUE);
 }
 
-void
+inline void
 PlayerControl::SeekLocked(std::unique_lock<Mutex> &lock,
-			  std::unique_ptr<DetachedSong> song, SongTime t)
+			  std::unique_ptr<DetachedSong> &&song, SongTime t)
 {
 	assert(song != nullptr);
 

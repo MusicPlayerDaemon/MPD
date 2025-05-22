@@ -517,13 +517,13 @@ private:
 	std::unique_ptr<DetachedSong> ReadTaggedSong() noexcept;
 
 	void EnqueueSongLocked(std::unique_lock<Mutex> &lock,
-			       std::unique_ptr<DetachedSong> song) noexcept;
+			       std::unique_ptr<DetachedSong> &&song) noexcept;
 
 	/**
 	 * Throws on error.
 	 */
 	void SeekLocked(std::unique_lock<Mutex> &lock,
-			std::unique_ptr<DetachedSong> song, SongTime t);
+			std::unique_ptr<DetachedSong> &&song, SongTime t);
 
 	/**
 	 * Caller must lock the object.
