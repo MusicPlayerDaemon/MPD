@@ -13,7 +13,12 @@ endif
 libcdio_paranoia_dep = dependency('libcdio_paranoia', version: '>= 10.2+0.93+1', required: get_option('cdio_paranoia'))
 input_features.set('ENABLE_CDIO_PARANOIA', libcdio_paranoia_dep.found())
 if libcdio_paranoia_dep.found()
-  input_plugins_sources += 'CdioParanoiaInputPlugin.cxx'
+  input_plugins_sources += [
+    'CdioParanoiaCDID.cxx',
+    'CdioParanoiaInputPlugin.cxx',
+    'CdioParanoiaMusicBrainzTags.cxx',
+    'CdioParanoiaMusicBrainzXMLParser.cxx',
+    ]
 endif
 
 if curl_dep.found()
