@@ -48,6 +48,12 @@ BlockParam::GetBoolValue() const
 	return With(ParseBool);
 }
 
+double
+BlockParam::GetDoubleValue() const
+{
+	return With(ParseDouble);
+}
+
 std::chrono::steady_clock::duration
 BlockParam::GetDuration(std::chrono::steady_clock::duration min_value) const
 {
@@ -140,6 +146,16 @@ ConfigBlock::GetBlockValue(const char *name, bool default_value) const
 		return default_value;
 
 	return bp->GetBoolValue();
+}
+
+double
+ConfigBlock::GetBlockValue(const char *name, double default_value) const
+{
+	const BlockParam *bp = GetBlockParam(name);
+	if (bp == nullptr)
+		return default_value;
+
+	return bp->GetDoubleValue();
 }
 
 std::chrono::steady_clock::duration

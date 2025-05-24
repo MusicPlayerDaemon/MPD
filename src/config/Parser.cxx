@@ -54,6 +54,17 @@ ParsePositive(const char *s)
 	return (unsigned)value;
 }
 
+double
+ParseDouble(const char *s)
+{
+	char *endptr;
+	double value = strtod(s, &endptr);
+	if (endptr == s || *endptr != 0)
+		throw std::runtime_error("Failed to parse number");
+
+	return value;
+}
+
 template<std::size_t OPERAND>
 static std::size_t
 Multiply(std::size_t value)

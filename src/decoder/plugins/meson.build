@@ -88,6 +88,12 @@ if libgme_dep.found()
   decoder_plugins_sources += 'GmeDecoderPlugin.cxx'
 endif
 
+vgmstream_dep = c_compiler.find_library('vgmstream', required: get_option('vgmstream'))
+decoder_features.set('ENABLE_VGMSTREAM', vgmstream_dep.found())
+if vgmstream_dep.found()
+  decoder_plugins_sources += 'VgmstreamDecoderPlugin.cxx'
+endif
+
 libmad_dep = c_compiler.find_library('mad', required: get_option('mad'))
 decoder_features.set('ENABLE_MAD', libmad_dep.found())
 if libmad_dep.found()
@@ -177,6 +183,7 @@ decoder_plugins = static_library(
     libaudiofile_dep,
     libfaad_dep,
     libgme_dep,
+    vgmstream_dep,
     libmad_dep,
     libmikmod_dep,
     libmodplug_dep,
