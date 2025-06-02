@@ -11,6 +11,7 @@ project(
     'warning_level=3',
 
     'fmt:cpp_std=c++20',
+    'gtest:cpp_std=c++20',
 
     # If we build those libraries as Meson subproject, they shall be
     # linked statically into the MPD executable.
