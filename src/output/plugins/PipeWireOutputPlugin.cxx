@@ -744,8 +744,8 @@ PipeWireOutput::Process() noexcept
 	auto &buffer = *b->buffer;
 	auto &d = buffer.datas[0];
 
-	auto dest = (std::byte *)d.data;
-	if (dest == nullptr)
+	const std::span<std::byte> dest{reinterpret_cast<std::byte *>(d.data), d.maxsize};
+	if (dest.data() == nullptr)
 		return;
 
 	std::size_t chunk_size = frame_size;
@@ -757,7 +757,7 @@ PipeWireOutput::Process() noexcept
 	}
 #endif
 
-	size_t nbytes = ring_buffer.ReadFramesTo({dest, d.maxsize}, chunk_size);
+	size_t nbytes = ring_buffer.ReadFramesTo(dest, chunk_size);
 	assert(nbytes % chunk_size == 0);
 	if (nbytes == 0) {
 		if (drain_requested) {
@@ -768,7 +768,7 @@ PipeWireOutput::Process() noexcept
 		/* buffer underrun: generate some silence */
 		std::size_t max_chunks = d.maxsize / chunk_size;
 		nbytes = max_chunks * chunk_size;
-		PcmSilence({dest, nbytes}, sample_format);
+		PcmSilence(dest.first(nbytes), sample_format);
 
 		LogWarning(pipewire_output_domain, "Decoder is too slow; playing silence to avoid xrun");
 	}
@@ -780,7 +780,7 @@ PipeWireOutput::Process() noexcept
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
 	if (use_dsd)
-		PostProcessDsd(dest, chunk, channels,
+		PostProcessDsd(dest.data(), chunk, channels,
 			       dsd_reverse_bits, dsd_interleave);
 #endif
 
