@@ -187,6 +187,20 @@ public:
 	}
 
 	/**
+	 * Check whether the ring buffer is empty.
+	 *
+	 * This method is thread-safe, but it may only be called from
+	 * the consumer thread.
+	 */
+	[[gnu::pure]]
+	bool IsEmptyRelaxed() const noexcept {
+		const auto rp = read_position.load(std::memory_order_relaxed);
+		const auto wp = write_position.load(std::memory_order_relaxed);
+
+		return rp == wp;
+	}
+
+	/**
 	 * Prepare a contiguous read directly from the buffer.  The
 	 * returned span (which, of course, cannot wrap around the end
 	 * of the ring) may be read from; after that, call Consume()

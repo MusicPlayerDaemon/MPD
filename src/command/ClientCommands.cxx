@@ -128,7 +128,7 @@ ParseProtocolFeature(Request request)
 	for (const char *name : request) {
 		auto type = protocol_feature_parse_i(name);
 		if (type == PF_NUM_OF_ITEM_TYPES)
-			throw ProtocolError(ACK_ERROR_ARG, "Unknown protcol feature");
+			throw ProtocolError(ACK_ERROR_ARG, "Unknown protocol feature");
 
 		result |= type;
 	}
