@@ -735,6 +735,14 @@ PostProcessDsd(std::byte *data, struct spa_chunk &chunk, unsigned channels,
 inline void
 PipeWireOutput::Process() noexcept
 {
+	if (drain_requested && ring_buffer.IsEmptyRelaxed()) {
+		/* draining was requested and our ring buffer is
+		   empty: tell PipeWire to drain (instead of queueing
+		   a buffer) */
+		pw_stream_flush(stream, true);
+		return;
+	}
+
 	auto *b = pw_stream_dequeue_buffer(stream);
 	if (b == nullptr) {
 		pw_log_warn("out of buffers: %m");
@@ -760,11 +768,6 @@ PipeWireOutput::Process() noexcept
 	size_t nbytes = ring_buffer.ReadFramesTo(dest, chunk_size);
 	assert(nbytes % chunk_size == 0);
 	if (nbytes == 0) {
-		if (drain_requested) {
-			pw_stream_flush(stream, true);
-			return;
-		}
-
 		/* buffer underrun: generate some silence */
 		std::size_t max_chunks = d.maxsize / chunk_size;
 		nbytes = max_chunks * chunk_size;
