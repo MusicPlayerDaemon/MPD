@@ -4,11 +4,27 @@
 
 #pragma once
 
+#include <system_error>
+
 class AddressInfoList;
+
+class ResolverErrorCategory final : public std::error_category {
+public:
+	const char *name() const noexcept override {
+		return "gai";
+	}
+
+	std::string message(int condition) const override;
+};
+
+extern ResolverErrorCategory resolver_error_category;
 
 /**
  * Thin wrapper for getaddrinfo() which throws on error and returns a
  * RAII object.
+ *
+ * getaddrinfo() errors are thrown as std::system_error with
+ * #resolver_error_category.
  */
 AddressInfoList
 Resolve(const char *node, const char *service,
@@ -21,7 +37,8 @@ Resolve(const char *node, const char *service,
  * This is a wrapper for getaddrinfo() and it does not support local
  * sockets.
  *
- * Throws on error.
+ * Throws on error.  Resolver errors are thrown as std::system_error
+ * with #resolver_error_category.
  */
 AddressInfoList
 Resolve(const char *host_and_port, int default_port,
