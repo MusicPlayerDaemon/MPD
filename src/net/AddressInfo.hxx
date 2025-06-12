@@ -14,17 +14,6 @@
 #include <netdb.h> // IWYU pragma: export
 #endif
 
-constexpr struct addrinfo
-MakeAddrInfo(int flags, int family, int socktype, int protocol=0) noexcept
-{
-	struct addrinfo ai{};
-	ai.ai_flags = flags;
-	ai.ai_family = family;
-	ai.ai_socktype = socktype;
-	ai.ai_protocol = protocol;
-	return ai;
-}
-
 class AddressInfo : addrinfo {
 	/* this class cannot be instantiated, it can only be cast from
 	   a struct addrinfo pointer */

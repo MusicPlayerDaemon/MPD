@@ -122,6 +122,11 @@ Resolve(const char *host_and_port, int default_port,
 AddressInfoList
 Resolve(const char *host_port, unsigned default_port, int flags, int socktype)
 {
-	const auto hints = MakeAddrInfo(flags, AF_UNSPEC, socktype);
+	const struct addrinfo hints{
+		.ai_flags = flags,
+		.ai_family = AF_UNSPEC,
+		.ai_socktype = socktype,
+	};
+
 	return Resolve(host_port, default_port, &hints);
 }
