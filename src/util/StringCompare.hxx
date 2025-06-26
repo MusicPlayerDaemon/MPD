@@ -62,6 +62,15 @@ StringAfterPrefix(const char *haystack, std::string_view needle) noexcept
 		: nullptr;
 }
 
+[[gnu::pure]]
+static inline std::string_view
+StringAfterPrefix(std::string_view haystack, std::string_view needle) noexcept
+{
+	return haystack.starts_with(needle)
+		? haystack.substr(needle.size())
+		: std::string_view{};
+}
+
 [[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringStartsWithIgnoreCase(const char *haystack, std::string_view needle) noexcept
