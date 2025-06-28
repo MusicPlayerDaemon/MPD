@@ -27,8 +27,9 @@ IcuCanonicalizeFinish() noexcept;
  * used):
  *
  * - case folding (optional)
+ * - diacritics stripping (optional)
  */
 AllocatedString
-IcuCanonicalize(std::string_view src, bool fold_case) noexcept;
+IcuCanonicalize(std::string_view src, bool fold_case, bool strip_diacritics) noexcept;
 
 #endif

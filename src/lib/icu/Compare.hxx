@@ -25,11 +25,13 @@ class IcuCompare {
 #endif
 
 	AllocatedString needle;
+    bool fold_case;
+    bool strip_diacritics;
 
 public:
 	IcuCompare():needle(nullptr) {}
 
-	explicit IcuCompare(std::string_view needle) noexcept;
+	explicit IcuCompare(std::string_view needle, bool fold_case, bool strip_diacritics) noexcept;
 
 	IcuCompare(const IcuCompare &src) noexcept
 		:needle(src
