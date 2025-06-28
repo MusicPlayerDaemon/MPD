@@ -32,9 +32,9 @@ private:
 	std::string value;
 
 	/**
-	 * This value is only set if case folding is enabled.
+	 * This value is only set if case folding or diacritics stripping is enabled.
 	 */
-	IcuCompare fold_case;
+	IcuCompare icu_compare;
 
 #ifdef HAVE_PCRE
 	std::shared_ptr<UniqueRegex> regex;
@@ -46,10 +46,10 @@ private:
 
 public:
 	template<typename V>
-	StringFilter(V &&_value, bool _fold_case, Position _position, bool _negated)
+	StringFilter(V &&_value, bool _fold_case, bool _strip_diacritics, Position _position, bool _negated)
 		:value(std::forward<V>(_value)),
-		 fold_case(_fold_case
-			   ? IcuCompare(value)
+		 icu_compare(_fold_case || _strip_diacritics
+			   ? IcuCompare(value, _fold_case, _strip_diacritics)
 			   : IcuCompare()),
 		 position(_position),
 		 negated(_negated) {}
@@ -78,7 +78,7 @@ public:
 	}
 
 	bool GetFoldCase() const noexcept {
-		return fold_case;
+		return icu_compare.GetFoldCase();
 	}
 
 	bool IsNegated() const noexcept {

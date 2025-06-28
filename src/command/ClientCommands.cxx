@@ -7,6 +7,7 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "TagPrint.hxx"
+#include "client/StringNormalization.hxx"
 #include "tag/ParseName.hxx"
 #include "tag/Type.hxx"
 #include "util/StringAPI.hxx"
@@ -174,6 +175,62 @@ handle_protocol(Client &client, Request request, Response &r)
 		}
 
 		protocol_features_print_all(r);
+		return CommandResult::OK;
+	} else {
+		r.Error(ACK_ERROR_ARG, "Unknown sub command");
+		return CommandResult::ERROR;
+	}
+}
+
+static StringNormalization
+ParseStringNormalization(Request request)
+{
+	if (request.empty())
+		throw ProtocolError(ACK_ERROR_ARG, "Not enough arguments");
+
+	StringNormalization result = StringNormalization::None();
+
+	for (const char *name : request) {
+		auto type = string_normalization_parse_i(name);
+		if (type == SN_NUM_OF_ITEM_TYPES)
+			throw ProtocolError(ACK_ERROR_ARG, "Unknown string normalization");
+
+		result |= type;
+	}
+
+	return result;
+}
+
+CommandResult
+handle_string_normalization(Client &client, Request request, Response &r)
+{
+	if (request.empty()) {
+		string_normalizations_print(client, r);
+		return CommandResult::OK;
+	}
+
+	const char *cmd = request.shift();
+	if (StringIsEqual(cmd, "all")) {
+		if (!request.empty()) {
+			r.Error(ACK_ERROR_ARG, "Too many arguments");
+			return CommandResult::ERROR;
+		}
+
+		client.AllStringNormalizations();
+		return CommandResult::OK;
+	} else if (StringIsEqual(cmd, "enable")) {
+		client.SetStringNormalizations(ParseStringNormalization(request), true);
+		return CommandResult::OK;
+	} else if (StringIsEqual(cmd, "disable")) {
+		client.SetStringNormalizations(ParseStringNormalization(request), false);
+		return CommandResult::OK;
+	} else if (StringIsEqual(cmd, "available")) {
+		if (!request.empty()) {
+			r.Error(ACK_ERROR_ARG, "Too many arguments");
+			return CommandResult::ERROR;
+		}
+
+		string_normalizations_print_all(r);
 		return CommandResult::OK;
 	} else {
 		r.Error(ACK_ERROR_ARG, "Unknown sub command");

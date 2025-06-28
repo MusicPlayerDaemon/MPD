@@ -76,7 +76,7 @@ locate_parse_type(const char *str) noexcept
 	return tag_name_parse_i(str);
 }
 
-SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
+SongFilter::SongFilter(TagType tag, const char *value, bool fold_case, bool strip_diacritics)
 {
 	/* for compatibility with MPD 0.20 and older, "fold_case" also
 	   switches on "substring" */
@@ -85,7 +85,7 @@ SongFilter::SongFilter(TagType tag, const char *value, bool fold_case)
 		: StringFilter::Position::FULL;
 
 	and_filter.AddItem(std::make_unique<TagSongFilter>(tag,
-							   StringFilter(value, fold_case, position, false)));
+							   StringFilter(value, fold_case, strip_diacritics, position, false)));
 }
 
 /* this destructor exists here just so it won't get inlined */
@@ -230,7 +230,7 @@ static constexpr std::array<OperatorDef, 12> operators = {
  * Throws on error.
  */
 static StringFilter
-ParseStringFilter(const char *&s, bool fold_case)
+ParseStringFilter(const char *&s, bool fold_case, bool strip_diacritics)
 {
 	for (auto& op: operators) {
 		if (auto after_prefix = StringAfterPrefixIgnoreCase(s, op.prefix)) {
@@ -238,6 +238,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 			return StringFilter(
 				ExpectQuoted(s),
 				op.fold_case,
+				strip_diacritics,
 				op.position,
 				op.negated);
 		}
@@ -247,7 +248,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 		s = StripLeft(after_contains);
 		auto value = ExpectQuoted(s);
 		return {
-			std::move(value), fold_case,
+			std::move(value), fold_case, strip_diacritics,
 			StringFilter::Position::ANYWHERE,
 			false,
 		};
@@ -257,7 +258,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 		s = StripLeft(after_not_contains);
 		auto value = ExpectQuoted(s);
 		return {
-			std::move(value), fold_case,
+			std::move(value), fold_case, strip_diacritics,
 			StringFilter::Position::ANYWHERE,
 			true,
 		};
@@ -267,7 +268,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 		s = StripLeft(after_starts_with);
 		auto value = ExpectQuoted(s);
 		return {
-			std::move(value), fold_case,
+			std::move(value), fold_case, strip_diacritics,
 			StringFilter::Position::PREFIX,
 			false,
 		};
@@ -277,7 +278,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 		s = StripLeft(after_not_starts_with);
 		auto value = ExpectQuoted(s);
 		return {
-			std::move(value), fold_case,
+			std::move(value), fold_case, strip_diacritics,
 			StringFilter::Position::PREFIX,
 			true,
 		};
@@ -291,7 +292,7 @@ ParseStringFilter(const char *&s, bool fold_case)
 		s = StripLeft(s + 2);
 		auto value = ExpectQuoted(s);
 		StringFilter f{
-			std::move(value), fold_case,
+			std::move(value), fold_case, strip_diacritics,
 			StringFilter::Position::FULL,
 			negated,
 		};
@@ -310,21 +311,21 @@ ParseStringFilter(const char *&s, bool fold_case)
 	auto value = ExpectQuoted(s);
 
 	return {
-		std::move(value), fold_case,
+		std::move(value), fold_case, strip_diacritics,
 		StringFilter::Position::FULL,
 		negated,
 	};
 }
 
 ISongFilterPtr
-SongFilter::ParseExpression(const char *&s, bool fold_case)
+SongFilter::ParseExpression(const char *&s, bool fold_case, bool strip_diacritics)
 {
 	assert(*s == '(');
 
 	s = StripLeft(s + 1);
 
 	if (*s == '(') {
-		auto first = ParseExpression(s, fold_case);
+		auto first = ParseExpression(s, fold_case, strip_diacritics);
 		if (*s == ')') {
 			s = StripLeft(s + 1);
 			return first;
@@ -337,7 +338,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 		and_filter->AddItem(std::move(first));
 
 		while (true) {
-			and_filter->AddItem(ParseExpression(s, fold_case));
+			and_filter->AddItem(ParseExpression(s, fold_case, strip_diacritics));
 
 			if (*s == ')') {
 				s = StripLeft(s + 1);
@@ -355,7 +356,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 		if (*s != '(')
 			throw std::runtime_error("'(' expected");
 
-		auto inner = ParseExpression(s, fold_case);
+		auto inner = ParseExpression(s, fold_case, strip_diacritics);
 		if (*s != ')')
 			throw std::runtime_error("')' expected");
 		s = StripLeft(s + 1);
@@ -424,7 +425,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 
 		return std::make_unique<PrioritySongFilter>(value);
 	} else {
-		auto string_filter = ParseStringFilter(s, fold_case);
+		auto string_filter = ParseStringFilter(s, fold_case, strip_diacritics);
 		if (*s != ')')
 			throw std::runtime_error("')' expected");
 
@@ -442,7 +443,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case)
 }
 
 void
-SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
+SongFilter::Parse(const char *tag_string, const char *value, bool fold_case, bool strip_diacritics)
 {
 	unsigned tag = locate_parse_type(tag_string);
 
@@ -471,6 +472,7 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 		and_filter.AddItem(std::make_unique<UriSongFilter>(StringFilter{
 					value,
 					fold_case,
+					strip_diacritics,
 					fold_case
 					? StringFilter::Position::ANYWHERE
 					: StringFilter::Position::FULL,
@@ -487,6 +489,7 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 		and_filter.AddItem(std::make_unique<TagSongFilter>(TagType(tag), StringFilter{
 					value,
 					fold_case,
+					strip_diacritics,
 					fold_case
 					? StringFilter::Position::ANYWHERE
 					: StringFilter::Position::FULL,
@@ -497,7 +500,7 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 }
 
 void
-SongFilter::Parse(std::span<const char *const> args, bool fold_case)
+SongFilter::Parse(std::span<const char *const> args, bool fold_case, bool strip_diacritics)
 {
 	if (args.empty())
 		throw std::runtime_error("Incorrect number of filter arguments");
@@ -507,7 +510,7 @@ SongFilter::Parse(std::span<const char *const> args, bool fold_case)
 			const char *s = args.front();
 			args = args.subspan(1);
 			const char *end = s;
-			auto f = ParseExpression(end, fold_case);
+			auto f = ParseExpression(end, fold_case, strip_diacritics);
 			if (*end != 0)
 				throw std::runtime_error("Unparsed garbage after expression");
 
@@ -521,7 +524,7 @@ SongFilter::Parse(std::span<const char *const> args, bool fold_case)
 		const char *tag = args[0];
 		const char *value = args[1];
 		args = args.subspan(2);
-		Parse(tag, value, fold_case);
+		Parse(tag, value, fold_case, strip_diacritics);
 	} while (!args.empty());
 }
 

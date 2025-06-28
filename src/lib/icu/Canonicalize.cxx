@@ -20,11 +20,13 @@
 using std::string_view_literals::operator""sv;
 
 static IcuTransliterator *transliterator;
+static IcuTransliterator *strip_diacritics_transliterator;
 
 void
 IcuCanonicalizeInit()
 {
 	assert(transliterator == nullptr);
+	assert(strip_diacritics_transliterator == nullptr);
 
 	const auto id =
 		/* convert all punctuation to ASCII equivalents */
@@ -32,21 +34,34 @@ IcuCanonicalizeInit()
 
 	transliterator = new IcuTransliterator(ToStringView(std::span{UCharFromUTF8(id)}),
 					       {});
+
+	const auto strip_diacritics_id =
+		/* decompose into base letters and combining marks, remove all marks, recompose characters
+		effectively removes diacritics */
+		"NFD; [:M:] Remove; NFC"sv;
+
+	strip_diacritics_transliterator =
+		new IcuTransliterator(ToStringView(std::span{UCharFromUTF8(strip_diacritics_id)}),
+				      {});
 }
 
 void
 IcuCanonicalizeFinish() noexcept
 {
 	assert(transliterator != nullptr);
+	assert(strip_diacritics_transliterator != nullptr);
 
 	delete transliterator;
 	transliterator = nullptr;
+
+	delete strip_diacritics_transliterator;
+	strip_diacritics_transliterator = nullptr;
 }
 
 #endif
 
 AllocatedString
-IcuCanonicalize(std::string_view src, bool fold_case) noexcept
+IcuCanonicalize(std::string_view src, bool fold_case, bool strip_diacritics) noexcept
 try {
 #ifdef HAVE_ICU
 	assert(transliterator != nullptr);
@@ -54,6 +69,12 @@ try {
 	auto u = UCharFromUTF8(src);
 	if (u.data() == nullptr)
 		return {src};
+
+	if (strip_diacritics) {
+		auto s = strip_diacritics_transliterator->Transliterate(ToStringView(std::span{u}));
+		if (s != nullptr)
+			u = std::move(s);
+	}
 
 	if (auto n = fold_case
 	    ? IcuNormalizeCaseFold(ToStringView(std::span{u}))
