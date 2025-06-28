@@ -25,11 +25,13 @@ class IcuCompare {
 #endif
 
 	AllocatedString needle;
+    bool fold_case;
+    bool strip_diacritics;
 
 public:
 	IcuCompare():needle(nullptr) {}
 
-	explicit IcuCompare(std::string_view needle) noexcept;
+	explicit IcuCompare(std::string_view needle, bool fold_case, bool strip_diacritics) noexcept;
 
 	IcuCompare(const IcuCompare &src) noexcept
 		:needle(src
@@ -59,6 +61,10 @@ public:
 
 	[[gnu::pure]]
 	bool StartsWith(const char *haystack) const noexcept;
+
+    bool GetFoldCase() const noexcept {
+        return needle != nullptr && fold_case;
+    }
 };
 
 #endif
