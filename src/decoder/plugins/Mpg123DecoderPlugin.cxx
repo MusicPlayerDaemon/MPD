@@ -34,10 +34,19 @@
 
 static constexpr Domain mpg123_domain("mpg123");
 
+/**
+ * Use mpg123_scan() on database update?  This is expensive because it
+ * reads and parses the whole file (therefore disabled by default),
+ * but is the only way to get a reliable song duration.
+ */
+static bool full_scan;
+
 static bool
-mpd_mpg123_init([[maybe_unused]] const ConfigBlock &block)
+mpd_mpg123_init(const ConfigBlock &block)
 {
 	mpg123_init();
+
+	full_scan = block.GetBlockValue("full_scan", false);
 
 	return true;
 }
@@ -458,6 +467,9 @@ Scan(mpg123_handle &handle, TagHandler &handler) noexcept
 	/* prepare for using mpg123_id3_raw() later */
 	mpg123_param(&handle, MPG123_ADD_FLAGS, MPG123_STORE_RAW_ID3, 0);
 #endif
+
+	if (full_scan)
+		mpg123_scan(&handle);
 
 	AudioFormat audio_format;
 
