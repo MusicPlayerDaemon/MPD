@@ -441,6 +441,7 @@ executable(
     decoder_glue_dep,
     input_glue_dep,
     archive_glue_dep,
+    cmdline_dep,
   ],
 )
 
