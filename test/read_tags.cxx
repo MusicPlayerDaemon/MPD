@@ -73,6 +73,18 @@ ParseCommandLine(int argc, char **argv)
 	return c;
 }
 
+class GlobalInit {
+	EventThread io_thread;
+	const ScopeInputPluginsInit input_plugins_init{ConfigData{}, io_thread.GetEventLoop()};
+	const ScopeDecoderPluginsInit decoder_plugins_init{ConfigData{}};
+
+public:
+	explicit GlobalInit()
+	{
+		io_thread.Start();
+	}
+};
+
 class DumpTagHandler final : public NullTagHandler {
 	bool empty = true;
 
@@ -118,14 +130,7 @@ try {
 	const auto c = ParseCommandLine(argc, argv);
 
 	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
-
-	EventThread io_thread;
-	io_thread.Start();
-
-	const ScopeInputPluginsInit input_plugins_init(ConfigData(),
-						       io_thread.GetEventLoop());
-
-	const ScopeDecoderPluginsInit decoder_plugins_init({});
+	const GlobalInit init;
 
 	auto *plugin = decoder_plugin_from_name(c.decoder);
 	if (plugin == nullptr) {
