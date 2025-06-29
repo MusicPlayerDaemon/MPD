@@ -126,7 +126,7 @@
 #metadata_to_use "+comment"
 #
 # This setting enables automatic update of MPD's database when files in
-# music_directory are changed.
+# music_directory are changed.  (Linux only)
 #
 #auto_update	"yes"
 #
