@@ -2,7 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "config.h"
-#include "config/Data.hxx"
+#include "ConfigGlue.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
@@ -39,14 +39,18 @@ struct CommandLine {
 	const char *decoder = nullptr;
 	const char *uri = nullptr;
 
+	FromNarrowPath config_path;
+
 	bool verbose = false;
 };
 
 enum Option {
+	OPTION_CONFIG,
 	OPTION_VERBOSE,
 };
 
 static constexpr OptionDef option_defs[] = {
+	{"config", 0, true, "Load a MPD configuration file"},
 	{"verbose", 'v', false, "Verbose logging"},
 };
 
@@ -58,6 +62,10 @@ ParseCommandLine(int argc, char **argv)
 	OptionParser option_parser(option_defs, argc, argv);
 	while (auto o = option_parser.Next()) {
 		switch (Option(o.index)) {
+		case OPTION_CONFIG:
+			c.config_path = o.value;
+			break;
+
 		case OPTION_VERBOSE:
 			c.verbose = true;
 			break;
@@ -74,12 +82,14 @@ ParseCommandLine(int argc, char **argv)
 }
 
 class GlobalInit {
+	const ConfigData config;
 	EventThread io_thread;
-	const ScopeInputPluginsInit input_plugins_init{ConfigData{}, io_thread.GetEventLoop()};
-	const ScopeDecoderPluginsInit decoder_plugins_init{ConfigData{}};
+	const ScopeInputPluginsInit input_plugins_init{config, io_thread.GetEventLoop()};
+	const ScopeDecoderPluginsInit decoder_plugins_init{config};
 
 public:
-	explicit GlobalInit()
+	explicit GlobalInit(Path config_path)
+		:config(AutoLoadConfigFile(config_path))
 	{
 		io_thread.Start();
 	}
@@ -130,7 +140,7 @@ try {
 	const auto c = ParseCommandLine(argc, argv);
 
 	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
-	const GlobalInit init;
+	const GlobalInit init{c.config_path};
 
 	auto *plugin = decoder_plugin_from_name(c.decoder);
 	if (plugin == nullptr) {
