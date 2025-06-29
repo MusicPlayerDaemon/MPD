@@ -551,9 +551,7 @@ Decodes Musepack files using `libmpcdec <http://www.musepack.net/>`_.
 mpg123
 ------
 
-Decodes MP3 files using `libmpg123 <http://www.mpg123.de/>`_. Currently, this
-decoder does not support streams (e.g. archived files, remote files over HTTP,
-...), only regular local files.
+Decodes MP3 files using `libmpg123 <http://www.mpg123.de/>`_.
 
 opus
 ----
