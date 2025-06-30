@@ -23,7 +23,7 @@ CreateConfiguredDatabase(const ConfigData &config,
 	const auto *path = config.GetParam(ConfigOption::DB_FILE);
 
 	if (param != nullptr && path != nullptr)
-		throw FmtRuntimeError("Found both 'database' (line {}) and 'db_file' (line }) setting",
+		throw FmtRuntimeError("Found both 'database' (line {}) and 'db_file' (line {}) setting",
 				      param->line, path->line);
 
 	if (param != nullptr) {

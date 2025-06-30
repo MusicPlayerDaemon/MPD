@@ -152,6 +152,7 @@ auto_update <yes or no>
   This specifies the whether to support automatic update of music database
   when files are changed in music_directory. The default is to disable
   autoupdate of database.
+  (Only implemented on Linux.)
 
 auto_update_depth <N>
   Limit the depth of the directories being watched, 0 means only watch the

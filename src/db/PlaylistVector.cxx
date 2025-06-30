@@ -21,13 +21,14 @@ PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi) noexcept
 {
 	assert(holding_db_lock());
 
-	auto i = find(pi.name.c_str());
+	auto i = find(pi.name);
 	if (i != end()) {
+		i->mark = true;
+
 		if (pi.mtime == i->mtime)
 			return false;
 
 		i->mtime = pi.mtime;
-		i->mark = true;
 	} else {
 		pi.mark = true;
 		push_back(std::move(pi));

@@ -2,7 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "config.h"
-#include "config/Data.hxx"
+#include "ConfigGlue.hxx"
 #include "event/Thread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
@@ -15,9 +15,13 @@
 #include "fs/NarrowPath.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
+#include "cmdline/OptionDef.hxx"
+#include "cmdline/OptionParser.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
 #include "util/PrintException.hxx"
+#include "Log.hxx"
+#include "LogBackend.hxx"
 
 #include <fmt/core.h>
 
@@ -30,6 +34,66 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
+
+struct CommandLine {
+	const char *decoder = nullptr;
+	const char *uri = nullptr;
+
+	FromNarrowPath config_path;
+
+	bool verbose = false;
+};
+
+enum Option {
+	OPTION_CONFIG,
+	OPTION_VERBOSE,
+};
+
+static constexpr OptionDef option_defs[] = {
+	{"config", 0, true, "Load a MPD configuration file"},
+	{"verbose", 'v', false, "Verbose logging"},
+};
+
+static CommandLine
+ParseCommandLine(int argc, char **argv)
+{
+	CommandLine c;
+
+	OptionParser option_parser(option_defs, argc, argv);
+	while (auto o = option_parser.Next()) {
+		switch (Option(o.index)) {
+		case OPTION_CONFIG:
+			c.config_path = o.value;
+			break;
+
+		case OPTION_VERBOSE:
+			c.verbose = true;
+			break;
+		}
+	}
+
+	auto args = option_parser.GetRemaining();
+	if (args.size() != 2)
+		throw std::runtime_error("Usage: read_tags [--verbose] DECODER URI");
+
+	c.decoder = args[0];
+	c.uri = args[1];
+	return c;
+}
+
+class GlobalInit {
+	const ConfigData config;
+	EventThread io_thread;
+	const ScopeInputPluginsInit input_plugins_init{config, io_thread.GetEventLoop()};
+	const ScopeDecoderPluginsInit decoder_plugins_init{config};
+
+public:
+	explicit GlobalInit(Path config_path)
+		:config(AutoLoadConfigFile(config_path))
+	{
+		io_thread.Start();
+	}
+};
 
 class DumpTagHandler final : public NullTagHandler {
 	bool empty = true;
@@ -68,40 +132,26 @@ public:
 
 int main(int argc, char **argv)
 try {
-	const char *decoder_name;
-	const struct DecoderPlugin *plugin;
-
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
 #endif
 
-	if (argc != 3) {
-		fmt::print(stderr, "Usage: read_tags DECODER FILE\n");
-		return EXIT_FAILURE;
-	}
+	const auto c = ParseCommandLine(argc, argv);
 
-	decoder_name = argv[1];
-	const char *path = argv[2];
+	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
+	const GlobalInit init{c.config_path};
 
-	EventThread io_thread;
-	io_thread.Start();
-
-	const ScopeInputPluginsInit input_plugins_init(ConfigData(),
-						       io_thread.GetEventLoop());
-
-	const ScopeDecoderPluginsInit decoder_plugins_init({});
-
-	plugin = decoder_plugin_from_name(decoder_name);
+	auto *plugin = decoder_plugin_from_name(c.decoder);
 	if (plugin == nullptr) {
-		fmt::print(stderr, "No such decoder: {:?}\n", decoder_name);
+		fmt::print(stderr, "No such decoder: {:?}\n", c.decoder);
 		return EXIT_FAILURE;
 	}
 
 	DumpTagHandler h;
 	bool success;
 	try {
-		success = plugin->ScanFile(FromNarrowPath(path), h);
+		success = plugin->ScanFile(FromNarrowPath(c.uri), h);
 	} catch (...) {
 		PrintException(std::current_exception());
 		success = false;
@@ -111,7 +161,7 @@ try {
 	InputStreamPtr is;
 
 	if (!success && plugin->scan_stream != nullptr) {
-		is = InputStream::OpenReady(path, mutex);
+		is = InputStream::OpenReady(c.uri, mutex);
 		success = plugin->ScanStream(*is, h);
 	}
 
@@ -124,7 +174,7 @@ try {
 		if (is)
 			ScanGenericTags(*is, h);
 		else
-			ScanGenericTags(FromNarrowPath(path), h);
+			ScanGenericTags(FromNarrowPath(c.uri), h);
 	}
 
 	return 0;

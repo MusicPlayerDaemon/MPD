@@ -704,8 +704,15 @@ ffmpeg_suffixes() noexcept
 		if (input_format->extensions != nullptr) {
 			for (const auto i : IterableSplitString(input_format->extensions, ','))
 				suffixes.emplace(i);
-		} else
+		} else {
+			if (StringIsEqual(input_format->name, "aiff"))
+				/* the "aiff" demuxer has no extension
+				   list, but we should treat "*.aif"
+				   just like "*.aiff" */
+				suffixes.emplace("aif"sv);
+
 			suffixes.emplace(input_format->name);
+		}
 	}
 
 	void *codec_opaque = nullptr;
