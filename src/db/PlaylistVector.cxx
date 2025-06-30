@@ -21,7 +21,7 @@ PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi) noexcept
 {
 	assert(holding_db_lock());
 
-	auto i = find(pi.name.c_str());
+	auto i = find(pi.name);
 	if (i != end()) {
 		if (pi.mtime == i->mtime)
 			return false;
