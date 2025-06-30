@@ -425,6 +425,13 @@ mpd_mpg123_stream_decode(DecoderClient &client, InputStream &is)
 
 	AtScopeExit(handle) { mpg123_delete(handle); };
 
+	if (is.IsSeekable())
+		/* in "stream" mode, libmpg123 assumes that the song
+		   is not seekable (even if the "lseek" method is
+		   implemented), unless we force it to with
+		   MPG123_FORCE_SEEKABLE */
+		mpg123_param(handle, MPG123_ADD_FLAGS, MPG123_FORCE_SEEKABLE, 0);
+
 	struct mpd_mpg123_iohandle iohandle{
 		.client = &client,
 		.is = is,
