@@ -1,6 +1,7 @@
 ver 0.24.5 (not yet released)
 * decoder
   - ffmpeg: handle "*.aif" files
+  - mpg123: add option "full_scan"
 * output
   - pipewire: fix resuming playback after it was paused by "single" mode
 
