@@ -23,11 +23,12 @@ PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi) noexcept
 
 	auto i = find(pi.name);
 	if (i != end()) {
+		i->mark = true;
+
 		if (pi.mtime == i->mtime)
 			return false;
 
 		i->mtime = pi.mtime;
-		i->mark = true;
 	} else {
 		pi.mark = true;
 		push_back(std::move(pi));
