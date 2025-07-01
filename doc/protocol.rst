@@ -1751,6 +1751,44 @@ Connection settings
 :command:`protocol available`
     Lists all available protocol features.
 
+.. _command_stringnormalization:
+
+:command:`stringnormalization`
+    Shows a list of enabled string normalization options when searching
+    using :ref:`search <command_search>`.
+
+    Available options:
+
+    - ``strip_diacritics``: strip diacritics from searched strings
+
+    The following ``stringnormalization`` sub commands configure the
+    options.
+
+.. _command_stringnormalization_disable:
+
+:command:`stringnormalization disable {FEATURE...}`
+    Disables one or more string normalization options.
+
+.. _command_stringnormalization_enable:
+
+:command:`stringnormalization enable {FEATURE...}`
+    Enables one or more string normalization options.
+
+.. _command_stringnormalization_clear:
+
+:command:`stringnormalization clear`
+    Disables all string normalization options.
+
+.. _command_stringnormalization_all:
+
+:command:`stringnormalization all`
+    Enables all string normalization options.
+
+.. _command_stringnormalization_available:
+
+:command:`stringnormalization available`
+    Lists all available string normalization options.
+
 .. _partition_commands:
 
 Partition commands

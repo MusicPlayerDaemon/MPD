@@ -1,6 +1,7 @@
 ver 0.25 (not yet released)
 * protocol
   - implement "window" parameter for command "list"
+  - new command "stringnormalization"
 * decoder
   - vgmstream: new plugin
 * output
