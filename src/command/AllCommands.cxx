@@ -217,7 +217,9 @@ command_available([[maybe_unused]] const Partition &partition,
 {
 #ifdef ENABLE_SQLITE
 	if (StringIsEqual(cmd->cmd, "sticker") ||
-	    StringIsEqual(cmd->cmd, "stickernames"))
+	    StringIsEqual(cmd->cmd, "stickernames") ||
+	    StringIsEqual(cmd->cmd, "stickernamestypes") ||
+	    StringIsEqual(cmd->cmd, "stickertypes"))
 		return partition.instance.HasStickerDatabase();
 #endif
 
