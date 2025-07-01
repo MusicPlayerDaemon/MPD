@@ -61,6 +61,10 @@ public:
 
 	[[gnu::pure]]
 	bool StartsWith(const char *haystack) const noexcept;
+
+    bool GetFoldCase() const noexcept {
+        return needle != nullptr && fold_case;
+    }
 };
 
 #endif

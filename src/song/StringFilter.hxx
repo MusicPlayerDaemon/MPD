@@ -78,7 +78,7 @@ public:
 	}
 
 	bool GetFoldCase() const noexcept {
-		return icu_compare;
+		return icu_compare.GetFoldCase();
 	}
 
 	bool IsNegated() const noexcept {

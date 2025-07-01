@@ -21,7 +21,7 @@ enum StringNormalizationType : uint8_t {
 class StringNormalization {
 	using string_normalization_t = uint_least8_t;
 
-	/* must have enough bits to represent all protocol features
+	/* must have enough bits to represent all string normalization options
 	   supported by MPD */
 	static_assert(SN_NUM_OF_ITEM_TYPES <= sizeof(string_normalization_t) * 8);
 

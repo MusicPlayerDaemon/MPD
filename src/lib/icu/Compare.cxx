@@ -14,7 +14,7 @@
 #ifdef HAVE_ICU_CANONICALIZE
 
 IcuCompare::IcuCompare(std::string_view _needle, bool _fold_case, bool _strip_diacritics) noexcept
-	:needle(IcuCanonicalize(_needle, true, _strip_diacritics)),
+	:needle(IcuCanonicalize(_needle, _fold_case, _strip_diacritics)),
 	fold_case(_fold_case),
 	strip_diacritics(_strip_diacritics) {}
 
