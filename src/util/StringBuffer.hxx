@@ -47,6 +47,10 @@ public:
 		return the_data.data();
 	}
 
+	constexpr const_pointer data() const noexcept {
+		return the_data.data();
+	}
+
 	constexpr value_type front() const noexcept {
 		return the_data.front();
 	}
