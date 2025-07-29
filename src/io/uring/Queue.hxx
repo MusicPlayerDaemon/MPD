@@ -54,6 +54,22 @@ public:
 		return !operations.empty();
 	}
 
+	/**
+	 * Are there more than this number of pending operations?
+	 * This is a special method for integration into #EventLoop so
+	 * #EventLoop can determine whether there are pending
+	 * operations other than its own ones.
+	 */
+	[[gnu::pure]]
+	bool HasPendingMoreThan(std::size_t n) const noexcept {
+		for (auto i = operations.begin(), end = operations.end(); i != end; ++i) {
+			if (n-- == 0)
+				return true;
+		}
+
+		return false;
+	}
+
 protected:
 	void AddPending(struct io_uring_sqe &sqe,
 			Operation &operation) noexcept;
