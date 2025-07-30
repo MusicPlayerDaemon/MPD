@@ -1,0 +1,4 @@
+[Service]
+Name=%H
+Type=_mpd._tcp
+Port=6600
