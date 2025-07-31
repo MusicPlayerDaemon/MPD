@@ -30,7 +30,7 @@ TEST_F(TagSongFilterTest, Basic)
 {
 	const TagSongFilter f{
 		TAG_TITLE,
-		{"needle", false, StringFilter::Position::FULL, false},
+		{"needle", false, false, StringFilter::Position::FULL, false},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "needle")));
@@ -53,7 +53,7 @@ TEST_F(TagSongFilterTest, Empty)
 {
 	const TagSongFilter f{
 		TAG_TITLE,
-		{"", false, StringFilter::Position::FULL, false},
+		{"", false, false, StringFilter::Position::FULL, false},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag()));
@@ -66,7 +66,7 @@ TEST_F(TagSongFilterTest, Substring)
 {
 	const TagSongFilter f{
 		TAG_TITLE,
-		{"needle", false, StringFilter::Position::ANYWHERE, false},
+		{"needle", false, false, StringFilter::Position::ANYWHERE, false},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "needle")));
@@ -82,7 +82,7 @@ TEST_F(TagSongFilterTest, Startswith)
 {
 	const TagSongFilter f{
 		TAG_TITLE,
-		{"needle", false, StringFilter::Position::PREFIX, false},
+		{"needle", false, false, StringFilter::Position::PREFIX, false},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "needle")));
@@ -98,7 +98,7 @@ TEST_F(TagSongFilterTest, Negated)
 {
 	const TagSongFilter f{
 		TAG_TITLE,
-		{"needle", false, StringFilter::Position::FULL, true},
+		{"needle", false, false, StringFilter::Position::FULL, true},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag()));
@@ -113,7 +113,7 @@ TEST_F(TagSongFilterTest, EmptyNegated)
 {
 	const TagSongFilter f{
 		TAG_TITLE,
-		{"", false, StringFilter::Position::FULL, true},
+		{"", false, false, StringFilter::Position::FULL, true},
 	};
 
 	EXPECT_FALSE(InvokeFilter(f, MakeTag()));
@@ -127,7 +127,7 @@ TEST_F(TagSongFilterTest, MultiNegated)
 {
 	const TagSongFilter f{
 		TAG_TITLE,
-		{"needle", false, StringFilter::Position::FULL, true},
+		{"needle", false, false, StringFilter::Position::FULL, true},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_TITLE, "foo", TAG_TITLE, "bar")));
@@ -143,7 +143,7 @@ TEST_F(TagSongFilterTest, Fallback)
 {
 	const TagSongFilter f{
 		TAG_ALBUM_ARTIST,
-		{"needle", false, StringFilter::Position::FULL, false},
+		{"needle", false, false, StringFilter::Position::FULL, false},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_ALBUM_ARTIST, "needle")));
@@ -165,7 +165,7 @@ TEST_F(TagSongFilterTest, EmptyFallback)
 {
 	const TagSongFilter f{
 		TAG_ALBUM_ARTIST,
-		{"", false, StringFilter::Position::FULL, false},
+		{"", false, false, StringFilter::Position::FULL, false},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag()));
@@ -181,7 +181,7 @@ TEST_F(TagSongFilterTest, NegatedFallback)
 {
 	const TagSongFilter f{
 		TAG_ALBUM_ARTIST,
-		{"needle", false, StringFilter::Position::FULL, true},
+		{"needle", false, false, StringFilter::Position::FULL, true},
 	};
 
 	EXPECT_TRUE(InvokeFilter(f, MakeTag()));
