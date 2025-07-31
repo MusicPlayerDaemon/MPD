@@ -155,6 +155,7 @@ if is_windows
     c_compiler.find_library('ksuser', required: true),
     c_compiler.find_library('ole32', required: true),
     win32_dep,
+    system_windows_dep,
   ]
 else
   wasapi_dep = dependency('', required: false)

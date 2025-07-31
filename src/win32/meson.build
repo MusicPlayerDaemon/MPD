@@ -8,7 +8,6 @@ win32 = static_library(
   'ComWorker.cxx',
   'HResult.cxx',
   'PropVariant.cxx',
-  'WinEvent.cxx',
   include_directories: inc,
   dependencies: [
     fmt_dep,
