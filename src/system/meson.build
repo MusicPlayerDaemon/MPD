@@ -13,7 +13,7 @@ endif
 
 if host_machine.system() == 'windows'
   system_sources += [
-    'Clock.cxx',
+    'windows/Clock.cxx',
   ]
 endif
 

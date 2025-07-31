@@ -8,15 +8,19 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.5 (not yet released)
+ver 0.24.5 (2025/07/31)
 * database
   - fix disappearing playlist files
 * decoder
   - ffmpeg: handle "*.aif" files
   - mpg123: add option "full_scan"
   - mpg123: support seeking on remote files
+  - mpg123: work around libmpg123 ID3 corruption bug
+  - sidplay: add support for PSID files
 * output
   - pipewire: fix resuming playback after it was paused by "single" mode
+* Windows
+  - fix libfmt error "what(): invalid utf8"
 
 ver 0.24.4 (2025/05/20)
 * protocol
