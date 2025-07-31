@@ -8,6 +8,8 @@ ver 0.24.5 (not yet released)
   - sidplay: add support for PSID files
 * output
   - pipewire: fix resuming playback after it was paused by "single" mode
+* Windows
+  - fix libfmt error "what(): invalid utf8"
 
 ver 0.24.4 (2025/05/20)
 * protocol
