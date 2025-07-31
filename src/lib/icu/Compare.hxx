@@ -27,7 +27,7 @@ class IcuCompare {
 	AllocatedString needle;
 
 public:
-	IcuCompare():needle(nullptr) {}
+	IcuCompare() noexcept = default;
 
 	explicit IcuCompare(std::string_view needle) noexcept;
 
