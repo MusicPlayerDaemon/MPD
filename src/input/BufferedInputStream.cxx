@@ -5,6 +5,8 @@
 
 #include <string.h>
 
+offset_type BufferedInputStream::MAX_SIZE = 128 * 1024 * 1024;
+
 BufferedInputStream::BufferedInputStream(InputStreamPtr _input)
 	:InputStream(_input->GetUriView(), _input->mutex),
 	 BufferingInputStream(std::move(_input))
