@@ -1,4 +1,5 @@
 /packagecache/
+/.wraplock
 
 /curl-*/
 /expat-*/
