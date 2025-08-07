@@ -8,6 +8,8 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.6 (not yet released)
+
 ver 0.24.5 (2025/07/31)
 * database
   - fix disappearing playlist files
