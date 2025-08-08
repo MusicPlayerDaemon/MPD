@@ -25,21 +25,27 @@ class IcuCompare {
 #endif
 
 	AllocatedString needle;
+	bool fold_case;
+	bool strip_diacritics;
 
 public:
 	IcuCompare() noexcept = default;
 
-	explicit IcuCompare(std::string_view needle) noexcept;
+	explicit IcuCompare(std::string_view needle, bool fold_case, bool strip_diacritics) noexcept;
 
 	IcuCompare(const IcuCompare &src) noexcept
 		:needle(src
 			? AllocatedString(src.needle)
-			: nullptr) {}
+			: nullptr),
+		 fold_case(src.fold_case),
+		 strip_diacritics(src.strip_diacritics) {}
 
 	IcuCompare &operator=(const IcuCompare &src) noexcept {
 		needle = src
 			? AllocatedString(src.needle)
 			: nullptr;
+		fold_case = src.fold_case;
+		strip_diacritics = src.strip_diacritics;
 		return *this;
 	}
 
@@ -59,6 +65,10 @@ public:
 
 	[[gnu::pure]]
 	bool StartsWith(const char *haystack) const noexcept;
+
+	bool GetFoldCase() const noexcept {
+		return needle != nullptr && fold_case;
+	}
 };
 
 #endif

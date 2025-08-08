@@ -16,19 +16,19 @@ StringFilter::MatchWithoutNegation(const char *s) const noexcept
 		return regex->Match(s);
 #endif
 
-	if (fold_case) {
+	if (icu_compare) {
 		switch (position) {
 		case Position::FULL:
 			break;
 
 		case Position::ANYWHERE:
-			return fold_case.IsIn(s);
+			return icu_compare.IsIn(s);
 
 		case Position::PREFIX:
-			return fold_case.StartsWith(s);
+			return icu_compare.StartsWith(s);
 		}
 
-		return fold_case == s;
+		return icu_compare == s;
 	} else {
 		switch (position) {
 		case Position::FULL:

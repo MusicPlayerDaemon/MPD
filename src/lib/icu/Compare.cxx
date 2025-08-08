@@ -13,13 +13,17 @@
 
 #ifdef HAVE_ICU_CANONICALIZE
 
-IcuCompare::IcuCompare(std::string_view _needle) noexcept
-	:needle(IcuCanonicalize(_needle, true)) {}
+IcuCompare::IcuCompare(std::string_view _needle, bool _fold_case, bool _strip_diacritics) noexcept
+	:needle(IcuCanonicalize(_needle, _fold_case, _strip_diacritics)),
+	 fold_case(_fold_case),
+	 strip_diacritics(_strip_diacritics) {}
 
 #elif defined(_WIN32)
 
-IcuCompare::IcuCompare(std::string_view _needle) noexcept
-	:needle(nullptr)
+IcuCompare::IcuCompare(std::string_view _needle, bool _fold_case, bool _strip_diacritics) noexcept
+	:needle(nullptr),
+	 fold_case(_fold_case),
+	 strip_diacritics(_strip_diacritics)
 {
 	try {
 		needle = MultiByteToWideChar(CP_UTF8, _needle);
@@ -29,8 +33,12 @@ IcuCompare::IcuCompare(std::string_view _needle) noexcept
 
 #else
 
-IcuCompare::IcuCompare(std::string_view _needle) noexcept
-	:needle(_needle) {}
+IcuCompare::IcuCompare(std::string_view _needle,
+		       [[maybe_unused]] bool _fold_case,
+		       [[maybe_unused]] bool _strip_diacritics) noexcept
+	:needle(_needle),
+	 fold_case(false),
+	 strip_diacritics(false) {}
 
 #endif
 
@@ -38,7 +46,7 @@ bool
 IcuCompare::operator==(const char *haystack) const noexcept
 {
 #ifdef HAVE_ICU_CANONICALIZE
-	return StringIsEqual(IcuCanonicalize(haystack, true).c_str(), needle.c_str());
+	return StringIsEqual(IcuCanonicalize(haystack, fold_case, strip_diacritics).c_str(), needle.c_str());
 #elif defined(_WIN32)
 	if (needle == nullptr)
 		/* the MultiByteToWideChar() call in the constructor
@@ -64,7 +72,7 @@ bool
 IcuCompare::IsIn(const char *haystack) const noexcept
 {
 #ifdef HAVE_ICU_CANONICALIZE
-	return StringFind(IcuCanonicalize(haystack, true).c_str(),
+	return StringFind(IcuCanonicalize(haystack, fold_case, strip_diacritics).c_str(),
 			  needle.c_str()) != nullptr;
 #elif defined(_WIN32)
 	if (needle == nullptr)
@@ -101,7 +109,7 @@ bool
 IcuCompare::StartsWith(const char *haystack) const noexcept
 {
 #ifdef HAVE_ICU_CANONICALIZE
-	return StringStartsWith(IcuCanonicalize(haystack, true).c_str(),
+	return StringStartsWith(IcuCanonicalize(haystack, fold_case, strip_diacritics).c_str(),
 				needle);
 #elif defined(_WIN32)
 	if (needle == nullptr)

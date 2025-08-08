@@ -28,4 +28,7 @@ handle_tagtypes(Client &client, Request request, Response &response);
 CommandResult
 handle_protocol(Client &client, Request request, Response &response);
 
+CommandResult
+handle_string_normalization(Client &client, Request request, Response &response);
+
 #endif

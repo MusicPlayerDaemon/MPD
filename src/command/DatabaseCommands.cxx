@@ -5,6 +5,7 @@
 #include "PositionArg.hxx"
 #include "Request.hxx"
 #include "Partition.hxx"
+#include "client/StringNormalization.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "db/DatabasePrint.hxx"
@@ -96,7 +97,7 @@ ParseInsertPosition(Request &args, const playlist &playlist)
  * @param filter a buffer to be used for DatabaseSelection::filter
  */
 static DatabaseSelection
-ParseDatabaseSelection(Request args, bool fold_case, SongFilter &filter)
+ParseDatabaseSelection(Request args, bool fold_case, bool strip_diacritics, SongFilter &filter)
 {
 	RangeArg window = RangeArg::All();
 	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "window")) {
@@ -122,7 +123,7 @@ ParseDatabaseSelection(Request args, bool fold_case, SongFilter &filter)
 	}
 
 	try {
-		filter.Parse(args, fold_case);
+		filter.Parse(args, fold_case, strip_diacritics);
 	} catch (...) {
 		throw ProtocolError(ACK_ERROR_ARG,
 				    GetFullMessage(std::current_exception()).c_str());
@@ -137,10 +138,10 @@ ParseDatabaseSelection(Request args, bool fold_case, SongFilter &filter)
 }
 
 static CommandResult
-handle_match(Client &client, Request args, Response &r, bool fold_case)
+handle_match(Client &client, Request args, Response &r, bool fold_case, bool strip_diacritics)
 {
 	SongFilter filter;
-	const auto selection = ParseDatabaseSelection(args, fold_case, filter);
+	const auto selection = ParseDatabaseSelection(args, fold_case, strip_diacritics, filter);
 
 	db_selection_print(r, client.GetPartition(),
 			   selection, true, false);
@@ -150,17 +151,18 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 CommandResult
 handle_find(Client &client, Request args, Response &r)
 {
-	return handle_match(client, args, r, false);
+	return handle_match(client, args, r, false, false);
 }
 
 CommandResult
 handle_search(Client &client, Request args, Response &r)
 {
-	return handle_match(client, args, r, true);
+	auto strip_diacritics = client.StringNormalizationEnabled(SN_STRIP_DIACRITICS);
+	return handle_match(client, args, r, true, strip_diacritics);
 }
 
 static CommandResult
-handle_match_add(Client &client, Request args, bool fold_case)
+handle_match_add(Client &client, Request args, bool fold_case, bool strip_diacritics)
 {
 	auto &partition = client.GetPartition();
 	const auto queue_length = partition.playlist.queue.GetLength();
@@ -168,7 +170,7 @@ handle_match_add(Client &client, Request args, bool fold_case)
 		ParseInsertPosition(args, partition.playlist);
 
 	SongFilter filter;
-	const auto selection = ParseDatabaseSelection(args, fold_case, filter);
+	const auto selection = ParseDatabaseSelection(args, fold_case, strip_diacritics, filter);
 
 	AddFromDatabase(partition, selection);
 
@@ -190,13 +192,14 @@ handle_match_add(Client &client, Request args, bool fold_case)
 CommandResult
 handle_findadd(Client &client, Request args, Response &)
 {
-	return handle_match_add(client, args, false);
+	return handle_match_add(client, args, false, false);
 }
 
 CommandResult
 handle_searchadd(Client &client, Request args, Response &)
 {
-	return handle_match_add(client, args, true);
+	auto strip_diacritics = client.StringNormalizationEnabled(SN_STRIP_DIACRITICS);
+	return handle_match_add(client, args, true,  strip_diacritics);
 }
 
 CommandResult
@@ -207,7 +210,8 @@ handle_searchaddpl(Client &client, Request args, Response &)
 	const unsigned position = ParseQueuePosition(args, UINT_MAX);
 
 	SongFilter filter;
-	const auto selection = ParseDatabaseSelection(args, true, filter);
+	auto strip_diacritics = client.StringNormalizationEnabled(SN_STRIP_DIACRITICS);
+	const auto selection = ParseDatabaseSelection(args, true, strip_diacritics, filter);
 
 	const Database &db = client.GetDatabaseOrThrow();
 
@@ -222,7 +226,7 @@ handle_searchaddpl(Client &client, Request args, Response &)
 }
 
 static CommandResult
-handle_count_internal(Client &client, Request args, Response &r, bool fold_case)
+handle_count_internal(Client &client, Request args, Response &r, bool fold_case, bool strip_diacritics)
 {
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
 	if (args.size() >= 2 && StringIsEqual(args[args.size() - 2], "group")) {
@@ -241,7 +245,7 @@ handle_count_internal(Client &client, Request args, Response &r, bool fold_case)
 	SongFilter filter;
 	if (!args.empty()) {
 		try {
-			filter.Parse(args, fold_case);
+			filter.Parse(args, fold_case, strip_diacritics);
 		} catch (...) {
 			r.Error(ACK_ERROR_ARG,
 				GetFullMessage(std::current_exception()).c_str());
@@ -258,13 +262,14 @@ handle_count_internal(Client &client, Request args, Response &r, bool fold_case)
 CommandResult
 handle_count(Client &client, Request args, Response &r)
 {
-	return handle_count_internal(client, args, r, false);
+	return handle_count_internal(client, args, r, false, false);
 }
 
 CommandResult
 handle_searchcount(Client &client, Request args, Response &r)
 {
-	return handle_count_internal(client, args, r, true);
+	auto strip_diacritics = client.StringNormalizationEnabled(SN_STRIP_DIACRITICS);
+	return handle_count_internal(client, args, r, true, strip_diacritics);
 }
 
 CommandResult

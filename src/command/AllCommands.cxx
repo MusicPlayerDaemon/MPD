@@ -195,6 +195,7 @@ static constexpr struct command commands[] = {
 	{ "stickertypes", PERMISSION_ADMIN, 0, 0, handle_sticker_types },
 #endif
 	{ "stop", PERMISSION_PLAYER, 0, 0, handle_stop },
+	{ "stringnormalization", PERMISSION_NONE, 0, -1, handle_string_normalization },
 	{ "subscribe", PERMISSION_READ, 1, 1, handle_subscribe },
 	{ "swap", PERMISSION_PLAYER, 2, 2, handle_swap },
 	{ "swapid", PERMISSION_PLAYER, 2, 2, handle_swapid },
