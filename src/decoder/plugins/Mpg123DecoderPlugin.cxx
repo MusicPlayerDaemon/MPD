@@ -474,6 +474,7 @@ Scan(mpg123_handle &handle, TagHandler &handler) noexcept
 #ifdef ENABLE_ID3TAG
 	/* prepare for using mpg123_id3_raw() later */
 	mpg123_param(&handle, MPG123_ADD_FLAGS, MPG123_STORE_RAW_ID3, 0);
+	mpg123_param(&handle, MPG123_ADD_FLAGS, MPG123_SKIP_ID3V2, 0);
 #endif
 
 	if (full_scan)
