@@ -57,7 +57,7 @@ NeighborGlue::Open()
 			for (auto k = explorers.begin(); k != i; ++k)
 				k->explorer->Close();
 
-			std::throw_with_nested(FmtRuntimeError("Failed to open neighblor plugin {:?}",
+			std::throw_with_nested(FmtRuntimeError("Failed to open neighbor plugin {:?}",
 							       i->name));
 		}
 	}
