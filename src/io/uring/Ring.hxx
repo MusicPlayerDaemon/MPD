@@ -68,6 +68,15 @@ public:
 	}
 
 	/**
+	 * @return true if there are overflow entries waiting to be
+	 * flushed onto the CQ ring
+	 */
+	[[gnu::pure]]
+	bool HasOverflow() const noexcept {
+		return io_uring_cq_has_overflow(&ring);
+	}
+
+	/**
 	 * Returns a submit queue entry or nullptr if the submit queue
 	 * is full.
 	 */

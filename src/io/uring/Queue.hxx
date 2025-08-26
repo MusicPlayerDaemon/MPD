@@ -38,6 +38,11 @@ public:
 		ring.SetMaxWorkers(bounded, unbounded);
 	}
 
+	[[gnu::pure]]
+	bool HasOverflow() const noexcept {
+		return ring.HasOverflow();
+	}
+
 	struct io_uring_sqe *GetSubmitEntry() noexcept {
 		return ring.GetSubmitEntry();
 	}
