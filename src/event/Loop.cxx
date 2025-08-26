@@ -26,7 +26,16 @@ public:
 	UringPoll(EventLoop &_event_loop) noexcept
 		:event_loop(_event_loop) {}
 
-	void Start();
+	void Start() {
+		assert(!IsUringPending());
+		assert(event_loop.GetUring());
+
+		auto &queue = *event_loop.GetUring();
+
+		auto &s = queue.RequireSubmitEntry();
+		io_uring_prep_poll_multishot(&s, event_loop.poll_backend.GetFileDescriptor().Get(), EPOLLIN);
+		queue.Push(s, *this);
+	}
 
 private:
 	void OnUringCompletion(int res) noexcept override {
@@ -129,19 +138,6 @@ EventLoop::SetVolatile() noexcept
 }
 
 #ifdef HAVE_URING
-
-inline void
-EventLoop::UringPoll::Start()
-{
-	assert(!IsUringPending());
-	assert(event_loop.GetUring());
-
-	auto &queue = *event_loop.GetUring();
-
-	auto &s = queue.RequireSubmitEntry();
-	io_uring_prep_poll_multishot(&s, event_loop.poll_backend.GetFileDescriptor().Get(), EPOLLIN);
-	queue.Push(s, *this);
-}
 
 void
 EventLoop::EnableUring(unsigned entries, unsigned flags)
