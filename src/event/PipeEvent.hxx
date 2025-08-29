@@ -59,6 +59,10 @@ public:
 		event.SetReadyFlags(flags);
 	}
 
+	void ClearReadyFlags(unsigned flags) noexcept {
+		event.ClearReadyFlags(flags);
+	}
+
 	bool Schedule(unsigned flags) noexcept {
 		return event.Schedule(flags);
 	}
