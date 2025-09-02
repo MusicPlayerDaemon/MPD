@@ -232,6 +232,14 @@ handle_string_normalization(Client &client, Request request, Response &r)
 
 		string_normalizations_print_all(r);
 		return CommandResult::OK;
+	} else if (StringIsEqual(cmd, "clear")) {
+		if (!request.empty()) {
+			r.Error(ACK_ERROR_ARG, "Too many arguments");
+			return CommandResult::ERROR;
+		}
+
+		client.ClearStringNormalizations();
+		return CommandResult::OK;
 	} else {
 		r.Error(ACK_ERROR_ARG, "Unknown sub command");
 		return CommandResult::ERROR;
