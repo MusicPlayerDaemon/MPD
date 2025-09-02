@@ -34,6 +34,8 @@
 #include <cassert>
 #include <array>
 
+using std::string_view_literals::operator""sv;
+
 [[gnu::pure]]
 static bool
 SkipNameFS(PathTraitsFS::const_pointer name_fs) noexcept
@@ -342,7 +344,7 @@ public:
 			return;
 		}
 
-		    response.Fmt("size: {}\n", buffer.size());
+		response.Fmt("size: {}\n"sv, buffer.size());
 
 		if (mime_type != nullptr)
 			response.Fmt("type: {}\n", mime_type);
