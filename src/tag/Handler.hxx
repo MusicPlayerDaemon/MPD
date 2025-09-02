@@ -102,7 +102,7 @@ public:
 	 * @param buffer the picture file contents; the buffer will be
 	 * invalidated after this method returns
 	 */
-	virtual void OnPicture(const char *mime_type,
+	virtual void OnPicture(std::string_view mime_type,
 			       std::span<const std::byte> buffer) noexcept = 0;
 };
 
@@ -116,7 +116,7 @@ public:
 	void OnPair(std::string_view key,
 		    std::string_view value) noexcept override;
 	void OnAudioFormat(AudioFormat af) noexcept override;
-	void OnPicture(const char *mime_type,
+	void OnPicture(std::string_view mime_type,
 		       std::span<const std::byte> buffer) noexcept override;
 };
 

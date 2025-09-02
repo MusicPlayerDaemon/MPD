@@ -123,7 +123,7 @@ public:
 		fmt::print("{}\n", af);
 	}
 
-	void OnPicture(const char *mime_type,
+	void OnPicture(std::string_view mime_type,
 		       std::span<const std::byte> buffer) noexcept override {
 		fmt::print("picture mime={:?} size={}\n",
 			   mime_type, buffer.size());

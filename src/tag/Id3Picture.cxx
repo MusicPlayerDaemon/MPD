@@ -54,7 +54,5 @@ ScanId3Apic(std::span<const std::byte> buffer, TagHandler &handler) noexcept
 
 	const auto image = buffer.first(image_size);
 
-	// TODO: don't copy MIME type, pass std::string_view to TagHandler::OnPicture()
-	handler.OnPicture(std::string{mime_type}.c_str(),
-			  image);
+	handler.OnPicture(mime_type, image);
 }

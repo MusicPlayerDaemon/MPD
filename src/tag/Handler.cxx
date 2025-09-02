@@ -22,7 +22,7 @@ NullTagHandler::OnPair(std::string_view, std::string_view) noexcept
 }
 
 void
-NullTagHandler::OnPicture(const char *, std::span<const std::byte>) noexcept
+NullTagHandler::OnPicture(std::string_view, std::span<const std::byte>) noexcept
 {
 }
 
