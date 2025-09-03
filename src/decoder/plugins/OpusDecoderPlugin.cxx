@@ -113,6 +113,14 @@ class MPDOpusDecoder final : public OggDecoder {
 	 */
 	bool submitted_replay_gain = false;
 
+	/**
+	 * This is true if a SEEK command was received from
+	 * DecoderClient::Ready().  We continue reading until we see
+	 * the first packet in order to apply ReplayGain and find the
+	 * file offset of the first audio packet.
+	 */
+	bool initial_seek = false;
+
 public:
 	explicit MPDOpusDecoder(DecoderReader &reader)
 		:OggDecoder(reader) {}
@@ -230,8 +238,17 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 					       * audio_format.channels];
 
 	auto cmd = client.GetCommand();
-	if (cmd != DecoderCommand::NONE)
+	if (cmd != DecoderCommand::NONE) {
+		if (cmd == DecoderCommand::SEEK) {
+			/* postpone the seek until we have found the
+			   first packet with audio data, i.e. after
+			   the AutoSetFirstOffset() call */
+			initial_seek = true;
+			return;
+		}
+
 		throw cmd;
+	}
 }
 
 void
@@ -274,7 +291,8 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	if (!tag_builder.empty()) {
 		Tag tag = tag_builder.Commit();
 		auto cmd = client.SubmitTag(input_stream, std::move(tag));
-		if (cmd != DecoderCommand::NONE)
+		if (cmd != DecoderCommand::NONE &&
+		    (cmd != DecoderCommand::SEEK || !initial_seek))
 			throw cmd;
 	}
 }
@@ -297,6 +315,14 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	}
 
 	AutoSetFirstOffset();
+
+	if (initial_seek) {
+		/* now that AutoSetFirstOffset() was called, we can do
+		   the seek (don't bother to waste time on decoding
+		   audio data) */
+		initial_seek = false;
+		throw DecoderCommand::SEEK;
+	}
 
 	int nframes = opus_decode(opus_decoder,
 				  (const unsigned char*)packet.packet,
