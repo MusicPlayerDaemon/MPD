@@ -20,10 +20,16 @@ struct DsdId {
 	bool Equals(const char *s) const noexcept;
 };
 
+/**
+ * Skip the #InputStream to the specified offset.
+ */
 bool
 dsdlib_skip_to(DecoderClient *client, InputStream &is,
 	       offset_type offset);
 
+/**
+ * Skip some bytes from the #InputStream.
+ */
 bool
 dsdlib_skip(DecoderClient *client, InputStream &is,
 	    offset_type delta);
