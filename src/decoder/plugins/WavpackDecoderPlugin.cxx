@@ -202,7 +202,8 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 				auto where = client.GetSeekFrame();
 				if (!WavpackSeekSample64(wpc, where)) {
 					/* seek errors are fatal */
-					client.SeekError();
+					client.SeekError(std::make_exception_ptr(FmtRuntimeError("WavpackSeekSample64() failed: {}"sv,
+												 WavpackGetErrorMessage(wpc))));
 					break;
 				}
 

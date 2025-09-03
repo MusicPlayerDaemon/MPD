@@ -129,7 +129,10 @@ public:
 		return previous_channels != 0;
 	}
 
-	bool Seek(uint64_t where_frame);
+	/**
+	 * Throws on error.
+	 */
+	void Seek(uint64_t where_frame);
 
 private:
 	void AddGranulepos(ogg_int64_t n) noexcept {
@@ -362,7 +365,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 		AddGranulepos(nframes);
 }
 
-bool
+void
 MPDOpusDecoder::Seek(uint64_t where_frame)
 {
 	assert(IsSeekable());
@@ -376,19 +379,13 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 	   declares its granulepos */
 	granulepos = -1;
 
-	try {
-		SeekGranulePos(where_granulepos);
+	SeekGranulePos(where_granulepos);
 
-		/* since all frame numbers are offset by the file's
-		   pre-skip value, we need to apply it here as well;
-		   we could just seek to "where_frame+pre_skip" as
-		   well, but I think by decoding those samples and
-		   discard them, we're safer */
-		skip = pre_skip;
-		return true;
-	} catch (...) {
-		return false;
-	}
+	/* since all frame numbers are offset by the file's pre-skip
+	   value, we need to apply it here as well; we could just seek
+	   to "where_frame+pre_skip" as well, but I think by decoding
+	   those samples and discard them, we're safer */
+	skip = pre_skip;
 }
 
 void
@@ -415,10 +412,12 @@ mpd_opus_stream_decode(DecoderClient &client,
 			break;
 		} catch (DecoderCommand cmd) {
 			if (cmd == DecoderCommand::SEEK) {
-				if (d.Seek(client.GetSeekFrame()))
+				try {
+					d.Seek(client.GetSeekFrame());
 					client.CommandFinished();
-				else
-					client.SeekError();
+				} catch (...) {
+					client.SeekError(std::current_exception());
+				}
 			} else if (cmd != DecoderCommand::NONE)
 				break;
 		}

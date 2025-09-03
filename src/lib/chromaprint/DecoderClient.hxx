@@ -69,7 +69,7 @@ public:
 		return 0;
 	}
 
-	void SeekError() noexcept override {}
+	void SeekError(std::exception_ptr &&) noexcept override {}
 
 	//InputStreamPtr OpenUri(std::string_view uri) override;
 

@@ -543,9 +543,10 @@ FfmpegDecode(DecoderClient &client, InputStream *input,
 			/* AVSEEK_FLAG_BACKWARD asks FFmpeg to seek to
 			   the packet boundary before the seek time
 			   stamp, not after */
-			if (av_seek_frame(&format_context, audio_stream, where,
-					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
-				client.SeekError();
+			if (int error = av_seek_frame(&format_context, audio_stream, where,
+						      AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD);
+			    error < 0)
+				client.SeekError(std::make_exception_ptr(MakeFfmpegError(error, "av_seek_frame() failed")));
 			else {
 				codec_context.FlushBuffers();
 				min_frame = client.GetSeekFrame();

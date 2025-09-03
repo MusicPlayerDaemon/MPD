@@ -13,6 +13,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/NarrowPath.hxx"
 #include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Domain.hxx"
@@ -27,6 +28,8 @@
 #include <stdlib.h>
 
 #define SUBTUNE_PREFIX "tune_"
+
+using std::string_view_literals::operator""sv;
 
 static constexpr Domain gme_domain("gme");
 
@@ -202,8 +205,7 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 			unsigned where = client.GetSeekTime().ToMS();
 			gme_err = gme_seek(emu, where);
 			if (gme_err != nullptr) {
-				LogWarning(gme_domain, gme_err);
-				client.SeekError();
+				client.SeekError(std::make_exception_ptr(FmtRuntimeError("gme_see() failed: {}"sv, gme_err)));
 			} else
 				client.CommandFinished();
 		}

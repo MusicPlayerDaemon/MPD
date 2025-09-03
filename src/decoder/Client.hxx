@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <span>
 #include <string_view>
 
@@ -71,8 +72,10 @@ public:
 	/**
 	 * Call this instead of CommandFinished() when seeking has
 	 * failed.
+	 *
+	 * @param error details about the seek error (optional)
 	 */
-	virtual void SeekError() noexcept = 0;
+	virtual void SeekError(std::exception_ptr &&error={}) noexcept = 0;
 
 	/**
 	 * Open a new #InputStream and wait until it's ready.

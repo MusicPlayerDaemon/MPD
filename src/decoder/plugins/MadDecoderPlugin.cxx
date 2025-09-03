@@ -131,7 +131,11 @@ public:
 	bool RunScan(TagHandler &handler) noexcept;
 
 private:
-	bool Seek(long offset) noexcept;
+	/**
+	 * Throws on error.
+	 */
+	void Seek(long offset);
+
 	bool FillBuffer() noexcept;
 	void ParseId3(size_t tagsize, Tag *tag) noexcept;
 	MadDecoderAction DecodeNextFrame(bool skip, Tag *tag) noexcept;
@@ -201,19 +205,13 @@ MadDecoder::MadDecoder(DecoderClient *_client,
 	mad_timer_reset(&timer);
 }
 
-inline bool
-MadDecoder::Seek(long offset) noexcept
+inline void
+MadDecoder::Seek(long offset)
 {
-	try {
-		input_stream.LockSeek(offset);
-	} catch (...) {
-		return false;
-	}
+	input_stream.LockSeek(offset);
 
 	mad_stream_buffer(&stream, input_buffer, 0);
 	stream.error = MAD_ERROR_NONE;
-
-	return true;
 }
 
 inline bool
@@ -877,12 +875,14 @@ MadDecoder::HandleCurrentFrame() noexcept
 			const auto t = client->GetSeekTime();
 			size_t j = TimeToFrame(t);
 			if (j < highest_frame) {
-				if (Seek(frame_offsets[j])) {
+				try {
+					Seek(frame_offsets[j]);
 					current_frame = j;
 					was_eof = false;
 					client->CommandFinished();
-				} else
-					client->SeekError();
+				} catch (...) {
+					client->SeekError(std::current_exception());
+				}
 			} else {
 				seek_time = t;
 				mute_frame = MadDecoderMuteFrame::SEEK;

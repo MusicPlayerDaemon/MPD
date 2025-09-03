@@ -3,6 +3,7 @@
 
 #include "DumpDecoderClient.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Names.hxx"
@@ -10,6 +11,8 @@
 
 #include <unistd.h>
 #include <stdio.h>
+
+using std::string_view_literals::operator""sv;
 
 void
 DumpDecoderClient::Ready(const AudioFormat audio_format,
@@ -49,8 +52,9 @@ DumpDecoderClient::GetSeekFrame() noexcept
 }
 
 void
-DumpDecoderClient::SeekError() noexcept
+DumpDecoderClient::SeekError(std::exception_ptr &&error) noexcept
 {
+	fmt::print(stderr, "Seek error: {}\n"sv, error);
 }
 
 InputStreamPtr

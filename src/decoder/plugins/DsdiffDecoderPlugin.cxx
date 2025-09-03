@@ -385,7 +385,7 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 				} else
 					client.SeekError();
 			} catch (...) {
-				client.SeekError();
+				client.SeekError(std::current_exception());
 			}
 		}
 

@@ -348,9 +348,12 @@ DecoderBridge::GetSeekFrame() noexcept
 }
 
 void
-DecoderBridge::SeekError() noexcept
+DecoderBridge::SeekError(std::exception_ptr &&_error) noexcept
 {
 	assert(dc.pipe != nullptr);
+
+	if (!_error)
+		_error = std::make_exception_ptr(std::runtime_error{"Decoder failed to seek"});
 
 	if (initial_seek_running) {
 		/* d'oh, we can't seek to the sub-song start position,
@@ -358,14 +361,14 @@ DecoderBridge::SeekError() noexcept
 		initial_seek_running = false;
 
 		if (initial_seek_essential)
-			error = std::make_exception_ptr(std::runtime_error("Decoder failed to seek"));
+			error = std::move(_error);
 
 		return;
 	}
 
 	assert(dc.command == DecoderCommand::SEEK);
 
-	dc.seek_error = true;
+	dc.seek_error = std::move(_error);
 	seeking = false;
 
 	CommandFinished();

@@ -100,7 +100,9 @@ class MyDecoderClient final : public DumpDecoderClient {
 
 	unsigned sample_rate;
 
-	bool seekable, seek_error = false;
+	bool seekable;
+
+	std::exception_ptr seek_error;
 
 public:
 	explicit MyDecoderClient(SongTime _seek_where) noexcept
@@ -111,7 +113,7 @@ public:
 			throw "Unrecognized file";
 
 		if (seek_error)
-			throw "Seek error";
+			std::rethrow_exception(seek_error);
 
 		if (seek_where != SongTime{}) {
 			if (!seekable)
@@ -164,10 +166,10 @@ public:
 		return GetSeekTime().ToScale<uint64_t>(sample_rate);
 	}
 
-	void SeekError() noexcept override {
+	void SeekError(std::exception_ptr &&_error) noexcept override {
 		assert(seek_where != SongTime{});
 
-		seek_error = true;
+		seek_error = std::move(_error);
 		seek_where = {};
 	}
 };

@@ -205,8 +205,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 				buffer.Clear();
 				client.CommandFinished();
 			} catch (...) {
-				LogError(std::current_exception());
-				client.SeekError();
+				client.SeekError(std::current_exception());
 			}
 
 			cmd = DecoderCommand::NONE;

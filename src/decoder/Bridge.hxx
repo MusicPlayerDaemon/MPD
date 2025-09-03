@@ -157,7 +157,7 @@ public:
 	void CommandFinished() noexcept override;
 	SongTime GetSeekTime() noexcept override;
 	uint64_t GetSeekFrame() noexcept override;
-	void SeekError() noexcept override;
+	void SeekError(std::exception_ptr &&_error) noexcept override;
 	InputStreamPtr OpenUri(std::string_view uri) override;
 	size_t Read(InputStream &is,
 		    std::span<std::byte> dest) noexcept override;

@@ -119,7 +119,7 @@ DecoderControl::Seek(std::unique_lock<Mutex> &lock, SongTime t)
 		throw std::runtime_error("Not seekable");
 
 	seek_time = t;
-	seek_error = false;
+	seek_error = {};
 	SynchronousCommandLocked(lock, DecoderCommand::SEEK);
 
 	while (state == DecoderState::START)
@@ -135,7 +135,7 @@ DecoderControl::Seek(std::unique_lock<Mutex> &lock, SongTime t)
 		WaitForDecoder(lock);
 
 	if (seek_error)
-		throw std::runtime_error("Decoder failed to seek");
+		std::rethrow_exception(seek_error);
 }
 
 void

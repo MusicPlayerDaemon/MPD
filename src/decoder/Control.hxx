@@ -90,11 +90,15 @@ public:
 	 */
 	std::exception_ptr error;
 
+	/**
+	 * The most recent seek error.
+	 */
+	std::exception_ptr seek_error;
+
 private:
 	bool quit;
 
 public:
-	bool seek_error;
 	bool seekable;
 
 	/**
