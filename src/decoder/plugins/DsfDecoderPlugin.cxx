@@ -257,11 +257,16 @@ dsf_decode_chunk(DecoderClient &client, InputStream &is,
 
 			offset_type offset =
 				start_offset + block * block_size;
-			if (dsdlib_skip_to(&client, is, offset)) {
-				client.CommandFinished();
-				i = block;
-			} else
+
+			try {
+				if (dsdlib_skip_to(&client, is, offset)) {
+					client.CommandFinished();
+					i = block;
+				} else
+					client.SeekError();
+			} catch (...) {
 				client.SeekError();
+			}
 		}
 
 		/* worst-case buffer size */

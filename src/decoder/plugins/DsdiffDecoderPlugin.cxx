@@ -377,12 +377,16 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 				break;
 			}
 
-			if (dsdlib_skip_to(&client, is,
-					   start_offset + offset)) {
-				client.CommandFinished();
-				remaining_bytes = total_bytes - offset;
-			} else
+			try {
+				if (dsdlib_skip_to(&client, is,
+						   start_offset + offset)) {
+					client.CommandFinished();
+					remaining_bytes = total_bytes - offset;
+				} else
+					client.SeekError();
+			} catch (...) {
 				client.SeekError();
+			}
 		}
 
 		/* see how much aligned data from the remaining chunk

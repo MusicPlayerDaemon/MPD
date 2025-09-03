@@ -22,6 +22,8 @@ struct DsdId {
 
 /**
  * Skip the #InputStream to the specified offset.
+ *
+ * On error, either throws exception or returns false.
  */
 [[nodiscard]]
 bool
@@ -30,6 +32,8 @@ dsdlib_skip_to(DecoderClient *client, InputStream &is,
 
 /**
  * Skip some bytes from the #InputStream.
+ *
+ * On error, either throws exception or returns false.
  */
 [[nodiscard]]
 bool
