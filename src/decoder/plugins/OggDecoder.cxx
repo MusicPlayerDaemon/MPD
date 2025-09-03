@@ -75,7 +75,7 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 	static const ogg_int64_t MARGIN_BEFORE = 44100 / 3;
 	static const ogg_int64_t MARGIN_AFTER = 44100 / 10;
 
-	offset_type min_offset = 0, max_offset = input_stream.GetSize();
+	offset_type min_offset = first_offset, max_offset = input_stream.GetSize();
 	ogg_int64_t min_granule = 0, max_granule = end_granulepos;
 
 	while (true) {

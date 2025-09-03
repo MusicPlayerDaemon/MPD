@@ -296,6 +296,8 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 		submitted_replay_gain = true;
 	}
 
+	AutoSetFirstOffset();
+
 	int nframes = opus_decode(opus_decoder,
 				  (const unsigned char*)packet.packet,
 				  packet.bytes,
