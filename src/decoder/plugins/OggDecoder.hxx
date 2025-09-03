@@ -9,6 +9,14 @@
 #include "input/Offset.hxx"
 
 class OggDecoder : public OggVisitor {
+	/**
+	 * The granulepos at the end of the last packet.  This is used
+	 * to calculate the song duration and to calculate seek file
+	 * offsets.
+	 *
+	 * This field is uninitialized until UpdateEndGranulePos() is
+	 * called.
+	 */
 	ogg_int64_t end_granulepos;
 
 protected:
