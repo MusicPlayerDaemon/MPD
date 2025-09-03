@@ -10,14 +10,13 @@
 #include "event/Thread.hxx"
 #include "util/PrintException.hxx"
 
-#include <inttypes.h>
-#include <stdio.h>
+#include <fmt/core.h>
 
 int
 main(int argc, char **argv) noexcept
 try {
 	if (argc != 2) {
-		fprintf(stderr, "Usage: DumpOgg FILE\n");
+		fmt::print(stderr, "Usage: DumpOgg FILE\n");
 		return EXIT_FAILURE;
 	}
 
@@ -41,8 +40,8 @@ try {
 		if (!sync.ExpectPage(page))
 			break;
 
-		printf("page offset=%" PRIu64 " serial=%d\n",
-		       sync.GetStartOffset(), ogg_page_serialno(&page));
+		fmt::print("page offset={} serial={}\n",
+			   sync.GetStartOffset(), ogg_page_serialno(&page));
 	}
 
 	return EXIT_SUCCESS;
