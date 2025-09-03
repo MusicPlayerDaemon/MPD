@@ -51,7 +51,7 @@ OggSyncState::ExpectPageIn(ogg_stream_state &os)
 bool
 OggSyncState::ExpectPageSeek(ogg_page &page)
 {
-	size_t remaining_skipped = 65536;
+	size_t remaining_skipped = 1024 * 1024;
 
 	while (true) {
 		int r = ogg_sync_pageseek(&oy, &page);
