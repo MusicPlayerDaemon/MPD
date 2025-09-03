@@ -23,6 +23,7 @@ struct DsdId {
 /**
  * Skip the #InputStream to the specified offset.
  */
+[[nodiscard]]
 bool
 dsdlib_skip_to(DecoderClient *client, InputStream &is,
 	       offset_type offset);
@@ -30,6 +31,7 @@ dsdlib_skip_to(DecoderClient *client, InputStream &is,
 /**
  * Skip some bytes from the #InputStream.
  */
+[[nodiscard]]
 bool
 dsdlib_skip(DecoderClient *client, InputStream &is,
 	    offset_type delta);
