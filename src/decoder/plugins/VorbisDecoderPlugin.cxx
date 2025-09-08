@@ -266,6 +266,8 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 			vorbis_block_init(&dsp, &block);
 		}
 
+		AutoSetFirstOffset();
+
 		if (vorbis_synthesis(&block, &packet) != 0) {
 			/* ignore bad packets, but give the MPD core a
 			   chance to stop us */

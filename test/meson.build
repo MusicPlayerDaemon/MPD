@@ -490,6 +490,7 @@ if ogg_dep.found()
     'DumpOgg.cxx',
     include_directories: inc,
     dependencies: [
+      fmt_dep,
       ogg_dep,
       input_glue_dep,
       archive_glue_dep,

@@ -13,6 +13,7 @@ ver 0.25 (not yet released)
 ver 0.24.6 (not yet released)
 * decoder
   - mpg123: another workaround for libmpg123 ID3 corruption bug
+  - opus: fix seeking in files with large OpusTags
 
 ver 0.24.5 (2025/07/31)
 * database
