@@ -16,6 +16,7 @@
 
 struct iovec;
 class UniqueFileDescriptor;
+struct FileAt;
 
 /**
  * An OO wrapper for a UNIX file descriptor.
@@ -96,8 +97,7 @@ public:
 
 #ifdef __linux__
 	[[nodiscard]]
-	bool Open(FileDescriptor dir, const char *pathname,
-		  int flags, mode_t mode=0666) noexcept;
+	bool Open(FileAt file, int flags, mode_t mode=0666) noexcept;
 #endif
 
 	[[nodiscard]]
@@ -113,8 +113,7 @@ public:
 
 #ifdef __linux__
 	[[nodiscard]]
-	bool OpenReadOnly(FileDescriptor dir,
-			  const char *pathname) noexcept;
+	bool OpenReadOnly(FileAt file) noexcept;
 
 	[[nodiscard]]
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w,

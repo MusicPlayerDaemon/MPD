@@ -5,6 +5,7 @@
 
 class FileDescriptor;
 class UniqueFileDescriptor;
+struct FileAt;
 
 UniqueFileDescriptor
 OpenReadOnly(const char *path, int flags=0);
@@ -25,19 +26,18 @@ UniqueFileDescriptor
 OpenPath(const char *path, int flags=0);
 
 UniqueFileDescriptor
-OpenPath(FileDescriptor directory, const char *name, int flags=0);
+OpenPath(FileAt file, int flags=0);
 
 UniqueFileDescriptor
-OpenReadOnly(FileDescriptor directory, const char *name, int flags=0);
+OpenReadOnly(FileAt file, int flags=0);
 
 UniqueFileDescriptor
-OpenWriteOnly(FileDescriptor directory, const char *name, int flags=0);
+OpenWriteOnly(FileAt file, int flags=0);
 
 UniqueFileDescriptor
-OpenDirectory(FileDescriptor directory, const char *name, int flags=0);
+OpenDirectory(FileAt file, int flags=0);
 
 struct opwn_how;
-struct FileAt;
 
 /**
  * Wrapper for openat2() which converts the returned file descriptor

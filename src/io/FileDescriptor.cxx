@@ -2,6 +2,7 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "FileDescriptor.hxx"
+#include "FileAt.hxx"
 #include "UniqueFileDescriptor.hxx"
 #include "system/Error.hxx"
 
@@ -65,10 +66,9 @@ FileDescriptor::IsSocket() const noexcept
 #ifdef __linux__
 
 bool
-FileDescriptor::Open(FileDescriptor dir, const char *pathname,
-		     int flags, mode_t mode) noexcept
+FileDescriptor::Open(FileAt file, int flags, mode_t mode) noexcept
 {
-	fd = ::openat(dir.Get(), pathname, flags | O_NOCTTY | O_CLOEXEC | O_NONBLOCK, mode);
+	fd = ::openat(file.directory.Get(), file.name, flags | O_NOCTTY | O_CLOEXEC | O_NONBLOCK, mode);
 	return IsDefined();
 }
 
@@ -101,9 +101,9 @@ FileDescriptor::OpenReadOnly(const char *pathname) noexcept
 #ifdef __linux__
 
 bool
-FileDescriptor::OpenReadOnly(FileDescriptor dir, const char *pathname) noexcept
+FileDescriptor::OpenReadOnly(FileAt file) noexcept
 {
-	return Open(dir, pathname, O_RDONLY);
+	return Open(file, O_RDONLY);
 }
 
 bool

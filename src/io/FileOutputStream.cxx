@@ -10,6 +10,7 @@
 #endif
 
 #ifdef __linux__
+#include "FileAt.hxx"
 #include "io/linux/ProcPath.hxx"
 #include <fcntl.h>
 #endif
@@ -175,7 +176,7 @@ OpenTempFile(FileDescriptor directory_fd,
 	     FileDescriptor &fd, Path path) noexcept
 {
 	if (directory_fd != FileDescriptor(AT_FDCWD))
-		return fd.Open(directory_fd, ".", O_TMPFILE|O_WRONLY, 0666);
+		return fd.Open({directory_fd, "."}, O_TMPFILE|O_WRONLY, 0666);
 
 	const auto directory = path.GetDirectoryName();
 	if (directory.IsNull())
@@ -204,9 +205,13 @@ FileOutputStream::OpenCreate(bool visible)
 
 		if (fd.Open(
 #ifdef __linux__
-			    directory_fd,
+			    {
+				    directory_fd,
 #endif
-			    tmp_path.c_str(),
+				    tmp_path.c_str(),
+#ifdef __linux__
+			    },
+#endif
 			    O_WRONLY|O_CREAT|O_EXCL,
 			    0666))
 			return;
@@ -216,9 +221,13 @@ FileOutputStream::OpenCreate(bool visible)
 	/* fall back to plain POSIX */
 	if (!fd.Open(
 #ifdef __linux__
-		    directory_fd,
+		     {
+			    directory_fd,
 #endif
-		    GetPath().c_str(),
+			    GetPath().c_str(),
+#ifdef __linux__
+		    },
+#endif
 		    O_WRONLY|O_CREAT|O_TRUNC,
 		    0666))
 		throw FmtErrno("Failed to create {}", GetPath());
@@ -233,9 +242,14 @@ FileOutputStream::OpenAppend(bool create)
 
 	if (!fd.Open(
 #ifdef __linux__
-		     directory_fd,
+		     {
+			     directory_fd,
 #endif
-		     path.c_str(), flags))
+			     path.c_str(),
+#ifdef __linux__
+		     },
+#endif
+		     flags))
 		throw FmtErrno("Failed to append to {}", path);
 }
 
