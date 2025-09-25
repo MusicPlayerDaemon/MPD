@@ -352,6 +352,10 @@ public:
 		disposer(&i);
 	}
 
+	const_reference back() const noexcept {
+		return *Cast(head.prev);
+	}
+
 	reference back() noexcept {
 		return *Cast(head.prev);
 	}
