@@ -17,9 +17,15 @@ struct WinSelectEvents {
 	static constexpr unsigned HANGUP = 0;
 
 	/**
+	 * Any kind of hangup, i.e. the normal EPOLLHUP plus the
+	 * Linux-specific EPOLLRDHUP.
+	 */
+	static constexpr unsigned ANY_HANGUP = HANGUP;
+
+	/**
 	 * A mask containing all events which indicate a dead socket
 	 * connection (i.e. error or hangup).  It may still be
 	 * possible to receive pending data from the socket buffer.
 	 */
-	static constexpr unsigned DEAD_MASK = ERROR|HANGUP;
+	static constexpr unsigned DEAD_MASK = ERROR|ANY_HANGUP;
 };

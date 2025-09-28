@@ -13,9 +13,15 @@ struct EpollEvents {
 	static constexpr unsigned READ_HANGUP = EPOLLRDHUP;
 
 	/**
+	 * Any kind of hangup, i.e. the normal EPOLLHUP plus the
+	 * Linux-specific EPOLLRDHUP.
+	 */
+	static constexpr unsigned ANY_HANGUP = HANGUP|READ_HANGUP;
+
+	/**
 	 * A mask containing all events which indicate a dead socket
 	 * connection (i.e. error or hangup).  It may still be
 	 * possible to receive pending data from the socket buffer.
 	 */
-	static constexpr unsigned DEAD_MASK = ERROR|HANGUP|READ_HANGUP;
+	static constexpr unsigned DEAD_MASK = ERROR|ANY_HANGUP;
 };
