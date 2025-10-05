@@ -37,6 +37,14 @@ OpenWriteOnly(FileAt file, int flags=0);
 UniqueFileDescriptor
 OpenDirectory(FileAt file, int flags=0);
 
+/**
+ * Combination of OpenDirectory() and OpenPath() - open a directory as
+ * an O_PATH file descriptor.  Like OpenDirectory(), it will fail with
+ * ENOTDIR if the specified path exists but is not a directory
+ */
+UniqueFileDescriptor
+OpenDirectoryPath(FileAt file, int flags=0);
+
 struct opwn_how;
 
 /**

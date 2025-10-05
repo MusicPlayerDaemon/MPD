@@ -101,6 +101,16 @@ OpenDirectory(FileAt file, int flags)
 	return fd;
 }
 
+UniqueFileDescriptor
+OpenDirectoryPath(FileAt file, int flags)
+{
+	UniqueFileDescriptor fd;
+	if (!fd.Open(file, O_PATH|O_DIRECTORY|flags))
+		throw FmtErrno("Failed to open {:?}", file.name);
+
+	return fd;
+}
+
 #ifdef HAVE_OPENAT2
 
 UniqueFileDescriptor
