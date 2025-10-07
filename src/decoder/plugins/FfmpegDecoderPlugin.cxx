@@ -717,6 +717,9 @@ ffmpeg_suffixes() noexcept
 
 	void *codec_opaque = nullptr;
 	while (const auto codec = av_codec_iterate(&codec_opaque)) {
+		if (codec->type != AVMEDIA_TYPE_AUDIO)
+			continue;
+
 		if (StringStartsWith(codec->name, "dsd_"sv)) {
 			/* FFmpeg was compiled with DSD support */
 			suffixes.emplace("dff"sv);
