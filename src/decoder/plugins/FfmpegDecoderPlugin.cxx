@@ -726,6 +726,9 @@ ffmpeg_suffixes() noexcept
 			suffixes.emplace("dsf"sv);
 		} else if (StringIsEqual(codec->name, "dst")) {
 			suffixes.emplace("dst"sv);
+		} else if (StringIsEqual(codec->name, "opus") ||
+			   StringIsEqual(codec->name, "libopus")) {
+			suffixes.emplace("opus"sv);
 		} else if (StringStartsWith(codec->name, "wma"sv)) {
 			/* there are codecs "wmav1", "wmav2" etc. and
 			   they usually come in "*.wma" files */
