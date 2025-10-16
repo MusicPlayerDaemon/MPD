@@ -1197,6 +1197,15 @@ The music database
     the queue.  Parameters have the same meaning as for
     :ref:`find <command_find>` and :ref:`searchadd <command_searchadd>`.
 
+.. _command_findaddpl:
+
+:command:`findaddpl {NAME} {FILTER} [sort {TYPE}] [window {START:END}] [position POS]`
+    Search the database for songs matching
+    ``FILTER`` (see :ref:`Filters <filter_syntax>`) and add them to
+    the playlist named ``NAME``.
+
+    Parameters have the same meaning as for :ref:`searchaddpl <command_searchadd>`.
+
 .. _command_list:
 
 :command:`list {TYPE} {FILTER} [group {GROUPTYPE}] [window {START:END}]`
