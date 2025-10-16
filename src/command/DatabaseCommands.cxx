@@ -189,6 +189,28 @@ handle_match_add(Client &client, Request args, bool fold_case, bool strip_diacri
 	return CommandResult::OK;
 }
 
+static CommandResult
+handle_match_addpl(Client &client, Request args, bool fold_case) {
+	const char *playlist = args.shift();
+
+	const unsigned position = ParseQueuePosition(args, UINT_MAX);
+
+	SongFilter filter;
+	auto strip_diacritics = client.StringNormalizationEnabled(SN_STRIP_DIACRITICS);
+	const auto selection = ParseDatabaseSelection(args, fold_case, strip_diacritics, filter);
+
+	const Database &db = client.GetDatabaseOrThrow();
+
+	if (position == UINT_MAX)
+		search_add_to_playlist(db, client.GetStorage(),
+				       playlist, selection);
+	else
+		SearchInsertIntoPlaylist(db, client.GetStorage(), selection,
+					 playlist, position);
+
+	return CommandResult::OK;
+}
+
 CommandResult
 handle_findadd(Client &client, Request args, Response &)
 {
@@ -203,26 +225,15 @@ handle_searchadd(Client &client, Request args, Response &)
 }
 
 CommandResult
+handle_findaddpl(Client &client, Request args, Response &)
+{
+	return handle_match_addpl(client, args, false);
+}
+
+CommandResult
 handle_searchaddpl(Client &client, Request args, Response &)
 {
-	const char *playlist = args.shift();
-
-	const unsigned position = ParseQueuePosition(args, UINT_MAX);
-
-	SongFilter filter;
-	auto strip_diacritics = client.StringNormalizationEnabled(SN_STRIP_DIACRITICS);
-	const auto selection = ParseDatabaseSelection(args, true, strip_diacritics, filter);
-
-	const Database &db = client.GetDatabaseOrThrow();
-
-	if (position == UINT_MAX)
-		search_add_to_playlist(db, client.GetStorage(),
-				       playlist, selection);
-	else
-		SearchInsertIntoPlaylist(db, client.GetStorage(), selection,
-					 playlist, position);
-
-	return CommandResult::OK;
+	return handle_match_addpl(client, args, true);
 }
 
 static CommandResult
