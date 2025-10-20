@@ -11,10 +11,6 @@ void
 ScanVorbisPicture(std::string_view value, TagHandler &handler) noexcept
 {
 #ifdef HAVE_BASE64
-	if (value.size() > 1024 * 1024)
-		/* ignore image files which are too huge */
-		return;
-
 	try {
 		return ScanId3Apic(DecodeBase64(value), handler);
 	} catch (...) {

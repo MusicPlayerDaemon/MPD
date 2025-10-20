@@ -18,6 +18,8 @@
 #include <tremor/ivorbiscodec.h>
 #endif /* HAVE_TREMOR */
 
+using std::string_view_literals::operator""sv;
+
 template<typename F>
 static void
 ForEachUserComment(const vorbis_comment &vc, F &&f)
@@ -49,11 +51,11 @@ VorbisCommentToReplayGain(ReplayGainInfo &rgi,
 static void
 vorbis_scan_comment(std::string_view comment, TagHandler &handler) noexcept
 {
-	const auto picture_b64 = handler.WantPicture()
-		? GetVorbisCommentValue(comment, "METADATA_BLOCK_PICTURE")
-		: std::string_view{};
-	if (picture_b64.data() != nullptr)
-		return ScanVorbisPicture(picture_b64, handler);
+	if (handler.WantPicture()) {
+		if (const auto picture_b64 = GetVorbisCommentValue(comment, "METADATA_BLOCK_PICTURE"sv);
+		    picture_b64.data() != nullptr)
+			return ScanVorbisPicture(picture_b64, handler);
+	}
 
 	ScanVorbisComment(comment, handler);
 }

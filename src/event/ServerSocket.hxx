@@ -12,7 +12,7 @@ class SocketAddress;
 class AllocatedSocketAddress;
 class UniqueSocketDescriptor;
 class EventLoop;
-class AllocatedPath;
+class Path;
 
 /**
  * A socket that accepts incoming stream connections (e.g. TCP).
@@ -96,7 +96,7 @@ public:
 	 *
 	 * @param path the absolute socket path
 	 */
-	void AddPath(AllocatedPath &&path);
+	void AddPath(Path path);
 
 	/**
 	 * Add a listener on an abstract local socket (Linux specific).
