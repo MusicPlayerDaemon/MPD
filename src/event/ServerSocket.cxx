@@ -15,7 +15,7 @@
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
 #include "event/SocketEvent.hxx"
-#include "fs/AllocatedPath.hxx"
+#include "fs/Path.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -33,10 +33,6 @@ class ServerSocket::OneServerSocket final {
 
 	const unsigned serial;
 
-#ifdef HAVE_UN
-	AllocatedPath path;
-#endif
-
 	const AllocatedSocketAddress address;
 
 public:
@@ -47,9 +43,6 @@ public:
 		:parent(_parent),
 		 event(_loop, BIND_THIS_METHOD(OnSocketReady)),
 		 serial(_serial),
-#ifdef HAVE_UN
-		 path(nullptr),
-#endif
 		 address(std::forward<A>(_address))
 	{
 	}
@@ -64,14 +57,6 @@ public:
 	[[nodiscard]] unsigned GetSerial() const noexcept {
 		return serial;
 	}
-
-#ifdef HAVE_UN
-	void SetPath(AllocatedPath &&_path) noexcept {
-		assert(path.IsNull());
-
-		path = std::move(_path);
-	}
-#endif
 
 	[[nodiscard]] bool IsDefined() const noexcept {
 		return event.IsDefined();
@@ -157,8 +142,8 @@ ServerSocket::OneServerSocket::Open()
 #ifdef HAVE_UN
 	/* allow everybody to connect */
 
-	if (!path.IsNull())
-		chmod(path.c_str(), 0666);
+	if (const char *path = address.GetLocalPath())
+		chmod(path, 0666);
 #endif
 
 	/* register in the EventLoop */	
@@ -345,7 +330,7 @@ ServerSocket::AddHost(const char *hostname, unsigned port)
 }
 
 void
-ServerSocket::AddPath(AllocatedPath &&path)
+ServerSocket::AddPath(Path path)
 {
 #ifdef HAVE_UN
 	unlink(path.c_str());
@@ -353,8 +338,7 @@ ServerSocket::AddPath(AllocatedPath &&path)
 	AllocatedSocketAddress address;
 	address.SetLocal(path.c_str());
 
-	OneServerSocket &s = AddAddress(std::move(address));
-	s.SetPath(std::move(path));
+	AddAddress(std::move(address));
 #else /* !HAVE_UN */
 	(void)path;
 
