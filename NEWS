@@ -1,4 +1,4 @@
-ver 0.24.6 (not yet released)
+ver 0.24.6 (2025/10/20)
 * decoder
   - ffmpeg: handle "*.opus" files
   - mpg123: another workaround for libmpg123 ID3 corruption bug
