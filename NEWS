@@ -3,6 +3,7 @@ ver 0.24.6 (not yet released)
   - ffmpeg: handle "*.opus" files
   - mpg123: another workaround for libmpg123 ID3 corruption bug
   - opus: fix seeking in files with large OpusTags
+  - opus, vorbis: remove METADATA_BLOCK_PICTURE size limit
 
 ver 0.24.5 (2025/07/31)
 * database
