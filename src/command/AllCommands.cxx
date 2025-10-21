@@ -98,6 +98,7 @@ static constexpr struct command commands[] = {
 #ifdef ENABLE_DATABASE
 	{ "find", PERMISSION_READ, 1, -1, handle_find },
 	{ "findadd", PERMISSION_ADD, 1, -1, handle_findadd},
+	{ "findaddpl", PERMISSION_CONTROL, 2, -1, handle_findaddpl },
 #endif
 #ifdef ENABLE_CHROMAPRINT
 	{ "getfingerprint", PERMISSION_READ, 1, 1, handle_getfingerprint },
