@@ -10,6 +10,7 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cmath>
 
 static constexpr Domain cross_fade_domain("cross_fade");
 
@@ -108,7 +109,7 @@ CrossFadeSettings::Calculate(float replay_gain_db, float replay_gain_prev_db,
 
 	if (!IsMixRampEnabled() ||
 	    !mixramp_start || !mixramp_prev_end) {
-		chunks = lround(duration / chunk_duration);
+		chunks = std::lround(duration / chunk_duration);
 	} else {
 		/* Calculate mixramp overlap. */
 		const auto mixramp_overlap_current =
@@ -123,7 +124,7 @@ CrossFadeSettings::Calculate(float replay_gain_db, float replay_gain_prev_db,
 		if (mixramp_overlap_current >= FloatDuration::zero() &&
 		    mixramp_overlap_prev >= FloatDuration::zero() &&
 		    mixramp_delay <= mixramp_overlap) {
-			chunks = lround((mixramp_overlap - mixramp_delay)
+			chunks = std::lround((mixramp_overlap - mixramp_delay)
 					/ chunk_duration);
 			FmtDebug(cross_fade_domain,
 				 "will overlap {} chunks, {}s", chunks,

@@ -13,6 +13,7 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cmath>
 #include <cstring>
 
 #include <neaacdec.h>
@@ -367,7 +368,7 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 		/* update bit rate and position */
 
 		if (frame_info.samples > 0) {
-			bit_rate = lround(frame_info.bytesconsumed * 8.0 *
+			bit_rate = std::lround(frame_info.bytesconsumed * 8.0 *
 					  frame_info.channels * audio_format.sample_rate /
 					  frame_info.samples / 1000);
 		}
