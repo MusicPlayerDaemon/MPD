@@ -15,10 +15,10 @@
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"
-#include "util/Math.hxx"
 #include "Log.hxx"
 
 #include <alsa/asoundlib.h>
+#include <cmath>
 
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
@@ -107,7 +107,7 @@ public:
 private:
 	[[gnu::const]]
 	static unsigned NormalizedToPercent(double normalized) noexcept {
-		return lround(100 * normalized);
+		return std::lround(100 * normalized);
 	}
 
 	[[gnu::pure]]

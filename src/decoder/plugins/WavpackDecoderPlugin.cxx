@@ -11,7 +11,6 @@
 #include "fs/Path.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
-#include "util/Math.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <wavpack/wavpack.h>
@@ -218,7 +217,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		if (n_frames == 0)
 			break;
 
-		int bitrate = lround(WavpackGetInstantBitrate(wpc) / 1000);
+		int bitrate = std::lround(WavpackGetInstantBitrate(wpc) / 1000);
 		format_samples(buffer, n_frames * audio_format.channels);
 
 		cmd = client.SubmitAudio(nullptr,
