@@ -6,7 +6,6 @@
 #include "output/Features.h"
 #include "output/OutputAPI.hxx"
 #include "output/plugins/WinmmOutputPlugin.hxx"
-#include "util/Math.hxx"
 
 #include <mmsystem.h>
 

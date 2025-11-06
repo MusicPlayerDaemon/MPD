@@ -6,7 +6,6 @@
 #include "Clamp.hxx"
 #include "Traits.hxx"
 #include "util/Clamp.hxx"
-#include "util/Math.hxx"
 
 #include "Dither.cxx" // including the .cxx file to get inlined templates
 

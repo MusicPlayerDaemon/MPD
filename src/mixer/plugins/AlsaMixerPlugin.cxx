@@ -15,7 +15,6 @@
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/Domain.hxx"
-#include "util/Math.hxx"
 #include "Log.hxx"
 
 #include <alsa/asoundlib.h>

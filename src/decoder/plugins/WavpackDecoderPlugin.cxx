@@ -11,7 +11,6 @@
 #include "fs/Path.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
-#include "util/Math.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <wavpack/wavpack.h>

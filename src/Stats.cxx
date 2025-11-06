@@ -12,7 +12,6 @@
 #include "db/Stats.hxx"
 #include "Log.hxx"
 #include "time/ChronoUtil.hxx"
-#include "util/Math.hxx"
 
 #ifdef _WIN32
 #include "system/Clock.hxx"

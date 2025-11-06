@@ -4,7 +4,7 @@
 
 #include "ISO8601.hxx"
 #include "Convert.hxx"
-#include "Math.hxx"
+#include "time/Math.hxx"
 #include "util/StringBuffer.hxx"
 
 #include <cassert>

@@ -16,7 +16,6 @@
 #include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/Exception.hxx"
-#include "util/Math.hxx"
 
 #include "db/Features.hxx" // for ENABLE_DATABASE
 #ifdef ENABLE_DATABASE

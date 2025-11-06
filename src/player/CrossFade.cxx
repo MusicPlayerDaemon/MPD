@@ -7,7 +7,6 @@
 #include "pcm/AudioFormat.hxx"
 #include "util/CNumberParser.hxx"
 #include "util/Domain.hxx"
-#include "util/Math.hxx"
 #include "Log.hxx"
 
 #include <cassert>

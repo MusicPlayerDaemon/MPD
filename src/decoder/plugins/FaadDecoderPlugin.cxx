@@ -9,7 +9,6 @@
 #include "tag/Handler.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/Domain.hxx"
-#include "util/Math.hxx"
 #include "util/SpanCast.hxx"
 #include "Log.hxx"
 
