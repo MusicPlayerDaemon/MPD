@@ -176,6 +176,14 @@ public:
 		Schedule(IMPLICIT_FLAGS);
 	}
 
+	/**
+	 * Schedule #ANY_HANGUP (in addition to events that may
+	 * already be scheduled).
+	 */
+	void ScheduleAnyHangup() noexcept {
+		Schedule(GetScheduledFlags() | ANY_HANGUP);
+	}
+
 #ifdef USE_EPOLL
 	/**
 	 * Cancel READ but schedule READ_HANGUP.  This is useful to be
