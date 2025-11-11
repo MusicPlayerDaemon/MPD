@@ -128,7 +128,7 @@ HugeDiscard(void *, size_t) noexcept
 template<typename T>
 class HugeArray {
 	using Buffer = std::span<T>;
-	Buffer buffer{nullptr};
+	Buffer buffer;
 
 public:
 	typedef typename Buffer::size_type size_type;
