@@ -16,7 +16,6 @@
 #include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/Exception.hxx"
-#include "util/Math.hxx"
 
 #include "db/Features.hxx" // for ENABLE_DATABASE
 #ifdef ENABLE_DATABASE
@@ -152,7 +151,7 @@ handle_status(Client &client, [[maybe_unused]] Request args, Response &r)
 
 	if (pc.GetCrossFade() > FloatDuration::zero())
 		r.Fmt(COMMAND_STATUS_CROSSFADE ": {}\n",
-		      lround(pc.GetCrossFade().count()));
+		      std::lround(pc.GetCrossFade().count()));
 
 	if (pc.GetMixRampDelay() > FloatDuration::zero())
 		r.Fmt(COMMAND_STATUS_MIXRAMPDELAY ": {}\n",

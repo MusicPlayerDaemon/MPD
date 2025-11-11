@@ -2,11 +2,9 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <max.kellermann@ionos.com>
 
-#include "Math.hxx"
 #include "Calendar.hxx"
 #include "Convert.hxx"
-
-#include <time.h>
+#include "Math.hxx"
 
 std::chrono::system_clock::time_point
 PrecedingMidnightLocal(std::chrono::system_clock::time_point t) noexcept

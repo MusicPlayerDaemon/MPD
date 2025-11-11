@@ -6,11 +6,11 @@
 #include "output/Features.h"
 #include "output/OutputAPI.hxx"
 #include "output/plugins/WinmmOutputPlugin.hxx"
-#include "util/Math.hxx"
 
 #include <mmsystem.h>
 
 #include <cassert>
+#include <cmath>
 #include <stdexcept>
 
 #include <windows.h>
@@ -38,13 +38,13 @@ public:
 static inline int
 winmm_volume_decode(DWORD volume)
 {
-	return lround((volume & 0xFFFF) / 655.35);
+	return std::lround((volume & 0xFFFF) / 655.35);
 }
 
 static inline DWORD
 winmm_volume_encode(int volume)
 {
-	int value = lround(volume * 655.35);
+	int value = std::lround(volume * 655.35);
 	return MAKELONG(value, value);
 }
 
