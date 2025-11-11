@@ -1,4 +1,5 @@
 ver 0.24.7 (not yet released)
+* fix spurious linker failures
 
 ver 0.24.6 (2025/10/20)
 * decoder
