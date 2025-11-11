@@ -26,6 +26,7 @@ fs = static_library(
   fs_sources,
   include_directories: inc,
   dependencies: [
+    io_dep,
     shlwapi_dep,
     icu_dep,
     fmt_dep,
@@ -35,5 +36,6 @@ fs = static_library(
 fs_dep = declare_dependency(
   link_with: fs,
   dependencies: [
+    io_dep,
   ],
 )

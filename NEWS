@@ -10,6 +10,9 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.7 (not yet released)
+* fix spurious linker failures
+
 ver 0.24.6 (2025/10/20)
 * decoder
   - ffmpeg: handle "*.opus" files
