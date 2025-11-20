@@ -3,7 +3,7 @@ mpd.conf
 ========
 
 
-DESCRIPTION
+Description
 ------------
 
 :file:`mpd.conf` is the configuration file for :manpage:`mpd(1)`. If
@@ -59,7 +59,7 @@ Please read the MPD user manual for a complete configuration guide:
 http://www.musicpd.org/doc/user/
 
 
-OPTIONAL PARAMETERS
+Optional Parameters
 -------------------
 
 db_file <file>
@@ -158,7 +158,7 @@ auto_update_depth <N>
   Limit the depth of the directories being watched, 0 means only watch the
   music directory itself. There is no limit by default.
 
-REQUIRED AUDIO OUTPUT PARAMETERS
+Required Audio Output Parameters
 --------------------------------
 
 type <type>
@@ -168,7 +168,7 @@ type <type>
 name <name>
   This specifies a unique name for the audio output.
 
-OPTIONAL AUDIO OUTPUT PARAMETERS
+Optional Audio Output Parameters
 --------------------------------
 
 format <sample_rate:bits:channels>
@@ -190,7 +190,7 @@ mixer_type <hardware, software or none>
   mixer ("none"). By default, the hardware mixer is used for devices which
   support it, and none for the others.
 
-FILES
+Files
 -----
 
 :file:`$XDG_CONFIG_HOME/mpd/mpd.conf`
@@ -199,7 +199,7 @@ FILES
 :file:`/etc/mpd.conf`
   Global configuration file.
 
-SEE ALSO
+See Also
 --------
 
 :manpage:`mpd(1)`, :manpage:`mpc(1)`
