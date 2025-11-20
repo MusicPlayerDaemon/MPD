@@ -59,21 +59,44 @@ Please read the MPD user manual for a complete configuration guide:
 http://www.musicpd.org/doc/user/
 
 
+System Settings
+---------------
+
+user <username>
+   This specifies the user that MPD will run as, if set. MPD should never run
+   as root, and you may use this option to make MPD change its user id after
+   initialization. Do not use this option if you start MPD as an unprivileged
+   user.
+
+pid_file <file>
+   This specifies the file to save mpd's process ID in.
+
+log_file <file>
+   This specifies where the log file should be located. The special value "syslog" makes MPD use the local syslog daemon.
+
+log_level <level>
+   Suppress all messages below the given threshold.  The following
+   log levels are available:
+
+   - :samp:`error`: errors
+   - :samp:`warning`: warnings
+   - :samp:`notice`: interesting informational messages
+   - :samp:`info`: unimportant informational messages
+   - :samp:`verbose`: debug messages (for developers and for
+     troubleshooting)
+
+   The default is :samp:`notice`.
+
+
 Optional Settings
 -----------------
 
 db_file <file>
    This specifies where the db file will be stored.
 
-log_file <file>
-   This specifies where the log file should be located. The special value "syslog" makes MPD use the local syslog daemon.
-
 sticker_file <file>
    The location of the sticker database. This is a database which manages
    dynamic information attached to songs.
-
-pid_file <file>
-   This specifies the file to save mpd's process ID in.
 
 music_directory <directory>
    This specifies the directory where music is located. If you do not configure
@@ -92,27 +115,8 @@ state_file <file>
 restore_paused <yes or no>
    Put MPD into pause mode instead of starting playback after startup.
 
-user <username>
-   This specifies the user that MPD will run as, if set. MPD should never run
-   as root, and you may use this option to make MPD change its user id after
-   initialization. Do not use this option if you start MPD as an unprivileged
-   user.
-
 port <port>
    This specifies the port that mpd listens on. The default is 6600.
-
-log_level <level>
-   Suppress all messages below the given threshold.  The following
-   log levels are available:
-
-   - :samp:`error`: errors
-   - :samp:`warning`: warnings
-   - :samp:`notice`: interesting informational messages
-   - :samp:`info`: unimportant informational messages
-   - :samp:`verbose`: debug messages (for developers and for
-     troubleshooting)
-
-   The default is :samp:`notice`.
 
 follow_outside_symlinks <yes or no>
   Control if MPD will follow symbolic links pointing outside the music dir. You
