@@ -23,6 +23,9 @@ CommandResult
 handle_findadd(Client &client, Request request, Response &response);
 
 CommandResult
+handle_findaddpl(Client &client, Request request, Response &response);
+
+CommandResult
 handle_search(Client &client, Request request, Response &response);
 
 CommandResult
