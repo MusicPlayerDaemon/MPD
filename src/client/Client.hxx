@@ -158,14 +158,6 @@ public:
 	}
 
 	/**
-	 * returns the uid of the client process, or a negative value
-	 * if the uid is unknown
-	 */
-	int GetUID() const noexcept {
-		return uid;
-	}
-
-	/**
 	 * Is this client running on the same machine, connected with
 	 * a local (UNIX domain) socket?
 	 */
