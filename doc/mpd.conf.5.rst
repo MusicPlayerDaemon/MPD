@@ -68,6 +68,10 @@ user <username>
    initialization. Do not use this option if you start MPD as an unprivileged
    user.
 
+group <groupname>
+   Change to this group.  This discards all default groups and uses
+   only this group.  Do not use this setting.
+
 pid_file <file>
    This specifies the file to save mpd's process ID in.
 
