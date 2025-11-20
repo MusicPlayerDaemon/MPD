@@ -59,8 +59,8 @@ Please read the MPD user manual for a complete configuration guide:
 http://www.musicpd.org/doc/user/
 
 
-Optional Parameters
--------------------
+Optional Settings
+-----------------
 
 db_file <file>
    This specifies where the db file will be stored.
@@ -134,8 +134,8 @@ zeroconf_name <name>
   hostname of the machine running MPD.
 
 audio_output
-  See DESCRIPTION and the various ``AUDIO OUTPUT PARAMETERS`` sections for the
-  format of this parameter. Multiple audio_output sections may be specified. If
+  See DESCRIPTION and the various ``AUDIO OUTPUT OPTIONS`` sections for the
+  format of this block. Multiple audio_output sections may be specified. If
   no audio_output section is specified, then MPD will scan for a usable audio
   output.
 
@@ -158,8 +158,8 @@ auto_update_depth <N>
   Limit the depth of the directories being watched, 0 means only watch the
   music directory itself. There is no limit by default.
 
-Required Audio Output Parameters
---------------------------------
+Required Audio Output Settings
+------------------------------
 
 type <type>
   This specifies the audio output type. See the list of supported outputs in
@@ -168,13 +168,13 @@ type <type>
 name <name>
   This specifies a unique name for the audio output.
 
-Optional Audio Output Parameters
---------------------------------
+Optional Audio Output Settings
+------------------------------
 
 format <sample_rate:bits:channels>
   This specifies the sample rate, bits per sample, and number of channels of
   audio that is sent to the audio output device. See documentation for the
-  ``audio_output_format`` parameter for more details. The default is to use
+  ``audio_output_format`` option for more details. The default is to use
   whatever audio format is passed to the audio output. Any of the three
   attributes may be an asterisk to specify that this attribute should not be
   enforced
