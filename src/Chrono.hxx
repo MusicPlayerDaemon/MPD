@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_CHRONO_HXX
-#define MPD_CHRONO_HXX
+#pragma once
 
 #include <chrono>
 #include <utility>
@@ -18,50 +17,50 @@ class SongTime : public std::chrono::duration<std::uint32_t, std::milli> {
 	typedef std::chrono::duration<std::uint32_t, std::milli> Base;
 
 public:
-	SongTime() = default;
+	constexpr SongTime() noexcept = default;
 
 	template<typename T>
-	explicit constexpr SongTime(T t):Base(t) {}
+	explicit constexpr SongTime(T t) noexcept:Base(t) {}
 
-	static constexpr SongTime zero() {
+	static constexpr SongTime zero() noexcept {
 		return SongTime(Base::zero());
 	}
 
 	template<typename D>
-	static constexpr SongTime Cast(D src) {
+	static constexpr SongTime Cast(D src) noexcept {
 		return SongTime(std::chrono::duration_cast<Base>(src));
 	}
 
-	static constexpr SongTime FromS(unsigned s) {
+	static constexpr SongTime FromS(unsigned s) noexcept {
 		return SongTime(rep(s) * 1000);
 	}
 
-	static constexpr SongTime FromS(float s) {
+	static constexpr SongTime FromS(float s) noexcept {
 		return SongTime(rep(s * 1000));
 	}
 
-	static constexpr SongTime FromS(double s) {
+	static constexpr SongTime FromS(double s) noexcept {
 		return SongTime(rep(s * 1000));
 	}
 
-	static constexpr SongTime FromMS(rep ms) {
+	static constexpr SongTime FromMS(rep ms) noexcept {
 		return SongTime(ms);
 	}
 
-	constexpr rep ToS() const {
+	constexpr rep ToS() const noexcept {
 		return count() / rep(1000);
 	}
 
-	constexpr rep RoundS() const {
+	constexpr rep RoundS() const noexcept {
 		return (count() + 500) / rep(1000);
 	}
 
-	constexpr rep ToMS() const {
+	constexpr rep ToMS() const noexcept {
 		return count();
 	}
 
 	template<typename T=rep>
-	constexpr T ToScale(unsigned scale) const {
+	constexpr T ToScale(unsigned scale) const noexcept {
 		return count() * T(scale) / 1000;
 	}
 
@@ -73,27 +72,27 @@ public:
 	 * @param scale the value's scale in Hz
 	 */
 	template<typename T=rep>
-	static constexpr SongTime FromScale(T value, unsigned scale) {
+	static constexpr SongTime FromScale(T value, unsigned scale) noexcept {
 		return SongTime(value * T(1000) / T(scale));
 	}
 
-	constexpr double ToDoubleS() const {
+	constexpr double ToDoubleS() const noexcept {
 		return double(count()) / 1000.;
 	}
 
-	constexpr bool IsZero() const {
+	constexpr bool IsZero() const noexcept {
 		return count() == 0;
 	}
 
-	constexpr bool IsPositive() const {
+	constexpr bool IsPositive() const noexcept {
 		return count() > 0;
 	}
 
-	constexpr SongTime operator+(const SongTime &other) const {
+	constexpr SongTime operator+(const SongTime &other) const noexcept {
 		return SongTime(*(const Base *)this + (const Base &)other);
 	}
 
-	constexpr SongTime operator-(const SongTime &other) const {
+	constexpr SongTime operator-(const SongTime &other) const noexcept {
 		return SongTime(*(const Base *)this - (const Base &)other);
 	}
 };
@@ -106,66 +105,66 @@ class SignedSongTime : public std::chrono::duration<std::int32_t, std::milli> {
 	typedef std::chrono::duration<std::int32_t, std::milli> Base;
 
 public:
-	SignedSongTime() = default;
+	constexpr SignedSongTime() noexcept = default;
 
 	template<typename T>
-	explicit constexpr SignedSongTime(T t):Base(t) {}
+	explicit constexpr SignedSongTime(T t) noexcept:Base(t) {}
 
 	/**
 	 * Allow implicit conversion from SongTime to SignedSongTime.
 	 */
-	constexpr SignedSongTime(SongTime t):Base(t) {}
+	constexpr SignedSongTime(SongTime t) noexcept:Base(t) {}
 
-	static constexpr SignedSongTime zero() {
+	static constexpr SignedSongTime zero() noexcept {
 		return SignedSongTime(Base::zero());
 	}
 
 	/**
 	 * Generate a negative value.
 	 */
-	static constexpr SignedSongTime Negative() {
+	static constexpr SignedSongTime Negative() noexcept {
 		return SignedSongTime(-1);
 	}
 
 	template<typename D>
-	static constexpr SongTime Cast(D src) {
+	static constexpr SongTime Cast(D src) noexcept {
 		return SongTime(std::chrono::duration_cast<Base>(src));
 	}
 
-	static constexpr SignedSongTime FromS(int s) {
+	static constexpr SignedSongTime FromS(int s) noexcept {
 		return SignedSongTime(rep(s) * 1000);
 	}
 
-	static constexpr SignedSongTime FromS(unsigned s) {
+	static constexpr SignedSongTime FromS(unsigned s) noexcept {
 		return SignedSongTime(rep(s) * 1000);
 	}
 
-	static constexpr SignedSongTime FromS(float s) {
+	static constexpr SignedSongTime FromS(float s) noexcept {
 		return SignedSongTime(rep(s * 1000));
 	}
 
-	static constexpr SignedSongTime FromS(double s) {
+	static constexpr SignedSongTime FromS(double s) noexcept {
 		return SignedSongTime(rep(s * 1000));
 	}
 
-	static constexpr SignedSongTime FromMS(rep ms) {
+	static constexpr SignedSongTime FromMS(rep ms) noexcept {
 		return SignedSongTime(ms);
 	}
 
-	constexpr rep ToS() const {
+	constexpr rep ToS() const noexcept {
 		return count() / rep(1000);
 	}
 
-	constexpr rep RoundS() const {
+	constexpr rep RoundS() const noexcept {
 		return (count() + 500) / rep(1000);
 	}
 
-	constexpr rep ToMS() const {
+	constexpr rep ToMS() const noexcept {
 		return count();
 	}
 
 	template<typename T=rep>
-	constexpr T ToScale(unsigned scale) const {
+	constexpr T ToScale(unsigned scale) const noexcept {
 		return count() * T(scale) / 1000;
 	}
 
@@ -177,33 +176,31 @@ public:
 	 * @param scale the value's scale in Hz
 	 */
 	template<typename T=rep>
-	static constexpr SignedSongTime FromScale(T value, unsigned scale) {
+	static constexpr SignedSongTime FromScale(T value, unsigned scale) noexcept {
 		return SignedSongTime(value * T(1000) / T(scale));
 	}
 
-	constexpr double ToDoubleS() const {
+	constexpr double ToDoubleS() const noexcept {
 		return double(count()) / 1000.;
 	}
 
-	constexpr bool IsZero() const {
+	constexpr bool IsZero() const noexcept {
 		return count() == 0;
 	}
 
-	constexpr bool IsPositive() const {
+	constexpr bool IsPositive() const noexcept {
 		return count() > 0;
 	}
 
-	constexpr bool IsNegative() const {
+	constexpr bool IsNegative() const noexcept {
 		return count() < 0;
 	}
 
-	constexpr SignedSongTime operator+(const SignedSongTime &other) const {
+	constexpr SignedSongTime operator+(const SignedSongTime &other) const noexcept {
 		return SignedSongTime(*(const Base *)this + (const Base &)other);
 	}
 
-	constexpr SignedSongTime operator-(const SignedSongTime &other) const {
+	constexpr SignedSongTime operator-(const SignedSongTime &other) const noexcept {
 		return SignedSongTime(*(const Base *)this - (const Base &)other);
 	}
 };
-
-#endif
