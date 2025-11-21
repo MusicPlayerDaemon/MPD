@@ -25,15 +25,15 @@ Each line in the configuration file contains a setting name and its value, e.g.:
 
 Lines starting with ``#`` are treated as comments and ignored.
 
-For settings that specify a file system path, the tilde ('~') is
-expanded to $HOME. In addition, the following path expansions are
+For settings that specify a file system path, the tilde (``~``) is
+expanded to ``$HOME``. In addition, the following path expansions are
 supported:
 
-- `$HOME`
-- `$XDG_CONFIG_HOME`
-- `$XDG_MUSIC_DIR`
-- `$XDG_CACHE_HOME`
-- `$XDG_RUNTIME_DIR`
+- ``$HOME``
+- ``$XDG_CONFIG_HOME``
+- ``$XDG_MUSIC_DIR``
+- ``$XDG_CACHE_HOME``
+- ``$XDG_RUNTIME_DIR``
 
 Example:
 
