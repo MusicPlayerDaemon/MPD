@@ -35,9 +35,12 @@ supported:
 - `$XDG_CACHE_HOME`
 - `$XDG_RUNTIME_DIR`
 
-:code:`music_directory "~/Music"`
+Example:
 
-:code:`db_file "$XDG_CONFIG_HOME/mpd/database"`
+.. code-block:: none
+
+    music_directory "~/Music"
+    db_file "$XDG_CONFIG_HOME/mpd/database"
 
 Some of the settings are grouped in blocks with curly braces, e.g. per-plugin settings:
 
