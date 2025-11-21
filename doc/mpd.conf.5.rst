@@ -74,9 +74,11 @@ This manual is not complete, it lists only the most important options.
 Please read the MPD user manual for a complete configuration guide:
 http://www.musicpd.org/doc/user/
 
+Global Settings
+---------------
 
 System Settings
----------------
+^^^^^^^^^^^^^^^
 
 user <username>
    This specifies the user that MPD will run as, if set. MPD should never run
@@ -108,8 +110,15 @@ log_level <level>
    The default is :samp:`notice`.
 
 
-Optional Settings
------------------
+Client Settings
+^^^^^^^^^^^^^^^
+
+port <port>
+   This specifies the port that mpd listens on. The default is 6600.
+
+
+File Settings
+^^^^^^^^^^^^^
 
 db_file <file>
    This specifies where the db file will be stored.
@@ -132,12 +141,6 @@ state_file <file>
    the :program:`kill` command. When mpd is restarted, it will read the state file and
    restore the state of mpd (including the playlist).
 
-restore_paused <yes or no>
-   Put MPD into pause mode instead of starting playback after startup.
-
-port <port>
-   This specifies the port that mpd listens on. The default is 6600.
-
 follow_outside_symlinks <yes or no>
   Control if MPD will follow symbolic links pointing outside the music dir. You
   must recreate the database after changing this option. The default is "yes".
@@ -146,6 +149,36 @@ follow_inside_symlinks <yes or no>
   Control if MPD will follow symbolic links pointing inside the music dir,
   potentially adding duplicates to the database. You must recreate the
   database after changing this option. The default is "yes".
+
+auto_update <yes or no>
+  This specifies the whether to support automatic update of music database
+  when files are changed in music_directory. The default is to disable
+  autoupdate of database.
+  (Only implemented on Linux.)
+
+auto_update_depth <N>
+  Limit the depth of the directories being watched, 0 means only watch the
+  music directory itself. There is no limit by default.
+
+save_absolute_paths_in_playlists <yes or no>
+  This specifies whether relative or absolute paths for song filenames are used
+  when saving playlists. The default is "no".
+
+filesystem_charset <charset>
+  This specifies the character set used for the filesystem. A list of supported
+  character sets can be obtained by running "iconv -l". The default is
+  determined from the locale when the db was originally created.
+
+
+Player Settings
+^^^^^^^^^^^^^^^
+
+restore_paused <yes or no>
+   Put MPD into pause mode instead of starting playback after startup.
+
+
+Other Settings
+^^^^^^^^^^^^^^
 
 zeroconf_enabled <yes or no>
   If yes, and MPD has been compiled with support for Avahi or Bonjour, service
@@ -162,25 +195,6 @@ audio_output
   format of this block. Multiple audio_output sections may be specified. If
   no audio_output section is specified, then MPD will scan for a usable audio
   output.
-
-filesystem_charset <charset>
-  This specifies the character set used for the filesystem. A list of supported
-  character sets can be obtained by running "iconv -l". The default is
-  determined from the locale when the db was originally created.
-
-save_absolute_paths_in_playlists <yes or no>
-  This specifies whether relative or absolute paths for song filenames are used
-  when saving playlists. The default is "no".
-
-auto_update <yes or no>
-  This specifies the whether to support automatic update of music database
-  when files are changed in music_directory. The default is to disable
-  autoupdate of database.
-  (Only implemented on Linux.)
-
-auto_update_depth <N>
-  Limit the depth of the directories being watched, 0 means only watch the
-  music directory itself. There is no limit by default.
 
 Required Audio Output Settings
 ------------------------------
