@@ -1,3 +1,5 @@
+.. _manpage_mpdconf:
+
 ========
 mpd.conf
 ========
@@ -6,10 +8,16 @@ mpd.conf
 Description
 ------------
 
-:file:`mpd.conf` is the configuration file for :manpage:`mpd(1)`. If
-not specified on the command line, MPD first searches for it at
-:file:`$XDG_CONFIG_HOME/mpd/mpd.conf` then at :file:`~/.mpdconf` then
-at :file:`~/.mpd/mpd.conf` and then in :file:`/etc/mpd.conf`.
+:file:`mpd.conf` is the configuration file for :manpage:`mpd(1)`.
+
+Usually, that is :file:`/etc/mpd.conf`, unless a different path is
+specified on the command line.
+
+If you run :program:`MPD` as a user daemon (and not as a system
+daemon), the configuration is read from
+:file:`$XDG_CONFIG_HOME/mpd/mpd.conf` (usually
+:file:`~/.config/mpd/mpd.conf`). On Android, :file:`mpd.conf` will be
+loaded from the top-level directory of the data partition.
 
 Each line in the configuration file contains a setting name and its value, e.g.:
 
@@ -17,8 +25,9 @@ Each line in the configuration file contains a setting name and its value, e.g.:
 
 Lines starting with ``#`` are treated as comments and ignored.
 
-For settings that specify a file system path, the tilde ('~') is expanded to $HOME.
-In addition, the following path expansions are supported:
+For settings that specify a file system path, the tilde ('~') is
+expanded to $HOME. In addition, the following path expansions are
+supported:
 
 - `$HOME`
 - `$XDG_CONFIG_HOME`
@@ -44,12 +53,16 @@ Some of the settings are grouped in blocks with curly braces, e.g. per-plugin se
 The :code:`include` directive can be used to include settings from
 another file; the given file name is relative to the current file:
 
-:code:`include "other.conf"`
+.. code-block:: none
 
-You can use include_optional instead if you want the included file to be
-optional; the directive will be ignored if the file does not exist:
+  include "other.conf"
 
-:code:`include_optional "may_not_exist.conf"`
+You can use :code:`include_optional` instead if you want the included file
+to be optional; the directive will be ignored if the file does not exist:
+
+.. code-block:: none
+
+  include_optional "may_not_exist.conf"
 
 See :file:`docs/mpdconf.example` in the source tarball for an example
 configuration file.
