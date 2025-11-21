@@ -17,6 +17,8 @@ if get_option('html_manual')
       'client.rst',
       'protocol.rst',
       'conf.py',
+      'mpd.1.rst',
+      'mpd.conf.5.rst',
       '_static/css/custom.css'
     ],
     command: [sphinx, '-q', '-b', 'html', '-d', '@OUTDIR@/doctrees', meson.current_source_dir(), '@OUTPUT@'],
@@ -30,7 +32,11 @@ if get_option('manpages')
   custom_target(
     'Manpage documentation',
     output: ['mpd.1', 'mpd.conf.5'],
-    input: ['mpd.1.rst', 'conf.py'],
+    input: [
+      'mpd.1.rst',
+      'mpd.conf.5.rst',
+      'conf.py',
+    ],
     command: [sphinx, '-q', '-b', 'man', '-d', '@OUTDIR@/man_doctrees', meson.current_source_dir(), '@OUTDIR@'],
     build_by_default: true,
     install: true,

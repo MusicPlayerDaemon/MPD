@@ -66,7 +66,7 @@ Each plugin usually needs a codec library, which you also need to
 install. Check the :doc:`plugins` for details about required libraries
 
 For example, the following installs a fairly complete list of build
-dependencies on Debian Bookworm:
+dependencies on Debian Trixie:
 
 .. code-block:: none
 
@@ -243,50 +243,8 @@ Configuration
 The Configuration File
 ----------------------
 
-:program:`MPD` reads its configuration from a text file. Usually, that is :file:`/etc/mpd.conf`, unless a different path is specified on the command line. If you run :program:`MPD` as a user daemon (and not as a system daemon), the configuration is read from :file:`$XDG_CONFIG_HOME/mpd/mpd.conf` (usually :file:`~/.config/mpd/mpd.conf`). On Android, :file:`mpd.conf` will be loaded from the top-level directory of the data partition.
-
-Each line in the configuration file contains a setting name and its value, e.g.:
-
-:code:`connection_timeout "5"`
-
-Lines starting with ``#`` are treated as comments and ignored.
-
-For settings that specify a file system path, the tilde ('~') is expanded to $HOME. In addition, the following path expansions are supported:
-
-- `$HOME`
-- `$XDG_CONFIG_HOME`
-- `$XDG_MUSIC_DIR`
-- `$XDG_CACHE_HOME`
-- `$XDG_RUNTIME_DIR`
-
-:code:`music_directory "~/Music"`
-
-:code:`db_file "$XDG_CONFIG_HOME/mpd/database"`
-
-Some of the settings are grouped in blocks with curly braces, e.g. per-plugin settings:
-
-.. code-block:: none
-
-    audio_output {
-        type "alsa"
-        name "My ALSA output"
-        device "iec958:CARD=Intel,DEV=0"
-        mixer_control "PCM"
-    }
-
-The :code:`include` directive can be used to include settings from
-another file; the given file name is relative to the current file:
-
-.. code-block:: none
-
-  include "other.conf"
-
-You can use :code:`include_optional` instead if you want the included file
-to be optional; the directive will be ignored if the file does not exist:
-
-.. code-block:: none
-
-  include_optional "may_not_exist.conf"
+The :ref:`mpd.conf manpage <manpage_mpdconf>` contains general
+information about the :program:`MPD` configuration file.
 
 Configuring the music directory
 -------------------------------
