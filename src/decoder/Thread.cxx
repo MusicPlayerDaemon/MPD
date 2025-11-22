@@ -21,8 +21,10 @@
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
+#include "util/UriQueryParser.hxx"
 #include "thread/Name.hxx"
 #include "tag/ApeReplayGain.hxx"
+#include "tag/ReplayGainParser.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -277,6 +279,19 @@ LoadReplayGain(DecoderClient &client, InputStream &is)
 	ReplayGainInfo info;
 	if (replay_gain_ape_read(is, info))
 		client.SubmitReplayGain(&info);
+
+	const char *fragment = uri_get_fragment(is.GetURI());
+	if (fragment != nullptr) {
+		const auto gain = UriFindRawQueryParameter(fragment, "gain");
+		if (gain.data() != nullptr) {
+			if (ParseReplayGainTag(info, "replaygain_track_gain",
+					std::string(gain).c_str())) {
+				info.album.gain = info.track.gain;
+				info.album.peak = info.track.peak = 0.0;
+				client.SubmitReplayGain(&info);
+			}
+		}
+	}
 }
 
 /**

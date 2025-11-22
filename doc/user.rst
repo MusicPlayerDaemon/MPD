@@ -678,6 +678,14 @@ prevents `Bit-perfect playback`_).  To use a hardware mixer, set
 ``replay_gain_handler`` to ``mixer`` in the ``audio_output`` section
 (see :ref:`config_audio_output` for details).
 
+The ``gain`` URL fragment can be used to apply ReplayGain tags to
+Internet radios, which helps to normalize volume across different
+radios, e.g.::
+
+    mpc add 'http://radio.example.com/stream#gain=-3.5'
+
+This will set "track" and "album" ReplayGain tags for the stream to -3.5 dB.
+
 Simple Volume Normalization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
