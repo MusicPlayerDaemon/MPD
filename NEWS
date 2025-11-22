@@ -7,6 +7,8 @@ ver 0.25 (not yet released)
   - vgmstream: new plugin
 * output
   - pipewire: add option "reconnect_stream"
+* player
+  - support replay gain parameter in stream URI
 * switch to C++23
 * require Meson 1.2
 
