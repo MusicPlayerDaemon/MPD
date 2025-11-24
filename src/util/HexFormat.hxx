@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include <array>
+#include "FixedString.hxx"
+
 #include <cstdint>
 #include <span>
 
@@ -79,7 +80,7 @@ requires(size != std::dynamic_extent)
 constexpr auto
 HexFormat(std::span<const std::byte, size> input) noexcept
 {
-	std::array<char, size * 2> output;
+	FixedString<size * 2> output;
 	HexFormat(output.data(), input);
 	return output;
 }
