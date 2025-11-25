@@ -645,3 +645,23 @@ if alsa_dep.found()
 endif
 
 subdir('fs')
+
+test(
+  'TestFullIntegration',
+  executable(
+    'TestFullIntegration',
+    'TestFullIntegration.cxx',
+    include_directories: inc,
+    dependencies: [
+      log_dep,
+      event_dep,
+      util_dep,
+      config_dep,
+      fs_dep,
+      net_dep,
+      encoder_glue_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
