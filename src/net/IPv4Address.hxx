@@ -167,6 +167,10 @@ public:
 		return address.sin_family != AF_UNSPEC;
 	}
 
+	constexpr void Clear() noexcept {
+		address.sin_family = AF_UNSPEC;
+	}
+
 	/**
 	 * @return the port number in network byte order
 	 */

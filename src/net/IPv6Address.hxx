@@ -139,6 +139,10 @@ public:
 		return address.sin6_family == AF_INET6;
 	}
 
+	constexpr void Clear() noexcept {
+		address.sin6_family = AF_UNSPEC;
+	}
+
 	/**
 	 * @return the port number in network byte order
 	 */
