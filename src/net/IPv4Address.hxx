@@ -159,6 +159,10 @@ public:
 		return sizeof(address);
 	}
 
+	constexpr int GetFamily() const noexcept {
+		return address.sin_family;
+	}
+
 	constexpr bool IsDefined() const noexcept {
 		return address.sin_family != AF_UNSPEC;
 	}
