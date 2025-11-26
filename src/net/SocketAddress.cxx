@@ -114,29 +114,7 @@ SocketAddress::GetPort() const noexcept
 	}
 }
 
-static std::span<const std::byte>
-GetSteadyPart(const struct sockaddr_in &address) noexcept
-{
-	return {
-		reinterpret_cast<const std::byte *>(&address.sin_addr),
-		sizeof(address.sin_addr),
-	};
-}
-
 #endif // HAVE_TCP
-
-#ifdef HAVE_IPV6
-
-static std::span<const std::byte>
-GetSteadyPart(const struct sockaddr_in6 &address) noexcept
-{
-	return {
-		reinterpret_cast<const std::byte *>(&address.sin6_addr),
-		sizeof(address.sin6_addr),
-	};
-}
-
-#endif
 
 std::span<const std::byte>
 SocketAddress::GetSteadyPart() const noexcept
@@ -152,12 +130,12 @@ SocketAddress::GetSteadyPart() const noexcept
 
 #ifdef HAVE_TCP
 	case AF_INET:
-		return ::GetSteadyPart(CastTo<struct sockaddr_in>());
+		return IPv4Address::Cast(*this).GetSteadyPart();
 #endif
 
 #ifdef HAVE_IPV6
 	case AF_INET6:
-		return ::GetSteadyPart(CastTo<struct sockaddr_in6>());
+		return IPv6Address::Cast(*this).GetSteadyPart();
 #endif
 
 	default:

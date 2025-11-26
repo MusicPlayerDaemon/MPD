@@ -211,6 +211,20 @@ public:
 	}
 
 	/**
+	 * Return a buffer pointing to the "steady" portion of the
+	 * address, i.e. without volatile parts like the port number.
+	 * This buffer is useful for hashing the address, but not so
+	 * much for anything else.  Returns nullptr if the address is
+	 * not supported.
+	 */
+	constexpr std::span<const std::byte> GetSteadyPart() const noexcept {
+		return {
+			reinterpret_cast<const std::byte *>(&address.sin_addr),
+			sizeof(address.sin_addr),
+		};
+	}
+
+	/**
 	 * Bit-wise AND of two addresses.  This is useful for netmask
 	 * calculations.
 	 */

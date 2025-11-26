@@ -94,4 +94,26 @@ public:
 			return 0;
 		}
 	}
+
+	/**
+	 * Return a buffer pointing to the "steady" portion of the
+	 * address, i.e. without volatile parts like the port number.
+	 * This buffer is useful for hashing the address, but not so
+	 * much for anything else.  Returns nullptr if the address is
+	 * not supported.
+	 */
+	constexpr std::span<const std::byte> GetSteadyPart() const noexcept {
+		switch (GetFamily()) {
+		case AF_INET:
+			return v4.GetSteadyPart();
+
+#ifdef HAVE_IPV6
+		case AF_INET6:
+			return v6.GetSteadyPart();
+#endif
+
+		default:
+			return {};
+		}
+	}
 };

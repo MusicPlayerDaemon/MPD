@@ -170,6 +170,20 @@ public:
 	}
 
 	/**
+	 * Return a buffer pointing to the "steady" portion of the
+	 * address, i.e. without volatile parts like the port number.
+	 * This buffer is useful for hashing the address, but not so
+	 * much for anything else.  Returns nullptr if the address is
+	 * not supported.
+	 */
+	constexpr std::span<const std::byte> GetSteadyPart() const noexcept {
+		return {
+			reinterpret_cast<const std::byte *>(&address.sin6_addr),
+			sizeof(address.sin6_addr),
+		};
+	}
+
+	/**
 	 * Is this the IPv6 wildcard address (in6addr_any)?
 	 */
 	[[gnu::pure]]
