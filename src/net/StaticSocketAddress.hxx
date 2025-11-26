@@ -26,6 +26,9 @@ private:
 	struct sockaddr_storage address;
 
 public:
+	/**
+	 * Leave the object uninitialized.
+	 */
 	constexpr StaticSocketAddress() noexcept = default;
 
 	explicit StaticSocketAddress(SocketAddress src) noexcept {

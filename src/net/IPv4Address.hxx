@@ -86,7 +86,10 @@ class IPv4Address {
 	}
 
 public:
-	IPv4Address() = default;
+	/**
+	 * Leave the object uninitialized.
+	 */
+	constexpr IPv4Address() noexcept = default;
 
 	constexpr IPv4Address(const struct sockaddr_in &_address) noexcept
 		:address(_address) {}

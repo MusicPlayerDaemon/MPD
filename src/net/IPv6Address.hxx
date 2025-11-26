@@ -59,7 +59,10 @@ class IPv6Address {
 	}
 
 public:
-	IPv6Address() = default;
+	/**
+	 * Leave the object uninitialized.
+	 */
+	constexpr IPv6Address() noexcept = default;
 
 	constexpr IPv6Address(struct in6_addr _address, uint16_t port,
 			      uint32_t scope_id=0) noexcept
