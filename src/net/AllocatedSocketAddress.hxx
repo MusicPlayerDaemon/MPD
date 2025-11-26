@@ -111,7 +111,11 @@ public:
 	}
 
 	bool IsInet() const noexcept {
-		return GetFamily() == AF_INET || GetFamily() == AF_INET6;
+		return GetFamily() == AF_INET
+#ifdef HAVE_IPV6
+			|| GetFamily() == AF_INET6
+#endif
+			;
 	}
 
 #ifdef HAVE_UN
@@ -140,7 +144,7 @@ public:
 	void SetLocal(std::string_view path) noexcept;
 #endif
 
-#ifdef HAVE_TCP
+#ifdef HAVE_IPV6
 	bool IsV6Any() const noexcept {
 		return ((SocketAddress)*this).IsV6Any();
 	}
@@ -148,7 +152,9 @@ public:
 	bool IsV4Mapped() const noexcept {
 		return ((SocketAddress)*this).IsV4Mapped();
 	}
+#endif // HAVE_IPV6
 
+#ifdef HAVE_TCP
 	/**
 	 * Does the address family support port numbers?
 	 */
@@ -181,7 +187,7 @@ public:
 	AllocatedSocketAddress WithPort(unsigned port) const noexcept {
 		return WithPort(*this, port);
 	}
-#endif
+#endif // HAVE_TCP
 
 	[[gnu::pure]]
 	std::span<const std::byte> GetSteadyPart() const noexcept {

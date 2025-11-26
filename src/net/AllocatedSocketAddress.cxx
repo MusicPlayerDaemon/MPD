@@ -97,12 +97,14 @@ AllocatedSocketAddress::SetPort(unsigned port) noexcept
 			return true;
 		}
 
+#ifdef HAVE_IPV6
 	case AF_INET6:
 		{
 			auto &a = *(IPv6Address *)(void *)address;
 			a.SetPort(port);
 			return true;
 		}
+#endif
 	}
 
 	return false;

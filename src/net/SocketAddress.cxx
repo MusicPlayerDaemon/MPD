@@ -5,6 +5,9 @@
 
 #ifdef HAVE_TCP
 #include "IPv4Address.hxx"
+#endif
+
+#ifdef HAVE_IPV6
 #include "IPv6Address.hxx"
 #endif
 
@@ -65,7 +68,7 @@ SocketAddress::GetLocalPath() const noexcept
 
 #endif
 
-#ifdef HAVE_TCP
+#ifdef HAVE_IPV6
 
 bool
 SocketAddress::IsV6Any() const noexcept
@@ -87,6 +90,10 @@ SocketAddress::UnmapV4() const noexcept
 	return IPv6Address::Cast(*this).UnmapV4();
 }
 
+#endif // HAVE_IPV6
+
+#ifdef HAVE_TCP
+
 unsigned
 SocketAddress::GetPort() const noexcept
 {
@@ -97,8 +104,10 @@ SocketAddress::GetPort() const noexcept
 	case AF_INET:
 		return IPv4Address::Cast(*this).GetPort();
 
+#ifdef HAVE_IPV6
 	case AF_INET6:
 		return IPv6Address::Cast(*this).GetPort();
+#endif
 
 	default:
 		return 0;
@@ -114,6 +123,10 @@ GetSteadyPart(const struct sockaddr_in &address) noexcept
 	};
 }
 
+#endif // HAVE_TCP
+
+#ifdef HAVE_IPV6
+
 static std::span<const std::byte>
 GetSteadyPart(const struct sockaddr_in6 &address) noexcept
 {
@@ -123,7 +136,7 @@ GetSteadyPart(const struct sockaddr_in6 &address) noexcept
 	};
 }
 
-#endif // HAVE_TCP
+#endif
 
 std::span<const std::byte>
 SocketAddress::GetSteadyPart() const noexcept
@@ -140,7 +153,9 @@ SocketAddress::GetSteadyPart() const noexcept
 #ifdef HAVE_TCP
 	case AF_INET:
 		return ::GetSteadyPart(CastTo<struct sockaddr_in>());
+#endif
 
+#ifdef HAVE_IPV6
 	case AF_INET6:
 		return ::GetSteadyPart(CastTo<struct sockaddr_in6>());
 #endif
