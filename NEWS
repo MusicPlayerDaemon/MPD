@@ -13,6 +13,9 @@ ver 0.25 (not yet released)
 * require Meson 1.2
 
 ver 0.24.7 (not yet released)
+* decoder
+  - ffmpeg: allow seeking only if both AVFormatContext and InputStream allow it
+* fix GCC 16 compiler warning
 * fix spurious linker failures
 
 ver 0.24.6 (2025/10/20)

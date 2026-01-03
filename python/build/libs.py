@@ -36,8 +36,8 @@ libmodplug = AutotoolsProject(
 )
 
 libopenmpt = AutotoolsProject(
-    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.3+release.autotools.tar.gz',
-    '0b18a9b67674e300f4915f52ef902a9bb184b96a0d93efbc2058ec9526dc97039e0da53d9605e7fda97c46734529813008c2110e2cb4822e04e411444ff21db9',
+    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.4+release.autotools.tar.gz',
+    '627f9bf11aacae615a1f2c982c7e88cb21f11b2d6f0267946f7c82c5eae4943b',
     'lib/libopenmpt.a',
     [
         '--disable-shared', '--enable-static',
@@ -79,8 +79,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-8.0.tar.xz',
-    'b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e',
+    'http://ffmpeg.org/releases/ffmpeg-8.0.1.tar.xz',
+    '05ee0b03119b45c0bdb4df654b96802e909e0a752f72e4fe3794f487229e5a41',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',

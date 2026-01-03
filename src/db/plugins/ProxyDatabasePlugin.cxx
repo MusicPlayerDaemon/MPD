@@ -20,6 +20,7 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "tag/ParseName.hxx"
+#include "tag/WithTagBuffer.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/RecursiveMap.hxx"
 #include "util/ScopeExit.hxx"
@@ -48,9 +49,7 @@ public:
 	}
 };
 
-class ProxySong : public LightSong {
-	Tag tag2;
-
+class ProxySong : WithTagBuffer, public LightSong {
 public:
 	explicit ProxySong(const mpd_song *song);
 };
@@ -206,7 +205,7 @@ Copy(TagBuilder &tag, TagType d_tag,
 }
 
 ProxySong::ProxySong(const mpd_song *song)
-	:LightSong(mpd_song_get_uri(song), tag2)
+	:LightSong(mpd_song_get_uri(song), tag_buffer)
 {
 	const auto _mtime = mpd_song_get_last_modified(song);
 	if (_mtime > 0)
@@ -265,7 +264,7 @@ ProxySong::ProxySong(const mpd_song *song)
 	for (const auto *i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		Copy(tag_builder, i->d, song, i->s);
 
-	tag_builder.Commit(tag2);
+	tag_builder.Commit(tag_buffer);
 }
 
 [[gnu::const]]
