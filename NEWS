@@ -1,4 +1,6 @@
 ver 0.24.7 (not yet released)
+* decoder
+  - ffmpeg: allow seeking only if both AVFormatContext and InputStream allow it
 * fix spurious linker failures
 
 ver 0.24.6 (2025/10/20)
