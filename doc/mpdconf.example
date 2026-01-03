@@ -1,5 +1,5 @@
 # An example configuration file for MPD.
-# Read the user manual for documentation: http://www.musicpd.org/doc/user/
+# Read the user manual for documentation: https://mpd.readthedocs.io/en/stable/user.html#configuration
 
 
 # Files and directories #######################################################
@@ -165,6 +165,15 @@
 #
 # If this setting is set, MPD will require password authorization. The password
 # setting can be specified multiple times for different password profiles.
+#
+# Possible permisisons:
+#
+# NAME    DESCRIPTION
+# read    Allows reading of the database, displaying the current playlist, and current status of MPD.
+# add     Allows adding songs and loading playlists.
+# player  Allows any player and queue manipulation (start/pause/stop playback etc.).
+# control Allows all other player and playlist manipulations.
+# admin   Allows manipulating outputs, stickers and partitions, mounting/unmounting storage and shutting down MPD.
 #
 #password                        "password@read,add,control,admin"
 #
