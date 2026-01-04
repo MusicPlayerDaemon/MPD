@@ -15,6 +15,26 @@ TextInputStream::~TextInputStream() noexcept = default;
 char *
 TextInputStream::ReadLine()
 {
+	if (!bom_checked) {
+		bom_checked = true;
+
+		/* try to strip a UTF-8 BOM;
+		   keep all bytes if it's not a BOM */
+		auto dest = buffer.Write();
+		assert(dest.size() >= 3);
+		dest = dest.first(3);
+		size_t nbytes = is->LockRead(std::as_writable_bytes(dest));
+		buffer.Append(nbytes);
+
+		auto r = buffer.Read();
+		if (r.size() >= 3 &&
+		    static_cast<unsigned char>(r[0]) == 0xEF &&
+		    static_cast<unsigned char>(r[1]) == 0xBB &&
+		    static_cast<unsigned char>(r[2]) == 0xBF) {
+			buffer.Consume(3);
+		}
+	}
+
 	char *line = ReadBufferedLine(buffer);
 	if (line != nullptr)
 		return line;
