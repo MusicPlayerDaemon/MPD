@@ -10,6 +10,7 @@
 class TextInputStream {
 	InputStreamPtr is;
 	StaticFifoBuffer<char, 4096> buffer;
+	bool bom_checked = false;
 
 public:
 	/**
