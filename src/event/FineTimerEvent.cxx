@@ -42,6 +42,6 @@ FineTimerEvent::ScheduleEarlier(Event::Duration d) noexcept
 		Cancel();
 	}
 
-	SetDue(due);
+	SetDue(new_due);
 	ScheduleCurrent();
 }
