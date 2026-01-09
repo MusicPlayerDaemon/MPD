@@ -52,11 +52,36 @@ public:
 	}
 
 	/**
+	 * Set the due time as an absolute time point.  This can be
+	 * done to prepare an eventual ScheduleCurrent() call.  Must
+	 * not be called while the timer is already scheduled.
+	 */
+	void SetDue(Event::TimePoint _due) noexcept {
+		assert(!IsPending());
+
+		due = _due;
+	}
+
+	/**
+	 * Set the due time as a duration relative to now.  This can
+	 * done to prepare an eventual ScheduleCurrent() call.  Must
+	 * not be called while the timer is already scheduled.
+	 */
+	void SetDue(Event::Duration d) noexcept;
+
+	/**
 	 * Was this timer scheduled?
 	 */
 	bool IsPending() const noexcept {
 		return is_linked();
 	}
+
+	/**
+	 * Schedule the timer at the due time that was already set;
+	 * either by SetDue() or by a Schedule() call that was already
+	 * canceled.
+	 */
+	void ScheduleCurrent() noexcept;
 
 	void Schedule(Event::Duration d) noexcept;
 
