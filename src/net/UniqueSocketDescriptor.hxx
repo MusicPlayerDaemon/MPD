@@ -75,6 +75,13 @@ public:
 	/**
 	 * @return an "undefined" instance on error
 	 */
+	UniqueSocketDescriptor Accept() const noexcept {
+		return UniqueSocketDescriptor{AdoptTag{}, SocketDescriptor::Accept()};
+	}
+
+	/**
+	 * @return an "undefined" instance on error
+	 */
 	UniqueSocketDescriptor AcceptNonBlock() const noexcept {
 		return UniqueSocketDescriptor{AdoptTag{}, SocketDescriptor::AcceptNonBlock()};
 	}
