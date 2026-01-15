@@ -3,6 +3,7 @@ ver 0.24.7 (not yet released)
   - ffmpeg: allow seeking only if both AVFormatContext and InputStream allow it
 * playlist
   - cue: strip UTF-8 byte order marker
+* Linux: disable the iowait state for io_uring
 * fix GCC 16 compiler warning
 * fix spurious linker failures
 
