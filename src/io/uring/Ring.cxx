@@ -12,6 +12,10 @@ Ring::Ring(unsigned entries, unsigned flags)
 	if (int error = io_uring_queue_init(entries, &ring, flags);
 	    error < 0)
 		throw MakeErrno(-error, "io_uring_queue_init() failed");
+#if !IO_URING_CHECK_VERSION(2, 10)
+	// Intentionally ignore the error code, as this is only supported on Linux 6.15+
+	(void) io_uring_set_iowait(&ring, false);
+#endif
 }
 
 Ring::Ring(unsigned entries, struct io_uring_params &params)
@@ -19,6 +23,10 @@ Ring::Ring(unsigned entries, struct io_uring_params &params)
 	if (int error = io_uring_queue_init_params(entries, &ring, &params);
 	    error < 0)
 		throw MakeErrno(-error, "io_uring_queue_init_params() failed");
+#if !IO_URING_CHECK_VERSION(2, 10)
+	// Intentionally ignore the error code, as this is only supported on Linux 6.15+
+	(void) io_uring_set_iowait(&ring, false);
+#endif
 }
 
 void

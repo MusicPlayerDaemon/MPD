@@ -12,9 +12,12 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.7 (not yet released)
+ver 0.24.7 (2026/01/16)
 * decoder
   - ffmpeg: allow seeking only if both AVFormatContext and InputStream allow it
+* playlist
+  - cue: strip UTF-8 byte order marker
+* Linux: disable the iowait state for io_uring
 * fix GCC 16 compiler warning
 * fix spurious linker failures
 
