@@ -645,3 +645,82 @@ if alsa_dep.found()
 endif
 
 subdir('fs')
+
+#
+# StateFile
+#
+
+# Build mock storage as a static library
+mock_storage_lib = static_library(
+  'mock_storage',
+  'MockStorage.cxx',
+  'TestRegistry.cxx',  # Includes storage_plugins array with mock plugin
+  '../src/storage/StoragePlugin.cxx',
+  '../src/storage/CompositeStorage.cxx',
+  '../src/storage/StorageState.cxx',
+  include_directories: inc,
+  dependencies: [
+    util_dep,
+    log_dep,
+    fmt_dep,
+  ],
+)
+
+# Build state_file_lib for testing
+state_file_lib_sources = []
+foreach src : sources
+  # Exclude main entry points - tests will provide their own
+  src_str = '@0@'.format(src)
+  if not src_str.contains('Main.cxx') and not src_str.contains('Win32Main.cxx')
+    if src_str.startswith('src/')
+      state_file_lib_sources += '..' / src
+    else
+      # Handle generated sources (like version_cxx) which are build-relative
+      state_file_lib_sources += src
+    endif
+  endif
+endforeach
+
+state_file_lib_dependencies = [
+    basic_dep,
+    neighbor_glue_dep,
+    output_glue_dep,
+    mixer_glue_dep,
+    decoder_glue_dep,
+    encoder_glue_dep,
+    playlist_glue_dep,
+    db_glue_dep,
+    storage_glue_dep,
+    song_dep,
+    systemd_dep,
+    sqlite_dep,
+]
+
+state_file_lib = static_library(
+  'state_file_lib',
+  state_file_lib_sources,
+  include_directories: inc,
+  dependencies: state_file_lib_dependencies,
+)
+
+state_file_lib_dep = declare_dependency(
+  link_with: state_file_lib,
+  dependencies: state_file_lib_dependencies,
+)
+
+test(
+  'TestStateFile',
+  executable(
+    'TestStateFile',
+    'TestStateFile.cxx',
+    'MockPlaylistSong.cxx',
+    include_directories: inc,
+    dependencies: [
+      gtest_dep,
+      state_file_lib_dep,
+    ],
+    link_whole: mock_storage_lib,
+    link_args: ['-Wl,--allow-multiple-definition'],
+  ),
+  protocol: 'gtest',
+)
