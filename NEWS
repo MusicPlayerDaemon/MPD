@@ -1,4 +1,4 @@
-ver 0.24.7 (not yet released)
+ver 0.24.7 (2026/01/16)
 * decoder
   - ffmpeg: allow seeking only if both AVFormatContext and InputStream allow it
 * playlist
