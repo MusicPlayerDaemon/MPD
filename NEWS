@@ -1,4 +1,5 @@
 ver 0.24.8 (not yet released)
+* Linux: fix build with liburing < 2.4
 
 ver 0.24.7 (2026/01/16)
 * decoder
