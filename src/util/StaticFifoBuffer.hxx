@@ -19,6 +19,7 @@ class StaticFifoBuffer {
 public:
 	using size_type = std::size_t;
 	using Range = std::span<T>;
+	using ConstRange = std::span<const T>;
 
 protected:
 	size_type head = 0, tail = 0;
@@ -115,6 +116,10 @@ public:
 	 */
 	constexpr Range Read() noexcept {
 		return Range(data + head, tail - head);
+	}
+
+	constexpr ConstRange Read() const noexcept {
+		return (data + head, tail - head);
 	}
 
 	/**
