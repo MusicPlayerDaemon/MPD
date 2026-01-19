@@ -14,7 +14,7 @@
  * read data from the beginning.  This class automatically shifts the
  * buffer as needed.  It is not thread safe.
  */
-template<class T, size_t size>
+template<class T, std::size_t size>
 class StaticFifoBuffer {
 public:
 	using size_type = std::size_t;
