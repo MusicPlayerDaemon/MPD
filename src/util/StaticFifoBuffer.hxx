@@ -66,7 +66,7 @@ public:
 		else if (tail == size)
 			Shift();
 
-		return Range(data + tail, size - tail);
+		return {data + tail, static_cast<std::size_t>(size - tail)};
 	}
 
 	/**
@@ -115,11 +115,11 @@ public:
 	 * writable, to allow modifications while parsing.
 	 */
 	constexpr Range Read() noexcept {
-		return Range(data + head, tail - head);
+		return {data + head, static_cast<std::size_t>(tail - head)};
 	}
 
 	constexpr ConstRange Read() const noexcept {
-		return (data + head, tail - head);
+		return {data + head, static_cast<std::size_t>(tail - head)};
 	}
 
 	/**
