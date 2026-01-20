@@ -135,7 +135,7 @@ parse_cdio_uri(std::string_view src)
 
 	src = StringAfterPrefixIgnoreCase(src, "cdda://"sv);
 
-	const auto [device, track] = Split(src, '/');
+	const auto [device, track] = SplitLast(src, '/');
 	if (device.size() >= sizeof(dest.device))
 		throw std::invalid_argument{"Device name is too long"};
 

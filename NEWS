@@ -1,4 +1,6 @@
 ver 0.24.8 (not yet released)
+* input
+  - cdio_paranoia: fix parsing of absolute device paths (0.24 regression)
 * Linux: fix build with liburing < 2.4
 
 ver 0.24.7 (2026/01/16)
