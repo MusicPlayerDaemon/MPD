@@ -131,24 +131,25 @@ struct CdioUri {
 static CdioUri
 parse_cdio_uri(std::string_view src)
 {
-	CdioUri dest;
-
 	src = StringAfterPrefixIgnoreCase(src, "cdda://"sv);
 
 	const auto [device, track] = SplitLast(src, '/');
-	dest.device = device;
+
+	/* play the whole CD by default */
+	int track_number = -1;
 
 	if (!track.empty()) {
 		auto value = ParseInteger<uint_least16_t>(track);
 		if (!value)
 			throw std::invalid_argument{"Bad track number"};
 
-		dest.track = *value;
-	} else
-		/* play the whole CD */
-		dest.track = -1;
+		track_number = *value;
+	}
 
-	return dest;
+	return {
+		.device = device,
+		.track = track_number,
+	};
 }
 
 static AllocatedPath
