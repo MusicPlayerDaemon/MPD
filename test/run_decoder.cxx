@@ -72,7 +72,7 @@ ParseCommandLine(int argc, char **argv)
 
 	auto args = option_parser.GetRemaining();
 	if (args.size() != 2)
-		throw std::runtime_error("Usage: run_decoder [--verbose] [--config=FILE] [--seek=POS] ECODER URI");
+		throw std::runtime_error("Usage: run_decoder [--verbose] [--config=FILE] [--seek=POS] DECODER URI");
 
 	c.decoder = args[0];
 	c.uri = args[1];
