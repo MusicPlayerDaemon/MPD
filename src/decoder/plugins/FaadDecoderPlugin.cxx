@@ -255,6 +255,10 @@ public:
 		return CheckAudioFormat(sample_rate, SampleFormat::S16, channels);
 	}
 
+	void PostSeekReset(long frame) noexcept {
+		NeAACDecPostSeekReset(handle, frame);
+	}
+
 	/**
 	 * Wrapper for NeAACDecDecode()
 	 */
@@ -311,6 +315,8 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 	if (AdtsFindFrame(buffer) == 0)
 		return;
 
+	const auto start_offset = buffer.GetOffset();
+
 	FaadDecoder decoder;
 
 	/* initialize it */
@@ -319,13 +325,59 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 
 	/* initialize the MPD core */
 
-	client.Ready(audio_format, false, total_time);
+	client.Ready(audio_format,
+		     is.IsSeekable() && is.KnownSize() && !total_time.IsNegative(),
+		     total_time);
 
 	/* the decoder loop */
 
-	DecoderCommand cmd;
+	DecoderCommand cmd =  DecoderCommand::NONE;
 	unsigned bit_rate = 0;
 	do {
+		/* handle seek command */
+		if (cmd == DecoderCommand::SEEK) {
+			assert(is.IsSeekable());
+			assert(is.KnownSize());
+			assert(!total_time.IsNegative());
+
+			const auto seek_frame = client.GetSeekFrame();
+			cmd = DecoderCommand::NONE;
+
+			const double seek_time = double(seek_frame) / audio_format.sample_rate;
+			const double total_seconds = total_time.ToDoubleS();
+
+			if (seek_time >= total_seconds) {
+				/* seeking past end of song - simply
+				   stop decoding */
+				client.CommandFinished();
+				break;
+			}
+
+			/* interpolate the seek offset (assuming a
+			   constant bit rate) */
+			const auto seek_offset = start_offset + static_cast<offset_type>((is.GetSize() - start_offset) * seek_time / total_seconds);
+
+			try {
+				is.LockSeek(seek_offset);
+				buffer.Clear();
+				decoder.PostSeekReset(seek_frame);
+
+				if (AdtsFindFrame(buffer) == 0) {
+					/* can't find anything here,
+					   and there's no going back -
+					   report the error and stop
+					   decoding */
+					client.SeekError();
+					break;
+				}
+
+				/* seeking was successful */
+				client.CommandFinished();
+			} catch (...) {
+				client.SeekError(std::current_exception());
+			}
+		}
+
 		/* find the next frame */
 
 		const size_t frame_size = AdtsFindFrame(buffer);

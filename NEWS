@@ -4,6 +4,7 @@ ver 0.25 (not yet released)
   - new command "stringnormalization"
   - show detailed seek errors
 * decoder
+  - faad: implement seeking
   - vgmstream: new plugin
 * output
   - pipewire: add option "reconnect_stream"
