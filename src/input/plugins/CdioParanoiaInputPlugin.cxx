@@ -124,34 +124,32 @@ input_cdio_init(EventLoop &, const ConfigBlock &block)
 }
 
 struct CdioUri {
-	char device[64];
+	std::string_view device;
 	int track;
 };
 
 static CdioUri
 parse_cdio_uri(std::string_view src)
 {
-	CdioUri dest;
-
 	src = StringAfterPrefixIgnoreCase(src, "cdda://"sv);
 
-	const auto [device, track] = Split(src, '/');
-	if (device.size() >= sizeof(dest.device))
-		throw std::invalid_argument{"Device name is too long"};
+	const auto [device, track] = SplitLast(src, '/');
 
-	*std::copy(device.begin(), device.end(), dest.device) = '\0';
+	/* play the whole CD by default */
+	int track_number = -1;
 
 	if (!track.empty()) {
 		auto value = ParseInteger<uint_least16_t>(track);
 		if (!value)
 			throw std::invalid_argument{"Bad track number"};
 
-		dest.track = *value;
-	} else
-		/* play the whole CD */
-		dest.track = -1;
+		track_number = *value;
+	}
 
-	return dest;
+	return {
+		.device = device,
+		.track = track_number,
+	};
 }
 
 static AllocatedPath
@@ -177,7 +175,7 @@ input_cdio_open(std::string_view uri,
 	const auto parsed_uri = parse_cdio_uri(uri);
 
 	/* get list of CD's supporting CD-DA */
-	const AllocatedPath device = parsed_uri.device[0] != 0
+	const AllocatedPath device = !parsed_uri.device.empty()
 		? AllocatedPath::FromFS(parsed_uri.device)
 		: cdio_detect_device();
 	if (device.IsNull())
