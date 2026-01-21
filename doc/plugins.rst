@@ -199,7 +199,12 @@ Allows :program:`MPD` on Linux to play audio directly from a soundcard using the
 cdio_paranoia
 -------------
 
-Plays audio CDs using libcdio. The URI has the form: "cdda://[DEVICE][/TRACK]". The simplest form cdda:// plays the whole disc in the default drive.
+Plays audio CDs using libcdio.  The URI has the form
+``cdda://[DEVICE][/TRACK]``.  Examples:
+
+- ``cdda://`` plays the whole disc in the default drive
+- ``cdda:///dev/sr0`` plays the whole disc in ``/dev/sr0``
+- ``cdda:///dev/sr0/4`` plays the fourth track
 
 .. list-table::
    :widths: 20 80
