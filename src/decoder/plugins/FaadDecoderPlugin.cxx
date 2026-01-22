@@ -7,7 +7,6 @@
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
-#include "util/ScopeExit.hxx"
 #include "util/Domain.hxx"
 #include "util/SpanCast.hxx"
 #include "Log.hxx"
@@ -211,66 +210,66 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 		return SignedSongTime::Negative();
 }
 
-static NeAACDecHandle
-faad_decoder_new()
-{
-	auto decoder = NeAACDecOpen();
+class FaadDecoder {
+	const NeAACDecHandle handle = NeAACDecOpen();
 
-	NeAACDecConfigurationPtr config =
-		NeAACDecGetCurrentConfiguration(decoder);
-	config->outputFormat = FAAD_FMT_16BIT;
-	config->downMatrix = 1;
-	config->dontUpSampleImplicitSBR = 0;
-	NeAACDecSetConfiguration(decoder, config);
+public:
+	FaadDecoder() noexcept {
+		NeAACDecConfigurationPtr config =
+			NeAACDecGetCurrentConfiguration(handle);
+		config->outputFormat = FAAD_FMT_16BIT;
+		config->downMatrix = 1;
+		config->dontUpSampleImplicitSBR = 0;
+		NeAACDecSetConfiguration(handle, config);
+	}
 
-	return decoder;
-}
+	~FaadDecoder() noexcept {
+		NeAACDecClose(handle);
+	}
 
-/**
- * Wrapper for NeAACDecInit() which works around some API
- * inconsistencies in libfaad.
- *
- * Throws #std::runtime_error on error.
- */
-static AudioFormat
-faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer)
-{
-	auto data = FromBytesStrict<const uint8_t>(buffer.Read());
-	if (data.empty())
-		throw std::runtime_error("Empty file");
+	FaadDecoder(const FaadDecoder &) = delete;
+	FaadDecoder &operator=(const FaadDecoder &) = delete;
 
-	uint8_t channels;
-	unsigned long sample_rate;
-	long nbytes = NeAACDecInit(decoder,
-				   /* deconst hack, libfaad requires this */
-				   const_cast<unsigned char *>(data.data()),
-				   data.size(),
-				   &sample_rate, &channels);
-	if (nbytes < 0)
-		throw std::runtime_error("Not an AAC stream");
+	/**
+	 * Wrapper for NeAACDecInit().
+	 *
+	 * Throws on error.
+	 */
+	AudioFormat Init(DecoderBuffer &buffer) {
+		auto data = FromBytesStrict<const unsigned char>(buffer.Read());
+		if (data.empty())
+			throw std::runtime_error("Empty file");
 
-	buffer.Consume(nbytes);
+		uint8_t channels;
+		unsigned long sample_rate;
+		long nbytes = NeAACDecInit(handle,
+					   /* deconst hack, libfaad requires this */
+					   const_cast<unsigned char *>(data.data()),
+					   data.size(),
+					   &sample_rate, &channels);
+		if (nbytes < 0)
+			throw std::runtime_error("Not an AAC stream");
 
-	return CheckAudioFormat(sample_rate, SampleFormat::S16, channels);
-}
+		buffer.Consume(nbytes);
 
-/**
- * Wrapper for NeAACDecDecode() which works around some API
- * inconsistencies in libfaad.
- */
-static const void *
-faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer &buffer,
-		    NeAACDecFrameInfo *frame_info)
-{
-	auto data = FromBytesStrict<const uint8_t>(buffer.Read());
-	if (data.empty())
-		return nullptr;
+		return CheckAudioFormat(sample_rate, SampleFormat::S16, channels);
+	}
 
-	return NeAACDecDecode(decoder, frame_info,
-			      /* deconst hack, libfaad requires this */
-			      const_cast<uint8_t *>(data.data()),
-			      data.size());
-}
+	/**
+	 * Wrapper for NeAACDecDecode()
+	 */
+	const void *Decode(DecoderBuffer &buffer,
+			   NeAACDecFrameInfo *frame_info) noexcept {
+		auto data = FromBytesStrict<const uint8_t>(buffer.Read());
+		if (data.empty())
+			return nullptr;
+
+		return NeAACDecDecode(handle, frame_info,
+				      /* deconst hack, libfaad requires this */
+				      const_cast<uint8_t *>(data.data()),
+				      data.size());
+	}
+};
 
 /**
  * Determine a song file's total playing time.
@@ -287,13 +286,12 @@ faad_get_file_time(InputStream &is)
 	bool recognized = !duration.IsNegative();
 
 	if (!recognized) {
-		NeAACDecHandle decoder = faad_decoder_new();
-		AtScopeExit(decoder) { NeAACDecClose(decoder); };
+		FaadDecoder decoder;
 
 		buffer.Fill();
 
 		try {
-			faad_decoder_init(decoder, buffer);
+			decoder.Init(buffer);
 			recognized = true;
 		} catch (...) {
 		}
@@ -303,17 +301,21 @@ faad_get_file_time(InputStream &is)
 }
 
 static void
-faad_stream_decode(DecoderClient &client, InputStream &is,
-		   DecoderBuffer &buffer, NeAACDecHandle decoder)
+faad_stream_decode(DecoderClient &client, InputStream &is)
 {
+	DecoderBuffer buffer(&client, is,
+			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
+
 	const auto total_time = faad_song_duration(buffer, is);
 
 	if (adts_find_frame(buffer) == 0)
 		return;
 
+	FaadDecoder decoder;
+
 	/* initialize it */
 
-	const auto audio_format = faad_decoder_init(decoder, buffer);
+	const auto audio_format = decoder.Init(buffer);
 
 	/* initialize the MPD core */
 
@@ -335,7 +337,7 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 
 		NeAACDecFrameInfo frame_info;
 		const auto decoded = (const int16_t *)
-			faad_decoder_decode(decoder, buffer, &frame_info);
+			decoder.Decode(buffer, &frame_info);
 
 		if (frame_info.error > 0) {
 			FmtWarning(faad_decoder_domain,
@@ -375,20 +377,6 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 
 		cmd = client.SubmitAudio(is, audio, bit_rate);
 	} while (cmd != DecoderCommand::STOP);
-}
-
-static void
-faad_stream_decode(DecoderClient &client, InputStream &is)
-{
-	DecoderBuffer buffer(&client, is,
-			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
-
-	/* create the libfaad decoder */
-
-	auto decoder = faad_decoder_new();
-	AtScopeExit(decoder) { NeAACDecClose(decoder); };
-
-	faad_stream_decode(client, is, buffer, decoder);
 }
 
 static bool
