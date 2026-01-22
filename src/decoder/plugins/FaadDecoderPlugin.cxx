@@ -28,16 +28,16 @@ static constexpr Domain faad_decoder_domain("faad_decoder");
  * Check whether the buffer head is an AAC frame, and return the frame
  * length.  Returns 0 if it is not a frame.
  */
-static constexpr size_t
+static constexpr std::size_t
 AdtsCheckFrame(const uint8_t *data) noexcept
 {
 	/* check syncword */
 	if (!((data[0] == 0xFF) && ((data[1] & 0xF6) == 0xF0)))
 		return 0;
 
-	return (((unsigned int)data[3] & 0x3) << 11) |
-		(((unsigned int)data[4]) << 3) |
-		(data[5] >> 5);
+	return (static_cast<std::size_t>(data[3] & 0x3) << 11) |
+		(static_cast<std::size_t>(data[4]) << 3) |
+		static_cast<std::size_t>(data[5] >> 5);
 }
 
 /**
