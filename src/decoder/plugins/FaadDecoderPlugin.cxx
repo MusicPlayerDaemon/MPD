@@ -58,6 +58,15 @@ AdtsGetSampleRate(const uint8_t *frame) noexcept
 	return adts_sample_rates[(frame[2] & 0x3c) >> 2];
 }
 
+static constexpr uint8_t
+AdtsGetChannels(const uint8_t *frame) noexcept
+{
+	assert(AdtsCheckFrame(frame));
+
+	/* extract 3-bit channel configuration from byte 2 (bits 2-0) */
+	return (frame[2] & 0x1) << 2 | (frame[3] >> 6);
+}
+
 /**
  * Find the next ADTS frame in the buffer.  Returns 0 if no frame is
  * found or if not enough data is available.
@@ -145,12 +154,22 @@ AdtsSongDuration(DecoderBuffer &buffer, const unsigned sample_rate) noexcept
 						   sample_rate);
 }
 
-static SignedSongTime
-FaadSongDuration(DecoderBuffer &buffer, InputStream &is) noexcept
+struct FaadSongInfo {
+	unsigned sample_rate = 0;
+	uint8_t channels = 0;
+	SignedSongTime duration = SignedSongTime::Negative();
+
+	bool WasRecognized() const noexcept {
+		return sample_rate > 0;
+	}
+};
+
+static FaadSongInfo
+ScanFaadSong(DecoderBuffer &buffer, InputStream &is) noexcept
 {
 	auto data = FromBytesStrict<const uint8_t>(buffer.Need(5));
 	if (data.data() == nullptr)
-		return SignedSongTime::Negative();
+		return {};
 
 	size_t tagsize = 0;
 	if (data.size() >= 10 && !memcmp(data.data(), "ID3", 3)) {
@@ -162,24 +181,29 @@ FaadSongDuration(DecoderBuffer &buffer, InputStream &is) noexcept
 		tagsize += 10;
 
 		if (!buffer.Skip(tagsize))
-			return SignedSongTime::Negative();
+			return {};
 
 		data = FromBytesStrict<const uint8_t>(buffer.Need(5));
 		if (data.data() == nullptr)
-			return SignedSongTime::Negative();
+			return {};
 	}
 
 	if (data.size() >= 8 && AdtsCheckFrame(data.data()) > 0) {
 		/* obtain the duration from the ADTS header */
 
+		FaadSongInfo info{
+			.sample_rate = AdtsGetSampleRate(data.data()),
+			.channels = AdtsGetChannels(data.data()),
+		};
+
+		if (info.sample_rate == 0 ||
+		    !audio_valid_channel_count(info.channels))
+			return {};
+
 		if (!is.IsSeekable())
-			return SignedSongTime::Negative();
+			return info;
 
-		const unsigned sample_rate = AdtsGetSampleRate(data.data());
-		if (sample_rate == 0)
-			return SignedSongTime::Negative();
-
-		auto song_length = AdtsSongDuration(buffer, sample_rate);
+		info.duration = AdtsSongDuration(buffer, info.sample_rate);
 
 		try {
 			is.LockSeek(tagsize);
@@ -188,9 +212,9 @@ FaadSongDuration(DecoderBuffer &buffer, InputStream &is) noexcept
 
 		buffer.Clear();
 
-		return song_length;
+		return info;
 	} else
-		return SignedSongTime::Negative();
+		return {};
 }
 
 class FaadDecoder {
@@ -260,7 +284,11 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 	DecoderBuffer buffer(&client, is,
 			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 
-	const auto total_time = FaadSongDuration(buffer, is);
+	const auto info = ScanFaadSong(buffer, is);
+	if (!info.WasRecognized())
+	    return;
+
+	const auto total_time = info.duration;
 
 	if (AdtsFindFrame(buffer).empty())
 		return;
@@ -387,38 +415,25 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
  * The first return value specifies whether the file was recognized.
  * The second return value is the duration.
  */
-static std::pair<bool, SignedSongTime>
-FaadGetFileTime(InputStream &is) noexcept
+static auto
+ScanFaadSong(InputStream &is) noexcept
 {
 	DecoderBuffer buffer(nullptr, is,
 			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
-	auto duration = FaadSongDuration(buffer, is);
-	bool recognized = !duration.IsNegative();
-
-	if (!recognized) {
-		FaadDecoder decoder;
-
-		buffer.Fill();
-
-		try {
-			decoder.Init(buffer);
-			recognized = true;
-		} catch (...) {
-		}
-	}
-
-	return {recognized, duration};
+	return ScanFaadSong(buffer, is);
 }
 
 static bool
 FaadScanStream(InputStream &is, TagHandler &handler)
 {
-	auto result = FaadGetFileTime(is);
-	if (!result.first)
+	const auto info = ScanFaadSong(is);
+	if (!info.WasRecognized())
 		return false;
 
-	if (!result.second.IsNegative())
-		handler.OnDuration(SongTime(result.second));
+	handler.OnAudioFormat(AudioFormat{info.sample_rate, SampleFormat::FLOAT, info.channels});
+
+	if (!info.duration.IsNegative())
+		handler.OnDuration(SongTime(info.duration));
 	return true;
 }
 
