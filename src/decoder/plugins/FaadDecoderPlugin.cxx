@@ -139,8 +139,7 @@ AdtsSongDuration(DecoderBuffer &buffer) noexcept
 			   extrapolate the song duration from what we
 			   have until now */
 
-			const auto offset = is.GetOffset()
-				- buffer.GetAvailable();
+			const auto offset = buffer.GetOffset();
 			if (offset <= 0)
 				return SignedSongTime::Negative();
 
