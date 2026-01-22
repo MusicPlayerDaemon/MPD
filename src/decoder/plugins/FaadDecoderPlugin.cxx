@@ -197,29 +197,6 @@ FaadSongDuration(DecoderBuffer &buffer, InputStream &is) noexcept
 		buffer.Clear();
 
 		return song_length;
-	} else if (data.size() >= 5 && memcmp(data.data(), "ADIF", 4) == 0) {
-		/* obtain the duration from the ADIF header */
-
-		if (!is.KnownSize())
-			return SignedSongTime::Negative();
-
-		size_t skip_size = (data[4] & 0x80) ? 9 : 0;
-
-		if (8 + skip_size > data.size())
-			/* not enough data yet; skip parsing this
-			   header */
-			return SignedSongTime::Negative();
-
-		unsigned bit_rate = ((data[4 + skip_size] & 0x0F) << 19) |
-			(data[5 + skip_size] << 11) |
-			(data[6 + skip_size] << 3) |
-			(data[7 + skip_size] & 0xE0);
-
-		const auto size = is.GetSize();
-		if (bit_rate == 0)
-			return SignedSongTime::Negative();
-
-		return SongTime::FromScale(size, bit_rate / 8);
 	} else
 		return SignedSongTime::Negative();
 }
