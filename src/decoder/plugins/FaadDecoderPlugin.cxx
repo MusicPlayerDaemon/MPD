@@ -49,6 +49,14 @@ AdtsCheckFrame(const uint8_t *data) noexcept
 		static_cast<std::size_t>(data[5] >> 5);
 }
 
+static constexpr unsigned
+AdtsGetSampleRate(const uint8_t *frame) noexcept
+{
+	assert(AdtsCheckFrame(frame));
+
+	return adts_sample_rates[(frame[2] & 0x3c) >> 2];
+}
+
 /**
  * Find the next ADTS frame in the buffer.  Returns 0 if no frame is
  * found or if not enough data is available.
@@ -117,7 +125,7 @@ AdtsSongDuration(DecoderBuffer &buffer) noexcept
 			break;
 
 		if (frames == 0) {
-			sample_rate = adts_sample_rates[(frame[2] & 0x3c) >> 2];
+			sample_rate = AdtsGetSampleRate(frame.data());
 			if (sample_rate == 0)
 				break;
 		}
