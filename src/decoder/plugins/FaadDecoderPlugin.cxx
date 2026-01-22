@@ -258,35 +258,6 @@ public:
 	}
 };
 
-/**
- * Determine a song file's total playing time.
- *
- * The first return value specifies whether the file was recognized.
- * The second return value is the duration.
- */
-static std::pair<bool, SignedSongTime>
-FaadGetFileTime(InputStream &is) noexcept
-{
-	DecoderBuffer buffer(nullptr, is,
-			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
-	auto duration = FaadSongDuration(buffer, is);
-	bool recognized = !duration.IsNegative();
-
-	if (!recognized) {
-		FaadDecoder decoder;
-
-		buffer.Fill();
-
-		try {
-			decoder.Init(buffer);
-			recognized = true;
-		} catch (...) {
-		}
-	}
-
-	return {recognized, duration};
-}
-
 static void
 FaadDecodeStream(DecoderClient &client, InputStream &is)
 {
@@ -412,6 +383,35 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 
 		cmd = client.SubmitAudio(is, audio, kbit_rate);
 	} while (cmd != DecoderCommand::STOP);
+}
+
+/**
+ * Determine a song file's total playing time.
+ *
+ * The first return value specifies whether the file was recognized.
+ * The second return value is the duration.
+ */
+static std::pair<bool, SignedSongTime>
+FaadGetFileTime(InputStream &is) noexcept
+{
+	DecoderBuffer buffer(nullptr, is,
+			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
+	auto duration = FaadSongDuration(buffer, is);
+	bool recognized = !duration.IsNegative();
+
+	if (!recognized) {
+		FaadDecoder decoder;
+
+		buffer.Fill();
+
+		try {
+			decoder.Init(buffer);
+			recognized = true;
+		} catch (...) {
+		}
+	}
+
+	return {recognized, duration};
 }
 
 static bool
