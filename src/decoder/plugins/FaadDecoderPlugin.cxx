@@ -111,7 +111,7 @@ AdtsSongDuration(DecoderBuffer &buffer) noexcept
 	/* Read all frames to ensure correct time and bitrate */
 	unsigned frames = 0;
 	for (;; frames++) {
-		const unsigned frame_length = AdtsFindFrame(buffer);
+		const auto frame_length = AdtsFindFrame(buffer);
 		if (frame_length == 0)
 			break;
 
