@@ -342,7 +342,7 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 	/* the decoder loop */
 
 	DecoderCommand cmd =  DecoderCommand::NONE;
-	unsigned bit_rate = 0;
+	unsigned kbit_rate = 0;
 	do {
 		/* handle seek command */
 		if (cmd == DecoderCommand::SEEK) {
@@ -428,7 +428,7 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 		/* update bit rate and position */
 
 		if (frame_info.samples > 0) {
-			bit_rate = std::lround(frame_info.bytesconsumed * 8.0 *
+			kbit_rate = std::lround(frame_info.bytesconsumed * 8.0 *
 					  frame_info.channels * audio_format.sample_rate /
 					  frame_info.samples / 1000);
 		}
@@ -437,7 +437,7 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 
 		const std::span audio{decoded, (size_t)frame_info.samples};
 
-		cmd = client.SubmitAudio(is, audio, bit_rate);
+		cmd = client.SubmitAudio(is, audio, kbit_rate);
 	} while (cmd != DecoderCommand::STOP);
 }
 
