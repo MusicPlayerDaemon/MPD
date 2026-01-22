@@ -17,7 +17,7 @@
 
 #include <neaacdec.h>
 
-static const unsigned adts_sample_rates[] =
+static constexpr unsigned adts_sample_rates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
 	16000, 12000, 11025, 8000, 7350, 0, 0, 0
 };
@@ -445,8 +445,8 @@ FaadScanStream(InputStream &is, TagHandler &handler)
 	return true;
 }
 
-static const char *const faad_suffixes[] = { "aac", nullptr };
-static const char *const faad_mime_types[] = {
+static constexpr const char *faad_suffixes[] = { "aac", nullptr };
+static constexpr const char *faad_mime_types[] = {
 	"audio/aac", "audio/aacp", nullptr
 };
 
