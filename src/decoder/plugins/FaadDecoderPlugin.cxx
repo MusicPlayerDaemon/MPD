@@ -144,7 +144,7 @@ AdtsSongDuration(DecoderBuffer &buffer) noexcept
 }
 
 static SignedSongTime
-FaadSongDuration(DecoderBuffer &buffer, InputStream &is)
+FaadSongDuration(DecoderBuffer &buffer, InputStream &is) noexcept
 {
 	auto data = FromBytesStrict<const uint8_t>(buffer.Need(5));
 	if (data.data() == nullptr)
@@ -282,7 +282,7 @@ public:
  * The second return value is the duration.
  */
 static std::pair<bool, SignedSongTime>
-FaadGetFileTime(InputStream &is)
+FaadGetFileTime(InputStream &is) noexcept
 {
 	DecoderBuffer buffer(nullptr, is,
 			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
