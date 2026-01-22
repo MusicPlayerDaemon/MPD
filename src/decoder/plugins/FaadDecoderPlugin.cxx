@@ -29,8 +29,8 @@ static constexpr Domain faad_decoder_domain("faad_decoder");
  * Check whether the buffer head is an AAC frame, and return the frame
  * length.  Returns 0 if it is not a frame.
  */
-static size_t
-adts_check_frame(const unsigned char *data)
+static constexpr size_t
+adts_check_frame(const unsigned char *data) noexcept
 {
 	/* check syncword */
 	if (!((data[0] == 0xFF) && ((data[1] & 0xF6) == 0xF0)))
@@ -46,7 +46,7 @@ adts_check_frame(const unsigned char *data)
  * found or if not enough data is available.
  */
 static size_t
-adts_find_frame(DecoderBuffer &buffer)
+adts_find_frame(DecoderBuffer &buffer) noexcept
 {
 	while (true) {
 		auto data = FromBytesStrict<const uint8_t>(buffer.Need(8));
@@ -91,7 +91,7 @@ adts_find_frame(DecoderBuffer &buffer)
 }
 
 static SignedSongTime
-adts_song_duration(DecoderBuffer &buffer)
+adts_song_duration(DecoderBuffer &buffer) noexcept
 {
 	const InputStream &is = buffer.GetStream();
 	const bool estimate = !is.CheapSeeking();
