@@ -5,6 +5,7 @@ ver 0.25 (not yet released)
   - show detailed seek errors
 * decoder
   - faad: implement seeking
+  - faad: output 32 bit floating point samples instead of 16 bit integer
   - vgmstream: new plugin
 * output
   - pipewire: add option "reconnect_stream"

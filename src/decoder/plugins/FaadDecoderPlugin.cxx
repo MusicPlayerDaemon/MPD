@@ -231,7 +231,7 @@ public:
 	FaadDecoder() noexcept {
 		NeAACDecConfigurationPtr config =
 			NeAACDecGetCurrentConfiguration(handle);
-		config->outputFormat = FAAD_FMT_16BIT;
+		config->outputFormat = FAAD_FMT_FLOAT;
 		config->downMatrix = 1;
 		config->dontUpSampleImplicitSBR = 0;
 		NeAACDecSetConfiguration(handle, config);
@@ -266,7 +266,7 @@ public:
 
 		buffer.Consume(nbytes);
 
-		return CheckAudioFormat(sample_rate, SampleFormat::S16, channels);
+		return CheckAudioFormat(sample_rate, SampleFormat::FLOAT, channels);
 	}
 
 	void PostSeekReset(long frame) noexcept {
@@ -398,7 +398,7 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 		/* decode it */
 
 		NeAACDecFrameInfo frame_info;
-		const auto decoded = (const int16_t *)
+		const auto decoded = (const float *)
 			decoder.Decode(frame, &frame_info);
 
 		if (frame_info.error > 0) {
