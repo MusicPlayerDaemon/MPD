@@ -25,7 +25,7 @@ static const unsigned adts_sample_rates[] =
 static constexpr Domain faad_decoder_domain("faad_decoder");
 
 /**
- * Check whether the buffer head is an AAC frame, and return the frame
+ * Check whether the buffer head is an ADTS frame, and return the frame
  * length.  Returns 0 if it is not a frame.
  */
 static constexpr std::size_t
@@ -41,7 +41,7 @@ AdtsCheckFrame(const uint8_t *data) noexcept
 }
 
 /**
- * Find the next AAC frame in the buffer.  Returns 0 if no frame is
+ * Find the next ADTS frame in the buffer.  Returns 0 if no frame is
  * found or if not enough data is available.
  */
 static size_t
