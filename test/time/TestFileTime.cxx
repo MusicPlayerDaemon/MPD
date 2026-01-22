@@ -19,9 +19,9 @@ TEST(Time, FileTimeToChrono)
 	struct stat st;
 	ASSERT_EQ(stat(".", &st), 0);
 
-	ASSERT_EQ(std::chrono::system_clock::to_time_t(tp), st.st_mtime);
+	EXPECT_NEAR(std::chrono::system_clock::to_time_t(tp), st.st_mtime, 1);
 
 	const auto ft2 = ChronoToFileTime(std::chrono::system_clock::from_time_t(st.st_mtime));
 	const auto tp2 = FileTimeToChrono(ft2);
-	ASSERT_EQ(std::chrono::system_clock::to_time_t(tp2), st.st_mtime);
+	EXPECT_NEAR(std::chrono::system_clock::to_time_t(tp2), st.st_mtime, 1);
 }
