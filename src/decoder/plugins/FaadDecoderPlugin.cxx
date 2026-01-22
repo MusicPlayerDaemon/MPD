@@ -109,14 +109,14 @@ AdtsFindFrame(DecoderBuffer &buffer) noexcept
 }
 
 static SignedSongTime
-AdtsSongDuration(DecoderBuffer &buffer) noexcept
+AdtsSongDuration(DecoderBuffer &buffer, const unsigned sample_rate) noexcept
 {
+	assert(audio_valid_sample_rate(sample_rate));
+
 	const InputStream &is = buffer.GetStream();
 	const bool estimate = !is.CheapSeeking();
 	if (estimate && !is.KnownSize())
 		return SignedSongTime::Negative();
-
-	unsigned sample_rate = 0;
 
 	/* Read all frames to ensure correct time and bitrate */
 	unsigned frames = 0;
@@ -124,12 +124,6 @@ AdtsSongDuration(DecoderBuffer &buffer) noexcept
 		const auto frame = AdtsFindFrame(buffer);
 		if (frame.empty())
 			break;
-
-		if (frames == 0) {
-			sample_rate = AdtsGetSampleRate(frame.data());
-			if (sample_rate == 0)
-				break;
-		}
 
 		buffer.Consume(frame.size());
 
@@ -146,9 +140,6 @@ AdtsSongDuration(DecoderBuffer &buffer) noexcept
 			break;
 		}
 	}
-
-	if (sample_rate == 0)
-		return SignedSongTime::Negative();
 
 	return SignedSongTime::FromScale<uint64_t>(frames * uint64_t(1024),
 						   sample_rate);
@@ -184,7 +175,11 @@ FaadSongDuration(DecoderBuffer &buffer, InputStream &is) noexcept
 		if (!is.IsSeekable())
 			return SignedSongTime::Negative();
 
-		auto song_length = AdtsSongDuration(buffer);
+		const unsigned sample_rate = AdtsGetSampleRate(data.data());
+		if (sample_rate == 0)
+			return SignedSongTime::Negative();
+
+		auto song_length = AdtsSongDuration(buffer, sample_rate);
 
 		try {
 			is.LockSeek(tagsize);
