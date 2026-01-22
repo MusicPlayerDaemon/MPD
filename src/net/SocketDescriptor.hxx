@@ -365,6 +365,11 @@ public:
 		return Send(src);
 	}
 
+#ifndef _WIN32
+	using FileDescriptor::FullRead;
+	using FileDescriptor::FullWrite;
+#endif
+
 	/**
 	 * Wrapper for Receive() with MSG_DONTWAIT (not available on
 	 * Windows).
