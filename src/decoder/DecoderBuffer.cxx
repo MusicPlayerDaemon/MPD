@@ -3,6 +3,13 @@
 
 #include "DecoderBuffer.hxx"
 #include "DecoderAPI.hxx"
+#include "input/InputStream.hxx"
+
+offset_type
+DecoderBuffer::GetOffset() const noexcept
+{
+	return is.GetOffset() - GetAvailable();
+}
 
 bool
 DecoderBuffer::Fill()

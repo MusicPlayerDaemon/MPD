@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_DECODER_BUFFER_HXX
-#define MPD_DECODER_BUFFER_HXX
+#pragma once
 
+#include "input/Offset.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 
 class DecoderClient;
@@ -36,6 +36,12 @@ public:
 	const InputStream &GetStream() const noexcept {
 		return is;
 	}
+
+	/**
+	 * Returns the file offset at the start of the buffer.
+	 */
+	[[gnu::pure]]
+	offset_type GetOffset() const noexcept;
 
 	void Clear() noexcept {
 		buffer.Clear();
@@ -92,5 +98,3 @@ public:
 	 */
 	bool Skip(size_t nbytes);
 };
-
-#endif
