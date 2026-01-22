@@ -29,7 +29,7 @@ static constexpr Domain faad_decoder_domain("faad_decoder");
  * length.  Returns 0 if it is not a frame.
  */
 static constexpr size_t
-adts_check_frame(const uint8_t *data) noexcept
+AdtsCheckFrame(const uint8_t *data) noexcept
 {
 	/* check syncword */
 	if (!((data[0] == 0xFF) && ((data[1] & 0xF6) == 0xF0)))
@@ -45,7 +45,7 @@ adts_check_frame(const uint8_t *data) noexcept
  * found or if not enough data is available.
  */
 static size_t
-adts_find_frame(DecoderBuffer &buffer) noexcept
+AdtsFindFrame(DecoderBuffer &buffer) noexcept
 {
 	while (true) {
 		auto data = FromBytesStrict<const uint8_t>(buffer.Need(8));
@@ -69,7 +69,7 @@ adts_find_frame(DecoderBuffer &buffer) noexcept
 		}
 
 		/* is it a frame? */
-		const size_t frame_length = adts_check_frame(data.data());
+		const size_t frame_length = AdtsCheckFrame(data.data());
 		if (frame_length == 0) {
 			/* it's just some random 0xff byte; discard it
 			   and continue searching */
@@ -90,7 +90,7 @@ adts_find_frame(DecoderBuffer &buffer) noexcept
 }
 
 static SignedSongTime
-adts_song_duration(DecoderBuffer &buffer) noexcept
+AdtsSongDuration(DecoderBuffer &buffer) noexcept
 {
 	const InputStream &is = buffer.GetStream();
 	const bool estimate = !is.CheapSeeking();
@@ -102,7 +102,7 @@ adts_song_duration(DecoderBuffer &buffer) noexcept
 	/* Read all frames to ensure correct time and bitrate */
 	unsigned frames = 0;
 	for (;; frames++) {
-		const unsigned frame_length = adts_find_frame(buffer);
+		const unsigned frame_length = AdtsFindFrame(buffer);
 		if (frame_length == 0)
 			break;
 
@@ -144,7 +144,7 @@ adts_song_duration(DecoderBuffer &buffer) noexcept
 }
 
 static SignedSongTime
-faad_song_duration(DecoderBuffer &buffer, InputStream &is)
+FaadSongDuration(DecoderBuffer &buffer, InputStream &is)
 {
 	auto data = FromBytesStrict<const uint8_t>(buffer.Need(5));
 	if (data.data() == nullptr)
@@ -167,13 +167,13 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 			return SignedSongTime::Negative();
 	}
 
-	if (data.size() >= 8 && adts_check_frame(data.data()) > 0) {
+	if (data.size() >= 8 && AdtsCheckFrame(data.data()) > 0) {
 		/* obtain the duration from the ADTS header */
 
 		if (!is.IsSeekable())
 			return SignedSongTime::Negative();
 
-		auto song_length = adts_song_duration(buffer);
+		auto song_length = AdtsSongDuration(buffer);
 
 		try {
 			is.LockSeek(tagsize);
@@ -278,11 +278,11 @@ public:
  * The second return value is the duration.
  */
 static std::pair<bool, SignedSongTime>
-faad_get_file_time(InputStream &is)
+FaadGetFileTime(InputStream &is)
 {
 	DecoderBuffer buffer(nullptr, is,
 			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
-	auto duration = faad_song_duration(buffer, is);
+	auto duration = FaadSongDuration(buffer, is);
 	bool recognized = !duration.IsNegative();
 
 	if (!recognized) {
@@ -301,14 +301,14 @@ faad_get_file_time(InputStream &is)
 }
 
 static void
-faad_stream_decode(DecoderClient &client, InputStream &is)
+FaadDecodeStream(DecoderClient &client, InputStream &is)
 {
 	DecoderBuffer buffer(&client, is,
 			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 
-	const auto total_time = faad_song_duration(buffer, is);
+	const auto total_time = FaadSongDuration(buffer, is);
 
-	if (adts_find_frame(buffer) == 0)
+	if (AdtsFindFrame(buffer) == 0)
 		return;
 
 	FaadDecoder decoder;
@@ -328,7 +328,7 @@ faad_stream_decode(DecoderClient &client, InputStream &is)
 	do {
 		/* find the next frame */
 
-		const size_t frame_size = adts_find_frame(buffer);
+		const size_t frame_size = AdtsFindFrame(buffer);
 		if (frame_size == 0)
 			/* end of file */
 			break;
@@ -380,9 +380,9 @@ faad_stream_decode(DecoderClient &client, InputStream &is)
 }
 
 static bool
-faad_scan_stream(InputStream &is, TagHandler &handler)
+FaadScanStream(InputStream &is, TagHandler &handler)
 {
-	auto result = faad_get_file_time(is);
+	auto result = FaadGetFileTime(is);
 	if (!result.first)
 		return false;
 
@@ -397,6 +397,6 @@ static const char *const faad_mime_types[] = {
 };
 
 constexpr DecoderPlugin faad_decoder_plugin =
-	DecoderPlugin("faad", faad_stream_decode, faad_scan_stream)
+	DecoderPlugin("faad", FaadDecodeStream, FaadScanStream)
 	.WithSuffixes(faad_suffixes)
 	.WithMimeTypes(faad_mime_types);
