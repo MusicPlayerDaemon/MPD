@@ -27,14 +27,23 @@ static constexpr Domain faad_decoder_domain("faad_decoder");
 /**
  * Check whether the buffer head is an ADTS frame, and return the frame
  * length.  Returns 0 if it is not a frame.
+ *
+ * ADTS header layout (ISO/IEC 13818-7):
+ * - Bytes 0-1: Syncword (12 bits, must be 0xFFF) + ID/Layer/Protection/Profile
+ * - Bytes 2-5: Sample rate, channels, frame length, etc.
+ * - Frame length spans bytes 3-5 (13 bits total)
  */
 static constexpr std::size_t
 AdtsCheckFrame(const uint8_t *data) noexcept
 {
-	/* check syncword */
+	/* check syncword (0xFFF) and validate fixed header bits */
 	if (!((data[0] == 0xFF) && ((data[1] & 0xF6) == 0xF0)))
 		return 0;
 
+	/* extract 13-bit frame length from bytes 3-5:
+	 * - data[3] & 0x3: bits 12-11 of frame length
+	 * - data[4]: bits 10-3 of frame length
+	 * - data[5] >> 5: bits 2-0 of frame length */
 	return (static_cast<std::size_t>(data[3] & 0x3) << 11) |
 		(static_cast<std::size_t>(data[4]) << 3) |
 		static_cast<std::size_t>(data[5] >> 5);
