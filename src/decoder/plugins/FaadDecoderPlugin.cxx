@@ -140,9 +140,6 @@ AdtsSongDuration(DecoderBuffer &buffer) noexcept
 			   have until now */
 
 			const auto offset = buffer.GetOffset();
-			if (offset <= 0)
-				return SignedSongTime::Negative();
-
 			const auto file_size = is.GetSize();
 			frames = (frames * file_size) / offset;
 			break;
