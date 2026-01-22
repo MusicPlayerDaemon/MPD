@@ -12,7 +12,7 @@ DecoderBuffer::GetOffset() const noexcept
 }
 
 bool
-DecoderBuffer::Fill()
+DecoderBuffer::Fill() noexcept
 {
 	auto w = buffer.Write();
 	if (w.empty())
@@ -30,7 +30,7 @@ DecoderBuffer::Fill()
 }
 
 std::span<const std::byte>
-DecoderBuffer::Need(size_t min_size)
+DecoderBuffer::Need(size_t min_size) noexcept
 {
 	while (true) {
 		const auto r = Read();
@@ -43,7 +43,7 @@ DecoderBuffer::Need(size_t min_size)
 }
 
 bool
-DecoderBuffer::Skip(size_t nbytes)
+DecoderBuffer::Skip(size_t nbytes) noexcept
 {
 	const auto r = buffer.Read();
 	if (r.size() >= nbytes) {
