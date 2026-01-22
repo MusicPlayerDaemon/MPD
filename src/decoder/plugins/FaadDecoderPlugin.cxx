@@ -30,7 +30,7 @@ static constexpr Domain faad_decoder_domain("faad_decoder");
  * length.  Returns 0 if it is not a frame.
  */
 static constexpr size_t
-adts_check_frame(const unsigned char *data) noexcept
+adts_check_frame(const uint8_t *data) noexcept
 {
 	/* check syncword */
 	if (!((data[0] == 0xFF) && ((data[1] & 0xF6) == 0xF0)))
