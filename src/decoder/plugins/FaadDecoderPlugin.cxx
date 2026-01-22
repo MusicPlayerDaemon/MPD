@@ -232,9 +232,8 @@ faad_decoder_new()
  *
  * Throws #std::runtime_error on error.
  */
-static void
-faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer,
-		  AudioFormat &audio_format)
+static AudioFormat
+faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer)
 {
 	auto data = FromBytesStrict<const uint8_t>(buffer.Read());
 	if (data.empty())
@@ -252,8 +251,7 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer,
 
 	buffer.Consume(nbytes);
 
-	audio_format = CheckAudioFormat(sample_rate, SampleFormat::S16,
-					channels);
+	return CheckAudioFormat(sample_rate, SampleFormat::S16, channels);
 }
 
 /**
@@ -294,9 +292,8 @@ faad_get_file_time(InputStream &is)
 
 		buffer.Fill();
 
-		AudioFormat audio_format;
 		try {
-			faad_decoder_init(decoder, buffer, audio_format);
+			faad_decoder_init(decoder, buffer);
 			recognized = true;
 		} catch (...) {
 		}
@@ -316,8 +313,7 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 
 	/* initialize it */
 
-	AudioFormat audio_format;
-	faad_decoder_init(decoder, buffer, audio_format);
+	const auto audio_format = faad_decoder_init(decoder, buffer);
 
 	/* initialize the MPD core */
 
