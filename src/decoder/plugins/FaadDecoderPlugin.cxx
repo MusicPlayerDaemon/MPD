@@ -53,14 +53,14 @@ AdtsCheckFrame(const uint8_t *data) noexcept
  * Find the next ADTS frame in the buffer.  Returns 0 if no frame is
  * found or if not enough data is available.
  */
-static size_t
+static std::span<const uint8_t>
 AdtsFindFrame(DecoderBuffer &buffer) noexcept
 {
 	while (true) {
 		auto r = FromBytesStrict<const uint8_t>(buffer.Need(8));
 		if (r.data() == nullptr)
 			/* failed */
-			return 0;
+			return {};
 
 		/* find the 0xff marker */
 		auto p = (const uint8_t *)std::memchr(r.data(), 0xff,
@@ -86,7 +86,8 @@ AdtsFindFrame(DecoderBuffer &buffer) noexcept
 			continue;
 		}
 
-		if (buffer.Need(frame_length).empty()) {
+		r = FromBytesStrict<const uint8_t>(buffer.Need(frame_length));
+		if (r.empty()) {
 			/* not enough data; discard this frame to
 			   prevent a possible buffer overflow */
 			buffer.Clear();
@@ -94,7 +95,7 @@ AdtsFindFrame(DecoderBuffer &buffer) noexcept
 		}
 
 		/* found a full frame! */
-		return frame_length;
+		return r.first(frame_length);
 	}
 }
 
@@ -111,21 +112,17 @@ AdtsSongDuration(DecoderBuffer &buffer) noexcept
 	/* Read all frames to ensure correct time and bitrate */
 	unsigned frames = 0;
 	for (;; frames++) {
-		const auto frame_length = AdtsFindFrame(buffer);
-		if (frame_length == 0)
+		const auto frame = AdtsFindFrame(buffer);
+		if (frame.empty())
 			break;
 
 		if (frames == 0) {
-			auto data = FromBytesStrict<const uint8_t>(buffer.Read());
-			assert(!data.empty());
-			assert(frame_length <= data.size());
-
-			sample_rate = adts_sample_rates[(data[2] & 0x3c) >> 2];
+			sample_rate = adts_sample_rates[(frame[2] & 0x3c) >> 2];
 			if (sample_rate == 0)
 				break;
 		}
 
-		buffer.Consume(frame_length);
+		buffer.Consume(frame.size());
 
 		if (estimate && frames == 128) {
 			/* if this is a remote file, don't slurp the
@@ -271,16 +268,12 @@ public:
 	/**
 	 * Wrapper for NeAACDecDecode()
 	 */
-	const void *Decode(DecoderBuffer &buffer,
+	const void *Decode(std::span<const unsigned char> frame,
 			   NeAACDecFrameInfo *frame_info) noexcept {
-		auto data = FromBytesStrict<const uint8_t>(buffer.Read());
-		if (data.empty())
-			return nullptr;
-
 		return NeAACDecDecode(handle, frame_info,
 				      /* deconst hack, libfaad requires this */
-				      const_cast<uint8_t *>(data.data()),
-				      data.size());
+				      const_cast<unsigned char *>(frame.data()),
+				      frame.size());
 	}
 };
 
@@ -321,7 +314,7 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 
 	const auto total_time = FaadSongDuration(buffer, is);
 
-	if (AdtsFindFrame(buffer) == 0)
+	if (AdtsFindFrame(buffer).empty())
 		return;
 
 	const auto start_offset = buffer.GetOffset();
@@ -371,7 +364,7 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 				buffer.Clear();
 				decoder.PostSeekReset(seek_frame);
 
-				if (AdtsFindFrame(buffer) == 0) {
+				if (AdtsFindFrame(buffer).empty()) {
 					/* can't find anything here,
 					   and there's no going back -
 					   report the error and stop
@@ -389,8 +382,8 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 
 		/* find the next frame */
 
-		const size_t frame_size = AdtsFindFrame(buffer);
-		if (frame_size == 0)
+		const auto frame = AdtsFindFrame(buffer);
+		if (frame.empty())
 			/* end of file */
 			break;
 
@@ -398,7 +391,7 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 
 		NeAACDecFrameInfo frame_info;
 		const auto decoded = (const int16_t *)
-			decoder.Decode(buffer, &frame_info);
+			decoder.Decode(frame, &frame_info);
 
 		if (frame_info.error > 0) {
 			FmtWarning(faad_decoder_domain,
