@@ -71,6 +71,7 @@ public:
 	 * Wait until this number of bytes are available.  Returns nullptr on
 	 * error.
 	 */
+	[[nodiscard]]
 	std::span<const std::byte> Need(size_t min_size) noexcept;
 
 	/**
@@ -90,6 +91,7 @@ public:
 	 * @param nbytes the number of bytes to skip
 	 * @return true on success, false on error
 	 */
+	[[nodiscard]]
 	bool Skip(size_t nbytes) noexcept;
 };
 
