@@ -54,6 +54,7 @@ AdtsGetSampleRate(const uint8_t *frame) noexcept
 {
 	assert(AdtsCheckFrame(frame));
 
+	/* extract 4-bit sampling frequency index from byte 2 (bits 5-2) */
 	return adts_sample_rates[(frame[2] & 0x3c) >> 2];
 }
 
