@@ -57,28 +57,28 @@ static size_t
 AdtsFindFrame(DecoderBuffer &buffer) noexcept
 {
 	while (true) {
-		auto data = FromBytesStrict<const uint8_t>(buffer.Need(8));
-		if (data.data() == nullptr)
+		auto r = FromBytesStrict<const uint8_t>(buffer.Need(8));
+		if (r.data() == nullptr)
 			/* failed */
 			return 0;
 
 		/* find the 0xff marker */
-		auto p = (const uint8_t *)std::memchr(data.data(), 0xff,
-						      data.size());
+		auto p = (const uint8_t *)std::memchr(r.data(), 0xff,
+						      r.size());
 		if (p == nullptr) {
 			/* no marker - discard the buffer */
 			buffer.Clear();
 			continue;
 		}
 
-		if (p > data.data()) {
+		if (p > r.data()) {
 			/* discard data before 0xff */
-			buffer.Consume(p - data.data());
+			buffer.Consume(p - r.data());
 			continue;
 		}
 
 		/* is it a frame? */
-		const size_t frame_length = AdtsCheckFrame(data.data());
+		const size_t frame_length = AdtsCheckFrame(r.data());
 		if (frame_length == 0) {
 			/* it's just some random 0xff byte; discard it
 			   and continue searching */
