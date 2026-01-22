@@ -48,7 +48,7 @@ public:
 	 * data available (yet), end of file, I/O error or a decoder
 	 * command was received
 	 */
-	bool Fill();
+	bool Fill() noexcept;
 
 	/**
 	 * How many bytes are stored in the buffer?
@@ -71,7 +71,7 @@ public:
 	 * Wait until this number of bytes are available.  Returns nullptr on
 	 * error.
 	 */
-	std::span<const std::byte> Need(size_t min_size);
+	std::span<const std::byte> Need(size_t min_size) noexcept;
 
 	/**
 	 * Consume (delete, invalidate) a part of the buffer.  The
@@ -90,7 +90,7 @@ public:
 	 * @param nbytes the number of bytes to skip
 	 * @return true on success, false on error
 	 */
-	bool Skip(size_t nbytes);
+	bool Skip(size_t nbytes) noexcept;
 };
 
 #endif
