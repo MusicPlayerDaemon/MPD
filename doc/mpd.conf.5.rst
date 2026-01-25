@@ -152,8 +152,9 @@ File Settings
 .. confval:: playlist_directory
    :type: PATH
 
-   This specifies the directory where saved playlists are stored. If
-   you do not configure this, you cannot save playlists.
+   This specifies the directory where saved playlists are stored
+   (flat, no subdirectories).  If you do not configure this, you
+   cannot save playlists.
 
 .. confval:: state_file
    :type: PATH
