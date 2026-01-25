@@ -155,6 +155,8 @@ File Settings
    This specifies the directory where saved playlists are stored. If
    you do not configure this, you cannot save playlists.
 
+   In contrast to ``music_directory`` subfolders in this path won't be traversed my MPD. So you're bound to a flat file structure.
+
 .. confval:: state_file
    :type: PATH
 
