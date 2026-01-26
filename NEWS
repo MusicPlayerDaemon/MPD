@@ -14,10 +14,12 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.8 (not yet released)
+ver 0.24.8 (2026/01/26)
 * input
   - cdio_paranoia: fix parsing of absolute device paths (0.24 regression)
-* Linux: fix build with liburing < 2.4
+* Linux:
+  - fix build with glibc 2.43
+  - fix build with liburing < 2.4
 
 ver 0.24.7 (2026/01/16)
 * decoder
