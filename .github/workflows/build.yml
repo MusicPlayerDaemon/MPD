@@ -53,9 +53,9 @@ jobs:
             meson_options:
           - key: clang
             os: ubuntu-24.04
-            cc: clang
-            cxx: clang++
-            packages: clang
+            cc: clang-19
+            cxx: clang++-19
+            packages: clang-19
             meson_options: --force-fallback-for=fmt,gtest
 
     runs-on: ${{ matrix.os }}
