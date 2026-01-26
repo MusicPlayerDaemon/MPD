@@ -1,3 +1,5 @@
+ver 0.24.9 (not yet released)
+
 ver 0.24.8 (2026/01/26)
 * input
   - cdio_paranoia: fix parsing of absolute device paths (0.24 regression)
