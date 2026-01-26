@@ -9,6 +9,7 @@
 #include <jni.h>
 
 #include <cassert>
+#include <cstddef> // for std::nullptr_t
 #include <utility>
 
 namespace Java {
