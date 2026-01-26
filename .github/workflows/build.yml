@@ -43,21 +43,21 @@ jobs:
   build-linux:
     strategy:
       matrix:
-        compiler: [gcc14, gcc12, clang]
+        key: [gcc14, gcc12, clang]
         include:
-          - compiler: gcc14
+          - key: gcc14
             os: ubuntu-24.04
             cc: gcc-14
             cxx: g++-14
             packages: g++-14
             meson_options:
-          - compiler: gcc12
+          - key: gcc12
             os: ubuntu-24.04
             cc: gcc-12
             cxx: g++-12
             packages: g++-12
             meson_options:
-          - compiler: clang
+          - key: clang
             os: ubuntu-24.04
             cc: clang
             cxx: clang++
@@ -115,7 +115,7 @@ jobs:
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-${{ matrix.compiler }}
+          key: ${{ matrix.os }}-${{ matrix.key }}
 
       - name: Configure
         run: |
@@ -165,9 +165,9 @@ jobs:
   build-macos:
     strategy:
       matrix:
-        compiler: [clang]
+        key: [clang]
         include:
-          - compiler: clang
+          - key: clang
             os: macos-latest
             cc: clang
             cxx: clang++
@@ -216,7 +216,7 @@ jobs:
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-${{ matrix.compiler }}
+          key: ${{ matrix.os }}-${{ matrix.key }}
 
       - name: Configure
         run: |
