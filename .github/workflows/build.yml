@@ -43,19 +43,13 @@ jobs:
   build-linux:
     strategy:
       matrix:
-        key: [gcc14, gcc12, clang]
+        key: [gcc14, clang]
         include:
           - key: gcc14
             os: ubuntu-24.04
             cc: gcc-14
             cxx: g++-14
             packages: g++-14
-            meson_options:
-          - key: gcc12
-            os: ubuntu-24.04
-            cc: gcc-12
-            cxx: g++-12
-            packages: g++-12
             meson_options:
           - key: clang
             os: ubuntu-24.04
