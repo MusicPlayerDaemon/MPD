@@ -6,6 +6,7 @@
 #include "NotSongFilter.hxx"
 #include "UriSongFilter.hxx"
 #include "BaseSongFilter.hxx"
+#include "DirectorySongFilter.hxx"
 #include "TagSongFilter.hxx"
 #include "ModifiedSinceSongFilter.hxx"
 #include "AddedSinceSongFilter.hxx"
@@ -43,6 +44,7 @@ enum {
 	LOCATE_TAG_FILE_TYPE,
 	LOCATE_TAG_ANY_TYPE,
 	LOCATE_TAG_ADDED_SINCE,
+	LOCATE_TAG_DIRECTORY_TYPE,
 };
 
 /**
@@ -61,6 +63,9 @@ locate_parse_type(const char *str) noexcept
 
 	if (strcmp(str, "base") == 0)
 		return LOCATE_TAG_BASE_TYPE;
+
+	if (strcmp(str, "directory") == 0)
+		return LOCATE_TAG_DIRECTORY_TYPE;
 
 	if (strcmp(str, "modified-since") == 0)
 		return LOCATE_TAG_MODIFIED_SINCE;
@@ -386,6 +391,12 @@ SongFilter::ParseExpression(const char *&s, bool fold_case, bool strip_diacritic
 		s = StripLeft(s + 1);
 
 		return std::make_unique<BaseSongFilter>(std::move(value));
+	} else if (type == LOCATE_TAG_DIRECTORY_TYPE) {
+		auto value = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+		s = StripLeft(s + 1);
+		return std::make_unique<DirectorySongFilter>(std::move(value));
 	} else if (type == LOCATE_TAG_AUDIO_FORMAT) {
 		bool mask;
 		if (s[0] == '=' && s[1] == '=')
@@ -457,6 +468,12 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case, boo
 			throw std::runtime_error("Bad URI");
 
 		and_filter.AddItem(std::make_unique<BaseSongFilter>(value));
+		break;
+
+	case LOCATE_TAG_DIRECTORY_TYPE:
+		if (!uri_safe_local(value))
+			throw std::runtime_error("Bad URI");
+		and_filter.AddItem(std::make_unique<DirectorySongFilter>(value));
 		break;
 
 	case LOCATE_TAG_MODIFIED_SINCE:

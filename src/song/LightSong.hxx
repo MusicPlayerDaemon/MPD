@@ -107,6 +107,13 @@ struct LightSong {
 	}
 
 	[[gnu::pure]]
+	std::string GetDirectory() const noexcept {
+		if (directory == nullptr)
+      return std::string("");
+    return std::string(directory);
+	}
+
+	[[gnu::pure]]
 	SignedSongTime GetDuration() const noexcept;
 };
 
