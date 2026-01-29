@@ -15,5 +15,5 @@ DirectorySongFilter::ToExpression() const noexcept
 bool
 DirectorySongFilter::Match(const LightSong &song) const noexcept
 {
-	return StringIsEqual(value.c_str(), song.GetDirectory().c_str());
+  return StringIsEqual(value.c_str(), song.directory == nullptr ? "" : song.directory);
 }
