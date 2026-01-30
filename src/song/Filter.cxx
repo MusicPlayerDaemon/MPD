@@ -556,16 +556,6 @@ SongFilter::HasFoldCase() const noexcept
 		});
 }
 
-bool
-SongFilter::HasOtherThanBase() const noexcept
-{
-	return std::any_of(and_filter.GetItems().begin(), and_filter.GetItems().end(),
-			   [=](const auto &item) {
-				   return !dynamic_cast<const BaseSongFilter *>(
-					   item.get());
-			   });
-}
-
 const char *
 SongFilter::GetBase() const noexcept
 {

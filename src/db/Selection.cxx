@@ -24,12 +24,6 @@ DatabaseSelection::IsFiltered() const noexcept
 }
 
 bool
-DatabaseSelection::HasOtherThanBase() const noexcept
-{
-	return filter != nullptr && filter->HasOtherThanBase();
-}
-
-bool
 DatabaseSelection::Match(const LightSong &song) const noexcept
 {
 	return filter == nullptr || filter->Match(song);

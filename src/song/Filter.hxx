@@ -80,12 +80,6 @@ public:
 	bool HasFoldCase() const noexcept;
 
 	/**
-	 * Does this filter contain constraints other than "base"?
-	 */
-	[[gnu::pure]]
-	bool HasOtherThanBase() const noexcept;
-
-	/**
 	 * Returns the "base" specification (if there is one) or
 	 * nullptr.
 	 */

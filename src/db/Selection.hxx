@@ -46,12 +46,6 @@ struct DatabaseSelection {
 	[[gnu::pure]]
 	bool IsFiltered() const noexcept;
 
-	/**
-	 * Does this selection contain constraints other than "base"?
-	 */
-	[[gnu::pure]]
-	bool HasOtherThanBase() const noexcept;
-
 	[[gnu::pure]]
 	bool Match(const LightSong &song) const noexcept;
 };
