@@ -22,6 +22,7 @@
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 
+#include <algorithm> // for std::any_of()
 #include <cassert>
 
 #include <stdlib.h>
