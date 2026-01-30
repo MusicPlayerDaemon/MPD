@@ -3,6 +3,7 @@
 
 #include "Selection.hxx"
 #include "song/Filter.hxx"
+#include "song/BaseSongFilter.hxx"
 
 DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 				     const SongFilter *_filter) noexcept
@@ -10,10 +11,11 @@ DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 {
 	/* optimization: if the caller didn't specify a base URI, pick
 	   the one from SongFilter */
-	if (uri.empty() && filter != nullptr) {
-		auto base = filter->GetBase();
-		if (base != nullptr)
-			uri = base;
+	if (filter != nullptr) {
+		Base base = filter->GetBase();
+		if (uri.empty() && base.uri != nullptr)
+			uri = base.uri;
+		recursive = base.recursive;
 	}
 }
 

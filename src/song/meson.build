@@ -5,7 +5,6 @@ song = static_library(
   'StringFilter.cxx',
   'UriSongFilter.cxx',
   'BaseSongFilter.cxx',
-  'DirectorySongFilter.cxx',
   'TagSongFilter.cxx',
   'ModifiedSinceSongFilter.cxx',
   'AddedSinceSongFilter.cxx',
