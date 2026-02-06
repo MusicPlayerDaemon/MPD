@@ -564,7 +564,7 @@ Decodes MP3 files using `libmpg123 <http://www.mpg123.de/>`_.
 
    * - Setting
      - Description
-   * - **full_scheme yes|no**
+   * - **full_scan yes|no**
      - Use ``mpg123_scan()`` on database update?  This is expensive
        because it reads and parses the whole file (therefore disabled
        by default), but is the only way to get a reliable song

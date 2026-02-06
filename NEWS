@@ -14,6 +14,8 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.9 (not yet released)
+
 ver 0.24.8 (2026/01/26)
 * input
   - cdio_paranoia: fix parsing of absolute device paths (0.24 regression)
