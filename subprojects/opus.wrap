@@ -1,10 +1,10 @@
 [wrap-file]
-directory = opus-1.6
-source_url = https://downloads.xiph.org/releases/opus/opus-1.6.tar.gz
-source_filename = opus-1.6.tar.gz
-source_hash = b7637334527201fdfd6dd6a02e67aceffb0e5e60155bbd89175647a80301c92c
-source_fallback_url = https://wrapdb.mesonbuild.com/v2/opus_1.6-1/get_source/opus-1.6.tar.gz
-wrapdb_version = 1.6-1
+directory = opus-1.6.1
+source_url = https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.gz
+source_filename = opus-1.6.1.tar.gz
+source_hash = 6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1
+source_fallback_url = https://wrapdb.mesonbuild.com/v2/opus_1.6.1-1/get_source/opus-1.6.1.tar.gz
+wrapdb_version = 1.6.1-1
 
 [provide]
 opus = opus_dep
