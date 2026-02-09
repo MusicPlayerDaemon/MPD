@@ -67,7 +67,7 @@ public:
 		return buffer;
 	}
 
-	constexpr operator std::span<const T>() noexcept {
+	constexpr operator std::span<const T>() const noexcept {
 		return buffer;
 	}
 
