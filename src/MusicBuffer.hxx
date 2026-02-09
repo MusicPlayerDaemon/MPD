@@ -53,6 +53,16 @@ public:
 	}
 
 	/**
+	 * Give all memory allocations back to the kernel.
+	 *
+	 * This call is not protected with the #mutex, and may only be
+	 * used while this object is inaccessible to other threads.
+	 */
+	void DiscardMemory() noexcept {
+		buffer.DiscardMemory();
+	}
+
+	/**
 	 * Allocates a chunk from the buffer.  When it is not used anymore,
 	 * call Return().
 	 *

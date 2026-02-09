@@ -1306,6 +1306,7 @@ try {
 			CommandFinished();
 
 			assert(buffer.IsEmptyUnsafe());
+			buffer.DiscardMemory();
 
 			break;
 

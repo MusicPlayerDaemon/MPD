@@ -120,11 +120,5 @@ public:
 		slice->next = available;
 		available = slice;
 		--n_allocated;
-
-		/* give memory back to the kernel when the last slice
-		   was freed */
-		if (n_allocated == 0) {
-			DiscardMemory();
-		}
 	}
 };
