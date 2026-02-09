@@ -9,26 +9,13 @@
 
 #ifdef __linux__
 #include <sys/mman.h>
-#include <unistd.h>
 #else
 #include <stdlib.h>
 #endif
 
 #ifdef __linux__
 
-/**
- * Round up the parameter, make it page-aligned.
- */
-[[gnu::const]]
-static size_t
-AlignToPageSize(size_t size) noexcept
-{
-	static const long page_size = sysconf(_SC_PAGESIZE);
-	if (page_size <= 0)
-		return size;
-
-	return RoundUpToPowerOfTwo(size, static_cast<std::size_t>(page_size));
-}
+#include "system/PageSize.hxx"
 
 std::span<std::byte>
 HugeAllocate(size_t size)
