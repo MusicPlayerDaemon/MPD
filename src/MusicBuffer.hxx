@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_MUSIC_BUFFER_HXX
-#define MPD_MUSIC_BUFFER_HXX
+#pragma once
 
 #include "MusicChunk.hxx"
 #include "MusicChunkPtr.hxx"
@@ -29,9 +28,10 @@ public:
 
 #ifndef NDEBUG
 	/**
-	 * Check whether the buffer is empty.  This call is not
-	 * protected with the mutex, and may only be used while this
-	 * object is inaccessible to other threads.
+	 * Check whether the buffer is empty.
+	 *
+	 * This call is not protected with the #mutex, and may only be
+	 * used while this object is inaccessible to other threads.
 	 */
 	bool IsEmptyUnsafe() const {
 		return buffer.empty();
@@ -45,8 +45,7 @@ public:
 
 	/**
 	 * Returns the total number of reserved chunks in this buffer.  This
-	 * is the same value which was passed to the constructor
-	 * music_buffer_new().
+	 * is the same value which was passed to the constructor.
 	 */
 	[[gnu::pure]]
 	unsigned GetSize() const noexcept {
@@ -68,5 +67,3 @@ public:
 	 */
 	void Return(MusicChunk *chunk) noexcept;
 };
-
-#endif
