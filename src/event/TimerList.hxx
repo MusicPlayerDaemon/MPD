@@ -21,7 +21,7 @@ class TimerList final {
 			 IntrusiveTreeSetOperators<FineTimerEvent, GetDue>> timers;
 
 public:
-	TimerList();
+	TimerList() noexcept;
 	~TimerList() noexcept;
 
 	TimerList(const TimerList &other) = delete;

@@ -11,7 +11,7 @@ TimerList::GetDue::operator()(const FineTimerEvent &timer) const noexcept
 	return timer.GetDue();
 }
 
-TimerList::TimerList() = default;
+TimerList::TimerList() noexcept = default;
 
 TimerList::~TimerList() noexcept
 {
