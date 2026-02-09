@@ -2,46 +2,33 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "HugeAllocator.hxx"
-#include "system/VmaName.hxx"
-#include "util/RoundPowerOfTwo.hxx"
-
-#include <new>
-
-#ifdef __linux__
-#include <sys/mman.h>
-#else
-#include <stdlib.h>
-#endif
 
 #ifdef __linux__
 
+#include "system/PageAllocator.hxx"
 #include "system/PageSize.hxx"
+#include "system/VmaName.hxx"
+
+static std::span<std::byte>
+AlignToPageSize(std::span<std::byte> p) noexcept
+{
+	return {p.data(), AlignToPageSize(p.size())};
+}
 
 std::span<std::byte>
 HugeAllocate(size_t size)
 {
 	size = AlignToPageSize(size);
 
-	constexpr int flags = MAP_ANONYMOUS|MAP_PRIVATE|MAP_NORESERVE;
-	void *p = mmap(nullptr, size,
-		       PROT_READ|PROT_WRITE, flags,
-		       -1, 0);
-	if (p == (void *)-1)
-		throw std::bad_alloc();
-
-#ifdef MADV_HUGEPAGE
-	/* allow the Linux kernel to use "Huge Pages", which reduces page
-	   table overhead for this big chunk of data */
-	madvise(p, size, MADV_HUGEPAGE);
-#endif
-
-	return {(std::byte *)p, size};
+	const std::span<std::byte> p{AllocatePages(size), size};
+	EnableHugePages(p);
+	return p;
 }
 
 void
 HugeFree(std::span<std::byte> p) noexcept
 {
-	munmap(p.data(), AlignToPageSize(p.size()));
+	FreePages(AlignToPageSize(p));
 }
 
 void
@@ -53,18 +40,13 @@ HugeSetName(std::span<std::byte> p, const char *name) noexcept
 void
 HugeForkCow(std::span<std::byte> p, bool enable) noexcept
 {
-#ifdef MADV_DONTFORK
-	madvise(p.data(), AlignToPageSize(p.size()),
-		enable ? MADV_DOFORK : MADV_DONTFORK);
-#endif
+	EnablePageFork(AlignToPageSize(p), enable);
 }
 
 void
 HugeDiscard(std::span<std::byte> p) noexcept
 {
-#ifdef MADV_DONTNEED
-	madvise(p.data(), AlignToPageSize(p.size()), MADV_DONTNEED);
-#endif
+	DiscardPages(AlignToPageSize(p));
 }
 
 #elif defined(_WIN32)

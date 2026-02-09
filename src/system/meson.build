@@ -8,6 +8,7 @@ if host_machine.system() == 'linux'
     'EventFD.cxx',
     'SignalFD.cxx',
     'EpollFD.cxx',
+    'PageAllocator.cxx',
   ]
 endif
 
