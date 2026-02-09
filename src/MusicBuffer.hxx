@@ -6,7 +6,7 @@
 
 #include "MusicChunk.hxx"
 #include "MusicChunkPtr.hxx"
-#include "util/SliceBuffer.hxx"
+#include "memory/SliceBuffer.hxx"
 #include "thread/Mutex.hxx"
 
 /**

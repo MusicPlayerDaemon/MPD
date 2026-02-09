@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "SpanCast.hxx"
+#include "util/SpanCast.hxx"
 
 #include <cstddef>
 #include <span>

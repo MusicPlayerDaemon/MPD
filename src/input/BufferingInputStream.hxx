@@ -8,7 +8,7 @@
 #include "thread/Thread.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "util/SparseBuffer.hxx"
+#include "memory/SparseBuffer.hxx"
 
 #include <cstddef>
 #include <exception>

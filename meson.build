@@ -479,6 +479,7 @@ subdir('src/system')
 subdir('src/system/linux')
 subdir('src/thread')
 subdir('src/net')
+subdir('src/memory')
 subdir('src/event')
 subdir('src/win32')
 
@@ -642,6 +643,7 @@ mpd = build_target(
     zeroconf_dep,
     more_deps,
     chromaprint_dep,
+    memory_dep,
     fmt_dep,
   ],
   link_args: link_args,

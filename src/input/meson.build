@@ -33,6 +33,7 @@ input_basic = static_library(
     input_api_dep,
     thread_dep,
     event_dep,
+    memory_dep,
   ],
 )
 
@@ -42,6 +43,7 @@ input_basic_dep = declare_dependency(
     input_api_dep,
     thread_dep,
     event_dep,
+    memory_dep,
   ],
 )
 

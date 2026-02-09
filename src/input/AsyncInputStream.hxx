@@ -6,7 +6,7 @@
 #include "InputStream.hxx"
 #include "thread/Cond.hxx"
 #include "event/InjectEvent.hxx"
-#include "util/HugeAllocator.hxx"
+#include "memory/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
 
 #include <cstddef>
