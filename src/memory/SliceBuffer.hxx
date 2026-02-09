@@ -72,6 +72,10 @@ public:
 		buffer.SetName(name);
 	}
 
+	void PopulateMemory() noexcept {
+		buffer.Populate();
+	}
+
 	void DiscardMemory() noexcept {
 		assert(empty());
 
