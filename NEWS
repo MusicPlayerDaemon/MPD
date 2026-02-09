@@ -1,4 +1,6 @@
 ver 0.24.9 (not yet released)
+* database
+  - upnp: refuse to build with libupnp >= 1.14.26 due to API breakage
 
 ver 0.24.8 (2026/01/26)
 * input
