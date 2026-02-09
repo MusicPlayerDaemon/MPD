@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "HugeAllocator.hxx"
+#include "HugeArray.hxx"
 
 #include <cassert>
 #include <map>

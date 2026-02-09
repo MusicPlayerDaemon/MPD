@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_SLICE_BUFFER_HXX
-#define MPD_SLICE_BUFFER_HXX
+#pragma once
 
-#include "HugeAllocator.hxx"
+#include "HugeArray.hxx"
 
 #include <cassert>
 #include <cstddef>
@@ -129,5 +128,3 @@ public:
 		}
 	}
 };
-
-#endif

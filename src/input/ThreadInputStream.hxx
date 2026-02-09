@@ -6,7 +6,7 @@
 #include "InputStream.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Cond.hxx"
-#include "memory/HugeAllocator.hxx"
+#include "memory/HugeArray.hxx"
 #include "util/CircularBuffer.hxx"
 
 #include <cassert>
