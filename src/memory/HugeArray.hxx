@@ -6,6 +6,10 @@
 #include "HugeAllocator.hxx"
 #include "util/SpanCast.hxx"
 
+#ifdef __linux__
+#include "system/PageAllocator.hxx"
+#endif
+
 #include <utility>
 
 /**
@@ -49,6 +53,10 @@ public:
 
 	void ForkCow(bool enable) noexcept {
 		HugeForkCow(std::as_writable_bytes(buffer), enable);
+	}
+
+	void Populate() noexcept {
+		HugePopulate(std::as_writable_bytes(buffer));
 	}
 
 	void Discard() noexcept {
