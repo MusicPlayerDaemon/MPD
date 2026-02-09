@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Chrono.hxx"
-#include "event/Features.h"
 #include "util/IntrusiveTreeSet.hxx"
 
 class FineTimerEvent;

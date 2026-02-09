@@ -2,7 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "SignalMonitor.hxx"
-#include "event/Features.h"
+#include "event/config.h"
 
 #ifndef _WIN32
 

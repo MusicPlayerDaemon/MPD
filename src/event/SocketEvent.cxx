@@ -3,7 +3,6 @@
 
 #include "SocketEvent.hxx"
 #include "Loop.hxx"
-#include "event/Features.h"
 
 #include <cassert>
 #include <utility>

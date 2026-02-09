@@ -7,9 +7,9 @@
 #include "Chrono.hxx"
 #include "TimerWheel.hxx"
 #include "Backend.hxx"
-#include "event/Features.h"
 #include "time/ClockCache.hxx"
 #include "util/IntrusiveList.hxx"
+#include "event/config.h"
 
 #ifndef NO_FINE_TIMER_EVENT
 #include "TimerList.hxx"

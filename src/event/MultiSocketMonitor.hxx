@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_MULTI_SOCKET_MONITOR_HXX
-#define MPD_MULTI_SOCKET_MONITOR_HXX
+#pragma once
 
 #include "IdleEvent.hxx"
 #include "FineTimerEvent.hxx"
 #include "SocketEvent.hxx"
-#include "event/Features.h"
+#include "event/config.h"
 
 #include <cassert>
 #include <forward_list>
@@ -244,5 +243,3 @@ private:
 
 	void OnIdle() noexcept;
 };
-
-#endif

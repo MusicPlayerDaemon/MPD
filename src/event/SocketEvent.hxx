@@ -4,7 +4,7 @@
 #pragma once
 
 #include "BackendEvents.hxx"
-#include "event/Features.h" // for USE_EPOLL
+#include "event/config.h" // for USE_EPOLL
 #include "net/SocketDescriptor.hxx"
 #include "util/BindMethod.hxx"
 #include "util/IntrusiveList.hxx"

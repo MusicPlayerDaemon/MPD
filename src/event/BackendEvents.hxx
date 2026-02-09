@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "event/Features.h"
+#include "event/config.h" // for USE_EPOLL
 
 #ifdef _WIN32
 

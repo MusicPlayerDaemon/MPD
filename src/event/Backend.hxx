@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef EVENT_BACKEND_HXX
-#define EVENT_BACKEND_HXX
+#pragma once
 
-#include "event/Features.h"
+#include "event/config.h"
 
 #ifdef _WIN32
 
@@ -20,7 +19,5 @@ using EventPollBackend = EpollBackend;
 
 #include "PollBackend.hxx"
 using EventPollBackend = PollBackend;
-
-#endif
 
 #endif

@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_WAKE_FD_HXX
-#define MPD_WAKE_FD_HXX
+#pragma once
 
 #include "net/SocketDescriptor.hxx"
-#include "event/Features.h"
+#include "event/config.h"
 
 #ifdef USE_EVENTFD
 #include "system/EventFD.hxx"
@@ -37,5 +36,3 @@ public:
 		fd.Write();
 	}
 };
-
-#endif
