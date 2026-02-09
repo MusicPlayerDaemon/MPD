@@ -44,6 +44,13 @@ void
 HugeForkCow(std::span<std::byte> p, bool enable) noexcept;
 
 /**
+ * Populate (prefault) page tables writable, faulting in all pages in
+ * the range just as if manually writing to each each page.
+ */
+void
+HugePopulate(std::span<std::byte> p) noexcept;
+
+/**
  * Discard any data stored in the allocation and give the memory back
  * to the kernel.  After returning, the allocation still exists and
  * can be reused at any time, but its contents are undefined.
@@ -73,6 +80,12 @@ HugeSetName(std::span<std::byte>, const char *) noexcept
 static inline void
 HugeForkCow(std::span<std::byte>, bool) noexcept
 {
+}
+
+static inline void
+HugePopulate(std::span<std::byte> p) noexcept
+{
+	VirtualAlloc(p.data(), p.size(), MEM_COMMIT|MEM_RESERVE, PAGE_NOACCESS);
 }
 
 static inline void
@@ -106,6 +119,11 @@ HugeSetName(std::span<std::byte>, const char *) noexcept
 
 static inline void
 HugeForkCow(std::span<std::byte>, bool) noexcept
+{
+}
+
+static inline void
+HugePopulate(std::span<std::byte>) noexcept
 {
 }
 

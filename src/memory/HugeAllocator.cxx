@@ -44,6 +44,13 @@ HugeForkCow(std::span<std::byte> p, bool enable) noexcept
 }
 
 void
+HugePopulate(std::span<std::byte> p) noexcept
+{
+	PagesPopulateWrite(p);
+	CollapseHugePages(p);
+}
+
+void
 HugeDiscard(std::span<std::byte> p) noexcept
 {
 	DiscardPages(AlignToPageSize(p));
