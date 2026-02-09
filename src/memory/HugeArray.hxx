@@ -33,8 +33,7 @@ public:
 
 	~HugeArray() noexcept {
 		if (!buffer.empty()) {
-			auto v = std::as_writable_bytes(buffer);
-			HugeFree(v.data(), v.size());
+			HugeFree(std::as_writable_bytes(buffer));
 		}
 	}
 
@@ -45,18 +44,15 @@ public:
 	}
 
 	void SetName(const char *name) noexcept {
-		const auto v = std::as_writable_bytes(buffer);
-		HugeSetName(v.data(), v.size(), name);
+		HugeSetName(std::as_writable_bytes(buffer), name);
 	}
 
 	void ForkCow(bool enable) noexcept {
-		const auto v = std::as_writable_bytes(buffer);
-		HugeForkCow(v.data(), v.size(), enable);
+		HugeForkCow(std::as_writable_bytes(buffer), enable);
 	}
 
 	void Discard() noexcept {
-		const auto v = std::as_writable_bytes(buffer);
-		HugeDiscard(v.data(), v.size());
+		HugeDiscard(std::as_writable_bytes(buffer));
 	}
 
 	constexpr bool operator==(std::nullptr_t) const noexcept {

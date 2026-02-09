@@ -24,10 +24,9 @@ HugeAllocate(size_t size);
 
 /**
  * @param p an allocation returned by HugeAllocate()
- * @param size the allocation's size as passed to HugeAllocate()
  */
 void
-HugeFree(void *p, size_t size) noexcept;
+HugeFree(std::span<std::byte> p) noexcept;
 
 /**
  * Set a name for the specified virtual memory area.
@@ -35,14 +34,14 @@ HugeFree(void *p, size_t size) noexcept;
  * This feature requires Linux 5.17.
  */
 void
-HugeSetName(void *p, size_t size, const char *name) noexcept;
+HugeSetName(std::span<std::byte> p, const char *name) noexcept;
 
 /**
  * Control whether this allocation is copied to newly forked child
  * processes.  Disabling that makes forking a little bit cheaper.
  */
 void
-HugeForkCow(void *p, size_t size, bool enable) noexcept;
+HugeForkCow(std::span<std::byte> p, bool enable) noexcept;
 
 /**
  * Discard any data stored in the allocation and give the memory back
@@ -50,10 +49,9 @@ HugeForkCow(void *p, size_t size, bool enable) noexcept;
  * can be reused at any time, but its contents are undefined.
  *
  * @param p an allocation returned by HugeAllocate()
- * @param size the allocation's size as passed to HugeAllocate()
  */
 void
-HugeDiscard(void *p, size_t size) noexcept;
+HugeDiscard(std::span<std::byte> p) noexcept;
 
 #elif defined(_WIN32)
 #include <memoryapi.h>
@@ -62,25 +60,25 @@ std::span<std::byte>
 HugeAllocate(size_t size);
 
 static inline void
-HugeFree(void *p, size_t) noexcept
+HugeFree(std::span<std::byte> p) noexcept
 {
-	VirtualFree(p, 0, MEM_RELEASE);
+	VirtualFree(p.data(), 0, MEM_RELEASE);
 }
 
 static inline void
-HugeSetName(void *, size_t, const char *) noexcept
-{
-}
-
-static inline void
-HugeForkCow(void *, size_t, bool) noexcept
+HugeSetName(std::span<std::byte>, const char *) noexcept
 {
 }
 
 static inline void
-HugeDiscard(void *p, size_t size) noexcept
+HugeForkCow(std::span<std::byte>, bool) noexcept
 {
-	VirtualAlloc(p, size, MEM_RESET, PAGE_NOACCESS);
+}
+
+static inline void
+HugeDiscard(std::span<std::byte> p) noexcept
+{
+	VirtualAlloc(p.data(), p.size(), MEM_RESET, PAGE_NOACCESS);
 }
 
 #else
@@ -96,24 +94,23 @@ HugeAllocate(size_t size)
 }
 
 static inline void
-HugeFree(void *_p, size_t) noexcept
+HugeFree(std::span<std::byte> p) noexcept
 {
-	auto *p = (std::byte *)_p;
-	delete[] p;
+	delete[] p.data();
 }
 
 static inline void
-HugeSetName(void *, size_t, const char *) noexcept
-{
-}
-
-static inline void
-HugeForkCow(void *, size_t, bool) noexcept
+HugeSetName(std::span<std::byte>, const char *) noexcept
 {
 }
 
 static inline void
-HugeDiscard(void *, size_t) noexcept
+HugeForkCow(std::span<std::byte>, bool) noexcept
+{
+}
+
+static inline void
+HugeDiscard(std::span<std::byte>) noexcept
 {
 }
 

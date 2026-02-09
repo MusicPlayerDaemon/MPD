@@ -52,31 +52,31 @@ HugeAllocate(size_t size)
 }
 
 void
-HugeFree(void *p, size_t size) noexcept
+HugeFree(std::span<std::byte> p) noexcept
 {
-	munmap(p, AlignToPageSize(size));
+	munmap(p.data(), AlignToPageSize(p.size()));
 }
 
 void
-HugeSetName(void *p, size_t size, const char *name) noexcept
+HugeSetName(std::span<std::byte> p, const char *name) noexcept
 {
-	SetVmaName(p, size, name);
+	SetVmaName(p.data(), p.size(), name);
 }
 
 void
-HugeForkCow(void *p, size_t size, bool enable) noexcept
+HugeForkCow(std::span<std::byte> p, bool enable) noexcept
 {
 #ifdef MADV_DONTFORK
-	madvise(p, AlignToPageSize(size),
+	madvise(p.data(), AlignToPageSize(p.size()),
 		enable ? MADV_DOFORK : MADV_DONTFORK);
 #endif
 }
 
 void
-HugeDiscard(void *p, size_t size) noexcept
+HugeDiscard(std::span<std::byte> p) noexcept
 {
 #ifdef MADV_DONTNEED
-	madvise(p, AlignToPageSize(size), MADV_DONTNEED);
+	madvise(p.data(), AlignToPageSize(p.size()), MADV_DONTNEED);
 #endif
 }
 
