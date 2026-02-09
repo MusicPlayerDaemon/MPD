@@ -1271,6 +1271,12 @@ try {
 
 			{
 				const ScopeUnlock unlock(mutex);
+
+				/* allocate physical RAM for the whole
+				   buffer to reduce page faults
+				   later */
+				buffer.PopulateMemory();
+
 				do_play(*this, dc, buffer);
 
 				/* give the main thread a chance to

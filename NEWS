@@ -11,6 +11,7 @@ ver 0.25 (not yet released)
   - pipewire: add option "reconnect_stream"
 * player
   - support replay gain parameter in stream URI
+  - preallocate physical RAM for audio buffer when playback starts
 * switch to C++23
 * require Meson 1.2
 

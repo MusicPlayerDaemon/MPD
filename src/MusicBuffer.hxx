@@ -52,6 +52,10 @@ public:
 		return buffer.GetCapacity();
 	}
 
+	void PopulateMemory() noexcept {
+		buffer.PopulateMemory();
+	}
+
 	/**
 	 * Give all memory allocations back to the kernel.
 	 *
