@@ -24,7 +24,7 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/glue/StandardDirectory.hxx"
-#include "event/Features.h"
+#include "event/config.h" // for USE_EPOLL
 #include "net/Features.hxx" // for HAVE_TCP, HAVE_IPV6, HAVE_UN
 #include "io/uring/Features.h"
 #include "cmdline/OptionDef.hxx"
