@@ -8,17 +8,23 @@
 
 class BaseSongFilter final : public ISongFilter {
 	std::string value;
+  bool recursive;
 
 public:
+
 	BaseSongFilter(const BaseSongFilter &) = default;
 
 	template<typename V>
-	explicit BaseSongFilter(V &&_value)
-		:value(std::forward<V>(_value)) {}
+	explicit BaseSongFilter(V &&_value, bool _recursive)
+		:value(std::forward<V>(_value)), recursive(_recursive) {}
 
 	const char *GetValue() const noexcept {
 		return value.c_str();
 	}
+
+  bool IsRecursive() const noexcept {
+    return recursive;
+  }
 
 	ISongFilterPtr Clone() const noexcept override {
 		return std::make_unique<BaseSongFilter>(*this);
