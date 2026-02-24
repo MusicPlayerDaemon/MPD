@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <cstddef> // for std::byte
+#include <span>
+
 #ifdef __linux__
 # include <sys/prctl.h>
 
@@ -22,14 +25,14 @@
  * This feature requires Linux 5.17.
  */
 inline void
-SetVmaName(const void *start, size_t len, const char *name)
+SetVmaName(std::span<const std::byte> vma, const char *name)
 {
 #ifdef __linux__
-	prctl(PR_SET_VMA, PR_SET_VMA_ANON_NAME, (unsigned long)start, len,
+	prctl(PR_SET_VMA, PR_SET_VMA_ANON_NAME,
+	      (unsigned long)vma.data(), vma.size(),
 	      (unsigned long)name);
 #else
-	(void)start;
-	(void)len;
+	(void)vma;
 	(void)name;
 #endif
 }

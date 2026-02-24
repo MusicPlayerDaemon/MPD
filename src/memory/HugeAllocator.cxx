@@ -34,7 +34,7 @@ HugeFree(std::span<std::byte> p) noexcept
 void
 HugeSetName(std::span<std::byte> p, const char *name) noexcept
 {
-	SetVmaName(p.data(), p.size(), name);
+	SetVmaName(p, name);
 }
 
 void
