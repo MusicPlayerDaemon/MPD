@@ -201,7 +201,7 @@ public:
 
 	template<typename T>
 	bool GetInfo(CURLINFO info, T value_r) const noexcept {
-		return ::curl_easy_getinfo(handle, info, value_r) == CURLE_OK;
+		return curl_easy_getinfo(handle, info, value_r) == CURLE_OK;
 	}
 
 	/**
@@ -222,7 +222,7 @@ public:
 	}
 
 	bool Unpause() noexcept {
-		return ::curl_easy_pause(handle, CURLPAUSE_CONT) == CURLE_OK;
+		return curl_easy_pause(handle, CURLPAUSE_CONT) == CURLE_OK;
 	}
 
 	CurlString Escape(const char *string, int length=0) const noexcept {

@@ -2,7 +2,6 @@ import re
 from os.path import abspath
 
 from build.project import Project
-from build.zlib import ZlibProject
 from build.cmake import CmakeProject
 from build.autotools import AutotoolsProject
 from build.ffmpeg import FfmpegProject
@@ -18,11 +17,15 @@ libsamplerate = CmakeProject(
     ],
 )
 
-zlib = ZlibProject(
-    ('http://zlib.net/zlib-1.3.1.tar.xz',
-     'https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.xz'),
-    '38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32',
-    'lib/libz.a',
+zlib = CmakeProject(
+    ('http://zlib.net/zlib-1.3.2.tar.xz',
+     'https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz'),
+    'd7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3',
+    'include/zlib.h',
+    [
+        '-DZLIB_BUILD_TESTING=OFF',
+        '-DZLIB_BUILD_SHARED=OFF',
+    ],
 )
 
 libmodplug = AutotoolsProject(

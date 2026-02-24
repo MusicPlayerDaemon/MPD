@@ -1321,8 +1321,7 @@ ICY-MetaData
 ------------
 
 Some MP3 streams send information about the current song with a
-protocol named `"ICY-MetaData"
-<http://www.smackfu.com/stuff/programming/shoutcast.html>`_.
+protocol named "ICY-MetaData".
 :program:`MPD` makes its ``StreamTitle`` value available as ``Title``
 tag.
 
