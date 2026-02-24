@@ -1,4 +1,6 @@
 ver 0.24.9 (not yet released)
+* input
+  - curl: fix build failure after CURL 8.19 API change
 * database
   - upnp: refuse to build with libupnp >= 1.14.26 due to API breakage
 
