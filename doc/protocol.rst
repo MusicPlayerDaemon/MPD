@@ -213,6 +213,8 @@ of:
   songs in the given directory (relative to the music
   directory).
 
+- ``(directory 'VALUE')``: non-recursive version of ``(base 'VALUE')``.
+
 - ``(modified-since 'VALUE')``: compares the
   file's time stamp with the given value (ISO 8601 or UNIX
   time stamp).
