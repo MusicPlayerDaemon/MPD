@@ -305,7 +305,7 @@ AudioOutputControl::LockUpdate(const AudioFormat audio_format,
 
 	if (enabled && really_enabled) {
 		if (force || !fail_timer.IsDefined() ||
-		    fail_timer.Check(REOPEN_AFTER * 1000)) {
+		    fail_timer.Check(REOPEN_AFTER)) {
 			return Open(std::move(lock), audio_format, mp);
 		}
 	} else if (IsOpen())
