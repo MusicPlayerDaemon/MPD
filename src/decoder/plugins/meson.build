@@ -170,6 +170,12 @@ if libsidplay_dep.found()
   decoder_plugins_sources += 'SidplayDecoderPlugin.cxx'
 endif
 
+libpsgplay_dep = dependency('libpsgplay', version: '>= 0.8', required: get_option('psgplay'))
+decoder_features.set('ENABLE_PSGPLAY', libpsgplay_dep.found())
+if libpsgplay_dep.found()
+  decoder_plugins_sources += 'PsgplayDecoderPlugin.cxx'
+endif
+
 decoder_plugins = static_library(
   'decoder_plugins',
   decoder_plugins_sources,
@@ -192,6 +198,7 @@ decoder_plugins = static_library(
     libmpg123_dep,
     libopus_dep,
     libsidplay_dep,
+    libpsgplay_dep,
     libsndfile_dep,
     vorbis_dep,
     ogg_dep,

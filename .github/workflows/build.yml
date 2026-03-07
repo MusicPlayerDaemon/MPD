@@ -320,6 +320,7 @@ jobs:
             -Dnfs=disabled \
             -Dnlohmann_json=enabled \
             -Dsidplay=disabled \
+            -Dpsgplay=disabled \
             -Dudisks=disabled \
             -Dupnp=disabled \
             -Dwavpack=disabled \
