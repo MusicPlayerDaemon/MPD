@@ -32,6 +32,16 @@ Some example code:
     }
 
 
+C++ Subset
+==========
+
+The following C++ features are not allowed in MPD:
+
+* :code:`<filesystem>` (bloated)
+* :code:`<iostream>` (bloated, weird error handling)
+* :code:`<regex>` (PCRE is better)
+
+
 Error handling
 ==============
 

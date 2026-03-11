@@ -18,6 +18,7 @@
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/StringCompare.hxx"
 #include "Log.hxx"
 
 #include <sidplayfp/sidplayfp.h>
@@ -33,8 +34,6 @@
 
 #include <iterator>
 #include <memory>
-
-#include <string.h>
 
 #define SUBTUNE_PREFIX "tune_"
 
@@ -136,10 +135,9 @@ struct SidplayContainerPath {
 static unsigned
 ParseSubtuneName(const char *base) noexcept
 {
-	if (memcmp(base, SUBTUNE_PREFIX, sizeof(SUBTUNE_PREFIX) - 1) != 0)
+	base = StringAfterPrefix(base, SUBTUNE_PREFIX);
+	if (base == nullptr)
 		return 0;
-
-	base += sizeof(SUBTUNE_PREFIX) - 1;
 
 	char *endptr;
 	auto track = strtoul(base, &endptr, 10);

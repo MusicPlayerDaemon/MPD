@@ -45,6 +45,10 @@
 #include "config/PartitionConfig.hxx"
 #include "util/ScopeExit.hxx"
 
+#ifdef __linux__
+#include "io/linux/ProcStatus.hxx"
+#endif
+
 #ifdef ENABLE_DAEMON
 #include "unix/Daemon.hxx"
 #endif
@@ -693,6 +697,15 @@ mpd_main(int argc, char *argv[])
 int
 main(int argc, char *argv[]) noexcept
 try {
+#ifdef __linux__
+	if (ProcStatusThreads() > 1)
+		/* threads created by libraries before main() can
+		   cause all sorts of bugs that are difficult to
+		   analyze; bail out quickly and refuse to run if we
+		   detect such a thing */
+		throw "Background threads were detected before MPD could initialize. This is likely caused by a misbehaving library. Aborting to prevent erroneous behavior. Please report.";
+#endif
+
 	AtScopeExit() { log_deinit(); };
 
 #ifdef _WIN32

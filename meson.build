@@ -472,6 +472,7 @@ subdir('src/cmdline')
 subdir('src/time')
 subdir('src/lib/icu')
 subdir('src/io')
+subdir('src/io/linux')
 subdir('src/fs')
 subdir('src/io/fs')
 subdir('src/io/uring')
@@ -625,6 +626,7 @@ mpd = build_target(
     fs_dep,
     net_dep,
     util_dep,
+    io_linux_dep,
     event_dep,
     thread_dep,
     neighbor_glue_dep,

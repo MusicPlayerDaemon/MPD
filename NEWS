@@ -15,11 +15,14 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.9 (not yet released)
+ver 0.24.9 (2026/03/11)
 * input
   - curl: fix build failure after CURL 8.19 API change
+* output
+  - fix auto-reopen after error times out
 * database
   - upnp: refuse to build with libupnp >= 1.14.26 due to API breakage
+* abort if threads were created by a library during process startup
 
 ver 0.24.8 (2026/01/26)
 * input
