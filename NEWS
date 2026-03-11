@@ -3,6 +3,7 @@ ver 0.25 (not yet released)
   - implement "window" parameter for command "list"
   - new command "stringnormalization"
   - show detailed seek errors
+  - new filter "directory": non-recursive version of "base"
 * decoder
   - faad: implement seeking
   - faad: output 32 bit floating point samples instead of 16 bit integer
