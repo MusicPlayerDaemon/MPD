@@ -63,4 +63,10 @@ private:
 
 	/* callback for #timer_event */
 	void OnTimeout() noexcept;
+
+	/**
+	 * Handle partition lines in the state file
+	 */
+	bool PartitionSwitch(const char *line,
+			     Partition *&current_partition) noexcept;
 };
