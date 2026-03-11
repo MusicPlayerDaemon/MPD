@@ -89,6 +89,7 @@ public:
 	 * Like Schedule(), but is a no-op if there is a due time
 	 * earlier than the given one.
 	 */
+	void ScheduleEarlier(Event::TimePoint t) noexcept;
 	void ScheduleEarlier(Event::Duration d) noexcept;
 
 	void Cancel() noexcept {

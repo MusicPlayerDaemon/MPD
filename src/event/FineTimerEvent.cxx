@@ -31,17 +31,22 @@ FineTimerEvent::Schedule(Event::Duration d) noexcept
 }
 
 void
-FineTimerEvent::ScheduleEarlier(Event::Duration d) noexcept
+FineTimerEvent::ScheduleEarlier(Event::TimePoint t) noexcept
 {
-	const auto new_due = loop.SteadyNow() + d;
-
 	if (IsPending()) {
-		if (new_due >= due)
+		if (t >= due)
 			return;
 
 		Cancel();
 	}
 
-	SetDue(new_due);
+	SetDue(t);
 	ScheduleCurrent();
+
+}
+
+void
+FineTimerEvent::ScheduleEarlier(Event::Duration d) noexcept
+{
+	ScheduleEarlier(loop.SteadyNow() + d);
 }
