@@ -152,6 +152,62 @@ TEST(IntrusiveHashSet, Multi)
 	ASSERT_EQ(set.find(b), set.end());
 }
 
+TEST(IntrusiveHashSet, ForEachKey)
+{
+	IntItem a{1}, b{2}, c{3}, d{1}, e{1};
+
+	IntrusiveHashSet<IntItem, 3,
+			 IntrusiveHashSetOperators<IntItem, std::identity,
+						   IntItem::Hash,
+						   IntItem::Equal>> set;
+
+	set.insert(a);
+	set.insert(b);
+	set.insert(c);
+	set.insert(d);
+	set.insert(e);
+
+	/* key with multiple matches */
+	{
+		std::size_t count = 0;
+		set.for_each_key(1, [&count](const IntItem &item) {
+			ASSERT_EQ(item.value, 1);
+			++count;
+		});
+		ASSERT_EQ(count, 3U);
+	}
+
+	/* key with single match */
+	{
+		std::size_t count = 0;
+		set.for_each_key(2, [&count](const IntItem &item) {
+			ASSERT_EQ(item.value, 2);
+			++count;
+		});
+		ASSERT_EQ(count, 1U);
+	}
+
+	/* key with no matches */
+	{
+		std::size_t count = 0;
+		set.for_each_key(42, [&count]([[maybe_unused]] const IntItem &item) {
+			++count;
+		});
+		ASSERT_EQ(count, 0U);
+	}
+
+	/* const overload */
+	{
+		const auto &cset = set;
+		std::size_t count = 0;
+		cset.for_each_key(1, [&count](const IntItem &item) {
+			ASSERT_EQ(item.value, 1);
+			++count;
+		});
+		ASSERT_EQ(count, 3U);
+	}
+}
+
 TEST(IntrusiveHashSet, Tag)
 {
 	struct A {};

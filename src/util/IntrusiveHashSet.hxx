@@ -446,6 +446,22 @@ public:
 				f(i);
 	}
 
+	/**
+	 * Invoke the specified function for each item with the
+	 * specified key.
+	 */
+	constexpr void for_each_key(const auto &key, auto &&f) {
+		for (auto &i : GetBucket(key))
+			if (ops.equal(key, ops.get_key(i)))
+				f(i);
+	}
+
+	constexpr void for_each_key(const auto &key, auto &&f) const {
+		for (const auto &i : GetBucket(key))
+			if (ops.equal(key, ops.get_key(i)))
+				f(i);
+	}
+
 private:
 	template<typename K>
 	[[gnu::pure]]
