@@ -346,6 +346,39 @@ GetAppCacheDir() noexcept
 }
 
 AllocatedPath
+GetUserDataDir() noexcept
+{
+#ifdef USE_XDG
+	// Check for $XDG_DATA_HOME
+	if (const auto path = GetExistingEnvDirectory("XDG_DATA_HOME");
+	    path != nullptr)
+		return AllocatedPath{path};
+
+	// Check for $HOME/.local/share
+	if (const auto home = GetHomeDir(); !home.IsNull())
+		if (auto fallback = home / Path::FromFS(".local/share");
+		    IsValidDir(fallback))
+			return fallback;
+
+#endif
+	return nullptr;
+}
+
+AllocatedPath
+GetAppDataDir() noexcept
+{
+#if defined(USE_XDG)
+	if (const auto user_dir = GetUserDataDir(); !user_dir.IsNull()) {
+		auto dir = user_dir / app_filename;
+		CreateDirectoryNoThrow(dir);
+		return dir;
+	}
+
+#endif
+	return nullptr;
+}
+
+AllocatedPath
 GetUserRuntimeDir() noexcept
 {
 #ifdef USE_XDG
