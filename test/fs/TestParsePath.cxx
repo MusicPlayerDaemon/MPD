@@ -108,6 +108,26 @@ GetAppRuntimeDir() noexcept
 #endif
 }
 
+AllocatedPath
+GetUserStateDir() noexcept
+{
+#ifdef _WIN32
+	return nullptr;
+#else
+	return AllocatedPath::FromFS(PATH_LITERAL("/home/foo/.local/state"));
+#endif
+}
+
+AllocatedPath
+GetAppStateDir() noexcept
+{
+#ifdef _WIN32
+	return nullptr;
+#else
+	return GetUserStateDir() / AllocatedPath::FromFS(PATH_LITERAL("mpd"));
+#endif
+}
+
 const char *
 ConfigData::GetString([[maybe_unused]] ConfigOption option,
 		      const char *default_value) const noexcept
@@ -159,6 +179,8 @@ TEST(ParsePath, XDG)
 	EXPECT_EQ(ParsePath("$XDG_DATA_HOME"), AllocatedPath::FromFS(PATH_LITERAL("/home/foo/.local/share")));
 	EXPECT_EQ(ParsePath("$XDG_DATA_HOME/mpd"), AllocatedPath::FromFS(PATH_LITERAL("/home/foo/.local/share/mpd")));
 	EXPECT_EQ(ParsePath("$XDG_RUNTIME_DIR/mpd"), AllocatedPath::FromFS(PATH_LITERAL("/run/user/foo/mpd")));
+	EXPECT_EQ(ParsePath("$XDG_STATE_HOME"), AllocatedPath::FromFS(PATH_LITERAL("/home/foo/.local/state")));
+	EXPECT_EQ(ParsePath("$XDG_STATE_HOME/mpd"), AllocatedPath::FromFS(PATH_LITERAL("/home/foo/.local/state/mpd")));
 }
 
 #endif

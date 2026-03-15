@@ -87,6 +87,8 @@ GetVariable(std::string_view name)
 		return GetUserCacheDir();
 	else if (name == "XDG_RUNTIME_DIR"sv)
 		return GetUserRuntimeDir();
+	else if (name == "XDG_STATE_HOME"sv)
+		return GetUserStateDir();
 	else
 		throw FmtRuntimeError("Unknown variable: {:?}", name);
 }

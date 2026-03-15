@@ -61,6 +61,20 @@ GetUserRuntimeDir() noexcept;
 AllocatedPath
 GetAppRuntimeDir() noexcept;
 
+/**
+ * Obtains the state directory for the current user.
+ */
+[[gnu::const]]
+AllocatedPath
+GetUserStateDir() noexcept;
+
+/**
+ * Obtains the state directory for this application.
+ */
+[[gnu::const]]
+AllocatedPath
+GetAppStateDir() noexcept;
+
 #ifdef _WIN32
 
 /**
