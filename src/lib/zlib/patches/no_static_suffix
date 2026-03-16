@@ -1,0 +1,12 @@
+Index: zlib-1.3.2/CMakeLists.txt
+===================================================================
+--- zlib-1.3.2.orig/CMakeLists.txt
++++ zlib-1.3.2/CMakeLists.txt
+@@ -150,7 +150,6 @@ set(ZLIB_SRCS
+     zutil.c)
+ 
+ if(WIN32)
+-    set(zlib_static_suffix "s")
+     set(CMAKE_DEBUG_POSTFIX "d")
+ endif(WIN32)
+ 

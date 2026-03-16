@@ -26,6 +26,7 @@ zlib = CmakeProject(
         '-DZLIB_BUILD_TESTING=OFF',
         '-DZLIB_BUILD_SHARED=OFF',
     ],
+    patches='src/lib/zlib/patches',
 )
 
 libmodplug = AutotoolsProject(

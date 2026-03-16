@@ -1,4 +1,6 @@
 ver 0.24.10 (not yet released)
+* Windows
+  - work around build failure due to zlib bug
 
 ver 0.24.9 (2026/03/11)
 * input
