@@ -55,7 +55,7 @@
 # it was brought down. This setting is disabled by default and the server
 # state will be reset on server start up.
 #
-#state_file			"$XDG_RUNTIME_DIR/mpd/state"
+#state_file			"$XDG_STATE_HOME/mpd/state"
 #state_file			"~/.mpd/state"
 #
 # The location of the sticker database.  This is a database which

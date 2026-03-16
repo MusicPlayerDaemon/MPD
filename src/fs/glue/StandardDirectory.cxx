@@ -346,6 +346,39 @@ GetAppCacheDir() noexcept
 }
 
 AllocatedPath
+GetUserDataDir() noexcept
+{
+#ifdef USE_XDG
+	// Check for $XDG_DATA_HOME
+	if (const auto path = GetExistingEnvDirectory("XDG_DATA_HOME");
+	    path != nullptr)
+		return AllocatedPath{path};
+
+	// Check for $HOME/.local/share
+	if (const auto home = GetHomeDir(); !home.IsNull())
+		if (auto fallback = home / Path::FromFS(".local/share");
+		    IsValidDir(fallback))
+			return fallback;
+
+#endif
+	return nullptr;
+}
+
+AllocatedPath
+GetAppDataDir() noexcept
+{
+#if defined(USE_XDG)
+	if (const auto user_dir = GetUserDataDir(); !user_dir.IsNull()) {
+		auto dir = user_dir / app_filename;
+		CreateDirectoryNoThrow(dir);
+		return dir;
+	}
+
+#endif
+	return nullptr;
+}
+
+AllocatedPath
 GetUserRuntimeDir() noexcept
 {
 #ifdef USE_XDG
@@ -377,6 +410,47 @@ GetAppRuntimeDir() noexcept
 
 #if defined(USE_XDG) || defined(__APPLE__)
 	if (const auto user_dir = GetUserRuntimeDir(); !user_dir.IsNull()) {
+		auto dir = user_dir / app_filename;
+		CreateDirectoryNoThrow(dir);
+		return dir;
+	}
+#endif
+
+	return nullptr;
+}
+
+AllocatedPath
+GetUserStateDir() noexcept
+{
+#ifdef USE_XDG
+	// Check for $XDG_STATE_HOME
+	if (const auto path = GetExistingEnvDirectory("XDG_STATE_HOME");
+	    path != nullptr)
+		return AllocatedPath{path};
+
+	// Check for $HOME/.local/state
+	if (const auto home = GetHomeDir(); !home.IsNull())
+		if (auto fallback = home / Path::FromFS(".local/state");
+		    IsValidDir(fallback))
+			return fallback;
+#endif
+
+	return nullptr;
+}
+
+AllocatedPath
+GetAppStateDir() noexcept
+{
+#if defined(__linux__) && !defined(ANDROID)
+	/* systemd specific; see systemd.exec(5) */
+	if (const char *state_directory = getenv("STATE_DIRECTORY"))
+		if (auto dir = Split(std::string_view{state_directory}, ':').first;
+		    !dir.empty())
+			return AllocatedPath::FromFS(dir);
+#endif
+
+#if defined(USE_XDG)
+	if (const auto user_dir = GetUserStateDir(); !user_dir.IsNull()) {
 		auto dir = user_dir / app_filename;
 		CreateDirectoryNoThrow(dir);
 		return dir;

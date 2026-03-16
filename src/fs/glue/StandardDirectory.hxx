@@ -27,6 +27,20 @@ AllocatedPath
 GetUserCacheDir() noexcept;
 
 /**
+ * Obtains data directory for this application.
+ */
+[[gnu::const]]
+AllocatedPath
+GetAppDataDir() noexcept;
+
+/**
+ * Obtains data directory for the current user.
+ */
+[[gnu::const]]
+AllocatedPath
+GetUserDataDir() noexcept;
+
+/**
  * Obtains cache directory for this application.
  */
 [[gnu::const]]
@@ -46,6 +60,20 @@ GetUserRuntimeDir() noexcept;
 [[gnu::const]]
 AllocatedPath
 GetAppRuntimeDir() noexcept;
+
+/**
+ * Obtains the state directory for the current user.
+ */
+[[gnu::const]]
+AllocatedPath
+GetUserStateDir() noexcept;
+
+/**
+ * Obtains the state directory for this application.
+ */
+[[gnu::const]]
+AllocatedPath
+GetAppStateDir() noexcept;
 
 #ifdef _WIN32
 

@@ -12,6 +12,8 @@ ver 0.25 (not yet released)
 * player
   - support replay gain parameter in stream URI
   - preallocate physical RAM for audio buffer when playback starts
+* configuration
+  - support $XDG_DATA_HOME, $XDG_STATE_HOME
 * switch to C++23
 * require Meson 1.2
 
