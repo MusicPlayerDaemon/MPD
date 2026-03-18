@@ -1,4 +1,6 @@
 ver 0.24.10 (not yet released)
+* database
+  - upnp: allow building with libupnp 1.14.30 which has fixed the API breakage
 * Windows
   - work around build failure due to zlib bug
 
