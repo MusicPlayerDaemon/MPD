@@ -859,7 +859,6 @@ Player::CheckCrossFade() noexcept
 	if (pc.border_pause) {
 		/* no cross-fading if MPD is going to pause at the end
 		   of the current song */
-		xfade_state = CrossFadeState::UNKNOWN;
 		return;
 	}
 
