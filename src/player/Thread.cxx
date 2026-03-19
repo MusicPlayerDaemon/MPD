@@ -15,7 +15,7 @@
  * thread and sends it commands.
  *
  * The player thread itself does not do any I/O.  It synchronizes with
- * other threads via #GMutex and #GCond objects, and passes
+ * other threads via #Mutex and #Cond objects, and passes
  * #MusicChunk instances around in #MusicPipe objects.
  */
 
