@@ -550,7 +550,8 @@ Player::OpenOutput() noexcept
 		const ScopeUnlock unlock(pc.mutex);
 		pc.outputs.Open(play_audio_format);
 	} catch (...) {
-		LogError(std::current_exception());
+		auto error = std::current_exception();
+		LogError(error);
 
 		output_open = false;
 
@@ -558,7 +559,7 @@ Player::OpenOutput() noexcept
 		   audio output becomes available */
 		paused = true;
 
-		pc.SetOutputError(std::current_exception());
+		pc.SetOutputError(std::move(error));
 
 		return false;
 	}
@@ -1042,7 +1043,8 @@ Player::PlayNextChunk() noexcept
 		pc.PlayChunk(*song, std::move(chunk),
 			     play_audio_format);
 	} catch (...) {
-		LogError(std::current_exception());
+		auto error = std::current_exception();
+		LogError(error);
 
 		chunk.reset();
 
@@ -1050,7 +1052,7 @@ Player::PlayNextChunk() noexcept
 		   audio output becomes available */
 		paused = true;
 
-		pc.LockSetOutputError(std::current_exception());
+		pc.LockSetOutputError(std::move(error));
 
 		return false;
 	}
