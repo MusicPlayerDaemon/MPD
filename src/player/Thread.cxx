@@ -407,10 +407,8 @@ Player::StopDecoder(std::unique_lock<Mutex> &lock) noexcept
 inline bool
 Player::ForwardDecoderError() noexcept
 {
-	try {
-		dc.CheckRethrowError();
-	} catch (...) {
-		pc.SetError(PlayerError::DECODER, std::current_exception());
+	if (dc.HasFailed()) {
+		pc.SetError(PlayerError::DECODER, dc.GetError());
 		return false;
 	}
 
