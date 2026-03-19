@@ -836,9 +836,11 @@ Player::ProcessCommand(std::unique_lock<Mutex> &lock) noexcept
 			pc.outputs.CheckPipe();
 		}
 
-		pc.elapsed_time = !pc.outputs.GetElapsedTime().IsNegative()
-			? SongTime(pc.outputs.GetElapsedTime())
-			: elapsed_time;
+		if (const auto outputs_time = pc.outputs.GetElapsedTime();
+		    !outputs_time.IsNegative())
+			pc.elapsed_time = static_cast<SongTime>(outputs_time);
+		else
+			pc.elapsed_time = elapsed_time;
 
 		pc.CommandFinished();
 		break;
