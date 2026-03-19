@@ -585,7 +585,7 @@ Player::CheckDecoderStartup(std::unique_lock<Mutex> &lock) noexcept
 
 		if (output_open &&
 		    !pc.WaitOutputConsumed(lock, 1))
-			/* the output devices havn't finished playing
+			/* the output devices haven't finished playing
 			   all chunks yet - wait for that */
 			return true;
 
