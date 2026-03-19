@@ -509,8 +509,7 @@ CreateEasy(const char *url, struct curl_slist *headers)
 
 	if (proxy_user != nullptr && proxy_password != nullptr)
 		easy.SetOption(CURLOPT_PROXYUSERPWD,
-			       FmtBuffer<1024>("{}:{}", proxy_user,
-					       proxy_password).c_str());
+			       fmt::format("{}:{}"sv, proxy_user, proxy_password).c_str());
 
 	if (cacert != nullptr)
 		easy.SetOption(CURLOPT_CAINFO, cacert);
