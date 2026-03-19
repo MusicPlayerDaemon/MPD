@@ -421,11 +421,11 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 
 	low_speed_time = block.GetBlockValue("low_speed_time", default_low_speed_time);
 
-	tcp_keepalive = block.GetBlockValue("tcp_keepalive",default_tcp_keepalive);
+	tcp_keepalive = block.GetBlockValue("tcp_keepalive", default_tcp_keepalive);
 
-	tcp_keepidle  = block.GetBlockValue("tcp_keepidle",default_tcp_keepidle);
+	tcp_keepidle  = block.GetBlockValue("tcp_keepidle", default_tcp_keepidle);
 
-	tcp_keepintvl = block.GetBlockValue("tcp_keepintvl",default_tcp_keepintvl);
+	tcp_keepintvl = block.GetBlockValue("tcp_keepintvl", default_tcp_keepintvl);
 }
 
 static void
