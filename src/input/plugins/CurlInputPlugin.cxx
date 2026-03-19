@@ -388,12 +388,9 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	}
 
 	const auto version_info = curl_version_info(CURLVERSION_FIRST);
-	if (version_info != nullptr) {
-		FmtDebug(curl_domain, "version {}", version_info->version);
-		if (version_info->features & CURL_VERSION_SSL)
-			FmtDebug(curl_domain, "with {}",
-				 version_info->ssl_version);
-	}
+	FmtDebug(curl_domain, "version {}", version_info->version);
+	if (version_info->features & CURL_VERSION_SSL)
+		FmtDebug(curl_domain, "with {}", version_info->ssl_version);
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
 
