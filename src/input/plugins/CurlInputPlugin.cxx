@@ -58,7 +58,7 @@ static const size_t CURL_RESUME_AT = 384 * 1024;
 
 class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
-	   too free */
+	   to free */
 	CurlSlist request_headers;
 
 	CurlRequest *request = nullptr;
