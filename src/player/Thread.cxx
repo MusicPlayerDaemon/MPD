@@ -404,7 +404,7 @@ Player::StopDecoder(std::unique_lock<Mutex> &lock) noexcept
 	decoder_starting = false;
 }
 
-bool
+inline bool
 Player::ForwardDecoderError() noexcept
 {
 	try {
