@@ -348,7 +348,11 @@ void
 CurlInputStream::OnEnd()
 {
 	const std::scoped_lock protect{mutex};
-	InvokeOnAvailable();
+
+	if (IsSeekPending())
+		SeekDone();
+	else
+		InvokeOnAvailable();
 
 	AsyncInputStream::SetClosed();
 }
