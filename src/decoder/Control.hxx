@@ -271,14 +271,6 @@ public:
 	}
 
 	/**
-	 * Like CheckRethrowError(), but locks and unlocks the object.
-	 */
-	void LockCheckRethrowError() const {
-		const std::scoped_lock protect{mutex};
-		CheckRethrowError();
-	}
-
-	/**
 	 * Clear the error condition (if any).
 	 *
 	 * Caller must lock the object.
