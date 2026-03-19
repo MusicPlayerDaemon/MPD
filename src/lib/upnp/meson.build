@@ -13,7 +13,10 @@ endif
 if upnp_option == 'auto'
   upnp_dep = dependency('libupnp', version: '>= 1.8', required: false)
 
-  if upnp_dep.found() and upnp_dep.version().version_compare('>= 1.14.26')
+  if upnp_dep.found() and (
+    ( upnp_dep.version().version_compare('>= 1.14.26') and upnp_dep.version().version_compare('< 1.14.30') )
+    or upnp_dep.version().version_compare('>= 1.18.0')
+  )
     warning('Your libupnp version is known to be broken, see https://github.com/pupnp/pupnp/issues/528 - disabling')
     upnp_dep = dependency('', required: false)
   endif
@@ -25,7 +28,10 @@ if upnp_option == 'auto'
 elif upnp_option == 'pupnp'
   upnp_dep = dependency('libupnp', version: '>= 1.8', required: true)
 
-  if upnp_dep.found() and upnp_dep.version().version_compare('>= 1.14.26')
+  if upnp_dep.found() and (
+    ( upnp_dep.version().version_compare('>= 1.14.26') and upnp_dep.version().version_compare('< 1.14.30') )
+    or upnp_dep.version().version_compare('>= 1.18.0')
+  )
     error('Your libupnp version is known to be broken, see https://github.com/pupnp/pupnp/issues/528')
   endif
 

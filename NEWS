@@ -17,6 +17,12 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.10 (not yet released)
+* database
+  - upnp: allow building with libupnp 1.14.30 which has fixed the API breakage
+* Windows
+  - work around build failure due to zlib bug
+
 ver 0.24.9 (2026/03/11)
 * input
   - curl: fix build failure after CURL 8.19 API change

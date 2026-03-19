@@ -261,25 +261,17 @@ public:
 		      bool _seekable, SignedSongTime _duration) noexcept;
 
 	/**
-	 * Checks whether an error has occurred, and if so, rethrows
+	 * Checks whether an error has occurred, and if so, returns
 	 * it.
 	 *
 	 * Caller must lock the object.
 	 */
-	void CheckRethrowError() const {
+	std::exception_ptr GetError() const noexcept {
 		assert(command == DecoderCommand::NONE);
-		assert(state != DecoderState::ERROR || error);
+		assert(state == DecoderState::ERROR);
+		assert(error);
 
-		if (state == DecoderState::ERROR)
-			std::rethrow_exception(error);
-	}
-
-	/**
-	 * Like CheckRethrowError(), but locks and unlocks the object.
-	 */
-	void LockCheckRethrowError() const {
-		const std::scoped_lock protect{mutex};
-		CheckRethrowError();
+		return error;
 	}
 
 	/**

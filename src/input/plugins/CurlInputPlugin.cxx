@@ -58,7 +58,7 @@ static const size_t CURL_RESUME_AT = 384 * 1024;
 
 class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
-	   too free */
+	   to free */
 	CurlSlist request_headers;
 
 	CurlRequest *request = nullptr;
@@ -348,7 +348,11 @@ void
 CurlInputStream::OnEnd()
 {
 	const std::scoped_lock protect{mutex};
-	InvokeOnAvailable();
+
+	if (IsSeekPending())
+		SeekDone();
+	else
+		InvokeOnAvailable();
 
 	AsyncInputStream::SetClosed();
 }
@@ -384,12 +388,9 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	}
 
 	const auto version_info = curl_version_info(CURLVERSION_FIRST);
-	if (version_info != nullptr) {
-		FmtDebug(curl_domain, "version {}", version_info->version);
-		if (version_info->features & CURL_VERSION_SSL)
-			FmtDebug(curl_domain, "with {}",
-				 version_info->ssl_version);
-	}
+	FmtDebug(curl_domain, "version {}", version_info->version);
+	if (version_info->features & CURL_VERSION_SSL)
+		FmtDebug(curl_domain, "with {}", version_info->ssl_version);
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
 
@@ -420,11 +421,11 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 
 	low_speed_time = block.GetBlockValue("low_speed_time", default_low_speed_time);
 
-	tcp_keepalive = block.GetBlockValue("tcp_keepalive",default_tcp_keepalive);
+	tcp_keepalive = block.GetBlockValue("tcp_keepalive", default_tcp_keepalive);
 
-	tcp_keepidle  = block.GetBlockValue("tcp_keepidle",default_tcp_keepidle);
+	tcp_keepidle  = block.GetBlockValue("tcp_keepidle", default_tcp_keepidle);
 
-	tcp_keepintvl = block.GetBlockValue("tcp_keepintvl",default_tcp_keepintvl);
+	tcp_keepintvl = block.GetBlockValue("tcp_keepintvl", default_tcp_keepintvl);
 }
 
 static void
@@ -509,8 +510,7 @@ CreateEasy(const char *url, struct curl_slist *headers)
 
 	if (proxy_user != nullptr && proxy_password != nullptr)
 		easy.SetOption(CURLOPT_PROXYUSERPWD,
-			       FmtBuffer<1024>("{}:{}", proxy_user,
-					       proxy_password).c_str());
+			       fmt::format("{}:{}"sv, proxy_user, proxy_password).c_str());
 
 	if (cacert != nullptr)
 		easy.SetOption(CURLOPT_CAINFO, cacert);

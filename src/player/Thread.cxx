@@ -15,7 +15,7 @@
  * thread and sends it commands.
  *
  * The player thread itself does not do any I/O.  It synchronizes with
- * other threads via #GMutex and #GCond objects, and passes
+ * other threads via #Mutex and #Cond objects, and passes
  * #MusicChunk instances around in #MusicPipe objects.
  */
 
@@ -404,13 +404,11 @@ Player::StopDecoder(std::unique_lock<Mutex> &lock) noexcept
 	decoder_starting = false;
 }
 
-bool
+inline bool
 Player::ForwardDecoderError() noexcept
 {
-	try {
-		dc.CheckRethrowError();
-	} catch (...) {
-		pc.SetError(PlayerError::DECODER, std::current_exception());
+	if (dc.HasFailed()) {
+		pc.SetError(PlayerError::DECODER, dc.GetError());
 		return false;
 	}
 
@@ -550,7 +548,8 @@ Player::OpenOutput() noexcept
 		const ScopeUnlock unlock(pc.mutex);
 		pc.outputs.Open(play_audio_format);
 	} catch (...) {
-		LogError(std::current_exception());
+		auto error = std::current_exception();
+		LogError(error);
 
 		output_open = false;
 
@@ -558,7 +557,7 @@ Player::OpenOutput() noexcept
 		   audio output becomes available */
 		paused = true;
 
-		pc.SetOutputError(std::current_exception());
+		pc.SetOutputError(std::move(error));
 
 		return false;
 	}
@@ -585,7 +584,7 @@ Player::CheckDecoderStartup(std::unique_lock<Mutex> &lock) noexcept
 
 		if (output_open &&
 		    !pc.WaitOutputConsumed(lock, 1))
-			/* the output devices havn't finished playing
+			/* the output devices haven't finished playing
 			   all chunks yet - wait for that */
 			return true;
 
@@ -837,9 +836,11 @@ Player::ProcessCommand(std::unique_lock<Mutex> &lock) noexcept
 			pc.outputs.CheckPipe();
 		}
 
-		pc.elapsed_time = !pc.outputs.GetElapsedTime().IsNegative()
-			? SongTime(pc.outputs.GetElapsedTime())
-			: elapsed_time;
+		if (const auto outputs_time = pc.outputs.GetElapsedTime();
+		    !outputs_time.IsNegative())
+			pc.elapsed_time = static_cast<SongTime>(outputs_time);
+		else
+			pc.elapsed_time = elapsed_time;
 
 		pc.CommandFinished();
 		break;
@@ -858,7 +859,6 @@ Player::CheckCrossFade() noexcept
 	if (pc.border_pause) {
 		/* no cross-fading if MPD is going to pause at the end
 		   of the current song */
-		xfade_state = CrossFadeState::UNKNOWN;
 		return;
 	}
 
@@ -866,8 +866,8 @@ Player::CheckCrossFade() noexcept
 		/* we need information about the next song before we
 		   can decide */
 		/* the "pipe.empty" check is here so we wait for all
-                   (ReplayGain/MixRamp) metadata to appear, which some
-                   decoders parse only after reporting readiness */
+		   (ReplayGain/MixRamp) metadata to appear, which some
+		   decoders parse only after reporting readiness */
 		return;
 
 	if (!pc.cross_fade.CanCrossFade(pc.total_time, dc.total_time,
@@ -986,7 +986,7 @@ Player::PlayNextChunk() noexcept
 						    std::move(other_chunk->tag));
 
 			if (pc.cross_fade.mixramp_delay <= FloatDuration::zero()) {
-				chunk->mix_ratio = ((float)cross_fade_position)
+				chunk->mix_ratio = static_cast<float>(cross_fade_position)
 					     / cross_fade_chunks;
 			} else {
 				chunk->mix_ratio = -1;
@@ -1042,7 +1042,8 @@ Player::PlayNextChunk() noexcept
 		pc.PlayChunk(*song, std::move(chunk),
 			     play_audio_format);
 	} catch (...) {
-		LogError(std::current_exception());
+		auto error = std::current_exception();
+		LogError(error);
 
 		chunk.reset();
 
@@ -1050,7 +1051,7 @@ Player::PlayNextChunk() noexcept
 		   audio output becomes available */
 		paused = true;
 
-		pc.LockSetOutputError(std::current_exception());
+		pc.LockSetOutputError(std::move(error));
 
 		return false;
 	}
