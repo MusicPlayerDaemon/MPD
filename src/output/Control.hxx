@@ -481,7 +481,7 @@ public:
 	 * @param force true to ignore the #fail_timer
 	 * @return true if the device is open
 	 */
-	bool LockUpdate(const AudioFormat audio_format,
+	bool LockUpdate(AudioFormat audio_format,
 			const MusicPipe &mp,
 			bool force) noexcept;
 
