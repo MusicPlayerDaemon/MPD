@@ -37,8 +37,6 @@
 #include <exception>
 #include <memory>
 
-#include <string.h>
-
 static constexpr Domain player_domain("player");
 
 /**
