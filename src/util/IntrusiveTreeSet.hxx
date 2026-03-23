@@ -200,6 +200,12 @@ public:
 	}
 
 	constexpr void clear() noexcept {
+		if constexpr (GetHookMode() >= IntrusiveHookMode::TRACK) {
+			/* clear all "parent" fields so is_linked()
+			   method will work */
+			clear_all_parents(GetRoot());
+		}
+
 		SetRoot(nullptr);
 		counter.reset();
 	}
@@ -507,6 +513,18 @@ private:
 		}
 
 		return *base;
+	}
+
+	void clear_all_parents(RedBlackTreeNode *node) noexcept {
+		static_assert(GetHookMode() >= IntrusiveHookMode::TRACK);
+
+		if (node == nullptr)
+			return;
+
+		for (auto *i : node->children)
+			clear_all_parents(i);
+
+		node->parent = nullptr;
 	}
 
 	void dispose_all(RedBlackTreeNode *node, Disposer<value_type> auto disposer) noexcept {
