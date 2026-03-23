@@ -191,7 +191,7 @@ public:
 		return GetRoot() == nullptr;
 	}
 
-	[[nodiscard]]
+	[[nodiscard]] [[gnu::pure]]
 	constexpr size_type size() const noexcept {
 		if constexpr (constant_time_size)
 			return counter;
@@ -321,7 +321,7 @@ public:
 		return iterator{&ToNode(item)};
 	}
 
-	[[nodiscard]]
+	[[nodiscard]] [[gnu::pure]]
 	constexpr iterator find(const auto &key) const noexcept {
 		auto *node = GetRoot();
 
