@@ -322,7 +322,7 @@ public:
 	}
 
 	[[nodiscard]] [[gnu::pure]]
-	constexpr iterator find(const auto &key) const noexcept {
+	constexpr const_iterator find(const auto &key) const noexcept {
 		auto *node = GetRoot();
 
 #ifndef NDEBUG
@@ -347,7 +347,17 @@ public:
 				break;
 		}
 
-		return iterator{node};
+		return const_iterator{node};
+	}
+
+	[[nodiscard]] [[gnu::pure]]
+	constexpr iterator find(const auto &key) noexcept {
+		/* avoid code duplication: obtain a const_iterator
+		   from the const find() overload and const_cast it to
+		   an iterator */
+		const auto &const_this = *this;
+		auto const_it = const_this.find(key);
+		return iterator{const_cast<RedBlackTreeNode *>(const_it.node)};
 	}
 
 	constexpr iterator insert(reference value) noexcept {
