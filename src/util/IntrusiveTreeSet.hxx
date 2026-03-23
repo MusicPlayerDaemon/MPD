@@ -266,7 +266,7 @@ public:
 		using pointer = value_type *;
 		using reference = value_type &;
 
-		explicit constexpr const_iterator(RedBlackTreeNode *_node) noexcept
+		explicit constexpr const_iterator(const RedBlackTreeNode *_node) noexcept
 			:node(_node) {}
 
 		constexpr const_iterator(iterator i) noexcept
