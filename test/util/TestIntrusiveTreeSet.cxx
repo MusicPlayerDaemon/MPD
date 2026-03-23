@@ -277,6 +277,91 @@ TEST(IntrusiveTreeSet, LargeRandom)
 	EXPECT_TRUE(items.empty());
 }
 
+/**
+ * Verify that is_linked() returns false for all items after clear().
+ */
+TEST(IntrusiveTreeSet, ClearIsLinked)
+{
+	IntItem a{1}, b{2}, c{3}, d{4}, e{5};
+
+	IntrusiveTreeSet<IntItem,
+			 IntrusiveTreeSetOperators<IntItem, IntItem::GetKey>> set;
+
+	set.insert(a);
+	set.insert(b);
+	set.insert(c);
+	set.insert(d);
+	set.insert(e);
+
+	EXPECT_TRUE(a.is_linked());
+	EXPECT_TRUE(b.is_linked());
+	EXPECT_TRUE(c.is_linked());
+	EXPECT_TRUE(d.is_linked());
+	EXPECT_TRUE(e.is_linked());
+	EXPECT_EQ(set.size(), 5U);
+
+	set.clear();
+
+	EXPECT_TRUE(set.empty());
+	EXPECT_FALSE(a.is_linked());
+	EXPECT_FALSE(b.is_linked());
+	EXPECT_FALSE(c.is_linked());
+	EXPECT_FALSE(d.is_linked());
+	EXPECT_FALSE(e.is_linked());
+
+	/* verify items can be re-inserted after clear() */
+	set.insert(c);
+	set.insert(a);
+
+	EXPECT_EQ(set.size(), 2U);
+	EXPECT_TRUE(a.is_linked());
+	EXPECT_FALSE(b.is_linked());
+	EXPECT_TRUE(c.is_linked());
+	EXPECT_EQ(&set.front(), &a);
+	EXPECT_EQ(set.find(1), set.iterator_to(a));
+	EXPECT_EQ(set.find(3), set.iterator_to(c));
+
+#ifndef NDEBUG
+	set.Check();
+#endif
+}
+
+/**
+ * Verify that is_linked() returns false for all items after
+ * clear_and_dispose().
+ */
+TEST(IntrusiveTreeSet, ClearAndDisposeIsLinked)
+{
+	IntItem a{1}, b{2}, c{3};
+
+	IntrusiveTreeSet<IntItem,
+			 IntrusiveTreeSetOperators<IntItem, IntItem::GetKey>> set;
+
+	set.insert(a);
+	set.insert(b);
+	set.insert(c);
+
+	unsigned dispose_count = 0;
+	set.clear_and_dispose([&dispose_count](auto *) { ++dispose_count; });
+
+	EXPECT_EQ(dispose_count, 3U);
+	EXPECT_TRUE(set.empty());
+	EXPECT_FALSE(a.is_linked());
+	EXPECT_FALSE(b.is_linked());
+	EXPECT_FALSE(c.is_linked());
+
+	/* verify items can be re-inserted after clear_and_dispose() */
+	set.insert(b);
+
+	EXPECT_EQ(set.size(), 1U);
+	EXPECT_TRUE(b.is_linked());
+	EXPECT_EQ(&set.front(), &b);
+
+#ifndef NDEBUG
+	set.Check();
+#endif
+}
+
 struct ZeroIntItem final : IntrusiveTreeSetHook<IntrusiveHookMode::TRACK> {
 	int value = 0;
 
