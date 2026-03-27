@@ -4,9 +4,11 @@
 #include "Init.hxx"
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
+#include "BufferedInputStream.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "config/Block.hxx"
+#include "config/Parser.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"
 #include "lib/fmt/RuntimeError.hxx"
@@ -21,6 +23,7 @@
 #endif
 
 static constexpr Domain input_domain("input");
+static constexpr size_t KILOBYTE = 1024;
 
 void
 input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
@@ -28,6 +31,16 @@ input_stream_global_init(const ConfigData &config, EventLoop &event_loop)
 #ifdef HAVE_URING
 	InitUringInputPlugin(event_loop);
 #endif
+
+	if (auto *param = config.GetParam(ConfigOption::MAX_BUFFERED_INPUT_STREAM_SIZE)) {
+		offset_type buffer_size = param->With([](const char *s){
+			size_t result = ParseSize(s, KILOBYTE);
+			if (result <= 0)
+				throw FmtRuntimeError("max buffered input size \"{}\" is not a positive integer", s);
+			return result;
+		});
+		BufferedInputStream::SetMaxSize(buffer_size);
+	}
 
 	const ConfigBlock empty;
 
