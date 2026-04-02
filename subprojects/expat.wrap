@@ -1,14 +1,14 @@
 [wrap-file]
-directory = expat-2.7.4
-source_url = https://github.com/libexpat/libexpat/releases/download/R_2_7_4/expat-2.7.4.tar.xz
-source_filename = expat-2.7.4.tar.xz
-source_hash = 9e9cabb457c1e09de91db2706d8365645792638eb3be1f94dbb2149301086ac0
-source_fallback_url = https://wrapdb.mesonbuild.com/v2/expat_2.7.4-1/get_source/expat-2.7.4.tar.xz
-patch_filename = expat_2.7.4-1_patch.zip
-patch_url = https://wrapdb.mesonbuild.com/v2/expat_2.7.4-1/get_patch
-patch_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/expat_2.7.4-1/expat_2.7.4-1_patch.zip
-patch_hash = 7bcf8e279b4403bc68b7d22929fd51d4c2397dee0ccb8dbf7cfc4f7ed302aecb
-wrapdb_version = 2.7.4-1
+directory = expat-2.7.5
+source_url = https://github.com/libexpat/libexpat/releases/download/R_2_7_5/expat-2.7.5.tar.xz
+source_filename = expat-2.7.5.tar.xz
+source_hash = 1032dfef4ff17f70464827daa28369b20f6584d108bc36f17ab1676e1edd2f91
+source_fallback_url = https://wrapdb.mesonbuild.com/v2/expat_2.7.5-1/get_source/expat-2.7.5.tar.xz
+patch_filename = expat_2.7.5-1_patch.zip
+patch_url = https://wrapdb.mesonbuild.com/v2/expat_2.7.5-1/get_patch
+patch_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/expat_2.7.5-1/expat_2.7.5-1_patch.zip
+patch_hash = f3de751df71265847b359914ac48ec2ced85a98cd6c3a35dd45890a331919f65
+wrapdb_version = 2.7.5-1
 
 [provide]
 dependency_names = expat
