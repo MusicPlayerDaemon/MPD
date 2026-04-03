@@ -6,6 +6,7 @@ ver 0.25 (not yet released)
 * decoder
   - faad: implement seeking
   - faad: output 32 bit floating point samples instead of 16 bit integer
+  - psgplay: new plugin
   - vgmstream: new plugin
 * output
   - pipewire: add option "reconnect_stream"

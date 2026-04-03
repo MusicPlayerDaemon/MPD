@@ -604,6 +604,18 @@ C64 SID decoder based on `libsidplayfp <https://sourceforge.net/projects/sidplay
    * - **basic**
      - Only libsidplayfp. Absolute path to basic rom image file.
 
+psgplay
+-------
+
+Decodes Atari SNDH files using `psgplay <https://github.com/frno7/psgplay>`_.
+
+   * - Setting
+     - Description
+   * - **default_songlength SECONDS**
+     - This is the default playing time in seconds, for songs without a duration. A value of 0 means play indefinitely.
+   * - **default_genre GENRE**
+     - Optional default genre for SNDH songs.
+
 sndfile
 -------
 
