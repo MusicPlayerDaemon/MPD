@@ -76,8 +76,13 @@ public:
 			emplace_back(std::move(i));
 	}
 
-	constexpr ~StaticVector() noexcept {
-		clear();
+	constexpr ~StaticVector() noexcept
+		requires std::is_trivially_destructible_v<T> = default;
+
+	constexpr ~StaticVector() noexcept
+		requires (!std::is_trivially_destructible_v<T>)
+	{
+			clear();
 	}
 
 	constexpr operator std::span<const T>() const noexcept {
