@@ -182,7 +182,7 @@ private:
 
 	/* virtual methods from class PlayerOutputs */
 	void EnableDisable() override;
-	void Open(const AudioFormat audio_format) override;
+	void Open(AudioFormat audio_format) override;
 	void Close() noexcept override;
 	void Release() noexcept override;
 	void Play(MusicChunkPtr chunk) override;

@@ -49,6 +49,86 @@ private:
 public:
 	constexpr StaticVector() noexcept = default;
 
+	constexpr StaticVector(const StaticVector &src) noexcept
+		requires std::is_trivially_copy_constructible_v<T> = default;
+
+	constexpr StaticVector(const StaticVector &src) noexcept(std::is_nothrow_copy_constructible_v<T>)
+		requires (!std::is_trivially_copy_constructible_v<T>)
+	{
+		assert(src.size() < max_size());
+
+		if constexpr (std::is_nothrow_copy_constructible_v<T>) {
+			for (size_type i = 0; i < src.the_size; ++i)
+				emplace_back(src[i]);
+		} else {
+			try {
+				for (size_type i = 0; i < src.the_size; ++i)
+					emplace_back(src[i]);
+			} catch (...) {
+				clear();
+				throw;
+			}
+		}
+	}
+
+	constexpr StaticVector(StaticVector &&src) noexcept
+		requires std::is_trivially_move_constructible_v<T> = default;
+
+	constexpr StaticVector(StaticVector &&src) noexcept(std::is_nothrow_move_constructible_v<T>)
+		requires (!std::is_trivially_move_constructible_v<T>)
+	{
+		assert(src.size() < max_size());
+
+		if constexpr (std::is_nothrow_move_constructible_v<T>) {
+			for (size_type i = 0; i < src.the_size; ++i)
+				emplace_back(std::move(src[i]));
+		} else {
+			try {
+				for (size_type i = 0; i < src.the_size; ++i)
+					emplace_back(std::move(src[i]));
+			} catch (...) {
+				clear();
+				throw;
+			}
+		}
+
+		src.clear();
+	}
+
+	constexpr StaticVector &operator=(const StaticVector &src) noexcept
+		requires std::is_trivially_copy_assignable_v<T> = default;
+
+	constexpr StaticVector &operator=(const StaticVector &src) noexcept(std::is_nothrow_copy_assignable_v<T>)
+		requires (!std::is_trivially_copy_assignable_v<T>)
+	{
+		if (this != &src) {
+			clear();
+
+			for (size_type i = 0; i < src.the_size; ++i)
+				emplace_back(src[i]);
+		}
+
+		return *this;
+	}
+
+	constexpr StaticVector &operator=(StaticVector &&src) noexcept
+		requires std::is_trivially_move_assignable_v<T> = default;
+
+	constexpr StaticVector &operator=(StaticVector &&src) noexcept(std::is_nothrow_move_constructible_v<T>)
+		requires (!std::is_trivially_move_assignable_v<T>)
+	{
+		if (this != &src) {
+			clear();
+
+			for (size_type i = 0; i < src.the_size; ++i)
+				emplace_back(std::move(src[i]));
+
+			src.clear();
+		}
+
+		return *this;
+	}
+
 	constexpr StaticVector(size_type _size, const_reference value)
 	{
 		if (_size > max)
@@ -79,8 +159,13 @@ public:
 			emplace_back(std::move(i));
 	}
 
-	constexpr ~StaticVector() noexcept {
-		clear();
+	constexpr ~StaticVector() noexcept
+		requires std::is_trivially_destructible_v<T> = default;
+
+	constexpr ~StaticVector() noexcept
+		requires (!std::is_trivially_destructible_v<T>)
+	{
+			clear();
 	}
 
 	constexpr operator std::span<const T>() const noexcept {

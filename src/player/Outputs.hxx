@@ -33,7 +33,7 @@ public:
 	 *
 	 * @param audio_format the preferred audio format
 	 */
-	virtual void Open(const AudioFormat audio_format) = 0;
+	virtual void Open(AudioFormat audio_format) = 0;
 
 	/**
 	 * Closes all audio outputs.

@@ -191,7 +191,7 @@ public:
 		return GetRoot() == nullptr;
 	}
 
-	[[nodiscard]]
+	[[nodiscard]] [[gnu::pure]]
 	constexpr size_type size() const noexcept {
 		if constexpr (constant_time_size)
 			return counter;
@@ -200,6 +200,12 @@ public:
 	}
 
 	constexpr void clear() noexcept {
+		if constexpr (GetHookMode() >= IntrusiveHookMode::TRACK) {
+			/* clear all "parent" fields so is_linked()
+			   method will work */
+			clear_all_parents(GetRoot());
+		}
+
 		SetRoot(nullptr);
 		counter.reset();
 	}
@@ -266,7 +272,7 @@ public:
 		using pointer = value_type *;
 		using reference = value_type &;
 
-		explicit constexpr const_iterator(RedBlackTreeNode *_node) noexcept
+		explicit constexpr const_iterator(const RedBlackTreeNode *_node) noexcept
 			:node(_node) {}
 
 		constexpr const_iterator(iterator i) noexcept
@@ -321,8 +327,8 @@ public:
 		return iterator{&ToNode(item)};
 	}
 
-	[[nodiscard]]
-	constexpr iterator find(const auto &key) const noexcept {
+	[[nodiscard]] [[gnu::pure]]
+	constexpr const_iterator find(const auto &key) const noexcept {
 		auto *node = GetRoot();
 
 #ifndef NDEBUG
@@ -347,7 +353,17 @@ public:
 				break;
 		}
 
-		return iterator{node};
+		return const_iterator{node};
+	}
+
+	[[nodiscard]] [[gnu::pure]]
+	constexpr iterator find(const auto &key) noexcept {
+		/* avoid code duplication: obtain a const_iterator
+		   from the const find() overload and const_cast it to
+		   an iterator */
+		const auto &const_this = *this;
+		auto const_it = const_this.find(key);
+		return iterator{const_cast<RedBlackTreeNode *>(const_it.node)};
 	}
 
 	constexpr iterator insert(reference value) noexcept {
@@ -497,6 +513,18 @@ private:
 		}
 
 		return *base;
+	}
+
+	void clear_all_parents(RedBlackTreeNode *node) noexcept {
+		static_assert(GetHookMode() >= IntrusiveHookMode::TRACK);
+
+		if (node == nullptr)
+			return;
+
+		for (auto *i : node->children)
+			clear_all_parents(i);
+
+		node->parent = nullptr;
 	}
 
 	void dispose_all(RedBlackTreeNode *node, Disposer<value_type> auto disposer) noexcept {

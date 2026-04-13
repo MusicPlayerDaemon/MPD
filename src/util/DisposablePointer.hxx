@@ -14,6 +14,7 @@
    in the move operator/constructor, and that's okay, we're not going
    to use it in that case anyway */
 #pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
 /**
