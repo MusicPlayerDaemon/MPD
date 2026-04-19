@@ -24,7 +24,7 @@ class AsyncWaiter {
 
 public:
 	bool IsDone() const noexcept {
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		return done;
 	}
 
@@ -37,13 +37,13 @@ public:
 	}
 
 	void SetDone() noexcept {
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		done = true;
 		cond.notify_one();
 	}
 
 	void SetError(std::exception_ptr e) noexcept {
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		error = std::move(e);
 		done = true;
 		cond.notify_one();

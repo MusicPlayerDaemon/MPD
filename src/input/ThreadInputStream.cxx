@@ -29,7 +29,7 @@ ThreadInputStream::Stop() noexcept
 		return;
 
 	{
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		close = true;
 		wake_cond.notify_one();
 	}

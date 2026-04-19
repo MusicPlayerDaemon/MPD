@@ -81,7 +81,7 @@ RemoteTagCache::ItemResolved(Item &item) noexcept
 void
 RemoteTagCache::InvokeHandlers() noexcept
 {
-	const std::scoped_lock lock{mutex};
+	const std::lock_guard lock{mutex};
 
 	while (!invoke_list.empty()) {
 		auto &item = invoke_list.pop_front();
@@ -106,7 +106,7 @@ RemoteTagCache::Item::OnRemoteTag(Tag &&_tag) noexcept
 
 	scanner.reset();
 
-	const std::scoped_lock lock{parent.mutex};
+	const std::lock_guard lock{parent.mutex};
 	parent.ItemResolved(*this);
 }
 
@@ -118,6 +118,6 @@ RemoteTagCache::Item::OnRemoteTagError(std::exception_ptr e) noexcept
 
 	scanner.reset();
 
-	const std::scoped_lock lock{parent.mutex};
+	const std::lock_guard lock{parent.mutex};
 	parent.ItemResolved(*this);
 }

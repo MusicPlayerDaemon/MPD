@@ -932,7 +932,7 @@ PlayerControl::PlayChunk(DetachedSong &song, MusicChunkPtr chunk,
 		return;
 
 	{
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		bit_rate = chunk->bit_rate;
 	}
 
@@ -1055,7 +1055,7 @@ Player::PlayNextChunk() noexcept
 		return false;
 	}
 
-	const std::scoped_lock lock{pc.mutex};
+	const std::lock_guard lock{pc.mutex};
 
 	/* this formula should prevent that the decoder gets woken up
 	   with each chunk; it is more efficient to make it decode a

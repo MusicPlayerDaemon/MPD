@@ -215,7 +215,7 @@ public:
 
 	[[gnu::pure]]
 	bool LockIsIdle() const noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		return IsIdle();
 	}
 
@@ -225,7 +225,7 @@ public:
 
 	[[gnu::pure]]
 	bool LockIsStarting() const noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		return IsStarting();
 	}
 
@@ -237,13 +237,13 @@ public:
 
 	[[gnu::pure]]
 	bool LockHasFailed() const noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		return HasFailed();
 	}
 
 	[[gnu::pure]]
 	bool LockIsReplayGainEnabled() const noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		return replay_gain_mode != ReplayGainMode::OFF;
 	}
 
@@ -342,7 +342,7 @@ private:
 	}
 
 	void LockAsynchronousCommand(DecoderCommand cmd) noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		command = cmd;
 		Signal();
 	}

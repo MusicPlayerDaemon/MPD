@@ -54,7 +54,7 @@ dump_input_stream(InputStreamPtr &&is)
 		dump_text_file(tis);
 	}
 
-	const std::scoped_lock protect{is->mutex};
+	const std::lock_guard protect{is->mutex};
 
 	is->Check();
 	return 0;

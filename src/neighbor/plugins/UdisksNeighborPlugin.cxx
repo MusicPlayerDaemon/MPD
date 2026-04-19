@@ -159,7 +159,7 @@ UdisksNeighborExplorer::Close() noexcept
 NeighborExplorer::List
 UdisksNeighborExplorer::GetList() const noexcept
 {
-	const std::scoped_lock lock{mutex};
+	const std::lock_guard lock{mutex};
 
 	NeighborExplorer::List result;
 
@@ -176,7 +176,7 @@ UdisksNeighborExplorer::Insert(UDisks2::Object &&o) noexcept
 	const NeighborInfo info = ToNeighborInfo(o);
 
 	{
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		auto i = by_uri.emplace(o.GetUri(), info);
 		if (!i.second)
 			i.first->second = info;

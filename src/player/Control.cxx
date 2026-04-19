@@ -141,7 +141,7 @@ PlayerControl::LockSetPause(bool pause_flag) noexcept
 void
 PlayerControl::LockSetBorderPause(bool _border_pause) noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	border_pause = _border_pause;
 }
 
@@ -182,14 +182,14 @@ PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error) noexcept
 void
 PlayerControl::LockClearError() noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	ClearError();
 }
 
 void
 PlayerControl::LockSetTaggedSong(const DetachedSong &song) noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	tagged_song.reset();
 	tagged_song = std::make_unique<DetachedSong>(song);
 }
@@ -209,7 +209,7 @@ PlayerControl::ReadTaggedSong() noexcept
 std::unique_ptr<DetachedSong>
 PlayerControl::LockReadTaggedSong() noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	return ReadTaggedSong();
 }
 

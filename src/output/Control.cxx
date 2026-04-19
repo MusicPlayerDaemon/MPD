@@ -65,7 +65,7 @@ AudioOutputControl::Steal() noexcept
 	StopThread();
 
 	/* now we can finally remove it */
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	return std::exchange(output, nullptr);
 }
 
@@ -77,7 +77,7 @@ AudioOutputControl::ReplaceDummy(std::unique_ptr<FilteredAudioOutput> new_output
 	assert(new_output);
 
 	{
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		output = std::move(new_output);
 		enabled = _enabled;
 	}
@@ -126,7 +126,7 @@ AudioOutputControl::SetAttribute(std::string &&attribute_name,
 bool
 AudioOutputControl::LockSetEnabled(bool new_value) noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	if (new_value == enabled)
 		return false;
@@ -138,7 +138,7 @@ AudioOutputControl::LockSetEnabled(bool new_value) noexcept
 bool
 AudioOutputControl::LockToggleEnabled() noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	return enabled = !enabled;
 }
 
@@ -326,14 +326,14 @@ AudioOutputControl::IsChunkConsumed(const MusicChunk &chunk) const noexcept
 bool
 AudioOutputControl::LockIsChunkConsumed(const MusicChunk &chunk) const noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	return IsChunkConsumed(chunk);
 }
 
 void
 AudioOutputControl::LockPlay() noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	assert(allow_play);
 
@@ -355,7 +355,7 @@ AudioOutputControl::LockPauseAsync() noexcept
 	if (output)
 		output->Interrupt();
 
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	assert(allow_play);
 	if (IsOpen())
@@ -365,7 +365,7 @@ AudioOutputControl::LockPauseAsync() noexcept
 void
 AudioOutputControl::LockDrainAsync() noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	assert(allow_play);
 	if (IsOpen())
@@ -378,7 +378,7 @@ AudioOutputControl::LockCancelAsync() noexcept
 	if (output)
 		output->Interrupt();
 
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	if (IsOpen()) {
 		allow_play = false;
@@ -389,7 +389,7 @@ AudioOutputControl::LockCancelAsync() noexcept
 void
 AudioOutputControl::LockAllowPlay() noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	allow_play = true;
 	if (IsOpen())
@@ -441,7 +441,7 @@ AudioOutputControl::BeginDestroy() noexcept
 		if (output)
 			output->Interrupt();
 
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		if (!killed) {
 			killed = true;
 			CommandAsync(Command::KILL);

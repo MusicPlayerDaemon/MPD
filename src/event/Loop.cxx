@@ -502,7 +502,7 @@ EventLoop::Run() noexcept
 		/* try to handle DeferEvents without WakeFD
 		   overhead */
 		{
-			const std::scoped_lock lock{mutex};
+			const std::lock_guard lock{mutex};
 			HandleInject();
 #endif
 
@@ -530,7 +530,7 @@ EventLoop::Run() noexcept
 
 #ifdef HAVE_THREADED_EVENT_LOOP
 		{
-			const std::scoped_lock lock{mutex};
+			const std::lock_guard lock{mutex};
 			busy = true;
 		}
 #endif
@@ -562,7 +562,7 @@ EventLoop::AddInject(InjectEvent &d) noexcept
 	bool must_wake;
 
 	{
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		if (d.IsPending())
 			return;
 
@@ -581,7 +581,7 @@ EventLoop::AddInject(InjectEvent &d) noexcept
 void
 EventLoop::RemoveInject(InjectEvent &d) noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	if (d.IsPending())
 		inject.erase(inject.iterator_to(d));
@@ -609,7 +609,7 @@ EventLoop::OnWake() noexcept
 		return;
 	}
 
-	const std::scoped_lock lock{mutex};
+	const std::lock_guard lock{mutex};
 	HandleInject();
 }
 

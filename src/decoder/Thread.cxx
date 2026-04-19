@@ -388,7 +388,7 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, std::string_view suffix,
 	DecoderControl &dc = bridge.dc;
 
 	if (plugin.file_decode != nullptr) {
-		const std::scoped_lock protect{dc.mutex};
+		const std::lock_guard protect{dc.mutex};
 		return decoder_file_decode(plugin, bridge, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
 		std::unique_lock lock{dc.mutex};
@@ -416,7 +416,7 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
 	bridge.Reset();
 
 	DecoderControl &dc = bridge.dc;
-	const std::scoped_lock protect{dc.mutex};
+	const std::lock_guard protect{dc.mutex};
 	return decoder_file_decode(plugin, bridge, path_fs);
 }
 
