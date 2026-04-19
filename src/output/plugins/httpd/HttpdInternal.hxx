@@ -182,7 +182,7 @@ public:
 	 */
 	[[gnu::pure]]
 	bool LockHasClients() const noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		return HasClients();
 	}
 

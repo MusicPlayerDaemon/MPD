@@ -19,6 +19,8 @@ ver 0.25 (not yet released)
 * require Meson 1.2
 
 ver 0.24.10 (not yet released)
+* input
+  - cache: fix deadlock bug
 * database
   - upnp: allow building with libupnp 1.14.30 which has fixed the API breakage
 * Windows

@@ -17,6 +17,7 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "lib/fmt/ToBuffer.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "util/CNumberParser.hxx"
@@ -268,7 +269,7 @@ CurlInputStream::OnHeaders(unsigned status,
 				      FmtBuffer<40>("got HTTP status {}",
 						    status).c_str());
 
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	if (IsSeekPending()) {
 		/* don't update metadata while seeking */
@@ -331,7 +332,7 @@ CurlInputStream::OnData(std::span<const std::byte> data)
 {
 	assert(!data.empty());
 
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	if (IsSeekPending())
 		SeekDone();
@@ -347,7 +348,7 @@ CurlInputStream::OnData(std::span<const std::byte> data)
 void
 CurlInputStream::OnEnd()
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 
 	if (IsSeekPending())
 		SeekDone();
@@ -360,7 +361,7 @@ CurlInputStream::OnEnd()
 void
 CurlInputStream::OnError(std::exception_ptr e) noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	postponed_exception = std::move(e);
 
 	if (IsSeekPending())

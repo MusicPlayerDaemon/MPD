@@ -8,6 +8,7 @@
 #include "../InputPlugin.hxx"
 #include "../MaybeBufferedInputStream.hxx"
 #include "PluginUnavailable.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "system/Error.hxx"
 
 #include <libsmbclient.h>
@@ -88,13 +89,15 @@ input_smbclient_open(std::string_view _uri,
 }
 
 size_t
-SmbclientInputStream::Read(std::unique_lock<Mutex> &,
+SmbclientInputStream::Read(std::unique_lock<Mutex> &lock,
 			   std::span<std::byte> dest)
 {
+	assert(lock.mutex() == &mutex);
+
 	ssize_t nbytes;
 
 	{
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		nbytes = ctx.Read(handle, dest.data(), dest.size());
 	}
 
@@ -106,13 +109,15 @@ SmbclientInputStream::Read(std::unique_lock<Mutex> &,
 }
 
 void
-SmbclientInputStream::Seek(std::unique_lock<Mutex> &,
+SmbclientInputStream::Seek(std::unique_lock<Mutex> &lock,
 			   offset_type new_offset)
 {
+	assert(lock.mutex() == &mutex);
+
 	off_t result;
 
 	{
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		result = ctx.Seek(handle, new_offset);
 	}
 

@@ -8,7 +8,7 @@
 void
 Mixer::LockOpen()
 {
-	const std::scoped_lock lock{mutex};
+	const std::lock_guard lock{mutex};
 
 	if (open)
 		return;
@@ -34,7 +34,7 @@ Mixer::_Open()
 void
 Mixer::LockClose() noexcept
 {
-	const std::scoped_lock lock{mutex};
+	const std::lock_guard lock{mutex};
 
 	if (open)
 		_Close();
@@ -53,7 +53,7 @@ Mixer::_Close() noexcept
 int
 Mixer::LockGetVolume()
 {
-	const std::scoped_lock lock{mutex};
+	const std::lock_guard lock{mutex};
 
 	if (!open) {
 		if (IsGlobal() && !failure)
@@ -76,7 +76,7 @@ Mixer::LockSetVolume(unsigned volume)
 {
 	assert(volume <= 100);
 
-	const std::scoped_lock lock{mutex};
+	const std::lock_guard lock{mutex};
 
 	if (!open) {
 		if (failure)

@@ -382,7 +382,7 @@ SlesOutput::Cancel() noexcept
 		LogWarning(sles_domain,
 			   "AndroidSimpleBufferQueue.Clear() failed");
 
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	n_queued = 0;
 	filled = 0;
 }
@@ -407,7 +407,7 @@ SlesOutput::Pause()
 inline void
 SlesOutput::PlayedCallback()
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	assert(n_queued > 0);
 	--n_queued;
 	cond.notify_one();

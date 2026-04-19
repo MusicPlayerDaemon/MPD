@@ -16,6 +16,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"
@@ -140,7 +141,7 @@ private:
 	void SetState(State _state) noexcept {
 		assert(GetEventLoop().IsInside());
 
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		state = _state;
 		cond.notify_all();
 	}
@@ -148,7 +149,7 @@ private:
 	void SetState(State _state, std::exception_ptr &&e) noexcept {
 		assert(GetEventLoop().IsInside());
 
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		state = _state;
 		last_exception = std::move(e);
 		cond.notify_all();
@@ -179,7 +180,7 @@ private:
 			case State::INITIAL:
 				/* schedule connect */
 				{
-					const ScopeUnlock unlock(mutex);
+					const ScopeUnlock unlock{lock};
 					defer_connect.Schedule();
 				}
 

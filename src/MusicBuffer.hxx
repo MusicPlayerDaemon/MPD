@@ -39,7 +39,7 @@ public:
 #endif
 
 	bool IsFull() const noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		return buffer.IsFull();
 	}
 

@@ -11,6 +11,7 @@
 #include "neighbor/Info.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
 #include "Log.hxx"
@@ -83,7 +84,7 @@ void
 SmbclientNeighborExplorer::Close() noexcept
 {
 	{
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		quit = true;
 		cond.notify_one();
 	}
@@ -94,7 +95,7 @@ SmbclientNeighborExplorer::Close() noexcept
 NeighborExplorer::List
 SmbclientNeighborExplorer::GetList() const noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	return list;
 }
 

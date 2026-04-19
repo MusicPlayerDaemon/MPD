@@ -32,7 +32,7 @@ public:
 
 	~SmbclientContext() noexcept {
 		if (ctx != nullptr) {
-			const std::scoped_lock protect{global_mutex};
+			const std::lock_guard protect{global_mutex};
 			smbc_free_context(ctx, 1);
 		}
 	}

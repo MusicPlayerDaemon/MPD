@@ -4,6 +4,7 @@
 #include "MmsInputPlugin.hxx"
 #include "input/ThreadInputStream.hxx"
 #include "input/InputPlugin.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "system/Error.hxx"
 
 #include <libmms/mmsx.h>

@@ -244,7 +244,7 @@ public:
 	 */
 	void InjectBreak() noexcept {
 		{
-			const std::scoped_lock lock{mutex};
+			const std::lock_guard lock{mutex};
 			quit_injected = true;
 		}
 

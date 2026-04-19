@@ -5,6 +5,7 @@
 #include "RemoteTagCacheHandler.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "input/ScanTags.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -80,13 +81,13 @@ RemoteTagCache::ItemResolved(Item &item) noexcept
 void
 RemoteTagCache::InvokeHandlers() noexcept
 {
-	const std::scoped_lock lock{mutex};
+	std::unique_lock lock{mutex};
 
 	while (!invoke_list.empty()) {
 		auto &item = invoke_list.pop_front();
 		idle_list.push_back(item);
 
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		handler.OnRemoteTag(item.uri.c_str(), item.tag);
 	}
 
@@ -105,7 +106,7 @@ RemoteTagCache::Item::OnRemoteTag(Tag &&_tag) noexcept
 
 	scanner.reset();
 
-	const std::scoped_lock lock{parent.mutex};
+	const std::lock_guard lock{parent.mutex};
 	parent.ItemResolved(*this);
 }
 
@@ -117,6 +118,6 @@ RemoteTagCache::Item::OnRemoteTagError(std::exception_ptr e) noexcept
 
 	scanner.reset();
 
-	const std::scoped_lock lock{parent.mutex};
+	const std::lock_guard lock{parent.mutex};
 	parent.ItemResolved(*this);
 }

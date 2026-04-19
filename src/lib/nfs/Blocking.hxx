@@ -52,7 +52,7 @@ private:
 	 * thread.
 	 */
 	void LockSetFinished() noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		finished = true;
 		cond.notify_one();
 	}

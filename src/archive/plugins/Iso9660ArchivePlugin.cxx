@@ -13,6 +13,7 @@
 #include "fs/Path.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UTF8.hxx"
 
@@ -235,9 +236,11 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 }
 
 size_t
-Iso9660InputStream::Read(std::unique_lock<Mutex> &,
+Iso9660InputStream::Read(std::unique_lock<Mutex> &lock,
 			 std::span<std::byte> dest)
 {
+	assert(lock.mutex() == &mutex);
+
 	const offset_type remaining = size - offset;
 	if (remaining == 0)
 		return 0;
@@ -252,7 +255,7 @@ Iso9660InputStream::Read(std::unique_lock<Mutex> &,
 
 		assert((offset - skip) % ISO_BLOCKSIZE == 0);
 
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 
 		const lsn_t read_lsn = lsn + offset / ISO_BLOCKSIZE;
 

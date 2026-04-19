@@ -99,7 +99,7 @@ public:
 	 */
 	template<typename T>
 	void VisitMounts(T t) const {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		std::string uri;
 		VisitMounts(uri, root, t);
 	}
@@ -109,7 +109,7 @@ public:
 	 */
 	[[gnu::pure]] [[gnu::nonnull]]
 	bool IsMounted(const char *storage_uri) const noexcept {
-		const std::scoped_lock protect{mutex};
+		const std::lock_guard protect{mutex};
 		return IsMounted(root, storage_uri);
 	}
 

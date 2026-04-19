@@ -3,6 +3,7 @@
 
 #include "ThreadInputStream.hxx"
 #include "thread/Name.hxx"
+#include "thread/ScopeUnlock.hxx"
 
 #include <cassert>
 
@@ -28,7 +29,7 @@ ThreadInputStream::Stop() noexcept
 		return;
 
 	{
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		close = true;
 		wake_cond.notify_one();
 	}
@@ -82,7 +83,7 @@ ThreadInputStream::ThreadFunc() noexcept
 			buffer.Clear();
 
 			try {
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				ThreadSeek(seek_offset_copy);
 			} catch (...) {
 				postponed_exception = std::current_exception();
@@ -100,7 +101,7 @@ ThreadInputStream::ThreadFunc() noexcept
 			size_t nbytes;
 
 			try {
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				nbytes = ThreadRead(w);
 			} catch (...) {
 				postponed_exception = std::current_exception();

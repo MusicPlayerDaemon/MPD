@@ -81,7 +81,7 @@ InputStream::ReadTag() noexcept
 std::unique_ptr<Tag>
 InputStream::LockReadTag() noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	return ReadTag();
 }
 
@@ -126,7 +126,7 @@ InputStream::LockReadFull(std::span<std::byte> dest)
 bool
 InputStream::LockIsEOF() const noexcept
 {
-	const std::scoped_lock protect{mutex};
+	const std::lock_guard protect{mutex};
 	return IsEOF();
 }
 

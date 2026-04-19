@@ -58,13 +58,13 @@ public:
 
 private:
 	void Finish() noexcept {
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		running_flag = false;
 		cond.notify_one();
 	}
 
 	void Push(const std::function<void()> &function) {
-		const std::scoped_lock lock{mutex};
+		const std::lock_guard lock{mutex};
 		queue.push(function);
 		cond.notify_one();
 	}
