@@ -3,17 +3,16 @@
 
 #pragma once
 
-#include "Mutex.hxx"
-
 /**
- * Within the scope of an instance, this class will keep a #Mutex
- * unlocked.
+ * Within the scope of an instance, this class will keep a #Mutex (or
+ * similar class implementing methods lock() and unlock()) unlocked.
  */
+template<typename T>
 class ScopeUnlock {
-	Mutex &mutex;
+	T &mutex;
 
 public:
-	explicit ScopeUnlock(Mutex &_mutex) noexcept:mutex(_mutex) {
+	explicit ScopeUnlock(T &_mutex) noexcept:mutex(_mutex) {
 		mutex.unlock();
 	}
 
