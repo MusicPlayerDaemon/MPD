@@ -64,9 +64,9 @@ CacheInputStream::Read(std::unique_lock<Mutex> &lock,
 		   #lock) and lock #InputCacheItem's mutex (from
 		   #BufferingInputStream) instead*/
 		const ScopeUnlock unlock{lock};
-		const std::lock_guard protect{i.mutex};
+		std::unique_lock cache_lock{i.mutex};
 
-		nbytes = i.Read(lock, _offset, dest);
+		nbytes = i.Read(cache_lock, _offset, dest);
 	}
 
 	offset += nbytes;
