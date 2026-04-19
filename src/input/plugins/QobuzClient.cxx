@@ -3,6 +3,7 @@
 
 #include "QobuzClient.hxx"
 #include "lib/crypto/MD5.hxx"
+#include "thread/ScopeUnlock.hxx"
 
 #include <fmt/core.h>
 

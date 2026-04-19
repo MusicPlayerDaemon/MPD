@@ -8,6 +8,7 @@
 #include "../InputPlugin.hxx"
 #include "../MaybeBufferedInputStream.hxx"
 #include "PluginUnavailable.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "system/Error.hxx"
 
 #include <libsmbclient.h>

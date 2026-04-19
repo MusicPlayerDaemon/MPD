@@ -17,6 +17,7 @@
 #include "tag/Builder.hxx"
 #include "tag/Tag.hxx"
 #include "lib/fmt/ToBuffer.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "util/CNumberParser.hxx"

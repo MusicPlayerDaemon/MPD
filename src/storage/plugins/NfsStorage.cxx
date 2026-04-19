@@ -16,6 +16,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"

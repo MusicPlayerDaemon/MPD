@@ -18,6 +18,7 @@
 #include "time/PeriodClock.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "util/Manual.hxx"
 #include "util/Domain.hxx"
 #include "event/MultiSocketMonitor.hxx"

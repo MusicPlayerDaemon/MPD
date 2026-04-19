@@ -7,6 +7,7 @@
 #include "fs/FileInfo.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "io/FileReader.hxx"
 #include "io/FileDescriptor.hxx"
 

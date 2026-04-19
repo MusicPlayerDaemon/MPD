@@ -5,6 +5,7 @@
 #include "RemoteTagCacheHandler.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "input/ScanTags.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"

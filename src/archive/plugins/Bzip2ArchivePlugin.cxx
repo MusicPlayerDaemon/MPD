@@ -13,6 +13,7 @@
 #include "input/LocalOpen.hxx"
 #include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
+#include "thread/ScopeUnlock.hxx"
 
 #include <bzlib.h>
 

@@ -11,6 +11,7 @@
 #include "neighbor/Info.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
 #include "Log.hxx"

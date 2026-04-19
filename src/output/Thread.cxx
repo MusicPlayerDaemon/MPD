@@ -10,6 +10,7 @@
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "thread/Util.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "thread/Slack.hxx"
 #include "thread/Name.hxx"
 #include "util/StringBuffer.hxx"

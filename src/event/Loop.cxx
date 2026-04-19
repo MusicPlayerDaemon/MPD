@@ -8,6 +8,7 @@
 #include "util/ScopeExit.hxx"
 
 #ifdef HAVE_THREADED_EVENT_LOOP
+#include "thread/ScopeUnlock.hxx"
 #include "InjectEvent.hxx"
 #endif
 

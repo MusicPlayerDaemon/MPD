@@ -32,6 +32,7 @@
 #include "tag/Tag.hxx"
 #include "util/Domain.hxx"
 #include "thread/Name.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "Log.hxx"
 
 #include <exception>

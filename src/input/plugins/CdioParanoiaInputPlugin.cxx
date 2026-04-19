@@ -10,6 +10,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"

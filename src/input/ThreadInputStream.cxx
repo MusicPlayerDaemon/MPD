@@ -3,6 +3,7 @@
 
 #include "ThreadInputStream.hxx"
 #include "thread/Name.hxx"
+#include "thread/ScopeUnlock.hxx"
 
 #include <cassert>
 

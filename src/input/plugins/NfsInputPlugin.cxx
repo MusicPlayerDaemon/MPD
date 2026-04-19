@@ -6,6 +6,7 @@
 #include "../InputPlugin.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
+#include "thread/ScopeUnlock.hxx"
 
 /**
  * Do not buffer more than this number of bytes.  It should be a

@@ -15,6 +15,7 @@
 #include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
 #include "lib/fmt/SystemError.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "util/UTF8.hxx"
 
 #include <zzip/zzip.h>

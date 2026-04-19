@@ -14,6 +14,7 @@
 #include "input/Registry.hxx"
 #include "DecoderList.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "system/Error.hxx"
 #include "util/MimeType.hxx"
 #include "util/UriExtract.hxx"

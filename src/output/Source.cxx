@@ -10,6 +10,7 @@
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "thread/Mutex.hxx"
+#include "thread/ScopeUnlock.hxx"
 
 #include <string.h>
 

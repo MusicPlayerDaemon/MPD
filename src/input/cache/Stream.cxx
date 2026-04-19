@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "Stream.hxx"
+#include "thread/ScopeUnlock.hxx"
 
 CacheInputStream::CacheInputStream(InputCacheLease _lease,
 				   Mutex &_mutex) noexcept

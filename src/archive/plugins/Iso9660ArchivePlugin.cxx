@@ -13,6 +13,7 @@
 #include "fs/Path.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UTF8.hxx"
 
