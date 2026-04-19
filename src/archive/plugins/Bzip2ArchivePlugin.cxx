@@ -125,12 +125,14 @@ Bzip2InputStream::FillBuffer()
 }
 
 size_t
-Bzip2InputStream::Read(std::unique_lock<Mutex> &, std::span<std::byte> dest)
+Bzip2InputStream::Read(std::unique_lock<Mutex> &lock, std::span<std::byte> dest)
 {
+	assert(lock.mutex() == &mutex);
+
 	if (eof)
 		return 0;
 
-	const ScopeUnlock unlock(mutex);
+	const ScopeUnlock unlock{lock};
 
 	bzstream.next_out = reinterpret_cast<char *>(dest.data());
 	bzstream.avail_out = dest.size();

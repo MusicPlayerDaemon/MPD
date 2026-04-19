@@ -1265,13 +1265,13 @@ try {
 	}
 
 	{
-		const std::lock_guard lock{mutex};
+		std::unique_lock lock{mutex};
 
 		assert(active);
 
 		if (drain) {
 			{
-				ScopeUnlock unlock(mutex);
+				ScopeUnlock unlock{lock};
 				if (!DrainInternal())
 					return;
 

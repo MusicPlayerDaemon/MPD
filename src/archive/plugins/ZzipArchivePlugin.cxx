@@ -137,9 +137,10 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 }
 
 size_t
-ZzipInputStream::Read(std::unique_lock<Mutex> &, std::span<std::byte> dest)
+ZzipInputStream::Read(std::unique_lock<Mutex> &lock, std::span<std::byte> dest)
 {
-	const ScopeUnlock unlock(mutex);
+	assert(lock.mutex() == &mutex);
+	const ScopeUnlock unlock{lock};
 
 	zzip_ssize_t nbytes = zzip_file_read(file, dest.data(), dest.size());
 	if (nbytes < 0)

@@ -60,7 +60,10 @@ CacheInputStream::Read(std::unique_lock<Mutex> &lock,
 	size_t nbytes;
 
 	{
-		const ScopeUnlock unlock(mutex);
+		/* release our own #mutex (taken by the caller via
+		   #lock) and lock #InputCacheItem's mutex (from
+		   #BufferingInputStream) instead*/
+		const ScopeUnlock unlock{lock};
 		const std::lock_guard protect{i.mutex};
 
 		nbytes = i.Read(lock, _offset, dest);

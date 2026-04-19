@@ -667,6 +667,7 @@ Player::SeekDecoder(std::unique_lock<Mutex> &lock, SongTime seek_time) noexcept
 inline bool
 Player::SeekDecoder(std::unique_lock<Mutex> &lock) noexcept
 {
+	assert(lock.mutex() == &pc.mutex);
 	assert(pc.next_song != nullptr);
 
 	if (pc.seek_time > SongTime::zero() && // TODO: allow this only if the song duration is known
@@ -685,7 +686,7 @@ Player::SeekDecoder(std::unique_lock<Mutex> &lock) noexcept
 	CancelPendingSeek();
 
 	{
-		const ScopeUnlock unlock(pc.mutex);
+		const ScopeUnlock unlock{lock};
 		pc.outputs.Cancel();
 	}
 
@@ -749,7 +750,7 @@ Player::SeekDecoder(std::unique_lock<Mutex> &lock) noexcept
 
 	{
 		/* call syncPlaylistWithQueue() in the main thread */
-		const ScopeUnlock unlock(pc.mutex);
+		const ScopeUnlock unlock{lock};
 		pc.listener.OnPlayerSync();
 	}
 
@@ -759,6 +760,8 @@ Player::SeekDecoder(std::unique_lock<Mutex> &lock) noexcept
 inline bool
 Player::ProcessCommand(std::unique_lock<Mutex> &lock) noexcept
 {
+	assert(lock.mutex() == &pc.mutex);
+
 	switch (pc.command) {
 	case PlayerCommand::NONE:
 		break;
@@ -770,7 +773,7 @@ Player::ProcessCommand(std::unique_lock<Mutex> &lock) noexcept
 
 	case PlayerCommand::UPDATE_AUDIO:
 		{
-			const ScopeUnlock unlock(pc.mutex);
+			const ScopeUnlock unlock{lock};
 			pc.outputs.EnableDisable();
 		}
 
@@ -796,7 +799,7 @@ Player::ProcessCommand(std::unique_lock<Mutex> &lock) noexcept
 		if (paused) {
 			pc.state = PlayerState::PAUSE;
 
-			const ScopeUnlock unlock(pc.mutex);
+			const ScopeUnlock unlock{lock};
 			pc.outputs.Pause();
 		} else if (!play_audio_format.IsDefined()) {
 			/* the decoder hasn't provided an audio format
@@ -831,7 +834,7 @@ Player::ProcessCommand(std::unique_lock<Mutex> &lock) noexcept
 
 	case PlayerCommand::REFRESH:
 		if (output_open && !paused) {
-			const ScopeUnlock unlock(pc.mutex);
+			const ScopeUnlock unlock{lock};
 			pc.outputs.CheckPipe();
 		}
 
@@ -1164,7 +1167,7 @@ Player::Run() noexcept
 			/* at least one music chunk is ready - send it
 			   to the audio output */
 
-			const ScopeUnlock unlock(pc.mutex);
+			const ScopeUnlock unlock{lock};
 			PlayNextChunk();
 		} else if (UnlockCheckOutputs() > 0) {
 			/* not enough data from decoder, but the
@@ -1199,7 +1202,7 @@ Player::Run() noexcept
 			if (pipe->IsEmpty()) {
 				/* wait for the hardware to finish
 				   playback */
-				const ScopeUnlock unlock(pc.mutex);
+				const ScopeUnlock unlock{lock};
 				pc.outputs.Drain();
 				break;
 			}
@@ -1270,7 +1273,7 @@ try {
 			assert(next_song != nullptr);
 
 			{
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				do_play(*this, dc, buffer);
 
 				/* give the main thread a chance to
@@ -1284,7 +1287,7 @@ try {
 
 		case PlayerCommand::STOP:
 			{
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				outputs.Cancel();
 			}
 
@@ -1299,7 +1302,7 @@ try {
 
 		case PlayerCommand::CLOSE_AUDIO:
 			{
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				outputs.Release();
 			}
 
@@ -1311,7 +1314,7 @@ try {
 
 		case PlayerCommand::UPDATE_AUDIO:
 			{
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				outputs.EnableDisable();
 			}
 
@@ -1320,7 +1323,7 @@ try {
 
 		case PlayerCommand::EXIT:
 			{
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				dc.Quit();
 				outputs.Close();
 			}

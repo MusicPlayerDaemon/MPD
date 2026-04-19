@@ -133,7 +133,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	}
 
 	{
-		const ScopeUnlock unlock(bridge.dc.mutex);
+		const ScopeUnlock unlock{lock};
 
 		FmtThreadName("decoder:{}", plugin.name);
 

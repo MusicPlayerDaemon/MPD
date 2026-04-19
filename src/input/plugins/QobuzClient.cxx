@@ -141,12 +141,13 @@ QobuzClient::OnQobuzLoginError(std::exception_ptr _error) noexcept
 void
 QobuzClient::InvokeHandlers() noexcept
 {
-	const std::lock_guard protect{mutex};
+	std::unique_lock lock{mutex};
+
 	while (!handlers.empty()) {
 		auto &h = handlers.front();
 		handlers.pop_front();
 
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		h.OnQobuzSession();
 	}
 }

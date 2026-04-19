@@ -180,7 +180,7 @@ private:
 			case State::INITIAL:
 				/* schedule connect */
 				{
-					const ScopeUnlock unlock(mutex);
+					const ScopeUnlock unlock{lock};
 					defer_connect.Schedule();
 				}
 

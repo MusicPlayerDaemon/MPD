@@ -83,7 +83,7 @@ ThreadInputStream::ThreadFunc() noexcept
 			buffer.Clear();
 
 			try {
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				ThreadSeek(seek_offset_copy);
 			} catch (...) {
 				postponed_exception = std::current_exception();
@@ -101,7 +101,7 @@ ThreadInputStream::ThreadFunc() noexcept
 			size_t nbytes;
 
 			try {
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				nbytes = ThreadRead(w);
 			} catch (...) {
 				postponed_exception = std::current_exception();

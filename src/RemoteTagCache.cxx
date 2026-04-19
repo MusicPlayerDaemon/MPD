@@ -81,13 +81,13 @@ RemoteTagCache::ItemResolved(Item &item) noexcept
 void
 RemoteTagCache::InvokeHandlers() noexcept
 {
-	const std::lock_guard lock{mutex};
+	std::unique_lock lock{mutex};
 
 	while (!invoke_list.empty()) {
 		auto &item = invoke_list.pop_front();
 		idle_list.push_back(item);
 
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		handler.OnRemoteTag(item.uri.c_str(), item.tag);
 	}
 

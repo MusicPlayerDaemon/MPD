@@ -231,12 +231,14 @@ try {
 inline bool
 AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 {
+	assert(lock.mutex() == &mutex);
+
 	assert(source_state == SourceState::OPEN);
 
 	// ensure pending tags are flushed in all cases
 	const auto *tag = source.ReadTag();
 	if (tags && tag != nullptr) {
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		try {
 			output->SendTag(*tag);
 		} catch (AudioOutputInterrupted) {
@@ -262,7 +264,7 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 		size_t nbytes;
 
 		try {
-			const ScopeUnlock unlock(mutex);
+			const ScopeUnlock unlock{lock};
 			nbytes = output->Play(data);
 			assert(nbytes > 0);
 			assert(nbytes <= data.size());
@@ -291,6 +293,7 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 inline bool
 AudioOutputControl::InternalPlay(std::unique_lock<Mutex> &lock) noexcept
 {
+	assert(lock.mutex() == &mutex);
 	assert(source_state == SourceState::OPEN);
 
 	if (!FillSourceOrClose())
@@ -315,7 +318,7 @@ AudioOutputControl::InternalPlay(std::unique_lock<Mutex> &lock) noexcept
 			/* wake up the player every now and then to
 			   give it a chance to refill the pipe before
 			   it runs empty */
-			const ScopeUnlock unlock(mutex);
+			const ScopeUnlock unlock{lock};
 			client.ChunksConsumed();
 			n = 0;
 		}
@@ -324,7 +327,7 @@ AudioOutputControl::InternalPlay(std::unique_lock<Mutex> &lock) noexcept
 			break;
 	} while (FillSourceOrClose());
 
-	const ScopeUnlock unlock(mutex);
+	const ScopeUnlock unlock{lock};
 	client.ChunksConsumed();
 
 	return true;
@@ -333,8 +336,10 @@ AudioOutputControl::InternalPlay(std::unique_lock<Mutex> &lock) noexcept
 inline void
 AudioOutputControl::InternalPause(std::unique_lock<Mutex> &lock) noexcept
 {
+	assert(lock.mutex() == &mutex);
+
 	{
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		output->BeginPause();
 	}
 
@@ -537,7 +542,7 @@ AudioOutputControl::Task() noexcept
 
 			if (open) {
 				playing = false;
-				const ScopeUnlock unlock(mutex);
+				const ScopeUnlock unlock{lock};
 				output->Cancel();
 			}
 

@@ -60,11 +60,13 @@ OpenFileInputStream(Path path, Mutex &mutex)
 }
 
 void
-FileInputStream::Seek(std::unique_lock<Mutex> &,
+FileInputStream::Seek(std::unique_lock<Mutex> &lock,
 		      offset_type new_offset)
 {
+	assert(lock.mutex() == &mutex);
+
 	{
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		reader.Seek((off_t)new_offset);
 	}
 
@@ -72,12 +74,14 @@ FileInputStream::Seek(std::unique_lock<Mutex> &,
 }
 
 size_t
-FileInputStream::Read(std::unique_lock<Mutex> &, std::span<std::byte> dest)
+FileInputStream::Read(std::unique_lock<Mutex> &lock, std::span<std::byte> dest)
 {
+	assert(lock.mutex() == &mutex);
+
 	size_t nbytes;
 
 	{
-		const ScopeUnlock unlock(mutex);
+		const ScopeUnlock unlock{lock};
 		nbytes = reader.Read(dest);
 	}
 
