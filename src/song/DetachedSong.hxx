@@ -87,7 +87,7 @@ public:
 	explicit DetachedSong(const char *_uri) noexcept
 		:uri(_uri) {}
 
-	explicit DetachedSong(const std::string &_uri) noexcept
+	explicit DetachedSong(std::string_view _uri) noexcept
 		:uri(_uri) {}
 
 	explicit DetachedSong(std::string &&_uri) noexcept
