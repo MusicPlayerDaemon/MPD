@@ -23,6 +23,8 @@
 
 #include <memory>
 
+using std::string_view_literals::operator""sv;
+
 static void
 handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 {
@@ -61,7 +63,7 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 }
 
 CommandResult
-handle_listfiles_storage(Response &r, Storage &storage, const char *uri)
+handle_listfiles_storage(Response &r, Storage &storage, std::string_view uri)
 {
 	std::unique_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(uri));
 	handle_listfiles_storage(r, *reader);
@@ -69,7 +71,7 @@ handle_listfiles_storage(Response &r, Storage &storage, const char *uri)
 }
 
 CommandResult
-handle_listfiles_storage(Client &client, Response &r, const char *uri)
+handle_listfiles_storage(Client &client, Response &r, std::string_view uri)
 {
 	auto &event_loop = client.GetInstance().io_thread.GetEventLoop();
 	std::unique_ptr<Storage> storage(CreateStorageURI(event_loop, uri));
@@ -78,7 +80,7 @@ handle_listfiles_storage(Client &client, Response &r, const char *uri)
 		return CommandResult::ERROR;
 	}
 
-	return handle_listfiles_storage(r, *storage, "");
+	return handle_listfiles_storage(r, *storage, ""sv);
 }
 
 static void

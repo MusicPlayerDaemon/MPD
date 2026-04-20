@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_STORAGE_COMMANDS_HXX
-#define MPD_STORAGE_COMMANDS_HXX
+#pragma once
 
 #include "CommandResult.hxx"
+
+#include <string_view>
 
 struct Instance;
 class Client;
@@ -13,10 +14,10 @@ class Request;
 class Response;
 
 CommandResult
-handle_listfiles_storage(Response &r, Storage &storage, const char *uri);
+handle_listfiles_storage(Response &r, Storage &storage, std::string_view uri);
 
 CommandResult
-handle_listfiles_storage(Client &client, Response &r, const char *uri);
+handle_listfiles_storage(Client &client, Response &r, std::string_view uri);
 
 CommandResult
 handle_listmounts(Client &client, Request request, Response &response);
@@ -30,5 +31,3 @@ handle_unmount(Client &client, Request request, Response &response);
 [[gnu::pure]]
 bool
 mount_commands_available(Instance &instance) noexcept;
-
-#endif
