@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_TAG_STREAM_HXX
-#define MPD_TAG_STREAM_HXX
+#pragma once
+
+#include <string_view>
 
 struct AudioFormat;
 class InputStream;
@@ -25,7 +26,7 @@ tag_stream_scan(InputStream &is, TagHandler &handler);
  * Throws on I/O error.
  */
 bool
-tag_stream_scan(const char *uri, TagHandler &handler);
+tag_stream_scan(std::string_view uri, TagHandler &handler);
 
 /**
  * Scan the tags of an #InputStream.  Invokes matching decoder
@@ -45,7 +46,5 @@ tag_stream_scan(InputStream &is, TagBuilder &builder,
  * Throws on I/O error.
  */
 bool
-tag_stream_scan(const char *uri, TagBuilder &builder,
+tag_stream_scan(std::string_view uri, TagBuilder &builder,
 		AudioFormat *audio_format=nullptr);
-
-#endif

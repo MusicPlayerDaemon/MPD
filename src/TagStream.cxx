@@ -58,7 +58,7 @@ tag_stream_scan(InputStream &is, TagHandler &handler)
 }
 
 bool
-tag_stream_scan(const char *uri, TagHandler &handler)
+tag_stream_scan(std::string_view uri, TagHandler &handler)
 {
 	Mutex mutex;
 
@@ -84,7 +84,7 @@ tag_stream_scan(InputStream &is, TagBuilder &builder,
 }
 
 bool
-tag_stream_scan(const char *uri, TagBuilder &builder,
+tag_stream_scan(std::string_view uri, TagBuilder &builder,
 		AudioFormat *audio_format)
 {
 	Mutex mutex;

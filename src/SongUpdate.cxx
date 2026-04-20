@@ -170,7 +170,7 @@ DetachedSong::Update()
 		auto new_audio_format = AudioFormat::Undefined();
 
 		try {
-			if (!tag_stream_scan(uri.c_str(), tag_builder,
+			if (!tag_stream_scan(uri, tag_builder,
 					     &new_audio_format))
 				return false;
 		} catch (...) {
