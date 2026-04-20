@@ -48,6 +48,9 @@ TagScanFile(const Path path_fs, TagHandler &handler)
 static std::string
 ResolveUri(std::string_view base, const char *relative)
 {
+	if (uri_has_scheme(relative)) {
+		return std::string(relative);
+	}
 	while (true) {
 		const char *rest = StringAfterPrefix(relative, "../");
 		if (rest == nullptr)
