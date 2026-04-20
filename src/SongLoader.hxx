@@ -7,6 +7,7 @@
 #include "config.h"
 
 #include <cstddef>
+#include <string_view>
 
 class IClient;
 class Database;
@@ -59,11 +60,9 @@ public:
 	DetachedSong LoadSong(const char *uri_utf8) const;
 
 private:
-	[[gnu::nonnull]]
-	DetachedSong LoadFromDatabase(const char *uri) const;
+	DetachedSong LoadFromDatabase(std::string_view uri) const;
 
-	[[gnu::nonnull]]
-	DetachedSong LoadFile(const char *path_utf8, Path path_fs) const;
+	DetachedSong LoadFile(std::string_view path_utf8, Path path_fs) const;
 };
 
 #endif

@@ -319,7 +319,7 @@ handle_getfingerprint(Client &client, Request args, Response &)
 #endif
 			    );
 
-	std::string uri = lu.canonical_uri;
+	std::string uri{lu.canonical_uri};
 
 	switch (lu.type) {
 	case LocatedUri::Type::ABSOLUTE:

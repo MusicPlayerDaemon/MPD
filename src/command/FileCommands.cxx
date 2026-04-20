@@ -215,7 +215,7 @@ read_stream_art(Response &r, const std::string_view art_directory,
  */
 [[gnu::pure]]
 static std::string_view
-RealDirectoryOfSong(Client &client, const char *song_uri,
+RealDirectoryOfSong(Client &client, const std::string_view song_uri,
 		    std::string_view directory_uri) noexcept
 try {
 	const auto *db = client.GetDatabase();
@@ -246,7 +246,7 @@ try {
 }
 
 static CommandResult
-read_db_art(Client &client, Response &r, const char *uri, const uint64_t offset)
+read_db_art(Client &client, Response &r, std::string_view uri, const uint64_t offset)
 {
 	const Storage *storage = client.GetStorage();
 	if (storage == nullptr) {

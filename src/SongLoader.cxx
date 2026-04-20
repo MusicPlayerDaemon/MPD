@@ -23,7 +23,7 @@ SongLoader::SongLoader(const IClient &_client) noexcept
 #endif
 
 DetachedSong
-SongLoader::LoadFromDatabase(const char *uri) const
+SongLoader::LoadFromDatabase(std::string_view uri) const
 {
 #ifdef ENABLE_DATABASE
 	if (db != nullptr)
@@ -36,7 +36,7 @@ SongLoader::LoadFromDatabase(const char *uri) const
 }
 
 DetachedSong
-SongLoader::LoadFile(const char *path_utf8, Path path_fs) const
+SongLoader::LoadFile(const std::string_view path_utf8, Path path_fs) const
 {
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
