@@ -51,7 +51,7 @@ struct LocatedUri {
 	const char *canonical_uri;
 
 	/**
-	 * Contains the local file path if type==FILE.
+	 * Contains the local file path if type==PATH.
 	 */
 	AllocatedPath path;
 
