@@ -38,10 +38,10 @@ InputCacheItem::RemoveLease(InputCacheLease &lease) noexcept
 }
 
 void
-InputCacheItem::OnBufferAvailable() noexcept
+InputCacheItem::OnBufferAvailable(std::unique_lock<Mutex> &lock) noexcept
 {
 	for (auto i = leases.begin(); i != leases.end(); i = next_lease) {
 		next_lease = std::next(i);
-		i->OnInputCacheAvailable();
+		i->OnInputCacheAvailable(lock);
 	}
 }

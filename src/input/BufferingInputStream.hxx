@@ -104,7 +104,7 @@ protected:
 	 * added to the buffer.  During this method call, the mutex is
 	 * locked.
 	 */
-	virtual void OnBufferAvailable() noexcept {}
+	virtual void OnBufferAvailable([[maybe_unused]] std::unique_lock<Mutex> &lock) noexcept {}
 
 private:
 	size_t FindFirstHole() const noexcept;
