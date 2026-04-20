@@ -37,7 +37,7 @@ DatabaseDetachSong(const Storage *storage, const LightSong &song) noexcept
 }
 
 DetachedSong
-DatabaseDetachSong(const Database &db, const Storage *storage, const char *uri)
+DatabaseDetachSong(const Database &db, const Storage *storage, std::string_view uri)
 {
 	const LightSong *tmp = db.GetSong(uri);
 	assert(tmp != nullptr);

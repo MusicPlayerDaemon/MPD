@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_DATABASE_SONG_HXX
-#define MPD_DATABASE_SONG_HXX
+#pragma once
+
+#include <string_view>
 
 struct LightSong;
 class Database;
@@ -24,6 +25,4 @@ DatabaseDetachSong(const Storage *storage, const LightSong &song) noexcept;
  */
 DetachedSong
 DatabaseDetachSong(const Database &db, const Storage *storage,
-		   const char *uri);
-
-#endif
+		   std::string_view uri);

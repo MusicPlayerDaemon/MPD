@@ -25,6 +25,8 @@
 #include <string.h>
 #include <stdio.h>
 
+using std::string_view_literals::operator""sv;
+
 bool
 uri_supported_scheme(const char *uri) noexcept
 {
@@ -83,15 +85,15 @@ MakeTag2c()
 		       TAG_COMMENT, "comment_b2", TAG_ALBUM, "album_a2");
 }
 
-static const char *uri1 = "/foo/bar.ogg";
-static const char *uri2 = "foo/bar.ogg";
+static constexpr std::string_view uri1 = "/foo/bar.ogg"sv;
+static constexpr std::string_view uri2 = "foo/bar.ogg"sv;
 
 DetachedSong
 DatabaseDetachSong([[maybe_unused]] const Database &db,
 		   [[maybe_unused]] const Storage *_storage,
-		   const char *uri)
+		   const std::string_view uri)
 {
-	if (strcmp(uri, uri2) == 0)
+	if (uri == uri2)
 		return DetachedSong(uri, MakeTag2a());
 
 	throw std::runtime_error("No such song");
