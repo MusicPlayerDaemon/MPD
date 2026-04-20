@@ -18,8 +18,10 @@
 #include "util/StringCompare.hxx"
 #include "LocateUri.hxx"
 
+using std::string_view_literals::operator""sv;
+
 static void
-TagScanStream(const char *uri, TagHandler &handler)
+TagScanStream(std::string_view uri, TagHandler &handler)
 {
 	Mutex mutex;
 
@@ -46,18 +48,16 @@ TagScanFile(const Path path_fs, TagHandler &handler)
  * URI.
  */
 static std::string
-ResolveUri(std::string_view base, const char *relative)
+ResolveUri(std::string_view base, std::string_view relative)
 {
 	while (true) {
-		const char *rest = StringAfterPrefix(relative, "../");
-		if (rest == nullptr)
+		if (!SkipPrefix(relative, "../"sv))
 			break;
 
 		if (base == ".")
 			throw ProtocolError(ACK_ERROR_NO_EXIST, "Bad real URI");
 
 		base = PathTraitsUTF8::GetParent(base);
-		relative = rest;
 	}
 
 	return PathTraitsUTF8::Build(base, relative);
@@ -87,13 +87,13 @@ GetRealSongUri(Client &client, std::string_view uri)
 #endif
 
 static void
-TagScanDatabase(Client &client, const char *uri, TagHandler &handler)
+TagScanDatabase(Client &client, std::string_view uri, TagHandler &handler)
 {
 #ifdef ENABLE_DATABASE
 	const auto real_uri = GetRealSongUri(client, uri);
 
 	if (!real_uri.empty()) {
-		uri = real_uri.c_str();
+		uri = real_uri;
 
 		// TODO: support absolute paths?
 		if (uri_has_scheme(uri))
