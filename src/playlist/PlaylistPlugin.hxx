@@ -35,7 +35,7 @@ struct PlaylistPlugin {
 	 * Opens the playlist on the specified URI.  This URI has
 	 * either matched one of the schemes or one of the suffixes.
 	 */
-	std::unique_ptr<SongEnumerator> (*open_uri)(const char *uri,
+	std::unique_ptr<SongEnumerator> (*open_uri)(std::string_view uri,
 						    Mutex &mutex) = nullptr;
 
 	/**
@@ -59,7 +59,7 @@ struct PlaylistPlugin {
 	bool as_folder = false;
 
 	constexpr PlaylistPlugin(const char *_name,
-				 std::unique_ptr<SongEnumerator> (*_open_uri)(const char *uri,
+				 std::unique_ptr<SongEnumerator> (*_open_uri)(std::string_view uri,
 									      Mutex &mutex)) noexcept
 		:name(_name), open_uri(_open_uri) {}
 

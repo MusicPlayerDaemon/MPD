@@ -36,7 +36,7 @@ playlist_open_path(Path path, Mutex &mutex)
 	assert(!path.IsNull());
 
 	const std::string uri_utf8 = path.ToUTF8Throw();
-	auto playlist = playlist_list_open_uri(uri_utf8.c_str(), mutex);
+	auto playlist = playlist_list_open_uri(uri_utf8, mutex);
 	if (playlist == nullptr)
 		playlist = playlist_open_path_suffix(path, mutex);
 
@@ -44,7 +44,7 @@ playlist_open_path(Path path, Mutex &mutex)
 }
 
 std::unique_ptr<SongEnumerator>
-playlist_open_remote(const char *uri, Mutex &mutex)
+playlist_open_remote(std::string_view uri, Mutex &mutex)
 {
 	assert(uri_has_scheme(uri));
 

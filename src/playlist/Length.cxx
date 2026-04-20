@@ -26,13 +26,11 @@ static SignedSongTime get_duration(const DetachedSong &song) {
 
 static void
 playlist_provider_length(Response &r,
-			const SongLoader &loader,
-			const char *uri,
-			SongEnumerator &e)
+			 const SongLoader &loader,
+			 const std::string_view uri,
+			 SongEnumerator &e) noexcept
 {
-	const auto base_uri = uri != nullptr
-		? PathTraitsUTF8::GetParent(uri)
-		: ".";
+	const auto base_uri = PathTraitsUTF8::GetParent(uri);
 
 	std::unique_ptr<DetachedSong> song;
 	unsigned i = 0;

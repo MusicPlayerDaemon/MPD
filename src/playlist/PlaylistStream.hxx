@@ -6,6 +6,7 @@
 #include "thread/Mutex.hxx"
 
 #include <memory>
+#include <string_view>
 
 class SongEnumerator;
 class Path;
@@ -29,6 +30,5 @@ playlist_open_path(Path path, Mutex &mutex);
  * @param uri the absolute URI of the playlist file
  * @return a playlist, or nullptr if the file is not supported
  */
-[[gnu::nonnull]]
 std::unique_ptr<SongEnumerator>
-playlist_open_remote(const char *uri, Mutex &mutex);
+playlist_open_remote(std::string_view uri, Mutex &mutex);

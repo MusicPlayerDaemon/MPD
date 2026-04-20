@@ -20,7 +20,7 @@
  * Load a playlist from the configured playlist directory.
  */
 static std::unique_ptr<SongEnumerator>
-playlist_open_in_playlist_dir(const char *uri, Mutex &mutex)
+playlist_open_in_playlist_dir(std::string_view uri, Mutex &mutex)
 {
 	assert(spl_valid_name(uri));
 
@@ -37,7 +37,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex)
  * Load a playlist from the configured music directory.
  */
 static std::unique_ptr<SongEnumerator>
-playlist_open_in_storage(const char *uri, Storage *storage, Mutex &mutex)
+playlist_open_in_storage(std::string_view uri, Storage *storage, Mutex &mutex)
 {
 	assert(uri_safe_local(uri));
 
@@ -55,7 +55,7 @@ playlist_open_in_storage(const char *uri, Storage *storage, Mutex &mutex)
 #endif
 
 std::unique_ptr<SongEnumerator>
-playlist_mapper_open(const char *uri,
+playlist_mapper_open(std::string_view uri,
 #ifdef ENABLE_DATABASE
 		     Storage *storage,
 #endif

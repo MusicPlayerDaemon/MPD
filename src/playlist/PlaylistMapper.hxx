@@ -7,6 +7,7 @@
 #include "config.h"
 
 #include <memory>
+#include <string_view>
 
 class SongEnumerator;
 class Storage;
@@ -20,7 +21,7 @@ class Storage;
  * @return a playlist, or nullptr if the file is not supported
  */
 std::unique_ptr<SongEnumerator>
-playlist_mapper_open(const char *uri,
+playlist_mapper_open(std::string_view uri,
 #ifdef ENABLE_DATABASE
 		     Storage *storage,
 #endif

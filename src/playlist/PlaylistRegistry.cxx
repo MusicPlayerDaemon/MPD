@@ -107,11 +107,9 @@ GetPlaylistPluginAsFolder(const PlaylistPlugin &plugin) noexcept
 }
 
 static std::unique_ptr<SongEnumerator>
-playlist_list_open_uri_scheme(const char *uri, Mutex &mutex,
+playlist_list_open_uri_scheme(std::string_view uri, Mutex &mutex,
 			      bool *tried)
 {
-	assert(uri != nullptr);
-
 	const auto scheme = uri_get_scheme(uri);
 	if (scheme.empty())
 		return nullptr;
@@ -135,11 +133,9 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex,
 }
 
 static std::unique_ptr<SongEnumerator>
-playlist_list_open_uri_suffix(const char *uri, Mutex &mutex,
+playlist_list_open_uri_suffix(std::string_view uri, Mutex &mutex,
 			      const bool *tried)
 {
-	assert(uri != nullptr);
-
 	const auto suffix = uri_get_suffix(uri);
 	if (suffix.empty())
 		return nullptr;
@@ -160,13 +156,11 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex,
 }
 
 std::unique_ptr<SongEnumerator>
-playlist_list_open_uri(const char *uri, Mutex &mutex)
+playlist_list_open_uri(std::string_view uri, Mutex &mutex)
 {
 	/** this array tracks which plugins have already been tried by
 	    playlist_list_open_uri_scheme() */
 	bool tried[n_playlist_plugins]{};
-
-	assert(uri != nullptr);
 
 	auto playlist = playlist_list_open_uri_scheme(uri, mutex, tried);
 	if (playlist == nullptr)
@@ -229,7 +223,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, std::string_view suffix)
 }
 
 std::unique_ptr<SongEnumerator>
-playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
+playlist_list_open_stream(InputStreamPtr &&is, std::string_view uri)
 {
 	assert(is->IsReady());
 
@@ -241,14 +235,11 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 			return playlist;
 	}
 
-	if (uri != nullptr) {
-		const auto suffix = uri_get_suffix(uri);
-		if (!suffix.empty()) {
-			auto playlist = playlist_list_open_stream_suffix(std::move(is),
-									 suffix);
-			if (playlist != nullptr)
-				return playlist;
-		}
+	if (const auto suffix = uri_get_suffix(uri); !suffix.empty()) {
+		auto playlist = playlist_list_open_stream_suffix(std::move(is),
+								 suffix);
+		if (playlist != nullptr)
+			return playlist;
 	}
 
 	return nullptr;

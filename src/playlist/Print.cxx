@@ -23,15 +23,13 @@
 static void
 playlist_provider_print(Response &r,
 			const SongLoader &loader,
-			const char *uri,
+			std::string_view uri,
 			SongEnumerator &e,
 			unsigned start_index,
 			unsigned end_index,
 			bool detail)
 {
-	const auto base_uri = uri != nullptr
-		? PathTraitsUTF8::GetParent(uri)
-		: ".";
+	const auto base_uri = PathTraitsUTF8::GetParent(uri);
 
 	std::unique_ptr<DetachedSong> song;
 
@@ -57,15 +55,13 @@ playlist_provider_print(Response &r,
 static void
 playlist_provider_search_print(Response &r,
 			       const SongLoader &loader,
-			       const char *uri,
+			       std::string_view uri,
 			       SongEnumerator &e,
 			       unsigned start_index,
 			       unsigned end_index,
 			       SongFilter *filter)
 {
-	const auto base_uri = uri != nullptr
-		? PathTraitsUTF8::GetParent(uri)
-		: ".";
+	const auto base_uri = PathTraitsUTF8::GetParent(uri);
 
 	std::unique_ptr<DetachedSong> song;
 

@@ -57,7 +57,7 @@ GetPlaylistPluginAsFolder(const PlaylistPlugin &plugin) noexcept;
  * Opens a playlist by its URI.
  */
 std::unique_ptr<SongEnumerator>
-playlist_list_open_uri(const char *uri, Mutex &mutex);
+playlist_list_open_uri(std::string_view uri, Mutex &mutex);
 
 std::unique_ptr<SongEnumerator>
 playlist_list_open_stream_suffix(InputStreamPtr &&is, std::string_view suffix);
@@ -70,7 +70,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, std::string_view suffix);
  * used to select the appropriate playlist plugin
  */
 std::unique_ptr<SongEnumerator>
-playlist_list_open_stream(InputStreamPtr &&is, const char *uri);
+playlist_list_open_stream(InputStreamPtr &&is, std::string_view uri);
 
 [[gnu::pure]]
 const PlaylistPlugin *

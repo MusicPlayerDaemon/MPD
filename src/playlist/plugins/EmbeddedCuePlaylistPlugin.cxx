@@ -66,7 +66,7 @@ ExtractCuesheetTagHandler::OnPair(std::string_view name, std::string_view value)
 }
 
 static std::unique_ptr<SongEnumerator>
-embcue_playlist_open_uri(const char *uri,
+embcue_playlist_open_uri(std::string_view uri,
 			 [[maybe_unused]] Mutex &mutex)
 {
 	if (!PathTraitsUTF8::IsAbsolute(uri))
