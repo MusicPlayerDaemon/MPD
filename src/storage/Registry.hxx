@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_STORAGE_REGISTRY_HXX
-#define MPD_STORAGE_REGISTRY_HXX
+#pragma once
 
 #include <memory>
+#include <string_view>
 
 struct StoragePlugin;
 class Storage;
@@ -20,12 +20,9 @@ extern const StoragePlugin *const storage_plugins[];
 const StoragePlugin *
 GetStoragePluginByName(const char *name) noexcept;
 
-[[gnu::nonnull]] [[gnu::pure]]
+[[gnu::pure]]
 const StoragePlugin *
-GetStoragePluginByUri(const char *uri) noexcept;
+GetStoragePluginByUri(std::string_view uri) noexcept;
 
-[[gnu::nonnull]]
 std::unique_ptr<Storage>
-CreateStorageURI(EventLoop &event_loop, const char *uri);
-
-#endif
+CreateStorageURI(EventLoop &event_loop, std::string_view uri);

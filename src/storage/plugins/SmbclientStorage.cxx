@@ -53,7 +53,7 @@ class SmbclientStorage final : public Storage {
 	SmbclientContext ctx = SmbclientContext::New();
 
 public:
-	explicit SmbclientStorage(const char *_base)
+	explicit SmbclientStorage(std::string_view _base) noexcept
 		:base(_base) {}
 
 	/* virtual methods from class Storage */
@@ -171,7 +171,7 @@ SmbclientDirectoryReader::GetInfo([[maybe_unused]] bool follow)
 }
 
 static std::unique_ptr<Storage>
-CreateSmbclientStorageURI([[maybe_unused]] EventLoop &event_loop, const char *base)
+CreateSmbclientStorageURI([[maybe_unused]] EventLoop &event_loop, std::string_view base)
 {
 	SmbclientInit();
 

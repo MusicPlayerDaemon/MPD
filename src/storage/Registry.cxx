@@ -43,7 +43,7 @@ GetStoragePluginByName(const char *name) noexcept
 }
 
 const StoragePlugin *
-GetStoragePluginByUri(const char *uri) noexcept
+GetStoragePluginByUri(std::string_view uri) noexcept
 {
 	for (auto i = storage_plugins; *i != nullptr; ++i) {
 		const StoragePlugin &plugin = **i;
@@ -55,7 +55,7 @@ GetStoragePluginByUri(const char *uri) noexcept
 }
 
 std::unique_ptr<Storage>
-CreateStorageURI(EventLoop &event_loop, const char *uri)
+CreateStorageURI(EventLoop &event_loop, std::string_view uri)
 {
 	for (auto i = storage_plugins; *i != nullptr; ++i) {
 		const StoragePlugin &plugin = **i;

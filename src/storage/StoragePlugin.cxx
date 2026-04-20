@@ -5,7 +5,7 @@
 #include "util/StringCompare.hxx"
 
 bool
-StoragePlugin::SupportsUri(const char *uri) const noexcept
+StoragePlugin::SupportsUri(std::string_view uri) const noexcept
 {
 	if (prefixes == nullptr)
 		return false;

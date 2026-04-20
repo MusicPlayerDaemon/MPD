@@ -21,7 +21,6 @@
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"
 #include "event/CoarseTimerEvent.hxx"
-#include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
 
 extern "C" {
@@ -70,7 +69,7 @@ class NfsStorage final
 	std::exception_ptr last_exception;
 
 public:
-	NfsStorage(const char *_url, NfsConnection &_connection)
+	NfsStorage(std::string_view _url, NfsConnection &_connection)
 		:url(_url),
 		 base(fmt::format("nfs://{}{}"sv, _connection.GetServer(), _connection.GetExportName())),
 		 connection(&_connection),
@@ -422,15 +421,15 @@ NfsStorage::OpenDirectory(std::string_view uri_utf8)
 }
 
 static std::unique_ptr<Storage>
-CreateNfsStorageURI(EventLoop &event_loop, const char *base)
+CreateNfsStorageURI(EventLoop &event_loop, std::string_view base)
 {
-	if (!StringStartsWithCaseASCII(base, "nfs://"sv))
+	if (!StringStartsWithIgnoreCase(base, "nfs://"sv))
 		return nullptr;
 
 	nfs_init(event_loop);
 
 	try {
-		auto &connection = nfs_make_connection(base);
+		auto &connection = nfs_make_connection(std::string{base}.c_str());
 		nfs_set_base(connection.GetServer(), connection.GetExportName());
 
 		return std::make_unique<NfsStorage>(base, connection);

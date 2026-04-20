@@ -13,7 +13,7 @@
 #include "uri/Extract.hxx"
 
 static std::unique_ptr<Storage>
-CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)
+CreateConfiguredStorageUri(EventLoop &event_loop, std::string_view uri)
 {
 	auto storage = CreateStorageURI(event_loop, uri);
 	if (storage == nullptr)

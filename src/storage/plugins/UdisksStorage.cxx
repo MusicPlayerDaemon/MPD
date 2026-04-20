@@ -26,9 +26,12 @@
 #include "uri/Util.hxx"
 #include "util/Domain.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringSplit.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
+
+using std::string_view_literals::operator""sv;
 
 static constexpr Domain udisks_domain("udisks");
 
@@ -392,35 +395,27 @@ UdisksStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 }
 
 static std::unique_ptr<Storage>
-CreateUdisksStorageURI(EventLoop &event_loop, const char *base_uri)
+CreateUdisksStorageURI(EventLoop &event_loop, std::string_view base_uri)
 {
-	const char *id_begin = StringAfterPrefix(base_uri, "udisks://");
-	if (id_begin == nullptr)
+	const std::string_view id_begin = StringAfterPrefix(base_uri, "udisks://");
+	if (id_begin.data() == nullptr)
 		return nullptr;
 
-	std::string id;
+	auto [id, relative_path] = Split(id_begin, '/');
 
-	const char *relative_path = std::strchr(id_begin, '/');
-	if (relative_path == nullptr) {
-		id = id_begin;
-		relative_path = "";
-	} else {
-		id = {id_begin, relative_path};
-		++relative_path;
-		while (*relative_path == '/')
-			++relative_path;
-	}
+	while (relative_path.starts_with('/'))
+		relative_path = relative_path.substr(1);
 
-	if (*relative_path != 0 && !uri_safe_local(relative_path))
+	if (!relative_path.empty() && !uri_safe_local(relative_path))
 		/* don't allow escaping the mount point with ".." */
 		throw std::invalid_argument{"Malformed udisks:// URI"};
 
-	auto inside_path = *relative_path != 0
+	auto inside_path = !relative_path.empty()
 		? AllocatedPath::FromUTF8Throw(relative_path)
 		: nullptr;
 
 	return std::make_unique<UdisksStorage>(event_loop, base_uri,
-					       std::move(id),
+					       id,
 					       std::move(inside_path));
 }
 

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_STORAGE_PLUGIN_HXX
-#define MPD_STORAGE_PLUGIN_HXX
+
+#pragma once
 
 #include <memory>
+#include <string_view>
 
 class Storage;
 class EventLoop;
@@ -22,10 +23,8 @@ struct StoragePlugin {
 	 * Throws #std::runtime_error on error.
 	 */
 	std::unique_ptr<Storage> (*create_uri)(EventLoop &event_loop,
-					       const char *uri);
+					       std::string_view uri);
 
 	[[gnu::pure]]
-	bool SupportsUri(const char *uri) const noexcept;
+	bool SupportsUri(std::string_view uri) const noexcept;
 };
-
-#endif
