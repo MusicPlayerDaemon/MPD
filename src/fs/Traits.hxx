@@ -162,6 +162,9 @@ struct PathTraitsFS {
 	[[gnu::pure]] [[gnu::nonnull]]
 	static const_pointer GetBase(const_pointer p) noexcept;
 
+	[[gnu::pure]]
+	static string_view GetBase(string_view p) noexcept;
+
 	/**
 	 * Determine the "parent" file name of the given native path.
 	 * As a special case, returns the string "." if there is no
@@ -345,6 +348,9 @@ struct PathTraitsUTF8 {
 	 */
 	[[gnu::pure]] [[gnu::nonnull]]
 	static const_pointer GetBase(const_pointer p) noexcept;
+
+	[[gnu::pure]]
+	static string_view GetBase(string_view p) noexcept;
 
 	/**
 	 * Determine the "parent" file name of the given UTF-8 path.

@@ -52,6 +52,16 @@ GetBasePathImpl(typename Traits::const_pointer p) noexcept
 
 template<typename Traits>
 typename Traits::string_view
+GetBasePathImpl(typename Traits::string_view p) noexcept
+{
+	auto sep = Traits::FindLastSeparator(p);
+	return sep != nullptr
+		? typename Traits::string_view{sep, p.data() + p.size()}
+		: p;
+}
+
+template<typename Traits>
+typename Traits::string_view
 GetParentPathImpl(typename Traits::const_pointer p) noexcept
 {
 #if !CLANG_CHECK_VERSION(3,6)
@@ -182,6 +192,12 @@ PathTraitsFS::GetBase(PathTraitsFS::const_pointer p) noexcept
 }
 
 PathTraitsFS::string_view
+PathTraitsFS::GetBase(string_view p) noexcept
+{
+	return GetBasePathImpl<PathTraitsFS>(p);
+}
+
+PathTraitsFS::string_view
 PathTraitsFS::GetParent(PathTraitsFS::const_pointer p) noexcept
 {
 	return GetParentPathImpl<PathTraitsFS>(p);
@@ -252,6 +268,12 @@ PathTraitsUTF8::IsValidFilename(string_view name) noexcept
 
 PathTraitsUTF8::const_pointer
 PathTraitsUTF8::GetBase(const_pointer p) noexcept
+{
+	return GetBasePathImpl<PathTraitsUTF8>(p);
+}
+
+PathTraitsUTF8::string_view
+PathTraitsUTF8::GetBase(string_view p) noexcept
 {
 	return GetBasePathImpl<PathTraitsUTF8>(p);
 }
