@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef URI_UTIL_HXX
-#define URI_UTIL_HXX
+#pragma once
 
 #include <string>
 
@@ -15,7 +14,7 @@
  */
 [[gnu::pure]]
 bool
-uri_safe_local(const char *uri) noexcept;
+uri_safe_local(std::string_view uri) noexcept;
 
 /**
  * Removes HTTP username and password from the URI.  This may be
@@ -25,7 +24,7 @@ uri_safe_local(const char *uri) noexcept;
  */
 [[gnu::pure]]
 std::string
-uri_remove_auth(const char *uri) noexcept;
+uri_remove_auth(std::string_view uri) noexcept;
 
 /**
  * Remove dot segments in the URI.  For example, uri_squash_dot_segments
@@ -33,6 +32,4 @@ uri_remove_auth(const char *uri) noexcept;
  */
 [[gnu::pure]]
 std::string
-uri_squash_dot_segments(const char *uri) noexcept;
-
-#endif
+uri_squash_dot_segments(std::string_view uri) noexcept;

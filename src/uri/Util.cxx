@@ -4,49 +4,25 @@
 #include "Util.hxx"
 #include "util/ASCII.hxx"
 #include "util/SplitString.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringListVerify.hxx"
 
 #include <array>
-#include <cassert>
-#include <cstring>
-
 #include <string_view>
 
-static const char *
-verify_uri_segment(const char *p) noexcept
-{
-	unsigned dots = 0;
-	while (*p == '.') {
-		++p;
-		++dots;
-	}
-
-	if (dots <= 2 && (*p == 0 || *p == '/'))
-		return nullptr;
-
-	const char *q = std::strchr(p + 1, '/');
-	return q != nullptr ? q : "";
-}
+using std::string_view_literals::operator""sv;
 
 bool
-uri_safe_local(const char *uri) noexcept
+uri_safe_local(std::string_view uri) noexcept
 {
-	while (true) {
-		uri = verify_uri_segment(uri);
-		if (uri == nullptr)
-			return false;
-
-		if (*uri == 0)
-			return true;
-
-		assert(*uri == '/');
-
-		++uri;
-	}
+	return IsNonEmptyListOf(uri, '/', [](std::string_view segment){
+		return !segment.empty() && segment != "."sv && segment != ".."sv;
+	});
 }
 
 [[gnu::pure]]
-static const char *
-SkipUriScheme(const char *uri) noexcept
+static std::string_view
+SkipUriScheme(std::string_view uri) noexcept
 {
 	static constexpr auto schemes = std::array {
 		"http://", "https://",
@@ -54,41 +30,43 @@ SkipUriScheme(const char *uri) noexcept
 		"smb://",
 	};
 
-	for (auto scheme : schemes) {
-		auto result = StringAfterPrefixCaseASCII(uri, scheme);
-		if (result != nullptr)
-			return result;
+	for (const std::string_view scheme : schemes) {
+		if (SkipPrefixIgnoreCase(uri, scheme))
+			return uri;
 	}
 
-	return nullptr;
+	return {};
 }
 
 std::string
-uri_remove_auth(const char *uri) noexcept
+uri_remove_auth(const std::string_view uri) noexcept
 {
-	const char *auth = SkipUriScheme(uri);
-	if (auth == nullptr)
+	const std::string_view after_uri_scheme = SkipUriScheme(uri);
+	if (after_uri_scheme.data() == nullptr)
 		/* unrecognized URI */
 		return {};
 
-	const char *slash = std::strchr(auth, '/');
-	if (slash == nullptr)
-		slash = auth + strlen(auth);
+	std::size_t path_start = after_uri_scheme.find('/');
+	if (path_start == after_uri_scheme.npos)
+		path_start = after_uri_scheme.size();
 
-	auto at = (const char *)std::memchr(auth, '@', slash - auth);
-	if (at == nullptr)
+	const auto [host_and_auth, path] = Partition(after_uri_scheme, path_start);
+
+	auto [_, host] = Split(host_and_auth, '@');
+	if (host.data() == nullptr)
 		/* no auth info present, do nothing */
 		return {};
 
 	/* duplicate the full URI and then delete the auth
 	   information */
 	std::string result(uri);
-	result.erase(auth - uri, at + 1 - auth);
+	result.erase(std::distance(uri.begin(), after_uri_scheme.begin()),
+		     std::distance(after_uri_scheme.begin(), host.begin()));
 	return result;
 }
 
 std::string
-uri_squash_dot_segments(const char *uri) noexcept
+uri_squash_dot_segments(std::string_view uri) noexcept
 {
 	std::forward_list<std::string_view> path = SplitString(std::string_view(uri), '/', false);
 	path.remove_if([](const std::string_view &seg) { return seg == "."; });
