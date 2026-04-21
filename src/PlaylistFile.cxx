@@ -259,7 +259,7 @@ PlaylistFileEditor::PlaylistFileEditor(const char *name_utf8,
 }
 
 void
-PlaylistFileEditor::Insert(std::size_t i, const char *uri)
+PlaylistFileEditor::Insert(std::size_t i, const std::string_view uri)
 {
 	if (i > size())
 		throw PlaylistError(PlaylistResult::BAD_RANGE, "Bad position");

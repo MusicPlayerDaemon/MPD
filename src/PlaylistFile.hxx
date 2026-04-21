@@ -40,7 +40,7 @@ public:
 		return contents.size();
 	}
 
-	void Insert(std::size_t i, const char *uri);
+	void Insert(std::size_t i, std::string_view uri);
 	void Insert(std::size_t i, const DetachedSong &song);
 
 	void MoveIndex(RangeArg src, unsigned dest);
