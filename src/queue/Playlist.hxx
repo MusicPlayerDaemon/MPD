@@ -106,7 +106,7 @@ struct playlist {
 		return queue.last_loaded_playlist;
 	}
 
-	void SetLastLoadedPlaylist(const char *playlist_name) noexcept {
+	void SetLastLoadedPlaylist(const std::string_view playlist_name) noexcept {
 		queue.last_loaded_playlist = playlist_name;
 	}
 

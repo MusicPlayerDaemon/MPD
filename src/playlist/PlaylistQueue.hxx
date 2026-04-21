@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <string_view>
+
 /*! \file
  * \brief Glue between playlist plugin and the play queue
  */
@@ -22,7 +24,7 @@ class PlayerControl;
  * @param end_index the index of the last song (excluding)
  */
 void
-playlist_load_into_queue(const char *uri, SongEnumerator &e,
+playlist_load_into_queue(std::string_view uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
 			 const SongLoader &loader);

@@ -22,16 +22,14 @@
 #include <memory>
 
 void
-playlist_load_into_queue(const char *uri, SongEnumerator &e,
+playlist_load_into_queue(const std::string_view uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
 			 const SongLoader &loader)
 {
 	const unsigned max_log_msgs = 8;
 
-	const auto base_uri = uri != nullptr
-		? PathTraitsUTF8::GetParent(uri)
-		: ".";
+	const auto base_uri = PathTraitsUTF8::GetParent(uri);
 
 	std::unique_ptr<DetachedSong> song;
 	for (unsigned i = 0, failures = 0;
