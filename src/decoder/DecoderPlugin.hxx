@@ -234,7 +234,7 @@ struct DecoderPlugin {
 	}
 
 	[[gnu::pure]]
-	bool SupportsUri(const char *uri) const noexcept;
+	bool SupportsUri(std::string_view uri) const noexcept;
 
 	/**
 	 * Does the plugin announce the specified file name suffix?

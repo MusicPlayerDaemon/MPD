@@ -28,9 +28,9 @@
 using std::string_view_literals::operator""sv;
 
 bool
-uri_supported_scheme(const char *uri) noexcept
+uri_supported_scheme(std::string_view uri) noexcept
 {
-	return strncmp(uri, "http://", 7) == 0;
+	return uri.starts_with("http://"sv);
 }
 
 const StoragePlugin *

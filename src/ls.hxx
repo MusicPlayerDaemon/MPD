@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_LS_HXX
-#define MPD_LS_HXX
+#pragma once
+
+#include <string_view>
 
 #include <stdio.h>
 
@@ -15,7 +16,7 @@ class Response;
  */
 [[gnu::pure]]
 bool
-uri_supported_scheme(const char *url) noexcept;
+uri_supported_scheme(std::string_view url) noexcept;
 
 /**
  * Send a list of supported URI schemes to the client.  This is the
@@ -27,5 +28,3 @@ void print_supported_uri_schemes(Response &r);
  * Send a list of supported URI schemes to a file pointer.
  */
 void print_supported_uri_schemes_to_fp(FILE *fp);
-
-#endif

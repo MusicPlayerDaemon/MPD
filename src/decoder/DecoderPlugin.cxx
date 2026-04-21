@@ -9,12 +9,12 @@
 #include <cassert>
 
 bool
-DecoderPlugin::SupportsUri(const char *uri) const noexcept
+DecoderPlugin::SupportsUri(const std::string_view uri) const noexcept
 {
 	if (protocols != nullptr) {
 		const auto p = protocols();
 		return std::any_of(p.begin(), p.end(), [uri](const auto &schema)
-			{ return StringStartsWithIgnoreCase(uri, schema.c_str()); } );
+			{ return StringStartsWithIgnoreCase(uri, schema); } );
 	}
 
 	return false;
