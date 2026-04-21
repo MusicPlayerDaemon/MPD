@@ -272,7 +272,7 @@ handle_playlistclear([[maybe_unused]] Client &client,
 
 static CommandResult
 handle_playlistadd_position(Client &client, const char *playlist_name,
-			    const char *uri, unsigned position,
+			    const std::string_view uri, unsigned position,
 			    Response &r)
 {
 	PlaylistFileEditor editor{

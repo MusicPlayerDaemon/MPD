@@ -78,7 +78,7 @@ GroupCountVisitor(TagCountMap &map, TagType group,
 }
 
 void
-PrintSongCount(Response &r, const Partition &partition, const char *name,
+PrintSongCount(Response &r, const Partition &partition, const std::string_view name,
 	       const SongFilter *filter,
 	       TagType group)
 {

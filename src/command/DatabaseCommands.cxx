@@ -27,8 +27,10 @@
 
 #include <limits.h> // for UINT_MAX
 
+using std::string_view_literals::operator""sv;
+
 CommandResult
-handle_listfiles_db(Client &client, Response &r, const char *uri)
+handle_listfiles_db(Client &client, Response &r, const std::string_view uri)
 {
 	const DatabaseSelection selection(uri, false);
 	db_selection_print(r, client.GetPartition(),
@@ -37,7 +39,7 @@ handle_listfiles_db(Client &client, Response &r, const char *uri)
 }
 
 CommandResult
-handle_lsinfo2(Client &client, const char *uri, Response &r)
+handle_lsinfo2(Client &client, const std::string_view uri, Response &r)
 {
 	const DatabaseSelection selection(uri, false);
 	db_selection_print(r, client.GetPartition(),
@@ -129,7 +131,7 @@ ParseDatabaseSelection(Request args, bool fold_case, SongFilter &filter)
 	}
 	filter.Optimize();
 
-	DatabaseSelection selection("", true, &filter);
+	DatabaseSelection selection{""sv, true, &filter};
 	selection.window = window;
 	selection.sort = sort;
 	selection.descending = descending;
@@ -251,7 +253,7 @@ handle_count_internal(Client &client, Request args, Response &r, bool fold_case)
 		filter.Optimize();
 	}
 
-	PrintSongCount(r, client.GetPartition(), "", &filter, group);
+	PrintSongCount(r, client.GetPartition(), ""sv, &filter, group);
 	return CommandResult::OK;
 }
 

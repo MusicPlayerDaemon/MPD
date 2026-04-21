@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_DATABASE_SELECTION_HXX
-#define MPD_DATABASE_SELECTION_HXX
+
+#pragma once
 
 #include "protocol/RangeArg.hxx"
 #include "tag/Type.hxx"
@@ -40,7 +40,7 @@ struct DatabaseSelection {
 	 */
 	bool recursive;
 
-	DatabaseSelection(const char *_uri, bool _recursive,
+	DatabaseSelection(std::string_view _uri, bool _recursive,
 			  const SongFilter *_filter=nullptr) noexcept;
 
 	[[gnu::pure]]
@@ -55,5 +55,3 @@ struct DatabaseSelection {
 	[[gnu::pure]]
 	bool Match(const LightSong &song) const noexcept;
 };
-
-#endif

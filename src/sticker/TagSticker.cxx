@@ -12,6 +12,8 @@
 #include "song/Filter.hxx"
 #include "util/StringAPI.hxx"
 
+using std::string_view_literals::operator""sv;
+
 SongFilter
 MakeSongFilter(const char *filter_string)
 {
@@ -72,7 +74,7 @@ FilterMatches(const Database &database, const SongFilter &filter) noexcept
 	if (filter.IsEmpty())
 		return false;
 
-	const DatabaseSelection selection{"", true, &filter};
+	const DatabaseSelection selection{""sv, true, &filter};
 	
 	// TODO: we just need to know if the tag selection has a match.
 	//       a visitor callback that can stop the db visit by return value

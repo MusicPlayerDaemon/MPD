@@ -4,7 +4,8 @@
 #include "Selection.hxx"
 #include "song/Filter.hxx"
 
-DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
+DatabaseSelection::DatabaseSelection(const std::string_view _uri,
+				     bool _recursive,
 				     const SongFilter *_filter) noexcept
 	:uri(_uri), filter(_filter), recursive(_recursive)
 {

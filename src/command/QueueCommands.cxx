@@ -40,7 +40,7 @@ AddUri(Client &client, const LocatedUri &uri)
 #ifdef ENABLE_DATABASE
 
 static void
-AddDatabaseSelection(Partition &partition, const char *uri)
+AddDatabaseSelection(Partition &partition, const std::string_view uri)
 {
 	const ScopeBulkEdit bulk_edit(partition);
 

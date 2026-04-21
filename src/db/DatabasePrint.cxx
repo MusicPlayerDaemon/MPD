@@ -21,6 +21,8 @@
 
 #include <functional>
 
+using std::string_view_literals::operator""sv;
+
 [[gnu::pure]]
 static const char *
 ApplyBaseFlag(const char *uri, bool base) noexcept
@@ -167,7 +169,7 @@ PrintSongUris(Response &r, Partition &partition,
 {
 	const Database &db = partition.GetDatabaseOrThrow();
 
-	const DatabaseSelection selection("", true, filter);
+	const DatabaseSelection selection{""sv, true, filter};
 
 	const auto f = [&](const auto &song)
 		{ return PrintSongURIVisitor(r, song); };
@@ -197,7 +199,7 @@ PrintUniqueTags(Response &r, Partition &partition,
 {
 	const Database &db = partition.GetDatabaseOrThrow();
 
-	const DatabaseSelection selection("", true, filter);
+	const DatabaseSelection selection{""sv, true, filter};
 
 	PrintUniqueTags(r, tag_types,
 			db.CollectUniqueTags(selection, tag_types));
