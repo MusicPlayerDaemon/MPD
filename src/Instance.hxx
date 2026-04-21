@@ -213,9 +213,9 @@ struct Instance final
 	void BeginShutdownUpdate() noexcept;
 
 #ifdef ENABLE_CURL
-	void LookupRemoteTag(const char *uri) noexcept;
+	void LookupRemoteTag(std::string_view uri) noexcept;
 #else
-	void LookupRemoteTag(const char *) noexcept {
+	void LookupRemoteTag(std::string_view) noexcept {
 		/* no-op */
 	}
 #endif
@@ -239,7 +239,7 @@ private:
 
 #ifdef ENABLE_CURL
 	/* virtual methods from class RemoteTagCacheHandler */
-	void OnRemoteTag(const char *uri, const Tag &tag) noexcept override;
+	void OnRemoteTag(std::string_view uri, const Tag &tag) noexcept override;
 #endif
 
 	/* callback for #idle_monitor */

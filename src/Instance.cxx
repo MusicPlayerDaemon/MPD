@@ -176,7 +176,7 @@ Instance::LostNeighbor([[maybe_unused]] const NeighborInfo &info) noexcept
 #ifdef ENABLE_CURL
 
 void
-Instance::LookupRemoteTag(const char *uri) noexcept
+Instance::LookupRemoteTag(const std::string_view uri) noexcept
 {
 	if (!uri_has_scheme(uri))
 		return;
@@ -189,7 +189,7 @@ Instance::LookupRemoteTag(const char *uri) noexcept
 }
 
 void
-Instance::OnRemoteTag(const char *uri, const Tag &tag) noexcept
+Instance::OnRemoteTag(const std::string_view uri, const Tag &tag) noexcept
 {
 	if (!tag.IsDefined())
 		/* boring */

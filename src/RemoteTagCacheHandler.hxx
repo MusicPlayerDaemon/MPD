@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_REMOTE_TAG_CACHE_HANDLER_HXX
-#define MPD_REMOTE_TAG_CACHE_HANDLER_HXX
+#pragma once
+
+#include <string_view>
 
 struct Tag;
 
 class RemoteTagCacheHandler {
 public:
-	virtual void OnRemoteTag(const char *uri, const Tag &tag) noexcept = 0;
+	virtual void OnRemoteTag(std::string_view uri, const Tag &tag) noexcept = 0;
 };
-
-#endif

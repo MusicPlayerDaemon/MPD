@@ -25,7 +25,7 @@ RemoteTagCache::~RemoteTagCache() noexcept
 }
 
 void
-RemoteTagCache::Lookup(const std::string &uri) noexcept
+RemoteTagCache::Lookup(const std::string_view uri) noexcept
 {
 	std::unique_lock lock{mutex};
 

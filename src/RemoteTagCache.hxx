@@ -96,7 +96,7 @@ public:
 		       RemoteTagCacheHandler &_handler) noexcept;
 	~RemoteTagCache() noexcept;
 
-	void Lookup(const std::string &uri) noexcept;
+	void Lookup(std::string_view uri) noexcept;
 
 private:
 	void InvokeHandlers() noexcept;
