@@ -17,7 +17,11 @@
 #include "Main.hxx"
 #endif
 
+#include <fmt/core.h>
+
 #include <cassert>
+
+using std::string_view_literals::operator""sv;
 
 /**
  * The absolute path of the playlist directory encoded in the
@@ -99,9 +103,7 @@ map_spl_utf8_to_fs(const char *name) noexcept
 	if (playlist_dir_fs.IsNull())
 		return nullptr;
 
-	std::string filename_utf8 = name;
-	filename_utf8.append(PLAYLIST_FILE_SUFFIX);
-
+	const auto filename_utf8 = fmt::format("{}" PLAYLIST_FILE_SUFFIX ""sv, name);
 	const auto filename_fs =
 		AllocatedPath::FromUTF8(filename_utf8);
 	if (filename_fs.IsNull())
