@@ -50,7 +50,7 @@ spl_global_init(const ConfigData &config)
 }
 
 bool
-spl_valid_name(const char *name_utf8)
+spl_valid_name(const char *name_utf8) noexcept
 {
 	if (StringIsEmpty(name_utf8))
 		/* empty name not allowed */
