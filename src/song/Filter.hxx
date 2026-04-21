@@ -29,6 +29,11 @@
 enum TagType : uint8_t;
 struct LightSong;
 
+/**
+ * Base URI and recursive flag.
+ */
+struct Base { const char *uri; bool recursive; };
+
 class SongFilter {
 	AndSongFilter and_filter;
 
@@ -80,11 +85,11 @@ public:
 	bool HasFoldCase() const noexcept;
 
 	/**
-	 * Returns the "base" specification (if there is one) or
-	 * nullptr.
+	 * Returns the "base" specification, containing URI (if any) and
+	 * recursive flag (default to true).
 	 */
 	[[gnu::pure]]
-	const char *GetBase() const noexcept;
+	const Base GetBase() const noexcept;
 
 	/**
 	 * Create a copy of the filter with the given prefix stripped

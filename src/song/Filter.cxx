@@ -43,6 +43,7 @@ enum {
 	LOCATE_TAG_FILE_TYPE,
 	LOCATE_TAG_ANY_TYPE,
 	LOCATE_TAG_ADDED_SINCE,
+	LOCATE_TAG_DIRECTORY_TYPE,
 };
 
 /**
@@ -61,6 +62,9 @@ locate_parse_type(const char *str) noexcept
 
 	if (strcmp(str, "base") == 0)
 		return LOCATE_TAG_BASE_TYPE;
+
+	if (strcmp(str, "directory") == 0)
+		return LOCATE_TAG_DIRECTORY_TYPE;
 
 	if (strcmp(str, "modified-since") == 0)
 		return LOCATE_TAG_MODIFIED_SINCE;
@@ -385,7 +389,13 @@ SongFilter::ParseExpression(const char *&s, bool fold_case, bool strip_diacritic
 			throw std::runtime_error("')' expected");
 		s = StripLeft(s + 1);
 
-		return std::make_unique<BaseSongFilter>(std::move(value));
+		return std::make_unique<BaseSongFilter>(std::move(value), true);
+	} else if (type == LOCATE_TAG_DIRECTORY_TYPE) {
+		auto value = ExpectQuoted(s);
+		if (*s != ')')
+			throw std::runtime_error("')' expected");
+		s = StripLeft(s + 1);
+		return std::make_unique<BaseSongFilter>(std::move(value), false);
 	} else if (type == LOCATE_TAG_AUDIO_FORMAT) {
 		bool mask;
 		if (s[0] == '=' && s[1] == '=')
@@ -456,7 +466,13 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case, boo
 		if (!uri_safe_local(value))
 			throw std::runtime_error("Bad URI");
 
-		and_filter.AddItem(std::make_unique<BaseSongFilter>(value));
+		and_filter.AddItem(std::make_unique<BaseSongFilter>(value, true));
+		break;
+
+	case LOCATE_TAG_DIRECTORY_TYPE:
+		if (!uri_safe_local(value))
+			throw std::runtime_error("Bad URI");
+		and_filter.AddItem(std::make_unique<BaseSongFilter>(value, false));
 		break;
 
 	case LOCATE_TAG_MODIFIED_SINCE:
@@ -557,16 +573,15 @@ SongFilter::HasFoldCase() const noexcept
 		});
 }
 
-const char *
+const Base
 SongFilter::GetBase() const noexcept
 {
 	for (const auto &i : and_filter.GetItems()) {
 		const auto *f = dynamic_cast<const BaseSongFilter *>(i.get());
 		if (f != nullptr)
-			return f->GetValue();
+			return Base{f->GetValue(), f->IsRecursive()};
 	}
-
-	return nullptr;
+	return Base{nullptr, true};
 }
 
 SongFilter
@@ -586,7 +601,7 @@ SongFilter::WithoutBasePrefix(const std::string_view prefix) const noexcept
 					++s;
 
 					if (*s != 0)
-						result.and_filter.AddItem(std::make_unique<BaseSongFilter>(s));
+						result.and_filter.AddItem(std::make_unique<BaseSongFilter>(s, f->IsRecursive()));
 
 					continue;
 				}
