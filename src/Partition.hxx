@@ -132,7 +132,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.DeleteRange(pc, range);
 	}
 
-	void StaleSong(const char *uri) noexcept {
+	void StaleSong(std::string_view uri) noexcept {
 		playlist.StaleSong(pc, uri);
 	}
 
@@ -250,7 +250,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	 * The tag of the given song has been modified.  Propagate the
 	 * change to all instances of this song in the queue.
 	 */
-	void TagModified(const char *uri, const Tag &tag) noexcept;
+	void TagModified(std::string_view uri, const Tag &tag) noexcept;
 
 	/**
 	 * Synchronize the player with the play queue.

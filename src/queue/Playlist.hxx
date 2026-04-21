@@ -195,7 +195,7 @@ public:
 	 * @param real_uri the song's "real uri" (see
 	 * DetachedSong::GetRealURI(), DetachedSong::IsRealURI())
 	 */
-	void TagModified(const char *real_uri, const Tag &tag) noexcept;
+	void TagModified(std::string_view real_uri, const Tag &tag) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**
@@ -247,7 +247,7 @@ public:
 	 * database.  The method attempts to remove all instances of
 	 * this song from the queue.
 	 */
-	void StaleSong(PlayerControl &pc, const char *uri) noexcept;
+	void StaleSong(PlayerControl &pc, std::string_view uri) noexcept;
 
 	void Shuffle(PlayerControl &pc, RangeArg range);
 

@@ -283,7 +283,7 @@ playlist::DeleteId(PlayerControl &pc, unsigned id)
 }
 
 void
-playlist::StaleSong(PlayerControl &pc, const char *uri) noexcept
+playlist::StaleSong(PlayerControl &pc, const std::string_view uri) noexcept
 {
 	/* don't remove the song if it's currently being played, to
 	   avoid disrupting playback; a deleted file may still be

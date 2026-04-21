@@ -29,7 +29,7 @@ playlist::TagModified(DetachedSong &&song) noexcept
 }
 
 void
-playlist::TagModified(const char *real_uri, const Tag &tag) noexcept
+playlist::TagModified(const std::string_view real_uri, const Tag &tag) noexcept
 {
 	bool modified = false;
 
