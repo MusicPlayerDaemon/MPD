@@ -75,7 +75,7 @@ struct LocatedUri {
  */
 LocatedUri
 LocateUri(UriPluginKind kind,
-	  const char *uri, const IClient *client,
+	  std::string_view uri, const IClient *client,
 #ifdef ENABLE_DATABASE
 	  const Storage *storage,
 #endif

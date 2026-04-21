@@ -9,7 +9,6 @@
 #include "storage/Registry.hxx"
 #include "uri/Extract.hxx"
 #include "uri/Util.hxx"
-#include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
 
 #ifdef ENABLE_DATABASE
@@ -18,8 +17,10 @@
 
 #include <stdexcept>
 
+using std::string_view_literals::operator""sv;
+
 static LocatedUri
-LocateFileUri(const char *uri, const IClient *client
+LocateFileUri(const std::string_view uri, const IClient *client
 #ifdef ENABLE_DATABASE
 	      , const Storage *storage
 #endif
@@ -44,7 +45,7 @@ LocateFileUri(const char *uri, const IClient *client
 }
 
 static LocatedUri
-LocateAbsoluteUri(UriPluginKind kind, const char *uri
+LocateAbsoluteUri(UriPluginKind kind, const std::string_view uri
 #ifdef ENABLE_DATABASE
 		  , const Storage *storage
 #endif
@@ -86,15 +87,15 @@ LocateAbsoluteUri(UriPluginKind kind, const char *uri
 
 LocatedUri
 LocateUri(UriPluginKind kind,
-	  const char *uri, const IClient *client,
+	  const std::string_view uri, const IClient *client,
 #ifdef ENABLE_DATABASE
 	  const Storage *storage,
 #endif
 	  bool allow_empty)
 {
 	/* skip the obsolete "file://" prefix */
-	const char *path_utf8 = StringAfterPrefixCaseASCII(uri, "file://");
-	if (path_utf8 != nullptr) {
+	if (const auto path_utf8 = StringAfterPrefixIgnoreCase(uri, "file://"sv);
+	    path_utf8.data() != nullptr) {
 		if (!PathTraitsUTF8::IsAbsolute(path_utf8))
 			throw std::invalid_argument("Malformed file:// URI");
 
@@ -115,7 +116,7 @@ LocateUri(UriPluginKind kind,
 					 , storage
 #endif
 					 );
-	else if (allow_empty && StringIsEmpty(uri))
+	else if (allow_empty && uri.empty())
 		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
 	else {
 		if (!uri_safe_local(uri))
