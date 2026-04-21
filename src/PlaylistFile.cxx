@@ -32,6 +32,8 @@
 #include <cassert>
 #include <cstring>
 
+using std::string_view_literals::operator""sv;
+
 static const char PLAYLIST_COMMENT = '#';
 
 static unsigned playlist_max_length;
@@ -50,9 +52,9 @@ spl_global_init(const ConfigData &config)
 }
 
 bool
-spl_valid_name(const char *name_utf8) noexcept
+spl_valid_name(std::string_view name_utf8) noexcept
 {
-	if (StringIsEmpty(name_utf8))
+	if (name_utf8.empty())
 		/* empty name not allowed */
 		return false;
 
@@ -67,10 +69,14 @@ spl_valid_name(const char *name_utf8) noexcept
 	 * filenames isn't going to happen, either.
 	 */
 
-	return std::strchr(name_utf8, '/') == nullptr &&
+	static constexpr std::string_view forbidden_characters =
+		"/"
 #ifdef _WIN32
-		std::strchr(name_utf8, '\\') == nullptr &&
+		"\\"
 #endif
+		""sv;
+
+	return name_utf8.find_first_of(forbidden_characters) == name_utf8.npos &&
 		VerifyStringUTF8(name_utf8);
 }
 
@@ -86,7 +92,7 @@ spl_map()
 }
 
 static void
-spl_check_name(const char *name_utf8)
+spl_check_name(std::string_view name_utf8)
 {
 	if (!spl_valid_name(name_utf8))
 		throw PlaylistError(PlaylistResult::BAD_NAME,
@@ -94,7 +100,7 @@ spl_check_name(const char *name_utf8)
 }
 
 AllocatedPath
-spl_map_to_fs(const char *name_utf8)
+spl_map_to_fs(std::string_view name_utf8)
 {
 	spl_map();
 	spl_check_name(name_utf8);
@@ -345,7 +351,7 @@ PlaylistFileEditor::Save()
 }
 
 void
-spl_clear(const char *utf8path)
+spl_clear(std::string_view utf8path)
 {
 	const auto path_fs = spl_map_to_fs(utf8path);
 	assert(!path_fs.IsNull());
@@ -364,7 +370,7 @@ spl_clear(const char *utf8path)
 }
 
 void
-spl_delete(const char *name_utf8)
+spl_delete(std::string_view name_utf8)
 {
 	const auto path_fs = spl_map_to_fs(name_utf8);
 	assert(!path_fs.IsNull());
@@ -383,7 +389,7 @@ spl_delete(const char *name_utf8)
 }
 
 void
-spl_append_song(const char *utf8path, const DetachedSong &song)
+spl_append_song(std::string_view utf8path, const DetachedSong &song)
 try {
 	const auto path_fs = spl_map_to_fs(utf8path);
 	assert(!path_fs.IsNull());
@@ -409,7 +415,7 @@ try {
 }
 
 void
-spl_append_uri(const char *utf8file,
+spl_append_uri(std::string_view utf8file,
 	       const SongLoader &loader, const char *url)
 {
 	spl_append_song(utf8file, loader.LoadSong(url));
@@ -436,7 +442,7 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs)
 }
 
 void
-spl_rename(const char *utf8from, const char *utf8to)
+spl_rename(std::string_view utf8from, std::string_view utf8to)
 {
 	const auto from_path_fs = spl_map_to_fs(utf8from);
 	assert(!from_path_fs.IsNull());

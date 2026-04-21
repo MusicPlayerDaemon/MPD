@@ -98,7 +98,7 @@ map_spl_path() noexcept
 }
 
 AllocatedPath
-map_spl_utf8_to_fs(const char *name) noexcept
+map_spl_utf8_to_fs(std::string_view name) noexcept
 {
 	if (playlist_dir_fs.IsNull())
 		return nullptr;

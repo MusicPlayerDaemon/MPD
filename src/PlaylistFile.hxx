@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PLAYLIST_FILE_HXX
-#define MPD_PLAYLIST_FILE_HXX
+#pragma once
 
 #include "fs/AllocatedPath.hxx"
 
 #include <vector>
 #include <string>
+#include <string_view>
 
 struct ConfigData;
 struct RangeArg;
@@ -65,11 +65,11 @@ spl_global_init(const ConfigData &config);
  */
 [[gnu::pure]]
 bool
-spl_valid_name(const char *name_utf8) noexcept;
+spl_valid_name(std::string_view name_utf8) noexcept;
 
 [[nodiscard]]
 AllocatedPath
-spl_map_to_fs(const char *name_utf8);
+spl_map_to_fs(std::string_view name_utf8);
 
 /**
  * Returns a list of stored_playlist_info struct pointers.
@@ -79,22 +79,20 @@ PlaylistVector
 ListPlaylistFiles();
 
 void
-spl_clear(const char *utf8path);
+spl_clear(std::string_view utf8path);
 
 void
-spl_delete(const char *name_utf8);
+spl_delete(std::string_view name_utf8);
 
 void
-spl_append_song(const char *utf8path, const DetachedSong &song);
+spl_append_song(std::string_view utf8path, const DetachedSong &song);
 
 /**
  * Throws #std::runtime_error on error.
  */
 void
-spl_append_uri(const char *path_utf8,
+spl_append_uri(std::string_view path_utf8,
 	       const SongLoader &loader, const char *uri_utf8);
 
 void
-spl_rename(const char *utf8from, const char *utf8to);
-
-#endif
+spl_rename(std::string_view utf8from, std::string_view utf8to);

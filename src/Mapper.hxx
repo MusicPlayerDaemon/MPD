@@ -5,8 +5,7 @@
  * Maps directory and song objects to file system paths.
  */
 
-#ifndef MPD_MAPPER_HXX
-#define MPD_MAPPER_HXX
+#pragma once
 
 #include "config.h"
 
@@ -60,6 +59,4 @@ map_spl_path() noexcept;
  */
 [[gnu::pure]]
 AllocatedPath
-map_spl_utf8_to_fs(const char *name) noexcept;
-
-#endif
+map_spl_utf8_to_fs(std::string_view name) noexcept;
