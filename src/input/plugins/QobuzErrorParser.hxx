@@ -3,8 +3,8 @@
 
 #pragma once
 
-struct StringCurlResponse;
+namespace Curl { struct StringResponse; }
 
 [[noreturn]]
 void
-ThrowQobuzError(const StringCurlResponse &response);
+ThrowQobuzError(const Curl::StringResponse &response);

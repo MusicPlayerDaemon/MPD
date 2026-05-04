@@ -10,7 +10,7 @@
 class QobuzClient;
 
 class QobuzTagScanner final
-	: public RemoteTagScanner, StringCurlResponseHandler
+	: public RemoteTagScanner, Curl::StringResponseHandler
 {
 	CurlRequest request;
 
