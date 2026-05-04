@@ -1,0 +1,99 @@
+---
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - 'AUTHORS'
+      - 'COPYING'
+      - 'LICENSES/**'
+      - 'NEWS'
+      - 'README.md'
+      - 'android/**'
+      - 'doc/**'
+      - 'systemd/**'
+    branches:
+      - master
+      - v0.24.x
+  pull_request:
+    paths-ignore:
+      - 'AUTHORS'
+      - 'COPYING'
+      - 'LICENSES/**'
+      - 'NEWS'
+      - 'README.md'
+      - 'android/**'
+      - 'doc/**'
+      - 'systemd/**'
+    branches:
+      - master
+      - v0.24.x
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  build-linux:
+    strategy:
+      matrix:
+        cpu: [x86-64, i686]
+        include:
+          - cpu: x86-64
+            packages: g++-mingw-w64-x86-64
+            bits: 64
+          - cpu: i686
+            packages: g++-mingw-w64-i686
+            bits: 32
+
+    runs-on: ubuntu-24.04
+
+    env:
+      CC: ccache ${{matrix.cpu}}-w64-mingw32-g++
+      CXX: ccache ${{matrix.cpu}}-w64-mingw32-gcc
+
+    steps:
+      - id: checkout
+        uses: actions/checkout@v5
+
+      - name: "Cache third-party libraries"
+        uses: actions/cache@v4
+        with:
+          key: ${{runner.os}}-libs-${{matrix.cpu}}-${{hashFiles('win32/build.py', 'python/**')}}
+          path: |
+            ${{github.workspace}}/output/lib/download
+            ${{github.workspace}}/output/lib/*/root
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ${{ matrix.packages }} \
+            meson \
+            ccache
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: mingw-${{ matrix.cpu }}
+
+      - name: Configure
+        run: |
+          mkdir -p output
+          cd output
+          ../win32/build.py --${{matrix.bits}} \
+            --buildtype=debug \
+            --werror \
+            -Dtest=true \
+            -Ddocumentation=disabled \
+            -Dupnp=disabled \
+            -Dcurl=enabled \
+            -Dffmpeg=enabled \
+            -Did3tag=enabled \
+            -Dlibmpdclient=enabled \
+            -Dnfs=enabled \
+            -Dsqlite=enabled \
+            -Dwebdav=enabled \
+            -Dzlib=enabled \
+            -Dwrap_mode=forcefallback
+
+      - name: Build
+        run: meson compile -C output --verbose
