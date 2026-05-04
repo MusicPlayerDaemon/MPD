@@ -3,6 +3,7 @@
 // author: Max Kellermann <max.kellermann@ionos.com>
 
 #include "StringHandler.hxx"
+#include "net/SocketProtocolError.hxx"
 #include "util/SpanCast.hxx"
 
 namespace Curl {
@@ -17,6 +18,9 @@ StringResponseHandler::OnHeaders(unsigned status, Curl::Headers &&headers)
 void
 StringResponseHandler::OnData(std::span<const std::byte> data)
 {
+	if (response.body.size() + data.size() > options.max_size)
+		throw SocketMessageTooLargeError{"Response body is too large"};
+
 	response.body.append(ToStringView(data));
 }
 

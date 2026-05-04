@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Handler.hxx"
+#include "StringOptions.hxx"
 #include "StringResponse.hxx"
 
 namespace Curl {
@@ -14,11 +15,20 @@ namespace Curl {
  * body in a std::string.
  */
 class StringResponseHandler : public CurlResponseHandler {
+	const StringOptions options;
+
 	StringResponse response;
 
 	std::exception_ptr error;
 
 public:
+	[[nodiscard]]
+	StringResponseHandler() noexcept = default;
+
+	[[nodiscard]]
+	explicit StringResponseHandler(StringOptions &_options) noexcept
+		:options(_options) {}
+
 	void CheckRethrowError() const {
 		if (error)
 			std::rethrow_exception(error);
