@@ -155,7 +155,7 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock)
 			buffer.Commit(read_offset, read_offset + nbytes);
 
 			client_cond.notify_all();
-			OnBufferAvailable();
+			OnBufferAvailable(lock);
 		} else
 			wake_cond.wait(lock);
 	}
@@ -173,7 +173,7 @@ BufferingInputStream::RunThread() noexcept
 	} catch (...) {
 		error = std::current_exception();
 		client_cond.notify_all();
-		OnBufferAvailable();
+		OnBufferAvailable(lock);
 	}
 
 	/* clear the "input" attribute while holding the mutex */

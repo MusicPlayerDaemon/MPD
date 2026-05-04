@@ -67,8 +67,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             ${{ matrix.packages }} \
+            ccache \
+            cmake \
             meson \
-            ccache
+            nasm \
+            pkg-config \
+            quilt
 
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1.2

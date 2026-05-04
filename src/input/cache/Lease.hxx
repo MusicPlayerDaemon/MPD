@@ -71,7 +71,7 @@ public:
 	/**
 	 * Caller locks #InputCacheItem::mutex.
 	 */
-	virtual void OnInputCacheAvailable() noexcept {}
+	virtual void OnInputCacheAvailable([[maybe_unused]] std::unique_lock<Mutex> &lock) noexcept {}
 };
 
 #endif

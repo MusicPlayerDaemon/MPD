@@ -29,5 +29,5 @@ public:
 
 private:
 	/* virtual methods from class InputCacheLease */
-	void OnInputCacheAvailable() noexcept override;
+	void OnInputCacheAvailable(std::unique_lock<Mutex> &lock) noexcept override;
 };
