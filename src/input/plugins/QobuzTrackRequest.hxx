@@ -16,7 +16,7 @@ public:
 	virtual void OnQobuzTrackError(std::exception_ptr error) noexcept = 0;
 };
 
-class QobuzTrackRequest final : StringCurlResponseHandler {
+class QobuzTrackRequest final : Curl::StringResponseHandler {
 	CurlSlist request_headers;
 
 	CurlRequest request;

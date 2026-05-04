@@ -10,7 +10,7 @@
 using std::string_view_literals::operator""sv;
 
 void
-ThrowQobuzError(const StringCurlResponse &response)
+ThrowQobuzError(const Curl::StringResponse &response)
 {
 	if (auto i = response.headers.find("content-type");
 	    i != response.headers.end() && i->second.find("/json") != i->second.npos) {

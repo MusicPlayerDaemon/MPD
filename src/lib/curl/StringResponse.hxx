@@ -8,8 +8,12 @@
 
 #include <string>
 
-struct StringCurlResponse {
+namespace Curl {
+
+struct StringResponse {
 	unsigned status;
 	Curl::Headers headers;
 	std::string body;
 };
+
+} // namespace Curl

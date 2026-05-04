@@ -14,7 +14,7 @@ public:
 	virtual void OnQobuzLoginError(std::exception_ptr error) noexcept = 0;
 };
 
-class QobuzLoginRequest final : StringCurlResponseHandler {
+class QobuzLoginRequest final : Curl::StringResponseHandler {
 	CurlRequest request;
 
 	QobuzLoginHandler &handler;
