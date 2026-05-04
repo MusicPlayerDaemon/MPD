@@ -50,7 +50,7 @@ struct LocatedUri {
 	std::string_view canonical_uri;
 
 	/**
-	 * Contains the local file path if type==FILE.
+	 * Contains the local file path if type==PATH.
 	 */
 	AllocatedPath path;
 

@@ -74,10 +74,11 @@ CacheInputStream::Read(std::unique_lock<Mutex> &lock,
 }
 
 void
-CacheInputStream::OnInputCacheAvailable() noexcept
+CacheInputStream::OnInputCacheAvailable(std::unique_lock<Mutex> &lock) noexcept
 {
-	auto &i = GetCacheItem();
-	const ScopeUnlock unlock(i.mutex);
+	assert(lock.mutex() == &GetCacheItem().mutex);
+
+	const ScopeUnlock unlock{lock};
 
 	const std::lock_guard protect{mutex};
 	InvokeOnAvailable();
