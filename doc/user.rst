@@ -165,6 +165,7 @@ You need:
 * `Meson 1.0.0 <http://mesonbuild.com/>`__ and `Ninja
   <https://ninja-build.org/>`__
 * cmake
+* nasm (for the FFmpeg build)
 * pkg-config
 * quilt
 
