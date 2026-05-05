@@ -33,6 +33,7 @@ project(
     'opus:default_library=static',
     'sqlite3:default_library=static',
     'vorbis:default_library=static',
+    'pcre2:default_library=static',
 
     # Not interested in compiler warnings from subprojects.
     'curl:werror=false',
@@ -159,6 +160,9 @@ test_common_flags = [
 
   # libfmt causes this warning due to -ffast-math
   '-Wno-nan-infinity-disabled',
+
+  # PCRE2 overlength-strings warning
+  '-Wno-overlength-strings'
 ]
 
 test_global_cxxflags = test_global_common_flags + [
