@@ -27,6 +27,10 @@
 #define ID3_FRAME_DISC "TPOS"
 #endif
 
+#ifndef ID3_FRAME_DISCSUBTITLE
+#define ID3_FRAME_DISCSUBTITLE "TSST"
+#endif
+
 #ifndef ID3_FRAME_ARTIST_SORT
 #define ID3_FRAME_ARTIST_SORT "TSOP"
 #endif
@@ -336,6 +340,8 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 	tag_id3_import_comment(tag, ID3_FRAME_COMMENT, TAG_COMMENT,
 			       handler);
 	tag_id3_import_text(tag, ID3_FRAME_DISC, TAG_DISC,
+			    handler);
+	tag_id3_import_text(tag, ID3_FRAME_DISCSUBTITLE, TAG_DISCSUBTITLE,
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_LABEL, TAG_LABEL,
 			    handler);

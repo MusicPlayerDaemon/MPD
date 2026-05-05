@@ -34,6 +34,7 @@ static constexpr struct tag_table tag_item_names_init[] = {
 	{"Grouping", TAG_GROUPING},
 	{"Comment", TAG_COMMENT},
 	{"Disc", TAG_DISC},
+	{"DiscSubtitle", TAG_DISCSUBTITLE},
 	{"Label", TAG_LABEL},
 
 	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
