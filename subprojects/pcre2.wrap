@@ -11,3 +11,6 @@ wrapdb_version = 10.47-3
 
 [provide]
 dependency_names = libpcre2-8, libpcre2-16, libpcre2-32, libpcre2-posix
+
+[options]
+c_args = -Wno-overlength-strings
