@@ -13,6 +13,7 @@ extern "C" {
 #include <libavfilter/avfilter.h>
 }
 
+#include <cstddef>
 #include <new>
 #include <utility>
 

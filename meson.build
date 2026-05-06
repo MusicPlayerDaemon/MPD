@@ -31,6 +31,7 @@ project(
     'ogg:default_library=static',
     'openssl:default_library=static',
     'opus:default_library=static',
+    'pcre2:default_library=static',
     'sqlite3:default_library=static',
     'vorbis:default_library=static',
 
@@ -58,6 +59,8 @@ project(
     'openssl:warning_level=0',
     'opus:werror=false',
     'opus:warning_level=0',
+    'pcre2:werror=false',
+    'pcre2:warning_level=0',
     'vorbis:warning_level=0',
 
     # Disable subprojects features we don't need
@@ -102,6 +105,8 @@ project(
     'opus:docs=disabled',
     'opus:extra-programs=disabled',
     'opus:tests=disabled',
+    'pcre2:grep=false',
+    'pcre2:test=false',
   ],
   license: 'GPLv2+',
 )

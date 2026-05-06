@@ -40,8 +40,8 @@ libmodplug = AutotoolsProject(
 )
 
 libopenmpt = AutotoolsProject(
-    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.4+release.autotools.tar.gz',
-    '627f9bf11aacae615a1f2c982c7e88cb21f11b2d6f0267946f7c82c5eae4943b',
+    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.6+release.autotools.tar.gz',
+    'caa2fa959e389f4374d9e2df3af5c633452c12dd80442cba2e89cb7ff2b93c5b',
     'lib/libopenmpt.a',
     [
         '--disable-shared', '--enable-static',
@@ -53,7 +53,7 @@ libopenmpt = AutotoolsProject(
         '--without-portaudio', '--without-portaudiocpp', '--without-sndfile',
         '--without-flac',
     ],
-    base='libopenmpt-0.8.4+release.autotools',
+    base='libopenmpt-0.8.6+release.autotools',
 )
 
 wildmidi = CmakeProject(
@@ -68,8 +68,8 @@ wildmidi = CmakeProject(
 )
 
 gme = CmakeProject(
-    'https://github.com/libgme/game-music-emu/archive/refs/tags/0.6.4.tar.gz',
-    'f2360feb5a32ace226c583df4faf6eff74145c81264aaea11e17a1af2f6f101a',
+    'https://github.com/libgme/game-music-emu/releases/download/0.6.5/libgme-0.6.5-src.tar.gz',
+    'a133f19278222136ba0d8c27b64a07987ba05fec9d2e6d293ccd8cabdd97ddbb',
     'lib/libgme.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',
@@ -79,12 +79,12 @@ gme = CmakeProject(
         '-DGME_ZLIB=OFF',
         '-DZLIB_INCLUDE_DIR=OFF',
     ],
-    base='game-music-emu-0.6.4',
+    base='libgme-0.6.5',
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-8.1.tar.xz',
-    'b072aed6871998cce9b36e7774033105ca29e33632be5b6347f3206898e0756a',
+    'https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz',
+    'b6863adde98898f42602017462871b5f6333e65aec803fdd7a6308639c52edf3',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',

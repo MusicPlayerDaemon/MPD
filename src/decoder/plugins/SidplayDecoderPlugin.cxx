@@ -15,6 +15,7 @@
 #include "lib/icu/Converter.hxx"
 #include "io/FileReader.hxx"
 #include "util/Domain.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ByteOrder.hxx"
@@ -26,13 +27,13 @@
 #include <sidplayfp/SidConfig.h>
 #include <sidplayfp/SidTune.h>
 #include <sidplayfp/SidTuneInfo.h>
-#include <sidplayfp/builders/resid.h>
 #include <sidplayfp/builders/residfp.h>
 #include <sidplayfp/SidDatabase.h>
 
 #include <fmt/format.h>
 
-#include <iterator>
+#include <array>
+#include <limits>
 #include <memory>
 
 #define SUBTUNE_PREFIX "tune_"
@@ -46,7 +47,9 @@ struct SidplayGlobal {
 	unsigned default_songlength;
 	std::string default_genre;
 
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
 	bool filter_setting;
+#endif
 
 	std::unique_ptr<uint8_t[]> kernal, basic;
 
@@ -94,7 +97,9 @@ SidplayGlobal::SidplayGlobal(const ConfigBlock &block)
 	all_files_are_containers =
 		block.GetBlockValue("all_files_are_containers", true);
 
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
 	filter_setting = block.GetBlockValue("filter", true);
+#endif
 
 	/* read kernal rom dump file */
 	const auto kernal_path = block.GetPath("kernal");
@@ -151,6 +156,7 @@ ParseSubtuneName(const char *base) noexcept
  * returns the file path stripped of any /tune_xxx.* subtune suffix
  * and the track number (or 1 if no "tune_xxx" suffix is present).
  */
+[[gnu::pure]]
 static SidplayContainerPath
 ParseContainerPath(Path path_fs) noexcept
 {
@@ -162,13 +168,9 @@ ParseContainerPath(Path path_fs) noexcept
 	return { path_fs.GetDirectoryName(), track };
 }
 
-/**
- * This is a template, because libsidplay requires SidTuneMod while
- * libsidplayfp requires just a plain Sidtune.
- */
-template<typename T>
+[[gnu::pure]]
 static SignedSongTime
-get_song_length(T &tune) noexcept
+get_song_length(SidTune &tune) noexcept
 {
 	assert(tune.getStatus());
 
@@ -198,8 +200,6 @@ get_song_length(T &tune) noexcept
 static void
 sidplay_file_decode(DecoderClient &client, Path path_fs)
 {
-	int channels;
-
 	/* load the tune */
 
 	const auto container = ParseContainerPath(path_fs);
@@ -234,6 +234,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	/* initialize the builder */
 
 	ReSIDfpBuilder builder("ReSID");
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
 	if (!builder.getStatus()) {
 		FmtWarning(sidplay_domain,
 			   "failed to initialize ReSIDfpBuilder: {}",
@@ -256,6 +257,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 			   builder.error());
 		return;
 	}
+#endif
 
 	/* configure the player */
 
@@ -264,8 +266,10 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	config.frequency = 48000;
 	config.sidEmulation = &builder;
 	config.samplingMethod = SidConfig::INTERPOLATE;
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
 	config.fastSampling = false;
 
+	unsigned channels;
 	if (tune.getInfo()->sidChips() >= 2) {
 		config.playback = SidConfig::STEREO;
 		channels = 2;
@@ -273,12 +277,28 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		config.playback = SidConfig::MONO;
 		channels = 1;
 	}
+#else
+	constexpr unsigned channels = 2;
+#endif
 
 	if (!player.config(config)) {
 		FmtWarning(sidplay_domain,
 			   "sidplay2.config() failed: {}", player.error());
 		return;
 	}
+
+#if LIBSIDPLAYFP_VERSION_MAJ >= 3
+	player.initMixer(true);
+
+	static constexpr unsigned CYCLES = 4096;
+	const int buf_size = player.getBufSize(CYCLES);
+	if (buf_size <= 0) {
+		LogWarning(sidplay_domain, "sidplayfp.getBufSize() failed");
+		return;
+	}
+
+	AllocatedArray<short> buffer{static_cast<std::size_t>(buf_size)};
+#endif
 
 	/* initialize the MPD decoder */
 
@@ -289,52 +309,86 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	/* .. and play */
 
+	using sidplayfp_time_t = uint_least32_t;
+
+#if LIBSIDPLAYFP_VERSION_MAJ >= 2
+	constexpr unsigned timebase = 1000;
+#else
 	constexpr unsigned timebase = 1;
-	const unsigned end = duration.IsNegative()
-		? 0U
+#endif
+	const sidplayfp_time_t end_time = duration.IsNegative()
+		? std::numeric_limits<sidplayfp_time_t>::max()
 		: duration.ToScale<uint64_t>(timebase);
 
-	DecoderCommand cmd;
-	do {
-		short buffer[4096];
+	/* if this is positive, then we're currently seeking; skip all
+	   samples until the player reaches this time stamp and then
+	   call CommandFinished() */
+	sidplayfp_time_t min_time = 0;
 
-		const auto result = player.play(buffer, std::size(buffer));
+	sidplayfp_time_t time = 0;
+
+	DecoderCommand cmd = DecoderCommand::NONE;
+	while (cmd != DecoderCommand::STOP && time < end_time) {
+#if LIBSIDPLAYFP_VERSION_MAJ >= 3
+		const int result = player.play(CYCLES);
+		if (result <= 0) {
+			FmtWarning(sidplay_domain,
+				   "sidplay2.play() failed: {}", player.error());
+			break;
+		}
+
+		const unsigned n_samples = player.mix(buffer.data(), result);
+#else
+		std::array<short, 4096> buffer;
+
+		const auto result = player.play(buffer.data(), buffer.size());
 		if (result <= 0)
 			break;
 
 		/* libsidplayfp returns the number of samples */
 		const size_t n_samples = result;
+#endif
 
-		client.SubmitTimestamp(FloatDuration(player.time()) / timebase);
+#if LIBSIDPLAYFP_VERSION_MAJ >= 2
+		time = player.timeMs();
+#else
+		time = player.time();
+#endif
 
-		cmd = client.SubmitAudio(nullptr, std::span{buffer, n_samples},
-					 0);
+		if (min_time > 0) {
+			if (time < min_time)
+				/* still seeking */
+				continue;
 
-		if (cmd == DecoderCommand::SEEK) {
-			unsigned data_time = player.time();
-			unsigned target_time =
-				client.GetSeekTime().ToScale(timebase);
-
-			/* can't rewind so return to zero and seek forward */
-			if(target_time<data_time) {
-				player.stop();
-				data_time=0;
-			}
-
-			/* ignore data until target time is reached */
-			while (data_time < target_time &&
-			       player.play(buffer, std::size(buffer)) > 0)
-				data_time = player.time();
-
+			min_time = 0;
 			client.CommandFinished();
 		}
 
-		if (end > 0 && player.time() >= end)
-			break;
+		client.SubmitTimestamp(FloatDuration{time} / timebase);
 
-	} while (cmd != DecoderCommand::STOP);
+		cmd = client.SubmitAudio(nullptr, std::span{buffer}.first(n_samples),
+					 0);
+
+		if (cmd == DecoderCommand::SEEK) {
+			min_time = client.GetSeekTime().ToScale(timebase);
+
+			/* can't rewind so return to zero and seek forward */
+			if (min_time < time) {
+#if LIBSIDPLAYFP_VERSION_MAJ >= 3
+				player.reset();
+#else
+				player.stop();
+#endif
+				time = 0;
+			}
+
+			if (min_time == 0)
+				client.CommandFinished();
+		}
+	}
 }
 
+[[gnu::pure]]
 static AllocatedString
 Windows1252ToUTF8(const char *s) noexcept
 {

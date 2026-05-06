@@ -164,7 +164,10 @@ if wildmidi_dep.found()
   decoder_plugins_sources += 'WildmidiDecoderPlugin.cxx'
 endif
 
-libsidplay_dep = dependency('libsidplayfp', version: '>= 1.8', required: get_option('sidplay'))
+libsidplay_dep = dependency('libsidplayfp',
+                            version: '>= 1.8',
+                            include_type: 'system',
+                            required: get_option('sidplay'))
 decoder_features.set('ENABLE_SIDPLAY', libsidplay_dep.found())
 if libsidplay_dep.found()
   decoder_plugins_sources += 'SidplayDecoderPlugin.cxx'

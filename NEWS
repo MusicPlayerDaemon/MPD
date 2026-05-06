@@ -21,9 +21,12 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.10 (not yet released)
+ver 0.24.10 (2026/05/06)
 * input
   - cache: fix deadlock bug
+* decoder
+  - sidplay: support millisecond-precision time stamps
+  - sidplay: support libsidplayfp version 3
 * database
   - upnp: allow building with libupnp 1.14.30 which has fixed the API breakage
 * Windows
