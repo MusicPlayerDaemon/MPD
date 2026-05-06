@@ -293,44 +293,45 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		? std::numeric_limits<sidplayfp_time_t>::max()
 		: duration.ToScale<uint64_t>(timebase);
 
+	sidplayfp_time_t time = 0;
+
 	DecoderCommand cmd;
 	do {
+		if (time >= end_time)
+			break;
+
 		std::array<short, 4096> buffer;
 
 		const auto result = player.play(buffer.data(), buffer.size());
 		if (result <= 0)
 			break;
 
+		time = player.time();
+		client.SubmitTimestamp(FloatDuration{time} / timebase);
+
 		/* libsidplayfp returns the number of samples */
 		const size_t n_samples = result;
-
-		client.SubmitTimestamp(FloatDuration(player.time()) / timebase);
 
 		cmd = client.SubmitAudio(nullptr, std::span{buffer}.first(n_samples),
 					 0);
 
 		if (cmd == DecoderCommand::SEEK) {
-			sidplayfp_time_t data_time = player.time();
 			sidplayfp_time_t target_time =
 				client.GetSeekTime().ToScale(timebase);
 
 			/* can't rewind so return to zero and seek forward */
-			if(target_time<data_time) {
+			if (target_time < time) {
 				player.stop();
-				data_time=0;
+				time = 0;
 			}
 
 			/* ignore data until target time is reached */
-			while (data_time < target_time &&
+			while (time < target_time &&
 			       player.play(buffer.data(), buffer.size()) > 0)
-				data_time = player.time();
+				time = player.time();
 
 			client.CommandFinished();
 		}
-
-		if (player.time() >= end_time)
-			break;
-
 	} while (cmd != DecoderCommand::STOP);
 }
 
