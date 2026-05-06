@@ -161,13 +161,8 @@ ParseContainerPath(Path path_fs) noexcept
 	return { path_fs.GetDirectoryName(), track };
 }
 
-/**
- * This is a template, because libsidplay requires SidTuneMod while
- * libsidplayfp requires just a plain Sidtune.
- */
-template<typename T>
 static SignedSongTime
-get_song_length(T &tune) noexcept
+get_song_length(SidTune &tune) noexcept
 {
 	assert(tune.getStatus());
 
