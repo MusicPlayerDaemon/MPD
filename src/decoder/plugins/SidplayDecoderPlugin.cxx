@@ -32,6 +32,7 @@
 #include <fmt/format.h>
 
 #include <array>
+#include <limits>
 #include <memory>
 
 #define SUBTUNE_PREFIX "tune_"
@@ -289,7 +290,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	constexpr unsigned timebase = 1;
 	const sidplayfp_time_t end_time = duration.IsNegative()
-		? 0U
+		? std::numeric_limits<sidplayfp_time_t>::max()
 		: duration.ToScale<uint64_t>(timebase);
 
 	DecoderCommand cmd;
@@ -327,7 +328,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 			client.CommandFinished();
 		}
 
-		if (end_time > 0 && player.time() >= end_time)
+		if (player.time() >= end_time)
 			break;
 
 	} while (cmd != DecoderCommand::STOP);
