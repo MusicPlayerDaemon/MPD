@@ -31,7 +31,7 @@
 
 #include <fmt/format.h>
 
-#include <iterator>
+#include <array>
 #include <memory>
 
 #define SUBTUNE_PREFIX "tune_"
@@ -292,9 +292,9 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	DecoderCommand cmd;
 	do {
-		short buffer[4096];
+		std::array<short, 4096> buffer;
 
-		const auto result = player.play(buffer, std::size(buffer));
+		const auto result = player.play(buffer.data(), buffer.size());
 		if (result <= 0)
 			break;
 
@@ -303,7 +303,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 		client.SubmitTimestamp(FloatDuration(player.time()) / timebase);
 
-		cmd = client.SubmitAudio(nullptr, std::span{buffer, n_samples},
+		cmd = client.SubmitAudio(nullptr, std::span{buffer}.first(n_samples),
 					 0);
 
 		if (cmd == DecoderCommand::SEEK) {
@@ -319,7 +319,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 			/* ignore data until target time is reached */
 			while (data_time < target_time &&
-			       player.play(buffer, std::size(buffer)) > 0)
+			       player.play(buffer.data(), buffer.size()) > 0)
 				data_time = player.time();
 
 			client.CommandFinished();
