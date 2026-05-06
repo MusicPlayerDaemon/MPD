@@ -293,6 +293,11 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		? std::numeric_limits<sidplayfp_time_t>::max()
 		: duration.ToScale<uint64_t>(timebase);
 
+	/* if this is positive, then we're currently seeking; skip all
+	   samples until the player reaches this time stamp and then
+	   call CommandFinished() */
+	sidplayfp_time_t min_time = 0;
+
 	sidplayfp_time_t time = 0;
 
 	DecoderCommand cmd = DecoderCommand::NONE;
@@ -304,6 +309,16 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 			break;
 
 		time = player.time();
+
+		if (min_time > 0) {
+			if (time < min_time)
+				/* still seeking */
+				continue;
+
+			min_time = 0;
+			client.CommandFinished();
+		}
+
 		client.SubmitTimestamp(FloatDuration{time} / timebase);
 
 		/* libsidplayfp returns the number of samples */
@@ -313,21 +328,16 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 					 0);
 
 		if (cmd == DecoderCommand::SEEK) {
-			sidplayfp_time_t target_time =
-				client.GetSeekTime().ToScale(timebase);
+			min_time = client.GetSeekTime().ToScale(timebase);
 
 			/* can't rewind so return to zero and seek forward */
-			if (target_time < time) {
+			if (min_time < time) {
 				player.stop();
 				time = 0;
 			}
 
-			/* ignore data until target time is reached */
-			while (time < target_time &&
-			       player.play(buffer.data(), buffer.size()) > 0)
-				time = player.time();
-
-			client.CommandFinished();
+			if (min_time == 0)
+				client.CommandFinished();
 		}
 	}
 }
