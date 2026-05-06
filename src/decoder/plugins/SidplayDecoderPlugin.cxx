@@ -15,6 +15,7 @@
 #include "lib/icu/Converter.hxx"
 #include "io/FileReader.hxx"
 #include "util/Domain.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ByteOrder.hxx"
@@ -46,7 +47,9 @@ struct SidplayGlobal {
 	unsigned default_songlength;
 	std::string default_genre;
 
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
 	bool filter_setting;
+#endif
 
 	std::unique_ptr<uint8_t[]> kernal, basic;
 
@@ -94,7 +97,9 @@ SidplayGlobal::SidplayGlobal(const ConfigBlock &block)
 	all_files_are_containers =
 		block.GetBlockValue("all_files_are_containers", true);
 
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
 	filter_setting = block.GetBlockValue("filter", true);
+#endif
 
 	/* read kernal rom dump file */
 	const auto kernal_path = block.GetPath("kernal");
@@ -195,8 +200,6 @@ get_song_length(SidTune &tune) noexcept
 static void
 sidplay_file_decode(DecoderClient &client, Path path_fs)
 {
-	int channels;
-
 	/* load the tune */
 
 	const auto container = ParseContainerPath(path_fs);
@@ -231,6 +234,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	/* initialize the builder */
 
 	ReSIDfpBuilder builder("ReSID");
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
 	if (!builder.getStatus()) {
 		FmtWarning(sidplay_domain,
 			   "failed to initialize ReSIDfpBuilder: {}",
@@ -253,6 +257,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 			   builder.error());
 		return;
 	}
+#endif
 
 	/* configure the player */
 
@@ -261,8 +266,10 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	config.frequency = 48000;
 	config.sidEmulation = &builder;
 	config.samplingMethod = SidConfig::INTERPOLATE;
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
 	config.fastSampling = false;
 
+	unsigned channels;
 	if (tune.getInfo()->sidChips() >= 2) {
 		config.playback = SidConfig::STEREO;
 		channels = 2;
@@ -270,12 +277,28 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		config.playback = SidConfig::MONO;
 		channels = 1;
 	}
+#else
+	constexpr unsigned channels = 2;
+#endif
 
 	if (!player.config(config)) {
 		FmtWarning(sidplay_domain,
 			   "sidplay2.config() failed: {}", player.error());
 		return;
 	}
+
+#if LIBSIDPLAYFP_VERSION_MAJ >= 3
+	player.initMixer(true);
+
+	static constexpr unsigned CYCLES = 4096;
+	const int buf_size = player.getBufSize(CYCLES);
+	if (buf_size <= 0) {
+		LogWarning(sidplay_domain, "sidplayfp.getBufSize() failed");
+		return;
+	}
+
+	AllocatedArray<short> buffer{static_cast<std::size_t>(buf_size)};
+#endif
 
 	/* initialize the MPD decoder */
 
@@ -306,11 +329,25 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (cmd != DecoderCommand::STOP && time < end_time) {
+#if LIBSIDPLAYFP_VERSION_MAJ >= 3
+		const int result = player.play(CYCLES);
+		if (result <= 0) {
+			FmtWarning(sidplay_domain,
+				   "sidplay2.play() failed: {}", player.error());
+			break;
+		}
+
+		const unsigned n_samples = player.mix(buffer.data(), result);
+#else
 		std::array<short, 4096> buffer;
 
 		const auto result = player.play(buffer.data(), buffer.size());
 		if (result <= 0)
 			break;
+
+		/* libsidplayfp returns the number of samples */
+		const size_t n_samples = result;
+#endif
 
 #if LIBSIDPLAYFP_VERSION_MAJ >= 2
 		time = player.timeMs();
@@ -329,9 +366,6 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 		client.SubmitTimestamp(FloatDuration{time} / timebase);
 
-		/* libsidplayfp returns the number of samples */
-		const size_t n_samples = result;
-
 		cmd = client.SubmitAudio(nullptr, std::span{buffer}.first(n_samples),
 					 0);
 
@@ -340,7 +374,11 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 			/* can't rewind so return to zero and seek forward */
 			if (min_time < time) {
+#if LIBSIDPLAYFP_VERSION_MAJ >= 3
+				player.reset();
+#else
 				player.stop();
+#endif
 				time = 0;
 			}
 

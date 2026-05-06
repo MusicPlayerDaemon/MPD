@@ -3,6 +3,7 @@ ver 0.24.10 (not yet released)
   - cache: fix deadlock bug
 * decoder
   - sidplay: support millisecond-precision time stamps
+  - sidplay: support libsidplayfp version 3
 * database
   - upnp: allow building with libupnp 1.14.30 which has fixed the API breakage
 * Windows
