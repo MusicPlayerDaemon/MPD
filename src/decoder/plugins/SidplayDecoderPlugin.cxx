@@ -288,7 +288,11 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	using sidplayfp_time_t = uint_least32_t;
 
+#if LIBSIDPLAYFP_VERSION_MAJ >= 2
+	constexpr unsigned timebase = 1000;
+#else
 	constexpr unsigned timebase = 1;
+#endif
 	const sidplayfp_time_t end_time = duration.IsNegative()
 		? std::numeric_limits<sidplayfp_time_t>::max()
 		: duration.ToScale<uint64_t>(timebase);
@@ -308,7 +312,11 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		if (result <= 0)
 			break;
 
+#if LIBSIDPLAYFP_VERSION_MAJ >= 2
+		time = player.timeMs();
+#else
 		time = player.time();
+#endif
 
 		if (min_time > 0) {
 			if (time < min_time)
