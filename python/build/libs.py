@@ -40,8 +40,8 @@ libmodplug = AutotoolsProject(
 )
 
 libopenmpt = AutotoolsProject(
-    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.4+release.autotools.tar.gz',
-    '627f9bf11aacae615a1f2c982c7e88cb21f11b2d6f0267946f7c82c5eae4943b',
+    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.6+release.autotools.tar.gz',
+    'caa2fa959e389f4374d9e2df3af5c633452c12dd80442cba2e89cb7ff2b93c5b',
     'lib/libopenmpt.a',
     [
         '--disable-shared', '--enable-static',
@@ -53,7 +53,7 @@ libopenmpt = AutotoolsProject(
         '--without-portaudio', '--without-portaudiocpp', '--without-sndfile',
         '--without-flac',
     ],
-    base='libopenmpt-0.8.4+release.autotools',
+    base='libopenmpt-0.8.6+release.autotools',
 )
 
 wildmidi = CmakeProject(
