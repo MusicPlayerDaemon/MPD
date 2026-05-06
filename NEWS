@@ -1,4 +1,4 @@
-ver 0.24.10 (not yet released)
+ver 0.24.10 (2026/05/06)
 * input
   - cache: fix deadlock bug
 * decoder
