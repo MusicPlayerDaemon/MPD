@@ -286,7 +286,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	/* .. and play */
 
 	constexpr unsigned timebase = 1;
-	const unsigned end = duration.IsNegative()
+	const unsigned end_time = duration.IsNegative()
 		? 0U
 		: duration.ToScale<uint64_t>(timebase);
 
@@ -325,7 +325,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 			client.CommandFinished();
 		}
 
-		if (end > 0 && player.time() >= end)
+		if (end_time > 0 && player.time() >= end_time)
 			break;
 
 	} while (cmd != DecoderCommand::STOP);
