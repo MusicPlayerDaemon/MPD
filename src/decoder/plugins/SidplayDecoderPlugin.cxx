@@ -150,6 +150,7 @@ ParseSubtuneName(const char *base) noexcept
  * returns the file path stripped of any /tune_xxx.* subtune suffix
  * and the track number (or 1 if no "tune_xxx" suffix is present).
  */
+[[gnu::pure]]
 static SidplayContainerPath
 ParseContainerPath(Path path_fs) noexcept
 {
@@ -161,6 +162,7 @@ ParseContainerPath(Path path_fs) noexcept
 	return { path_fs.GetDirectoryName(), track };
 }
 
+[[gnu::pure]]
 static SignedSongTime
 get_song_length(SidTune &tune) noexcept
 {
@@ -329,6 +331,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	} while (cmd != DecoderCommand::STOP);
 }
 
+[[gnu::pure]]
 static AllocatedString
 Windows1252ToUTF8(const char *s) noexcept
 {
