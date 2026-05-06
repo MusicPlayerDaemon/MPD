@@ -295,11 +295,8 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	sidplayfp_time_t time = 0;
 
-	DecoderCommand cmd;
-	do {
-		if (time >= end_time)
-			break;
-
+	DecoderCommand cmd = DecoderCommand::NONE;
+	while (cmd != DecoderCommand::STOP && time < end_time) {
 		std::array<short, 4096> buffer;
 
 		const auto result = player.play(buffer.data(), buffer.size());
@@ -332,7 +329,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 			client.CommandFinished();
 		}
-	} while (cmd != DecoderCommand::STOP);
+	}
 }
 
 [[gnu::pure]]
