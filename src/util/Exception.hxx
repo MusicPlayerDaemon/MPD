@@ -112,3 +112,10 @@ std::string
 GetFullMessage(std::exception_ptr ep,
 	       const char *fallback="Unknown exception",
 	       const char *separator="; ") noexcept;
+
+/**
+ * Obtain the message of the inner-most exception.
+ */
+const char *
+GetInnerMessage(std::exception_ptr ep,
+		const char *fallback="Unknown exception") noexcept;

@@ -40,6 +40,25 @@ TEST(ExceptionTest, GetFullMessageSanitize)
 	}
 }
 
+TEST(ExceptionTest, GetInnerMessage)
+{
+	ASSERT_STREQ(GetInnerMessage(std::make_exception_ptr(std::runtime_error{"Foo"})), "Foo");
+
+	try {
+		throw std::runtime_error{"inner"};
+	} catch (const std::exception &e1) {
+		ASSERT_STREQ(e1.what(), "inner");
+		ASSERT_STREQ(GetInnerMessage(std::current_exception()), "inner");
+
+		try {
+			std::throw_with_nested(std::runtime_error{"outer"});
+		} catch (const std::exception &e2) {
+			ASSERT_STREQ(e2.what(), "outer");
+			ASSERT_STREQ(GetInnerMessage(std::current_exception()), "inner");
+		}
+	}
+}
+
 TEST(ExceptionTest, FindNestedDirect)
 {
 	struct Foo {};

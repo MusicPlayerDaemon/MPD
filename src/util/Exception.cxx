@@ -84,3 +84,19 @@ GetFullMessage(std::exception_ptr ep,
 		return fallback;
 	}
 }
+
+const char *
+GetInnerMessage(std::exception_ptr ep, const char *fallback) noexcept
+{
+	try {
+		std::rethrow_exception(std::move(ep));
+	} catch (const std::nested_exception &ne) {
+		return GetInnerMessage(ne.nested_ptr(), fallback);
+	} catch (const std::exception &e) {
+		return e.what();
+	} catch (const char *s) {
+		return s;
+	} catch (...) {
+		return fallback;
+	}
+}
