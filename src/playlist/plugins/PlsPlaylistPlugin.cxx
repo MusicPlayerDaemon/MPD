@@ -113,8 +113,6 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 
 	auto i = songs.before_begin();
 	for (const auto &entry : entries) {
-		const char *uri = entry.file.c_str();
-
 		TagBuilder tag;
 		if (!entry.title.empty())
 			tag.AddItem(TAG_TITLE, entry.title);
@@ -122,7 +120,7 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 		if (entry.length > 0)
 			tag.SetDuration(SignedSongTime::FromS(entry.length));
 
-		i = songs.emplace_after(i, uri, tag.Commit());
+		i = songs.emplace_after(i, std::move(entry.file), tag.Commit());
 	}
 
 	return true;
