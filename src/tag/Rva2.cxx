@@ -3,6 +3,7 @@
 
 #include "Rva2.hxx"
 #include "ReplayGainInfo.hxx"
+#include "util/DivideRoundUp.hxx"
 
 #include <id3tag.h>
 
@@ -31,7 +32,7 @@ struct Rva2Data {
 static inline id3_length_t
 rva2_peak_bytes(const Rva2Data &data)
 {
-	return (data.peak_bits + 7) / 8;
+	return DivideRoundUp(unsigned{data.peak_bits}, 8U);
 }
 
 static inline int

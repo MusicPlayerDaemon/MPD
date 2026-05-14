@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "FallbackResampler.hxx"
+#include "util/DivideRoundUp.hxx"
 #include "util/SpanCast.hxx"
 
 #include <cassert>
@@ -55,8 +56,7 @@ pcm_resample_fallback(PcmBuffer &buffer,
 {
 	unsigned dest_pos = 0;
 	unsigned src_frames = src.size() / channels;
-	unsigned dest_frames =
-		(src_frames * dest_rate + src_rate - 1) / src_rate;
+	const unsigned dest_frames = DivideRoundUp(src_frames * dest_rate, src_rate);
 	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(T);
 	T *dest_buffer = (T *)buffer.Get(dest_size);
