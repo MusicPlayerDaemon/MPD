@@ -10,6 +10,7 @@ playlist_plugins_deps = [
   flac_dep,
   input_basic_dep,
   config_dep,
+  protocol_dep,
 ]
 
 playlist_features.set('ENABLE_CUE', get_option('cue'))

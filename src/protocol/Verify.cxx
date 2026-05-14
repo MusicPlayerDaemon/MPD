@@ -42,3 +42,9 @@ VerifyRelativePathUTF8(std::string_view path_utf8) noexcept
 	// TODO check whether it's a relative path
 	return VerifyPathUTF8(path_utf8);
 }
+
+bool
+VerifyUriUTF8(std::string_view uri_utf8) noexcept
+{
+	return !uri_utf8.empty() && VerifyStringUTF8(uri_utf8);
+}

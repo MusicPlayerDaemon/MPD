@@ -5,6 +5,7 @@
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
 #include "tag/Builder.hxx"
+#include "protocol/Verify.hxx"
 #include "util/ASCII.hxx"
 #include "lib/expat/ExpatParser.hxx"
 
@@ -85,7 +86,7 @@ rss_end_element(void *user_data, const XML_Char *element_name)
 
 	case RssParser::ITEM:
 		if (StringEqualsCaseASCII(element_name, "item")) {
-			if (!parser->location.empty())
+			if (VerifyUriUTF8(parser->location))
 				parser->songs.emplace_front(std::move(parser->location),
 							    parser->tag_builder.Commit());
 

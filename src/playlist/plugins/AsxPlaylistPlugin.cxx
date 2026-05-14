@@ -4,6 +4,7 @@
 #include "AsxPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
+#include "protocol/Verify.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Table.hxx"
 #include "util/ASCII.hxx"
@@ -99,7 +100,7 @@ asx_end_element(void *user_data, const XML_Char *element_name)
 
 	case AsxParser::ENTRY:
 		if (StringEqualsCaseASCII(element_name, "entry")) {
-			if (!parser->location.empty())
+			if (VerifyUriUTF8(parser->location))
 				parser->songs.emplace_front(std::move(parser->location),
 							    parser->tag_builder.Commit());
 

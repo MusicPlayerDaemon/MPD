@@ -54,3 +54,14 @@ VerifyPathUTF8(std::string_view path_utf8) noexcept;
 [[gnu::pure]]
 bool
 VerifyRelativePathUTF8(std::string_view path_utf8) noexcept;
+
+/**
+ * Is this a valid URI string (for transmitting it as a value over
+ * the MPD text protocol)?
+ *
+ * In the MPD protocol, URIs can be actual URIs or absolute/relative
+ * file paths.  This function allows all of these.
+ */
+[[gnu::pure]]
+bool
+VerifyUriUTF8(std::string_view uri_utf8) noexcept;

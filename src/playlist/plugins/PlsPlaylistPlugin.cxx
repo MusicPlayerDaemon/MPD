@@ -8,6 +8,7 @@
 #include "input/InputStream.hxx"
 #include "song/DetachedSong.hxx"
 #include "tag/Builder.hxx"
+#include "protocol/Verify.hxx"
 #include "util/ASCII.hxx"
 #include "util/NumberParser.hxx"
 #include "util/StringCompare.hxx"
@@ -113,6 +114,9 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 
 	auto i = songs.before_begin();
 	for (const auto &entry : entries) {
+		if (!VerifyUriUTF8(entry.file))
+			continue;
+
 		TagBuilder tag;
 		if (!entry.title.empty())
 			tag.AddItem(TAG_TITLE, entry.title);

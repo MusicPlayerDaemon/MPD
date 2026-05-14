@@ -4,6 +4,7 @@
 #include "XspfPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
+#include "protocol/Verify.hxx"
 #include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"
 #include "tag/Builder.hxx"
@@ -129,7 +130,7 @@ xspf_end_element(void *user_data, const XML_Char *element_name)
 
 	case XspfParser::TRACK:
 		if (strcmp(element_name, "track") == 0) {
-			if (!parser->location.empty())
+			if (VerifyUriUTF8(parser->location))
 				parser->songs.emplace_front(std::move(parser->location),
 							    parser->tag_builder.Commit());
 
