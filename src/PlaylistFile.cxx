@@ -11,6 +11,7 @@
 #include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "protocol/RangeArg.hxx"
+#include "protocol/Verify.hxx"
 #include "io/FileLineReader.hxx"
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
@@ -70,8 +71,7 @@ spl_valid_name(const char *name_utf8)
 #ifdef _WIN32
 		std::strchr(name_utf8, '\\') == nullptr &&
 #endif
-		std::strchr(name_utf8, '\n') == nullptr &&
-		std::strchr(name_utf8, '\r') == nullptr;
+		VerifyStringUTF8(name_utf8);
 }
 
 static const AllocatedPath &
