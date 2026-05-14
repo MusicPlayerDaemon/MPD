@@ -141,6 +141,55 @@ ValidateUTF8(const char *p) noexcept
 	return true;
 }
 
+bool
+ValidateUTF8(std::string_view s) noexcept
+{
+	for (auto i = s.begin(), end = s.end(); i != end; ++i) {
+		uint8_t ch = *i;
+		if (IsASCII(ch))
+			continue;
+
+		if (IsContinuation(ch))
+			/* continuation without a prefix */
+			return false;
+
+		if (IsLeading1(ch)) {
+			/* 1 continuation */
+			if (++i == end || !IsContinuation(*i))
+				return false;
+		} else if (IsLeading2(ch)) {
+			/* 2 continuations */
+			if (++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i))
+				return false;
+		} else if (IsLeading3(ch)) {
+			/* 3 continuations */
+			if (++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i))
+				return false;
+		} else if (IsLeading4(ch)) {
+			/* 4 continuations */
+			if (++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i))
+				return false;
+		} else if (IsLeading5(ch)) {
+			/* 5 continuations */
+			if (++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i) ||
+			    ++i == end || !IsContinuation(*i))
+				return false;
+		} else
+			return false;
+	}
+
+	return true;
+}
+
 std::size_t
 SequenceLengthUTF8(char ch) noexcept
 {
