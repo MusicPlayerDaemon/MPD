@@ -2,6 +2,8 @@ ver 0.24.11 (not yet released)
 * protocol
   - fix path traversal bug
 * playlist: do not allow newlines in song URIs
+* input
+  - curl: require version 7.85.0
 * decoder
   - pcm: fix stack buffer overflow
 
