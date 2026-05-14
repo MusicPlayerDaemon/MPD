@@ -1,4 +1,6 @@
 ver 0.24.11 (not yet released)
+* protocol
+  - fix path traversal bug
 * playlist: do not allow newlines in song URIs
 
 ver 0.24.10 (2026/05/06)

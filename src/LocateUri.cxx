@@ -9,6 +9,7 @@
 #include "storage/Registry.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriExtract.hxx"
+#include "util/UriUtil.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "storage/StorageInterface.hxx"
@@ -115,6 +116,10 @@ LocateUri(UriPluginKind kind,
 					 , storage
 #endif
 					 );
-	else
+	else {
+		if (!uri_safe_local(uri))
+			throw std::invalid_argument{"Bad relative path"};
+
 		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
+	}
 }
