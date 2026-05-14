@@ -14,9 +14,9 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "fs/NarrowPath.hxx"
 #include "fs/Path.hxx"
+#include "protocol/Verify.hxx"
 #include "lib/fmt/SystemError.hxx"
 #include "thread/ScopeUnlock.hxx"
-#include "util/UTF8.hxx"
 
 #include <zzip/zzip.h>
 
@@ -70,7 +70,7 @@ ZzipArchiveFile::Visit(ArchiveVisitor &visitor)
 	ZZIP_DIRENT dirent;
 	while (zzip_dir_read(dir->dir, &dirent))
 		//add only files
-		if (dirent.st_size > 0 && ValidateUTF8(dirent.d_name))
+		if (dirent.st_size > 0 && VerifyRelativePathUTF8(dirent.d_name))
 			visitor.VisitArchiveEntry(dirent.d_name);
 }
 
