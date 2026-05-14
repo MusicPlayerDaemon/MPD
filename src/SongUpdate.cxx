@@ -10,6 +10,7 @@
 #include "input/InputStream.hxx"
 #include "input/WaitReady.hxx"
 #include "decoder/DecoderList.hxx"
+#include "protocol/Verify.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
 #include "thread/Mutex.hxx"
@@ -41,7 +42,7 @@ Song::LoadFile(Storage &storage, std::string_view path_utf8,
 	       const StorageFileInfo &info, Directory &parent)
 {
 	assert(!uri_has_scheme(path_utf8));
-	assert(path_utf8.find('\n') == path_utf8.npos);
+	assert(VerifyRelativePathUTF8(path_utf8));
 
 	auto song = std::make_unique<Song>(path_utf8, parent);
 	if (!song->UpdateFile(storage, info))
@@ -96,7 +97,7 @@ Song::LoadFromArchive(ArchiveFile &archive, std::string_view name_utf8,
 		      Directory &parent) noexcept
 {
 	assert(!uri_has_scheme(name_utf8));
-	assert(name_utf8.find('\n') == name_utf8.npos);
+	assert(VerifyRelativePathUTF8(name_utf8));
 
 	auto song = std::make_unique<Song>(name_utf8, parent);
 	if (!song->UpdateFileInArchive(archive))

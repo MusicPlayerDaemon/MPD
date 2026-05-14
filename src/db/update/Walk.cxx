@@ -11,6 +11,7 @@
 #include "db/plugins/simple/Song.hxx"
 #include "storage/StorageInterface.hxx"
 #include "ExcludeList.hxx"
+#include "protocol/Verify.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
@@ -225,14 +226,6 @@ try {
 	LogError(std::current_exception());
 }
 
-/* we don't look at files with newlines in their name */
-[[gnu::pure]]
-static bool
-skip_path(const char *name_utf8) noexcept
-{
-	return std::strchr(name_utf8, '\n') != nullptr;
-}
-
 [[gnu::pure]]
 bool
 UpdateWalk::SkipSymlink(const Directory *directory,
@@ -359,7 +352,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	const char *name_utf8;
 	while (!cancel && (name_utf8 = reader->Read()) != nullptr) {
-		if (skip_path(name_utf8))
+		if (!VerifySeenFilenameUTF8(name_utf8))
 			continue;
 
 		{

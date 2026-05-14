@@ -7,6 +7,7 @@
 #include "db/plugins/simple/Directory.hxx"
 #include "db/plugins/simple/Song.hxx"
 #include "storage/StorageInterface.hxx"
+#include "protocol/Verify.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/FileInfo.hxx"
@@ -35,22 +36,13 @@ LockFindSong(Directory &directory, std::string_view name) noexcept
 	return directory.FindSong(name);
 }
 
-[[gnu::pure]]
-static bool
-IsAcceptableFilename(std::string_view name) noexcept
-{
-	return !name.empty() &&
-		/* newlines cannot be represented in MPD's protocol */
-		name.find('\n') == name.npos;
-}
-
 void
 UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 			      std::string_view name) noexcept
 {
 	const auto [child_name, rest] = Split(name, '/');
 	if (rest.data() != nullptr) {
-		if (!IsAcceptableFilename(child_name))
+		if (!VerifyRelativePathUTF8(child_name))
 			return;
 
 		//add dir is not there already
@@ -60,7 +52,7 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 		//create directories first
 		UpdateArchiveTree(archive, *subdir, rest);
 	} else {
-		if (!IsAcceptableFilename(name))
+		if (!VerifyRelativePathUTF8(name))
 			return;
 
 		//add file

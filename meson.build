@@ -481,6 +481,7 @@ if enable_database
 endif
 
 subdir('src/util')
+subdir('src/protocol')
 subdir('src/cmdline')
 subdir('src/time')
 subdir('src/lib/icu')
@@ -658,6 +659,7 @@ mpd = build_target(
     more_deps,
     chromaprint_dep,
     fmt_dep,
+    protocol_dep,
   ],
   link_args: link_args,
   build_by_default: not get_option('fuzzer'),

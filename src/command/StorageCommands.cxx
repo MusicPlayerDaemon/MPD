@@ -17,24 +17,18 @@
 #include "db/update/Service.hxx"
 #include "TimePrint.hxx"
 #include "protocol/IdleFlags.hxx"
+#include "protocol/Verify.hxx"
 
 #include <fmt/format.h>
 
 #include <memory>
-
-[[gnu::pure]]
-static bool
-skip_path(const char *name_utf8) noexcept
-{
-	return std::strchr(name_utf8, '\n') != nullptr;
-}
 
 static void
 handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 {
 	const char *name_utf8;
 	while ((name_utf8 = reader.Read()) != nullptr) {
-		if (skip_path(name_utf8))
+		if (!VerifySeenFilenameUTF8(name_utf8))
 			continue;
 
 		StorageFileInfo info;
