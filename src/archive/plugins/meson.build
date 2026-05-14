@@ -35,6 +35,7 @@ archive_plugins = static_library(
     libbz2_dep,
     libiso9660_dep,
     libzzip_dep,
+    protocol_dep,
   ],
 )
 

@@ -34,6 +34,7 @@ or implied, of Sebastian Gesemann.
 #include "Traits.hxx"
 #include "util/BitReverse.hxx"
 #include "util/Compiler.h"
+#include "util/DivideRoundUp.hxx"
 #include "util/GenerateArray.hxx"
 
 #include <cassert>
@@ -45,7 +46,7 @@ or implied, of Sebastian Gesemann.
 static constexpr size_t HTAPS = 48;
 
 /** number of "8 MACs" lookup tables */
-static constexpr size_t CTABLES = (HTAPS + 7) / 8;
+static constexpr size_t CTABLES = DivideRoundUp(HTAPS, size_t{8});
 
 static_assert(Dsd2Pcm::FIFOSIZE * 8 >= HTAPS * 2, "FIFOSIZE too small");
 

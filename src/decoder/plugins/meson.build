@@ -171,6 +171,7 @@ libsidplay_dep = dependency('libsidplayfp',
 decoder_features.set('ENABLE_SIDPLAY', libsidplay_dep.found())
 if libsidplay_dep.found()
   decoder_plugins_sources += 'SidplayDecoderPlugin.cxx'
+  decoder_features.set('HAVE_RESID_BUILDER', c_compiler.has_header('sidplayfp/builders/residfp.h', dependencies: libsidplay_dep))
 endif
 
 libpsgplay_dep = dependency('libpsgplay', version: '>= 0.8', required: get_option('psgplay'))

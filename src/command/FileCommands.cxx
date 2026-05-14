@@ -4,6 +4,7 @@
 #include "FileCommands.hxx"
 #include "Request.hxx"
 #include "protocol/Ack.hxx"
+#include "protocol/Verify.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
@@ -43,13 +44,6 @@ SkipNameFS(PathTraitsFS::const_pointer name_fs) noexcept
 	return PathTraitsFS::IsSpecialFilename(name_fs);
 }
 
-[[gnu::pure]]
-static bool
-skip_path(Path name_fs) noexcept
-{
-	return name_fs.HasNewline();
-}
-
 CommandResult
 handle_listfiles_local(Response &r, Path path_fs)
 {
@@ -57,7 +51,7 @@ handle_listfiles_local(Response &r, Path path_fs)
 
 	while (reader.ReadEntry()) {
 		const Path name_fs = reader.GetEntry();
-		if (SkipNameFS(name_fs.c_str()) || skip_path(name_fs))
+		if (SkipNameFS(name_fs.c_str()) || !VerifySeenFilename(name_fs))
 			continue;
 
 		std::string name_utf8 = name_fs.ToUTF8();

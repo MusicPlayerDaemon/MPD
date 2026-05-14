@@ -11,6 +11,7 @@
 #include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "protocol/RangeArg.hxx"
+#include "protocol/Verify.hxx"
 #include "io/FileLineReader.hxx"
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
@@ -73,9 +74,10 @@ spl_valid_name(std::string_view name_utf8) noexcept
 #ifdef _WIN32
 		"\\"
 #endif
-		"\n\r\0"sv;
+		""sv;
 
-	return name_utf8.find_first_of(forbidden_characters) == name_utf8.npos;
+	return name_utf8.find_first_of(forbidden_characters) == name_utf8.npos &&
+		VerifyStringUTF8(name_utf8);
 }
 
 static const AllocatedPath &

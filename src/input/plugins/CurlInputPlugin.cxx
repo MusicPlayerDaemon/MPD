@@ -628,10 +628,6 @@ OpenCurlInputStream(std::string_view uri, const Curl::Headers &headers,
 static InputStreamPtr
 input_curl_open(std::string_view url, Mutex &mutex)
 {
-	if (!StringStartsWithIgnoreCase(url, "http://"sv) &&
-	    !StringStartsWithIgnoreCase(url, "https://"sv))
-		return nullptr;
-
 	return CurlInputStream::Open(url, {}, mutex);
 }
 

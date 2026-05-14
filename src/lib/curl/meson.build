@@ -1,4 +1,4 @@
-curl_dep = dependency('libcurl', version: '>= 7.55', required: get_option('curl'))
+curl_dep = dependency('libcurl', version: '>= 7.85', required: get_option('curl'))
 conf.set('ENABLE_CURL', curl_dep.found())
 if not curl_dep.found()
   subdir_done()
@@ -14,7 +14,6 @@ endif
 curl = static_library(
   'curl',
   'Delegate.cxx',
-  'Version.cxx',
   'Init.cxx',
   'Global.cxx',
   'Request.cxx',

@@ -11,7 +11,6 @@
  * - non-empty
  * - does not begin or end with a slash
  * - no double slashes
- * - no "." or ".." path component
  */
 [[gnu::pure]]
 bool

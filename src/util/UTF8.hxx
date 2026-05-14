@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef UTF8_HXX
-#define UTF8_HXX
+#pragma once
 
 #include <cstddef>
+#include <string_view>
 
 /**
  * Is this a valid UTF-8 string?
@@ -12,6 +12,10 @@
 [[gnu::pure]] [[gnu::nonnull]]
 bool
 ValidateUTF8(const char *p) noexcept;
+
+[[gnu::pure]]
+bool
+ValidateUTF8(std::string_view s) noexcept;
 
 /**
  * @return the number of the sequence beginning with the given
@@ -57,5 +61,3 @@ UnicodeToUTF8(unsigned ch, char *buffer) noexcept;
 [[gnu::pure]] [[gnu::nonnull]]
 std::size_t
 LengthUTF8(const char *p) noexcept;
-
-#endif

@@ -8,6 +8,7 @@
 #include "input/InputStream.hxx"
 #include "song/DetachedSong.hxx"
 #include "tag/Builder.hxx"
+#include "protocol/Verify.hxx"
 #include "util/ASCII.hxx"
 #include "util/NumberParser.hxx"
 #include "util/StringCompare.hxx"
@@ -113,7 +114,8 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 
 	auto i = songs.before_begin();
 	for (const auto &entry : entries) {
-		const char *uri = entry.file.c_str();
+		if (!VerifyUriUTF8(entry.file))
+			continue;
 
 		TagBuilder tag;
 		if (!entry.title.empty())
@@ -122,7 +124,7 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 		if (entry.length > 0)
 			tag.SetDuration(SignedSongTime::FromS(entry.length));
 
-		i = songs.emplace_after(i, uri, tag.Commit());
+		i = songs.emplace_after(i, std::move(entry.file), tag.Commit());
 	}
 
 	return true;
