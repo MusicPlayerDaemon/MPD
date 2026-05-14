@@ -3,6 +3,7 @@
 
 #include "Verify.hxx"
 #include "fs/Path.hxx"
+#include "util/UTF8.hxx"
 
 #include <cstring> // for std::strchr()
 
@@ -14,7 +15,9 @@ bool
 VerifyStringUTF8(const char *s) noexcept
 {
 	/* newlines cannot be represented in MPD's protocol */
-	return std::strchr(s, '\n') == nullptr;
+	return std::strchr(s, '\n') == nullptr &&
+		/* the MPD protocol is UTF-8 only */
+		ValidateUTF8(s);
 }
 
 bool
@@ -23,7 +26,9 @@ VerifyStringUTF8(std::string_view s) noexcept
 	/* newlines cannot be represented in MPD's protocol */
 	return s.find('\n') == s.npos &&
 		/* null bytes are forbidden, too */
-		s.find('\0') == s.npos;
+		s.find('\0') == s.npos &&
+		/* the MPD protocol is UTF-8 only */
+		ValidateUTF8(s);
 }
 
 bool
