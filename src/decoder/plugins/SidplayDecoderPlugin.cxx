@@ -27,8 +27,13 @@
 #include <sidplayfp/SidConfig.h>
 #include <sidplayfp/SidTune.h>
 #include <sidplayfp/SidTuneInfo.h>
-#include <sidplayfp/builders/residfp.h>
 #include <sidplayfp/SidDatabase.h>
+
+#ifdef HAVE_RESID_BUILDER
+#include <sidplayfp/builders/residfp.h>
+#else
+#include <sidplayfp/builders/sidlite.h>
+#endif
 
 #include <fmt/format.h>
 
@@ -233,7 +238,11 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 
 	/* initialize the builder */
 
+#ifdef HAVE_RESID_BUILDER
 	ReSIDfpBuilder builder("ReSID");
+#else
+	SIDLiteBuilder builder{"SIDLite"};
+#endif
 #if LIBSIDPLAYFP_VERSION_MAJ < 3
 	if (!builder.getStatus()) {
 		FmtWarning(sidplay_domain,

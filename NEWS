@@ -6,6 +6,7 @@ ver 0.24.11 (not yet released)
   - curl: require version 7.85.0
 * decoder
   - pcm: fix stack buffer overflow
+  - sidplay: fall back to SIDLiteBuilder if ReSIDfpBuilder is unavailable
 
 ver 0.24.10 (2026/05/06)
 * input
