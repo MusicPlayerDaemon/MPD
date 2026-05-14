@@ -21,7 +21,9 @@ bool
 VerifyStringUTF8(std::string_view s) noexcept
 {
 	/* newlines cannot be represented in MPD's protocol */
-	return s.find('\n') == s.npos;
+	return s.find('\n') == s.npos &&
+		/* null bytes are forbidden, too */
+		s.find('\0') == s.npos;
 }
 
 bool
