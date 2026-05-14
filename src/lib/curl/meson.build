@@ -14,7 +14,6 @@ endif
 curl = static_library(
   'curl',
   'Delegate.cxx',
-  'Version.cxx',
   'Init.cxx',
   'Global.cxx',
   'Request.cxx',
