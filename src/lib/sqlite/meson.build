@@ -15,6 +15,7 @@ sqlite = static_library(
   'sqlite',
   'Database.cxx',
   'Error.cxx',
+  'Generator.cxx',
   include_directories: inc,
   dependencies: [
     sqlite_dep,

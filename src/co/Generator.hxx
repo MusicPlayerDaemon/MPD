@@ -97,9 +97,6 @@ private:
 	};
 
 public:
-	Generator(handle_type h) : h_(h) {}
-	~Generator() { h_.destroy(); }
-
 	auto begin() const noexcept {
 		return iterator{coroutine.get()};
 	}
