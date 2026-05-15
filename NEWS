@@ -21,6 +21,10 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.12 (2026/05/15)
+* protocol
+  - allow empty URI in "lsinfo", "add" etc. (0.24.11 regression)
+
 ver 0.24.11 (2026/05/15)
 * protocol
   - fix path traversal bug

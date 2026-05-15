@@ -70,11 +70,12 @@ struct LocatedUri {
  * @param storage a #Storage instance which may be used to convert
  * absolute URIs to relative ones, using Storage::MapToRelativeUTF8();
  * that feature is disabled if this parameter is nullptr
+ * @param allow_empty is an empty URI allowed in this context?
  */
 LocatedUri
 LocateUri(UriPluginKind kind,
-	  std::string_view uri, const IClient *client
+	  std::string_view uri, const IClient *client,
 #ifdef ENABLE_DATABASE
-	  , const Storage *storage
+	  const Storage *storage,
 #endif
-	  );
+	  bool allow_empty=false);

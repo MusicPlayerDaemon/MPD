@@ -87,11 +87,11 @@ LocateAbsoluteUri(UriPluginKind kind, const std::string_view uri
 
 LocatedUri
 LocateUri(UriPluginKind kind,
-	  const std::string_view uri, const IClient *client
+	  const std::string_view uri, const IClient *client,
 #ifdef ENABLE_DATABASE
-	  , const Storage *storage
+	  const Storage *storage,
 #endif
-	  )
+	  bool allow_empty)
 {
 	/* skip the obsolete "file://" prefix */
 	if (const auto path_utf8 = StringAfterPrefixIgnoreCase(uri, "file://"sv);
@@ -116,6 +116,8 @@ LocateUri(UriPluginKind kind,
 					 , storage
 #endif
 					 );
+	else if (allow_empty && uri.empty())
+		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
 	else {
 		if (!uri_safe_local(uri))
 			throw std::invalid_argument{"Bad relative path"};
