@@ -136,26 +136,6 @@ ExecuteModified(sqlite3_stmt *stmt)
 	return ExecuteChanges(stmt) > 0;
 }
 
-template<typename F>
-static inline void
-ExecuteForEach(sqlite3_stmt *stmt, F &&f)
-{
-	while (true) {
-		int result = ExecuteBusy(stmt);
-		switch (result) {
-		case SQLITE_ROW:
-			f();
-			break;
-
-		case SQLITE_DONE:
-			return;
-
-		default:
-			throw SqliteError(stmt, result, "sqlite3_step() failed");
-		}
-	}
-}
-
 } // namespace Sqlite
 
 #endif
