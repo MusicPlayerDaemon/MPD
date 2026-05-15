@@ -3,6 +3,8 @@
 
 #include "Database.hxx"
 #include "Sticker.hxx"
+#include "lib/sqlite/Generator.hxx"
+#include "lib/sqlite/Row.hxx"
 #include "lib/sqlite/Util.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
@@ -221,11 +223,11 @@ StickerDatabase::ListValues(std::map<std::string, std::string, std::less<>> &tab
 		sqlite3_clear_bindings(s);
 	};
 
-	ExecuteForEach(s, [s, &table](){
-		const char *name = (const char *)sqlite3_column_text(s, 0);
-		const char *value = (const char *)sqlite3_column_text(s, 1);
+	for (const auto &row : GenerateRows(*s)) {
+		const char *name = row[0];
+		const char *value = row[1];
 		table.emplace(name, value);
-	});
+	}
 }
 
 void
@@ -463,11 +465,8 @@ StickerDatabase::Find(const char *type, const char *base_uri, const char *name,
 		sqlite3_finalize(s);
 	};
 
-	ExecuteForEach(s, [s, func, user_data](){
-			func((const char*)sqlite3_column_text(s, 0),
-			     (const char*)sqlite3_column_text(s, 1),
-			     user_data);
-		});
+	for (const auto &row : GenerateRows(*s))
+		func(row[0], row[1], user_data);
 }
 
 std::list<StickerDatabase::StickerTypeUriPair>
@@ -479,10 +478,10 @@ StickerDatabase::GetUniqueStickers()
 	AtScopeExit(s) {
 		sqlite3_reset(s);
 	};
-	ExecuteForEach(s, [&s, &result]() {
-		result.emplace_back((const char*)sqlite3_column_text(s, 0),
-				    (const char*)sqlite3_column_text(s, 1));
-	});
+
+	for (const auto &row : GenerateRows(*s))
+		result.emplace_back(row[0], row[1]);
+
 	return result;
 }
 
@@ -498,9 +497,8 @@ StickerDatabase::Names(void (*func)(const char *value, void *user_data), void *u
 		sqlite3_reset(s);
 	};
 
-	ExecuteForEach(s, [s, func, user_data](){
-			func((const char*)sqlite3_column_text(s, 0), user_data);
-		});
+	for (const auto &row : GenerateRows(*s))
+		func(row[0], user_data);
 }
 
 void
@@ -520,10 +518,8 @@ StickerDatabase::NamesTypes(const char *type, void (*func)(const char *value, co
 		sqlite3_reset(s);
 	};
 
-	ExecuteForEach(s, [s, func, user_data](){
-			func((const char*)sqlite3_column_text(s, 0),
-			     (const char*)sqlite3_column_text(s, 1), user_data);
-		});
+	for (const auto &row : GenerateRows(*s))
+		func(row[0], row[1], user_data);
 }
 
 void
