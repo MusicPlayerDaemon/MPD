@@ -7,6 +7,7 @@
 #include "song/LightSong.hxx"
 #include "db/Interface.hxx"
 #include "util/AllocatedString.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string.h>
 #include <stdlib.h>
@@ -78,8 +79,7 @@ sticker_song_get(StickerDatabase &db, const LightSong &song)
 namespace {
 struct sticker_song_find_data {
 	const Database *db;
-	const char *base_uri;
-	size_t base_uri_length;
+	std::string_view base_uri;
 
 	BoundMethod<void(const LightSong &song, const char *value)> func;
 };
@@ -91,7 +91,7 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 	auto *data =
 		(struct sticker_song_find_data *)user_data;
 
-	if (memcmp(uri, data->base_uri, data->base_uri_length) != 0)
+	if (!StringStartsWith(uri, data->base_uri))
 		/* should not happen, ignore silently */
 		return;
 
@@ -116,19 +116,19 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		.func = func,
 	};
 
-	AllocatedString allocated;
 	data.base_uri = base_uri;
-	if (*data.base_uri != 0) {
+
+	AllocatedString allocated;
+	if (!data.base_uri.empty()) {
 		/* append slash to base_uri */
-		allocated = AllocatedString{std::string_view{data.base_uri}, "/"sv};
-		data.base_uri = allocated.c_str();
+		allocated = AllocatedString{data.base_uri, "/"sv};
+		base_uri = allocated.c_str();
+		data.base_uri = base_uri;
 	} else {
 		/* searching in root directory - no trailing slash */
 	}
 
-	data.base_uri_length = strlen(data.base_uri);
-
-	sticker_database.Find("song", data.base_uri, name, op, value,
+	sticker_database.Find("song", base_uri, name, op, value,
 				  sort, descending, window,
 			      sticker_song_find_cb, &data);
 }
