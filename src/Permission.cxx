@@ -7,11 +7,14 @@
 #include "config/Data.hxx"
 #include "config/Option.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/IterableSplitString.hxx"
+#include "util/StringSplit.hxx"
+
+#ifdef HAVE_TCP
 #include "net/AddressInfo.hxx"
 #include "net/Resolver.hxx"
 #include "net/ToString.hxx"
-#include "util/IterableSplitString.hxx"
-#include "util/StringSplit.hxx"
+#endif
 
 #include <cassert>
 #include <map>
