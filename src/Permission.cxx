@@ -42,7 +42,7 @@ static unsigned local_permissions;
 #endif
 
 #ifdef HAVE_TCP
-static std::map<std::string, unsigned, std::less<>> host_passwords;
+static std::map<std::string, unsigned, std::less<>> host_permissions;
 #endif
 
 static unsigned
@@ -119,8 +119,8 @@ initPermissions(const ConfigData &config)
 
 			for (const auto &i : Resolve(host_s.c_str(), 0,
 						     AI_PASSIVE, SOCK_STREAM))
-				host_passwords.emplace(HostToString(i),
-						       permissions);
+				host_permissions.emplace(HostToString(i),
+							 permissions);
 		});
 	}
 #endif
@@ -131,8 +131,8 @@ initPermissions(const ConfigData &config)
 int
 GetPermissionsFromAddress(SocketAddress address) noexcept
 {
-	if (auto i = host_passwords.find(HostToString(address));
-	    i != host_passwords.end())
+	if (auto i = host_permissions.find(HostToString(address));
+	    i != host_permissions.end())
 		return i->second;
 
 	return -1;
