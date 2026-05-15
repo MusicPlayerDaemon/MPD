@@ -1,5 +1,21 @@
-fs_sources = [
+fs_path = static_library(
+  'fs_path',
   'Traits.cxx',
+  include_directories: inc,
+  dependencies: [
+    util_dep,
+    fmt_dep,
+  ],
+)
+
+fs_path_dep = declare_dependency(
+  link_with: fs_path,
+  dependencies: [
+    util_dep,
+  ],
+)
+
+fs_sources = [
   'Config.cxx',
   'Charset.cxx',
   'Glob.cxx',
@@ -25,6 +41,7 @@ fs = static_library(
   fs_sources,
   include_directories: inc,
   dependencies: [
+    fs_path_dep,
     io_dep,
     shlwapi_dep,
     icu_dep,
@@ -35,6 +52,7 @@ fs = static_library(
 fs_dep = declare_dependency(
   link_with: fs,
   dependencies: [
+    fs_path_dep,
     io_dep,
   ],
 )
