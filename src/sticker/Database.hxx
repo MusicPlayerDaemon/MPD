@@ -13,6 +13,7 @@
 #include <string>
 #include <list>
 
+namespace Co { template<typename T> class Generator; }
 class Path;
 struct Sticker;
 
@@ -163,6 +164,11 @@ public:
 	 */
 	Sticker Load(const char *type, const char *uri);
 
+	struct FindRecord {
+		const char *uri;
+		const char *value;
+	};
+
 	/**
 	 * Finds stickers with the specified name below the specified URI.
 	 *
@@ -173,22 +179,24 @@ public:
 	 * @param op the comparison operator
 	 * @param value the operand
 	 */
-	void Find(const char *type, const char *base_uri, const char *name,
-		  StickerOperator op, const char *value,
-		  const char *sort, bool descending, RangeArg window,
-		  void (*func)(const char *uri, const char *value,
-			       void *user_data),
-		  void *user_data);
+	Co::Generator<FindRecord> Find(const char *type, const char *base_uri, const char *name,
+				       StickerOperator op, const char *value,
+				       const char *sort, bool descending, RangeArg window);
 
 	/**
 	 * Uniq and sorted list of all sticker names
 	 */
-	void Names(void (*func)(const char *value, void *user_data), void *user_data);
+	Co::Generator<const char *> Names();
+
+	struct NameTypeRecord {
+		const char *value;
+		const char *type;
+	};
 
 	/**
 	 * Uniq and sorted list of all sticker names by type
 	 */
-	void NamesTypes(const char *type, void (*func)(const char *value, const char *type, void *user_data), void *user_data);
+	Co::Generator<NameTypeRecord> NamesTypes(const char *type);
 
 	using StickerTypeUriPair = std::pair<std::string, std::string>;
 

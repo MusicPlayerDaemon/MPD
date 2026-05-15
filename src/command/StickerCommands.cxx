@@ -29,6 +29,7 @@
 #include "db/DatabaseLock.hxx"
 #include <fmt/format.h>
 #include "song/Filter.hxx"
+#include "co/Generator.hxx"
 
 namespace {
 
@@ -101,63 +102,30 @@ public:
 
 	virtual CommandResult Find(const char *uri, const char *name, StickerOperator op, const char *value,
 			const char *sort, bool descending, RangeArg window) {
-		auto data = CallbackContext{
-			.name = name,
-			.sticker_type = sticker_type,
-			.response = response,
-			.is_song = StringIsEqual("song", sticker_type)
-		};
+		const bool is_song = StringIsEqual("song", sticker_type);
 
-		auto callback = [](const char *found_uri, const char *found_value, void *user_data) {
-			auto context = reinterpret_cast<CallbackContext *>(user_data);
-			context->response.Fmt("{}: {}\n",
- 					      context->is_song ? "file" : context->sticker_type, found_uri);
-			sticker_print_value(context->response, context->name, found_value);
-		};
-
-		sticker_database.Find(sticker_type,
-				      uri,
-				      name,
-				      op, value,
-					  sort, descending, window,
-				      callback, &data);
+		for (const auto &i : sticker_database.Find(sticker_type, uri,
+							   name, op, value,
+							   sort, descending, window)) {
+			response.Fmt("{}: {}\n", is_song ? "file" : sticker_type, i.uri);
+			sticker_print_value(response, name, i.value);
+		}
 
 		return CommandResult::OK;
 	}
 
 	virtual CommandResult Names() {
-		auto data = CallbackContext{
-			.name = "",
-			.sticker_type = sticker_type,
-			.response = response,
-			.is_song = StringIsEqual("song", sticker_type)
-		};
-
-		auto callback = [](const char *found_value, void *user_data) {
-			auto context = reinterpret_cast<CallbackContext *>(user_data);
-			context->response.Fmt("name: {}\n", found_value);
-		};
-
-		sticker_database.Names(callback, &data);
+		for (const char *name : sticker_database.Names())
+			response.Fmt("name: {}\n", name);
 
 		return CommandResult::OK;
 	}
 
 	CommandResult NamesTypes(const char *type) {
-		auto data = CallbackContext{
-			.name = "",
-			.sticker_type = sticker_type,
-			.response = response,
-			.is_song = StringIsEqual("song", sticker_type)
-		};
-
-		auto callback = [](const char *found_value, const char *found_type, void *user_data) {
-			auto context = reinterpret_cast<CallbackContext *>(user_data);
-			context->response.Fmt("name: {}\n", found_value);
-			context->response.Fmt("type: {}\n", found_type);
-		};
-
-		sticker_database.NamesTypes(type, callback, &data);
+		for (const auto &i : sticker_database.NamesTypes(type)) {
+			response.Fmt("name: {}\n", i.value);
+			response.Fmt("type: {}\n", i.type);
+		}
 
 		return CommandResult::OK;
 	}
@@ -188,14 +156,6 @@ protected:
 	Response &response;
 	const Database &database;
 	StickerDatabase &sticker_database;
-
-private:
-	struct CallbackContext {
-		const char *const name;
-		const char *const sticker_type;
-		Response &response;
-		const bool is_song;
-	};
 };
 
 /**

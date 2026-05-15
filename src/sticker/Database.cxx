@@ -448,16 +448,11 @@ StickerDatabase::BindFind(const char *type, const char *base_uri,
 	std::unreachable();
 }
 
-void
+Co::Generator<StickerDatabase::FindRecord>
 StickerDatabase::Find(const char *type, const char *base_uri, const char *name,
 		      StickerOperator op, const char *value,
-			  const char *sort, bool descending, RangeArg window,
-		      void (*func)(const char *uri, const char *value,
-				   void *user_data),
-		      void *user_data)
+		      const char *sort, bool descending, RangeArg window)
 {
-	assert(func != nullptr);
-
 	sqlite3_stmt *const s = BindFind(type, base_uri, name, op, value, sort, descending, window);
 	assert(s != nullptr);
 
@@ -466,7 +461,7 @@ StickerDatabase::Find(const char *type, const char *base_uri, const char *name,
 	};
 
 	for (const auto &row : GenerateRows(*s))
-		func(row[0], row[1], user_data);
+		co_yield FindRecord{row[0], row[1]};
 }
 
 std::list<StickerDatabase::StickerTypeUriPair>
@@ -485,11 +480,9 @@ StickerDatabase::GetUniqueStickers()
 	return result;
 }
 
-void
-StickerDatabase::Names(void (*func)(const char *value, void *user_data), void *user_data)
+Co::Generator<const char *>
+StickerDatabase::Names()
 {
-	assert(func != nullptr);
-
 	sqlite3_stmt *const s = stmt[STICKER_SQL_NAMES];
 	assert(s != nullptr);
 
@@ -498,14 +491,12 @@ StickerDatabase::Names(void (*func)(const char *value, void *user_data), void *u
 	};
 
 	for (const auto &row : GenerateRows(*s))
-		func(row[0], user_data);
+		co_yield row[0];
 }
 
-void
-StickerDatabase::NamesTypes(const char *type, void (*func)(const char *value, const char *type, void *user_data), void *user_data)
+Co::Generator<StickerDatabase::NameTypeRecord>
+StickerDatabase::NamesTypes(const char *type)
 {
-	assert(func != nullptr);
-
 	sqlite3_stmt *const s = type == nullptr
 		? stmt[STICKER_SQL_NAMES_TYPES]
 		: stmt[STICKER_SQL_NAMES_TYPES_BY_TYPE];
@@ -519,7 +510,7 @@ StickerDatabase::NamesTypes(const char *type, void (*func)(const char *value, co
 	};
 
 	for (const auto &row : GenerateRows(*s))
-		func(row[0], row[1], user_data);
+		co_yield NameTypeRecord{row[0], row[1]};
 }
 
 void

@@ -6,6 +6,7 @@
 #include "Database.hxx"
 #include "song/LightSong.hxx"
 #include "db/Interface.hxx"
+#include "co/Generator.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/StringCompare.hxx"
 
@@ -76,34 +77,6 @@ sticker_song_get(StickerDatabase &db, const LightSong &song)
 	return db.Load("song", uri.c_str());
 }
 
-namespace {
-struct sticker_song_find_data {
-	const Database *db;
-	std::string_view base_uri;
-
-	BoundMethod<void(const LightSong &song, const char *value)> func;
-};
-} // namespace
-
-static void
-sticker_song_find_cb(const char *uri, const char *value, void *user_data)
-{
-	auto *data =
-		(struct sticker_song_find_data *)user_data;
-
-	if (!StringStartsWith(uri, data->base_uri))
-		/* should not happen, ignore silently */
-		return;
-
-	const Database *db = data->db;
-	try {
-		const LightSong *song = db->GetSong(uri);
-		data->func(*song, value);
-		db->ReturnSong(song);
-	} catch (...) {
-	}
-}
-
 void
 sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		  const char *base_uri, const char *name,
@@ -111,24 +84,29 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		  const char *sort, bool descending, RangeArg window,
 		  BoundMethod<void(const LightSong &song, const char *value)> func)
 {
-	struct sticker_song_find_data data{
-		.db = &db,
-		.func = func,
-	};
-
-	data.base_uri = base_uri;
+	std::string_view base_uri_sv{base_uri};
 
 	AllocatedString allocated;
-	if (!data.base_uri.empty()) {
+	if (!base_uri_sv.empty()) {
 		/* append slash to base_uri */
-		allocated = AllocatedString{data.base_uri, "/"sv};
+		allocated = AllocatedString{base_uri_sv, "/"sv};
 		base_uri = allocated.c_str();
-		data.base_uri = base_uri;
+		base_uri_sv = base_uri;
 	} else {
 		/* searching in root directory - no trailing slash */
 	}
 
-	sticker_database.Find("song", base_uri, name, op, value,
-				  sort, descending, window,
-			      sticker_song_find_cb, &data);
+	for (const auto &i : sticker_database.Find("song", base_uri, name, op, value,
+						   sort, descending, window)) {
+		if (!StringStartsWith(i.uri, base_uri_sv))
+			/* should not happen, ignore silently */
+			continue;
+
+		try {
+			const LightSong *song = db.GetSong(i.uri);
+			func(*song, i.value);
+			db.ReturnSong(song);
+		} catch (...) {
+		}
+	}
 }
