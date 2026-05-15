@@ -7,6 +7,8 @@ net_features.set('HAVE_TCP', have_tcp)
 
 if have_tcp
   net_sources += [
+    'BareInetAddress.cxx',
+    'MaskedInetAddress.cxx',
     'IPv4Address.cxx',
     'IPv6Address.cxx',
     'DscpParser.cxx',

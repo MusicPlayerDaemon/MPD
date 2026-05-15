@@ -1,7 +1,11 @@
 test_net_sources = []
 
 if have_tcp
-  test_net_sources += 'TestIPv4Address.cxx'
+  test_net_sources += [
+    'TestBareInetAddress.cxx',
+    'TestIPv4Address.cxx',
+    'TestMaskedInetAddress.cxx',
+  ]
   if have_ipv6
     test_net_sources += 'TestIPv6Address.cxx'
   endif
