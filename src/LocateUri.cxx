@@ -117,7 +117,7 @@ LocateUri(UriPluginKind kind,
 #endif
 					 );
 	else {
-		if (!uri_safe_local(uri))
+		if (!uri.empty() && !uri_safe_local(uri))
 			throw std::invalid_argument{"Bad relative path"};
 
 		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
