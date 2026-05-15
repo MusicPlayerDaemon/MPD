@@ -27,7 +27,7 @@ Prepare(sqlite3 *db, const char *sql)
 /**
  * Throws #SqliteError on error.
  */
-static void
+static inline void
 Bind(sqlite3_stmt *stmt, unsigned i, const char *value)
 {
 	int result = sqlite3_bind_text(stmt, i, value, -1, nullptr);
@@ -67,7 +67,7 @@ BindAll(sqlite3_stmt *stmt, Args&&... args)
  * Call sqlite3_stmt() repepatedly until something other than
  * SQLITE_BUSY is returned.
  */
-static int
+static inline int
 ExecuteBusy(sqlite3_stmt *stmt)
 {
 	int result;
@@ -83,7 +83,7 @@ ExecuteBusy(sqlite3_stmt *stmt)
  *
  * Throws #SqliteError on error.
  */
-static bool
+static inline bool
 ExecuteRow(sqlite3_stmt *stmt)
 {
 	int result = ExecuteBusy(stmt);
@@ -102,7 +102,7 @@ ExecuteRow(sqlite3_stmt *stmt)
  *
  * Throws #SqliteError on error.
  */
-static void
+static inline void
 ExecuteCommand(sqlite3_stmt *stmt)
 {
 	int result = ExecuteBusy(stmt);
