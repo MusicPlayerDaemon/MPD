@@ -176,20 +176,12 @@ public:
 
 	CommandResult Find(const char *uri, const char *name, StickerOperator op, const char *value,
 			const char *sort, bool descending, RangeArg window) override {
-		struct Data {
-			Response &r;
-			const char *name;
-
-			void Callback(const LightSong &song, const char *value) {
-				song_print_uri(r, song);
-				sticker_print_value(r, name, value);
-			}
-		} data{.r = response, .name = name};
-
-		sticker_song_find(sticker_database, database, uri, data.name,
-				  op, value,
-				  sort, descending, window,
-				  BIND_METHOD(data, &Data::Callback));
+		for (const auto &i : sticker_song_find(sticker_database, database, uri, name,
+						       op, value,
+						       sort, descending, window)) {
+			song_print_uri(response, i.song);
+			sticker_print_value(response, name, i.value);
+		}
 
 		return CommandResult::OK;
 	}
@@ -203,21 +195,6 @@ protected:
 	}
 
 private:
-	struct sticker_song_find_data {
-		Response &r;
-		const char *name;
-	};
-
-	static void
-	sticker_song_find_print_cb(const LightSong &song, const char *value,
-				   void *user_data)
-	{
-		auto *data = (struct sticker_song_find_data *)user_data;
-
-		song_print_uri(data->r, song);
-		sticker_print_value(data->r, data->name, value);
-	}
-
 	const LightSong* song = nullptr;
 };
 

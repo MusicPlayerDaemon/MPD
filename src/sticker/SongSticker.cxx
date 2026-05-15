@@ -77,12 +77,11 @@ sticker_song_get(StickerDatabase &db, const LightSong &song)
 	return db.Load("song", uri.c_str());
 }
 
-void
+Co::Generator<FindSongStickerRecord>
 sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		  const char *base_uri, const char *name,
 		  StickerOperator op, const char *value,
-		  const char *sort, bool descending, RangeArg window,
-		  BoundMethod<void(const LightSong &song, const char *value)> func)
+		  const char *sort, bool descending, RangeArg window)
 {
 	std::string_view base_uri_sv{base_uri};
 
@@ -104,7 +103,7 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 
 		try {
 			const LightSong *song = db.GetSong(i.uri);
-			func(*song, i.value);
+			co_yield FindSongStickerRecord{*song, i.value};
 			db.ReturnSong(song);
 		} catch (...) {
 		}
