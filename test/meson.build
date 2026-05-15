@@ -3,6 +3,7 @@ gtest_dep = dependency('gtest', main: true,
                        fallback: ['gtest', 'gtest_main_dep'])
 
 subdir('util')
+subdir('co')
 subdir('net')
 subdir('time')
 subdir('tag')
