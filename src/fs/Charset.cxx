@@ -3,7 +3,6 @@
 
 #include "Charset.hxx"
 #include "Features.hxx"
-#include "Domain.hxx"
 #include "lib/icu/Converter.hxx"
 #include "util/AllocatedString.hxx"
 #include "config.h"

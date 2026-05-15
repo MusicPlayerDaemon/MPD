@@ -1,5 +1,4 @@
 fs_sources = [
-  'Domain.cxx',
   'Traits.cxx',
   'Config.cxx',
   'Charset.cxx',
