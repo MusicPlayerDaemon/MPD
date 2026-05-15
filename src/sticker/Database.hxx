@@ -1,7 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-/*
+#pragma once
+
+#include "Match.hxx"
+#include "lib/sqlite/Database.hxx"
+#include "protocol/RangeArg.hxx"
+
+#include <sqlite3.h>
+
+#include <map>
+#include <string>
+#include <list>
+
+class Path;
+struct Sticker;
+
+/**
  * This is the sticker database library.  It is the backend of all the
  * sticker code in MPD.
  *
@@ -22,23 +37,6 @@
  * ...
  *
  */
-
-#ifndef MPD_STICKER_DATABASE_HXX
-#define MPD_STICKER_DATABASE_HXX
-
-#include "Match.hxx"
-#include "lib/sqlite/Database.hxx"
-#include "protocol/RangeArg.hxx"
-
-#include <sqlite3.h>
-
-#include <map>
-#include <string>
-#include <list>
-
-class Path;
-struct Sticker;
-
 class StickerDatabase {
 	enum SQL {
 		  SQL_GET,
@@ -221,5 +219,3 @@ private:
 			       StickerOperator op, const char *value,
 				   const char *sort, bool descending, RangeArg window);
 };
-
-#endif
