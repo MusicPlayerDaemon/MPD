@@ -11,12 +11,15 @@
 #endif
 
 #ifdef _WIN32
-#include <string.h> // for memcpy()
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#endif
+
+#ifndef __linux__
+#include <string.h> // for memcpy()
 #endif
 
 BareInetAddress::BareInetAddress(const IPv4Address &src) noexcept
@@ -33,16 +36,15 @@ BareInetAddress::BareInetAddress(const IPv6Address &_src) noexcept
 {
 	const auto &src = _src.GetAddress();
 	static_assert(sizeof(array) == sizeof(src));
-	static_assert(sizeof(array) == sizeof(src.s6_addr));
 
-#ifdef _WIN32
-	/* Windows doesn't have s6_addr32 */
-	memcpy(array, &src, sizeof(array));
-#else
+#ifdef __linux__
 	array[0] = src.s6_addr32[0];
 	array[1] = src.s6_addr32[1];
 	array[2] = src.s6_addr32[2];
 	array[3] = src.s6_addr32[3];
+#else
+	/* s6_addr32 is Linux-only */
+	memcpy(array, &src, sizeof(array));
 #endif
 }
 
