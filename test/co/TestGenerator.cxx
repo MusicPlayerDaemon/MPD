@@ -19,7 +19,7 @@ Empty()
 
 TEST(Generator, Empty)
 {
-	for (int _ : Empty())
+	for ([[maybe_unused]] int _ : Empty())
 		FAIL();
 }
 
