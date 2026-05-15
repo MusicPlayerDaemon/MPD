@@ -115,10 +115,11 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 			       void *user_data),
 		  void *user_data)
 {
-	struct sticker_song_find_data data;
-	data.db = &db;
-	data.func = func;
-	data.user_data = user_data;
+	struct sticker_song_find_data data{
+		.db = &db,
+		.func = func,
+		.user_data = user_data,
+	};
 
 	AllocatedString allocated;
 	data.base_uri = base_uri;
