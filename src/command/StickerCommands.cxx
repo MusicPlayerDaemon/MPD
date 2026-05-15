@@ -216,15 +216,20 @@ public:
 
 	CommandResult Find(const char *uri, const char *name, StickerOperator op, const char *value,
 			const char *sort, bool descending, RangeArg window) override {
-		struct sticker_song_find_data data = {
-			response,
-			name,
-		};
+		struct Data {
+			Response &r;
+			const char *name;
+
+			void Callback(const LightSong &song, const char *value) {
+				song_print_uri(r, song);
+				sticker_print_value(r, name, value);
+			}
+		} data{.r = response, .name = name};
 
 		sticker_song_find(sticker_database, database, uri, data.name,
 				  op, value,
 				  sort, descending, window,
-				  sticker_song_find_print_cb, &data);
+				  BIND_METHOD(data, &Data::Callback));
 
 		return CommandResult::OK;
 	}

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_SONG_STICKER_HXX
-#define MPD_SONG_STICKER_HXX
+#pragma once
 
 #include "Match.hxx"
 #include "protocol/RangeArg.hxx"
+#include "util/BindMethod.hxx"
 
 #include <string>
 
@@ -104,8 +104,4 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		  const char *base_uri, const char *name,
 		  StickerOperator op, const char *value,
 		  const char *sort, bool descending, RangeArg window,
-		  void (*func)(const LightSong &song, const char *value,
-			       void *user_data),
-		  void *user_data);
-
-#endif
+		  BoundMethod<void(const LightSong &song, const char *value)> func);

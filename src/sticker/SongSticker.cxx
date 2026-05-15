@@ -81,9 +81,7 @@ struct sticker_song_find_data {
 	const char *base_uri;
 	size_t base_uri_length;
 
-	void (*func)(const LightSong &song, const char *value,
-		     void *user_data);
-	void *user_data;
+	BoundMethod<void(const LightSong &song, const char *value)> func;
 };
 } // namespace
 
@@ -100,7 +98,7 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 	const Database *db = data->db;
 	try {
 		const LightSong *song = db->GetSong(uri);
-		data->func(*song, value, data->user_data);
+		data->func(*song, value);
 		db->ReturnSong(song);
 	} catch (...) {
 	}
@@ -111,14 +109,11 @@ sticker_song_find(StickerDatabase &sticker_database, const Database &db,
 		  const char *base_uri, const char *name,
 		  StickerOperator op, const char *value,
 		  const char *sort, bool descending, RangeArg window,
-		  void (*func)(const LightSong &song, const char *value,
-			       void *user_data),
-		  void *user_data)
+		  BoundMethod<void(const LightSong &song, const char *value)> func)
 {
 	struct sticker_song_find_data data{
 		.db = &db,
 		.func = func,
-		.user_data = user_data,
 	};
 
 	AllocatedString allocated;
