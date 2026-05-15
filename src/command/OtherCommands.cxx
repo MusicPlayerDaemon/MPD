@@ -83,11 +83,11 @@ handle_listfiles(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	const auto located_uri = LocateUri(UriPluginKind::STORAGE, uri, &client
+	const auto located_uri = LocateUri(UriPluginKind::STORAGE, uri, &client,
 #ifdef ENABLE_DATABASE
-					   , nullptr
+					   nullptr,
 #endif
-					   );
+					   true);
 
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:
@@ -203,11 +203,11 @@ handle_lsinfo(Client &client, Request args, Response &r)
 		   compatibility, work around this here */
 		uri = "";
 
-	const auto located_uri = LocateUri(UriPluginKind::INPUT, uri, &client
+	const auto located_uri = LocateUri(UriPluginKind::INPUT, uri, &client,
 #ifdef ENABLE_DATABASE
-					   , nullptr
+					   nullptr,
 #endif
-					   );
+					   true);
 
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:

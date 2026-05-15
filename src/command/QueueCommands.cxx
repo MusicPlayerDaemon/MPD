@@ -70,11 +70,11 @@ handle_add(Client &client, Request args, [[maybe_unused]] Response &r)
 		: old_size;
 
 	const auto located_uri = LocateUri(UriPluginKind::INPUT, uri,
-					   &client
+					   &client,
 #ifdef ENABLE_DATABASE
-					   , nullptr
+					   nullptr,
 #endif
-					   );
+					   true);
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:
 		AddUri(client, located_uri);
