@@ -8,6 +8,10 @@
 #include "tag/Tag.hxx"
 #include "tag/Fallback.hxx"
 
+#include <fmt/core.h>
+
+using std::string_view_literals::operator""sv;
+
 std::string
 TagSongFilter::ToExpression() const noexcept
 {
@@ -15,8 +19,9 @@ TagSongFilter::ToExpression() const noexcept
 		? "any"
 		: tag_item_names[type];
 
-	return std::string("(") + name + " " + filter.GetOperator()
-		+ " \"" + EscapeFilterString(filter.GetValue()) + "\")";
+	return fmt::format("({} {} \"{}\")"sv,
+			   name, filter.GetOperator(),
+			   EscapeFilterString(filter.GetValue()));
 }
 
 bool

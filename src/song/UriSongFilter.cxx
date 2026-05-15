@@ -5,11 +5,15 @@
 #include "Escape.hxx"
 #include "LightSong.hxx"
 
+#include <fmt/core.h>
+
+using std::string_view_literals::operator""sv;
+
 std::string
 UriSongFilter::ToExpression() const noexcept
 {
-	return std::string("(file ") + filter.GetOperator()
-		+ " \"" + EscapeFilterString(filter.GetValue()) + "\")";
+	return fmt::format("(file {} \"{}\")"sv,
+			   filter.GetOperator(), EscapeFilterString(filter.GetValue()));
 }
 
 bool
