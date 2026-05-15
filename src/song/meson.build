@@ -16,6 +16,7 @@ song = static_library(
   'LightSong.cxx',
   include_directories: inc,
   dependencies: [
+    fs_path_dep,
     pcre_dep,
     fmt_dep,
   ],
