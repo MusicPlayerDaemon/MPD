@@ -12,11 +12,13 @@
 
 #ifdef HAVE_TCP
 #include "net/AddressInfo.hxx"
+#include "net/MaskedInetAddress.hxx"
 #include "net/Resolver.hxx"
 #include "net/ToString.hxx"
 #endif
 
 #include <cassert>
+#include <forward_list>
 #include <map>
 #include <string>
 #include <utility>
@@ -45,7 +47,13 @@ static unsigned local_permissions;
 #endif
 
 #ifdef HAVE_TCP
-static std::map<std::string, unsigned, std::less<>> host_permissions;
+struct HostPermissions {
+	MaskedInetAddress address;
+
+	unsigned permissions;
+};
+
+static std::forward_list<HostPermissions> host_permissions;
 #endif
 
 static unsigned
@@ -120,10 +128,18 @@ initPermissions(const ConfigData &config)
 
 			const std::string host_s{host_sv};
 
-			for (const auto &i : Resolve(host_s.c_str(), 0,
-						     AI_PASSIVE, SOCK_STREAM))
-				host_permissions.emplace(HostToString(i),
-							 permissions);
+			MaskedInetAddress masked_address;
+			if (masked_address.Parse(host_s.c_str())) {
+				host_permissions.emplace_front(HostPermissions{masked_address, permissions});
+			} else {
+				for (const auto &i : Resolve(host_s.c_str(), 0,
+							     AI_PASSIVE, SOCK_STREAM)) {
+					BareInetAddress address;
+					if (address.CopyFrom(i))
+						host_permissions.emplace_front(HostPermissions{MaskedInetAddress{address, 0},
+								permissions});
+				}
+			}
 		});
 	}
 #endif
@@ -132,11 +148,15 @@ initPermissions(const ConfigData &config)
 #ifdef HAVE_TCP
 
 int
-GetPermissionsFromAddress(SocketAddress address) noexcept
+GetPermissionsFromAddress(SocketAddress _address) noexcept
 {
-	if (auto i = host_permissions.find(HostToString(address));
-	    i != host_permissions.end())
-		return i->second;
+	BareInetAddress address;
+	if (!address.CopyFrom(_address))
+		return -1;
+
+	for (const auto &i : host_permissions)
+		if (i.address.Matches(address))
+			return i.permissions;
 
 	return -1;
 }
