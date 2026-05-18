@@ -4,15 +4,16 @@
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
 
+#include <fmt/core.h>
+
+using std::string_view_literals::operator""sv;
+
 std::string LightSong::GetURI() const noexcept
 {
 	if (directory == nullptr)
 		return std::string(uri);
 
-	std::string result(directory);
-	result.push_back('/');
-	result.append(uri);
-	return result;
+	return fmt::format("{}/{}"sv, directory, uri);
 }
 
 SignedSongTime
