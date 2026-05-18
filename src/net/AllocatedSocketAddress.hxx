@@ -110,6 +110,7 @@ public:
 		size = 0;
 	}
 
+#ifdef HAVE_TCP
 	bool IsInet() const noexcept {
 		return GetFamily() == AF_INET
 #ifdef HAVE_IPV6
@@ -117,6 +118,7 @@ public:
 #endif
 			;
 	}
+#endif // HAVE_TCP
 
 #ifdef HAVE_UN
 	/**
