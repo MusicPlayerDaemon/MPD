@@ -3,13 +3,48 @@
 
 #include "net/BareInetAddress.hxx"
 #include "net/IPv4Address.hxx"
+#include "net/StaticSocketAddress.hxx"
 #include "net/Features.hxx"
 
 #ifdef HAVE_IPV6
 #include "net/IPv6Address.hxx"
 #endif
 
+#ifdef HAVE_UN
+#include "net/LocalSocketAddress.hxx"
+#endif
+
 #include <gtest/gtest.h>
+
+#include <string_view>
+
+using std::string_view_literals::operator""sv;
+
+TEST(BareInetAddress, CopyFromUnspec)
+{
+	BareInetAddress address;
+
+	StaticSocketAddress src{};
+
+	src.SetSize(1);
+	EXPECT_FALSE(address.CopyFrom(src));
+
+	src.Clear();
+	EXPECT_FALSE(address.CopyFrom(src));
+}
+
+#ifdef HAVE_UN
+
+TEST(BareInetAddress, CopyFromLocal)
+{
+	BareInetAddress address;
+
+	EXPECT_FALSE(address.CopyFrom(LocalSocketAddress{""sv}));
+	EXPECT_FALSE(address.CopyFrom(LocalSocketAddress{"/foo"sv}));
+	EXPECT_FALSE(address.CopyFrom(LocalSocketAddress{"@foo"sv}));
+}
+
+#endif
 
 TEST(BareInetAddress, IsV4Mapped)
 {
