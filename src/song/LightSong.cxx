@@ -4,6 +4,17 @@
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
 
+std::string LightSong::GetURI() const noexcept
+{
+	if (directory == nullptr)
+		return std::string(uri);
+
+	std::string result(directory);
+	result.push_back('/');
+	result.append(uri);
+	return result;
+}
+
 SignedSongTime
 LightSong::GetDuration() const noexcept
 {

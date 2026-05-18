@@ -96,15 +96,7 @@ struct LightSong {
 		 audio_format(src.audio_format) {}
 
 	[[gnu::pure]]
-	std::string GetURI() const noexcept {
-		if (directory == nullptr)
-			return std::string(uri);
-
-		std::string result(directory);
-		result.push_back('/');
-		result.append(uri);
-		return result;
-	}
+	std::string GetURI() const noexcept;
 
 	[[gnu::pure]]
 	SignedSongTime GetDuration() const noexcept;
