@@ -24,6 +24,14 @@ public:
 				    uint_least8_t _prefix_length) noexcept
 		:address(_address), prefix_length(_prefix_length) {}
 
+	/**
+	 * @return true on success, false the the specified
+	 * #SocketAddress is not compatible with this class or if the
+	 * prefix length is not valid.
+	 */
+	[[nodiscard]]
+	bool CopyFrom(SocketAddress src, unsigned _prefix_length) noexcept;
+
 	constexpr bool operator==(const MaskedInetAddress &other) const noexcept = default;
 
 	static constexpr bool Matches(const BareInetAddress &address, uint_least8_t prefix_length,

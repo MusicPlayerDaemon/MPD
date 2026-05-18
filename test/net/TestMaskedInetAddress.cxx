@@ -6,6 +6,7 @@
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/IPv4Address.hxx"
 #include "net/Literals.hxx"
+#include "net/StaticSocketAddress.hxx"
 #include "net/Features.hxx"
 
 #ifdef HAVE_IPV6
@@ -100,6 +101,44 @@ TEST(MaskedInetAddress, IPv4)
 #endif
 }
 
+TEST(MaskedInetAddress, CopyFromUnspec)
+{
+	MaskedInetAddress m;
+
+	StaticSocketAddress src{};
+	EXPECT_FALSE(m.CopyFrom(src, 0));
+
+	src.SetSize(1);
+	EXPECT_FALSE(m.CopyFrom(src, 0));
+}
+
+TEST(MaskedInetAddress, CopyFromV4)
+{
+	MaskedInetAddress m;
+
+	static constexpr IPv4Address zero{0, 0, 0, 0, 42};
+	EXPECT_TRUE(m.CopyFrom(zero, 0));
+	EXPECT_TRUE(m.CopyFrom(zero, 16));
+	EXPECT_TRUE(m.CopyFrom(zero, 32));
+	EXPECT_FALSE(m.CopyFrom(zero, 33));
+
+	static constexpr IPv4Address src{192, 168, 1, 0, 42};
+
+	/* host bits not zero */
+	EXPECT_FALSE(m.CopyFrom(src, 0));
+	EXPECT_FALSE(m.CopyFrom(src, 16));
+	EXPECT_FALSE(m.CopyFrom(src, 23));
+
+	/* valid net mask */
+	EXPECT_TRUE(m.CopyFrom(src, 24));
+	EXPECT_TRUE(m.CopyFrom(src, 25));
+	EXPECT_TRUE(m.CopyFrom(src, 32));
+
+	/* prefix too long */
+	EXPECT_FALSE(m.CopyFrom(src, 33));
+	EXPECT_FALSE(m.CopyFrom(src, 255));
+}
+
 TEST(MaskedInetAddress, ParseV4)
 {
 	const auto a = MakeMaskedInet4Address(192, 168, 1, 2);
@@ -160,6 +199,38 @@ TEST(MaskedInetAddress, IPv6)
 	EXPECT_FALSE(b.Matches(LocalSocketAddress{"@foo"sv}));
 	EXPECT_FALSE(b.Matches(LocalSocketAddress{"/run/foo"sv}));
 #endif
+}
+
+TEST(MaskedInetAddress, CopyFromV6)
+{
+	MaskedInetAddress m;
+
+	static constexpr IPv6Address zero{0, 0, 0, 0, 0, 0, 0, 0, 42};
+	EXPECT_TRUE(m.CopyFrom(zero, 0));
+	EXPECT_TRUE(m.CopyFrom(zero, 16));
+	EXPECT_TRUE(m.CopyFrom(zero, 32));
+	EXPECT_TRUE(m.CopyFrom(zero, 127));
+	EXPECT_TRUE(m.CopyFrom(zero, 128));
+	EXPECT_FALSE(m.CopyFrom(zero, 129));
+
+	static constexpr IPv6Address src{0x1234, 0x5678, 0x90ab, 0, 0, 0, 0, 0, 0};
+
+	/* host bits not zero */
+	EXPECT_FALSE(m.CopyFrom(src, 0));
+	EXPECT_FALSE(m.CopyFrom(src, 16));
+	EXPECT_FALSE(m.CopyFrom(src, 47));
+
+	/* valid net mask */
+	EXPECT_TRUE(m.CopyFrom(src, 48));
+	EXPECT_TRUE(m.CopyFrom(src, 49));
+	EXPECT_TRUE(m.CopyFrom(src, 64));
+	EXPECT_TRUE(m.CopyFrom(src, 80));
+	EXPECT_TRUE(m.CopyFrom(src, 127));
+	EXPECT_TRUE(m.CopyFrom(src, 128));
+
+	/* prefix too long */
+	EXPECT_FALSE(m.CopyFrom(src, 129));
+	EXPECT_FALSE(m.CopyFrom(src, 255));
 }
 
 TEST(MaskedInetAddress, ParseV6)

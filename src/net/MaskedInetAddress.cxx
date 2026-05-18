@@ -9,6 +9,30 @@
 #include <string.h> // for strchr(), memcpy()
 
 bool
+MaskedInetAddress::CopyFrom(SocketAddress src,
+			    unsigned _prefix_length) noexcept
+{
+	if (!address.CopyFrom(src))
+		/* unsupported address family or bad size */
+		return false;
+
+	switch (src.GetFamily()) {
+	case AF_INET:
+		/* IPv4 address begins at bit 96 (128-32) */
+		_prefix_length += 96;
+		break;
+	}
+
+	if (_prefix_length > 128)
+		return false;
+
+	prefix_length = _prefix_length;
+
+	/* finally check if the address has all host bits cleared */
+	return address.ToNetwork(prefix_length) == address;
+}
+
+bool
 MaskedInetAddress::Matches(SocketAddress _other) const noexcept
 {
 	BareInetAddress other;
