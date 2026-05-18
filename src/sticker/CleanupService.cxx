@@ -56,8 +56,7 @@ DeleteStickers(StickerDatabase &sticker_db,
 {
 	if (stickers.empty())
 		return 0;
-	sticker_db.BatchDeleteNoIdle(stickers);
-	auto count = stickers.size();
+	auto count = sticker_db.BatchDeleteNoIdle(stickers);
 	stickers.clear();
 	return count;
 }

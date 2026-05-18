@@ -513,7 +513,7 @@ StickerDatabase::NamesTypes(const char *type)
 		co_yield NameTypeRecord{row[0], row[1]};
 }
 
-void
+std::size_t
 StickerDatabase::BatchDeleteNoIdle(const std::list<StickerTypeUriPair> &stickers)
 {
 	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE];
@@ -525,6 +525,7 @@ StickerDatabase::BatchDeleteNoIdle(const std::list<StickerTypeUriPair> &stickers
 	try {
 		ExecuteBusy(begin);
 
+		std::size_t n_deleted = 0;
 		for (auto &sticker: stickers) {
 			AtScopeExit(s) {
 				sqlite3_reset(s);
@@ -534,9 +535,13 @@ StickerDatabase::BatchDeleteNoIdle(const std::list<StickerTypeUriPair> &stickers
 			BindAll(s, sticker.first.c_str(), sticker.second.c_str());
 
 			ExecuteCommand(s);
+
+			++n_deleted;
 		}
 
 		ExecuteBusy(commit);
+
+		return n_deleted;
 	} catch (...) {
 		// "If the transaction has already been rolled back automatically by the error response,
 		// then the ROLLBACK command will fail with an error, but no harm is caused by this."

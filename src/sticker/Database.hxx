@@ -209,8 +209,9 @@ public:
 	/**
 	 * Delete stickers by type and uri
 	 * @param stickers A list of stickers to delete
+	 * @return the number of deleted records
 	 */
-	void BatchDeleteNoIdle(const std::list<StickerTypeUriPair> &stickers);
+	std::size_t BatchDeleteNoIdle(const std::list<StickerTypeUriPair> &stickers);
 
 private:
 	void ListValues(std::map<std::string, std::string, std::less<>> &table,
