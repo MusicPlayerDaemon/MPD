@@ -107,7 +107,7 @@ public:
 	 *
 	 * Throws #SqliteError on error.
 	 */
-	std::string LoadValue(const char *type, const char *uri,
+	std::string LoadValue(const char *type, std::string_view uri,
 			      const char *name);
 
 	/**
@@ -116,7 +116,7 @@ public:
 	 *
 	 * Throws #SqliteError on error.
 	 */
-	void StoreValue(const char *type, const char *uri,
+	void StoreValue(const char *type, std::string_view uri,
 			const char *name, const char *value);
 	
 	/**
@@ -125,7 +125,7 @@ public:
 	 *
 	 * Throws #SqliteError on error.
 	 */
-	void IncValue(const char *type, const char *uri,
+	void IncValue(const char *type, std::string_view uri,
 		      const char *name, const char *value);
 
 	/**
@@ -134,7 +134,7 @@ public:
 	 *
 	 * Throws #SqliteError on error.
 	 */
-	void DecValue(const char *type, const char *uri,
+	void DecValue(const char *type, std::string_view uri,
 		      const char *name, const char *value);
 
 	/**
@@ -143,7 +143,7 @@ public:
 	 *
 	 * Throws #SqliteError on error.
 	 */
-	bool Delete(const char *type, const char *uri);
+	bool Delete(const char *type, std::string_view uri);
 
 	/**
 	 * Deletes a sticker value.  Fails if no sticker with this name
@@ -151,7 +151,7 @@ public:
 	 *
 	 * Throws #SqliteError on error.
 	 */
-	bool DeleteValue(const char *type, const char *uri, const char *name);
+	bool DeleteValue(const char *type, std::string_view uri, const char *name);
 
 	/**
 	 * Loads the sticker for the specified resource.
@@ -162,7 +162,7 @@ public:
 	 * @param uri the URI of the resource, e.g. the song path
 	 * @return a sticker object
 	 */
-	Sticker Load(const char *type, const char *uri);
+	Sticker Load(const char *type, std::string_view uri);
 
 	struct FindRecord {
 		const char *uri;
@@ -179,7 +179,7 @@ public:
 	 * @param op the comparison operator
 	 * @param value the operand
 	 */
-	Co::Generator<FindRecord> Find(const char *type, const char *base_uri, const char *name,
+	Co::Generator<FindRecord> Find(const char *type, std::string_view base_uri, const char *name,
 				       StickerOperator op, const char *value,
 				       const char *sort, bool descending, RangeArg window);
 
@@ -215,15 +215,15 @@ public:
 
 private:
 	void ListValues(std::map<std::string, std::string, std::less<>> &table,
-			const char *type, const char *uri);
+			const char *type, std::string_view uri);
 
-	bool UpdateValue(const char *type, const char *uri,
+	bool UpdateValue(const char *type, std::string_view uri,
 			 const char *name, const char *value);
 
-	void InsertValue(const char *type, const char *uri,
+	void InsertValue(const char *type, std::string_view uri,
 			 const char *name, const char *value);
 
-	sqlite3_stmt *BindFind(const char *type, const char *base_uri,
+	sqlite3_stmt *BindFind(const char *type, std::string_view base_uri,
 			       const char *name,
 			       StickerOperator op, const char *value,
 				   const char *sort, bool descending, RangeArg window);

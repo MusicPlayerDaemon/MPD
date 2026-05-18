@@ -183,12 +183,11 @@ StickerDatabase::~StickerDatabase() noexcept
 }
 
 std::string
-StickerDatabase::LoadValue(const char *type, const char *uri, const char *name)
+StickerDatabase::LoadValue(const char *type, std::string_view uri, const char *name)
 {
 	sqlite3_stmt *const s = stmt[STICKER_SQL_GET];
 
 	assert(type != nullptr);
-	assert(uri != nullptr);
 	assert(name != nullptr);
 
 	if (StringIsEmpty(name))
@@ -210,12 +209,11 @@ StickerDatabase::LoadValue(const char *type, const char *uri, const char *name)
 
 void
 StickerDatabase::ListValues(std::map<std::string, std::string, std::less<>> &table,
-			    const char *type, const char *uri)
+			    const char *type, std::string_view uri)
 {
 	sqlite3_stmt *const s = stmt[STICKER_SQL_LIST];
 
 	assert(type != nullptr);
-	assert(uri != nullptr);
 
 	BindAll(s, type, uri);
 
@@ -232,11 +230,10 @@ StickerDatabase::ListValues(std::map<std::string, std::string, std::less<>> &tab
 }
 
 void
-StickerDatabase::StoreValue(const char *type, const char *uri,
+StickerDatabase::StoreValue(const char *type, std::string_view uri,
 			    const char *name, const char *value)
 {
 	assert(type != nullptr);
-	assert(uri != nullptr);
 	assert(name != nullptr);
 	assert(*name != 0);
 	assert(value != nullptr);
@@ -255,13 +252,12 @@ StickerDatabase::StoreValue(const char *type, const char *uri,
 }
 
 void
-StickerDatabase::IncValue(const char *type, const char *uri,
+StickerDatabase::IncValue(const char *type, std::string_view uri,
 			  const char *name, const char *value)
 {
 	sqlite3_stmt *const s = stmt[STICKER_SQL_INC];
 
 	assert(type != nullptr);
-	assert(uri != nullptr);
 	assert(name != nullptr);
 	assert(*name != 0);
 	assert(value != nullptr);
@@ -278,13 +274,12 @@ StickerDatabase::IncValue(const char *type, const char *uri,
 }
 
 void
-StickerDatabase::DecValue(const char *type, const char *uri,
+StickerDatabase::DecValue(const char *type, std::string_view uri,
 			  const char *name, const char *value)
 {
 	sqlite3_stmt *const s = stmt[STICKER_SQL_DEC];
 
 	assert(type != nullptr);
-	assert(uri != nullptr);
 	assert(name != nullptr);
 	assert(*name != 0);
 	assert(value != nullptr);
@@ -301,12 +296,11 @@ StickerDatabase::DecValue(const char *type, const char *uri,
 }
 
 bool
-StickerDatabase::Delete(const char *type, const char *uri)
+StickerDatabase::Delete(const char *type, std::string_view uri)
 {
 	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE];
 
 	assert(type != nullptr);
-	assert(uri != nullptr);
 
 	BindAll(s, type, uri);
 
@@ -322,13 +316,12 @@ StickerDatabase::Delete(const char *type, const char *uri)
 }
 
 bool
-StickerDatabase::DeleteValue(const char *type, const char *uri,
+StickerDatabase::DeleteValue(const char *type, std::string_view uri,
 			     const char *name)
 {
 	sqlite3_stmt *const s = stmt[STICKER_SQL_DELETE_VALUE];
 
 	assert(type != nullptr);
-	assert(uri != nullptr);
 	assert(name != nullptr);
 
 	BindAll(s, type, uri, name);
@@ -345,7 +338,7 @@ StickerDatabase::DeleteValue(const char *type, const char *uri,
 }
 
 Sticker
-StickerDatabase::Load(const char *type, const char *uri)
+StickerDatabase::Load(const char *type, std::string_view uri)
 {
 	Sticker s;
 
@@ -355,16 +348,13 @@ StickerDatabase::Load(const char *type, const char *uri)
 }
 
 sqlite3_stmt *
-StickerDatabase::BindFind(const char *type, const char *base_uri,
+StickerDatabase::BindFind(const char *type, std::string_view base_uri,
 			  const char *name,
 			  StickerOperator op, const char *value,
 			  const char *sort, bool descending, RangeArg window)
 {
 	assert(type != nullptr);
 	assert(name != nullptr);
-
-	if (base_uri == nullptr)
-		base_uri = "";
 
 	auto order_by = StringIsEmpty(sort)
 		? std::string()
@@ -450,7 +440,7 @@ StickerDatabase::BindFind(const char *type, const char *base_uri,
 }
 
 Co::Generator<StickerDatabase::FindRecord>
-StickerDatabase::Find(const char *type, const char *base_uri, const char *name,
+StickerDatabase::Find(const char *type, std::string_view base_uri, const char *name,
 		      StickerOperator op, const char *value,
 		      const char *sort, bool descending, RangeArg window)
 {

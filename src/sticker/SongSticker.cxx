@@ -79,25 +79,22 @@ sticker_song_get(StickerDatabase &db, const LightSong &song)
 
 Co::Generator<FindSongStickerRecord>
 sticker_song_find(StickerDatabase &sticker_database, const Database &db,
-		  const char *base_uri, const char *name,
+		  std::string_view base_uri, const char *name,
 		  StickerOperator op, const char *value,
 		  const char *sort, bool descending, RangeArg window)
 {
-	std::string_view base_uri_sv{base_uri};
-
 	AllocatedString allocated;
-	if (!base_uri_sv.empty()) {
+	if (!base_uri.empty()) {
 		/* append slash to base_uri */
-		allocated = AllocatedString{base_uri_sv, "/"sv};
+		allocated = AllocatedString{base_uri, "/"sv};
 		base_uri = allocated.c_str();
-		base_uri_sv = base_uri;
 	} else {
 		/* searching in root directory - no trailing slash */
 	}
 
 	for (const auto &i : sticker_database.Find("song", base_uri, name, op, value,
 						   sort, descending, window)) {
-		if (!StringStartsWith(i.uri, base_uri_sv))
+		if (!StringStartsWith(i.uri, base_uri))
 			/* should not happen, ignore silently */
 			continue;
 

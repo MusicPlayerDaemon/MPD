@@ -39,7 +39,7 @@ public:
 
 	virtual CommandResult Get(const char *uri, const char *name) {
 		const auto value = sticker_database.LoadValue(sticker_type,
-							      ValidateUri(uri).c_str(),
+							      ValidateUri(uri),
 							      name);
 		if (value.empty()) {
 			response.FmtError(ACK_ERROR_NO_EXIST, "no such sticker: {:?}", name);
@@ -53,7 +53,7 @@ public:
 
 	virtual CommandResult Set(const char *uri, const char *name, const char *value) {
 		sticker_database.StoreValue(sticker_type,
-					    ValidateUri(uri).c_str(),
+					    ValidateUri(uri),
 					    name,
 					    value);
 
@@ -62,7 +62,7 @@ public:
 
 	virtual CommandResult Inc(const char *uri, const char *name, const char *value) {
 		sticker_database.IncValue(sticker_type,
-					  ValidateUri(uri).c_str(),
+					  ValidateUri(uri),
 					  name,
 					  value);
 
@@ -71,7 +71,7 @@ public:
 
 	virtual CommandResult Dec(const char *uri, const char *name, const char *value) {
 		sticker_database.DecValue(sticker_type,
-					  ValidateUri(uri).c_str(),
+					  ValidateUri(uri),
 					  name,
 					  value);
 
@@ -80,10 +80,9 @@ public:
 
 	virtual CommandResult Delete(const char *uri, const char *name) {
 		std::string validated_uri = ValidateUri(uri);
-		uri = validated_uri.c_str();
 		bool ret = name == nullptr
-			   ? sticker_database.Delete(sticker_type, uri)
-			   : sticker_database.DeleteValue(sticker_type, uri, name);
+			   ? sticker_database.Delete(sticker_type, validated_uri)
+			   : sticker_database.DeleteValue(sticker_type, validated_uri, name);
 		if (!ret) {
 			response.FmtError(ACK_ERROR_NO_EXIST, "no such sticker: {:?}", name);
 			return CommandResult::ERROR;
@@ -94,13 +93,13 @@ public:
 
 	virtual CommandResult List(const char *uri) {
 		const auto sticker = sticker_database.Load(sticker_type,
-							   ValidateUri(uri).c_str());
+							   ValidateUri(uri));
 		sticker_print(response, sticker);
 
 		return CommandResult::OK;
 	}
 
-	virtual CommandResult Find(const char *uri, const char *name, StickerOperator op, const char *value,
+	virtual CommandResult Find(std::string_view uri, const char *name, StickerOperator op, const char *value,
 			const char *sort, bool descending, RangeArg window) {
 		const bool is_song = StringIsEqual("song", sticker_type);
 
@@ -174,7 +173,7 @@ public:
 			database.ReturnSong(song);
 	}
 
-	CommandResult Find(const char *uri, const char *name, StickerOperator op, const char *value,
+	CommandResult Find(std::string_view uri, const char *name, StickerOperator op, const char *value,
 			const char *sort, bool descending, RangeArg window) override {
 		for (const auto &i : sticker_song_find(sticker_database, database, uri, name,
 						       op, value,

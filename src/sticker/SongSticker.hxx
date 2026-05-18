@@ -106,6 +106,6 @@ struct FindSongStickerRecord {
  */
 Co::Generator<FindSongStickerRecord>
 sticker_song_find(StickerDatabase &sticker_database, const Database &db,
-		  const char *base_uri, const char *name,
+		  std::string_view base_uri, const char *name,
 		  StickerOperator op, const char *value,
 		  const char *sort, bool descending, RangeArg window);
