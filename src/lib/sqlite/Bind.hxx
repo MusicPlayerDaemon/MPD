@@ -8,6 +8,7 @@
 #include <sqlite3.h>
 
 #include <cassert>
+#include <string_view>
 
 namespace Sqlite {
 
@@ -18,6 +19,14 @@ static inline void
 Bind(sqlite3_stmt *stmt, unsigned i, const char *value)
 {
 	int result = sqlite3_bind_text(stmt, i, value, -1, nullptr);
+	if (result != SQLITE_OK)
+		throw SqliteError(stmt, result, "sqlite3_bind_text() failed");
+}
+
+static inline void
+Bind(sqlite3_stmt *stmt, unsigned i, std::string_view value)
+{
+	int result = sqlite3_bind_text(stmt, i, value.data(), value.size(), nullptr);
 	if (result != SQLITE_OK)
 		throw SqliteError(stmt, result, "sqlite3_bind_text() failed");
 }
