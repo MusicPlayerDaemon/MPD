@@ -25,6 +25,7 @@ TEST(BareInetAddress, CopyFromUnspec)
 	BareInetAddress address;
 
 	StaticSocketAddress src{};
+	EXPECT_FALSE(address.CopyFrom(src));
 
 	src.SetSize(1);
 	EXPECT_FALSE(address.CopyFrom(src));
@@ -39,6 +40,7 @@ TEST(BareInetAddress, CopyFromLocal)
 {
 	BareInetAddress address;
 
+	EXPECT_FALSE(address.CopyFrom(LocalSocketAddress{}));
 	EXPECT_FALSE(address.CopyFrom(LocalSocketAddress{""sv}));
 	EXPECT_FALSE(address.CopyFrom(LocalSocketAddress{"/foo"sv}));
 	EXPECT_FALSE(address.CopyFrom(LocalSocketAddress{"@foo"sv}));

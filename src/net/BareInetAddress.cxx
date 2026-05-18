@@ -22,6 +22,8 @@
 #include <string.h> // for memcpy()
 #endif
 
+#include <cassert>
+
 BareInetAddress::BareInetAddress(const IPv4Address &src) noexcept
 {
 	array[0] = 0;
@@ -53,12 +55,26 @@ BareInetAddress::BareInetAddress(const IPv6Address &_src) noexcept
 bool
 BareInetAddress::CopyFrom(SocketAddress src) noexcept
 {
+	assert(!src.IsNull());
+
+	const auto size = src.GetSize();
+	if (size == 0) [[unlikely]]
+		return false;
+
 	if (src.GetFamily() == AF_INET) {
-		*this = IPv4Address::Cast(src);
+		const auto &ip = IPv4Address::Cast(src);
+		if (size != sizeof(ip)) [[unlikely]]
+			return false;
+
+		*this = ip;
 		return true;
 #ifdef HAVE_IPV6
 	} else if (src.GetFamily() == AF_INET6) {
-		*this = IPv6Address::Cast(src);
+		const auto &ip = IPv6Address::Cast(src);
+		if (size != sizeof(ip)) [[unlikely]]
+			return false;
+
+		*this = ip;
 		return true;
 #endif // HAVE_IPV6
 	} else
