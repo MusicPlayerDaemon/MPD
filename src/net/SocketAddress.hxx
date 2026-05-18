@@ -94,6 +94,20 @@ public:
 		return GetFamily() != AF_UNSPEC;
 	}
 
+	/**
+	 * Is this a valid address?  This checks:
+	 *
+	 * - family != AF_UNSPEC
+	 * - known family (in the hard-coded list of known families, i.e. AF_INET, AF_INET6, AF_LOCAL)
+	 * - size is valid for the family
+	 * - possibly additional family-specific checks
+	 *
+	 * This method does *not* check for `nullptr`.  Calling it
+	 * with a nulled object crashes the process.
+	 */
+	[[gnu::pure]]
+	bool IsValid() const noexcept;
+
 #ifdef HAVE_TCP
 	constexpr bool IsInet() const noexcept {
 		return GetFamily() == AF_INET

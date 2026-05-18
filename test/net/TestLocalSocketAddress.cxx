@@ -16,7 +16,7 @@ TEST(LocalSocketAddress, Path1)
 	const char *path = "/run/foo/bar.socket";
 	LocalSocketAddress a;
 	a.SetLocal(path);
-	EXPECT_TRUE(a.IsDefined());
+	EXPECT_TRUE(static_cast<SocketAddress>(a).IsValid());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
 	EXPECT_EQ(ToString(a), path);
 	EXPECT_EQ(a.GetLocalRaw(), "/run/foo/bar.socket\0"sv);
@@ -49,6 +49,7 @@ TEST(LocalSocketAddress, Path)
 	const char *path = "/run/foo/bar.socket";
 	AllocatedSocketAddress a;
 	a.SetLocal(path);
+	EXPECT_TRUE(a.IsDefined());
 	EXPECT_FALSE(a.IsNull());
 	EXPECT_TRUE(a.IsDefined());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
@@ -68,6 +69,7 @@ TEST(LocalSocketAddress, Abstract1)
 	const char *path = "@foo.bar";
 	LocalSocketAddress a;
 	a.SetLocal(path);
+	EXPECT_TRUE(static_cast<SocketAddress>(a).IsValid());
 	EXPECT_TRUE(a.IsDefined());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
 	EXPECT_EQ(ToString(a), path);
@@ -91,6 +93,7 @@ TEST(LocalSocketAddress, Abstract)
 	AllocatedSocketAddress a;
 	a.SetLocal(path);
 	EXPECT_FALSE(a.IsNull());
+	EXPECT_TRUE(static_cast<SocketAddress>(a).IsValid());
 	EXPECT_TRUE(a.IsDefined());
 	EXPECT_EQ(a.GetFamily(), AF_LOCAL);
 	EXPECT_EQ(ToString(a), path);

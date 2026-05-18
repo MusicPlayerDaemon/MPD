@@ -28,6 +28,7 @@ TEST(IPv4AddressTest, Basic)
 TEST(IPv4AddressTest, Port)
 {
 	IPv4Address a(12345);
+	EXPECT_TRUE(static_cast<SocketAddress>(a).IsValid());
 	EXPECT_EQ(a.GetPort(), 12345u);
 
 	a.SetPort(42);

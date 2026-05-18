@@ -27,6 +27,35 @@
 #endif
 
 bool
+SocketAddress::IsValid() const noexcept
+{
+	if (size == 0)
+		return false;
+
+	switch (GetFamily()) {
+#ifdef HAVE_TCP
+	case AF_INET:
+		return size == sizeof(IPv4Address);
+
+#ifdef HAVE_IPV6
+	case AF_INET6:
+		return size == sizeof(IPv6Address);
+#endif // HAVE_IPV6
+#endif // HAVE_TCP
+
+#ifdef HAVE_UN
+	case AF_LOCAL:
+		// TODO check for valid path?
+		return true;
+#endif
+	}
+
+	/* AF_UNSPEC and unknown address families are considered
+	   invalid here */
+	return false;
+}
+
+bool
 SocketAddress::operator==(SocketAddress other) const noexcept
 {
 	return size == other.size && memcmp(address, other.address, size) == 0;

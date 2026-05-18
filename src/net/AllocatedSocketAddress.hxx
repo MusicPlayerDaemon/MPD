@@ -110,6 +110,11 @@ public:
 		size = 0;
 	}
 
+	[[gnu::pure]]
+	bool IsValid() const noexcept {
+		return static_cast<const SocketAddress>(*this).IsValid();
+	}
+
 #ifdef HAVE_TCP
 	bool IsInet() const noexcept {
 		return GetFamily() == AF_INET
