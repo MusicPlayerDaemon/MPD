@@ -54,8 +54,6 @@ static std::size_t
 DeleteStickers(StickerDatabase &sticker_db,
 	       std::list<StickerDatabase::StickerTypeUriPair> &stickers)
 {
-	if (stickers.empty())
-		return 0;
 	auto count = sticker_db.BatchDeleteNoIdle(stickers);
 	stickers.clear();
 	return count;
@@ -87,7 +85,7 @@ StickerCleanupService::Task() noexcept
 			}
 		}
 
-		if (!cancel_flag)
+		if (!batch.empty() && !cancel_flag)
 			deleted_count += DeleteStickers(sticker_db, batch);
 	} catch (...) {
 		FmtError(sticker_domain, "cleanup failed: {}",
