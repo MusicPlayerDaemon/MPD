@@ -61,6 +61,7 @@ StickerCleanupService::Task() noexcept
 		auto stickers = sticker_db.GetUniqueStickers();
 		auto iter = stickers.cbegin();
 		std::list<StickerDatabase::StickerTypeUriPair> batch;
+		std::size_t batch_size = 0;
 		while (!cancel_flag && !stickers.empty()) {
 			const auto &[sticker_type, sticker_uri] = *iter;
 
@@ -71,9 +72,12 @@ StickerCleanupService::Task() noexcept
 				iter = stickers.erase(iter);
 			else {
 				batch.splice(batch.end(), stickers, iter++);
-				if (batch.size() == DeleteBatchSize) {
+				++batch_size;
+
+				if (batch_size == DeleteBatchSize) {
 					deleted_count += sticker_db.BatchDeleteNoIdle(stickers);
 					stickers.clear();
+					batch_size = 0;
 				}
 			}
 		}
