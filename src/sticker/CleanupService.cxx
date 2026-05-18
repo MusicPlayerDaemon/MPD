@@ -50,15 +50,6 @@ StickerCleanupService::RunDeferred() noexcept
 	instance.OnStickerCleanupDone(deleted_count != 0);
 }
 
-static std::size_t
-DeleteStickers(StickerDatabase &sticker_db,
-	       std::list<StickerDatabase::StickerTypeUriPair> &stickers)
-{
-	auto count = sticker_db.BatchDeleteNoIdle(stickers);
-	stickers.clear();
-	return count;
-}
-
 void
 StickerCleanupService::Task() noexcept
 {
@@ -80,13 +71,15 @@ StickerCleanupService::Task() noexcept
 				iter = stickers.erase(iter);
 			else {
 				batch.splice(batch.end(), stickers, iter++);
-				if (batch.size() == DeleteBatchSize)
-					deleted_count += DeleteStickers(sticker_db, batch);
+				if (batch.size() == DeleteBatchSize) {
+					deleted_count += sticker_db.BatchDeleteNoIdle(stickers);
+					stickers.clear();
+				}
 			}
 		}
 
 		if (!batch.empty() && !cancel_flag)
-			deleted_count += DeleteStickers(sticker_db, batch);
+			deleted_count += sticker_db.BatchDeleteNoIdle(batch);
 	} catch (...) {
 		FmtError(sticker_domain, "cleanup failed: {}",
 			 std::current_exception());
