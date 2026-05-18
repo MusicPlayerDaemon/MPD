@@ -3,6 +3,7 @@
 
 #include "Database.hxx"
 #include "Sticker.hxx"
+#include "lib/sqlite/Bind.hxx"
 #include "lib/sqlite/Generator.hxx"
 #include "lib/sqlite/Row.hxx"
 #include "lib/sqlite/Util.hxx"
