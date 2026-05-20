@@ -281,6 +281,8 @@ SetupHw(snd_pcm_t *pcm,
 	if (err < 0)
 		throw Alsa::MakeError(err, "snd_pcm_hw_params_get_period_size() failed");
 
+	result.can_pause = snd_pcm_hw_params_can_pause(hwparams);
+
 	return result;
 }
 

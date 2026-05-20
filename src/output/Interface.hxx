@@ -40,6 +40,10 @@ public:
 		return flags & FLAG_PAUSE;
 	}
 
+	virtual bool SupportsPauseWithoutCancel() const noexcept {
+		return false;
+	}
+
 	bool GetNeedFullyDefinedAudioFormat() const noexcept {
 		return flags & FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT;
 	}

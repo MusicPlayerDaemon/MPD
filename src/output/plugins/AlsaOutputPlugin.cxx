@@ -232,6 +232,7 @@ class AlsaOutput final
 	const bool close_on_pause;
 
 	std::atomic_bool paused;
+	bool hw_can_pause = false;
 
 public:
 	AlsaOutput(EventLoop &loop, const ConfigBlock &block);
@@ -398,6 +399,11 @@ private:
 	/* virtual methods from class MultiSocketMonitor */
 	Event::Duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
+
+	bool SupportsPauseWithoutCancel() const noexcept override {
+		return !close_on_pause && hw_can_pause;
+	}
+
 };
 
 static constexpr Domain alsa_output_domain("alsa_output");
@@ -562,6 +568,8 @@ AlsaOutput::Setup(AudioFormat &audio_format,
 
 	AlsaSetupSw(pcm, hw_result.buffer_size - hw_result.period_size,
 		    hw_result.period_size);
+
+	hw_can_pause = hw_result.can_pause;
 
 	auto alsa_period_size = hw_result.period_size;
 	if (alsa_period_size == 0)
@@ -1095,6 +1103,7 @@ AlsaOutput::CancelInternal() noexcept
 	ring_buffer.Clear();
 
 	active = false;
+	paused = false;
 	waiting = false;
 
 	UnregisterSockets();
@@ -1139,13 +1148,46 @@ AlsaOutput::Cancel() noexcept
 bool
 AlsaOutput::Pause() noexcept
 {
-	std::lock_guard lock{mutex};
-	interrupted = false;
+	{
+		std::lock_guard lock{mutex};
+		interrupted = false;
 
-	if (close_on_pause)
-		return false;
+		if (close_on_pause)
+			return false;
 
-	// TODO use snd_pcm_pause()?
+		if (!hw_can_pause) {
+			paused = true;
+			return true;
+		}
+	}
+
+	if (LockIsActive()) {
+		BlockingCall(GetEventLoop(), [this](){
+			/* only pause if actually running; if the PCM is
+			   still in PREPARED state, there is nothing in
+			   the hardware buffer worth preserving */
+			if (snd_pcm_state(pcm) == SND_PCM_STATE_RUNNING) {
+				int err = snd_pcm_pause(pcm, /* enable */ 1);
+				if (err < 0) {
+					LogError(alsa_output_domain,
+							 "snd_pcm_pause() failed");
+					hw_can_pause = false;
+					return;
+				}
+			}
+
+			UnregisterSockets();
+			silence_timer.Cancel();
+
+			/* set waiting=true so that Activate() inside
+			   Play() will re-schedule the event loop on
+			   resume; without this, Activate() sees
+			   active=true/waiting=false and returns early */
+			waiting = true;
+		});
+	}
+	if (!hw_can_pause)
+		return Pause(); // try again without hw pause
 
 	paused = true;
 	return true;
@@ -1215,7 +1257,12 @@ AlsaOutput::Play(std::span<const std::byte> src)
 	assert(!src.empty());
 	assert(src.size() % in_frame_size == 0);
 
-	paused = false;
+	const bool was_paused = paused.exchange(false);
+
+	if (was_paused) {
+		std::lock_guard lock{mutex};
+		Activate();
+	}
 
 	const size_t max_frames = LockWaitWriteAvailable();
 	const size_t max_size = max_frames * in_frame_size;
@@ -1242,6 +1289,15 @@ AlsaOutput::PrepareSockets() noexcept
 	}
 
 	try {
+		/* if the PCM was paused via snd_pcm_pause() (i.e. Pause()
+		   was called with hw_can_pause), resume it now that Play()
+		   has delivered new data and re-activated the I/O thread */
+		if (snd_pcm_state(pcm) == SND_PCM_STATE_PAUSED) {
+			int err = snd_pcm_pause(pcm, /* disable */ 0);
+			if (err < 0)
+				throw Alsa::MakeError(err, "snd_pcm_pause() failed");
+		}
+
 		return non_block.PrepareSockets(*this, pcm);
 	} catch (...) {
 		ClearSocketList();
