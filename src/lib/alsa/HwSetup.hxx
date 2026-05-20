@@ -15,6 +15,7 @@ namespace Alsa {
 struct HwResult {
 	snd_pcm_format_t format;
 	snd_pcm_uframes_t buffer_size, period_size;
+	bool can_pause;
 };
 
 /**

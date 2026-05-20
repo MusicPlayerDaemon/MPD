@@ -519,6 +519,10 @@ AudioOutputControl::Task() noexcept
 				   the actual playback */
 				if (source_state == SourceState::OPEN)
 					source.Cancel();
+				{
+					const ScopeUnlock unlock(mutex);
+					output->Cancel();
+				}
 				InternalPause(lock);
 			} else {
 				InternalClose(false);
