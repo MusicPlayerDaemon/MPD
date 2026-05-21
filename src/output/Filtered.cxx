@@ -192,7 +192,7 @@ FilteredAudioOutput::Cancel() noexcept
 void
 FilteredAudioOutput::BeginPause() noexcept
 {
-	if (!output->SupportsPauseWithoutCancel())
+	if (!output->SupportsHardwarePause())
 		Cancel();
 }
 

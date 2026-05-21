@@ -40,12 +40,22 @@ public:
 		return flags & FLAG_PAUSE;
 	}
 
-	virtual bool SupportsPauseWithoutCancel() const noexcept {
-		return false;
-	}
-
 	bool GetNeedFullyDefinedAudioFormat() const noexcept {
 		return flags & FLAG_NEED_FULLY_DEFINED_AUDIO_FORMAT;
+	}
+
+	/**
+	 * Returns true if this plugin can pause playback without first
+	 * discarding buffered audio via Cancel().  When this returns true,
+	 * #FilteredAudioOutput::BeginPause() will skip the Cancel() call,
+	 * allowing the plugin to preserve its hardware buffer across a pause
+	 * and resume it intact when Play() is next called.
+	 *
+	 * Plugins that return true must handle buffer cleanup if
+	 * Cancel() is called while paused (e.g. on stop or seek).
+	 */
+	virtual bool SupportsHardwarePause() const noexcept {
+		return false;
 	}
 
 	/**

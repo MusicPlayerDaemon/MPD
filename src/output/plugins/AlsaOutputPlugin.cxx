@@ -400,7 +400,7 @@ private:
 	Event::Duration PrepareSockets() noexcept override;
 	void DispatchSockets() noexcept override;
 
-	bool SupportsPauseWithoutCancel() const noexcept override {
+	bool SupportsHardwarePause() const noexcept override {
 		return !close_on_pause && hw_can_pause;
 	}
 
@@ -1103,7 +1103,6 @@ AlsaOutput::CancelInternal() noexcept
 	ring_buffer.Clear();
 
 	active = false;
-	paused = false;
 	waiting = false;
 
 	UnregisterSockets();
