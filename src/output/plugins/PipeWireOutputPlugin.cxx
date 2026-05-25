@@ -593,8 +593,12 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 							 PW_STREAM_FLAG_MAP_BUFFERS |
 							 PW_STREAM_FLAG_RT_PROCESS),
 				  params, 1);
-	if (error < 0)
+	if (error < 0) {
+		ring_buffer = {};
+		pw_stream_destroy(stream);
+		stream = nullptr;
 		throw PipeWire::MakeError(error, "Failed to connect stream");
+	}
 }
 
 void
