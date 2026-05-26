@@ -4,34 +4,10 @@
 
 #pragma once
 
+#include "Options.hxx"
 #include "RegexPointer.hxx"
 
 #include <utility>
-
-namespace Pcre {
-
-struct CompileOptions {
-	bool anchored = false;
-	bool caseless = false;
-	bool capture = false;
-
-	explicit constexpr operator int() const noexcept {
-		int options = PCRE2_DOTALL|PCRE2_NO_AUTO_CAPTURE;
-
-		if (anchored)
-			options |= PCRE2_ANCHORED;
-
-		if (caseless)
-			options |= PCRE2_CASELESS;
-
-		if (capture)
-			options &= ~PCRE2_NO_AUTO_CAPTURE;
-
-		return options;
-	}
-};
-
-} // namespace Pcre
 
 class UniqueRegex : public RegexPointer {
 public:
