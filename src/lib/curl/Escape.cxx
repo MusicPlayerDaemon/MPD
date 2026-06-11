@@ -13,6 +13,9 @@ CurlEscapeUriPath(CURL *curl, std::string_view src) noexcept
 
 	for (const auto i : IterableSplitString(src, '/')) {
 		CurlString escaped(curl_easy_escape(curl, i.data(), i.size()));
+		if (!escaped)
+			break;
+
 		if (!dest.empty())
 			dest.push_back('/');
 		dest += escaped.c_str();
@@ -33,7 +36,10 @@ CurlUnescape(CURL *curl, std::string_view src) noexcept
 {
 	int outlength;
 	CurlString tmp(curl_easy_unescape(curl, src.data(), src.size(),
-					  &outlength));
+				  &outlength));
+	if (!tmp)
+		return {};
+
 	return {tmp.c_str(), size_t(outlength)};
 }
 
