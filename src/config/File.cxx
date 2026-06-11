@@ -159,10 +159,17 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 
 /**
  * @param directory the directory used to resolve relative paths
+ * @param depth the current include recursion depth (to detect cycles)
  */
 static void
-ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
+ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory,
+	       unsigned depth = 0)
 {
+	static constexpr unsigned MAX_INCLUDE_DEPTH = 16;
+
+	if (depth > MAX_INCLUDE_DEPTH)
+		throw std::runtime_error("Include recursion too deep");
+
 	while (true) {
 		char *line = reader.ReadLine();
 		if (line == nullptr)
@@ -180,12 +187,10 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 		assert(name != nullptr);
 
 		if (StringIsEqual(name, "include")) {
-			// TODO: detect recursion
-			// TODO: Config{Block,Param} have only line number but no file name
 			const auto pattern = AllocatedPath::Apply(directory,
 								  AllocatedPath::FromUTF8Throw(ExpectValueAndEnd(tokenizer, false)));
 			for (const auto &path : ListWildcard(pattern))
-				ReadConfigFile(config_data, path);
+				ReadConfigFile(config_data, path, depth + 1);
 			continue;
 		}
 
@@ -204,7 +209,7 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 
 			for (const auto &path : l)
 				if (PathExists(path))
-					ReadConfigFile(config_data, path);
+					ReadConfigFile(config_data, path, depth + 1);
 			continue;
 		}
 
@@ -227,7 +232,7 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Path directory)
 }
 
 void
-ReadConfigFile(ConfigData &config_data, Path path)
+ReadConfigFile(ConfigData &config_data, Path path, unsigned depth)
 {
 	assert(!path.IsNull());
 
@@ -238,7 +243,7 @@ ReadConfigFile(ConfigData &config_data, Path path)
 	BufferedReader reader(file);
 
 	try {
-		ReadConfigFile(config_data, reader, path.GetDirectoryName());
+		ReadConfigFile(config_data, reader, path.GetDirectoryName(), depth);
 	} catch (...) {
 		std::throw_with_nested(FmtRuntimeError("Error in {:?} line {}",
 						       path,

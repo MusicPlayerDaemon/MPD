@@ -8,6 +8,6 @@ class Path;
 struct ConfigData;
 
 void
-ReadConfigFile(ConfigData &data, Path path);
+ReadConfigFile(ConfigData &data, Path path, unsigned depth = 0);
 
 #endif
