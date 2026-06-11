@@ -151,7 +151,10 @@ playlist_state_restore(const StateFileConfig &config,
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CONSUME))) {
 			playlist.SetConsume(ConsumeFromString(p));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CROSSFADE))) {
-			pc.SetCrossFade(FloatDuration(atoi(p)));
+			char *endptr;
+			int cf = (int)strtol(p, &endptr, 10);
+			if (endptr > p && *endptr == 0)
+				pc.SetCrossFade(FloatDuration(cf));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB))) {
 			pc.SetMixRampDb(ParseFloat(p));
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY))) {
@@ -164,7 +167,10 @@ playlist_state_restore(const StateFileConfig &config,
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_RANDOM))) {
 			random_mode = StringIsEqual(p, "1");
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CURRENT))) {
-			current = atoi(p);
+			char *endptr;
+			current = (int)strtol(p, &endptr, 10);
+			if (endptr == p || *endptr != 0)
+				current = -1;
 		} else if (StringStartsWith(line,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
 			playlist_state_load(file, song_loader, playlist);

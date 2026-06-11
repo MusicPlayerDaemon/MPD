@@ -70,7 +70,10 @@ db_load_internal(LineReader &file, Directory &music_root,
 		const char *p;
 
 		if ((p = StringAfterPrefix(line, DB_FORMAT_PREFIX))) {
-			format = atoi(p);
+			char *endptr;
+			format = (unsigned)strtoul(p, &endptr, 10);
+			if (endptr == p || *endptr != 0)
+				format = 0;
 		} else if (StringStartsWith(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version)
 				throw std::runtime_error("Duplicate version line");

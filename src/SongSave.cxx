@@ -117,9 +117,15 @@ song_load(LineReader &file, const char *uri,
 		} else if (StringIsEqual(line, "Playlist")) {
 			tag.SetHasPlaylist(StringIsEqual(value, "yes"));
 		} else if (StringIsEqual(line, SONG_MTIME)) {
-			song.SetLastModified(std::chrono::system_clock::from_time_t(atoi(value)));
+			char *endptr;
+			long t = strtol(value, &endptr, 10);
+			if (endptr > value && *endptr == 0)
+				song.SetLastModified(std::chrono::system_clock::from_time_t(t));
 		} else if (StringIsEqual(line, SONG_ADDED)) {
-			song.SetAdded(std::chrono::system_clock::from_time_t(atoi(value)));
+			char *endptr;
+			long t = strtol(value, &endptr, 10);
+			if (endptr > value && *endptr == 0)
+				song.SetAdded(std::chrono::system_clock::from_time_t(t));
 		} else if (StringIsEqual(line, "Range")) {
 			char *endptr;
 
