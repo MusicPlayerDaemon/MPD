@@ -8,6 +8,8 @@
 
 #include <fmt/format.h>
 
+#include <cstdint>
+
 static void
 ReadResultTag(UPnPDirContent &dirbuf, const UpnpActionResponse &response)
 {
@@ -54,13 +56,18 @@ ContentDirectoryService::readDir(UpnpClient_Handle handle,
 				 const char *objectId) const
 {
 	UPnPDirContent dirbuf;
-	unsigned offset = 0, total = -1, count;
+	unsigned offset = 0, total = 0, count;
+	unsigned iterations = 0;
+	static constexpr unsigned MAX_ITERATIONS = 100000;
 
 	do {
 		readDirSlice(handle, objectId, offset, m_rdreqcnt, dirbuf,
 			     count, total);
 
 		offset += count;
+
+		if (++iterations > MAX_ITERATIONS)
+			break;
 	} while (count > 0 && offset < total);
 
 	return dirbuf;
@@ -72,7 +79,9 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 				const char *ss) const
 {
 	UPnPDirContent dirbuf;
-	unsigned offset = 0, total = -1, count;
+	unsigned offset = 0, total = 0, count;
+	unsigned iterations = 0;
+	static constexpr unsigned MAX_ITERATIONS = 100000;
 
 	do {
 		const auto response = UpnpSendAction(hdl, m_actionURL.c_str(),
@@ -98,6 +107,9 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 			total = ParseUnsigned(value);
 
 		ReadResultTag(dirbuf, response);
+
+		if (++iterations > MAX_ITERATIONS)
+			break;
 	} while (count > 0 && offset < total);
 
 	return dirbuf;
