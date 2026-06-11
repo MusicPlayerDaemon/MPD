@@ -1,4 +1,6 @@
 ver 0.24.13 (not yet released)
+* configuration
+  - add range checks to number parser
 * output
   - pipewire: fix file descriptor leak bug after connect failure
 
