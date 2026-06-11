@@ -7,6 +7,7 @@
 #include "util/StringUtil.hxx"
 
 #include <cstdlib>
+#include <cerrno>
 
 bool
 ParseBool(const char *value)
@@ -27,9 +28,13 @@ long
 ParseLong(const char *s)
 {
 	char *endptr;
+	errno = 0;
 	long value = strtol(s, &endptr, 10);
 	if (endptr == s || *endptr != 0)
 		throw std::runtime_error("Failed to parse number");
+
+	if (errno == ERANGE)
+		throw std::runtime_error("Number out of range");
 
 	return value;
 }
@@ -80,9 +85,13 @@ std::size_t
 ParseSize(const char *s, std::size_t default_factor)
 {
 	char *endptr;
+	errno = 0;
 	std::size_t value = strtoul(s, &endptr, 10);
 	if (endptr == s)
 		throw std::runtime_error("Failed to parse integer");
+
+	if (errno == ERANGE)
+		throw std::runtime_error("Integer out of range");
 
 	static constexpr std::size_t KILO = 1024;
 	static constexpr std::size_t MEGA = 1024 * KILO;
