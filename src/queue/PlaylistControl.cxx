@@ -86,6 +86,8 @@ playlist::PlayAny(PlayerControl &pc)
 	if (queue.IsEmpty())
 		return;
 
+	pc.LockClearError();
+
 	if (playing) {
 		/* already playing: unpause playback, just in
 		   case it was paused, and return */
@@ -93,7 +95,6 @@ playlist::PlayAny(PlayerControl &pc)
 		return;
 	}
 
-	pc.LockClearError();
 	stop_on_error = false;
 	error_count = 0;
 
