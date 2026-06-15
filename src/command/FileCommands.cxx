@@ -155,6 +155,7 @@ find_stream_art(std::string_view directory, Mutex &mutex)
 
 static CommandResult
 read_stream_art(Response &r, const std::string_view art_directory,
+		const std::string_view display_directory,
 		size_t offset)
 {
 	// TODO: eliminate this const_cast
@@ -209,7 +210,11 @@ read_stream_art(Response &r, const std::string_view art_directory,
 			read_size += is->Read(lock, {buffer.get() + read_size, buffer_size - read_size});
 	}
 
-	r.Fmt("size: {}\n", art_file_size);
+	r.Fmt("file: {}\n"
+	      "size: {}\n",
+	      PathTraitsUTF8::Build(display_directory,
+				    PathTraitsUTF8::GetBase(is->GetUriView())),
+	      art_file_size);
 
 	r.WriteBinary({buffer.get(), read_size});
 
@@ -222,37 +227,43 @@ read_stream_art(Response &r, const std::string_view art_directory,
  * Attempt to locate the "real" directory where the given song is
  * stored.  This attempts to resolve "virtual" directories/songs,
  * e.g. expanded CUE sheet contents.
+ *
+ * Walks the relative (database) directory and the resolved (storage)
+ * directory in lockstep, so the caller has both forms available.
  */
 [[gnu::pure]]
-static std::string_view
+static std::pair<std::string_view, std::string_view>
 RealDirectoryOfSong(Client &client, const std::string_view song_uri,
-		    std::string_view directory_uri) noexcept
+		    std::string_view relative_directory,
+		    std::string_view resolved_directory) noexcept
 try {
 	const auto *db = client.GetDatabase();
 	if (db == nullptr)
-		return directory_uri;
+		return {relative_directory, resolved_directory};
 
 	const auto *song = db->GetSong(song_uri);
 	if (song == nullptr)
-		return directory_uri;
+		return {relative_directory, resolved_directory};
 
 	AtScopeExit(db, song) { db->ReturnSong(song); };
 
 	if (song->real_uri == nullptr)
-		return directory_uri;
+		return {relative_directory, resolved_directory};
 
 	const char *real_uri = song->real_uri;
 
 	/* this is a simplification which is just enough for CUE
 	   sheets (but may be incomplete): for each "../", go one
 	   level up */
-	while ((real_uri = StringAfterPrefix(real_uri, "../")) != nullptr)
-		directory_uri = PathTraitsUTF8::GetParent(directory_uri);
+	while ((real_uri = StringAfterPrefix(real_uri, "../")) != nullptr) {
+		relative_directory = PathTraitsUTF8::GetParent(relative_directory);
+		resolved_directory = PathTraitsUTF8::GetParent(resolved_directory);
+	}
 
-	return directory_uri;
+	return {relative_directory, resolved_directory};
 } catch (...) {
 	/* ignore all exceptions from Database::GetSong() */
-	return directory_uri;
+	return {relative_directory, resolved_directory};
 }
 
 static CommandResult
@@ -265,12 +276,13 @@ read_db_art(Client &client, Response &r, std::string_view uri, const uint64_t of
 	}
 	std::string uri2 = storage->MapUTF8(uri);
 
-	std::string_view directory_uri =
+	const auto [relative_directory, resolved_directory] =
 		RealDirectoryOfSong(client,
 				    uri,
+				    PathTraitsUTF8::GetParent(uri),
 				    PathTraitsUTF8::GetParent(uri2.c_str()));
 
-	return read_stream_art(r, directory_uri, offset);
+	return read_stream_art(r, resolved_directory, relative_directory, offset);
 }
 #endif
 
@@ -290,10 +302,11 @@ handle_album_art(Client &client, Request args, Response &r)
 
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE:
-	case LocatedUri::Type::PATH:
-		return read_stream_art(r,
-				       PathTraitsUTF8::GetParent(located_uri.canonical_uri),
-				       offset);
+	case LocatedUri::Type::PATH: {
+		const auto directory =
+			PathTraitsUTF8::GetParent(located_uri.canonical_uri);
+		return read_stream_art(r, directory, directory, offset);
+	}
 
 	case LocatedUri::Type::RELATIVE:
 #ifdef ENABLE_DATABASE

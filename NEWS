@@ -4,6 +4,7 @@ ver 0.25 (not yet released)
   - new command "stringnormalization"
   - show detailed seek errors
   - support filename "cover.jxl" for "albumart" command
+  - "albumart" response includes a "file" field with the artwork path
 * decoder
   - faad: implement seeking
   - faad: output 32 bit floating point samples instead of 16 bit integer

@@ -1116,14 +1116,15 @@ The music database
     resides in for a file called :file:`cover.png`, :file:`cover.jpg`,
     :file:`cover.jxl`, or :file:`cover.webp`.
 
-    Returns the file size and actual number
-    of bytes read at the requested offset, followed
-    by the chunk requested as raw bytes (see :ref:`binary`), then a
-    newline and the completion code.
+    Returns the path of the artwork file (``file``), the file size
+    (``size``) and actual number of bytes read at the requested
+    offset, followed by the chunk requested as raw bytes (see
+    :ref:`binary`), then a newline and the completion code.
 
     Example::
 
      albumart foo/bar.ogg 0
+     file: foo/cover.png
      size: 1024768
      binary: 8192
      <8192 bytes>
