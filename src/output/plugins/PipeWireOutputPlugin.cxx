@@ -601,8 +601,12 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 				  target_id,
 				  static_cast<enum pw_stream_flags>(stream_flags),
 				  params, 1);
-	if (error < 0)
+	if (error < 0) {
+		ring_buffer = {};
+		pw_stream_destroy(stream);
+		stream = nullptr;
 		throw PipeWire::MakeError(error, "Failed to connect stream");
+	}
 }
 
 void
