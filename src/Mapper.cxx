@@ -17,7 +17,7 @@
 #include "Main.hxx"
 #endif
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cassert>
 

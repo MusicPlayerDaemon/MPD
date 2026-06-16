@@ -5,7 +5,7 @@
 #include "Escape.hxx"
 #include "LightSong.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 using std::string_view_literals::operator""sv;
 

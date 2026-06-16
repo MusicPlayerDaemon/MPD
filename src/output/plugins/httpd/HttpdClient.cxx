@@ -13,7 +13,7 @@
 #include "util/StringSplit.hxx"
 #include "Log.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cassert>
 

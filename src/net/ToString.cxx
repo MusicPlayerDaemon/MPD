@@ -6,7 +6,7 @@
 #include "IPv4Address.hxx"
 #include "net/Features.hxx" // for HAVE_TCP, HAVE_IPV6, HAVE_UN
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <cassert>

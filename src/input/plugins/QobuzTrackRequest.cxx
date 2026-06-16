@@ -5,7 +5,7 @@
 #include "QobuzErrorParser.hxx"
 #include "QobuzClient.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
 using std::string_view_literals::operator""sv;
