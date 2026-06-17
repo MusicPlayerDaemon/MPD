@@ -391,6 +391,9 @@ may contain :ref:`song tags <tags>` and other metadata, specifically:
   fractional part).  Example: ``60-120`` plays only the second minute;
   "``180`` skips the first three minutes.
 
+- ``RealUri``: if this song really refers to another file (e.g. a
+  track in a CUE sheet), then this is its URI.
+
 - ``Format``: the audio format of the song
   (or an approximation to a format supported by MPD and the
   decoder plugin being used).  When playing this file, the
