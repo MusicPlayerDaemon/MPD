@@ -10,7 +10,7 @@
 
 #include <nfsc/libnfs.h> // for struct nfs_stat_64
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cassert>
 #include <cstring>

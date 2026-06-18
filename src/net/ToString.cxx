@@ -6,7 +6,7 @@
 #include "SocketAddress.hxx"
 #include "IPv4Address.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <cassert>

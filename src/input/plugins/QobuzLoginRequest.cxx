@@ -6,7 +6,7 @@
 #include "QobuzSession.hxx"
 #include "lib/curl/Form.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
 #include <cassert>
