@@ -5,7 +5,7 @@
 #include "tag/Tag.hxx"
 #include "util/TruncateString.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <iterator>
 

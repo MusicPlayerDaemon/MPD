@@ -5,7 +5,7 @@
 #include "lib/crypto/MD5.hxx"
 #include "thread/ScopeUnlock.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cassert>
 #include <stdexcept>
