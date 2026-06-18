@@ -11,17 +11,23 @@
 #include <cstdlib>
 #include <stdexcept>
 
+static std::size_t
+FormatISO8601(std::span<char> dest, const struct tm &tm) noexcept
+{
+	return strftime(dest.data(), dest.size(),
+#ifdef _WIN32
+			"%Y-%m-%dT%H:%M:%SZ",
+#else
+			"%FT%TZ",
+#endif
+			&tm);
+}
+
 StringBuffer<64>
 FormatISO8601(const struct tm &tm) noexcept
 {
 	StringBuffer<64> buffer;
-	strftime(buffer.data(), buffer.capacity(),
-#ifdef _WIN32
-		 "%Y-%m-%dT%H:%M:%SZ",
-#else
-		 "%FT%TZ",
-#endif
-		 &tm);
+	FormatISO8601(buffer, tm);
 	return buffer;
 }
 
