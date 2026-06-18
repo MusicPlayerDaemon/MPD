@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <span>
 
 /**
  * A statically allocated string buffer.  It is designed to hold
@@ -88,6 +89,14 @@ public:
 
 	constexpr operator const_pointer() const noexcept {
 		return c_str();
+	}
+
+	constexpr operator std::span<char, CAPACITY>() noexcept {
+		return the_data;
+	}
+
+	constexpr operator std::span<char>() noexcept {
+		return the_data;
 	}
 };
 
