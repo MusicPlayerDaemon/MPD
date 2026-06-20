@@ -97,9 +97,10 @@ AvioStream::Open()
 				false, this,
 				_Read, nullptr,
 				input.IsSeekable() ? _Seek : nullptr);
-	/* If avio_alloc_context() fails, who frees the buffer?  The
-	   libavformat API documentation does not specify this, it
-	   only says that AVIOContext.buffer must be freed in the end,
-	   however no AVIOContext exists in that failure code path. */
-	return io != nullptr;
+	if (io == nullptr) {
+		av_free(buffer);
+		return false;
+	}
+
+	return true;
 }
