@@ -46,8 +46,25 @@ VerifyPathUTF8(std::string_view path_utf8) noexcept
 bool
 VerifyRelativePathUTF8(std::string_view path_utf8) noexcept
 {
-	// TODO check whether it's a relative path
-	return VerifyPathUTF8(path_utf8);
+	if (!VerifyPathUTF8(path_utf8) || path_utf8.front() == '/')
+		return false;
+
+	while (!path_utf8.empty()) {
+		auto slash = path_utf8.find('/');
+		auto component = slash == path_utf8.npos
+			? path_utf8
+			: path_utf8.substr(0, slash);
+
+		if (component.empty() || component == "." || component == "..")
+			return false;
+
+		if (slash == path_utf8.npos)
+			break;
+
+		path_utf8.remove_prefix(slash + 1);
+	}
+
+	return true;
 }
 
 bool
