@@ -323,11 +323,13 @@ MadDecoder::ParseId3(size_t tagsize, Tag *mpd_tag) noexcept
 static signed long
 id3_tag_query(const void *p0, size_t length) noexcept
 {
-	const char *p = (const char *)p0;
+	const auto *p = (const unsigned char *)p0;
 
-	return length >= 10 && memcmp(p, "ID3", 3) == 0
-		? (p[8] << 7) + p[9] + 10
-		: 0;
+	if (length < 10 || memcmp(p, "ID3", 3) != 0 ||
+	    (p[6] | p[7] | p[8] | p[9]) >= 0x80)
+		return 0;
+
+	return (p[6] << 21) + (p[7] << 14) + (p[8] << 7) + p[9] + 10;
 }
 #endif /* !ENABLE_ID3TAG */
 
