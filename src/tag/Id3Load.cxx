@@ -12,6 +12,7 @@
 #include <algorithm>
 
 static constexpr size_t ID3V1_SIZE = 128;
+static constexpr size_t MAX_ID3_TAG_SIZE = 4 * 1024 * 1024;
 
 [[gnu::pure]]
 static inline bool
@@ -46,6 +47,8 @@ try {
 		return nullptr;
 
 	const std::size_t tag_size = static_cast<std::size_t>(query);
+	if (tag_size > MAX_ID3_TAG_SIZE)
+		return nullptr;
 
 	/* Found a tag.  Allocate a buffer and read it in. */
 	if (tag_size <= sizeof(query_buffer))
@@ -185,7 +188,7 @@ try {
 	if (size == 0)
 		return nullptr;
 
-	if (size > 4 * 1024 * 1024)
+	if (size > MAX_ID3_TAG_SIZE)
 		/* too large, don't allocate so much memory */
 		return nullptr;
 
