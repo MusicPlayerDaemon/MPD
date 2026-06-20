@@ -281,8 +281,15 @@ CurlInputStream::OnHeaders(unsigned status,
 		seekable = true;
 
 	auto i = headers.find("content-length");
-	if (i != headers.end())
-		size = offset + ParseUint64(i->second.c_str());
+	if (i != headers.end()) {
+		char *endptr;
+		auto content_length = ParseUint64(i->second.c_str(), &endptr);
+		if (endptr > i->second.c_str() && *endptr == 0 &&
+		    content_length < UNKNOWN_SIZE - offset)
+			size = offset + content_length;
+		else
+			size = UNKNOWN_SIZE;
+	}
 
 	i = headers.find("content-type");
 	if (i != headers.end())
