@@ -66,7 +66,7 @@ jobs:
 
     steps:
       - id: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
@@ -199,7 +199,7 @@ jobs:
 
     steps:
       - id: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
@@ -266,7 +266,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - id: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: msys2/setup-msys2@v2
         with:
