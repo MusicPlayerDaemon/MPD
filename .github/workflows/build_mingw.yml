@@ -52,7 +52,7 @@ jobs:
 
     steps:
       - id: checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: "Cache third-party libraries"
         uses: actions/cache@v4
