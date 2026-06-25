@@ -2,7 +2,7 @@ systemd_unit_conf = configuration_data()
 systemd_unit_conf.set('prefix', get_option('prefix'))
 
 address_families = ['AF_INET', 'AF_INET6', 'AF_UNIX']
-if get_option('smbclient').enabled()
+if get_option('smbclient').enabled() or upnp_dep.found()
   # AF_NETLINK is required by libsmbclient, or it will exit() .. *sigh*
   address_families += 'AF_NETLINK'
 endif

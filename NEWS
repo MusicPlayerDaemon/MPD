@@ -6,6 +6,7 @@ ver 0.24.13 (not yet released)
 * output
   - pipewire: fix file descriptor leak bug after connect failure
   - pipewire: support the "media.album" tag
+* systemd: allow AF_NETLINK when UPnP is enabled
 
 ver 0.24.12 (2026/05/15)
 * protocol
