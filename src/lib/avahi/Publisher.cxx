@@ -13,7 +13,7 @@
 #include <avahi-common/malloc.h>
 #include <avahi-common/alternative.h>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cassert>
 

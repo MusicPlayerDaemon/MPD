@@ -6,7 +6,7 @@
 #include "time/ISO8601.hxx"
 #include "util/StringBuffer.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 using std::string_view_literals::operator""sv;
 
