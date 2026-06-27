@@ -17,6 +17,17 @@
 
 using std::string_view_literals::operator""sv;
 
+/**
+ * Convert an EBU R128 value to ReplayGain.
+ */
+static constexpr float
+EbuR128ToReplayGain(float ebu_r128) noexcept
+{
+	/* add 5dB to compensate for the different reference levels
+	   between ReplayGain (89dB) and EBU R128 (-23 LUFS) */
+	return ebu_r128 + 5;
+}
+
 [[gnu::pure]]
 static TagType
 ParseOpusTagName(std::string_view name) noexcept
@@ -47,14 +58,14 @@ ScanOneOpusTag(std::string_view name, std::string_view value,
 		   dB */
 
 		if (const auto i = ParseInteger<int_least32_t>(value))
-			rgi->track.gain = float(*i) / 256.0f;
+			rgi->track.gain = EbuR128ToReplayGain(float(*i) / 256.0f);
 	} else if (rgi != nullptr &&
 		   StringIsEqualIgnoreCase(name, "R128_ALBUM_GAIN"sv)) {
 		/* R128_ALBUM_GAIN is a Q7.8 fixed point number in
 		   dB */
 
 		if (const auto i = ParseInteger<int_least32_t>(value))
-			rgi->album.gain = float(*i) / 256.0f;
+			rgi->album.gain = EbuR128ToReplayGain(float(*i) / 256.0f);
 	}
 
 	handler.OnPair(name, value);
