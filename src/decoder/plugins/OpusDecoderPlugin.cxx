@@ -312,7 +312,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 		   gain" value */
 		ReplayGainInfo rgi;
 		rgi.Clear();
-		rgi.track.gain = EbuR128ToReplayGain(output_gain);
+		rgi.track.gain = output_gain;
 		client.SubmitReplayGain(&rgi);
 		submitted_replay_gain = true;
 	}
