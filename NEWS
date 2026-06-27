@@ -3,6 +3,8 @@ ver 0.24.13 (not yet released)
   - add range checks to number parser
 * storage
   - curl: eliminate auth probe requests
+* decoder
+  - opus: do not add 5 dB to Opus header playback gain
 * tags:
   - id3: limit ID3 tags to 4 MB
 * output
