@@ -168,6 +168,7 @@ playlist_state_restore(const StateFileConfig &config,
 		} else if (StringStartsWith(line,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
 			playlist_state_load(file, song_loader, playlist);
+			break;
 		}
 	}
 
