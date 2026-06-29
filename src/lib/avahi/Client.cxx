@@ -23,6 +23,8 @@ Client::Client(EventLoop &event_loop, ErrorHandler &_error_handler) noexcept
 
 Client::~Client() noexcept
 {
+	assert(listeners.empty());
+
 	Close();
 }
 
