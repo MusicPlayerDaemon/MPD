@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: "Cache third-party libraries"
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           key: ${{runner.os}}-libs-${{matrix.cpu}}-${{hashFiles('win32/build.py', 'python/**')}}
           path: |
