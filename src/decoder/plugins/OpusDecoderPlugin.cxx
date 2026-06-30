@@ -47,17 +47,6 @@ IsOpusTags(const ogg_packet &packet) noexcept
 	return packet.bytes >= 8 && memcmp(packet.packet, "OpusTags", 8) == 0;
 }
 
-/**
- * Convert an EBU R128 value to ReplayGain.
- */
-static constexpr float
-EbuR128ToReplayGain(float ebu_r128) noexcept
-{
-	/* add 5dB to compensate for the different reference levels
-	   between ReplayGain (89dB) and EBU R128 (-23 LUFS) */
-	return ebu_r128 + 5;
-}
-
 static bool
 mpd_opus_init([[maybe_unused]] const ConfigBlock &block)
 {
@@ -282,11 +271,12 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 
 	if (rgi.IsDefined()) {
 		/* submit all valid EBU R128 values with output_gain
-		   applied */
+		   applied. conversion from EBU R128 -> ReplayGain
+		   happened in ScanOpusTags already. */
 		if (rgi.track.IsDefined())
-			rgi.track.gain += EbuR128ToReplayGain(output_gain);
+			rgi.track.gain += output_gain;
 		if (rgi.album.IsDefined())
-			rgi.album.gain += EbuR128ToReplayGain(output_gain);
+			rgi.album.gain += output_gain;
 		client.SubmitReplayGain(&rgi);
 		submitted_replay_gain = true;
 	}
@@ -312,7 +302,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 		   gain" value */
 		ReplayGainInfo rgi;
 		rgi.Clear();
-		rgi.track.gain = EbuR128ToReplayGain(output_gain);
+		rgi.track.gain = output_gain;
 		client.SubmitReplayGain(&rgi);
 		submitted_replay_gain = true;
 	}
