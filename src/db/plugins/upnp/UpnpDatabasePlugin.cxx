@@ -24,7 +24,7 @@
 #include "util/StringSplit.hxx"
 #include "config/Block.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cassert>
 #include <string>
