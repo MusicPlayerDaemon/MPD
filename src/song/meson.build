@@ -17,6 +17,7 @@ song = static_library(
   include_directories: inc,
   dependencies: [
     fs_path_dep,
+    pcm_basic_dep,
     pcre_dep,
     fmt_dep,
   ],
