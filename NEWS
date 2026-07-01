@@ -3,6 +3,7 @@ ver 0.24.13 (not yet released)
   - add range checks to number parser
 * output
   - pipewire: fix file descriptor leak bug after connect failure
+  - pipewire: support the "media.album" tag
 
 ver 0.24.12 (2026/05/15)
 * protocol
