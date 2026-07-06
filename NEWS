@@ -1,6 +1,8 @@
 ver 0.24.13 (not yet released)
 * configuration
   - add range checks to number parser
+* tags:
+  - id3: limit ID3 tags to 4 MB
 * output
   - pipewire: fix file descriptor leak bug after connect failure
   - pipewire: support the "media.album" tag
