@@ -47,6 +47,9 @@ try {
 
 	const std::size_t tag_size = static_cast<std::size_t>(query);
 
+	if (tag_size > 4 * 1024 * 1024)
+		return nullptr;
+
 	/* Found a tag.  Allocate a buffer and read it in. */
 	if (tag_size <= sizeof(query_buffer))
 		/* we have enough data already */
