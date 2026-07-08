@@ -928,7 +928,9 @@ PipeWireOutput::SendTag(const Tag &tag)
 		const char *pipewire;
 	} tag_map[] = {
 		{ TAG_ARTIST, PW_KEY_MEDIA_ARTIST },
+#ifdef PW_KEY_MEDIA_ALBUM
 		{ TAG_ALBUM, PW_KEY_MEDIA_ALBUM },
+#endif
 		{ TAG_TITLE, PW_KEY_MEDIA_TITLE },
 		{ TAG_DATE, PW_KEY_MEDIA_DATE },
 		{ TAG_COMMENT, PW_KEY_MEDIA_COMMENT },
