@@ -34,8 +34,6 @@ extern "C" {
  */
 #define MAX_SNDH_FILE_SIZE 0x1000000
 
-static constexpr Domain psgplay_domain("psgplay");
-
 struct PsgplayGlobal {
 	unsigned default_songlength;
 	std::string default_genre;
