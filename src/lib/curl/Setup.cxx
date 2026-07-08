@@ -17,7 +17,6 @@ Setup(CurlEasy &easy)
 	easy.SetNoProgress();
 	easy.SetNoSignal();
 	easy.SetConnectTimeout(std::chrono::seconds{10});
-	easy.SetOption(CURLOPT_HTTPAUTH, (long) CURLAUTH_ANY);
 }
 
 } // namespace Curl
