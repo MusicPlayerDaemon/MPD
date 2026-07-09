@@ -877,6 +877,11 @@ Other Settings
          metadata_to_use "+comment"
 
        Section :ref:`tags` contains a list of supported tags.
+   * - **inhibit_idle yes|no**
+     - ``yes`` enables `systemd idle inhibitor locks
+       <https://systemd.io/INHIBITOR_LOCKS/>`__ while MPD is playing
+       something.  That means the computer will not automatically
+       suspend or shut down during playback.
 
 The State File
 ^^^^^^^^^^^^^^

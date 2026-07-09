@@ -135,6 +135,10 @@ struct Instance final
 	bool need_sticker_cleanup = false;
 #endif
 
+#ifdef ENABLE_DBUS
+	bool inhibit_idle = false;
+#endif
+
 	Instance();
 	~Instance() noexcept;
 

@@ -634,6 +634,7 @@ mpd = build_target(
     util_dep,
     io_linux_dep,
     event_dep,
+    dbus_dep,
     thread_dep,
     neighbor_glue_dep,
     input_glue_dep,

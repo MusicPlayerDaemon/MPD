@@ -62,6 +62,8 @@ enum class ConfigOption {
 
 	MIXRAMP_ANALYZER,
 
+	INHIBIT_IDLE,
+
 	MAX
 };
 

@@ -422,6 +422,10 @@ MainConfigured(const CommandLineOptions &options,
 	daemonize_commit();
 #endif
 
+#ifdef ENABLE_DBUS
+	instance.inhibit_idle = raw_config.GetBool(ConfigOption::INHIBIT_IDLE, false);
+#endif
+
 #ifndef ANDROID
 	setup_log_output();
 
