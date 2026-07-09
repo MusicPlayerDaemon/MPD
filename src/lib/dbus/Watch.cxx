@@ -4,6 +4,8 @@
 
 #include "Watch.hxx"
 
+#include <dbus/dbus.h>
+
 #include <cassert>
 
 namespace ODBus {
@@ -105,6 +107,19 @@ WatchManager::Toggled(DBusWatch *watch) noexcept
 	assert(i != watches.end());
 
 	i->second.Toggled();
+}
+
+void
+WatchManager::SetupConnection() noexcept
+{
+	assert(connection);
+
+	dbus_connection_set_watch_functions(connection,
+					    AddFunction,
+					    RemoveFunction,
+					    ToggledFunction,
+					    (void *)this,
+					    nullptr);
 }
 
 } /* namespace ODBus */
