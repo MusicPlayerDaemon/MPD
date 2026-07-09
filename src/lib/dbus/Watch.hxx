@@ -2,17 +2,17 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <max.kellermann@ionos.com>
 
-#ifndef ODBUS_WATCH_HXX
-#define ODBUS_WATCH_HXX
+#pragma once
 
 #include "Connection.hxx"
 #include "event/SocketEvent.hxx"
 #include "event/DeferEvent.hxx"
 
-#include <dbus/dbus.h>
-
+#include <cstdint>
 #include <map>
 
+typedef uint32_t dbus_bool_t;
+struct DBusWatch;
 class EventLoop;
 
 namespace ODBus {
@@ -89,15 +89,12 @@ public:
 		connection = std::forward<C>(_connection);
 
 		if (connection)
-			dbus_connection_set_watch_functions(connection,
-							    AddFunction,
-							    RemoveFunction,
-							    ToggledFunction,
-							    (void *)this,
-							    nullptr);
+			SetupConnection();
 	}
 
 private:
+	void SetupConnection() noexcept;
+
 	void ScheduleDispatch() noexcept {
 		defer_dispatch.Schedule();
 	}
@@ -125,5 +122,3 @@ private:
 };
 
 } /* namespace ODBus */
-
-#endif
