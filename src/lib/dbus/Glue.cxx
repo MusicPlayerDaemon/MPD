@@ -4,6 +4,8 @@
 #include "Glue.hxx"
 #include "event/Call.hxx"
 
+#include <dbus/dbus.h>
+
 namespace ODBus {
 
 void
