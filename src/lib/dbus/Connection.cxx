@@ -5,7 +5,24 @@
 #include "Connection.hxx"
 #include "Error.hxx"
 
+#include <dbus/dbus.h>
+
 namespace ODBus {
+
+Connection::Connection(const Connection &src) noexcept
+	:c(dbus_connection_ref(src.c)) {}
+
+void
+Connection::Close() noexcept
+{
+	dbus_connection_close(c);
+}
+
+void
+Connection::Unref(DBusConnection *c) noexcept
+{
+	dbus_connection_unref(c);
+}
 
 Connection
 Connection::GetSystem()

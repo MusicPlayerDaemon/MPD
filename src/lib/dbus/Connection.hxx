@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <dbus/dbus.h>
-
 #include <utility>
+
+struct DBusConnection;
 
 namespace ODBus {
 
@@ -22,15 +22,14 @@ class Connection {
 public:
 	Connection() noexcept = default;
 
-	Connection(const Connection &src) noexcept
-		:c(dbus_connection_ref(src.c)) {}
+	Connection(const Connection &src) noexcept;
 
 	Connection(Connection &&src) noexcept
 		:c(std::exchange(src.c, nullptr)) {}
 
 	~Connection() noexcept {
 		if (c != nullptr)
-			dbus_connection_unref(c);
+			Unref(c);
 	}
 
 	Connection &operator=(Connection &&src) noexcept {
@@ -54,9 +53,10 @@ public:
 		return c != nullptr;
 	}
 
-	void Close() noexcept {
-		dbus_connection_close(c);
-	}
+	void Close() noexcept;
+
+private:
+	static void Unref(DBusConnection *c) noexcept;
 };
 
 } /* namespace ODBus */
