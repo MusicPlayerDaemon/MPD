@@ -9,7 +9,17 @@
 
 #include <string_view>
 
+class CurlEasy;
+
 extern const struct InputPlugin input_plugin_curl;
+
+/**
+ * Create a new #CurlEasy instance with the specified URL and apply
+ * this plugin's configuration.
+ */
+[[nodiscard]]
+CurlEasy
+CreateConfiguredCurlEasy(const char *url);
 
 /**
  * Open a #CurlInputStream with custom request headers.
@@ -18,6 +28,7 @@ extern const struct InputPlugin input_plugin_curl;
  *
  * Throws on error.
  */
+[[nodiscard]]
 InputStreamPtr
 OpenCurlInputStream(std::string_view uri, const Curl::Headers &headers,
 		    Mutex &mutex);
