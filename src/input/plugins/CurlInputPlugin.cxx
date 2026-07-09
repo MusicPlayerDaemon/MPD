@@ -485,8 +485,8 @@ CurlInputStream::~CurlInputStream() noexcept
 	FreeEasyIndirect();
 }
 
-static CurlEasy
-CreateEasy(const char *url, struct curl_slist *headers)
+CurlEasy
+CreateConfiguredCurlEasy(const char *url)
 {
 	CurlEasy easy{url};
 
@@ -494,14 +494,6 @@ CreateEasy(const char *url, struct curl_slist *headers)
 	   (the maximum until CURL 7.88.0) to reduce system call
 	   overhead */
 	easy.TrySetOption(CURLOPT_BUFFERSIZE, 512L * 1024L);
-
-	easy.SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
-	easy.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
-	easy.SetOption(CURLOPT_MAXREDIRS, 5L);
-
-	/* this option eliminates the probe request when
-	   username/password are specified */
-	easy.SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
 	if (proxy != nullptr)
 		easy.SetOption(CURLOPT_PROXY, proxy);
@@ -537,9 +529,25 @@ CreateEasy(const char *url, struct curl_slist *headers)
 	easy.SetOption(CURLOPT_TCP_KEEPIDLE, tcp_keepidle);
 	easy.SetOption(CURLOPT_TCP_KEEPINTVL, tcp_keepintvl);
 
-	easy.SetRequestHeaders(headers);
-
 	easy.SetOption(CURLOPT_DEBUGFUNCTION, CurlDebugToLog);
+
+	return easy;
+}
+
+static CurlEasy
+CreateEasy(const char *url, struct curl_slist *headers)
+{
+	auto easy = CreateConfiguredCurlEasy(url);
+
+	easy.SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
+	easy.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
+	easy.SetOption(CURLOPT_MAXREDIRS, 5L);
+
+	/* this option eliminates the probe request when
+	   username/password are specified */
+	easy.SetOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+	easy.SetRequestHeaders(headers);
 
 	return easy;
 }
