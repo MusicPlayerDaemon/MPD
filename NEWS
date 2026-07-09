@@ -28,6 +28,8 @@ ver 0.25 (not yet released)
 ver 0.24.13 (not yet released)
 * configuration
   - add range checks to number parser
+* storage
+  - curl: eliminate auth probe requests
 * tags:
   - id3: limit ID3 tags to 4 MB
 * output
