@@ -114,13 +114,15 @@ MultipleOutputs::FindByName(const std::string_view name) noexcept
 
 void
 MultipleOutputs::AddMoveFrom(AudioOutputControl &&src,
-			     bool enable) noexcept
+			     bool enable,
+			     ReplayGainMode replay_gain_mode) noexcept
 {
 	// TODO: this operation needs to be protected with a mutex
 	outputs.push_back(std::make_unique<AudioOutputControl>(std::move(src),
 							       client));
 
 	outputs.back()->LockSetEnabled(enable);
+	outputs.back()->SetReplayGainMode(replay_gain_mode);
 
 	client.ApplyEnabled();
 }

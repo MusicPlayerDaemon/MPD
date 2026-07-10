@@ -161,7 +161,8 @@ handle_moveoutput(Client &client, Request request, Response &response)
 	else
 		/* copy the AudioOutputControl and add it to the output list */
 		dest_partition.outputs.AddMoveFrom(std::move(*output),
-						   was_enabled);
+						   was_enabled,
+						   dest_partition.replay_gain_mode);
 
 	instance.EmitIdle(IDLE_OUTPUT);
 	return CommandResult::OK;

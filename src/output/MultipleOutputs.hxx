@@ -110,8 +110,8 @@ public:
 	}
 
 	void AddMoveFrom(AudioOutputControl &&src,
-			 bool enable) noexcept;
-
+			 bool enable,
+			 ReplayGainMode replay_gain_mode) noexcept;
 
 	void SetReplayGainMode(ReplayGainMode mode) noexcept;
 
