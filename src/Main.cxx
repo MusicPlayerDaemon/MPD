@@ -408,8 +408,7 @@ MainConfigured(const CommandLineOptions &options,
 		if (name == nullptr)
 			throw std::runtime_error("Missing 'name'");
 
-		instance.partitions.emplace_back(instance, name,
-						 partition_config);
+		instance.partitions.emplace_back(name, instance.partitions.front());
 	});
 
 	client_manager_init(raw_config);

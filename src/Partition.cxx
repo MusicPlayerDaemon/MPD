@@ -43,6 +43,12 @@ Partition::Partition(Instance &_instance,
 	UpdateEffectiveReplayGainMode();
 }
 
+Partition::Partition(const char *_name, const Partition &src) noexcept
+	:Partition(src.instance, _name, src.config)
+{
+	SetReplayGainMode(src.replay_gain_mode);
+}
+
 Partition::~Partition() noexcept = default;
 
 void

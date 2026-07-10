@@ -79,8 +79,8 @@ handle_newpartition(Client &client, Request request, Response &response)
 		return CommandResult::ERROR;
 	}
 
-	instance.partitions.emplace_back(instance, name,
-					 client.GetPartition().config);
+	instance.partitions.emplace_back(name,
+					 client.GetPartition());
 	auto &partition = instance.partitions.back();
 	partition.UpdateEffectiveReplayGainMode();
 
@@ -161,7 +161,8 @@ handle_moveoutput(Client &client, Request request, Response &response)
 	else
 		/* copy the AudioOutputControl and add it to the output list */
 		dest_partition.outputs.AddMoveFrom(std::move(*output),
-						   was_enabled);
+						   was_enabled,
+						   dest_partition.replay_gain_mode);
 
 	instance.EmitIdle(IDLE_OUTPUT);
 	return CommandResult::OK;

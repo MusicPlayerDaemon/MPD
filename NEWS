@@ -28,11 +28,14 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.13 (not yet released)
+ver 0.24.13 (2026/07/10)
 * configuration
   - add range checks to number parser
+  - copy replay_gain_mode when creating a new partition
 * storage
   - curl: eliminate auth probe requests
+* decoder
+  - opus: do not add 5 dB to Opus header playback gain
 * tags:
   - id3: limit ID3 tags to 4 MB
 * output
