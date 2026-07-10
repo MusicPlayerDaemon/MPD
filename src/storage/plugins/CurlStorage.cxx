@@ -104,8 +104,7 @@ public:
 	BlockingHttpRequest(CurlGlobal &curl, const char *uri)
 		:defer_start(curl.GetEventLoop(),
 			     BIND_THIS_METHOD(OnDeferredStart)),
-		 request(curl, uri, *this) {
-		// TODO: use CurlInputStream's configuration
+		 request(curl, CreateConfiguredCurlEasy(uri), *this) {
 	}
 
 	void DeferStart() noexcept {

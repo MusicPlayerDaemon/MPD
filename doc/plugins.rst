@@ -85,6 +85,8 @@ A WebDAV client using libcurl. It is used when :code:`music_directory`
 contains a ``http://`` or ``https://`` URI, for example
 :samp:`https://the.server/dav/`.
 
+This plugin uses the configuration settings of the :ref:`CURL input plugin <input_curl>`.
+
 smbclient
 ---------
 
@@ -221,6 +223,8 @@ Plays audio CDs using libcdio.  The URI has the form
        performs overlapped reads, and ``full`` enables all options.
    * - **skip yes|no**
      - If set to ``no``, then never skip failed reads.
+
+.. _input_curl:
 
 curl
 ----
