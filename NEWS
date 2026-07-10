@@ -1,4 +1,4 @@
-ver 0.24.13 (not yet released)
+ver 0.24.13 (2026/07/10)
 * configuration
   - add range checks to number parser
   - copy replay_gain_mode when creating a new partition
