@@ -68,9 +68,17 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
+	[[nodiscard]]
 	Partition(Instance &_instance,
 		  const char *_name,
 		  const PartitionConfig &_config) noexcept;
+
+	/**
+	 * Construct a new partition that inherits configuration from
+	 * an existing partition.
+	 */
+	[[nodiscard]]
+	Partition(const char *_name, const Partition &src) noexcept;
 
 	~Partition() noexcept;
 

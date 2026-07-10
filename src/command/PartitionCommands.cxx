@@ -79,8 +79,8 @@ handle_newpartition(Client &client, Request request, Response &response)
 		return CommandResult::ERROR;
 	}
 
-	instance.partitions.emplace_back(instance, name,
-					 client.GetPartition().config);
+	instance.partitions.emplace_back(name,
+					 client.GetPartition());
 	auto &partition = instance.partitions.back();
 	partition.UpdateEffectiveReplayGainMode();
 
