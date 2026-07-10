@@ -1,6 +1,7 @@
 ver 0.24.13 (not yet released)
 * configuration
   - add range checks to number parser
+  - copy replay_gain_mode when creating a new partition
 * storage
   - curl: eliminate auth probe requests
 * decoder
