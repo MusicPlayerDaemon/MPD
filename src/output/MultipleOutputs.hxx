@@ -8,14 +8,15 @@
 #include "MusicChunkPtr.hxx"
 #include "player/Outputs.hxx"
 #include "pcm/AudioFormat.hxx"
-#include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
+enum class ReplayGainMode : uint8_t;
 class MusicPipe;
 class EventLoop;
 class MixerListener;
