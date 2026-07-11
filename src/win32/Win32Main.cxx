@@ -89,7 +89,7 @@ console_handler(DWORD event)
 			// regardless our thread is still active.
 			// If this did not happen within 3 seconds
 			// let's shutdown anyway.
-			global_instance->Break();
+			global_instance->event_loop.InjectBreak();
 			// Under debugger it's better to wait indefinitely
 			// to allow debugging of shutdown code.
 			Sleep(IsDebuggerPresent() ? INFINITE : 3000);

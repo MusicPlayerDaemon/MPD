@@ -5,6 +5,7 @@ ver 0.24.14 (not yet released)
   - qobuz: use HTTPS for API requests
 * Windows
   - enable the "mpg123" decoder plugin
+  - fix shutdown in console mode
 
 ver 0.24.13 (2026/07/10)
 * configuration
