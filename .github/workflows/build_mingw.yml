@@ -69,6 +69,7 @@ jobs:
             ${{ matrix.packages }} \
             ccache \
             cmake \
+            gperf \
             meson \
             nasm \
             pkg-config \
