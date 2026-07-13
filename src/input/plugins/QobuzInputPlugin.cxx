@@ -115,7 +115,9 @@ InitQobuzInput(EventLoop &event_loop, const ConfigBlock &block)
 	GlobalInitMD5();
 
 	const char *base_url = block.GetBlockValue("base_url",
-						   "http://www.qobuz.com/api.json/0.2/");
+						   "https://www.qobuz.com/api.json/0.2/");
+	if (!StringStartsWithIgnoreCase(base_url, "https://"sv))
+		throw PluginUnconfigured("Qobuz base_url must use HTTPS");
 
 	const char *app_id = block.GetBlockValue("app_id");
 	if (app_id == nullptr)
