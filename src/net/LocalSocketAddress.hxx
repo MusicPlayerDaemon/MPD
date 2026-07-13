@@ -27,7 +27,7 @@ private:
 public:
 	constexpr LocalSocketAddress() noexcept = default;
 
-	constexpr explicit LocalSocketAddress(std::string_view path) noexcept
+	constexpr explicit LocalSocketAddress(std::string_view path)
 		:address{} {
 		SetLocal(path);
 	}

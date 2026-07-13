@@ -28,6 +28,12 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.14 (not yet released)
+* storage
+  - curl: bound WebDAV PROPFIND responses
+* input
+  - qobuz: use HTTPS for API requests
+
 ver 0.24.13 (2026/07/10)
 * configuration
   - add range checks to number parser
