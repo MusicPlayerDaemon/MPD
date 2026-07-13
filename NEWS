@@ -1,4 +1,6 @@
 ver 0.24.14 (not yet released)
+* storage
+  - curl: bound WebDAV PROPFIND responses
 
 ver 0.24.13 (2026/07/10)
 * configuration

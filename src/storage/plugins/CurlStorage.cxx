@@ -37,6 +37,10 @@
 
 using std::string_view_literals::operator""sv;
 
+static constexpr std::size_t MAX_PROPFIND_RESPONSE_SIZE = 8 * 1024 * 1024;
+static constexpr std::size_t MAX_DAV_HREF_SIZE = 16 * 1024;
+static constexpr std::size_t MAX_DAV_DIRECTORY_ENTRIES = 65536;
+
 class CurlStorage final : public Storage {
 	const std::string base;
 
@@ -233,6 +237,8 @@ IsXmlContentType(const Curl::Headers &headers) noexcept
 class PropfindOperation : BlockingHttpRequest, CommonExpatParser {
 	CurlSlist request_headers;
 
+	std::size_t response_size = 0;
+
 	enum class State {
 		ROOT,
 		RESPONSE,
@@ -303,6 +309,10 @@ private:
 	}
 
 	void OnData(std::span<const std::byte> src) final {
+		if (src.size() > MAX_PROPFIND_RESPONSE_SIZE - response_size)
+			throw std::runtime_error("WebDAV PROPFIND response is too large");
+
+		response_size += src.size();
 		Parse(ToStringView(src));
 	}
 
@@ -405,6 +415,9 @@ private:
 			break;
 
 		case State::HREF:
+			if (s.size() > MAX_DAV_HREF_SIZE - response.href.size())
+				throw std::runtime_error("WebDAV href is too long");
+
 			response.href.append(s);
 			break;
 
@@ -481,6 +494,7 @@ class HttpListDirectoryOperation final : public PropfindOperation {
 	const std::string base_path;
 
 	MemoryStorageDirectoryReader::List entries;
+	std::size_t n_entries = 0;
 
 public:
 	HttpListDirectoryOperation(CurlGlobal &curl, const char *uri)
@@ -538,7 +552,11 @@ protected:
 		if (name.data() == nullptr)
 			return;
 
+		if (n_entries >= MAX_DAV_DIRECTORY_ENTRIES)
+			throw std::runtime_error("Too many entries in WebDAV response");
+
 		entries.emplace_front(name);
+		++n_entries;
 
 		auto &info = entries.front().info;
 		info = StorageFileInfo(r.collection
