@@ -6,6 +6,7 @@ ver 0.24.14 (not yet released)
 * Windows
   - enable the "mpg123" decoder plugin
   - fix shutdown in console mode
+  - fix last-modified check during database update
 
 ver 0.24.13 (2026/07/10)
 * configuration

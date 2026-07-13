@@ -14,6 +14,18 @@
 
 #include <unistd.h>
 
+/**
+ * Truncate to seconds to match the DB round-trip through time_t.
+ * This is the precision stored in the database file.
+ */
+static bool
+CompareMtimeCoarse(std::chrono::system_clock::time_point info_mtime,
+		 std::chrono::system_clock::time_point song_mtime) noexcept
+{
+	return std::chrono::system_clock::to_time_t(info_mtime) ==
+	       std::chrono::system_clock::to_time_t(song_mtime);
+}
+
 inline void
 UpdateWalk::UpdateSongFile2(Directory &directory,
 			    std::string_view name, std::string_view suffix,
@@ -32,7 +44,9 @@ try {
 		return;
 	}
 
-	if (!(song != nullptr && info.mtime == song->mtime && !walk_discard) &&
+	if (!(song != nullptr &&
+	      CompareMtimeCoarse(info.mtime, song->mtime) &&
+	      !walk_discard) &&
 	    UpdateContainerFile(directory, name, suffix, info)) {
 		return;
 	}
@@ -61,7 +75,8 @@ try {
 		modified = true;
 		FmtNotice(update_domain, "added {}/{}",
 			  directory.GetPath(), name);
-	} else if (info.mtime != song->mtime || walk_discard) {
+	} else if (!CompareMtimeCoarse(info.mtime, song->mtime) ||
+		   walk_discard) {
 		FmtNotice(update_domain, "updating {}/{}",
 			  directory.GetPath(), name);
 		if (song->UpdateFile(storage, info))
