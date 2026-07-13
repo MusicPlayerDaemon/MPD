@@ -27,6 +27,8 @@ public:
 	UringPoll(EventLoop &_event_loop) noexcept
 		:event_loop(_event_loop) {}
 
+	using Uring::Operation::IsUringPending;
+
 	void Start() {
 		assert(!IsUringPending());
 		assert(event_loop.GetUring());
@@ -68,6 +70,8 @@ class EventLoop::UringWake final : Uring::Operation {
 public:
 	explicit UringWake(EventLoop &_event_loop) noexcept
 		:event_loop(_event_loop) {}
+
+	using Uring::Operation::IsUringPending;
 
 	void Start() {
 		assert(!IsUringPending());
@@ -393,6 +397,27 @@ EventLoop::Poll(Event::Duration timeout) noexcept
 
 #ifdef HAVE_URING
 
+std::size_t
+EventLoop::CountOwnUringOperations() const noexcept
+{
+	std::size_t n = 0;
+
+	n += uring_poll && uring_poll->IsUringPending();
+
+#ifdef HAVE_THREADED_EVENT_LOOP
+	n += uring_wake && uring_wake->IsUringPending();
+#endif
+
+	return n;
+}
+
+bool
+EventLoop::IsUringEmpty() const noexcept
+{
+	return !uring ||
+		!uring->HasPendingMoreThan(CountOwnUringOperations());
+}
+
 inline void
 EventLoop::UringWait(Event::Duration timeout) noexcept
 {
@@ -514,6 +539,9 @@ EventLoop::Run() noexcept
 #endif
 
 		/* wait for new event */
+
+		if (IsEmpty())
+			return;
 
 		if (!next.empty())
 			timeout = Event::Duration{0};
