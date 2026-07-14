@@ -454,6 +454,15 @@ try {
 
 		UINT32 write_in_frames = buffer_size_in_frames;
 		DWORD mode = 0;
+
+		/* Flush any pending data left in the endpoint buffer
+		   after Stop() and reset the stream position to 0.
+		   Without this, Start() would play stale audio.
+		   https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset */
+		if (!started) {
+			Reset(client);
+		}
+
 		AtScopeExit(&) {
 			render_client->ReleaseBuffer(write_in_frames, mode);
 
