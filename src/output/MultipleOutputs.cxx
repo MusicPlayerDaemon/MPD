@@ -102,6 +102,18 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 	}
 }
 
+int
+MultipleOutputs::FindIndexByName(const std::string_view name) const noexcept
+{
+	for (int idx = 0; const auto &i : outputs) {
+		if (name == i->GetName())
+			return idx;
+		++idx;
+	}
+
+	return -1;
+}
+
 AudioOutputControl *
 MultipleOutputs::FindByName(const std::string_view name) noexcept
 {
@@ -114,18 +126,60 @@ MultipleOutputs::FindByName(const std::string_view name) noexcept
 	return nullptr;
 }
 
+std::unique_ptr<AudioOutputControl>
+MultipleOutputs::ReplaceWithDummy(std::size_t idx) noexcept
+{
+	assert(idx < outputs.size());
+
+	auto &slot = outputs[idx];
+	slot->LockDisable();
+
+	const std::lock_guard lock{mutex};
+
+	auto old = std::move(slot);
+	old->LockDisable();
+
+	slot = std::make_unique<AudioOutputControl>(AudioOutputControl::Dummy{}, old->GetName());
+
+	return old;
+}
+
 void
-MultipleOutputs::AddMoveFrom(AudioOutputControl &&src,
-			     bool enable,
-			     ReplayGainMode replay_gain_mode) noexcept
+MultipleOutputs::ReplaceDummy(std::size_t idx,
+			      std::unique_ptr<AudioOutputControl> &&src,
+			      bool enable,
+			      ReplayGainMode replay_gain_mode) noexcept
+{
+	assert(idx < outputs.size());
+	assert(!src->IsEnabled());
+	assert(!src->IsReallyEnabled());
+
+	auto &output = *src;
+
+	auto &slot = outputs[idx];
+	assert(slot->IsDummy());
+
+	const std::lock_guard lock{mutex};
+	slot = std::move(src);
+	output.SetClient(client);
+	output.LockSetEnabled(enable);
+	output.SetReplayGainMode(replay_gain_mode);
+
+	client.ApplyEnabled();
+}
+
+void
+MultipleOutputs::Add(std::unique_ptr<AudioOutputControl> &&src,
+		     bool enable,
+		     ReplayGainMode replay_gain_mode) noexcept
 {
 	{
 		const std::lock_guard lock{mutex};
-		outputs.push_back(std::make_unique<AudioOutputControl>(std::move(src),
-								       client));
+		outputs.push_back(std::move(src));
 	}
 
 	auto &output = *outputs.back();
+	output.SetClient(client);
 	output.LockSetEnabled(enable);
 	output.SetReplayGainMode(replay_gain_mode);
 

@@ -112,6 +112,13 @@ public:
 	}
 
 	/**
+	 * Returns the index of the audio output device with the specified name.
+	 * Returns -1 if the name does not exist.
+	 */
+	[[gnu::pure]]
+	int FindIndexByName(std::string_view name) const noexcept;
+
+	/**
 	 * Returns the audio output device with the specified name.
 	 * Returns nullptr if the name does not exist.
 	 */
@@ -126,9 +133,24 @@ public:
 		return FindByName(name) != nullptr;
 	}
 
-	void AddMoveFrom(AudioOutputControl &&src,
-			 bool enable,
-			 ReplayGainMode replay_gain_mode) noexcept;
+	/**
+	 * Replace the output at the specified index with a dummy
+	 * output and return the original output to the caller.
+	 */
+	[[nodiscard]]
+	std::unique_ptr<AudioOutputControl> ReplaceWithDummy(std::size_t idx) noexcept;
+
+	/**
+	 * Replace the dummy output at the specified index with #src.
+	 */
+	void ReplaceDummy(std::size_t idx,
+			  std::unique_ptr<AudioOutputControl> &&src,
+			  bool enable,
+			  ReplayGainMode replay_gain_mode) noexcept;
+
+	void Add(std::unique_ptr<AudioOutputControl> &&src,
+		 bool enable,
+		 ReplayGainMode replay_gain_mode) noexcept;
 
 	void SetReplayGainMode(ReplayGainMode mode) noexcept;
 

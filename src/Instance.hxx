@@ -185,8 +185,8 @@ struct Instance final
 	 * @param excluding_partition ignore this partition
 	 */
 	[[gnu::pure]]
-	AudioOutputControl *FindOutput(std::string_view name,
-				       Partition &excluding_partition) noexcept;
+	std::pair<Partition *, std::size_t> FindOutput(std::string_view name,
+						       Partition &excluding_partition) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**

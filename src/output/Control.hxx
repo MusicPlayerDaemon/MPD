@@ -274,19 +274,19 @@ public:
 	 */
 	mutable Mutex mutex;
 
+	struct Dummy{};
+
+	/**
+	 * Construct a "dummy" instance.
+	 */
+	explicit AudioOutputControl(Dummy, std::string_view _name) noexcept;
+
 	/**
 	 * Throws on error.
 	 */
 	AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
 			   AudioOutputClient &_client,
 			   const ConfigBlock &block);
-
-	/**
-	 * Move the contents of an existing instance, and convert that
-	 * existing instance to a "dummy" output.
-	 */
-	AudioOutputControl(AudioOutputControl &&src,
-			   AudioOutputClient &_client) noexcept;
 
 	~AudioOutputControl() noexcept;
 
@@ -371,14 +371,6 @@ public:
 	const std::exception_ptr &GetLastError() const noexcept {
 		return last_error;
 	}
-
-	/**
-	 * Detach and return the #FilteredAudioOutput instance and,
-	 * replacing it here with a "dummy" object.
-	 */
-	std::unique_ptr<FilteredAudioOutput> Steal() noexcept;
-	void ReplaceDummy(std::unique_ptr<FilteredAudioOutput> new_output,
-			  bool _enabled) noexcept;
 
 	void StartThread();
 

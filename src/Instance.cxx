@@ -90,7 +90,7 @@ Instance::DeletePartition(Partition &partition) noexcept
 	}
 }
 
-AudioOutputControl *
+std::pair<Partition *, std::size_t>
 Instance::FindOutput(std::string_view name,
 		     Partition &excluding_partition) noexcept
 {
@@ -98,12 +98,12 @@ Instance::FindOutput(std::string_view name,
 		if (&partition == &excluding_partition)
 			continue;
 
-		auto *output = partition.outputs.FindByName(name);
-		if (output != nullptr && !output->IsDummy())
-			return output;
+		const auto idx = partition.outputs.FindIndexByName(name);
+		if (idx >= 0 && !partition.outputs.Get(idx).IsDummy())
+			return {&partition, idx};
 	}
 
-	return nullptr;
+	return {};
 }
 
 #ifdef ENABLE_DATABASE

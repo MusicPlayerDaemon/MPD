@@ -137,8 +137,8 @@ handle_moveoutput(Client &client, Request request, Response &response)
 	const std::string_view output_name = request[0];
 
 	auto &dest_partition = client.GetPartition();
-	auto *existing_output = dest_partition.outputs.FindByName(output_name);
-	if (existing_output != nullptr && !existing_output->IsDummy())
+	const auto existing_output_index = dest_partition.outputs.FindIndexByName(output_name);
+	if (existing_output_index >= 0 && !dest_partition.outputs.Get(existing_output_index).IsDummy())
 		/* this output is already in the specified partition,
 		   so nothing needs to be done */
 		return CommandResult::OK;
@@ -146,23 +146,26 @@ handle_moveoutput(Client &client, Request request, Response &response)
 	/* find the partition which owns this output currently */
 	auto &instance = client.GetInstance();
 
-	auto *output = instance.FindOutput(output_name, dest_partition);
-	if (output == nullptr) {
+	const auto [src_partition, src_index] = instance.FindOutput(output_name, dest_partition);
+	if (src_partition == nullptr) {
 		response.Error(ACK_ERROR_NO_EXIST, "No such output");
 		return CommandResult::ERROR;
 	}
 
-	const bool was_enabled = output->IsEnabled();
+	const bool was_enabled = src_partition->outputs.Get(src_index).IsEnabled();
 
-	if (existing_output != nullptr)
+	auto output = src_partition->outputs.ReplaceWithDummy(src_index);
+
+	if (existing_output_index >= 0)
 		/* move the output back where it once was */
-		existing_output->ReplaceDummy(output->Steal(),
-					      was_enabled);
+		dest_partition.outputs.ReplaceDummy(existing_output_index, std::move(output),
+						    was_enabled,
+						    dest_partition.replay_gain_mode);
 	else
 		/* copy the AudioOutputControl and add it to the output list */
-		dest_partition.outputs.AddMoveFrom(std::move(*output),
-						   was_enabled,
-						   dest_partition.replay_gain_mode);
+		dest_partition.outputs.Add(std::move(output),
+					   was_enabled,
+					   dest_partition.replay_gain_mode);
 
 	instance.EmitIdle(IDLE_OUTPUT);
 	return CommandResult::OK;
