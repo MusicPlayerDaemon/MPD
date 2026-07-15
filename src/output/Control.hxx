@@ -419,6 +419,11 @@ public:
 	void SetAttribute(std::string &&name, std::string &&value);
 
 	/**
+	 * Disables the device and wait for completion.
+	 */
+	void LockDisable() noexcept;
+
+	/**
 	 * Enables the device, but don't wait for completion.
 	 *
 	 * Caller must lock the mutex.

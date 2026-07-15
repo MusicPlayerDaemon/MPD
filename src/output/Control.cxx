@@ -51,13 +51,7 @@ AudioOutputControl::Steal() noexcept
 	assert(!IsDummy());
 
 	/* close and disable the output */
-	{
-		std::unique_lock lock{mutex};
-		if (really_enabled && output->SupportsEnableDisable())
-			CommandWait(lock, Command::DISABLE);
-
-		enabled = really_enabled = false;
-	}
+	LockDisable();
 
 	/* stop the thread */
 	StopThread();
@@ -168,6 +162,20 @@ AudioOutputControl::LockCommandWait(Command cmd) noexcept
 {
 	std::unique_lock lock{mutex};
 	CommandWait(lock, cmd);
+}
+
+void
+AudioOutputControl::LockDisable() noexcept
+{
+	std::unique_lock lock{mutex};
+
+	if (!output)
+		return;
+
+	if (really_enabled && output->SupportsEnableDisable())
+		CommandWait(lock, Command::DISABLE);
+
+	enabled = really_enabled = false;
 }
 
 void
