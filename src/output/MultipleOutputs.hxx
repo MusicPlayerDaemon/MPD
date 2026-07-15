@@ -8,6 +8,7 @@
 #include "MusicChunkPtr.hxx"
 #include "player/Outputs.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "thread/Mutex.hxx"
 #include "Chrono.hxx"
 
 #include <algorithm>
@@ -32,6 +33,15 @@ class MultipleOutputs final : public PlayerOutputs {
 	AudioOutputClient &client;
 
 	MixerListener &mixer_listener;
+
+	/**
+	 * Protects #outputs.
+	 *
+	 * The main thread is allowed to read #outputs without holding
+	 * the lock, because only the main thread is allowed to modify
+	 * it.
+	 */
+	mutable Mutex mutex;
 
 	std::vector<std::unique_ptr<AudioOutputControl>> outputs;
 
@@ -73,6 +83,10 @@ public:
 
 	/**
 	 * Returns the "i"th audio output device.
+	 *
+	 * Since this returns an unprotected reference, it may only be
+	 * called by the main thread (i.e. the only thread that is
+	 * allowed to modify #outputs).
 	 */
 	const AudioOutputControl &Get(std::size_t i) const noexcept {
 		assert(i < Size());
@@ -88,6 +102,9 @@ public:
 
 	/**
 	 * Are all outputs dummy?
+	 *
+	 * May only be called by the main thread (i.e. the only thread
+	 * that is allowed to modify #outputs).
 	 */
 	[[gnu::pure]]
 	bool IsDummy() const noexcept {
@@ -160,13 +177,23 @@ private:
 	/**
 	 * Wait until all (active) outputs have finished the current
 	 * command.
+	 *
+	 * Caller must lock #mutex.
 	 */
 	void WaitAll() noexcept;
 
 	/**
 	 * Signals all audio outputs which are open.
+	 *
+	 * Caller must lock #mutex.
 	 */
 	void AllowPlay() noexcept;
+
+	/**
+	 * A version of _EnableDisable() that expects the caller to
+	 * lock #mutex.
+	 */
+	bool _Update(bool force) noexcept;
 
 	/**
 	 * Opens all output devices which are enabled, but closed.
@@ -180,6 +207,18 @@ private:
 	 * Has this chunk been consumed by all audio outputs?
 	 */
 	bool IsChunkConsumed(const MusicChunk *chunk) const noexcept;
+
+	/**
+	 * A version of EnableDisable() that expects the caller to
+	 * lock #mutex.
+	 */
+	void _EnableDisable();
+
+	/**
+	 * A version of Close() that expects the caller to lock
+	 * #mutex.
+	 */
+	void _Close() noexcept;
 
 	/* virtual methods from class PlayerOutputs */
 	void EnableDisable() override;
