@@ -10,6 +10,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "time/PeriodClock.hxx"
+#include "util/IntrusiveList.hxx"
 
 #include <cassert>
 #include <cstdint>
@@ -29,21 +30,20 @@ class AudioOutputClient;
 /**
  * Controller for an #AudioOutput and its output thread.
  */
-class AudioOutputControl final : MixerListener {
+class AudioOutputControl final : public IntrusiveListHook<>, MixerListener {
 	const std::unique_ptr<FilteredAudioOutput> output;
-
-	/**
-	 * A copy of FilteredAudioOutput::name which we need just in
-	 * case this is a "dummy" output (output==nullptr) because
-	 * this output has been moved to another partition.
-	 */
-	const std::string name;
 
 	MixerListener *mixer_listener = nullptr;
 
 	/**
 	 * The PlayerControl object which "owns" this output.  This
 	 * object is needed to signal command completion.
+	 *
+	 * This field is left uninitialized by the constructor; it
+	 * will be initialized as soon as the output gets acquired by
+	 * the default partition.
+	 *
+	 * Protected by #mutex.
 	 */
 	AudioOutputClient *client;
 
@@ -276,18 +276,10 @@ public:
 	 */
 	mutable Mutex mutex;
 
-	struct Dummy{};
-
-	/**
-	 * Construct a "dummy" instance.
-	 */
-	explicit AudioOutputControl(Dummy, std::string_view _name) noexcept;
-
 	/**
 	 * Throws on error.
 	 */
 	AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
-			   AudioOutputClient &_client,
 			   const ConfigBlock &block);
 
 	~AudioOutputControl() noexcept;
@@ -296,9 +288,7 @@ public:
 	AudioOutputControl &operator=(const AudioOutputControl &) = delete;
 
 	[[gnu::pure]]
-	const auto &GetName() const noexcept {
-		return name;
-	}
+	const char *GetName() const noexcept;
 
 	[[gnu::pure]]
 	const char *GetPluginName() const noexcept;
@@ -312,9 +302,23 @@ public:
 		return *client;
 	}
 
+	/**
+	 * May only be called from the main thread.
+	 */
 	void LockSetMixerListener(MixerListener &_mixer_listener) noexcept {
 		const std::lock_guard lock{mutex};
 		mixer_listener = &_mixer_listener;
+	}
+
+	/**
+	 * Return the current #MixerListener.  This method exists only
+	 * as an efficient kludge to determine which #Partition this
+	 * object is currently assigned to.
+	 *
+	 * May only be called from the main thread.
+	 */
+	MixerListener *GetMixerListener() const noexcept {
+		return mixer_listener;
 	}
 
 	void SetClient(AudioOutputClient &_client) noexcept {
@@ -325,10 +329,6 @@ public:
 
 	[[gnu::pure]]
 	Mixer *GetMixer() const noexcept;
-
-	bool IsDummy() const noexcept {
-		return !output;
-	}
 
 	bool AlwaysOff() const noexcept {
 		return always_off;

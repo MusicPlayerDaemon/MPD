@@ -38,6 +38,7 @@ output_glue = static_library(
   'output_glue',
   'Defaults.cxx',
   'Filtered.cxx',
+  'AllOutputs.cxx',
   'MultipleOutputs.cxx',
   'SharedPipeConsumer.cxx',
   'Source.cxx',

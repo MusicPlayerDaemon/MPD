@@ -2,17 +2,12 @@
 // Copyright The Music Player Daemon Project
 
 #include "MultipleOutputs.hxx"
+#include "AllOutputs.hxx"
 #include "Client.hxx"
 #include "Control.hxx"
 #include "Filtered.hxx"
-#include "Defaults.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
-#include "filter/Factory.hxx"
-#include "config/Block.hxx"
-#include "config/Data.hxx"
-#include "config/Option.hxx"
-#include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
 #include <algorithm> // for std::all_of()
@@ -21,175 +16,77 @@
 
 #include <string.h>
 
-MultipleOutputs::MultipleOutputs(AudioOutputClient &_client,
+MultipleOutputs::MultipleOutputs(AllOutputs &_all_outputs,
+				 AudioOutputClient &_client,
 				 MixerListener &_mixer_listener) noexcept
-	:client(_client), mixer_listener(_mixer_listener)
+	:all_outputs(_all_outputs),
+	 client(_client),
+	 mixer_listener(_mixer_listener)
 {
 }
 
-MultipleOutputs::~MultipleOutputs() noexcept
-{
-	/* parallel destruction */
-	for (const auto &i : outputs)
-		i->BeginDestroy();
-}
-
-static std::unique_ptr<FilteredAudioOutput>
-LoadOutput(EventLoop &event_loop, EventLoop &rt_event_loop,
-	   const ReplayGainConfig &replay_gain_config,
-	   const ConfigBlock &block,
-	   const AudioOutputDefaults &defaults,
-	   FilterFactory *filter_factory)
-try {
-	return audio_output_new(event_loop, rt_event_loop, replay_gain_config, block,
-				defaults,
-				filter_factory);
-} catch (...) {
-	if (block.line > 0)
-		std::throw_with_nested(FmtRuntimeError("Failed to configure output in line {}",
-						       block.line));
-	else
-		throw;
-}
-
-static std::unique_ptr<AudioOutputControl>
-LoadOutputControl(EventLoop &event_loop, EventLoop &rt_event_loop,
-		  const ReplayGainConfig &replay_gain_config,
-		  AudioOutputClient &client, const ConfigBlock &block,
-		  const AudioOutputDefaults &defaults,
-		  FilterFactory *filter_factory)
-{
-	auto output = LoadOutput(event_loop, rt_event_loop,
-				 replay_gain_config,
-				 block, defaults, filter_factory);
-	return std::make_unique<AudioOutputControl>(std::move(output),
-						    client, block);
-}
-
-void
-MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
-			   const ConfigData &config,
-			   const ReplayGainConfig &replay_gain_config)
-{
-	const AudioOutputDefaults defaults(config);
-	FilterFactory filter_factory(config);
-
-	config.WithEach(ConfigBlockOption::AUDIO_OUTPUT, [&, this](const auto &block){
-		auto output = LoadOutputControl(event_loop, rt_event_loop,
-						replay_gain_config,
-						client, block, defaults,
-						&filter_factory);
-		if (HasName(output->GetName()))
-			throw FmtRuntimeError("output devices with identical "
-					      "names: {}",
-					      output->GetName());
-
-		outputs.emplace_back(std::move(output));
-		outputs.back()->LockSetMixerListener(mixer_listener);
-	});
-
-	if (outputs.empty()) {
-		/* auto-detect device */
-		const ConfigBlock empty;
-		outputs.emplace_back(LoadOutputControl(event_loop,
-						       rt_event_loop,
-						       replay_gain_config,
-						       client, empty, defaults,
-						       nullptr));
-		outputs.back()->LockSetMixerListener(mixer_listener);
-	}
-}
-
-bool
-MultipleOutputs::IsDummy() const noexcept
-{
-	return std::all_of(outputs.begin(), outputs.end(), [](const auto &i) { return i->IsDummy(); });
-}
-
-int
-MultipleOutputs::FindIndexByName(const std::string_view name) const noexcept
-{
-	for (int idx = 0; const auto &i : outputs) {
-		if (name == i->GetName())
-			return idx;
-		++idx;
-	}
-
-	return -1;
-}
+MultipleOutputs::~MultipleOutputs() noexcept = default;
 
 AudioOutputControl *
 MultipleOutputs::FindByName(const std::string_view name) noexcept
 {
-	const std::lock_guard lock{mutex};
-
-	for (const auto &i : outputs)
-		if (name == i->GetName())
-			return i.get();
+	for (auto &ao : outputs)
+		if (name == ao.GetName())
+			return &ao;
 
 	return nullptr;
 }
 
-std::unique_ptr<AudioOutputControl>
-MultipleOutputs::ReplaceWithDummy(std::size_t idx) noexcept
+bool
+MultipleOutputs::Owns(const AudioOutputControl &ao) const noexcept
 {
-	assert(idx < outputs.size());
-
-	auto &slot = outputs[idx];
-	slot->LockDisable();
-
-	const std::lock_guard lock{mutex};
-
-	auto old = std::move(slot);
-	old->LockDisable();
-
-	slot = std::make_unique<AudioOutputControl>(AudioOutputControl::Dummy{}, old->GetName());
-
-	return old;
+	return ao.GetMixerListener() == &mixer_listener;
 }
 
 void
-MultipleOutputs::ReplaceDummy(std::size_t idx,
-			      std::unique_ptr<AudioOutputControl> &&src,
-			      bool enable,
-			      ReplayGainMode replay_gain_mode) noexcept
+MultipleOutputs::AcquireAll(ReplayGainMode replay_gain_mode) noexcept
 {
-	assert(idx < outputs.size());
-	assert(!src->IsEnabled());
-	assert(!src->IsReallyEnabled());
+	assert(outputs.empty());
 
-	auto &output = *src;
-
-	auto &slot = outputs[idx];
-	assert(slot->IsDummy());
-
-	const std::lock_guard lock{mutex};
-	slot = std::move(src);
-	output.LockSetMixerListener(mixer_listener);
-	output.SetClient(client);
-	output.LockSetEnabled(enable);
-	output.SetReplayGainMode(replay_gain_mode);
-
-	client.ApplyEnabled();
+	for (unsigned i = 0, n = all_outputs.Size(); i != n; ++i) {
+		auto &ao = all_outputs.Get(i);
+		if (ao.GetMixerListener() == nullptr) {
+			outputs.push_back(ao);
+			ao.LockSetMixerListener(mixer_listener);
+			ao.SetClient(client);
+			ao.SetReplayGainMode(replay_gain_mode);
+		}
+	}
 }
 
 void
-MultipleOutputs::Add(std::unique_ptr<AudioOutputControl> &&src,
-		     bool enable,
-		     ReplayGainMode replay_gain_mode) noexcept
+MultipleOutputs::AcquireOwnership(AudioOutputControl &ao, bool enable,
+				  ReplayGainMode replay_gain_mode) noexcept
 {
+	assert(!Owns(ao));
+
 	{
 		const std::lock_guard lock{mutex};
-		outputs.push_back(std::move(src));
+		outputs.push_back(ao);
 	}
 
-	auto &output = *outputs.back();
-	output.LockSetMixerListener(mixer_listener);
-	output.SetClient(client);
-	output.LockSetEnabled(enable);
-	output.SetReplayGainMode(replay_gain_mode);
+	ao.LockSetMixerListener(mixer_listener);
+	ao.SetClient(client);
+	ao.LockSetEnabled(enable);
+	ao.SetReplayGainMode(replay_gain_mode);
 
 	client.ApplyEnabled();
+}
+
+void
+MultipleOutputs::ReleaseOwnership(AudioOutputControl &ao) noexcept
+{
+	assert(Owns(ao));
+
+	ao.LockDisable();
+
+	const std::lock_guard lock{mutex};
+	outputs.erase(outputs.iterator_to(ao));
 }
 
 void
@@ -197,8 +94,8 @@ MultipleOutputs::_EnableDisable()
 {
 	/* parallel execution */
 
-	for (const auto &ao : outputs)
-		ao->LockEnableDisableAsync();
+	for (auto &ao : outputs)
+		ao.LockEnableDisableAsync();
 
 	WaitAll();
 }
@@ -213,15 +110,15 @@ MultipleOutputs::EnableDisable()
 void
 MultipleOutputs::WaitAll() noexcept
 {
-	for (const auto &ao : outputs)
-		ao->LockWaitForCommand();
+	for (auto &ao : outputs)
+		ao.LockWaitForCommand();
 }
 
 inline void
 MultipleOutputs::AllowPlay() noexcept
 {
-	for (const auto &ao : outputs)
-		ao->LockAllowPlay();
+	for (auto &ao : outputs)
+		ao.LockAllowPlay();
 }
 
 bool
@@ -232,8 +129,8 @@ MultipleOutputs::_Update(bool force) noexcept
 	if (!IsOpen())
 		return false;
 
-	for (const auto &ao : outputs)
-		ret = ao->LockUpdate(input_audio_format, *pipe, force)
+	for (auto &ao : outputs)
+		ret = ao.LockUpdate(input_audio_format, *pipe, force)
 			|| ret;
 
 	return ret;
@@ -250,9 +147,8 @@ void
 MultipleOutputs::SetReplayGainMode(ReplayGainMode mode) noexcept
 {
 	const std::lock_guard lock{mutex};
-
-	for (const auto &ao : outputs)
-		ao->SetReplayGainMode(mode);
+	for (auto &ao : outputs)
+		ao.SetReplayGainMode(mode);
 }
 
 void
@@ -269,8 +165,8 @@ MultipleOutputs::Play(MusicChunkPtr chunk)
 	pipe->Push(std::move(chunk));
 
 	const std::lock_guard lock{mutex};
-	for (const auto &ao : outputs)
-		ao->LockPlay();
+	for (auto &ao : outputs)
+		ao.LockPlay();
 }
 
 void
@@ -298,20 +194,20 @@ MultipleOutputs::Open(const AudioFormat audio_format)
 
 	std::exception_ptr first_error;
 
-	for (const auto &ao : outputs) {
-		const std::lock_guard lock{ao->mutex};
+	for (auto &ao : outputs) {
+		const std::lock_guard lock{ao.mutex};
 
 		/* can't play on this device even if it's enabled */
-		if (ao->AlwaysOff())
+		if (ao.AlwaysOff())
 			continue;
 
-		if (ao->IsEnabled())
+		if (ao.IsEnabled())
 			enabled = true;
 
-		if (ao->IsOpen())
+		if (ao.IsOpen())
 			ret = true;
 		else if (!first_error)
-			first_error = ao->GetLastError();
+			first_error = ao.GetLastError();
 	}
 
 	if (!enabled) {
@@ -336,7 +232,7 @@ MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const noexcept
 	const std::lock_guard lock{mutex};
 
 	return std::all_of(outputs.begin(), outputs.end(), [chunk](const auto &ao) {
-		return ao->LockIsChunkConsumed(*chunk); });
+		return ao.LockIsChunkConsumed(*chunk); });
 }
 
 unsigned
@@ -364,8 +260,8 @@ MultipleOutputs::CheckPipe() noexcept
 			/* this is the tail of the pipe - clear the
 			   chunk reference in all outputs */
 			const std::lock_guard lock{mutex};
-			for (const auto &ao : outputs)
-				ao->LockClearTailChunk(*chunk);
+			for (auto &ao : outputs)
+				ao.LockClearTailChunk(*chunk);
 		}
 
 		/* remove the chunk from the pipe */
@@ -393,8 +289,8 @@ MultipleOutputs::Pause() noexcept
 
 	_Update(false);
 
-	for (const auto &ao : outputs)
-		ao->LockPauseAsync();
+	for (auto &ao : outputs)
+		ao.LockPauseAsync();
 
 	WaitAll();
 }
@@ -404,8 +300,8 @@ MultipleOutputs::Drain() noexcept
 {
 	const std::lock_guard lock{mutex};
 
-	for (const auto &ao : outputs)
-		ao->LockDrainAsync();
+	for (auto &ao : outputs)
+		ao.LockDrainAsync();
 
 	WaitAll();
 }
@@ -417,8 +313,8 @@ MultipleOutputs::Cancel() noexcept
 
 	/* send the cancel() command to all audio outputs */
 
-	for (const auto &ao : outputs)
-		ao->LockCancelAsync();
+	for (auto &ao : outputs)
+		ao.LockCancelAsync();
 
 	WaitAll();
 
@@ -440,8 +336,8 @@ MultipleOutputs::Cancel() noexcept
 void
 MultipleOutputs::_Close() noexcept
 {
-	for (const auto &ao : outputs)
-		ao->LockCloseWait();
+	for (auto &ao : outputs)
+		ao.LockCloseWait();
 
 	pipe.reset();
 
@@ -460,10 +356,11 @@ MultipleOutputs::Close() noexcept
 void
 MultipleOutputs::Release() noexcept
 {
-	const std::lock_guard lock{mutex};
-
-	for (const auto &ao : outputs)
-		ao->LockRelease();
+	{
+		const std::lock_guard lock{mutex};
+		for (auto &ao : outputs)
+			ao.LockRelease();
+	}
 
 	pipe.reset();
 

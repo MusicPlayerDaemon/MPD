@@ -9,6 +9,7 @@
  */
 
 #include "OutputCommand.hxx"
+#include "AllOutputs.hxx"
 #include "Client.hxx"
 #include "Control.hxx"
 #include "mixer/Mixer.hxx"
@@ -17,17 +18,22 @@
 #include "protocol/Ack.hxx"
 #include "protocol/IdleFlags.hxx"
 #include "Partition.hxx"
+#include "Instance.hxx"
 
 extern unsigned audio_output_state_version;
 
 AudioOutputControl &
 CheckPartitionOutput(Partition &partition, unsigned idx)
 {
-	auto &outputs = partition.outputs;
-	if (idx >= outputs.Size())
+	auto &all_outputs = partition.instance.outputs;
+	if (idx >= all_outputs.Size())
 		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such audio output");
 
-	return outputs.Get(idx);
+	auto &ao = all_outputs.Get(idx);
+	if (!partition.outputs.Owns(ao))
+		throw ProtocolError{ACK_ERROR_NO_EXIST, "Audio output not in this partition"};
+
+	return ao;
 }
 
 void

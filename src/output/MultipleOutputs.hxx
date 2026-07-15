@@ -1,48 +1,52 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef OUTPUT_ALL_H
-#define OUTPUT_ALL_H
+#pragma once
 
 #include "MusicChunkPtr.hxx"
 #include "player/Outputs.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "thread/Mutex.hxx"
+#include "util/IntrusiveList.hxx"
 #include "Chrono.hxx"
 
 #include <cassert>
+#include <concepts>
 #include <cstdint>
 #include <memory>
 #include <vector>
 
 enum class ReplayGainMode : uint8_t;
 class MusicPipe;
-class EventLoop;
 class MixerListener;
+class AllOutputs;
 class AudioOutputClient;
 class AudioOutputControl;
-struct ConfigData;
-struct ReplayGainConfig;
 
 /*
  * Wrap multiple #AudioOutputControl objects a single interface which
  * keeps them synchronized.
  */
 class MultipleOutputs final : public PlayerOutputs {
+	AllOutputs &all_outputs;
+
 	AudioOutputClient &client;
 
 	MixerListener &mixer_listener;
 
 	/**
-	 * Protects #outputs.
+	 * Protects #output.
 	 *
-	 * The main thread is allowed to read #outputs without holding
-	 * the lock, because only the main thread is allowed to modify
-	 * it.
+	 * The main thread is allowed to read #per_output without
+	 * holding the lock, because only the main thread is allowed
+	 * to modify it.
 	 */
 	mutable Mutex mutex;
 
-	std::vector<std::unique_ptr<AudioOutputControl>> outputs;
+	/**
+	 * A doubly-linked list of outputs owned by this object.
+	 */
+	IntrusiveList<AudioOutputControl> outputs;
 
 	AudioFormat input_audio_format = AudioFormat::Undefined();
 
@@ -63,57 +67,25 @@ public:
 	 * Load audio outputs from the configuration file and
 	 * initialize them.
 	 */
-	MultipleOutputs(AudioOutputClient &_client,
+	MultipleOutputs(AllOutputs &_all_outputs, AudioOutputClient &_client,
 			MixerListener &_mixer_listener) noexcept;
 	~MultipleOutputs() noexcept;
 
-	void Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
-		       const ConfigData &config,
-		       const ReplayGainConfig &replay_gain_config);
-
-	/**
-	 * Returns the total number of audio output devices, including
-	 * those which are disabled right now.
-	 */
-	[[gnu::pure]]
-	std::size_t Size() const noexcept {
-		return outputs.size();
+	const auto &GetAllOutputs() const noexcept {
+		return all_outputs;
 	}
 
-	/**
-	 * Returns the "i"th audio output device.
-	 *
-	 * Since this returns an unprotected reference, it may only be
-	 * called by the main thread (i.e. the only thread that is
-	 * allowed to modify #outputs).
-	 */
-	const AudioOutputControl &Get(std::size_t i) const noexcept {
-		assert(i < Size());
-
-		return *outputs[i];
+	bool empty() const noexcept {
+		return outputs.empty();
 	}
 
-	AudioOutputControl &Get(std::size_t i) noexcept {
-		assert(i < Size());
-
-		return *outputs[i];
+	auto begin() const noexcept {
+		return outputs.begin();
 	}
 
-	/**
-	 * Are all outputs dummy?
-	 *
-	 * May only be called by the main thread (i.e. the only thread
-	 * that is allowed to modify #outputs).
-	 */
-	[[gnu::pure]]
-	bool IsDummy() const noexcept;
-
-	/**
-	 * Returns the index of the audio output device with the specified name.
-	 * Returns -1 if the name does not exist.
-	 */
-	[[gnu::pure]]
-	int FindIndexByName(std::string_view name) const noexcept;
+	auto end() const noexcept {
+		return outputs.end();
+	}
 
 	/**
 	 * Returns the audio output device with the specified name.
@@ -123,31 +95,26 @@ public:
 	AudioOutputControl *FindByName(std::string_view name) noexcept;
 
 	/**
-	 * Does an audio output device with this name exist?
+	 * Does this object own the specified #AudioOutputControl instance?
+	 *
+	 * May only be called from the main thread.
 	 */
 	[[gnu::pure]]
-	bool HasName(std::string_view name) noexcept {
-		return FindByName(name) != nullptr;
-	}
+	bool Owns(const AudioOutputControl &ao) const noexcept;
 
 	/**
-	 * Replace the output at the specified index with a dummy
-	 * output and return the original output to the caller.
+	 * Acquire ownership of all (orphan) outputs in #all_outputs
+	 * (but do not enable/disable them).  This is what we do with
+	 * the default partitions on startup.
+	 *
+	 * This method is unsafe for later use because it does not
+	 * care for mutex locking.
 	 */
-	[[nodiscard]]
-	std::unique_ptr<AudioOutputControl> ReplaceWithDummy(std::size_t idx) noexcept;
+	void AcquireAll(ReplayGainMode replay_gain_mode) noexcept;
 
-	/**
-	 * Replace the dummy output at the specified index with #src.
-	 */
-	void ReplaceDummy(std::size_t idx,
-			  std::unique_ptr<AudioOutputControl> &&src,
-			  bool enable,
-			  ReplayGainMode replay_gain_mode) noexcept;
-
-	void Add(std::unique_ptr<AudioOutputControl> &&src,
-		 bool enable,
-		 ReplayGainMode replay_gain_mode) noexcept;
+	void AcquireOwnership(AudioOutputControl &ao, bool enable,
+			      ReplayGainMode replay_gain_mode) noexcept;
+	void ReleaseOwnership(AudioOutputControl &ao) noexcept;
 
 	void SetReplayGainMode(ReplayGainMode mode) noexcept;
 
@@ -254,5 +221,3 @@ private:
 		return elapsed_time;
 	}
 };
-
-#endif

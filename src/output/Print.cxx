@@ -9,6 +9,7 @@
 #include "Print.hxx"
 #include "Control.hxx"
 #include "MultipleOutputs.hxx"
+#include "AllOutputs.hxx"
 #include "client/Response.hxx"
 
 #include <fmt/format.h>
@@ -16,8 +17,11 @@
 void
 printAudioDevices(Response &r, const MultipleOutputs &outputs)
 {
-	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
-		const auto &ao = outputs.Get(i);
+	const auto &all_outputs = outputs.GetAllOutputs();
+	for (unsigned i = 0, n = all_outputs.Size(); i != n; ++i) {
+		const auto &ao = all_outputs.Get(i);
+		if (!outputs.Owns(ao))
+			continue;
 
 		r.Fmt("outputid: {}\n"
 		       "outputname: {}\n"

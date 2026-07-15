@@ -5,6 +5,7 @@
 #define MPD_INSTANCE_HXX
 
 #include "config.h"
+#include "output/AllOutputs.hxx"
 #include "db/Features.hxx" // for ENABLE_DATABASE
 #include "event/Loop.hxx"
 #include "event/Thread.hxx"
@@ -123,6 +124,8 @@ struct Instance final
 
 	std::unique_ptr<ClientList> client_list;
 
+	AllOutputs outputs;
+
 	std::list<Partition> partitions;
 
 	std::unique_ptr<StateFile> state_file;
@@ -176,17 +179,6 @@ struct Instance final
 	void DeletePartition(Partition &partition) noexcept;
 
 	void BeginShutdownPartitions() noexcept;
-
-	/**
-	 * Returns the (non-dummy) audio output device with the
-	 * specified name.  Returns nullptr if the name does not
-	 * exist.
-	 *
-	 * @param excluding_partition ignore this partition
-	 */
-	[[gnu::pure]]
-	std::pair<Partition *, std::size_t> FindOutput(std::string_view name,
-						       Partition &excluding_partition) noexcept;
 
 #ifdef ENABLE_DATABASE
 	/**

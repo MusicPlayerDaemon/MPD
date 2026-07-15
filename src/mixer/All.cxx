@@ -43,11 +43,13 @@ output_mixer_get_volume(const AudioOutputControl &ao) noexcept
 int
 MultipleOutputs::GetVolume() const noexcept
 {
+	const std::lock_guard lock{mutex};
+
 	unsigned ok = 0;
 	int total = 0;
 
 	for (const auto &ao : outputs) {
-		int volume = output_mixer_get_volume(*ao);
+		int volume = output_mixer_get_volume(ao);
 		if (volume >= 0) {
 			total += volume;
 			++ok;
@@ -104,9 +106,10 @@ MultipleOutputs::SetVolume(unsigned volume)
 	SetVolumeResult result = SetVolumeResult::NO_MIXER;
 	std::exception_ptr error;
 
-	for (const auto &ao : outputs) {
+	const std::lock_guard lock{mutex};
+	for (auto &ao : outputs) {
 		try {
-			auto r = output_mixer_set_volume(*ao, volume);
+			auto r = output_mixer_set_volume(ao, volume);
 			if (r > result)
 				result = r;
 		} catch (...) {
@@ -149,11 +152,13 @@ output_mixer_get_software_volume(const AudioOutputControl &ao) noexcept
 int
 MultipleOutputs::GetSoftwareVolume() const noexcept
 {
+	const std::lock_guard lock{mutex};
+
 	unsigned ok = 0;
 	int total = 0;
 
-	for (const auto &ao : outputs) {
-		int volume = output_mixer_get_software_volume(*ao);
+	for (auto &ao : outputs) {
+		int volume = output_mixer_get_software_volume(ao);
 		if (volume >= 0) {
 			total += volume;
 			++ok;
@@ -171,8 +176,9 @@ MultipleOutputs::SetSoftwareVolume(unsigned volume) noexcept
 {
 	assert(volume <= PCM_VOLUME_1);
 
+	const std::lock_guard lock{mutex};
 	for (const auto &ao : outputs) {
-		auto *mixer = ao->GetMixer();
+		auto *mixer = ao.GetMixer();
 
 		if (mixer != nullptr &&
 		    (mixer->IsPlugin(software_mixer_plugin) ||

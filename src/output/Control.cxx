@@ -16,16 +16,9 @@
     automatically reopening the device */
 static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
 
-AudioOutputControl::AudioOutputControl(Dummy, std::string_view _name) noexcept
-	:name(_name),
-	 tags(), always_on(), always_off() {}
-
 AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _output,
-				       AudioOutputClient &_client,
 				       const ConfigBlock &block)
 	:output(std::move(_output)),
-	 name(output->GetName()),
-	 client(&_client),
 	 tags(block.GetBlockValue("tags", true)),
 	 always_on(block.GetBlockValue("always_on", false)),
 	 always_off(block.GetBlockValue("always_off", false)),
@@ -41,40 +34,39 @@ AudioOutputControl::~AudioOutputControl() noexcept
 }
 
 const char *
+AudioOutputControl::GetName() const noexcept
+{
+	return output->GetName();
+}
+
+const char *
 AudioOutputControl::GetPluginName() const noexcept
 {
-	return output ? output->GetPluginName() : "dummy";
+	return output->GetPluginName();
 }
 
 const char *
 AudioOutputControl::GetLogName() const noexcept
 {
-	assert(!IsDummy());
-
-	return output ? output->GetLogName() : name.c_str();
+	return output->GetLogName();
 }
 
 Mixer *
 AudioOutputControl::GetMixer() const noexcept
 {
-	return output ? output->mixer : nullptr;
+	return output->mixer;
 }
 
 std::map<std::string, std::string, std::less<>>
 AudioOutputControl::GetAttributes() const noexcept
 {
-	return output
-		? output->GetAttributes()
-		: std::map<std::string, std::string, std::less<>>{};
+	return output->GetAttributes();
 }
 
 void
 AudioOutputControl::SetAttribute(std::string &&attribute_name,
 				 std::string &&value)
 {
-	if (!output)
-		throw std::runtime_error("Cannot set attribute on dummy output");
-
 	output->SetAttribute(std::move(attribute_name), std::move(value));
 }
 
@@ -132,9 +124,6 @@ AudioOutputControl::LockDisable() noexcept
 {
 	std::unique_lock lock{mutex};
 
-	if (!output)
-		return;
-
 	if (really_enabled && output->SupportsEnableDisable())
 		CommandWait(lock, Command::DISABLE);
 
@@ -144,9 +133,6 @@ AudioOutputControl::LockDisable() noexcept
 void
 AudioOutputControl::EnableAsync()
 {
-	if (!output)
-		return;
-
 	if (always_off)
 		return;
 
@@ -168,9 +154,6 @@ AudioOutputControl::EnableAsync()
 void
 AudioOutputControl::DisableAsync() noexcept
 {
-	if (!output)
-		return;
-
 	if (!thread.IsDefined()) {
 		if (!output->SupportsEnableDisable())
 			really_enabled = false;
@@ -251,9 +234,6 @@ AudioOutputControl::CloseWait(std::unique_lock<Mutex> &lock) noexcept
 {
 	assert(allow_play);
 
-	if (IsDummy())
-		return;
-
 	if (output->mixer != nullptr)
 		output->mixer->LockAutoClose();
 
@@ -321,8 +301,7 @@ AudioOutputControl::LockPauseAsync() noexcept
 		   Mixer::LockAutoClose()) */
 		output->mixer->LockAutoClose();
 
-	if (output)
-		output->Interrupt();
+	output->Interrupt();
 
 	const std::lock_guard protect{mutex};
 
@@ -344,8 +323,7 @@ AudioOutputControl::LockDrainAsync() noexcept
 void
 AudioOutputControl::LockCancelAsync() noexcept
 {
-	if (output)
-		output->Interrupt();
+	output->Interrupt();
 
 	const std::lock_guard protect{mutex};
 
@@ -368,9 +346,6 @@ AudioOutputControl::LockAllowPlay() noexcept
 void
 AudioOutputControl::LockRelease() noexcept
 {
-	if (!output)
-		return;
-
 	output->Interrupt();
 
 	if (output->mixer != nullptr &&
@@ -396,8 +371,7 @@ AudioOutputControl::LockCloseWait() noexcept
 {
 	assert(!open || !fail_timer.IsDefined());
 
-	if (output)
-		output->Interrupt();
+	output->Interrupt();
 
 	std::unique_lock lock{mutex};
 	CloseWait(lock);
@@ -407,8 +381,7 @@ void
 AudioOutputControl::BeginDestroy() noexcept
 {
 	if (thread.IsDefined()) {
-		if (output)
-			output->Interrupt();
+		output->Interrupt();
 
 		const std::lock_guard protect{mutex};
 		if (!killed) {

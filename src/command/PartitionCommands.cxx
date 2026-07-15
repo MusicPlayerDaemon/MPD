@@ -118,7 +118,7 @@ handle_delpartition(Client &client, Request request, Response &response)
 		return CommandResult::ERROR;
 	}
 
-	if (!partition->outputs.IsDummy()) {
+	if (!partition->outputs.empty()) {
 		response.Error(ACK_ERROR_UNKNOWN,
 			       "partition still has outputs");
 		return CommandResult::ERROR;
@@ -132,41 +132,40 @@ handle_delpartition(Client &client, Request request, Response &response)
 	return CommandResult::OK;
 }
 
+static Partition *
+FindOwningPartition(AudioOutputControl &ao) noexcept
+{
+	return static_cast<Partition *>(ao.GetMixerListener());
+}
+
 CommandResult
 handle_moveoutput(Client &client, Request request, Response &response)
 {
 	const std::string_view output_name = request[0];
 
-	auto &dest_partition = client.GetPartition();
-	const auto existing_output_index = dest_partition.outputs.FindIndexByName(output_name);
-	if (existing_output_index >= 0 && !dest_partition.outputs.Get(existing_output_index).IsDummy())
-		/* this output is already in the specified partition,
-		   so nothing needs to be done */
-		return CommandResult::OK;
-
-	/* find the partition which owns this output currently */
 	auto &instance = client.GetInstance();
-
-	const auto [src_partition, src_index] = instance.FindOutput(output_name, dest_partition);
-	if (src_partition == nullptr) {
+	auto *ao = instance.outputs.FindByName(output_name);
+	if (ao == nullptr) {
 		response.Error(ACK_ERROR_NO_EXIST, "No such output");
 		return CommandResult::ERROR;
 	}
 
-	const bool was_enabled = src_partition->outputs.Get(src_index).IsEnabled();
+	auto &dest_partition = client.GetPartition();
 
-	auto output = src_partition->outputs.ReplaceWithDummy(src_index);
+	/* find the partition which owns this output currently */
+	auto *src_partition = FindOwningPartition(*ao);
+	if (src_partition == &dest_partition)
+		/* this output is already in the specified partition,
+		   so nothing needs to be done */
+		return CommandResult::OK;
 
-	if (existing_output_index >= 0)
-		/* move the output back where it once was */
-		dest_partition.outputs.ReplaceDummy(existing_output_index, std::move(output),
-						    was_enabled,
-						    dest_partition.replay_gain_mode);
-	else
-		/* copy the AudioOutputControl and add it to the output list */
-		dest_partition.outputs.Add(std::move(output),
-					   was_enabled,
-					   dest_partition.replay_gain_mode);
+	const bool was_enabled = ao->IsEnabled();
+
+	if (src_partition != nullptr)
+		src_partition->outputs.ReleaseOwnership(*ao);
+
+	dest_partition.outputs.AcquireOwnership(*ao, was_enabled,
+						dest_partition.replay_gain_mode);
 
 	instance.EmitIdle(IDLE_OUTPUT);
 	return CommandResult::OK;

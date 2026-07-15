@@ -395,11 +395,14 @@ MainConfigured(const CommandLineOptions &options,
 
 	command_init();
 
+	instance.outputs.Configure(instance.io_thread.GetEventLoop(),
+				   instance.rtio_thread.GetEventLoop(),
+				   raw_config,
+				   partition_config.player.replay_gain);
+
+	instance.partitions.front().outputs.AcquireAll(instance.partitions.front().replay_gain_mode);
+
 	for (auto &partition : instance.partitions) {
-		partition.outputs.Configure(instance.io_thread.GetEventLoop(),
-					    instance.rtio_thread.GetEventLoop(),
-					    raw_config,
-					    partition_config.player.replay_gain);
 		partition.UpdateEffectiveReplayGainMode();
 	}
 

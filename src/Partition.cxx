@@ -35,7 +35,7 @@ Partition::Partition(Instance &_instance,
 	 idle_monitor(instance.event_loop, BIND_THIS_METHOD(OnIdleMonitor)),
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(config.queue.max_length, *this),
-	 outputs(pc, *this),
+	 outputs(instance.outputs, pc, *this),
 	 pc(*this, outputs,
 	    instance.input_cache.get(),
 	    config.player)
