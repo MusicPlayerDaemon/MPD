@@ -218,6 +218,14 @@ public:
 		std::size_t consumed = ring_buffer.WriteFrom(input);
 
 		if (!playing) {
+			/* Wait for enough data to fill the entire
+			   endpoint buffer before starting playback to
+			   prevent a pop on cold start.
+			   https://learn.microsoft.com/en-us/windows/win32/coreaudio/rendering-a-stream */
+			if (ring_buffer.ReadAvailable() <
+			    buffer_size_in_frames * frame_size) {
+				return consumed;
+			}
 			playing = true;
 			Play();
 		}
