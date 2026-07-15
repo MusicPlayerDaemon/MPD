@@ -11,6 +11,7 @@
 #include "thread/Cond.hxx"
 #include "time/PeriodClock.hxx"
 
+#include <cassert>
 #include <cstdint>
 #include <exception>
 #include <map>
@@ -42,7 +43,7 @@ class AudioOutputControl {
 	 * The PlayerControl object which "owns" this output.  This
 	 * object is needed to signal command completion.
 	 */
-	AudioOutputClient &client;
+	AudioOutputClient *client;
 
 	/**
 	 * Source of audio data.
@@ -304,7 +305,15 @@ public:
 	const char *GetLogName() const noexcept;
 
 	AudioOutputClient &GetClient() noexcept {
-		return client;
+		assert(client != nullptr);
+
+		return *client;
+	}
+
+	void SetClient(AudioOutputClient &_client) noexcept {
+		assert(source_state == SourceState::CLOSED);
+
+		client = &_client;
 	}
 
 	[[gnu::pure]]

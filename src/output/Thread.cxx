@@ -17,8 +17,6 @@
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
-#include <cassert>
-
 #include <string.h>
 
 void
@@ -319,7 +317,7 @@ AudioOutputControl::InternalPlay(std::unique_lock<Mutex> &lock) noexcept
 			   give it a chance to refill the pipe before
 			   it runs empty */
 			const ScopeUnlock unlock{lock};
-			client.ChunksConsumed();
+			GetClient().ChunksConsumed();
 			n = 0;
 		}
 
@@ -328,7 +326,7 @@ AudioOutputControl::InternalPlay(std::unique_lock<Mutex> &lock) noexcept
 	} while (FillSourceOrClose());
 
 	const ScopeUnlock unlock{lock};
-	client.ChunksConsumed();
+	GetClient().ChunksConsumed();
 
 	return true;
 }

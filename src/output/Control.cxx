@@ -21,7 +21,7 @@ AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _out
 				       const ConfigBlock &block)
 	:output(std::move(_output)),
 	 name(output->GetName()),
-	 client(_client),
+	 client(&_client),
 	 tags(block.GetBlockValue("tags", true)),
 	 always_on(block.GetBlockValue("always_on", false)),
 	 always_off(block.GetBlockValue("always_off", false)),
@@ -33,7 +33,7 @@ AudioOutputControl::AudioOutputControl(AudioOutputControl &&src,
 				       AudioOutputClient &_client) noexcept
 	:output(src.Steal()),
 	 name(output->GetName()),
-	 client(_client),
+	 client(&_client),
 	 tags(src.tags),
 	 always_on(src.always_on),
 	 always_off(src.always_off)
@@ -74,7 +74,7 @@ AudioOutputControl::ReplaceDummy(std::unique_ptr<FilteredAudioOutput> new_output
 		enabled = _enabled;
 	}
 
-	client.ApplyEnabled();
+	GetClient().ApplyEnabled();
 }
 
 const char *
