@@ -68,7 +68,7 @@ class AudioOutputControl {
 	 * The thread handle, or nullptr if the output thread isn't
 	 * running.
 	 */
-	Thread thread;
+	Thread thread{BIND_THIS_METHOD(Task)};
 
 	/**
 	 * This condition object wakes up the output thread after
