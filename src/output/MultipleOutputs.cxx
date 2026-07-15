@@ -121,8 +121,9 @@ MultipleOutputs::AddMoveFrom(AudioOutputControl &&src,
 	outputs.push_back(std::make_unique<AudioOutputControl>(std::move(src),
 							       client));
 
-	outputs.back()->LockSetEnabled(enable);
-	outputs.back()->SetReplayGainMode(replay_gain_mode);
+	auto &output = *outputs.back();
+	output.LockSetEnabled(enable);
+	output.SetReplayGainMode(replay_gain_mode);
 
 	client.ApplyEnabled();
 }
