@@ -288,8 +288,7 @@ MultipleOutputs::CheckPipe() noexcept
 		if (is_tail)
 			/* resume playback which has been suspended by
 			   LockClearTailChunk() */
-			for (const auto &ao : outputs)
-				ao->LockAllowPlay();
+			AllowPlay();
 
 		/* chunk is automatically returned to the buffer by
 		   ~MusicChunkPtr() */
