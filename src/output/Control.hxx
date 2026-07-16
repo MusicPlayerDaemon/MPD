@@ -30,12 +30,12 @@ class AudioOutputClient;
  * Controller for an #AudioOutput and its output thread.
  */
 class AudioOutputControl {
-	std::unique_ptr<FilteredAudioOutput> output;
+	const std::unique_ptr<FilteredAudioOutput> output;
 
 	/**
 	 * A copy of FilteredAudioOutput::name which we need just in
 	 * case this is a "dummy" output (output==nullptr) because
-	 * this output has been moved to another partitioncommands.
+	 * this output has been moved to another partition.
 	 */
 	const std::string name;
 
