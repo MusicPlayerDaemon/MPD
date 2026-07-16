@@ -3,6 +3,7 @@
 
 #include "MultipleOutputs.hxx"
 #include "Client.hxx"
+#include "Control.hxx"
 #include "Filtered.hxx"
 #include "Defaults.hxx"
 #include "MusicPipe.hxx"
@@ -14,6 +15,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
+#include <algorithm> // for std::all_of()
 #include <cassert>
 #include <stdexcept>
 
@@ -100,6 +102,12 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 						       client, empty, defaults,
 						       nullptr));
 	}
+}
+
+bool
+MultipleOutputs::IsDummy() const noexcept
+{
+	return std::all_of(outputs.begin(), outputs.end(), [](const auto &i) { return i->IsDummy(); });
 }
 
 int

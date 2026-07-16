@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "output/MultipleOutputs.hxx"
+#include "output/Control.hxx"
 #include "Control.hxx"
 #include "Mixer.hxx"
 #include "plugins/NullMixerPlugin.hxx"

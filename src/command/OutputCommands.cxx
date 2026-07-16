@@ -3,6 +3,7 @@
 
 #include "OutputCommands.hxx"
 #include "Request.hxx"
+#include "output/Control.hxx"
 #include "output/Print.hxx"
 #include "output/OutputCommand.hxx"
 #include "client/Client.hxx"

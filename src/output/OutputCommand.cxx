@@ -10,6 +10,7 @@
 
 #include "OutputCommand.hxx"
 #include "Client.hxx"
+#include "Control.hxx"
 #include "mixer/Mixer.hxx"
 #include "mixer/Memento.hxx"
 #include "mixer/Listener.hxx"

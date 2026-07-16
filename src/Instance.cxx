@@ -9,6 +9,7 @@
 #include "Stats.hxx"
 #include "client/List.hxx"
 #include "input/cache/Manager.hxx"
+#include "output/Control.hxx"
 
 #ifdef ENABLE_CURL
 #include "RemoteTagCache.hxx"

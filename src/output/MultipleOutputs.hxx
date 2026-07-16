@@ -4,14 +4,12 @@
 #ifndef OUTPUT_ALL_H
 #define OUTPUT_ALL_H
 
-#include "Control.hxx"
 #include "MusicChunkPtr.hxx"
 #include "player/Outputs.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "Chrono.hxx"
 
-#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <memory>
@@ -22,6 +20,7 @@ class MusicPipe;
 class EventLoop;
 class MixerListener;
 class AudioOutputClient;
+class AudioOutputControl;
 struct ConfigData;
 struct ReplayGainConfig;
 
@@ -107,9 +106,7 @@ public:
 	 * that is allowed to modify #outputs).
 	 */
 	[[gnu::pure]]
-	bool IsDummy() const noexcept {
-		return std::all_of(outputs.begin(), outputs.end(), [](const auto &i) { return i->IsDummy(); });
-	}
+	bool IsDummy() const noexcept;
 
 	/**
 	 * Returns the index of the audio output device with the specified name.

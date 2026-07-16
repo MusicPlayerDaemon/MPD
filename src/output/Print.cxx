@@ -7,6 +7,7 @@
  */
 
 #include "Print.hxx"
+#include "Control.hxx"
 #include "MultipleOutputs.hxx"
 #include "client/Response.hxx"
 

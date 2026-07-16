@@ -7,6 +7,7 @@
  */
 
 #include "State.hxx"
+#include "Control.hxx"
 #include "MultipleOutputs.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"
