@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_OUTPUT_CONTROL_HXX
-#define MPD_OUTPUT_CONTROL_HXX
+#pragma once
 
 #include "Source.hxx"
+#include "mixer/Listener.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Mutex.hxx"
@@ -29,7 +29,7 @@ class AudioOutputClient;
 /**
  * Controller for an #AudioOutput and its output thread.
  */
-class AudioOutputControl {
+class AudioOutputControl final : MixerListener {
 	const std::unique_ptr<FilteredAudioOutput> output;
 
 	/**
@@ -38,6 +38,8 @@ class AudioOutputControl {
 	 * this output has been moved to another partition.
 	 */
 	const std::string name;
+
+	MixerListener *mixer_listener = nullptr;
 
 	/**
 	 * The PlayerControl object which "owns" this output.  This
@@ -308,6 +310,11 @@ public:
 		assert(client != nullptr);
 
 		return *client;
+	}
+
+	void LockSetMixerListener(MixerListener &_mixer_listener) noexcept {
+		const std::lock_guard lock{mutex};
+		mixer_listener = &_mixer_listener;
 	}
 
 	void SetClient(AudioOutputClient &_client) noexcept {
@@ -655,6 +662,9 @@ private:
 	 * The OutputThread.
 	 */
 	void Task() noexcept;
-};
 
-#endif
+private:
+	/* virtual methods from class MixerListener */
+	void OnMixerVolumeChanged(Mixer &mixer, int volume) noexcept override;
+	void OnMixerChanged() noexcept override;
+};

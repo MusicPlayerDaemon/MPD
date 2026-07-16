@@ -55,7 +55,6 @@ try {
 static std::unique_ptr<AudioOutputControl>
 LoadOutputControl(EventLoop &event_loop, EventLoop &rt_event_loop,
 		  const ReplayGainConfig &replay_gain_config,
-		  MixerListener &mixer_listener,
 		  AudioOutputClient &client, const ConfigBlock &block,
 		  const AudioOutputDefaults &defaults,
 		  FilterFactory *filter_factory)
@@ -63,7 +62,6 @@ LoadOutputControl(EventLoop &event_loop, EventLoop &rt_event_loop,
 	auto output = LoadOutput(event_loop, rt_event_loop,
 				 replay_gain_config,
 				 block, defaults, filter_factory);
-	output->mixer_listener = &mixer_listener;
 	return std::make_unique<AudioOutputControl>(std::move(output),
 						    client, block);
 }
@@ -79,7 +77,6 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 	config.WithEach(ConfigBlockOption::AUDIO_OUTPUT, [&, this](const auto &block){
 		auto output = LoadOutputControl(event_loop, rt_event_loop,
 						replay_gain_config,
-						mixer_listener,
 						client, block, defaults,
 						&filter_factory);
 		if (HasName(output->GetName()))
@@ -88,6 +85,7 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 					      output->GetName());
 
 		outputs.emplace_back(std::move(output));
+		outputs.back()->LockSetMixerListener(mixer_listener);
 	});
 
 	if (outputs.empty()) {
@@ -96,9 +94,9 @@ MultipleOutputs::Configure(EventLoop &event_loop, EventLoop &rt_event_loop,
 		outputs.emplace_back(LoadOutputControl(event_loop,
 						       rt_event_loop,
 						       replay_gain_config,
-						       mixer_listener,
 						       client, empty, defaults,
 						       nullptr));
+		outputs.back()->LockSetMixerListener(mixer_listener);
 	}
 }
 

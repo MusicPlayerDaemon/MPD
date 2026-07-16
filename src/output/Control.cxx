@@ -31,6 +31,8 @@ AudioOutputControl::AudioOutputControl(std::unique_ptr<FilteredAudioOutput> _out
 	 always_off(block.GetBlockValue("always_off", false)),
 	 enabled(block.GetBlockValue("enabled", true))
 {
+	assert(output->mixer_listener == nullptr);
+	output->mixer_listener = this;
 }
 
 AudioOutputControl::~AudioOutputControl() noexcept
@@ -425,4 +427,22 @@ AudioOutputControl::StopThread() noexcept
 		thread.Join();
 
 	assert(IsCommandFinished());
+}
+
+void
+AudioOutputControl::OnMixerVolumeChanged(Mixer &_mixer, int volume) noexcept
+{
+	const std::lock_guard lock{mutex};
+
+	if (mixer_listener != nullptr)
+		mixer_listener->OnMixerVolumeChanged(_mixer, volume);
+}
+
+void
+AudioOutputControl::OnMixerChanged() noexcept
+{
+	const std::lock_guard lock{mutex};
+
+	if (mixer_listener != nullptr)
+		mixer_listener->OnMixerChanged();
 }
