@@ -126,6 +126,11 @@ class EventLoop final
 	bool alive;
 #endif
 
+	/**
+	 * Return from Run() as soon as all events are unregistered?
+	 */
+	bool quit_if_empty = true;
+
 	bool quit = false;
 
 	/**
@@ -225,6 +230,14 @@ public:
 	[[nodiscard]] [[gnu::const]]
 	Uring::Queue *GetUring() noexcept;
 #endif
+
+	/**
+	 * Don't automatically return from Run() as soon as all events
+	 * are unregistered.
+	 */
+	void DisableAutoBreak() noexcept {
+		quit_if_empty = false;
+	}
 
 	/**
 	 * Stop execution of this #EventLoop at the next chance.
