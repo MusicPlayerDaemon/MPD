@@ -18,7 +18,11 @@ class EventThread final {
 
 public:
 	explicit EventThread(bool _realtime=false)
-		:realtime(_realtime) {}
+		:realtime(_realtime) {
+		/* keep the EventThread alive even if there are no
+		   registered events */
+		event_loop.DisableAutoBreak();
+	}
 
 	~EventThread() noexcept {
 		Stop();
