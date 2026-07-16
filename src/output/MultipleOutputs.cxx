@@ -37,15 +37,13 @@ MultipleOutputs::~MultipleOutputs() noexcept
 static std::unique_ptr<FilteredAudioOutput>
 LoadOutput(EventLoop &event_loop, EventLoop &rt_event_loop,
 	   const ReplayGainConfig &replay_gain_config,
-	   MixerListener &mixer_listener,
 	   const ConfigBlock &block,
 	   const AudioOutputDefaults &defaults,
 	   FilterFactory *filter_factory)
 try {
 	return audio_output_new(event_loop, rt_event_loop, replay_gain_config, block,
 				defaults,
-				filter_factory,
-				mixer_listener);
+				filter_factory);
 } catch (...) {
 	if (block.line > 0)
 		std::throw_with_nested(FmtRuntimeError("Failed to configure output in line {}",
@@ -64,8 +62,8 @@ LoadOutputControl(EventLoop &event_loop, EventLoop &rt_event_loop,
 {
 	auto output = LoadOutput(event_loop, rt_event_loop,
 				 replay_gain_config,
-				 mixer_listener,
 				 block, defaults, filter_factory);
+	output->mixer_listener = &mixer_listener;
 	return std::make_unique<AudioOutputControl>(std::move(output),
 						    client, block);
 }

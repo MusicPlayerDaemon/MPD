@@ -201,3 +201,17 @@ FilteredAudioOutput::IteratePause()
 {
 	return output->Pause();
 }
+
+void
+FilteredAudioOutput::OnMixerVolumeChanged(Mixer &_mixer, int volume) noexcept
+{
+	if (mixer_listener != nullptr)
+		mixer_listener->OnMixerVolumeChanged(_mixer, volume);
+}
+
+void
+FilteredAudioOutput::OnMixerChanged() noexcept
+{
+	if (mixer_listener != nullptr)
+		mixer_listener->OnMixerChanged();
+}

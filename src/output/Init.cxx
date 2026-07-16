@@ -96,8 +96,7 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 			const ConfigBlock &block,
 			const MixerType mixer_type,
 			const MixerPlugin *plugin,
-			std::unique_ptr<PreparedFilter> &filter_chain,
-			MixerListener &listener)
+			std::unique_ptr<PreparedFilter> &filter_chain)
 {
 	Mixer *mixer;
 
@@ -107,7 +106,7 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 
 	case MixerType::NULL_:
 		return mixer_new(event_loop, null_mixer_plugin,
-				 *ao.output, listener,
+				 *ao.output, ao,
 				 block);
 
 	case MixerType::HARDWARE:
@@ -115,12 +114,12 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 			return nullptr;
 
 		return mixer_new(event_loop, *plugin,
-				 *ao.output, listener,
+				 *ao.output, ao,
 				 block);
 
 	case MixerType::SOFTWARE:
 		mixer = mixer_new(event_loop, software_mixer_plugin,
-				  *ao.output, listener,
+				  *ao.output, ao,
 				  ConfigBlock());
 		assert(mixer != nullptr);
 
@@ -182,7 +181,6 @@ inline void
 FilteredAudioOutput::Setup(EventLoop &event_loop,
 			   const ReplayGainConfig &replay_gain_config,
 			   const MixerPlugin *mixer_plugin,
-			   MixerListener &mixer_listener,
 			   const ConfigBlock &block,
 			   const AudioOutputDefaults &defaults)
 {
@@ -219,8 +217,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 		mixer = audio_output_load_mixer(event_loop, *this, block,
 						mixer_type,
 						mixer_plugin,
-						prepared_filter,
-						mixer_listener);
+						prepared_filter);
 	} catch (...) {
 		FmtError(output_domain,
 			 "Failed to initialize hardware mixer for {:?}: {}",
@@ -253,8 +250,7 @@ audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 const AudioOutputDefaults &defaults,
-		 FilterFactory *filter_factory,
-		 MixerListener &mixer_listener)
+		 FilterFactory *filter_factory)
 {
 	const AudioOutputPlugin *plugin;
 
@@ -298,6 +294,6 @@ audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 						       filter_factory);
 	f->Setup(event_loop, replay_gain_config,
 		 plugin->mixer_plugin,
-		 mixer_listener, block, defaults);
+		 block, defaults);
 	return f;
 }

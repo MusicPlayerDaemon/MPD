@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_FILTERED_AUDIO_OUTPUT_HXX
-#define MPD_FILTERED_AUDIO_OUTPUT_HXX
+#pragma once
 
+#include "mixer/Listener.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "filter/Observer.hxx"
 
@@ -25,7 +25,7 @@ struct AudioOutputDefaults;
 struct ReplayGainConfig;
 struct Tag;
 
-struct FilteredAudioOutput {
+struct FilteredAudioOutput final : MixerListener {
 	const char *const plugin_name;
 
 	/**
@@ -52,6 +52,12 @@ public:
 	 * configured.
 	 */
 	Mixer *mixer = nullptr;
+
+	/**
+	 * If not nullptr, then all #MixerListener calls are proxied
+	 * to this object.
+	 */
+	MixerListener *mixer_listener = nullptr;
 
 	/**
 	 * The configured audio format.
@@ -127,7 +133,6 @@ public:
 	void Setup(EventLoop &event_loop,
 		   const ReplayGainConfig &replay_gain_config,
 		   const MixerPlugin *mixer_plugin,
-		   MixerListener &mixer_listener,
 		   const ConfigBlock &block,
 		   const AudioOutputDefaults &defaults);
 
@@ -219,6 +224,11 @@ public:
 
 	void EndPause() noexcept{
 	}
+
+private:
+	/* virtual methods from class MixerListener */
+	void OnMixerVolumeChanged(Mixer &mixer, int volume) noexcept override;
+	void OnMixerChanged() noexcept override;
 };
 
 /**
@@ -229,7 +239,4 @@ audio_output_new(EventLoop &event_loop, EventLoop &rt_event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 const AudioOutputDefaults &defaults,
-		 FilterFactory *filter_factory,
-		 MixerListener &mixer_listener);
-
-#endif
+		 FilterFactory *filter_factory);
