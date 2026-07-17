@@ -14,22 +14,23 @@
 #include "mixer/Mixer.hxx"
 #include "mixer/Memento.hxx"
 #include "mixer/Listener.hxx"
+#include "protocol/Ack.hxx"
 #include "protocol/IdleFlags.hxx"
 #include "Partition.hxx"
 
 extern unsigned audio_output_state_version;
 
-bool
+void
 audio_output_enable_index(Partition &partition,
 			  unsigned idx)
 {
 	auto &outputs = partition.outputs;
 	if (idx >= outputs.Size())
-		return false;
+		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such audio output");
 
 	auto &ao = outputs.Get(idx);
 	if (!ao.LockSetEnabled(true))
-		return true;
+		return;
 
 	partition.EmitIdle(IDLE_OUTPUT);
 
@@ -42,21 +43,19 @@ audio_output_enable_index(Partition &partition,
 	ao.GetClient().ApplyEnabled();
 
 	++audio_output_state_version;
-
-	return true;
 }
 
-bool
+void
 audio_output_disable_index(Partition &partition,
 			   unsigned idx)
 {
 	auto &outputs = partition.outputs;
 	if (idx >= outputs.Size())
-		return false;
+		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such audio output");
 
 	auto &ao = outputs.Get(idx);
 	if (!ao.LockSetEnabled(false))
-		return true;
+		return;
 
 	partition.EmitIdle(IDLE_OUTPUT);
 
@@ -70,17 +69,15 @@ audio_output_disable_index(Partition &partition,
 	ao.GetClient().ApplyEnabled();
 
 	++audio_output_state_version;
-
-	return true;
 }
 
-bool
+void
 audio_output_toggle_index(Partition &partition,
 			  unsigned idx)
 {
 	auto &outputs = partition.outputs;
 	if (idx >= outputs.Size())
-		return false;
+		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such audio output");
 
 	auto &ao = outputs.Get(idx);
 	const bool enabled = ao.LockToggleEnabled();
@@ -98,6 +95,4 @@ audio_output_toggle_index(Partition &partition,
 	ao.GetClient().ApplyEnabled();
 
 	++audio_output_state_version;
-
-	return true;
 }
