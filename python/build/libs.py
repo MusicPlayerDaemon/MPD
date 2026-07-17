@@ -562,6 +562,17 @@ ffmpeg = FfmpegProject(
     ],
 )
 
+libmpg123 = AutotoolsProject(
+    'https://mpg123.de/download/mpg123-1.33.6.tar.bz2',
+    '0b10b3b33547f51e52694d069ca3cfe6',
+    'lib/libmpg123.a',
+    [
+        '--disable-shared', '--enable-static',
+        '--disable-components', '--enable-libmpg123',
+        '--disable-modules', '--disable-debug',
+    ],
+)
+
 libnfs = AutotoolsProject(
     'https://github.com/sahlberg/libnfs/archive/libnfs-6.0.2.tar.gz',
     '4e5459cc3e0242447879004e9ad28286d4d27daa42cbdcde423248fad911e747',
