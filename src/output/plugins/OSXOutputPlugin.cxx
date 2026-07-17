@@ -28,6 +28,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 #include <CoreServices/CoreServices.h>
 
+#include <cmath>
 #include <memory>
 #include <span>
 
@@ -197,7 +198,7 @@ OSXOutput::GetVolume()
 	const auto vol = AudioObjectGetPropertyDataT<Float32>(dev_id,
 							      aopa);
 
-	return static_cast<int>(vol * 100.0f);
+	return std::lround(vol * 100.0f);
 }
 
 void
