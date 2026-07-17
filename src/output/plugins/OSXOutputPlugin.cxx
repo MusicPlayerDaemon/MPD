@@ -28,6 +28,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 #include <CoreServices/CoreServices.h>
 
+#include <cmath>
 #include <memory>
 #include <span>
 
@@ -197,7 +198,7 @@ OSXOutput::GetVolume()
 	const auto vol = AudioObjectGetPropertyDataT<Float32>(dev_id,
 							      aopa);
 
-	return static_cast<int>(vol * 100.0f);
+	return std::lround(vol * 100.0f);
 }
 
 void
@@ -388,8 +389,9 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 							       aopa_device_streams);
 
 	bool format_found = false;
-	int output_stream;
-	AudioStreamBasicDescription output_format;
+	float output_score = 0;
+	AudioStreamID output_stream = kAudioObjectUnknown;
+	AudioStreamBasicDescription output_format{};
 
 	for (const auto stream : streams) {
 		const auto direction =
@@ -401,8 +403,6 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 		const auto format_list =
 			AudioObjectGetPropertyDataArray<AudioStreamRangedDescription>(stream,
 										      aopa_stream_phys_formats);
-
-		float output_score = 0;
 
 		for (const auto &format : format_list) {
 			AudioStreamBasicDescription format_desc = format.mFormat;
@@ -424,7 +424,7 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 			if (score > output_score) {
 				output_score  = score;
 				output_format = format_desc;
-				output_stream = stream; // set the idx of the stream in the device
+				output_stream = stream;
 				format_found = true;
 			}
 		}
@@ -442,6 +442,9 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 					      err);
 	}
 
+	/* without a matching format, this returns 0
+	   (kAudioStreamAnyRate), which the caller interprets as "the
+	   requested sample rate is not available" */
 	return output_format.mSampleRate;
 }
 

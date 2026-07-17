@@ -3,6 +3,9 @@ ver 0.24.14 (not yet released)
   - curl: bound WebDAV PROPFIND responses
 * input
   - qobuz: use HTTPS for API requests
+* output
+  - osx: fix format selection bugs
+  - osx: fix volume truncation
 * Windows
   - enable the "mpg123" decoder plugin
   - fix shutdown in console mode
