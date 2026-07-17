@@ -41,7 +41,7 @@ static constexpr AudioObjectPropertySelector kAudioHardwareServiceDeviceProperty
 static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
 
 static auto
-StreamDescriptionToString(const AudioStreamBasicDescription desc) noexcept
+StreamDescriptionToString(const AudioStreamBasicDescription &desc) noexcept
 {
 	// Only convert the lpcm formats (nothing else supported / used by MPD)
 	assert(desc.mFormatID == kAudioFormatLinearPCM);
@@ -389,7 +389,6 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 
 		for (const auto &format : format_list) {
 			AudioStreamBasicDescription format_desc = format.mFormat;
-			std::string format_string;
 
 			// for devices with kAudioStreamAnyRate
 			// we use the requested samplerate here
@@ -585,7 +584,7 @@ osx_render(void *vdata,
 	   UInt32 in_number_frames,
 	   AudioBufferList *buffer_list)
 {
-	OSXOutput *od = (OSXOutput *) vdata;
+	auto *od = static_cast<OSXOutput *>(vdata);
 
 	std::size_t count = in_number_frames * od->asbd.mBytesPerFrame;
 	buffer_list->mBuffers[0].mDataByteSize =
@@ -604,7 +603,7 @@ OSXOutput::Enable()
 	desc.componentFlagsMask = 0;
 
 	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
-	if (comp == 0)
+	if (comp == nullptr)
 		throw std::runtime_error("Error finding OS X component");
 
 	OSStatus status = AudioComponentInstanceNew(comp, &au);
@@ -692,7 +691,8 @@ OSXOutput::Open(AudioFormat &audio_format)
 	asbd.mBytesPerFrame = asbd.mBytesPerPacket;
 	asbd.mChannelsPerFrame = audio_format.channels;
 
-	Float64 sample_rate = osx_output_set_device_format(dev_id, asbd);
+	[[maybe_unused]] const Float64 sample_rate =
+		osx_output_set_device_format(dev_id, asbd);
 
 #ifdef ENABLE_DSD
 	if (audio_format.format == SampleFormat::DSD &&
