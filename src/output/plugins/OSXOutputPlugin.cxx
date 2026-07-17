@@ -373,8 +373,6 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 		kAudioObjectPropertyElementMain
 	};
 
-	OSStatus err;
-
 	const auto streams =
 		AudioObjectGetPropertyDataArray<AudioStreamID>(dev_id,
 							       aopa_device_streams);
@@ -422,15 +420,14 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	}
 
 	if (format_found) {
-		err = AudioObjectSetPropertyData(output_stream,
-						 &aopa_stream_phys_format,
-						 0,
-						 NULL,
-						 sizeof(output_format),
-						 &output_format);
+		OSStatus err = AudioObjectSetPropertyData(output_stream,
+							  &aopa_stream_phys_format,
+							  0,
+							  nullptr,
+							  sizeof(output_format),
+							  &output_format);
 		if (err != noErr)
-			throw FmtRuntimeError("Failed to change the stream format: {}",
-					      err);
+			Apple::ThrowOSStatus(err, "Failed to change the stream format");
 	}
 
 	/* without a matching format, this returns 0
@@ -772,7 +769,8 @@ OSXOutput::Play(std::span<const std::byte> input)
 	if (!started) {
 		OSStatus status = AudioOutputUnitStart(au);
 		if (status != noErr)
-			throw std::runtime_error("Unable to restart audio output after pause");
+			Apple::ThrowOSStatus(status,
+					     "Unable to start audio output");
 
 		started = true;
 	}
