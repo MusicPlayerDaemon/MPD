@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef APPLE_AUDIO_OBJECT_HXX
-#define APPLE_AUDIO_OBJECT_HXX
+#pragma once
 
 #include "Throw.hxx"
 #include "util/AllocatedArray.hxx"
@@ -75,5 +74,3 @@ AudioObjectGetPropertyDataArray(AudioObjectID inObjectID,
 
 	return result;
 }
-
-#endif

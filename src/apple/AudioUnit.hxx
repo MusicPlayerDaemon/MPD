@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef APPLE_AUDIO_UNIT_HXX
-#define APPLE_AUDIO_UNIT_HXX
+#pragma once
 
 #include "Throw.hxx"
 
@@ -81,5 +80,3 @@ AudioUnitSetBufferFrameSize(AudioUnit inUnit, const UInt32 &value)
 			      kAudioUnitScope_Global, 0,
 			      value);
 }
-
-#endif

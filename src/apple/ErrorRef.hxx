@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef APPLE_ERROR_REF_HXX
-#define APPLE_ERROR_REF_HXX
+#pragma once
 
 #include <CoreFoundation/CFError.h>
 
@@ -49,5 +48,3 @@ public:
 };
 
 } // namespace Apple
-
-#endif

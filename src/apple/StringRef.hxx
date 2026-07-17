@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef APPLE_STRING_REF_HXX
-#define APPLE_STRING_REF_HXX
+#pragma once
 
 #include <CoreFoundation/CFString.h>
 
@@ -43,5 +42,3 @@ public:
 };
 
 } // namespace Apple
-
-#endif
