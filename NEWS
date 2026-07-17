@@ -16,6 +16,8 @@ ver 0.25 (not yet released)
 * output
   - alsa: use hardware pause if available
   - pipewire: add option "reconnect_stream"
+* mixer
+  - fix mixer idle events on non-default partitions
 * tags
   - new tag "DiscSubtitle"
 * player

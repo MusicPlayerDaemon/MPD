@@ -165,6 +165,7 @@ MultipleOutputs::ReplaceDummy(std::size_t idx,
 
 	const std::lock_guard lock{mutex};
 	slot = std::move(src);
+	output.LockSetMixerListener(mixer_listener);
 	output.SetClient(client);
 	output.LockSetEnabled(enable);
 	output.SetReplayGainMode(replay_gain_mode);
@@ -183,6 +184,7 @@ MultipleOutputs::Add(std::unique_ptr<AudioOutputControl> &&src,
 	}
 
 	auto &output = *outputs.back();
+	output.LockSetMixerListener(mixer_listener);
 	output.SetClient(client);
 	output.LockSetEnabled(enable);
 	output.SetReplayGainMode(replay_gain_mode);
