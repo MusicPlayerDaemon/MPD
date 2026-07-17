@@ -33,7 +33,7 @@ ThrowOSStatus(OSStatus status, const char *prefix)
 
 	char description[1024];
 	if (cfstr.GetCString(description, sizeof(description)))
-		throw std::runtime_error(std::string{prefix} + description);
+		throw std::runtime_error(std::string{prefix} + ": " + description);
 
 	throw std::runtime_error(prefix);
 }
