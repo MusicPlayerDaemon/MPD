@@ -203,22 +203,14 @@ OSXOutput::GetVolume()
 void
 OSXOutput::SetVolume(unsigned new_volume)
 {
-	Float32 vol = new_volume / 100.0;
 	static constexpr AudioObjectPropertyAddress aopa = {
 		kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
 		kAudioObjectPropertyScopeOutput,
 		kAudioObjectPropertyElementMain
 	};
-	UInt32 size = sizeof(vol);
-	OSStatus status = AudioObjectSetPropertyData(dev_id,
-						     &aopa,
-						     0,
-						     NULL,
-						     size,
-						     &vol);
 
-	if (status != noErr)
-		Apple::ThrowOSStatus(status);
+	const Float32 vol = new_volume / 100.0f;
+	AudioObjectSetPropertyDataT(dev_id, aopa, vol);
 }
 
 static void
@@ -508,23 +500,19 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog) noexcept
 	}
 
 	hog_pid = hog ? getpid() : -1;
-	UInt32 size = sizeof(hog_pid);
-	OSStatus err;
-	err = AudioObjectSetPropertyData(dev_id,
-					 &aopa,
-					 0,
-					 NULL,
-					 size,
-					 &hog_pid);
-	if (err != noErr) {
-		FmtDebug(osx_output_domain,
-			 "Cannot hog the device: {}", err);
-	} else {
-		LogDebug(osx_output_domain,
-			 hog_pid == -1
-			 ? "Device is unhogged"
-			 : "Device is hogged");
+
+	try {
+		AudioObjectSetPropertyDataT(dev_id, aopa, hog_pid);
+	} catch (...) {
+		Log(LogLevel::DEBUG, std::current_exception(),
+		    "Cannot hog the device");
+		return;
 	}
+
+	LogDebug(osx_output_domain,
+		 hog_pid == -1
+		 ? "Device is unhogged"
+		 : "Device is hogged");
 }
 
 [[gnu::pure]]
