@@ -172,15 +172,12 @@ OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 		   changed by osx_output_set_device) */
 		: default_output_device;
 
-	AudioDeviceID dev_id = kAudioDeviceUnknown;
-	UInt32 dev_id_size = sizeof(dev_id);
-	AudioObjectGetPropertyData(kAudioObjectSystemObject,
-				   &aopa,
-				   0,
-				   NULL,
-				   &dev_id_size,
-				   &dev_id);
-	oo->dev_id = dev_id;
+	try {
+		oo->dev_id = AudioObjectGetPropertyDataT<AudioDeviceID>(kAudioObjectSystemObject,
+									aopa);
+	} catch (...) {
+		oo->dev_id = kAudioDeviceUnknown;
+	}
 
 	return oo;
 }
