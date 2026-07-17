@@ -388,6 +388,7 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 							       aopa_device_streams);
 
 	bool format_found = false;
+	float output_score = 0;
 	AudioStreamID output_stream = kAudioObjectUnknown;
 	AudioStreamBasicDescription output_format{};
 
@@ -401,8 +402,6 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 		const auto format_list =
 			AudioObjectGetPropertyDataArray<AudioStreamRangedDescription>(stream,
 										      aopa_stream_phys_formats);
-
-		float output_score = 0;
 
 		for (const auto &format : format_list) {
 			AudioStreamBasicDescription format_desc = format.mFormat;
