@@ -19,6 +19,7 @@
 #include "util/ByteOrder.hxx"
 #include "util/CharUtil.hxx"
 #include "util/RingBuffer.hxx"
+#include "util/RoundPowerOfTwo.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
 #include "Log.hxx"
@@ -454,13 +455,8 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
 	auto buffer_frame_size = AudioUnitGetBufferFrameSize(au);
 	buffer_frame_size *= desc.mBytesPerFrame;
 
-	// We set the frame size to a power of two integer that
-	// is larger than buffer_frame_size.
-	UInt32 frame_size = 1;
-	while (frame_size < buffer_frame_size + 1)
-		frame_size <<= 1;
-
-	return frame_size;
+	// the smallest power of two larger than buffer_frame_size
+	return RoundUpToPowerOfTwo(buffer_frame_size + 1);
 }
 
 static void
