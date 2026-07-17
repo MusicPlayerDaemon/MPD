@@ -388,8 +388,8 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 							       aopa_device_streams);
 
 	bool format_found = false;
-	int output_stream;
-	AudioStreamBasicDescription output_format;
+	AudioStreamID output_stream = kAudioObjectUnknown;
+	AudioStreamBasicDescription output_format{};
 
 	for (const auto stream : streams) {
 		const auto direction =
@@ -424,7 +424,7 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 			if (score > output_score) {
 				output_score  = score;
 				output_format = format_desc;
-				output_stream = stream; // set the idx of the stream in the device
+				output_stream = stream;
 				format_found = true;
 			}
 		}
@@ -442,6 +442,9 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 					      err);
 	}
 
+	/* without a matching format, this returns 0
+	   (kAudioStreamAnyRate), which the caller interprets as "the
+	   requested sample rate is not available" */
 	return output_format.mSampleRate;
 }
 
