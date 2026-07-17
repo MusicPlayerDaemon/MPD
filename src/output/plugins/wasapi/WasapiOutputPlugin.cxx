@@ -430,10 +430,19 @@ try {
 		event.Wait();
 
 		if (cancel.load()) {
+			/* Stop the client to prevent playing stale data
+			   or silence after discard. Push() will restart
+			   once the ring buffer is full.
+			   https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-start */
+			if (started && !is_exclusive) {
+				Stop(client);
+				started = false;
+			}
 			ring_buffer.Discard();
 			cancel.store(false);
 			empty.store(true);
 			InterruptWaiter();
+			continue;
 		}
 
 		Status current_state = status.load();
