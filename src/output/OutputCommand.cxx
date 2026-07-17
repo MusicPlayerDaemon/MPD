@@ -20,15 +20,21 @@
 
 extern unsigned audio_output_state_version;
 
-void
-audio_output_enable_index(Partition &partition,
-			  unsigned idx)
+AudioOutputControl &
+CheckPartitionOutput(Partition &partition, unsigned idx)
 {
 	auto &outputs = partition.outputs;
 	if (idx >= outputs.Size())
 		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such audio output");
 
-	auto &ao = outputs.Get(idx);
+	return outputs.Get(idx);
+}
+
+void
+audio_output_enable_index(Partition &partition,
+			  unsigned idx)
+{
+	auto &ao = CheckPartitionOutput(partition, idx);
 	if (!ao.LockSetEnabled(true))
 		return;
 
@@ -49,11 +55,7 @@ void
 audio_output_disable_index(Partition &partition,
 			   unsigned idx)
 {
-	auto &outputs = partition.outputs;
-	if (idx >= outputs.Size())
-		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such audio output");
-
-	auto &ao = outputs.Get(idx);
+	auto &ao = CheckPartitionOutput(partition, idx);
 	if (!ao.LockSetEnabled(false))
 		return;
 
@@ -75,11 +77,7 @@ void
 audio_output_toggle_index(Partition &partition,
 			  unsigned idx)
 {
-	auto &outputs = partition.outputs;
-	if (idx >= outputs.Size())
-		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such audio output");
-
-	auto &ao = outputs.Get(idx);
+	auto &ao = CheckPartitionOutput(partition, idx);
 	const bool enabled = ao.LockToggleEnabled();
 	partition.EmitIdle(IDLE_OUTPUT);
 

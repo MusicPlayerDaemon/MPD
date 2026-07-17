@@ -68,13 +68,7 @@ handle_outputset(Client &client, Request request, Response &response)
 	const unsigned i = request.ParseUnsigned(0);
 
 	auto &partition = client.GetPartition();
-	auto &outputs = partition.outputs;
-	if (i >= outputs.Size()) {
-		response.Error(ACK_ERROR_NO_EXIST, "No such audio output");
-		return CommandResult::ERROR;
-	}
-
-	auto &ao = outputs.Get(i);
+	auto &ao = CheckPartitionOutput(partition, i);
 
 	const char *const name = request[1];
 	if (!IsValidAttributeName(name)) {

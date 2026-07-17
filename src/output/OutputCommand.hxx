@@ -11,6 +11,14 @@
  */
 
 struct Partition;
+class AudioOutputControl;
+
+/**
+ * Look up an output of the specified partition and throw
+ * #ProtocolError on error.
+ */
+AudioOutputControl &
+CheckPartitionOutput(Partition &partition, unsigned idx);
 
 /**
  * Enables an audio output.
