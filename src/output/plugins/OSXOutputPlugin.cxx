@@ -32,13 +32,13 @@
 #include <memory>
 #include <span>
 
-// Backward compatibility from OSX 12.0 API change
-#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 120000)
-	#define KAUDIO_OBJECT_PROPERTY_ELEMENT_MM kAudioObjectPropertyElementMain
-	#define KAUDIO_HARDWARE_SERVICE_DEVICE_PROPERTY_VV kAudioHardwareServiceDeviceProperty_VirtualMainVolume
-#else
-	#define KAUDIO_OBJECT_PROPERTY_ELEMENT_MM kAudioObjectPropertyElementMaster
-	#define KAUDIO_HARDWARE_SERVICE_DEVICE_PROPERTY_VV kAudioHardwareServiceDeviceProperty_VirtualMasterVolume
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED < 120000)
+/* the "Main" identifiers were introduced in the macOS 12 SDK,
+   renaming the deprecated "Master" identifiers */
+static constexpr AudioObjectPropertyElement kAudioObjectPropertyElementMain =
+	kAudioObjectPropertyElementMaster;
+static constexpr AudioObjectPropertySelector kAudioHardwareServiceDeviceProperty_VirtualMainVolume =
+	kAudioHardwareServiceDeviceProperty_VirtualMasterVolume;
 #endif
 
 static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
@@ -154,13 +154,13 @@ OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 	static constexpr AudioObjectPropertyAddress default_system_output_device{
 		kAudioHardwarePropertyDefaultSystemOutputDevice,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM,
+		kAudioObjectPropertyElementMain,
 	};
 
 	static constexpr AudioObjectPropertyAddress default_output_device{
 		kAudioHardwarePropertyDefaultOutputDevice,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM
+		kAudioObjectPropertyElementMain
 	};
 
 	const auto &aopa =
@@ -189,9 +189,9 @@ int
 OSXOutput::GetVolume()
 {
 	static constexpr AudioObjectPropertyAddress aopa = {
-		KAUDIO_HARDWARE_SERVICE_DEVICE_PROPERTY_VV,
+		kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM,
+		kAudioObjectPropertyElementMain,
 	};
 
 	const auto vol = AudioObjectGetPropertyDataT<Float32>(dev_id,
@@ -205,9 +205,9 @@ OSXOutput::SetVolume(unsigned new_volume)
 {
 	Float32 vol = new_volume / 100.0;
 	static constexpr AudioObjectPropertyAddress aopa = {
-		KAUDIO_HARDWARE_SERVICE_DEVICE_PROPERTY_VV,
+		kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM
+		kAudioObjectPropertyElementMain
 	};
 	UInt32 size = sizeof(vol);
 	OSStatus status = AudioObjectSetPropertyData(dev_id,
@@ -360,25 +360,25 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	static constexpr AudioObjectPropertyAddress aopa_device_streams = {
 		kAudioDevicePropertyStreams,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM
+		kAudioObjectPropertyElementMain
 	};
 
 	static constexpr AudioObjectPropertyAddress aopa_stream_direction = {
 		kAudioStreamPropertyDirection,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM
+		kAudioObjectPropertyElementMain
 	};
 
 	static constexpr AudioObjectPropertyAddress aopa_stream_phys_formats = {
 		kAudioStreamPropertyAvailablePhysicalFormats,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM
+		kAudioObjectPropertyElementMain
 	};
 
 	static constexpr AudioObjectPropertyAddress aopa_stream_phys_format = {
 		kAudioStreamPropertyPhysicalFormat,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM
+		kAudioObjectPropertyElementMain
 	};
 
 	OSStatus err;
@@ -480,7 +480,7 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog) noexcept
 	static constexpr AudioObjectPropertyAddress aopa = {
 		kAudioDevicePropertyHogMode,
 		kAudioObjectPropertyScopeOutput,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM
+		kAudioObjectPropertyElementMain
 	};
 
 	pid_t hog_pid;
@@ -534,7 +534,7 @@ IsAudioDeviceName(AudioDeviceID id, const char *expected_name) noexcept
 	static constexpr AudioObjectPropertyAddress aopa_name{
 		kAudioObjectPropertyName,
 		kAudioObjectPropertyScopeGlobal,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM,
+		kAudioObjectPropertyElementMain,
 	};
 
 	char actual_name[256];
@@ -557,7 +557,7 @@ FindAudioDeviceByName(const char *name)
 	static constexpr AudioObjectPropertyAddress aopa_hw_devices{
 		kAudioHardwarePropertyDevices,
 		kAudioObjectPropertyScopeGlobal,
-		KAUDIO_OBJECT_PROPERTY_ELEMENT_MM,
+		kAudioObjectPropertyElementMain,
 	};
 
 	const auto ids =
