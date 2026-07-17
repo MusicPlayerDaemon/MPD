@@ -14,20 +14,16 @@
 #include "util/Manual.hxx"
 #include "pcm/Export.hxx"
 #include "pcm/Features.h" // for ENABLE_DSD
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/CharUtil.hxx"
 #include "util/RingBuffer.hxx"
 #include "util/RoundPowerOfTwo.hxx"
 #include "util/StringAPI.hxx"
-#include "util/StringBuffer.hxx"
 #include "Log.hxx"
 
 #include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
 #include <AudioToolbox/AudioToolbox.h>
-#include <CoreServices/CoreServices.h>
 
 #include <cmath>
 #include <memory>
