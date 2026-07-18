@@ -1847,6 +1847,9 @@ Audio output devices
 :command:`enableoutput {ID}`
     Turns an output on.
 
+    If this output is currently assigned to a different partition, MPD
+    will try to move it to the current partition.
+
 .. _command_toggleoutput:
 
 :command:`toggleoutput {ID}`

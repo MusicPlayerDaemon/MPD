@@ -22,8 +22,6 @@ printAudioDevices(Response &r, const MultipleOutputs &outputs)
 	const auto &all_outputs = outputs.GetAllOutputs();
 	for (unsigned i = 0, n = all_outputs.Size(); i != n; ++i) {
 		const auto &ao = all_outputs.Get(i);
-		if (!outputs.Owns(ao))
-			continue;
 
 		r.Fmt("outputid: {}\n"
 		       "outputname: {}\n"
@@ -31,7 +29,12 @@ printAudioDevices(Response &r, const MultipleOutputs &outputs)
 		       "outputenabled: {}\n",
 		      i,
 		      ao.GetName(), ao.GetPluginName(),
-		      ao.IsEnabled() ? "1"sv : "0"sv);
+		      outputs.Owns(ao) && ao.IsEnabled() ? "1"sv : "0"sv);
+
+		if (!outputs.Owns(ao))
+			/* omit attributes for outputs assigned to a
+			   different partition */
+			continue;
 
 		for (const auto &[attribute, value] : ao.GetAttributes())
 			r.Fmt("attribute: {}={}\n",

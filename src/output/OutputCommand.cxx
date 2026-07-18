@@ -36,11 +36,41 @@ CheckPartitionOutput(Partition &partition, unsigned idx)
 	return ao;
 }
 
+/**
+ * Like CheckPartitionOutput(), but move the output to this partition.
+ */
+static AudioOutputControl &
+CheckMovePartitionOutput(Partition &partition, unsigned idx, bool enable)
+{
+	auto &all_outputs = partition.instance.outputs;
+	if (idx >= all_outputs.Size())
+		throw ProtocolError(ACK_ERROR_NO_EXIST, "No such audio output");
+
+	auto &ao = all_outputs.Get(idx);
+	if (!partition.outputs.Owns(ao)) {
+		/* find the partition which owns this output currently */
+		auto *src_partition = partition.instance.FindOwningPartition(ao);
+		assert(src_partition != &partition);
+
+		if (src_partition != nullptr) {
+			src_partition->outputs.ReleaseOwnership(ao);
+			src_partition->EmitIdle(IDLE_OUTPUT);
+		}
+
+		partition.outputs.AcquireOwnership(ao, enable,
+						   partition.replay_gain_mode);
+
+		partition.EmitIdle(IDLE_OUTPUT);
+	}
+
+	return ao;
+}
+
 void
 audio_output_enable_index(Partition &partition,
 			  unsigned idx)
 {
-	auto &ao = CheckPartitionOutput(partition, idx);
+	auto &ao = CheckMovePartitionOutput(partition, idx, true);
 	if (!ao.LockSetEnabled(true))
 		return;
 
