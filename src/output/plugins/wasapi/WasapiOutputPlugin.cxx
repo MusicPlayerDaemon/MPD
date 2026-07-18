@@ -218,6 +218,14 @@ public:
 		std::size_t consumed = ring_buffer.WriteFrom(input);
 
 		if (!playing) {
+			/* Wait for enough data to fill the entire
+			   endpoint buffer before starting playback to
+			   prevent a pop on cold start.
+			   https://learn.microsoft.com/en-us/windows/win32/coreaudio/rendering-a-stream */
+			if (ring_buffer.ReadAvailable() <
+			    buffer_size_in_frames * frame_size) {
+				return consumed;
+			}
 			playing = true;
 			Play();
 		}
@@ -422,10 +430,19 @@ try {
 		event.Wait();
 
 		if (cancel.load()) {
+			/* Stop the client to prevent playing stale data
+			   or silence after discard. Push() will restart
+			   once the ring buffer is full.
+			   https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-start */
+			if (started && !is_exclusive) {
+				Stop(client);
+				started = false;
+			}
 			ring_buffer.Discard();
 			cancel.store(false);
 			empty.store(true);
 			InterruptWaiter();
+			continue;
 		}
 
 		Status current_state = status.load();
@@ -454,6 +471,15 @@ try {
 
 		UINT32 write_in_frames = buffer_size_in_frames;
 		DWORD mode = 0;
+
+		/* Flush any pending data left in the endpoint buffer
+		   after Stop() and reset the stream position to 0.
+		   Without this, Start() would play stale audio.
+		   https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset */
+		if (!started) {
+			Reset(client);
+		}
+
 		AtScopeExit(&) {
 			render_client->ReleaseBuffer(write_in_frames, mode);
 
