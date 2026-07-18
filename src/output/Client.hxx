@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_OUTPUT_CLIENT_HXX
-#define MPD_OUTPUT_CLIENT_HXX
+#pragma once
 
 /**
  * An interface between the #AudioOutput and the #Player.
@@ -14,7 +13,7 @@ public:
 	 * is called from within the output thread.  The client may
 	 * perform actions to refill the #MusicPipe.
 	 */
-	virtual void ChunksConsumed() = 0;
+	virtual void ChunksConsumed() noexcept = 0;
 
 	/**
 	 * The #AudioOutput has modified the "enabled" flag, and the
@@ -23,7 +22,5 @@ public:
 	 * AudioOutput::Command to the output thread; only the client
 	 * can do that safely.
 	 */
-	virtual void ApplyEnabled() = 0;
+	virtual void ApplyEnabled() noexcept = 0;
 };
-
-#endif

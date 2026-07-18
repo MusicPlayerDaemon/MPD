@@ -553,11 +553,11 @@ private:
 		       const AudioFormat &format);
 
 	/* virtual methods from AudioOutputClient */
-	void ChunksConsumed() override {
+	void ChunksConsumed() noexcept override {
 		LockSignal();
 	}
 
-	void ApplyEnabled() override {
+	void ApplyEnabled() noexcept override {
 		LockUpdateAudio();
 	}
 
