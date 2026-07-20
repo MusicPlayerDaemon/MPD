@@ -78,6 +78,15 @@ StringStartsWithIgnoreCase(std::string_view haystack, std::string_view needle) n
 					needle.data(), needle.size());
 }
 
+[[gnu::pure]]
+static inline bool
+StringEndsWithIgnoreCase(std::string_view haystack, std::string_view needle) noexcept
+{
+	return haystack.size() >= needle.size() &&
+		StringIsEqualIgnoreCase(haystack.substr(haystack.size() - needle.size()),
+					needle);
+}
+
 /**
  * Returns the portion of the string after a prefix.  If the string
  * does not begin with the specified prefix, this function returns
