@@ -525,11 +525,11 @@ public:
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 	constexpr const_reverse_iterator rbegin() const noexcept {
-		return reverse_iterator{end()};
+		return const_reverse_iterator{end()};
 	}
 
 	constexpr const_reverse_iterator rend() const noexcept {
-		return reverse_iterator{begin()};
+		return const_reverse_iterator{begin()};
 	}
 
 	/**
