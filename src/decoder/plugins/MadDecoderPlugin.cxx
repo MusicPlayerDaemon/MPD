@@ -32,6 +32,7 @@
 #include <string.h>
 
 static constexpr unsigned long FRAMES_CUSHION = 2000;
+static constexpr size_t MAX_ID3_TAG_SIZE = 4 * 1024 * 1024;
 
 enum class MadDecoderAction {
 	SKIP,
@@ -362,7 +363,15 @@ MadDecoder::DecodeNextFrame(bool skip, Tag *tag) noexcept
 							    stream.this_frame);
 
 			if (tagsize > 0) {
-				ParseId3((size_t)tagsize, tag);
+				const auto size = static_cast<size_t>(tagsize);
+				if (size > MAX_ID3_TAG_SIZE) {
+					FmtWarning(mad_domain,
+						   "ID3 tag is too large: {}",
+						   size);
+					return MadDecoderAction::SKIP;
+				}
+
+				ParseId3(size, tag);
 				return MadDecoderAction::CONT;
 			}
 		}
