@@ -26,6 +26,7 @@
 
 #include <algorithm> // for std::copy_n()
 #include <cassert>
+#include <new>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -149,13 +150,23 @@ private:
 
 	bool DecodeFirstFrame(Tag *tag) noexcept;
 
-	void AllocateBuffers() noexcept {
+	bool AllocateBuffers() noexcept {
 		assert(max_frames > 0);
 		assert(frame_offsets == nullptr);
 		assert(times == nullptr);
 
-		frame_offsets = new long[max_frames];
-		times = new mad_timer_t[max_frames];
+		frame_offsets = new (std::nothrow) long[max_frames];
+		if (frame_offsets == nullptr)
+			return false;
+
+		times = new (std::nothrow) mad_timer_t[max_frames];
+		if (times == nullptr) {
+			delete[] frame_offsets;
+			frame_offsets = nullptr;
+			return false;
+		}
+
+		return true;
 	}
 
 	[[nodiscard]] [[gnu::pure]]
@@ -960,7 +971,12 @@ MadDecoder::RunDecoder() noexcept
 		return;
 	}
 
-	AllocateBuffers();
+	if (!AllocateBuffers()) {
+		FmtWarning(mad_domain,
+			   "failed to allocate seek table for {} frames",
+			   max_frames);
+		return;
+	}
 
 	client->Ready(CheckAudioFormat(frame.header.samplerate,
 				       SampleFormat::S24_P32,
