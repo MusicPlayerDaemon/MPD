@@ -690,10 +690,28 @@ MadDecoder::DecodeFirstFrame(Tag *tag) noexcept
 		mute_frame = MadDecoderMuteFrame::SKIP;
 
 		if ((xing.flags & XING_FRAMES) && xing.frames) {
-			mad_timer_t duration = frame.header.duration;
-			mad_timer_multiply(&duration, xing.frames);
-			total_time = ToSongTime(duration);
-			max_frames = xing.frames;
+			/*
+			 * Each MPEG audio frame contains at least a four-byte
+			 * header.  Do not let a Xing header amplify a small
+			 * input into a large seek table allocation.  For
+			 * streams of unknown size, retain the conservative
+			 * estimate from FileSizeToSongLength().
+			 */
+			const offset_type available_frames =
+				input_stream.KnownSize()
+				? input_stream.GetSize() / 4
+				: FRAMES_CUSHION;
+
+			if (xing.frames > available_frames) {
+				FmtWarning(mad_domain,
+					   "ignoring implausible Xing frame count: {}",
+					   xing.frames);
+			} else {
+				mad_timer_t duration = frame.header.duration;
+				mad_timer_multiply(&duration, xing.frames);
+				total_time = ToSongTime(duration);
+				max_frames = xing.frames;
+			}
 		}
 
 		struct lame lame;
