@@ -13,6 +13,7 @@
 #include "mixer/Control.hxx"
 #include "mixer/plugins/NullMixerPlugin.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
+#include "mixer/plugins/PwSinkMixerPlugin.hxx"
 #include "filter/LoadChain.hxx"
 #include "filter/Prepared.hxx"
 #include "filter/plugins/AutoConvertFilterPlugin.hxx"
@@ -110,6 +111,24 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 				 block);
 
 	case MixerType::HARDWARE:
+		/* for a "pipewire" output, "hardware" would otherwise fall
+		   through below to the output's own registered mixer_plugin
+		   (PipeWireMixerPlugin.cxx, i.e. MPD's own pw_stream
+		   volume) -- but only if "mixer_type" wasn't actually
+		   configured in THIS block. Checking the raw block value
+		   here (rather than trusting the already-resolved
+		   mixer_type) is what lets an "ao" block with no
+		   "mixer_type" at all keep today's stream-volume behaviour,
+		   while a block that explicitly writes
+		   `mixer_type "hardware"` opts into driving the PipeWire
+		   sink volume instead -- regardless of what any global
+		   default mixer_type happens to be. */
+		if (StringIsEqual(ao.GetPluginName(), "pipewire") &&
+		    block.GetBlockValue("mixer_type") != nullptr)
+			return mixer_new(event_loop, pw_sink_mixer_plugin,
+					 *ao.output, ao,
+					 block);
+
 		if (plugin == nullptr)
 			return nullptr;
 
