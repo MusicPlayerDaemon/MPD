@@ -7,6 +7,7 @@
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
 #include "mixer/plugins/PipeWireMixerPlugin.hxx"
+#include "mixer/plugins/PwSinkMixerPlugin.hxx"
 #include "pcm/Features.h" // for ENABLE_DSD
 #include "pcm/Silence.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
@@ -976,11 +977,40 @@ pipewire_output_clear_mixer(PipeWireOutput &po, PipeWireMixer &pm) noexcept
 	po.ClearMixer(pm);
 }
 
+/**
+ * By default, mixer_type "hardware" for this output behaves exactly
+ * like leaving mixer_type unset: #pipewire_mixer_plugin drives MPD's
+ * own client-side stream volume via pipewire_output_set_volume(),
+ * because #PipeWireOutput has no other mixer to offer.
+ *
+ * If "mixer_type" is written explicitly as "hardware" in this
+ * output's own configuration block, opt into #pw_sink_mixer_plugin
+ * instead: it opens its own PipeWire connection and drives a sink
+ * node's real volume (the system default sink, or a specific
+ * "target" node), the same real hardware-mixer option ALSA, OSS and
+ * PulseAudio already offer via mixer_type "hardware".
+ *
+ * Checking the raw block value here, rather than trusting an
+ * already-resolved #MixerType, is what lets an "ao" block with no
+ * "mixer_type" at all keep the default stream-volume behaviour while
+ * a block that explicitly writes `mixer_type "hardware"` opts into
+ * sink volume instead -- regardless of what any global default
+ * mixer_type happens to be.
+ */
+static const MixerPlugin *
+pipewire_get_hardware_mixer_plugin(const ConfigBlock &block) noexcept
+{
+	return block.GetBlockValue("mixer_type") != nullptr
+		? &pw_sink_mixer_plugin
+		: nullptr;
+}
+
 const struct AudioOutputPlugin pipewire_output_plugin = {
 	"pipewire",
 	nullptr,
 	&PipeWireOutput::Create,
 	&pipewire_mixer_plugin,
+	pipewire_get_hardware_mixer_plugin,
 };
 
 void
