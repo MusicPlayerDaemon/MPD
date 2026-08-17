@@ -38,6 +38,8 @@ extern "C" {
 
 using std::string_view_literals::operator""sv;
 
+static constexpr std::size_t MAX_NFS_DIRECTORY_ENTRIES = 256 * 1024;
+
 class NfsStorage final
 	: public Storage, NfsLease {
 
@@ -384,6 +386,7 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 {
 	assert(entries.empty());
 
+	std::size_t n = 0;
 	const struct nfsdirent *ent;
 	while ((ent = connection.ReadDirectory(dir)) != nullptr) {
 #ifdef _WIN32
@@ -400,6 +403,10 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 		try {
 			entries.emplace_front(name_fs.ToUTF8Throw());
 			Copy(entries.front().info, *ent);
+
+			if (++n >= MAX_NFS_DIRECTORY_ENTRIES)
+				/* too many already - stop here */
+				break;
 		} catch (...) {
 			/* ignore files whose name cannot be converted
 			   to UTF-8 */

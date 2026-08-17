@@ -33,33 +33,21 @@ mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is)
 		buffer_size = size;
 	}
 
-	auto buffer = AllocatedArray<std::byte>(buffer_size);
+	AllocatedArray<std::byte> buffer{buffer_size};
 
-	std::byte *p = buffer.data();
-	std::byte *const end = p + buffer.size();
-
-	while (true) {
-		size_t ret = decoder_read(client, is, {p, end});
-		if (ret == 0) {
-			if (is.LockIsEOF())
-				/* end of file */
-				break;
-
+	const auto nbytes = decoder_read_much(client, is, buffer);
+	if (nbytes < buffer.size()) {
+		if (!is.LockIsEOF())
 			/* I/O error - skip this song */
-			return buffer;
-		}
-
-		p += ret;
-		if (p == end) {
-			if (!is_stream)
-				break;
-
+			return nullptr;
+	} else {
+		if (is_stream) {
 			LogWarning(*domain, "stream too large");
-			return buffer;
+			return nullptr;
 		}
 	}
 	
-	buffer.SetSize(p - buffer.data());
+	buffer.SetSize(nbytes);
 	return buffer;
 }
 

@@ -21,7 +21,7 @@ zlib = CmakeProject(
     ('http://zlib.net/zlib-1.3.2.tar.xz',
      'https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz'),
     'd7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3',
-    'include/zlib.h',
+    'lib/libz.a',
     [
         '-DZLIB_BUILD_TESTING=OFF',
         '-DZLIB_BUILD_SHARED=OFF',
@@ -83,8 +83,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'https://ffmpeg.org/releases/ffmpeg-8.1.2.tar.xz',
-    '464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c',
+    'https://ffmpeg.org/releases/ffmpeg-9.0.tar.xz',
+    '7f607a00dd0d28a729d5a4811205812eef01cf6ef6155025febb6f36a9062d52',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -563,8 +563,8 @@ ffmpeg = FfmpegProject(
 )
 
 libmpg123 = AutotoolsProject(
-    'https://mpg123.de/download/mpg123-1.33.6.tar.bz2',
-    '0b10b3b33547f51e52694d069ca3cfe6',
+    'https://mpg123.de/download/mpg123-1.33.7.tar.bz2',
+    '31d0e35a4ca567ec9b5ebda6c3062bb4435d6d3eacd6ef0d95cadd7854dc03ee',
     'lib/libmpg123.a',
     [
         '--disable-shared', '--enable-static',
@@ -574,8 +574,8 @@ libmpg123 = AutotoolsProject(
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-6.0.2.tar.gz',
-    '4e5459cc3e0242447879004e9ad28286d4d27daa42cbdcde423248fad911e747',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-7.0.0.tar.gz',
+    'd25c70537d60f1ab307b9cb5e9fb01acff71065fc9547b54dfaec109ba993003',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
@@ -587,6 +587,6 @@ libnfs = AutotoolsProject(
         '--disable-utils', '--disable-examples',
         '--without-libkrb5',
     ],
-    base='libnfs-libnfs-6.0.2',
+    base='libnfs-libnfs-7.0.0',
     autoreconf=True,
 )

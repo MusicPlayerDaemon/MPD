@@ -48,7 +48,14 @@ public:
 
 		dscp_class = _dscp_class;
 	}
-#endif
+
+	/**
+	 * Determine to which TCP port the socket was effectively
+	 * bound.  Returns 0 if none (or error).
+	 */
+	[[gnu::pure]]
+	unsigned GetEffectivePort() const noexcept;
+#endif // HAVE_TCP
 
 private:
 	template<typename A>

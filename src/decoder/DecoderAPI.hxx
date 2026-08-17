@@ -13,6 +13,7 @@
 // IWYU pragma: begin_exports
 
 #include "Client.hxx"
+#include "input/Offset.hxx"
 #include "input/Ptr.hxx"
 #include "Command.hxx"
 #include "DecoderPlugin.hxx"
@@ -46,10 +47,12 @@ class StopDecoder {};
  * @return the number of bytes read, or 0 if one of the following
  * occurs: end of file; error; command (like SEEK or STOP).
  */
+[[nodiscard]]
 size_t
 decoder_read(DecoderClient *decoder, InputStream &is,
 	     std::span<std::byte> dest) noexcept;
 
+[[nodiscard]]
 static inline size_t
 decoder_read(DecoderClient &decoder, InputStream &is,
 	     std::span<std::byte> dest) noexcept
@@ -65,6 +68,7 @@ decoder_read(DecoderClient &decoder, InputStream &is,
  * @return the number of bytes read, or 0 if one of the following
  * occurs: end of file; error; command (like SEEK or STOP).
  */
+[[nodiscard]]
 size_t
 decoder_read_much(DecoderClient *decoder, InputStream &is,
 		  std::span<std::byte> dest) noexcept;
@@ -76,6 +80,7 @@ decoder_read_much(DecoderClient *decoder, InputStream &is,
  * @return true on success, false on error or command or not enough
  * data
  */
+[[nodiscard]]
 bool
 decoder_read_full(DecoderClient *decoder, InputStream &is,
 		  std::span<std::byte> dest) noexcept;
@@ -85,5 +90,15 @@ decoder_read_full(DecoderClient *decoder, InputStream &is,
  *
  * @return true on success, false on error or command
  */
+[[nodiscard]]
 bool
-decoder_skip(DecoderClient *decoder, InputStream &is, size_t size) noexcept;
+decoder_skip(DecoderClient *decoder, InputStream &is, offset_type delta) noexcept;
+
+/**
+ * Wrapper for InputStream::LockSeek().
+ *
+ * @return true on success, false on error or command
+ */
+[[nodiscard]]
+bool
+decoder_seek(DecoderClient *decoder, InputStream &is, offset_type new_offset) noexcept;

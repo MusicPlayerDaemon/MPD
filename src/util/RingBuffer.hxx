@@ -176,14 +176,11 @@ public:
 	std::size_t WriteFramesFrom(std::span<const T> src, std::size_t frame_size) noexcept {
 		// TODO optimize, eliminate duplicate atomic reads
 
-		std::size_t available = WriteAvailable();
-		std::size_t frames_available = available / frame_size;
-		std::size_t rounded_available = frames_available * frame_size;
+		const std::size_t available = std::min(WriteAvailable(), src.size());
+		const std::size_t rounded_available =
+			available - available % frame_size;
 
-		if (rounded_available < src.size())
-			src = src.first(rounded_available);
-		
-		return WriteFrom(src);
+		return WriteFrom(src.first(rounded_available));
 	}
 
 	/**
@@ -277,14 +274,11 @@ public:
 	std::size_t ReadFramesTo(std::span<T> dest, std::size_t frame_size) noexcept {
 		// TODO optimize, eliminate duplicate atomic reads
 
-		std::size_t available = ReadAvailable();
-		std::size_t frames_available = available / frame_size;
-		std::size_t rounded_available = frames_available * frame_size;
+		const std::size_t available = std::min(ReadAvailable(), dest.size());
+		const std::size_t rounded_available =
+			available - available % frame_size;
 
-		if (rounded_available < dest.size())
-			dest = dest.first(rounded_available);
-		
-		return ReadTo(dest);
+		return ReadTo(dest.first(rounded_available));
 	}
 
 	/**

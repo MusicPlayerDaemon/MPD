@@ -32,6 +32,7 @@ public:
 	uint64_t GetSeekFrame() noexcept override;
 	void SeekError(std::exception_ptr &&error) noexcept override;
 	InputStreamPtr OpenUri(std::string_view uri) override;
+	bool Seek(InputStream &is, offset_type new_offset) noexcept override;
 	size_t Read(InputStream &is,
 		    std::span<std::byte> dest) noexcept override;
 	void SubmitTimestamp(FloatDuration t) noexcept override;

@@ -16,6 +16,7 @@ ver 0.25 (not yet released)
 * output
   - alsa: use hardware pause if available
   - pipewire: add option "reconnect_stream"
+  - wasapi: detect device changes
 * mixer
   - fix mixer idle events on non-default partitions
 * tags
@@ -30,14 +31,36 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.14 (not yet released)
+ver 0.24.14 (2026/08/13)
 * storage
   - curl: bound WebDAV PROPFIND responses
+* storage
+  - nfs: work around libnfs memory leak
+  - nfs: fix use-after-free bug after timeout
+  - nfs: fix assertion failures
+  - nfs: stop after 256k directory entries
 * input
   - qobuz: use HTTPS for API requests
+* decoder
+  - dsdiff: fix tag parser
+  - dsdiff: store audio format in database
+  - dsdiff: reject overflowing chunk offsets
+  - mad: limit ID3 tags to 4 MB
+  - mad: ignore implausible Xing frame counts
+  - modplug, openmpt: fix error handling bug
 * output
+  - alsa: remove logging calls from the real-time thread
+  - alsa: remove option "thesycon_dsd_workaround"
+  - alsa: fix corruption bug with "stop_dsd_silence"
   - osx: fix format selection bugs
   - osx: fix volume truncation
+  - pipewire: remove logging calls from the real-time thread
+  - pipewire: fix uninitialized variable
+  - pipewire: fix thread-safety bugs
+  - pipewire: fix deadlock bug
+  - pipewire: fix ring buffer corruption bug
+* Linux
+  - support Zeroconf with systemd socket activation
 * Windows
   - enable the "mpg123" decoder plugin
   - fix shutdown in console mode

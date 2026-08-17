@@ -13,8 +13,6 @@
 
 #include <string>
 
-class SocketAddress;
-
 namespace Avahi {
 
 struct Service;

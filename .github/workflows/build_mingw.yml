@@ -54,12 +54,21 @@ jobs:
       - id: checkout
         uses: actions/checkout@v7
 
-      - name: "Cache third-party libraries"
+      - name: "Cache third-party library tarballs"
         uses: actions/cache@v6
         with:
-          key: ${{runner.os}}-libs-${{matrix.cpu}}-${{hashFiles('win32/build.py', 'python/**')}}
+          key: lib-tarballs-windows-${{hashFiles('win32/configure.py', 'python/**')}}
           path: |
             ${{github.workspace}}/output/lib/download
+
+      - name: "Restore third-party libraries"
+        id: cache-libs
+        uses: actions/cache/restore@v6
+        with:
+          key: libs-mingw-${{matrix.cpu}}-${{hashFiles('win32/configure.py', 'python/**')}}-${{github.run_id}}
+          restore-keys: |
+            libs-mingw-${{matrix.cpu}}-${{hashFiles('win32/configure.py', 'python/**')}}-
+          path: |
             ${{github.workspace}}/output/lib/*/root
 
       - name: Install dependencies
@@ -69,6 +78,7 @@ jobs:
             ${{ matrix.packages }} \
             ccache \
             cmake \
+            gperf \
             meson \
             nasm \
             pkg-config \
@@ -83,7 +93,7 @@ jobs:
         run: |
           mkdir -p output
           cd output
-          ../win32/build.py --${{matrix.bits}} \
+          ../win32/configure.py --${{matrix.bits}} \
             --buildtype=debug \
             --werror \
             -Dtest=true \
@@ -98,6 +108,26 @@ jobs:
             -Dwebdav=enabled \
             -Dzlib=enabled \
             -Dwrap_mode=forcefallback
+
+      # If any library was built (i.e. a library build directory exists),
+      # save the cache, even if the cache was restored successfully (which
+      # would make actions/cache skip the save) and even if the build has
+      # failed.
+      - name: "Check for third-party library builds"
+        id: check-libs
+        if: always()
+        run: |
+          if ls -d output/lib/*/build >/dev/null 2>&1; then
+            echo "built=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Save third-party libraries"
+        if: always() && steps.check-libs.outputs.built == 'true'
+        uses: actions/cache/save@v6
+        with:
+          key: ${{steps.cache-libs.outputs.cache-primary-key}}
+          path: |
+            ${{github.workspace}}/output/lib/*/root
 
       - name: Build
         run: meson compile -C output --verbose

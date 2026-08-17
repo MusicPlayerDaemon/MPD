@@ -114,3 +114,104 @@ TEST(RingBuffer, ReadFromWriteTo)
 	EXPECT_EQ(b.WriteAvailable(), 4U);
 	EXPECT_EQ(b.ReadAvailable(), 0U);
 }
+
+TEST(RingBuffer, ReadFramesTo)
+{
+	RingBuffer<char> b{8};
+
+	EXPECT_EQ(b.WriteFrom(std::span{"abcdefgh"sv}), 8U);
+	// "abcdefgh_"
+
+	{
+		/* the destination buffer is not a multiple of the
+		   frame size; only whole frames may be read */
+		std::array<char, 5> d;
+		EXPECT_EQ(b.ReadFramesTo(d, 3), 3U);
+		// "___defgh_"
+
+		EXPECT_EQ(ToStringView(d).substr(0, 3), "abc"sv);
+	}
+
+	EXPECT_EQ(b.ReadAvailable(), 5U);
+
+	{
+		/* this time, the amount of available data is not a
+		   multiple of the frame size */
+		std::array<char, 8> d;
+		EXPECT_EQ(b.ReadFramesTo(d, 3), 3U);
+		// "______gh_"
+
+		EXPECT_EQ(ToStringView(d).substr(0, 3), "def"sv);
+	}
+
+	EXPECT_EQ(b.ReadAvailable(), 2U);
+
+	{
+		/* not enough data for one frame */
+		std::array<char, 8> d;
+		EXPECT_EQ(b.ReadFramesTo(d, 3), 0U);
+	}
+
+	EXPECT_EQ(b.ReadAvailable(), 2U);
+
+	/* now check the same with a read which wraps around the end
+	   of the ring buffer */
+
+	EXPECT_EQ(b.WriteFrom(std::span{"ijklmn"sv}), 6U);
+	// "jklmn_ghi"
+
+	EXPECT_EQ(b.ReadAvailable(), 8U);
+
+	{
+		std::array<char, 5> d;
+		EXPECT_EQ(b.ReadFramesTo(d, 2), 4U);
+		// "_klmn____"
+
+		EXPECT_EQ(ToStringView(d).substr(0, 4), "ghij"sv);
+	}
+
+	EXPECT_EQ(b.ReadAvailable(), 4U);
+
+	{
+		std::array<char, 4> d;
+		EXPECT_EQ(b.ReadFramesTo(d, 2), 4U);
+		// "_________"
+
+		EXPECT_EQ(ToStringView(d), "klmn"sv);
+	}
+
+	EXPECT_EQ(b.ReadAvailable(), 0U);
+}
+
+TEST(RingBuffer, WriteFramesFrom)
+{
+	RingBuffer<char> b{8};
+
+	{
+		/* the source buffer is not a multiple of the frame
+		   size; only whole frames may be written */
+		EXPECT_EQ(b.WriteFramesFrom(std::span{"abcde"sv}, 3), 3U);
+		// "abc______"
+
+		EXPECT_EQ(b.ReadAvailable(), 3U);
+		EXPECT_EQ(ToStringView(b.Read()), "abc"sv);
+	}
+
+	{
+		/* this time, the amount of free space is not a
+		   multiple of the frame size */
+		EXPECT_EQ(b.WriteFramesFrom(std::span{"defghijk"sv}, 3), 3U);
+		// "abcdef___"
+
+		EXPECT_EQ(b.WriteAvailable(), 2U);
+		EXPECT_EQ(ToStringView(b.Read()), "abcdef"sv);
+	}
+
+	{
+		/* not enough space for one frame */
+		EXPECT_EQ(b.WriteFramesFrom(std::span{"ghi"sv}, 3), 0U);
+
+		EXPECT_EQ(b.WriteAvailable(), 2U);
+		EXPECT_EQ(ToStringView(b.Read()), "abcdef"sv);
+	}
+}

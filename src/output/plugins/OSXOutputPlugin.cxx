@@ -143,11 +143,12 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 	}
 }
 
-AudioOutput *
-OSXOutput::Create(EventLoop &, const ConfigBlock &block)
+/**
+ * Query the current default output device.
+ */
+static AudioDeviceID
+GetDefaultOutputDevice(OSType component_subtype)
 {
-	OSXOutput *oo = new OSXOutput(block);
-
 	static constexpr AudioObjectPropertyAddress default_system_output_device{
 		kAudioHardwarePropertyDefaultSystemOutputDevice,
 		kAudioObjectPropertyScopeOutput,
@@ -161,16 +162,24 @@ OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 	};
 
 	const auto &aopa =
-		oo->component_subtype == kAudioUnitSubType_SystemOutput
+		component_subtype == kAudioUnitSubType_SystemOutput
 		// get system output dev_id if configured
 		? default_system_output_device
-		/* fallback to default device initially (can still be
-		   changed by osx_output_set_device) */
 		: default_output_device;
 
+	return AudioObjectGetPropertyDataT<AudioDeviceID>(kAudioObjectSystemObject,
+							  aopa);
+}
+
+AudioOutput *
+OSXOutput::Create(EventLoop &, const ConfigBlock &block)
+{
+	OSXOutput *oo = new OSXOutput(block);
+
 	try {
-		oo->dev_id = AudioObjectGetPropertyDataT<AudioDeviceID>(kAudioObjectSystemObject,
-									aopa);
+		/* fallback to default device initially (can still be
+		   changed by osx_output_set_device) */
+		oo->dev_id = GetDefaultOutputDevice(oo->component_subtype);
 	} catch (...) {
 		oo->dev_id = kAudioDeviceUnknown;
 	}

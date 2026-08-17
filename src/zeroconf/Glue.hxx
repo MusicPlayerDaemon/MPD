@@ -19,7 +19,7 @@ class ZeroconfHelper;
  * Throws on error.
  */
 std::unique_ptr<ZeroconfHelper>
-ZeroconfInit(const ConfigData &config, EventLoop &loop);
+ZeroconfInit(EventLoop &loop, const ConfigData &config, unsigned port);
 
 #endif /* ! HAVE_ZEROCONF */
 

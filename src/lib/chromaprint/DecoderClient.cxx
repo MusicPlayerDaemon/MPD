@@ -66,6 +66,16 @@ ChromaprintDecoderClient::SubmitAudio(InputStream *,
 	return GetCommand();
 }
 
+bool
+ChromaprintDecoderClient::Seek(InputStream &is, offset_type new_offset) noexcept
+try {
+	is.LockSeek(new_offset);
+	return true;
+} catch (...) {
+	error = std::current_exception();
+	return false;
+}
+
 size_t
 ChromaprintDecoderClient::Read(InputStream &is,
 			       std::span<std::byte> dest) noexcept

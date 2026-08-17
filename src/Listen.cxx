@@ -33,8 +33,6 @@
 static constexpr Domain listen_domain("listen");
 #endif
 
-int listen_port;
-
 #ifdef ENABLE_SYSTEMD_DAEMON
 
 static bool
@@ -144,6 +142,4 @@ listen_global_init(const ConfigData &config, ClientListener &listener)
 		else
 			throw;
 	}
-
-	listen_port = port;
 }

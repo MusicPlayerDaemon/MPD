@@ -12,6 +12,7 @@
 #include "pcm/Silence.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "system/Error.hxx"
+#include "time/PeriodClock.hxx"
 #include "util/BitReverse.hxx"
 #include "util/Domain.hxx"
 #include "util/RingBuffer.hxx"
@@ -39,6 +40,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <numeric>
 #include <stdexcept>
 #include <string>
@@ -54,6 +56,12 @@ class PipeWireOutput final : AudioOutput {
 	struct pw_thread_loop *thread_loop = nullptr;
 	struct pw_stream *stream;
 
+	/**
+	 * If #disconnected, this contains a human-readable
+	 * description of the problem.  Used by CheckThrowError().
+	 *
+	 * Protected by #thread_loop's lock.
+	 */
 	std::string error_message;
 
 	std::byte pod_buffer[1024];
@@ -145,6 +153,15 @@ class PipeWireOutput final : AudioOutput {
 
 	bool drained;
 
+	/**
+	 * Set to true from a real-time thread to ask the output
+	 * thread to log an xrun which required the producer to
+	 * generate silence.
+	 */
+	std::atomic_bool silence_inserted;
+
+	PeriodClock throttle_silence_log;
+
 	explicit PipeWireOutput(const ConfigBlock &block);
 
 public:
@@ -153,17 +170,6 @@ public:
 		pw_init(nullptr, nullptr);
 
 		return new PipeWireOutput(block);
-	}
-
-	static constexpr struct pw_stream_events MakeStreamEvents() noexcept {
-		struct pw_stream_events events{};
-		events.version = PW_VERSION_STREAM_EVENTS;
-		events.state_changed = StateChanged;
-		events.process = Process;
-		events.drained = Drained;
-		events.control_info = ControlInfo;
-		events.param_changed = ParamChanged;
-		return events;
 	}
 
 	void SetVolume(float volume);
@@ -177,6 +183,9 @@ public:
 	}
 
 private:
+	/**
+	 * Caller must lock the #thread_loop.
+	 */
 	void CheckThrowError() {
 		if (disconnected) {
 			if (error_message.empty())
@@ -262,6 +271,15 @@ private:
 		o.ParamChanged(id, param);
 	}
 
+	static constexpr struct pw_stream_events stream_events{
+		.version = PW_VERSION_STREAM_EVENTS,
+		.state_changed = StateChanged,
+		.control_info = ControlInfo,
+		.param_changed = ParamChanged,
+		.process = Process,
+		.drained = Drained,
+	};
+
 	/* virtual methods from class AudioOutput */
 	void Enable() override;
 	void Disable() noexcept override;
@@ -287,8 +305,6 @@ private:
 
 	void SendTag(const Tag &tag) override;
 };
-
-static constexpr auto stream_events = PipeWireOutput::MakeStreamEvents();
 
 inline
 PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
@@ -357,7 +373,12 @@ PipeWireOutput::Enable()
 	if (thread_loop == nullptr)
 		throw MakeErrno("pw_thread_loop_new() failed");
 
-	pw_thread_loop_start(thread_loop);
+	if (int error = pw_thread_loop_start(thread_loop); error < 0) {
+		pw_thread_loop_destroy(thread_loop);
+		thread_loop = nullptr;
+
+		throw PipeWire::MakeError(error, "pw_thread_loop_start() failed");
+	}
 
 	stream = nullptr;
 }
@@ -491,6 +512,7 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	restore_volume = true;
 
 	paused = false;
+	silence_inserted.store(false, std::memory_order_relaxed);
 
 	/* stay inactive (PW_STREAM_FLAG_INACTIVE) until the ring
 	   buffer has been filled */
@@ -505,6 +527,8 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 				       PW_KEY_APP_NAME, "Music Player Daemon",
 				       PW_KEY_APP_ICON_NAME, "mpd",
 				       nullptr);
+	if (props == nullptr)
+		throw MakeErrno("pw_properties_new() failed");
 
 	pw_properties_setf(props, PW_KEY_NODE_NAME, "mpd.%s", name);
 
@@ -654,7 +678,7 @@ inline void
 PipeWireOutput::DsdFormatChanged(const struct spa_pod &param) noexcept
 {
 	uint32_t media_type, media_subtype;
-	struct spa_audio_info_dsd dsd;
+	struct spa_audio_info_dsd dsd{};
 
 	if (spa_format_parse(&param, &media_type, &media_subtype) >= 0 &&
 	    media_type == SPA_MEDIA_TYPE_audio &&
@@ -766,8 +790,17 @@ PipeWireOutput::Process() noexcept
 	auto &d = buffer.datas[0];
 
 	const std::span<std::byte> dest{reinterpret_cast<std::byte *>(d.data), d.maxsize};
-	if (dest.data() == nullptr)
+	if (dest.data() == nullptr) {
+		/* this is not supposed to happen: due to
+		   PW_STREAM_FLAG_MAP_BUFFERS, libpipewire maps all
+		   buffers for us, except for DmaBufs which are not
+		   marked mappable, and we never negotiate DmaBuf; but
+		   just in case, give the buffer back instead of
+		   leaking it */
+		d.chunk->size = 0;
+		pw_stream_queue_buffer(stream, b);
 		return;
+	}
 
 	std::size_t chunk_size = frame_size;
 
@@ -786,7 +819,9 @@ PipeWireOutput::Process() noexcept
 		nbytes = max_chunks * chunk_size;
 		PcmSilence(dest.first(nbytes), sample_format);
 
-		LogWarning(pipewire_output_domain, "Decoder is too slow; playing silence to avoid xrun");
+		/* this is a real-time thread, so we must not log
+		   here; let the output thread do it */
+		silence_inserted.store(true, std::memory_order_relaxed);
 	}
 
 	auto &chunk = *d.chunk;
@@ -808,8 +843,6 @@ PipeWireOutput::Process() noexcept
 std::chrono::steady_clock::duration
 PipeWireOutput::Delay() const noexcept
 {
-	const PipeWire::ThreadLoopLock lock(thread_loop);
-
 	auto result = std::chrono::steady_clock::duration::zero();
 	if (paused)
 		/* idle while paused */
@@ -821,6 +854,13 @@ PipeWireOutput::Delay() const noexcept
 std::size_t
 PipeWireOutput::Play(std::span<const std::byte> src)
 {
+	if (silence_inserted.load(std::memory_order_relaxed)) {
+		silence_inserted.store(false, std::memory_order_relaxed);
+
+		if (throttle_silence_log.CheckUpdate(std::chrono::seconds(5)))
+			LogWarning(pipewire_output_domain, "Decoder is too slow; playing silence to avoid xrun");
+	}
+
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 
 	paused = false;
@@ -884,9 +924,6 @@ PipeWireOutput::Cancel() noexcept
 	if (drained)
 		return;
 
-	/* clear MPD's ring buffer */
-	ring_buffer.Clear();
-
 	/* clear libpipewire's buffer */
 	pw_stream_flush(stream, false);
 	drained = true;
@@ -899,6 +936,11 @@ PipeWireOutput::Cancel() noexcept
 		active = false;
 		pw_stream_set_active(stream, false);
 	}
+
+	/* clear MPD's ring buffer; this must be done only after the
+	   "process" callback has been disabled, because
+	   RingBuffer::Clear() is not thread-safe */
+	ring_buffer.Clear();
 }
 
 bool
@@ -930,8 +972,6 @@ PipeWireOutput::SetMixer(PipeWireMixer &_mixer) noexcept
 void
 PipeWireOutput::SendTag(const Tag &tag)
 {
-	CheckThrowError();
-
 	static constexpr struct {
 		TagType mpd;
 		const char *pipewire;
@@ -959,10 +999,10 @@ PipeWireOutput::SendTag(const Tag &tag)
 	struct spa_dict dict = SPA_DICT_INIT(items.data(), (uint32_t)items.size());
 
 	const PipeWire::ThreadLoopLock lock(thread_loop);
+	CheckThrowError();
 
-	auto rc = pw_stream_update_properties(stream, &dict);
-	if (rc < 0)
-		LogWarning(pipewire_output_domain, "Error updating properties");
+	if (int error = pw_stream_update_properties(stream, &dict); error < 0)
+		throw PipeWire::MakeError(error, "pw_stream_update_properties() failed");
 }
 
 void

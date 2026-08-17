@@ -9,60 +9,17 @@
 
 #include "config.h"
 #include "DsdLib.hxx"
-#include "../DecoderAPI.hxx"
-#include "input/InputStream.hxx"
-#include "tag/Id3Scan.hxx"
 
 #ifdef ENABLE_ID3TAG
-#include <id3tag.h>
+#include "../DecoderAPI.hxx"
+#include "tag/Id3Limits.hxx"
+#include "tag/Id3Parse.hxx"
+#include "tag/Id3Scan.hxx"
+#include "input/InputStream.hxx"
+#include "util/AllocatedArray.hxx"
 #endif
 
-#include <string.h>
 #include <stdlib.h>
-
-bool
-DsdId::Equals(const char *s) const noexcept
-{
-	assert(s != nullptr);
-	assert(strlen(s) == sizeof(value));
-
-	return memcmp(value, s, sizeof(value)) == 0;
-}
-
-bool
-dsdlib_skip_to(DecoderClient *client, InputStream &is,
-	       offset_type offset)
-{
-	if (is.IsSeekable()) {
-		is.LockSeek(offset);
-		return true;
-	}
-
-	if (is.GetOffset() > offset)
-		return false;
-
-	return dsdlib_skip(client, is, offset - is.GetOffset());
-}
-
-bool
-dsdlib_skip(DecoderClient *client, InputStream &is,
-	    offset_type delta)
-{
-	if (delta == 0)
-		return true;
-
-	if (is.IsSeekable()) {
-		is.LockSeek(is.GetOffset() + delta);
-		return true;
-	}
-
-	if (delta > 1024 * 1024)
-		/* don't skip more than one megabyte; it would be too
-		   expensive */
-		return false;
-
-	return decoder_skip(client, is, delta);
-}
 
 bool
 dsdlib_valid_freq(uint32_t samplefreq) noexcept
@@ -84,44 +41,38 @@ dsdlib_valid_freq(uint32_t samplefreq) noexcept
 }
 
 #ifdef ENABLE_ID3TAG
-void
-dsdlib_tag_id3(InputStream &is, TagHandler &handler,
-	       offset_type tagoffset)
+bool
+dsdlib_tag_id3(DecoderClient *client, InputStream &is,
+	       TagHandler &handler, offset_type tagoffset)
 {
 	if (tagoffset == 0 || !is.KnownSize())
-		return;
+		return false;
 
 	/* Prevent broken files causing problems */
 	const auto size = is.GetSize();
 	if (tagoffset >= size)
-		return;
+		return false;
 
 	const auto count64 = size - tagoffset;
-	if (count64 < 10 || count64 > 4 * 1024 * 1024)
-		return;
+	if (count64 < 10 || count64 > MAX_ID3_TAG_SIZE)
+		return false;
 
-	if (!dsdlib_skip_to(nullptr, is, tagoffset))
-		return;
+	if (!decoder_seek(client, is, tagoffset))
+		return false;
 
 	const id3_length_t count = count64;
 
-	auto *const id3_buf = new id3_byte_t[count];
-	if (id3_buf == nullptr)
-		return;
+	AllocatedArray<std::byte> id3_buf{count};
 
-	if (!decoder_read_full(nullptr, is,
-			       {reinterpret_cast<std::byte *>(id3_buf), count})) {
-		delete[] id3_buf;
-		return;
-	}
+	if (!decoder_read_full(client, is, id3_buf))
+		return false;
 
-	struct id3_tag *id3_tag = id3_tag_parse(id3_buf, count);
-	delete[] id3_buf;
+	const auto id3_tag = id3_tag_parse(id3_buf);
+	id3_buf = nullptr;
 	if (id3_tag == nullptr)
-		return;
+		return false;
 
-	scan_id3_tag(id3_tag, handler);
-
-	id3_tag_delete(id3_tag);
+	scan_id3_tag(id3_tag.get(), handler);
+	return true;
 }
 #endif

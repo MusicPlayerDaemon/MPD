@@ -3,6 +3,7 @@
 
 #include "DecoderAPI.hxx"
 #include "input/InputStream.hxx"
+#include "util/IntOverflow.hxx"
 #include "Log.hxx"
 
 #include <cassert>
@@ -58,18 +59,56 @@ decoder_read_full(DecoderClient *client, InputStream &is,
 }
 
 bool
-decoder_skip(DecoderClient *client, InputStream &is, size_t size) noexcept
+decoder_skip(DecoderClient *client, InputStream &is, offset_type delta) noexcept
 {
-	while (size > 0) {
+	if (delta > 1024 && is.IsSeekable() &&
+	    (delta > 1024 * 1024 || is.CheapSeeking())) {
+		offset_type new_offset;
+		if (AddOverflow(is.GetOffset(), delta, new_offset))
+			return false;
+
+		return decoder_seek(client, is, new_offset);
+	}
+
+	if (delta > 4 * 1024 * 1024)
+		/* skipping that much would be too expensive */
+		return false;
+
+	while (delta > 0) {
 		std::byte buffer[1024];
 
-		size_t nbytes = decoder_read(client, is,
-					     std::span{buffer, std::min(sizeof(buffer), size)});
+		std::span<std::byte> dest{buffer};
+		if (delta < dest.size())
+			dest = dest.first(delta);
+
+		size_t nbytes = decoder_read(client, is, dest);
 		if (nbytes == 0)
 			return false;
 
-		size -= nbytes;
+		delta -= nbytes;
 	}
 
 	return true;
+}
+
+bool
+decoder_seek(DecoderClient *client, InputStream &is, offset_type new_offset) noexcept
+{
+	if (is.IsSeekable()) {
+		if (client != nullptr)
+			return client->Seek(is, new_offset);
+
+		try {
+			is.LockSeek(new_offset);
+			return true;
+		} catch (...) {
+			LogError(std::current_exception());
+			return false;
+		}
+	}
+
+	if (is.GetOffset() > new_offset)
+		return false;
+
+	return decoder_skip(client, is, new_offset - is.GetOffset());
 }

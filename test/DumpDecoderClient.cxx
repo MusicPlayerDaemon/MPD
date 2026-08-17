@@ -63,6 +63,15 @@ DumpDecoderClient::OpenUri(std::string_view uri)
 	return InputStream::OpenReady(uri, mutex);
 }
 
+bool
+DumpDecoderClient::Seek(InputStream &is, offset_type new_offset) noexcept
+try {
+	is.LockSeek(new_offset);
+	return true;
+} catch (...) {
+	return false;
+}
+
 size_t
 DumpDecoderClient::Read(InputStream &is, std::span<std::byte> dest) noexcept
 {

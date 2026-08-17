@@ -401,6 +401,19 @@ DecoderBridge::OpenUri(std::string_view uri)
 	}
 }
 
+bool
+DecoderBridge::Seek(InputStream &is, offset_type new_offset) noexcept
+try {
+	assert(dc.state == DecoderState::START ||
+	       dc.state == DecoderState::DECODE);
+
+	is.LockSeek(new_offset);
+	return true;
+} catch (...) {
+	error = std::current_exception();
+	return false;
+}
+
 size_t
 DecoderBridge::Read(InputStream &is, std::span<std::byte> dest) noexcept
 try {

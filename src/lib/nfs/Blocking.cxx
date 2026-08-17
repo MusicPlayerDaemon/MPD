@@ -14,8 +14,11 @@ BlockingNfsOperation::Run()
 		    [this](){ connection.AddLease(*this); });
 
 	/* wait for completion */
-	if (!LockWaitFinished())
+	if (!LockWaitFinished()) {
+		BlockingCall(connection.GetEventLoop(),
+			     [this](){ connection.RemoveLease(*this); });
 		throw std::runtime_error("Timeout");
+	}
 
 	/* check for error */
 	if (error)

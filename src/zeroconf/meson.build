@@ -14,7 +14,7 @@ if zeroconf_option == 'auto'
   endif
 endif
 
-if zeroconf_option == 'disabled'
+if zeroconf_option == 'disabled' or not have_tcp
   zeroconf_dep = dependency('', required: false)
   subdir_done()
 endif

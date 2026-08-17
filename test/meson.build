@@ -218,6 +218,7 @@ if enable_database
   executable(
     'run_storage',
     'run_storage.cxx',
+    'ShutdownHandler.cxx',
     '../src/TagSave.cxx',
     include_directories: inc,
     dependencies: [

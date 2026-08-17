@@ -334,16 +334,7 @@ WavpackInput::ReadBytes(std::span<std::byte> dest) noexcept
 
 	/* wavpack fails if we return a partial read, so we just wait
 	   until the buffer is full */
-	while (!dest.empty()) {
-		size_t nbytes = decoder_read(client, is, dest);
-		if (nbytes == 0) {
-			/* EOF, error or a decoder command */
-			break;
-		}
-
-		i += nbytes;
-		dest = dest.subspan(nbytes);
-	}
+	i += decoder_read_much(client, is, dest);
 
 	return i;
 }

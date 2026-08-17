@@ -13,6 +13,7 @@
 #include "Listen.hxx"
 #include "client/Config.hxx"
 #include "client/List.hxx"
+#include "client/Listener.hxx"
 #include "command/AllCommands.hxx"
 #include "Partition.hxx"
 #include "tag/Config.hxx"
@@ -452,14 +453,21 @@ MainConfigured(const CommandLineOptions &options,
 
 #ifdef HAVE_ZEROCONF
 	std::unique_ptr<ZeroconfHelper> zeroconf;
-	try {
-		auto &event_loop = instance.io_thread.GetEventLoop();
-		BlockingCall(event_loop, [&](){
-			zeroconf = ZeroconfInit(raw_config, event_loop);
-		});
-	} catch (...) {
-		LogError(std::current_exception(),
-			 "Zeroconf initialization failed");
+
+	if (const unsigned port = instance.partitions.front().listener->GetEffectivePort();
+	    port > 0) {
+		try {
+			auto &event_loop = instance.io_thread.GetEventLoop();
+			BlockingCall(event_loop, [&](){
+				zeroconf = ZeroconfInit(event_loop, raw_config, port);
+			});
+		} catch (...) {
+			LogError(std::current_exception(),
+				 "Zeroconf initialization failed");
+		}
+	} else {
+		LogWarning(config_domain,
+			   "No global port, disabling zeroconf");
 	}
 
 	AtScopeExit(&zeroconf, &instance) {

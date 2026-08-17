@@ -73,6 +73,7 @@ public:
 
 	//InputStreamPtr OpenUri(std::string_view uri) override;
 
+	bool Seek(InputStream &is, offset_type new_offset) noexcept override;
 	size_t Read(InputStream &is,
 		    std::span<std::byte> dest) noexcept override;
 

@@ -10,4 +10,12 @@
  */
 class AudioOutputInterrupted {};
 
+/**
+ * An exception class that will be thrown by an #AudioOutput method
+ * when the audio device changed (e.g. the default device changed,
+ * or an explicitly configured device was reconnected), and the
+ * output needs to be reopened.
+*/
+class AudioDeviceChanged {};
+
 #endif

@@ -25,6 +25,7 @@
 #include "event/InjectEvent.hxx"
 #include "event/FineTimerEvent.hxx"
 #include "event/Call.hxx"
+#include "event/Loop.hxx"
 #include "util/RingBuffer.hxx"
 #include "Log.hxx"
 
@@ -164,16 +165,6 @@ class AlsaOutput final
 	 * Are we currently draining with #stop_dsd_silence?
 	 */
 	bool in_stop_dsd_silence;
-
-	/**
-	 * Enable the DSD sync workaround for Thesycon USB audio
-	 * receivers?  On this device, playing DSD512 or PCM causes
-	 * all subsequent attempts to play other DSD rates to fail,
-	 * which can be fixed by briefly playing PCM at 44.1 kHz.
-	 */
-	const bool thesycon_dsd_workaround;
-
-	bool need_thesycon_dsd_workaround = thesycon_dsd_workaround;
 #endif
 
 	/**
@@ -233,6 +224,13 @@ class AlsaOutput final
 
 	std::atomic_bool paused;
 	bool hw_can_pause = false;
+
+	/**
+	 * Set to true from a real-time thread to ask the output
+	 * thread to log an xrun which required the producer to
+	 * generate silence.
+	 */
+	std::atomic_bool silence_inserted;
 
 public:
 	AlsaOutput(EventLoop &loop, const ConfigBlock &block);
@@ -371,7 +369,11 @@ private:
 	snd_pcm_sframes_t WriteFromPeriodBuffer() noexcept;
 
 	void LockCaughtError() noexcept {
+		assert(GetEventLoop().IsInside());
+
 		period_buffer.Clear();
+
+		silence_timer.Cancel();
 
 		const std::lock_guard lock{mutex};
 		error = std::current_exception();
@@ -446,8 +448,6 @@ AlsaOutput::AlsaOutput(EventLoop &_loop, const ConfigBlock &block)
 		     /* legacy name from MPD 0.18 and older: */
 		     block.GetBlockValue("dsd_usb", false)),
 	 stop_dsd_silence(block.GetBlockValue("stop_dsd_silence", false)),
-	 thesycon_dsd_workaround(block.GetBlockValue("thesycon_dsd_workaround",
-						     false)),
 #endif
 	close_on_pause(block.GetBlockValue("close_on_pause", true))
 {
@@ -678,101 +678,11 @@ BestMatch(const std::forward_list<Alsa::AllowedFormat> &haystack,
 	return haystack.front();
 }
 
-#ifdef ENABLE_DSD
-
-static void
-Play_44_1_Silence(snd_pcm_t *pcm)
-{
-	snd_pcm_hw_params_t *hw;
-	snd_pcm_hw_params_alloca(&hw);
-
-	int err;
-
-	err = snd_pcm_hw_params_any(pcm, hw);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_hw_params_any() failed");
-
-	err = snd_pcm_hw_params_set_access(pcm, hw,
-					   SND_PCM_ACCESS_RW_INTERLEAVED);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_access() failed");
-
-	err = snd_pcm_hw_params_set_format(pcm, hw, SND_PCM_FORMAT_S16);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_format() failed");
-
-	unsigned channels = 1;
-	err = snd_pcm_hw_params_set_channels_near(pcm, hw, &channels);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_channels_near() failed");
-
-	constexpr snd_pcm_uframes_t rate = 44100;
-	err = snd_pcm_hw_params_set_rate(pcm, hw, rate, 0);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_rate() failed");
-
-	snd_pcm_uframes_t buffer_size = 1;
-	err = snd_pcm_hw_params_set_buffer_size_near(pcm, hw, &buffer_size);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_buffer_size_near() failed");
-
-	snd_pcm_uframes_t period_size = 1;
-	int dir = 0;
-	err = snd_pcm_hw_params_set_period_size_near(pcm, hw, &period_size,
-						     &dir);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_hw_params_set_period_size_near() failed");
-
-	err = snd_pcm_hw_params(pcm, hw);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_hw_params() failed");
-
-	snd_pcm_sw_params_t *sw;
-	snd_pcm_sw_params_alloca(&sw);
-
-	err = snd_pcm_sw_params_current(pcm, sw);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_sw_params_current() failed");
-
-	err = snd_pcm_sw_params_set_start_threshold(pcm, sw, period_size);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_sw_params_set_start_threshold() failed");
-
-	err = snd_pcm_sw_params(pcm, sw);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_sw_params() failed");
-
-	err = snd_pcm_prepare(pcm);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_prepare() failed");
-
-	AllocatedArray<int16_t> buffer{channels * period_size};
-	buffer = std::span<const int16_t>{};
-
-	/* play at least 250ms of silence */
-	for (snd_pcm_uframes_t remaining_frames = rate / 4;;) {
-		auto n = snd_pcm_writei(pcm, buffer.data(),
-					period_size);
-		if (n < 0)
-			throw Alsa::MakeError(err, "snd_pcm_writei() failed");
-
-		if (snd_pcm_uframes_t(n) >= remaining_frames)
-			break;
-
-		remaining_frames -= snd_pcm_uframes_t(n);
-	}
-
-	err = snd_pcm_drain(pcm);
-	if (err < 0)
-		throw Alsa::MakeError(err, "snd_pcm_drain() failed");
-}
-
-#endif
-
 void
 AlsaOutput::Open(AudioFormat &audio_format)
 {
 	paused = false;
+	silence_inserted.store(false, std::memory_order_relaxed);
 
 #ifdef ENABLE_DSD
 	bool dop;
@@ -809,22 +719,6 @@ AlsaOutput::Open(AudioFormat &audio_format)
 		 pcm_name,
 		 snd_pcm_type_name(snd_pcm_type(pcm)));
 
-#ifdef ENABLE_DSD
-	if (need_thesycon_dsd_workaround &&
-	    audio_format.format == SampleFormat::DSD &&
-	    audio_format.sample_rate <= 256 * 44100 / 8) {
-		LogDebug(alsa_output_domain, "Playing some 44.1 kHz silence");
-
-		try {
-			Play_44_1_Silence(pcm);
-		} catch (...) {
-			LogError(std::current_exception());
-		}
-
-		need_thesycon_dsd_workaround = false;
-	}
-#endif
-
 	PcmExport::Params params;
 
 	try {
@@ -844,11 +738,6 @@ AlsaOutput::Open(AudioFormat &audio_format)
 #ifdef ENABLE_DSD
 	use_dsd = audio_format.format == SampleFormat::DSD;
 	in_stop_dsd_silence = false;
-
-	if (thesycon_dsd_workaround &&
-	    (!use_dsd ||
-	     audio_format.sample_rate > 256 * 44100 / 8))
-		need_thesycon_dsd_workaround = true;
 
 	if (params.dsd_mode == PcmExport::DsdMode::DOP)
 		LogDebug(alsa_output_domain, "DoP (DSD over PCM) enabled");
@@ -1082,7 +971,12 @@ AlsaOutput::Drain()
 
 	Activate();
 
-	cond.wait(lock, [this]{ return !drain || !active; });
+	cond.wait(lock, [this]{ return !drain || !active || interrupted; });
+
+	/* the stream is discontinuous now; discard the incomplete
+	   block which may still be inside the PcmExport instance,
+	   because it would otherwise be prepended to the next song */
+	pcm_export->Reset();
 
 	if (error)
 		std::rethrow_exception(error);
@@ -1135,6 +1029,7 @@ AlsaOutput::Cancel() noexcept
 		in_stop_dsd_silence = true;
 		drain = true;
 		cond.wait(lock, [this]{ return !drain || !active; });
+		pcm_export->Reset();
 		return;
 	}
 #endif
@@ -1256,6 +1151,13 @@ AlsaOutput::Play(std::span<const std::byte> src)
 {
 	assert(!src.empty());
 	assert(src.size() % in_frame_size == 0);
+
+	if (silence_inserted.load(std::memory_order_relaxed)) {
+		silence_inserted.store(false, std::memory_order_relaxed);
+
+		if (throttle_silence_log.CheckUpdate(std::chrono::seconds(5)))
+			LogWarning(alsa_output_domain, "Decoder is too slow; playing silence to avoid xrun");
+	}
 
 	const bool was_paused = paused.exchange(false);
 
@@ -1388,8 +1290,9 @@ try {
 			return;
 		}
 
-		if (throttle_silence_log.CheckUpdate(std::chrono::seconds(5)))
-			LogWarning(alsa_output_domain, "Decoder is too slow; playing silence to avoid xrun");
+		/* this is a real-time thread, so we must not log
+		   here; let the output thread do it */
+		silence_inserted.store(true, std::memory_order_relaxed);
 
 		/* insert some silence if the buffer has not enough
 		   data yet, to avoid ALSA xrun */

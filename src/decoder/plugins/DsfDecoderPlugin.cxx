@@ -25,6 +25,8 @@
 
 #include <string.h>
 
+using std::string_view_literals::operator""sv;
+
 static constexpr unsigned DSF_BLOCK_SIZE = 4096;
 
 struct DsfMetaData {
@@ -88,7 +90,7 @@ dsf_read_metadata(DecoderClient *client, InputStream &is,
 {
 	DsfHeader dsf_header;
 	if (!decoder_read_full(client, is, ReferenceAsWritableBytes(dsf_header)) ||
-	    !dsf_header.id.Equals("DSD "))
+	    !dsf_header.id.Equals("DSD "sv))
 		return false;
 
 	const offset_type chunk_size = dsf_header.size;
@@ -103,7 +105,7 @@ dsf_read_metadata(DecoderClient *client, InputStream &is,
 	DsfFmtChunk dsf_fmt_chunk;
 	if (!decoder_read_full(client, is,
 			       ReferenceAsWritableBytes(dsf_fmt_chunk)) ||
-	    !dsf_fmt_chunk.id.Equals("fmt "))
+	    !dsf_fmt_chunk.id.Equals("fmt "sv))
 		return false;
 
 	const uint64_t fmt_chunk_size = dsf_fmt_chunk.size;
@@ -130,7 +132,7 @@ dsf_read_metadata(DecoderClient *client, InputStream &is,
 	/* read the 'data' chunk of the DSF file */
 	DsfDataChunk data_chunk;
 	if (!decoder_read_full(client, is, ReferenceAsWritableBytes(data_chunk)) ||
-	    !data_chunk.id.Equals("data"))
+	    !data_chunk.id.Equals("data"sv))
 		return false;
 
 	/* data size of DSF files are padded to multiple of 4096,
@@ -259,7 +261,7 @@ dsf_decode_chunk(DecoderClient &client, InputStream &is,
 				start_offset + block * block_size;
 
 			try {
-				if (dsdlib_skip_to(&client, is, offset)) {
+				if (decoder_seek(&client, is, offset)) {
 					client.CommandFinished();
 					i = block;
 				} else
@@ -336,7 +338,7 @@ dsf_scan_stream(InputStream &is, TagHandler &handler)
 
 #ifdef ENABLE_ID3TAG
 	/* Add available tags from the ID3 tag */
-	dsdlib_tag_id3(is, handler, metadata.id3_offset);
+	dsdlib_tag_id3(nullptr, is, handler, metadata.id3_offset);
 #endif
 	return true;
 }

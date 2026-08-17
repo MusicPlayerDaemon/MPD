@@ -15,6 +15,7 @@ apple = static_library(
   include_directories: inc,
   dependencies: [
     audiounit_dep,
+    fmt_dep,
   ],
 )
 

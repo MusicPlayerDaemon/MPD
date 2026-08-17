@@ -391,7 +391,7 @@ public:
 		assert(!empty());
 
 		auto *next = RedBlackTreeNode::GetNextNode(i.node);
-		Cast(i.node)->unlink();
+		ToHook(*Cast(i.node)).unlink();
 		--counter;
 		return iterator{next};
 	}

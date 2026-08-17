@@ -71,8 +71,8 @@ public:
 			return *this;
 
 		ResizeDiscard(other.size());
-		std::copy_n(other.buffer.begin(), other.buffer.end(),
-			    buffer.begin());
+		std::copy(other.buffer.begin(), other.buffer.end(),
+			  buffer.begin());
 		return *this;
 	}
 

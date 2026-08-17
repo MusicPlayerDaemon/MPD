@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
+#include "ShutdownHandler.hxx"
 #include "cmdline/OptionDef.hxx"
 #include "cmdline/OptionParser.hxx"
+#include "event/Loop.hxx"
 #include "event/Thread.hxx"
 #include "ConfigGlue.hxx"
 #include "tag/Tag.hxx"
@@ -47,6 +49,7 @@ Options:
   --verbose
 
 Available commands:
+  idle URI
   ls URI PATH
   stat URI PATH
   cat URI PATH
@@ -130,6 +133,24 @@ MakeStorage(EventLoop &event_loop, const char *uri)
 		throw std::runtime_error("Unrecognized storage URI");
 
 	return storage;
+}
+
+static int
+Idle(Path config_path, const char *storage_uri)
+{
+	EventLoop event_loop;
+	const ShutdownHandler shutdown_handler{event_loop};
+
+	GlobalInit init{config_path};
+
+	auto storage = MakeStorage(init.GetEventLoop(), storage_uri);
+
+	fprintf(stderr, "Waiting for SIGINT/SIGTERM\n");
+	event_loop.Run();
+
+	/* now let the destructors of #storage and #init shut
+	   everything down */
+	return EXIT_SUCCESS;
 }
 
 static int
@@ -266,6 +287,20 @@ try {
 	const auto c = ParseCommandLine(argc, argv);
 
 	SetLogThreshold(c.verbose ? LogLevel::DEBUG : LogLevel::INFO);
+
+	if (StringIsEqual(c.command, "idle")) {
+		/* this command needs to initialize things in a
+		   different order, therefore it is handled before
+		   #GlobalInit is constructed */
+
+		if (c.args.size() != 1) {
+			fputs(usage_text, stderr);
+			return EXIT_FAILURE;
+		}
+
+		return Idle(c.config_path, c.args[0]);
+	}
+
 	GlobalInit init{c.config_path};
 
 	if (StringIsEqual(c.command, "ls")) {

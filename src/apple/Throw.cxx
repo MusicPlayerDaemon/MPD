@@ -4,9 +4,12 @@
 #include "Throw.hxx"
 #include "ErrorRef.hxx"
 #include "StringRef.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <stdexcept>
 #include <string>
+
+using std::string_view_literals::operator""sv;
 
 namespace Apple {
 
@@ -33,7 +36,7 @@ ThrowOSStatus(OSStatus status, const char *prefix)
 
 	char description[1024];
 	if (cfstr.GetCString(description, sizeof(description)))
-		throw std::runtime_error(std::string{prefix} + ": " + description);
+		throw FmtRuntimeError("{}: {}sv", prefix, description);
 
 	throw std::runtime_error(prefix);
 }

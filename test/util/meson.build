@@ -4,6 +4,7 @@ test(
     'TestUtil',
     'TestCircularBuffer.cxx',
     'TestException.cxx',
+    'TestIntOverflow.cxx',
     'TestIntrusiveForwardList.cxx',
     'TestIntrusiveHashSet.cxx',
     'TestIntrusiveList.cxx',

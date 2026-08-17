@@ -9,6 +9,7 @@
 #include "net/IPv6Address.hxx"
 #include "net/StaticSocketAddress.hxx"
 #include "net/AllocatedSocketAddress.hxx"
+#include "net/StaticSocketAddress.hxx"
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
@@ -72,6 +73,16 @@ public:
 	SocketAddress GetAddress() const noexcept {
 		return address;
 	}
+
+#ifdef HAVE_TCP
+	[[gnu::pure]]
+	unsigned GetEffectivePort() const noexcept {
+		if (!IsDefined())
+			return 0;
+
+		return event.GetSocket().GetLocalAddress().GetPort();
+	}
+#endif
 
 	void SetFD(UniqueSocketDescriptor _fd) noexcept {
 		event.Open(_fd.Release());
@@ -225,6 +236,20 @@ ServerSocket::Close() noexcept
 		if (i.IsDefined())
 			i.Close();
 }
+
+#ifdef HAVE_TCP
+
+unsigned
+ServerSocket::GetEffectivePort() const noexcept
+{
+	for (const auto &i : sockets)
+		if (const unsigned port = i.GetEffectivePort(); port != 0)
+			return port;
+
+	return 0;
+}
+
+#endif // HAVE_TCP
 
 template<typename A>
 ServerSocket::OneServerSocket &

@@ -7,7 +7,6 @@
 #include "Client.hxx"
 #include "Error.hxx"
 #include "ErrorHandler.hxx"
-#include "net/SocketAddress.hxx"
 
 #include <avahi-common/error.h>
 #include <avahi-common/malloc.h>
@@ -128,13 +127,14 @@ static void
 AddService(AvahiEntryGroup &group, const Service &service,
 	   const char *name)
 {
-	int error = avahi_entry_group_add_service(&group,
-						  service.interface,
-						  service.protocol,
-						  AvahiPublishFlags(0),
-						  name, service.type.c_str(),
-						  nullptr, nullptr,
-						  service.port, nullptr);
+	int error = avahi_entry_group_add_service_strlst(&group,
+							 service.interface,
+							 service.protocol,
+							 AvahiPublishFlags(0),
+							 name, service.type.c_str(),
+							 nullptr, nullptr,
+							 service.port,
+							 service.txt.get());
 	if (error != AVAHI_OK)
 		throw MakeError(error, "Failed to add Avahi service");
 }
@@ -183,7 +183,7 @@ Publisher::RegisterServices(AvahiClient *c)
 	RegisterServices(*group);
 }
 
-void
+inline void
 Publisher::DeferredRegisterServices() noexcept
 {
 	assert(visible);

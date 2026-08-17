@@ -135,6 +135,7 @@ libmpg123_dep = dependency('libmpg123', required: get_option('mpg123'))
 decoder_features.set('ENABLE_MPG123', libmpg123_dep.found())
 if libmpg123_dep.found()
   decoder_plugins_sources += 'Mpg123DecoderPlugin.cxx'
+  decoder_plugins_dependencies += libid3tag_dep
 endif
 
 libsndfile_dep = dependency('sndfile', required: get_option('sndfile'))

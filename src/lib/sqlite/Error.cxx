@@ -3,14 +3,17 @@
 
 #include "Error.hxx"
 
+#include <fmt/format.h>
 #include <sqlite3.h>
 
 #include <string>
 
+using std::string_view_literals::operator""sv;
+
 static std::string
 MakeSqliteErrorMessage(sqlite3 *db, const char *msg) noexcept
 {
-	return std::string(msg) + ": " + sqlite3_errmsg(db);
+	return fmt::format("{}: {}sv", msg, sqlite3_errmsg(db));
 }
 
 SqliteError::SqliteError(sqlite3 *db, int _code, const char *msg) noexcept

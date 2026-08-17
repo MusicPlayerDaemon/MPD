@@ -5,6 +5,7 @@
 
 #include "Command.hxx"
 #include "Chrono.hxx"
+#include "input/Offset.hxx"
 #include "input/Ptr.hxx"
 
 #include <cstddef>
@@ -85,6 +86,13 @@ public:
 	 * Throws std::runtime_error on error.
 	 */
 	virtual InputStreamPtr OpenUri(std::string_view uri) = 0;
+
+	/**
+	 * Wrapper for InputStream::LockSeek().
+	 *
+	 * @return true on success, false on error
+	 */
+	virtual bool Seek(InputStream &is, offset_type new_offset) noexcept = 0;
 
 	/**
 	 * Blocking read from the input stream.

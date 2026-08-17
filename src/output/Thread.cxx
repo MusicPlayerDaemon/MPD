@@ -269,6 +269,10 @@ AudioOutputControl::PlayChunk(std::unique_lock<Mutex> &lock) noexcept
 		} catch (AudioOutputInterrupted) {
 			caught_interrupted = true;
 			return false;
+		} catch (AudioDeviceChanged) {
+			fail_timer.Reset();
+			InternalClose(false);
+			return false;
 		} catch (...) {
 			FmtError(output_domain,
 				 "Failed to play on {}: {}",

@@ -5,9 +5,6 @@
 #include "Helper.hxx"
 #include "config/Data.hxx"
 #include "config/Option.hxx"
-#include "Listen.hxx"
-#include "util/Domain.hxx"
-#include "Log.hxx"
 
 #ifdef HAVE_AVAHI
 #include "avahi/Helper.hxx"
@@ -17,6 +14,7 @@
 #include "Bonjour.hxx"
 #endif
 
+#include <cassert>
 #include <climits>
 
 #include <string.h>
@@ -27,8 +25,6 @@
    systems */
 #define HOST_NAME_MAX 255
 #endif
-
-static constexpr Domain zeroconf_domain("zeroconf");
 
 /* The default service name to publish
  * (overridden by 'zeroconf_name' config parameter)
@@ -41,19 +37,15 @@ static constexpr Domain zeroconf_domain("zeroconf");
 #define DEFAULT_ZEROCONF_ENABLED 1
 
 std::unique_ptr<ZeroconfHelper>
-ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
+ZeroconfInit(EventLoop &loop, const ConfigData &config, unsigned port)
 {
+	assert(port > 0);
+
 	const char *serviceName;
 
 	if (!config.GetBool(ConfigOption::ZEROCONF_ENABLED,
 			    DEFAULT_ZEROCONF_ENABLED))
 		return nullptr;
-
-	if (listen_port <= 0) {
-		LogWarning(zeroconf_domain,
-			   "No global port, disabling zeroconf");
-		return nullptr;
-	}
 
 	serviceName = config.GetString(ConfigOption::ZEROCONF_NAME,
 				       SERVICE_NAME);
@@ -71,5 +63,5 @@ ZeroconfInit(const ConfigData &config, [[maybe_unused]] EventLoop &loop)
 	}
 
 	return std::make_unique<ZeroconfHelper>(loop, serviceName,
-						SERVICE_TYPE, listen_port);
+						SERVICE_TYPE, port);
 }

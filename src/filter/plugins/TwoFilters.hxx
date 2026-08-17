@@ -51,7 +51,7 @@ public:
  * are not nullptr.
  */
 template<typename F, typename S, typename N>
-static std::unique_ptr<PreparedFilter>
+static inline std::unique_ptr<PreparedFilter>
 ChainFilters(F &&first, S &&second, N &&second_name) noexcept
 {
 	if (!second)

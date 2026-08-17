@@ -58,7 +58,9 @@ struct WrapVariant : BasicValue<T> {
 };
 
 template<typename T>
-static WrapVariant<T> Variant(const T &_value) noexcept {
+static inline WrapVariant<T>
+Variant(const T &_value) noexcept
+{
 	return WrapVariant<T>(_value);
 }
 
@@ -74,8 +76,9 @@ struct WrapFixedArray {
 };
 
 template<typename T>
-static WrapFixedArray<T> FixedArray(const T *_data,
-				    size_t _size) noexcept {
+static inline WrapFixedArray<T>
+FixedArray(const T *_data, size_t _size) noexcept
+{
 	return WrapFixedArray<T>(_data, _size);
 }
 
@@ -90,7 +93,9 @@ struct WrapStruct {
 };
 
 template<typename... T>
-static WrapStruct<T...> Struct(const T&... values) noexcept {
+static inline WrapStruct<T...>
+Struct(const T&... values) noexcept
+{
 	return WrapStruct<T...>(values...);
 }
 
