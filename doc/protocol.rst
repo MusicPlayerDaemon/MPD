@@ -1709,11 +1709,11 @@ Connection settings
 
 .. _command_tagtypes_available:
 
-:command:`tagtypes available`
+:command:`tagtypes available` [#since_0_24]_
     Shows the list of tag types configured
     by the ``metadata_to_use`` setting.
 
-:command:`tagtypes reset {NAME...}`
+:command:`tagtypes reset {NAME...}` [#since_0_24]_
     Clear the list of tag types and Re-enable one or more tags
     from the list of tag types for this client.  These will no
     longer be hidden from responses to this client.
