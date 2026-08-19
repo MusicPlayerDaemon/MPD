@@ -69,10 +69,9 @@ uri_is_relative_path(const char *uri) noexcept
 }
 
 std::string_view
-uri_get_path_query_fragment(std::string_view uri) noexcept
+UriPathQueryFragment(std::string_view uri) noexcept
 {
-	auto ap = UriAfterScheme(uri);
-	if (ap.data() != nullptr) {
+	if (std::string_view ap = UriAfterScheme(uri); ap.data() != nullptr) {
 		auto slash = ap.find('/');
 		if (slash == std::string_view::npos)
 			return {};
@@ -92,7 +91,7 @@ UriWithoutQueryString(std::string_view uri) noexcept
 std::string_view
 uri_get_path(std::string_view uri) noexcept
 {
-	auto path = uri_get_path_query_fragment(uri);
+	auto path = UriPathQueryFragment(uri);
 	if (path.data() == nullptr || path.data() == uri.data())
 		/* preserve query and fragment if this URI doesn't
 		   have a scheme; the question mark may be part of the
