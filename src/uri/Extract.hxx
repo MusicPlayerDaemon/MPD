@@ -20,6 +20,14 @@ uri_has_scheme(std::string_view uri) noexcept;
 std::string_view
 uri_get_scheme(std::string_view uri) noexcept;
 
+/**
+ * Return the URI part after the protocol specification (and after the
+ * double slash).
+ */
+[[gnu::pure]]
+std::string_view
+UriAfterScheme(std::string_view uri) noexcept;
+
 [[gnu::pure]]
 bool
 uri_is_relative_path(const char *uri) noexcept;

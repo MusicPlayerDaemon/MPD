@@ -31,30 +31,6 @@ IsValidScheme(std::string_view p) noexcept
 	return CheckChars(p.substr(1), IsValidSchemeChar);
 }
 
-/**
- * Return the URI part after the scheme specification (and after the
- * double slash).
- */
-[[gnu::pure]]
-static std::string_view
-uri_after_scheme(std::string_view uri) noexcept
-{
-	if (uri.length() > 2 &&
-	    uri[0] == '/' && uri[1] == '/' && uri[2] != '/')
-		return uri.substr(2);
-
-	auto colon = uri.find(':');
-	if (colon == std::string_view::npos ||
-	    !IsValidScheme(uri.substr(0, colon)))
-		return {};
-
-	uri = uri.substr(colon + 1);
-	if (uri[0] != '/' || uri[1] != '/')
-		return {};
-
-	return uri.substr(2);
-}
-
 bool
 uri_has_scheme(std::string_view uri) noexcept
 {
@@ -71,6 +47,24 @@ uri_get_scheme(std::string_view uri) noexcept
 	return uri.substr(0, end);
 }
 
+std::string_view
+UriAfterScheme(std::string_view uri) noexcept
+{
+	if (uri.size() > 2 && uri[0] == '/' && uri[1] == '/' && uri[2] != '/')
+		return uri.substr(2);
+
+	auto colon = uri.find(':');
+	if (colon == std::string_view::npos ||
+	    !IsValidScheme(uri.substr(0, colon)))
+		return {};
+
+	uri = uri.substr(colon + 1);
+	if (uri[0] != '/' || uri[1] != '/')
+		return {};
+
+	return uri.substr(2);
+}
+
 bool
 uri_is_relative_path(const char *uri) noexcept
 {
@@ -80,7 +74,7 @@ uri_is_relative_path(const char *uri) noexcept
 std::string_view
 uri_get_path_query_fragment(std::string_view uri) noexcept
 {
-	auto ap = uri_after_scheme(uri);
+	auto ap = UriAfterScheme(uri);
 	if (ap.data() != nullptr) {
 		auto slash = ap.find('/');
 		if (slash == std::string_view::npos)
