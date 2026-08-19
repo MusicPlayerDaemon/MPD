@@ -53,16 +53,13 @@ UriAfterScheme(std::string_view uri) noexcept
 	if (uri.size() > 2 && uri[0] == '/' && uri[1] == '/' && uri[2] != '/')
 		return uri.substr(2);
 
-	auto colon = uri.find(':');
-	if (colon == std::string_view::npos ||
-	    !IsValidScheme(uri.substr(0, colon)))
-		return {};
+	const auto [scheme, rest] = Split(uri, ':');
+	if (IsValidScheme(scheme) &&
+	    rest.size() > 2 && rest[0] == '/' && rest[1] == '/' &&
+	    rest[2] != '/')
+		return rest.substr(2);
 
-	uri = uri.substr(colon + 1);
-	if (uri[0] != '/' || uri[1] != '/')
-		return {};
-
-	return uri.substr(2);
+	return {};
 }
 
 bool
