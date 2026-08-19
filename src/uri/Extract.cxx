@@ -8,13 +8,13 @@
 #include <cstring>
 
 static constexpr bool
-IsValidSchemeStart(char ch)
+IsValidSchemeStart(char ch) noexcept
 {
 	return IsLowerAlphaASCII(ch);
 }
 
 static constexpr bool
-IsValidSchemeChar(char ch)
+IsValidSchemeChar(char ch) noexcept
 {
 	return IsLowerAlphaASCII(ch) || IsDigitASCII(ch) ||
 		ch == '+' || ch == '.' || ch == '-';
