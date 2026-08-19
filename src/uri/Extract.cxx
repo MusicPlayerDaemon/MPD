@@ -4,6 +4,7 @@
 #include "Extract.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringSplit.hxx"
+#include "util/StringVerify.hxx"
 
 #include <cstring>
 
@@ -27,11 +28,7 @@ IsValidScheme(std::string_view p) noexcept
 	if (p.empty() || !IsValidSchemeStart(p.front()))
 		return false;
 
-	for (size_t i = 1; i < p.size(); ++i)
-		if (!IsValidSchemeChar(p[i]))
-			return false;
-
-	return true;
+	return CheckChars(p.substr(1), IsValidSchemeChar);
 }
 
 /**
