@@ -15,10 +15,6 @@ test(
     'TestStringStrip.cxx',
     'TestTemplateString.cxx',
     'TestTerminatedArray.cxx',
-    'TestUriExtract.cxx',
-    'TestUriQueryParser.cxx',
-    'TestUriRelative.cxx',
-    'TestUriUtil.cxx',
     'test_byte_reverse.cxx',
     include_directories: inc,
     dependencies: [

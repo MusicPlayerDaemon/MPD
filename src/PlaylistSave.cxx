@@ -14,7 +14,7 @@
 #include "fs/FileSystem.hxx"
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 
 #include <fmt/format.h>
 

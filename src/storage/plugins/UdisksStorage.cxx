@@ -23,9 +23,9 @@
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "uri/Util.hxx"
 #include "util/Domain.hxx"
 #include "util/StringCompare.hxx"
-#include "util/UriUtil.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>

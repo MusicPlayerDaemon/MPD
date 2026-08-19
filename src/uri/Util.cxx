@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#include "UriUtil.hxx"
-#include "ASCII.hxx"
-#include "SplitString.hxx"
+#include "Util.hxx"
+#include "util/ASCII.hxx"
+#include "util/SplitString.hxx"
 
 #include <array>
 #include <cassert>

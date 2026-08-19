@@ -17,7 +17,7 @@
 #include "tag/Builder.hxx"
 #include "TagFile.hxx"
 #include "TagStream.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "TagArchive.hxx"

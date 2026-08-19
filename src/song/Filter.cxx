@@ -16,11 +16,11 @@
 #include "tag/Type.hxx"
 #include "time/ISO8601.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "uri/Util.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringStrip.hxx"
 #include "util/ASCII.hxx"
-#include "util/UriUtil.hxx"
 
 #include <cassert>
 #include <limits>

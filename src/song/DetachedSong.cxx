@@ -3,7 +3,7 @@
 
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 #include "fs/Traits.hxx"
 
 DetachedSong::DetachedSong(const LightSong &other) noexcept

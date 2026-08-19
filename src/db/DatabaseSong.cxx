@@ -6,9 +6,9 @@
 #include "song/DetachedSong.hxx"
 #include "song/LightSong.hxx"
 #include "storage/StorageInterface.hxx"
+#include "uri/Extract.hxx"
+#include "uri/Relative.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/UriExtract.hxx"
-#include "util/UriRelative.hxx"
 
 #include <cassert>
 

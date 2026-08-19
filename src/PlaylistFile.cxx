@@ -26,8 +26,8 @@
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "system/Error.hxx"
+#include "uri/Extract.hxx"
 #include "util/StringCompare.hxx"
-#include "util/UriExtract.hxx"
 
 #include <cassert>
 #include <cstring>

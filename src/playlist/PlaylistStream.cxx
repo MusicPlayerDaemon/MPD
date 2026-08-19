@@ -7,7 +7,7 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "fs/Path.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 
 #include <cassert>
 #include <exception>

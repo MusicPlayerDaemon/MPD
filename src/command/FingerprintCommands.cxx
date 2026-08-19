@@ -18,8 +18,8 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "system/Error.hxx"
+#include "uri/Extract.hxx"
 #include "util/MimeType.hxx"
-#include "util/UriExtract.hxx"
 
 #include <fmt/format.h>
 

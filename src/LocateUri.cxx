@@ -7,10 +7,10 @@
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
 #include "storage/Registry.hxx"
+#include "uri/Extract.hxx"
+#include "uri/Util.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringCompare.hxx"
-#include "util/UriExtract.hxx"
-#include "util/UriUtil.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "storage/StorageInterface.hxx"

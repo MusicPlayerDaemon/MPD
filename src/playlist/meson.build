@@ -19,6 +19,7 @@ playlist_glue = static_library(
   include_directories: inc,
   dependencies: [
     input_api_dep,
+    uri_dep,
   ],
 )
 

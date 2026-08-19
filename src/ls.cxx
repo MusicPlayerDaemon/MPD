@@ -8,7 +8,7 @@
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "client/Response.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 
 #include <fmt/format.h>
 

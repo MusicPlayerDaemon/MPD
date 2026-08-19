@@ -4,8 +4,8 @@
 #include "IcyInputStream.hxx"
 #include "tag/IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
-#include "util/UriExtract.hxx"
-#include "util/UriQueryParser.hxx"
+#include "uri/Extract.hxx"
+#include "uri/QueryParser.hxx"
 
 #include <string>
 

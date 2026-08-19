@@ -10,7 +10,7 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 
 #include <cassert>
 

@@ -12,10 +12,10 @@
 #include "protocol/Ack.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "input/InputStream.hxx"
+#include "uri/Extract.hxx"
 #include "util/Compiler.h"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
-#include "util/UriExtract.hxx"
 #include "LocateUri.hxx"
 
 static void

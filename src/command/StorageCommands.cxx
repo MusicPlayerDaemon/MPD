@@ -5,7 +5,6 @@
 #include "StorageCommands.hxx"
 #include "Request.hxx"
 #include "time/ChronoUtil.hxx"
-#include "util/UriUtil.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
@@ -18,6 +17,7 @@
 #include "TimePrint.hxx"
 #include "protocol/IdleFlags.hxx"
 #include "protocol/Verify.hxx"
+#include "uri/Util.hxx"
 
 #include <fmt/format.h>
 

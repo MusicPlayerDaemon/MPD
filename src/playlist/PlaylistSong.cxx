@@ -7,8 +7,8 @@
 #include "tag/Builder.hxx"
 #include "fs/Traits.hxx"
 #include "song/DetachedSong.hxx"
-#include "util/UriExtract.hxx"
-#include "util/UriUtil.hxx"
+#include "uri/Extract.hxx"
+#include "uri/Util.hxx"
 
 #include <algorithm>
 #include <string>

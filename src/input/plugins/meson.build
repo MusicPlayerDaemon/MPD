@@ -80,6 +80,7 @@ input_plugins = static_library(
     smbclient_dep,
     nlohmann_json_dep,
     crypto_md5_dep,
+    uri_dep,
   ],
 )
 

@@ -19,9 +19,9 @@
 #include "input/InputStream.hxx"
 #include "input/Error.hxx"
 #include "input/WaitReady.hxx"
+#include "uri/Extract.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
-#include "util/UriExtract.hxx"
 #include "Log.hxx"
 
 #include <cassert>

@@ -17,9 +17,9 @@
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
 #include "decoder/Features.h"
 #include "input/InputStream.hxx"
+#include "uri/Extract.hxx"
 #include "util/FilteredContainer.hxx"
 #include "util/MimeType.hxx"
-#include "util/UriExtract.hxx"
 #include "config/Data.hxx"
 #include "config/Block.hxx"
 

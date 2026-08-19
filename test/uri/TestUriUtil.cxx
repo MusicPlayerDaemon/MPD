@@ -2,7 +2,7 @@
  * Unit tests for src/util/
  */
 
-#include "util/UriUtil.hxx"
+#include "uri/Util.hxx"
 
 #include <gtest/gtest.h>
 

@@ -1,8 +1,8 @@
 /*
- * Unit tests for src/util/UriRelative.hxx
+ * Unit tests for src/uri/Relative.hxx
  */
 
-#include "util/UriRelative.hxx"
+#include "uri/Relative.hxx"
 
 #include <gtest/gtest.h>
 

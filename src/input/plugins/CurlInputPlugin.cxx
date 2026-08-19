@@ -30,9 +30,9 @@
 
 #ifdef HAVE_ICU_CONVERTER
 #include "lib/icu/Converter.hxx"
+#include "uri/Extract.hxx"
+#include "uri/QueryParser.hxx"
 #include "util/AllocatedString.hxx"
-#include "util/UriExtract.hxx"
-#include "util/UriQueryParser.hxx"
 #endif
 
 #include <fmt/format.h>

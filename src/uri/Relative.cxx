@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#include "UriRelative.hxx"
-#include "UriExtract.hxx"
-#include "StringAPI.hxx"
-#include "StringCompare.hxx"
-#include "Compiler.h"
+#include "Relative.hxx"
+#include "Extract.hxx"
+#include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
+#include "util/Compiler.h"
 
 #include <cassert>
 

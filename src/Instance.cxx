@@ -12,7 +12,7 @@
 
 #ifdef ENABLE_CURL
 #include "RemoteTagCache.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 #endif
 
 #ifdef ENABLE_DATABASE

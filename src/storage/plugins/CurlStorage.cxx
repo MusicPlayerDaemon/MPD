@@ -23,13 +23,13 @@
 #include "event/InjectEvent.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "uri/Extract.hxx"
 #include "util/ASCII.hxx"
 #include "util/ByteSizes.hxx"
 #include "util/NumberParser.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
-#include "util/UriExtract.hxx"
 
 #include <cassert>
 #include <memory>

@@ -27,8 +27,8 @@
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "time/ChronoUtil.hxx"
+#include "uri/Extract.hxx"
 #include "util/Exception.hxx"
-#include "util/UriExtract.hxx"
 #include "LocateUri.hxx"
 
 #include <fmt/format.h>

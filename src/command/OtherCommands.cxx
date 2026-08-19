@@ -18,7 +18,7 @@
 #include "decoder/DecoderPrint.hxx"
 #include "ls.hxx"
 #include "time/ChronoUtil.hxx"
-#include "util/UriUtil.hxx"
+#include "uri/Util.hxx"
 #include "util/StringAPI.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"

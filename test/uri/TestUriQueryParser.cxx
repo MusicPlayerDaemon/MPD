@@ -2,7 +2,7 @@
  * Unit tests for src/util/
  */
 
-#include "util/UriQueryParser.hxx"
+#include "uri/QueryParser.hxx"
 
 #include <gtest/gtest.h>
 

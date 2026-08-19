@@ -4,9 +4,9 @@
 #include "ContentDirectoryService.hxx"
 #include "Action.hxx"
 #include "Device.hxx"
+#include "uri/Relative.hxx"
+#include "uri/Util.hxx"
 #include "util/IterableSplitString.hxx"
-#include "util/UriRelative.hxx"
-#include "util/UriUtil.hxx"
 #include "config.h"
 
 using std::string_view_literals::operator""sv;

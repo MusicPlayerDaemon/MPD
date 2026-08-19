@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#include "UriQueryParser.hxx"
-#include "IterableSplitString.hxx"
+#include "QueryParser.hxx"
+#include "util/IterableSplitString.hxx"
 
 using std::string_view_literals::operator""sv;
 

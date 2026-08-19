@@ -10,7 +10,7 @@
 #include "fs/glue/StandardDirectory.hxx"
 #include "fs/glue/CheckFile.hxx"
 #include "lib/fmt/RuntimeError.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 
 static std::unique_ptr<Storage>
 CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)

@@ -3,7 +3,7 @@
 
 #include "Traits.hxx"
 #include "util/StringCompare.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 
 #include <string.h>
 

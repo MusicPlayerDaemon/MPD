@@ -10,8 +10,8 @@
 #include "fs/Traits.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "time/ChronoUtil.hxx"
+#include "uri/Util.hxx"
 #include "util/StringBuffer.hxx"
-#include "util/UriUtil.hxx"
 
 #include <fmt/format.h>
 

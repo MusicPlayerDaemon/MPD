@@ -56,6 +56,7 @@ db_glue = static_library(
     fmt_dep,
     log_dep,
     fs_glue_dep,
+    uri_dep,
   ],
 )
 

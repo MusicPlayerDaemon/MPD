@@ -11,7 +11,7 @@
 #include "input/WaitReady.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/StorageInterface.hxx"
-#include "util/UriUtil.hxx"
+#include "uri/Util.hxx"
 
 #include <cassert>
 #include <exception> // for std::exception_ptr

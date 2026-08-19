@@ -12,7 +12,7 @@
 #include "util/OffsetPointer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
-#include "util/UriExtract.hxx"
+#include "uri/Extract.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "TagAny.hxx"

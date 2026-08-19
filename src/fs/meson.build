@@ -4,6 +4,7 @@ fs_path = static_library(
   include_directories: inc,
   dependencies: [
     util_dep,
+    uri_dep,
     fmt_dep,
   ],
 )
