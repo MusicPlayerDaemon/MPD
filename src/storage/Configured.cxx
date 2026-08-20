@@ -48,7 +48,7 @@ std::unique_ptr<Storage>
 CreateConfiguredStorage(const ConfigData &config, EventLoop &event_loop)
 {
 	auto uri = config.GetString(ConfigOption::MUSIC_DIR);
-	if (uri != nullptr && uri_has_scheme(uri))
+	if (uri != nullptr && UriHasScheme(uri))
 		return CreateConfiguredStorageUri(event_loop, uri);
 
 	return CreateConfiguredStorageLocal(config);

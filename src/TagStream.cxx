@@ -31,7 +31,7 @@ tag_stream_scan(InputStream &is, TagHandler &handler)
 {
 	assert(is.IsReady());
 
-	const auto suffix = uri_get_suffix(is.GetURI());
+	const auto suffix = UriGetSuffix(is.GetURI());
 	const char *full_mime = is.GetMimeType();
 
 	if (suffix.empty() && full_mime == nullptr)

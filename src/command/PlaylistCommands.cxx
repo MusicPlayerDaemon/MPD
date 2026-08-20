@@ -285,7 +285,7 @@ handle_playlistadd_position(Client &client, const char *playlist_name,
 		return CommandResult::ERROR;
 	}
 
-	if (uri_has_scheme(uri)) {
+	if (UriHasScheme(uri)) {
 		editor.Insert(position, uri);
 	} else {
 #ifdef ENABLE_DATABASE
@@ -319,7 +319,7 @@ handle_playlistadd(Client &client, Request args, [[maybe_unused]] Response &r)
 		return handle_playlistadd_position(client, playlist, uri,
 						   args.ParseUnsigned(2), r);
 
-	if (uri_has_scheme(uri)) {
+	if (UriHasScheme(uri)) {
 		const SongLoader loader(client);
 		spl_append_uri(playlist, loader, uri);
 	} else {

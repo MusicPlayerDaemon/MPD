@@ -224,7 +224,7 @@ CurlInputStream::FreeEasyIndirect() noexcept
 static std::unique_ptr<IcuConverter>
 CreateIcuConverterForUri(const char *uri)
 {
-	const char *fragment = uri_get_fragment(uri);
+	const char *fragment = UriGetFragment(uri);
 	if (fragment == nullptr)
 		return nullptr;
 

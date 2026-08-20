@@ -110,7 +110,7 @@ LocateUri(UriPluginKind kind,
 				     , storage
 #endif
 				     );
-	else if (uri_has_scheme(uri))
+	else if (UriHasScheme(uri))
 		return LocateAbsoluteUri(kind, uri
 #ifdef ENABLE_DATABASE
 					 , storage

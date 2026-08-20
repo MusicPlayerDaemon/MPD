@@ -14,7 +14,7 @@ IcyInputStream::IcyInputStream(InputStreamPtr _input,
 	:ProxyInputStream(std::move(_input)), parser(std::move(_parser))
 {
 #ifdef HAVE_ICU_CONVERTER
-	const char *fragment = uri_get_fragment(GetURI());
+	const char *fragment = UriGetFragment(GetURI());
 	if (fragment != nullptr) {
 		const auto charset = UriFindRawQueryParameter(fragment,
 							      "charset");

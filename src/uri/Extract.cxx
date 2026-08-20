@@ -32,13 +32,13 @@ IsValidScheme(std::string_view p) noexcept
 }
 
 bool
-uri_has_scheme(std::string_view uri) noexcept
+UriHasScheme(std::string_view uri) noexcept
 {
-	return !uri_get_scheme(uri).empty();
+	return !UriGetScheme(uri).empty();
 }
 
 std::string_view
-uri_get_scheme(std::string_view uri) noexcept
+UriGetScheme(std::string_view uri) noexcept
 {
 	auto end = uri.find("://");
 	if (end == std::string_view::npos)
@@ -63,9 +63,9 @@ UriAfterScheme(std::string_view uri) noexcept
 }
 
 bool
-uri_is_relative_path(const char *uri) noexcept
+UriIsRelativePath(const char *uri) noexcept
 {
-	return !uri_has_scheme(uri) && *uri != '/';
+	return !UriHasScheme(uri) && *uri != '/';
 }
 
 std::string_view
@@ -89,7 +89,7 @@ UriWithoutQueryString(std::string_view uri) noexcept
 }
 
 std::string_view
-uri_get_path(std::string_view uri) noexcept
+UriGetPath(std::string_view uri) noexcept
 {
 	auto path = UriPathQueryFragment(uri);
 	if (path.data() == nullptr || path.data() == uri.data())
@@ -107,7 +107,7 @@ uri_get_path(std::string_view uri) noexcept
 
 /* suffixes should be ascii only characters */
 std::string_view
-uri_get_suffix(std::string_view _uri) noexcept
+UriGetSuffix(std::string_view _uri) noexcept
 {
 	const auto uri = UriWithoutQueryString(_uri);
 
@@ -126,7 +126,7 @@ uri_get_suffix(std::string_view _uri) noexcept
 }
 
 const char *
-uri_get_fragment(const char *uri) noexcept
+UriGetFragment(const char *uri) noexcept
 {
 	const char *fragment = std::strchr(uri, '#');
 	if (fragment == nullptr)

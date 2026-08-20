@@ -135,7 +135,7 @@ uri_apply_relative(std::string_view relative_uri,
 	if (relative_uri.empty())
 		return std::string(base_uri);
 
-	if (uri_has_scheme(relative_uri))
+	if (UriHasScheme(relative_uri))
 		return std::string(relative_uri);
 
 	// TODO: support double slash at beginning of relative_uri
@@ -160,7 +160,7 @@ uri_apply_relative(std::string_view relative_uri,
 
 	std::string_view relative_path{relative_uri};
 
-	const auto _base_path = uri_get_path(base_uri);
+	const auto _base_path = UriGetPath(base_uri);
 	if (_base_path.data() == nullptr) {
 		std::string result(base_uri);
 		if (relative_path.front() != '/')

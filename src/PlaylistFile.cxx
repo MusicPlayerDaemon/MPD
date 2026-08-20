@@ -210,7 +210,7 @@ try {
 
 		std::string uri_utf8;
 
-		if (!uri_has_scheme(s)) {
+		if (!UriHasScheme(s)) {
 #ifdef ENABLE_DATABASE
 			uri_utf8 = map_fs_to_utf8(path);
 			if (uri_utf8.empty()) {

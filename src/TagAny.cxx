@@ -96,7 +96,7 @@ TagScanDatabase(Client &client, std::string_view uri, TagHandler &handler)
 		uri = real_uri;
 
 		// TODO: support absolute paths?
-		if (uri_has_scheme(uri))
+		if (UriHasScheme(uri))
 			return TagScanStream(uri, handler);
 	}
 
@@ -115,7 +115,7 @@ TagScanDatabase(Client &client, std::string_view uri, TagHandler &handler)
 		return TagScanFile(path_fs, handler);
 
 	if (const auto absolute_uri = storage->MapUTF8(uri);
-	    uri_has_scheme(absolute_uri))
+	    UriHasScheme(absolute_uri))
 		return TagScanStream(absolute_uri.c_str(), handler);
 
 	throw ProtocolError(ACK_ERROR_NO_EXIST, "No such file");

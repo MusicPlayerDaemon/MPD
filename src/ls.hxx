@@ -12,7 +12,7 @@ class Response;
 /**
  * Checks whether the scheme of the specified URI is supported by MPD.
  * It is not allowed to pass an URI without a scheme, check with
- * uri_has_scheme() first.
+ * UriHasScheme() first.
  */
 [[gnu::pure]]
 bool

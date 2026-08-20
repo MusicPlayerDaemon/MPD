@@ -110,7 +110,7 @@ static std::unique_ptr<SongEnumerator>
 playlist_list_open_uri_scheme(std::string_view uri, Mutex &mutex,
 			      bool *tried)
 {
-	const auto scheme = uri_get_scheme(uri);
+	const auto scheme = UriGetScheme(uri);
 	if (scheme.empty())
 		return nullptr;
 
@@ -136,7 +136,7 @@ static std::unique_ptr<SongEnumerator>
 playlist_list_open_uri_suffix(std::string_view uri, Mutex &mutex,
 			      const bool *tried)
 {
-	const auto suffix = uri_get_suffix(uri);
+	const auto suffix = UriGetSuffix(uri);
 	if (suffix.empty())
 		return nullptr;
 
@@ -235,7 +235,7 @@ playlist_list_open_stream(InputStreamPtr &&is, std::string_view uri)
 			return playlist;
 	}
 
-	if (const auto suffix = uri_get_suffix(uri); !suffix.empty()) {
+	if (const auto suffix = UriGetSuffix(uri); !suffix.empty()) {
 		auto playlist = playlist_list_open_stream_suffix(std::move(is),
 								 suffix);
 		if (playlist != nullptr)

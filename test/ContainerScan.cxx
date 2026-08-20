@@ -33,7 +33,7 @@ static const DecoderPlugin *
 FindContainerDecoderPlugin(Path path)
 {
 	const auto path_utf8 = path.ToUTF8Throw();
-	const auto suffix = uri_get_suffix(path_utf8);
+	const auto suffix = UriGetSuffix(path_utf8);
 	if (suffix.empty())
 		return nullptr;
 

@@ -222,7 +222,7 @@ static bool
 IsSafeRealUri(const char *real_uri) noexcept
 {
 	return uri_safe_local(real_uri) ||
-		(uri_has_scheme(real_uri) &&
+		(UriHasScheme(real_uri) &&
 		 !StringStartsWithIgnoreCase(real_uri, "file:"sv));
 	// TODO use protocol_is_whitelisted()
 }

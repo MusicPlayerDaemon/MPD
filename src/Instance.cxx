@@ -178,7 +178,7 @@ Instance::LostNeighbor([[maybe_unused]] const NeighborInfo &info) noexcept
 void
 Instance::LookupRemoteTag(const std::string_view uri) noexcept
 {
-	if (!uri_has_scheme(uri))
+	if (!UriHasScheme(uri))
 		return;
 
 	if (!remote_tag_cache)

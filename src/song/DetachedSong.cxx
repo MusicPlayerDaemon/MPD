@@ -31,7 +31,7 @@ DetachedSong::operator LightSong() const noexcept
 bool
 DetachedSong::IsRemote() const noexcept
 {
-	return uri_has_scheme(GetRealURI());
+	return UriHasScheme(GetRealURI());
 }
 
 bool
