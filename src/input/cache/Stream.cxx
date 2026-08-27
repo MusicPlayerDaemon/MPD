@@ -7,12 +7,21 @@
 CacheInputStream::CacheInputStream(InputCacheLease _lease,
 				   Mutex &_mutex) noexcept
 	:InputStream(_lease->GetUri().c_str(), _mutex),
-	 InputCacheLease(std::move(_lease))
+	 lease(*this)
 {
-	const auto &i = GetCacheItem();
+	const auto &i = _lease.GetCacheItem();
 	size = i.size();
 	seekable = true;
 	SetReady();
+
+	/* Register only after this object has been fully initialized. */
+	lease.Set(std::move(_lease));
+}
+
+CacheInputStream::~CacheInputStream() noexcept
+{
+	/* Wait for a running notification before destructing this object. */
+	lease.Reset();
 }
 
 void
@@ -20,7 +29,7 @@ CacheInputStream::Check()
 {
 	const ScopeUnlock unlock(mutex);
 
-	auto &i = GetCacheItem();
+	auto &i = lease.GetCacheItem();
 	const std::lock_guard protect{i.mutex};
 
 	i.Check();
@@ -44,7 +53,7 @@ CacheInputStream::IsAvailable() const noexcept
 	const auto _offset = offset;
 	const ScopeUnlock unlock(mutex);
 
-	auto &i = GetCacheItem();
+	auto &i = lease.GetCacheItem();
 	const std::lock_guard protect{i.mutex};
 
 	return i.IsAvailable(_offset);
@@ -55,7 +64,7 @@ CacheInputStream::Read(std::unique_lock<Mutex> &lock,
 		       std::span<std::byte> dest)
 {
 	const auto _offset = offset;
-	auto &i = GetCacheItem();
+	auto &i = lease.GetCacheItem();
 
 	size_t nbytes;
 
@@ -76,9 +85,7 @@ CacheInputStream::Read(std::unique_lock<Mutex> &lock,
 void
 CacheInputStream::OnInputCacheAvailable(std::unique_lock<Mutex> &lock) noexcept
 {
-	assert(lock.mutex() == &GetCacheItem().mutex);
-
-	const ScopeUnlock unlock{lock};
+	assert(lock.mutex() == &lease.GetCacheItem().mutex);
 
 	const std::lock_guard protect{mutex};
 	InvokeOnAvailable();
