@@ -13,7 +13,7 @@ using std::string_view_literals::operator""sv;
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 						 const UPnPService &service) noexcept
-	:m_actionURL(uri_apply_base(service.controlURL, device.URLBase)),
+	:m_actionURL(uri_apply_relative(service.controlURL, device.URLBase)),
 	 m_serviceType(service.serviceType),
 	 m_deviceId(device.UDN),
 	 m_friendlyName(device.friendlyName),
