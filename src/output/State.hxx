@@ -11,9 +11,10 @@
 
 class MultipleOutputs;
 class BufferedOutputStream;
+struct Partition;
 
 bool
-audio_output_state_read(const char *line, MultipleOutputs &outputs);
+audio_output_state_read(const char *line, MultipleOutputs &outputs, Partition *partition);
 
 void
 audio_output_state_save(BufferedOutputStream &os,

@@ -10,12 +10,16 @@
 #include "io/BufferedOutputStream.hxx"
 #include "storage/StorageState.hxx"
 #include "Partition.hxx"
+#include "config/PartitionConfig.hxx"
 #include "Instance.hxx"
 #include "SongLoader.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
+#include "util/StringCompare.hxx"
 
 #include <exception>
+
+#define PARTITION_STATE "partition: "
 
 static constexpr Domain state_file_domain("state_file");
 
@@ -55,14 +59,23 @@ StateFile::IsModified() const noexcept
 inline void
 StateFile::Write(BufferedOutputStream &os)
 {
-	partition.mixer_memento.SaveSoftwareVolumeState(os);
-	audio_output_state_save(os, partition.outputs);
+	for (auto &current_partition : partition.instance.partitions) {
+		const bool is_default_partition =
+			&current_partition == &partition.instance.partitions.front();
+		if (!is_default_partition)  // Write partition header except for default partition
+			os.Fmt(PARTITION_STATE "{}\n", current_partition.name);
+		current_partition.mixer_memento.SaveSoftwareVolumeState(os);
+		audio_output_state_save(os, current_partition.outputs);
+		playlist_state_save(os, current_partition.playlist, current_partition.pc);
 
 #ifdef ENABLE_DATABASE
-	storage_state_save(os, partition.instance);
+		if (is_default_partition) {
+			// Only save storage state once and do it in the default partition
+			storage_state_save(os, partition.instance);
+		}
 #endif
+	}
 
-	playlist_state_save(os, partition.playlist, partition.pc);
 }
 
 inline void
@@ -106,13 +119,18 @@ try {
 	const SongLoader song_loader(nullptr, nullptr);
 #endif
 
+	Partition *current_partition = &partition;
+
 	const char *line;
 	while ((line = file.ReadLine()) != nullptr) {
-		success = partition.mixer_memento.LoadSoftwareVolumeState(line, partition.outputs) ||
-			audio_output_state_read(line, partition.outputs) ||
+		success = current_partition->mixer_memento.LoadSoftwareVolumeState(line,
+						partition.outputs) ||
+			audio_output_state_read(line, partition.outputs, current_partition) ||
 			playlist_state_restore(config, line, file, song_loader,
-					       partition.playlist,
-					       partition.pc);
+						current_partition->playlist,
+						current_partition->pc) ||
+			PartitionSwitch(line, current_partition);
+
 #ifdef ENABLE_DATABASE
 		success = success || storage_state_restore(line, file, partition.instance);
 #endif
@@ -139,4 +157,40 @@ void
 StateFile::OnTimeout() noexcept
 {
 	Write();
+}
+
+/**
+ * Attempts to switch the current partition based on a state file line.
+ *
+ * @param line The line from the state file to parse
+ * @param current_partition Reference to pointer that will be updated to point
+ *                          to the target partition
+ * @return true if the line was a partition switch command, false otherwise
+ */
+bool StateFile::PartitionSwitch(const char *line,
+				Partition *&current_partition) noexcept {
+	// Check if this line contains a partition switch command
+	line = StringAfterPrefix(line, PARTITION_STATE);
+	if (line == nullptr)
+		return false;
+
+	// Try to find existing partition
+	Partition *new_partition = partition.instance.FindPartition(line);
+	if (new_partition != nullptr) {
+		current_partition = new_partition;
+		FmtDebug(state_file_domain, "Switched to existing partition '{}'",
+			 current_partition->name);
+		return true;
+	}
+
+	// Partition doesn't exist, create it
+	partition.instance.partitions.emplace_back(partition.instance, line,
+						   PartitionConfig{});
+	current_partition = &partition.instance.partitions.back();
+	current_partition->UpdateEffectiveReplayGainMode();
+
+	FmtDebug(state_file_domain, "Created partition '{}' and switched to it",
+		 current_partition->name);
+
+	return true;
 }
