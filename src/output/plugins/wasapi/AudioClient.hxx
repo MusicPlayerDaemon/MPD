@@ -65,6 +65,14 @@ Stop(IAudioClient &client)
 }
 
 inline void
+Reset(IAudioClient &client)
+{
+	HRESULT result = client.Reset();
+	if (FAILED(result))
+		throw MakeHResultError(result, "Failed to reset client");
+}
+
+inline void
 SetEventHandle(IAudioClient &client, HANDLE h)
 {
 	HRESULT result = client.SetEventHandle(h);
