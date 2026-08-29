@@ -521,11 +521,13 @@ The following table lists the audio_output options valid for all plugins:
    * - **mixer_type hardware|software|null|none**
      - Specifies which mixer should be used for this audio output: the
        hardware mixer (available for ALSA :ref:`alsa_plugin`, OSS
-       :ref:`oss_plugin` and PulseAudio :ref:`pulse_plugin`), the
-       software mixer, the ":samp:`null`" mixer (allows setting the
-       volume, but with no effect; this can be used as a trick to
-       implement an external mixer, see :ref:`external_mixer`) or no mixer
-       (:samp:`none`). By default, the hardware mixer is used for
+       :ref:`oss_plugin` and PulseAudio :ref:`pulse_plugin`; for
+       PipeWire :ref:`pipewire_plugin`, the hardware mixer is only used
+       if :code:`mixer_type "hardware"` is written explicitly -- see
+       pipewire plugin documentation), the software mixer, the ":samp:`null`"
+       mixer (allows setting the volume, but with no effect; this can be used
+       as a trick to implement an external mixer, see :ref:`external_mixer`) 
+       or no mixer (:samp:`none`). By default, the hardware mixer is used for
        devices which support it, and none for the others.
    * - **replay_gain_handler software|mixer|none**
      - Specifies how :ref:`replay_gain` is applied.  The default is

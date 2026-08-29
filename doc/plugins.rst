@@ -1192,6 +1192,8 @@ The pipe plugin starts a program and writes raw PCM data into its standard input
    * - **command CMD**
      - This command is invoked with the shell.
 
+.. _pipewire_plugin:
+
 pipewire
 --------
 
@@ -1216,6 +1218,30 @@ Connect to a `PipeWire <https://pipewire.org/>`_ server.  Requires
        The default is ``yes``.
    * - **dsd yes|no**
      - Enable DSD playback.  This requires PipeWire 0.38.
+   * - **mixer_volume_curve cubic|linear**
+     - Only used together with :code:`mixer_type "hardware"`, see
+       below.  Selects the volume curve applied when writing to the
+       target sink's volume.  The default (``cubic``) matches the
+       curve WirePlumber and :program:`wpctl` use, so MPD volume 
+       percentage matches what ``wpctl get-volume`` reports for the 
+       same node.  ``linear`` writes the percentage directly as a 
+       linear PCM gain.
+
+By default, :code:`mixer_type "hardware"` (see :confval:`mixer_type`)
+has no special meaning for this plugin, and behaves
+identically to leaving :code:`mixer_type` unset: MPD applies a
+client-side software gain to its PipeWire stream
+(:code:`SPA_PROP_channelVolumes`).
+
+If :code:`mixer_type "hardware"` is written explicitly in this
+output's configuration block, a second, independent PipeWire 
+connection is opened and drives the destination sink's volume
+directly. MPD's own stream is pinned to unity gain in this mode,
+so the sink's volume is the only gain stage in effect. Without 
+a :code:`target` set, this follows whichever sink is currently 
+the system default; with :code:`target` set, it follows that 
+same node's volume, keeping playback routing and volume control
+pointed at one sink.
 
 .. _pulse_plugin:
 

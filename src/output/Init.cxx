@@ -292,8 +292,21 @@ audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 						       std::move(ao), block,
 						       defaults,
 						       filter_factory);
+
+	/* let the plugin substitute a different mixer for
+	   mixer_type "hardware" based on its own configuration, e.g.
+	   because it can only sometimes offer a real hardware-backed
+	   mixer depending on how it's set up */
+	const MixerPlugin *mixer_plugin = plugin->mixer_plugin;
+	if (plugin->get_hardware_mixer_plugin != nullptr) {
+		const MixerPlugin *alternative =
+			plugin->get_hardware_mixer_plugin(block);
+		if (alternative != nullptr)
+			mixer_plugin = alternative;
+	}
+
 	f->Setup(event_loop, replay_gain_config,
-		 plugin->mixer_plugin,
+		 mixer_plugin,
 		 block, defaults);
 	return f;
 }

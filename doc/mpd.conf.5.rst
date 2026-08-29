@@ -287,8 +287,8 @@ Optional Audio Output Settings
    :default: ``hardware`` (if supported) or ``none``
 
    Specifies which mixer should be used for this audio output: the hardware
-   mixer (available for ALSA, OSS and PulseAudio), the software mixer or no
-   mixer (``none``).
+   mixer (available for ALSA, OSS, PulseAudio and PipeWire), the software 
+   mixer or no mixer (``none``).
 
 Files
 -----

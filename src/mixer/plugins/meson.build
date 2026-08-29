@@ -19,7 +19,10 @@ if is_darwin
 endif
 
 if pipewire_dep.found()
-  mixer_plugins_sources += 'PipeWireMixerPlugin.cxx'
+  mixer_plugins_sources += [
+    'PipeWireMixerPlugin.cxx',
+    'PwSinkMixerPlugin.cxx',
+  ]
 endif
 
 if pulse_dep.found()
@@ -48,6 +51,7 @@ mixer_plugins = static_library(
   dependencies: [
     mixer_api_dep,
     alsa_dep,
+    pipewire_dep,
     pulse_dep,
     libsndio_dep,
     log_dep,

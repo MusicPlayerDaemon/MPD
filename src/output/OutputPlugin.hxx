@@ -42,6 +42,26 @@ struct AudioOutputPlugin {
 	 * this audio output device.
 	 */
 	const MixerPlugin *mixer_plugin;
+
+	/**
+	 * Allows this output plugin to substitute a different
+	 * #MixerPlugin for #mixer_plugin when mixer_type "hardware" is
+	 * used, based on this output's own configuration.  This method
+	 * is optional; may be nullptr.
+	 *
+	 * Returns nullptr to fall back to #mixer_plugin (i.e. no
+	 * substitution).  Must not throw.
+	 *
+	 * This exists for outputs whose own registered #mixer_plugin
+	 * does not always represent a real hardware-backed mixer (for
+	 * example because the output protocol has no concept of a
+	 * "device", only of a stream), but which can offer one under
+	 * some configurations.  The output plugin decides, from its own
+	 * #ConfigBlock, whether and which alternative mixer applies;
+	 * this class deliberately never inspects individual output
+	 * plugins by name to make that decision itself.
+	 */
+	const MixerPlugin *(*get_hardware_mixer_plugin)(const ConfigBlock &block) noexcept = nullptr;
 };
 
 static inline bool
