@@ -301,11 +301,11 @@ playlist::StaleSong(PlayerControl &pc, const char *uri) noexcept
 void
 playlist::MoveRange(PlayerControl &pc, RangeArg range, unsigned to)
 {
-	if (!queue.IsValidPosition(range.start) ||
-	    !queue.IsValidPosition(range.end - 1))
+	const unsigned length = GetLength();
+	if (range.IsEmpty() || range.start >= length || range.end > length)
 		throw PlaylistError::BadRange();
 
-	if (to + range.Count() - 1 >= GetLength())
+	if (to > length - range.Count())
 		throw PlaylistError::BadRange();
 
 	if (range.start == to)
