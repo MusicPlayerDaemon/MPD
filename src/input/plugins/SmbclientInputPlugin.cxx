@@ -11,6 +11,7 @@
 #include "thread/ScopeUnlock.hxx"
 #include "system/Error.hxx"
 
+#include <exception>
 #include <libsmbclient.h>
 
 class SmbclientInputStream final : public InputStream {
