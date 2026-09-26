@@ -42,6 +42,16 @@ struct AudioOutputPlugin {
 	 * this audio output device.
 	 */
 	const MixerPlugin *mixer_plugin;
+
+	/**
+	 * If pipewire backend is used and "mixer_type" resolves
+	 * to #MixerType::HARDWARE for this output, allows for the use
+	 * of either "sink_volume" or "stream_volume" for mpd volume
+	 * control.
+	 * This method is optional; if unset, #mixer_plugin is always
+	 * used, exactly as previously.
+	 */
+	const MixerPlugin *(*get_hardware_mixer_plugin)(const ConfigBlock &block) = nullptr;
 };
 
 static inline bool

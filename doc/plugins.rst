@@ -1216,6 +1216,9 @@ Connect to a `PipeWire <https://pipewire.org/>`_ server.  Requires
        The default is ``yes``.
    * - **dsd yes|no**
      - Enable DSD playback.  This requires PipeWire 0.38.
+   * - **sink_volume yes|no**
+     - Control the sink's volume instead of the stream's per-client
+       gain. The default is ``no``.
 
 .. _pulse_plugin:
 

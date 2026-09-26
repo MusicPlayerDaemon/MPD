@@ -7,6 +7,7 @@
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
 #include "mixer/plugins/PipeWireMixerPlugin.hxx"
+#include "mixer/plugins/PwSinkMixerPlugin.hxx"
 #include "pcm/Features.h" // for ENABLE_DSD
 #include "pcm/Silence.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
@@ -86,6 +87,7 @@ class PipeWireOutput final : AudioOutput {
 	float volume = -1;
 
 	PipeWireMixer *mixer = nullptr;
+	PwSinkMixer *pw_sink_mixer = nullptr;
 	unsigned channels;
 
 	/**
@@ -181,6 +183,15 @@ public:
 		mixer = nullptr;
 	}
 
+	void SetPwSinkMixer(PwSinkMixer &_mixer) noexcept {
+		pw_sink_mixer = &_mixer;
+	}
+
+	void ClearPwSinkMixer([[maybe_unused]] PwSinkMixer &old_mixer) noexcept {
+		assert(pw_sink_mixer == &old_mixer);
+		pw_sink_mixer = nullptr;
+	}
+	
 private:
 	/**
 	 * Caller must lock the #thread_loop.
@@ -344,6 +355,20 @@ SetVolume(struct pw_stream &stream, unsigned channels, float volume)
 				  SPA_PROP_channelVolumes, channels, value,
 				  0) != 0)
 		throw std::runtime_error("pw_stream_set_control() failed");
+}
+
+void
+pipewire_output_set_pw_sink_mixer(PipeWireOutput &output,
+				   PwSinkMixer &mixer) noexcept
+{
+	output.SetPwSinkMixer(mixer);
+}
+
+void
+pipewire_output_clear_pw_sink_mixer(PipeWireOutput &output,
+				     PwSinkMixer &mixer) noexcept
+{
+	output.ClearPwSinkMixer(mixer);
 }
 
 void
@@ -704,6 +729,9 @@ PipeWireOutput::ParamChanged([[maybe_unused]] uint32_t id,
 					 std::current_exception());
 			}
 		}
+
+		if (pw_sink_mixer != nullptr)
+			pw_sink_mixer_request_resync(*pw_sink_mixer);
 	}
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
@@ -1016,11 +1044,26 @@ pipewire_output_clear_mixer(PipeWireOutput &po, PipeWireMixer &pm) noexcept
 	po.ClearMixer(pm);
 }
 
+/**
+ * Selects which #MixerPlugin implements "mixer_type hardware" based
+ * on that output's own "sink_volume" setting. Either the pipewire
+ * stream when "no" or pipewire sink when "yes".
+ */
+static const MixerPlugin *
+pipewire_get_sink_mixer_plugin(const ConfigBlock &block) noexcept
+{
+	if (block.GetBlockValue("sink_volume", false))
+		return &pw_sink_mixer_plugin;
+
+	return &pipewire_mixer_plugin;
+}
+
 const struct AudioOutputPlugin pipewire_output_plugin = {
 	"pipewire",
 	nullptr,
 	&PipeWireOutput::Create,
 	&pipewire_mixer_plugin,
+	&pipewire_get_sink_mixer_plugin,
 };
 
 void

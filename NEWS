@@ -19,6 +19,7 @@ ver 0.25 (not yet released)
   - wasapi: detect device changes
 * mixer
   - fix mixer idle events on non-default partitions
+  - add pipewire config sink_volume "yes" 
 * tags
   - new tag "DiscSubtitle"
 * player
