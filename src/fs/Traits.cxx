@@ -56,7 +56,7 @@ GetBasePathImpl(typename Traits::string_view p) noexcept
 {
 	auto sep = Traits::FindLastSeparator(p);
 	return sep != nullptr
-		? typename Traits::string_view{sep, p.data() + p.size()}
+		? typename Traits::string_view{sep + 1, p.data() + p.size()}
 		: p;
 }
 
