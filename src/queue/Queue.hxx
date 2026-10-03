@@ -11,6 +11,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <optional>
 #include <utility>
 
 struct LightSong;
@@ -339,8 +340,12 @@ struct Queue {
 	/**
 	 * Shuffles the virtual order of songs, but does not move them
 	 * physically.  This is used in random mode.
+	 *
+	 * @param avoid_position the queue position whose entry must not
+	 * be first if another entry has the same priority
 	 */
-	void ShuffleOrder() noexcept;
+	void ShuffleOrder(std::optional<unsigned> avoid_position =
+			  std::nullopt) noexcept;
 
 	void ShuffleOrderFirst(unsigned start, unsigned end) noexcept;
 

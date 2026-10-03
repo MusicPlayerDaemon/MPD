@@ -134,7 +134,7 @@ playlist::UpdateQueuedSong(PlayerControl &pc,
 		const unsigned current_position =
 			queue.OrderToPosition(current);
 
-		queue.ShuffleOrder();
+		queue.ShuffleOrder(current_position);
 
 		/* make sure that the current still points to
 		   the current song, after the song order has been
