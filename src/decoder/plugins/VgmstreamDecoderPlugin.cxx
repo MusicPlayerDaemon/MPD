@@ -82,7 +82,8 @@ VgmstreamGetFormat(const libvgmstream_t *lib)
 		break;
 	}
 
-	return audio_format;
+	return CheckAudioFormat(audio_format.sample_rate, audio_format.format,
+				audio_format.channels);
 }
 
 static int
@@ -260,9 +261,17 @@ VgmstreamScanSong(Path path, int subsong, TagHandler &handler) noexcept
 
 	AtScopeExit(lib) { libvgmstream_free(lib); };
 
+	AudioFormat audio_format;
+	try {
+		audio_format = VgmstreamGetFormat(lib);
+	} catch (...) {
+		LogError(std::current_exception());
+		return false;
+	}
+
 	handler.OnDuration(
 		SongTime::FromScale(lib->format->play_samples, lib->format->sample_rate));
-	handler.OnAudioFormat(VgmstreamGetFormat(lib));
+	handler.OnAudioFormat(audio_format);
 
 	VgmstreamScanTags(path, lib, handler, nullptr);
 
