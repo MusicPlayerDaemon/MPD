@@ -6,6 +6,40 @@
 
 #include <gtest/gtest.h>
 
+using std::string_view_literals::operator""sv;
+
+TEST(UriUtil, SafeLocal)
+{
+	EXPECT_TRUE(uri_safe_local("foo"));
+	EXPECT_TRUE(uri_safe_local("foo/bar"));
+	EXPECT_TRUE(uri_safe_local("a/b/c/d/e"));
+
+	// must be non-empty
+	EXPECT_FALSE(uri_safe_local(""));
+
+	// must not begin or end with a slash
+	EXPECT_FALSE(uri_safe_local("/"));
+	EXPECT_FALSE(uri_safe_local("/foo"));
+	EXPECT_FALSE(uri_safe_local("foo/"));
+
+	// no double slash
+	EXPECT_FALSE(uri_safe_local("foo//bar"));
+	EXPECT_FALSE(uri_safe_local("foo///bar"));
+
+	// no "." or ".." segments
+	EXPECT_FALSE(uri_safe_local("./foo"));
+	EXPECT_FALSE(uri_safe_local("../foo"));
+	EXPECT_TRUE(uri_safe_local("foo/.bar"));
+	EXPECT_FALSE(uri_safe_local("foo/.."));
+	EXPECT_FALSE(uri_safe_local("foo/."));
+	EXPECT_FALSE(uri_safe_local("foo/../bar"));
+	EXPECT_FALSE(uri_safe_local("foo/./bar"));
+	EXPECT_TRUE(uri_safe_local(".foo"));
+	EXPECT_TRUE(uri_safe_local("..foo"));
+	EXPECT_TRUE(uri_safe_local("...foo"));
+	EXPECT_TRUE(uri_safe_local(".....foo"));
+}
+
 TEST(UriUtil, RemoveAuth)
 {
 	EXPECT_EQ(std::string(),
