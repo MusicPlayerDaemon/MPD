@@ -49,6 +49,7 @@ ver 0.24.16 (not yet released)
 * resampler
   - fallback: implement more than two channels
 * output
+  - pipewire: limit the ring buffer size
   - snapcast: fix integer overflow
 * avahi: fix use-after-free bug
 * Windows

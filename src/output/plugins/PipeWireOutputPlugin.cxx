@@ -12,6 +12,7 @@
 #include "system/Error.hxx"
 #include "time/PeriodClock.hxx"
 #include "util/BitReverse.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "util/RingBuffer.hxx"
 #include "util/ScopeExit.hxx"
@@ -582,7 +583,10 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	interrupted = false;
 
 	/* allocate a ring buffer of 0.5 seconds */
-	ring_buffer = RingBuffer{frame_size * (audio_format.sample_rate / 2)};
+	constexpr std::size_t MAX_RING_BUFFER_SIZE = 16_MiB;
+	ring_buffer = RingBuffer{frame_size * std::clamp<std::size_t>(audio_format.sample_rate / 2,
+								      1024,
+								      MAX_RING_BUFFER_SIZE / frame_size)};
 
 	const struct spa_pod *params[1];
 
