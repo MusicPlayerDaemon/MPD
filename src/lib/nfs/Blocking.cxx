@@ -4,6 +4,7 @@
 #include "Blocking.hxx"
 #include "Connection.hxx"
 #include "event/Call.hxx"
+#include "net/TimeoutError.hxx"
 
 void
 BlockingNfsOperation::Run()
@@ -17,7 +18,7 @@ BlockingNfsOperation::Run()
 	if (!LockWaitFinished()) {
 		BlockingCall(connection.GetEventLoop(),
 			     [this](){ connection.RemoveLease(*this); });
-		throw std::runtime_error("Timeout");
+		throw TimeoutError{};
 	}
 
 	/* check for error */
