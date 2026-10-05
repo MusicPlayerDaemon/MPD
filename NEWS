@@ -62,6 +62,7 @@ ver 0.24.16 (not yet released)
   - simple: fix use-after-free crash bug
   - upnp: limit size and duration of device description downloads
   - upnp: fix crash on discovery error
+  - upnp: limit Browse and Search results
 * queue
   - fix consuming the wrong song after reshuffle in random+repeat mode
   - don't reshuffle on "next" in single+repeat mode

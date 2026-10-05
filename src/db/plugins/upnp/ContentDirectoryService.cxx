@@ -49,19 +49,32 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	ReadResultTag(dirbuf, response);
 }
 
+/**
+ * The maximum number of objects in one container.  The loop
+ * termination depends on numbers reported by the (untrusted)
+ * server, and this limit protects against servers which never stop
+ * sending objects.
+ */
+static constexpr std::size_t MAX_OBJECTS = 256 * 1024;
+
 UPnPDirContent
 ContentDirectoryService::readDir(UpnpClient_Handle handle,
 				 const char *objectId) const
 {
 	UPnPDirContent dirbuf;
 	unsigned offset = 0, total = -1, count;
+	std::size_t old_size;
 
 	do {
+		old_size = dirbuf.objects.size();
 		readDirSlice(handle, objectId, offset, m_rdreqcnt, dirbuf,
 			     count, total);
 
 		offset += count;
-	} while (count > 0 && offset < total);
+	} while (count > 0 && offset < total &&
+		 /* stop if the server sends no objects */
+		 dirbuf.objects.size() > old_size &&
+		 dirbuf.objects.size() < MAX_OBJECTS);
 
 	return dirbuf;
 }
@@ -73,8 +86,11 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 {
 	UPnPDirContent dirbuf;
 	unsigned offset = 0, total = -1, count;
+	std::size_t old_size;
 
 	do {
+		old_size = dirbuf.objects.size();
+
 		const auto response = UpnpSendAction(hdl, m_actionURL.c_str(),
 						     "Search", m_serviceType.c_str(),
 						     {
@@ -98,7 +114,10 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 			total = ParseUnsigned(value);
 
 		ReadResultTag(dirbuf, response);
-	} while (count > 0 && offset < total);
+	} while (count > 0 && offset < total &&
+		 /* stop if the server sends no objects */
+		 dirbuf.objects.size() > old_size &&
+		 dirbuf.objects.size() < MAX_OBJECTS);
 
 	return dirbuf;
 }
