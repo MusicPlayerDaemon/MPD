@@ -79,9 +79,19 @@ PoorSocketPair(UniqueSocketDescriptor &socket0, UniqueSocketDescriptor &socket1)
 
 	socket0.SetNonBlocking();
 
-	socket1 = listen_socket.AcceptNonBlock();
-	if (!socket1.IsDefined())
-		throw MakeSocketError("Failed to accept connection");
+	/* any local process may connect to the listener; accept only
+	   the connection from socket0 */
+	const auto expected_peer = socket0.GetLocalAddress();
+
+	while (true) {
+		StaticSocketAddress peer;
+		socket1 = listen_socket.AcceptNonBlock(peer);
+		if (!socket1.IsDefined())
+			throw MakeSocketError("Failed to accept connection");
+
+		if (peer == SocketAddress{expected_peer})
+			break;
+	}
 }
 
 #endif
