@@ -61,6 +61,17 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 		if (!is_absolute && !IsSafeRelativeEntry(db_song->filename))
 			continue;
 
+		if (PathTraitsUTF8::IsAbsolute(db_song->filename)) {
+			/* absolute local paths are allowed only if
+			   they are inside the storage, or else the
+			   playlist would make MPD open arbitrary
+			   files */
+			const auto relative = storage.MapToRelativeUTF8(db_song->filename);
+			if (relative.data() == nullptr ||
+			    !uri_safe_local(relative))
+				continue;
+		}
+
 		db_song->target = is_absolute
 			? std::move(db_song->filename)
 			/* prepend "../" to relative paths to go from
