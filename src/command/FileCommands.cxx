@@ -171,7 +171,8 @@ SendFromInputStream(Response &r, InputStream &is, std::size_t offset)
  * opened file or #nullptr on failure.
  */
 static InputStreamPtr
-find_stream_art(std::string_view directory, Mutex &mutex)
+find_stream_art(std::string_view directory, Mutex &mutex,
+		const Client *check_client)
 {
 	static constexpr auto art_names = std::array {
 		"cover.png",
@@ -183,6 +184,12 @@ find_stream_art(std::string_view directory, Mutex &mutex)
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
 		try {
+			if (check_client != nullptr)
+				/* the client has specified a local
+				   path; check whether it is allowed to
+				   access this file */
+				check_client->AllowFile(AllocatedPath::FromUTF8Throw(art_file));
+
 			return InputStream::OpenReady(art_file, mutex);
 		} catch (...) {
 			auto e = std::current_exception();
@@ -193,9 +200,13 @@ find_stream_art(std::string_view directory, Mutex &mutex)
 	return nullptr;
 }
 
+/**
+ * @param check_access check Client::AllowFile() for each file
+ * (because #art_directory is a local path specified by the client)
+ */
 static CommandResult
 read_stream_art(Response &r, const std::string_view art_directory,
-		size_t offset)
+		size_t offset, bool check_access=false)
 {
 	// TODO: eliminate this const_cast
 	auto &client = const_cast<Client &>(r.GetClient());
@@ -203,9 +214,10 @@ read_stream_art(Response &r, const std::string_view art_directory,
 	/* to avoid repeating the search for each chunk request by the
 	   same client, use the #LastInputStream class to cache the
 	   #InputStream instance */
-	auto *is = client.last_album_art.Open(art_directory, [](std::string_view directory,
-								Mutex &mutex){
-		return find_stream_art(directory, mutex);
+	auto *is = client.last_album_art.Open(art_directory, [&client, check_access](std::string_view directory,
+										 Mutex &mutex){
+		return find_stream_art(directory, mutex,
+				       check_access ? &client : nullptr);
 	});
 
 	if (is == nullptr) {
@@ -293,7 +305,8 @@ handle_album_art(Client &client, Request args, Response &r)
 	case LocatedUri::Type::PATH:
 		return read_stream_art(r,
 				       PathTraitsUTF8::GetParent(located_uri.canonical_uri),
-				       offset);
+				       offset,
+				       located_uri.type == LocatedUri::Type::PATH);
 
 	case LocatedUri::Type::RELATIVE:
 #ifdef ENABLE_DATABASE

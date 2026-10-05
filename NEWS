@@ -9,6 +9,7 @@ ver 0.24.16 (not yet released)
   - fix double-free crash bug with "getfingerprint"
   - sanitize tag values printed by "lsinfo" on stream URIs
   - validate the picture MIME type for "readpicture"
+  - check local file access for "albumart"
 * neighbor
   - smbclient: validate server names and comments
   - udisks: fix crash bug
