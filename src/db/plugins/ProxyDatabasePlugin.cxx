@@ -24,6 +24,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/RecursiveMap.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/StringCompare.hxx"
 #include "protocol/Ack.hxx"
 #include "event/SocketEvent.hxx"
 #include "event/IdleEvent.hxx"
@@ -37,6 +38,8 @@
 #include <list>
 #include <string>
 #include <utility>
+
+using std::string_view_literals::operator""sv;
 
 class LibmpdclientError final : public std::runtime_error {
 	enum mpd_error code;
@@ -627,14 +630,33 @@ Visit(struct mpd_connection *connection, const char *uri,
  */
 static constexpr std::size_t MAX_DIRECTORY_DEPTH = 64;
 
+/**
+ * Is #child a direct child of #parent?
+ */
+[[gnu::pure]]
+static bool
+IsDirectChild(std::string_view parent, std::string_view child) noexcept
+{
+	if (!parent.empty()) {
+		if (!SkipPrefix(child, parent) ||
+		    !SkipPrefix(child, "/"sv))
+			return false;
+	}
+
+	return !child.empty() && child.find('/') == child.npos;
+}
+
 static void
-Visit(struct mpd_connection *connection,
+Visit(struct mpd_connection *connection, const char *parent_uri,
       bool recursive, const SongFilter *filter,
       const struct mpd_directory *directory,
       const VisitDirectory& visit_directory, const VisitSong& visit_song,
       const VisitPlaylist& visit_playlist)
 {
 	const char *path = mpd_directory_get_path(directory);
+
+	if (!IsDirectChild(parent_uri, path))
+		throw std::runtime_error{"Malformed directory entry from remote MPD"};
 
 	std::chrono::system_clock::time_point mtime =
 		std::chrono::system_clock::time_point::min();
@@ -747,7 +769,7 @@ Visit(struct mpd_connection *connection, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_DIRECTORY:
-			Visit(connection, recursive, filter,
+			Visit(connection, uri, recursive, filter,
 			      mpd_entity_get_directory(entity),
 			      visit_directory, visit_song, visit_playlist);
 			break;

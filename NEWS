@@ -41,6 +41,7 @@ ver 0.24.16 (not yet released)
   - id3: fix crash on encrypted ID3 tags
 * database
   - proxy: limit the directory nesting depth
+  - proxy: validate directories
   - simple: limit archive entry path length
   - simple: limit the directory nesting depth
   - upnp: limit size and duration of device description downloads
