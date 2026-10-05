@@ -7,7 +7,7 @@
 #include <cassert>
 
 Timer::Timer(const AudioFormat af) noexcept
-	:rate(af.sample_rate * af.GetFrameSize())
+	:rate(uint_least64_t(af.sample_rate) * af.GetFrameSize())
 {
 }
 

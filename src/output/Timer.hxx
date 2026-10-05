@@ -5,6 +5,7 @@
 #define MPD_TIMER_HXX
 
 #include <chrono>
+#include <cstdint>
 
 struct AudioFormat;
 
@@ -13,7 +14,11 @@ class Timer {
 
 	Time time;
 	bool started = false;
-	const int rate;
+	/**
+	 * Bytes per second.  This needs to be 64 bit, because the
+	 * product of sample rate and frame size may exceed 32 bit.
+	 */
+	const uint_least64_t rate;
 public:
 	explicit Timer(AudioFormat af) noexcept;
 
