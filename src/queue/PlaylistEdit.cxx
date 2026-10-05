@@ -302,7 +302,7 @@ void
 playlist::MoveRange(PlayerControl &pc, RangeArg range, unsigned to)
 {
 	const unsigned length = GetLength();
-	if (range.IsEmpty() || range.start >= length || range.end > length)
+	if (range.IsEmpty() || range.end > length)
 		throw PlaylistError::BadRange();
 
 	if (to > length - range.Count())
