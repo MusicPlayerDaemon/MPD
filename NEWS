@@ -2,6 +2,7 @@ ver 0.24.16 (not yet released)
 * protocol
   - fix underflow in relative range moves
   - reject empty ranges in "move"
+  - reject song id 0
 * storage
   - nfs: fix use-after-free bug
 * input
