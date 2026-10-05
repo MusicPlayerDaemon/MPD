@@ -1,16 +1,14 @@
 [wrap-file]
-directory = googletest-1.17.0
-source_url = https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz
-source_filename = googletest-1.17.0.tar.gz
-source_hash = 65fab701d9829d38cb77c14acdc431d2108bfdbf8979e40eb8ae567edf10b27c
-patch_filename = gtest_1.17.0-4_patch.zip
-patch_url = https://wrapdb.mesonbuild.com/v2/gtest_1.17.0-4/get_patch
-patch_hash = 3abf7662d09db706453a5b064a1e914678c74b9d9b0b19382747ca561d0d8750
-source_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/gtest_1.17.0-4/googletest-1.17.0.tar.gz
-wrapdb_version = 1.17.0-4
+directory = googletest-1.18.0
+source_url = https://github.com/google/googletest/archive/refs/tags/v1.18.0.tar.gz
+source_filename = googletest-1.18.0.tar.gz
+source_hash = 6e3191c1455468b3fc35a417fb565c1c5071aee1b7e7f85e30cf48a98d37d8b5
+source_fallback_url = https://wrapdb.mesonbuild.com/v2/gtest_1.18.0-1/get_source/googletest-1.18.0.tar.gz
+patch_filename = gtest_1.18.0-1_patch.zip
+patch_url = https://wrapdb.mesonbuild.com/v2/gtest_1.18.0-1/get_patch
+patch_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/gtest_1.18.0-1/gtest_1.18.0-1_patch.zip
+patch_hash = a51d48aa7a48fc666026f247f72c03d1629a145a89ae8a518825f189a52ace5d
+wrapdb_version = 1.18.0-1
 
 [provide]
-gtest = gtest_dep
-gtest_main = gtest_main_dep
-gmock = gmock_dep
-gmock_main = gmock_main_dep
+dependency_names = gtest, gmock, gtest_main, gmock_main
