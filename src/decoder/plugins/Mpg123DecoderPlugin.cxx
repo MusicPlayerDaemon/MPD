@@ -198,9 +198,13 @@ ParseId3(mpg123_handle &handle) noexcept
 static void
 AddTagItem(TagBuilder &tag, TagType type, const mpg123_string &s) noexcept
 {
-	assert(s.p != nullptr);
 	assert(s.size >= s.fill);
-	assert(s.fill > 0);
+
+	if (s.p == nullptr || s.fill == 0)
+		/* libmpg123 leaves an empty string here if the
+		   frame was empty (e.g. a duplicate frame with zero
+		   size) */
+		return;
 
 	/* "fill" includes the closing null byte; strip it here */
 	const std::string_view all_values{s.p, s.fill - 1};

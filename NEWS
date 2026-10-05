@@ -16,6 +16,7 @@ ver 0.24.16 (not yet released)
   - flac: fix crash on mid-stream channel change
   - ffmpeg: fix crash on mid-stream audio format change
   - mad: fix integer underflow
+  - mpg123: fix crash bug
   - opus, vorbis: don't return garbage after a gap in the stream
 * encoder
   - flac: skip tag values rejected by libFLAC
