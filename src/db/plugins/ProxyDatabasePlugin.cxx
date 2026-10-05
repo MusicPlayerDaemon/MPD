@@ -22,6 +22,8 @@
 #include "tag/ParseName.hxx"
 #include "tag/WithTagBuffer.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "uri/Extract.hxx"
+#include "uri/Util.hxx"
 #include "util/RecursiveMap.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
@@ -208,12 +210,33 @@ Copy(TagBuilder &tag, TagType d_tag,
 	}
 }
 
+#if LIBMPDCLIENT_CHECK_VERSION(2,25,0)
+
+/**
+ * May this (remote-supplied) "Real-URI" be used?  It must not refer
+ * to a local file outside of the music directory.
+ */
+[[gnu::pure]]
+static bool
+IsSafeRealUri(const char *real_uri) noexcept
+{
+	return uri_safe_local(real_uri) ||
+		(uri_has_scheme(real_uri) &&
+		 !StringStartsWithIgnoreCase(real_uri, "file:"sv));
+	// TODO use protocol_is_whitelisted()
+}
+
+#endif
+
 ProxySong::ProxySong(const mpd_song *song)
 	:LightSong(mpd_song_get_uri(song), tag_buffer)
 {
+	if (!uri_safe_local(uri))
+		throw std::runtime_error{"Malformed song URI from remote MPD"};
+
 #if LIBMPDCLIENT_CHECK_VERSION(2,25,0)
 	const auto _real_uri = mpd_song_get_real_uri(song);
-	if (_real_uri != nullptr)
+	if (_real_uri != nullptr && IsSafeRealUri(_real_uri))
 		real_uri = _real_uri;
 #endif
 

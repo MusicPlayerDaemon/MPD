@@ -42,6 +42,7 @@ ver 0.24.16 (not yet released)
 * database
   - proxy: limit the directory nesting depth
   - proxy: validate directories
+  - proxy: validate song URIs
   - simple: limit archive entry path length
   - simple: limit the directory nesting depth
   - upnp: limit size and duration of device description downloads
