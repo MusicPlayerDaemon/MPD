@@ -5,6 +5,8 @@
 #include "InputStream.hxx"
 #include "thread/Name.hxx"
 
+#include <stdexcept>
+
 #include <string.h>
 
 BufferingInputStream::BufferingInputStream(InputStreamPtr _input)
@@ -119,6 +121,13 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock)
 				/* the file has been read completely */
 				break;
 			}
+
+			if (new_offset == input->GetOffset())
+				/* the input has ended before the
+				   declared size; seeking to the
+				   current offset would not make any
+				   progress */
+				throw std::runtime_error{"Premature end of file"};
 
 			/* seek to the first hole */
 			input->Seek(lock, new_offset);
