@@ -35,6 +35,20 @@ test(
 )
 
 test(
+  'TestBufferingInputStream',
+  executable(
+    'TestBufferingInputStream',
+    'TestBufferingInputStream.cxx',
+    include_directories: inc,
+    dependencies: [
+      input_glue_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
   'test_protocol',
   executable(
     'test_protocol',
@@ -50,14 +64,29 @@ test(
 )
 
 test(
-  'test_queue_priority',
+  'TestQueue',
   executable(
-    'test_queue_priority',
+    'TestQueue',
     'test_queue_priority.cxx',
+    'TestIdTable.cxx',
     '../src/queue/Queue.cxx',
     include_directories: inc,
     dependencies: [
       util_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
+  'TestBufferedReader',
+  executable(
+    'TestBufferedReader',
+    'TestBufferedReader.cxx',
+    include_directories: inc,
+    dependencies: [
+      io_dep,
       gtest_dep,
     ],
   ),

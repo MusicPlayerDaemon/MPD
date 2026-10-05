@@ -84,7 +84,12 @@ BufferedReader::ReadLine()
 		}
 	} while (Fill(true));
 
-	if (!eof || buffer.empty())
+	if (!eof)
+		/* the buffer is full, but there is no newline; don't
+		   pretend this was the end of the file */
+		throw std::runtime_error("Line is too long");
+
+	if (buffer.empty())
 		return nullptr;
 
 	auto w = buffer.Write();

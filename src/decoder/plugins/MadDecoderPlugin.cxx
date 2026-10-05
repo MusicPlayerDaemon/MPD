@@ -878,6 +878,13 @@ MadDecoder::SynthAndSubmit() noexcept
 		pcm_length -= drop_end_samples;
 	}
 
+	if (i > pcm_length)
+		/* this frame is smaller than the first one (e.g. a
+		   switch from MPEG-1 to MPEG-2), therefore
+		   "drop_start_samples" (which was calculated from
+		   the first frame) is too large */
+		i = pcm_length;
+
 	auto cmd = SubmitPCM(i, pcm_length);
 	if (cmd != DecoderCommand::NONE)
 		return cmd;

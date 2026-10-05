@@ -18,8 +18,14 @@ public:
 		:p((const uint8_t *)_p), end(p + size) {}
 
 	constexpr bool Skip(size_t length) noexcept {
+		/* compare with the remaining size instead of
+		   comparing pointers after the addition, which may
+		   overflow on 32 bit platforms */
+		if (length > std::size_t(end - p))
+			return false;
+
 		p += length;
-		return p <= end;
+		return true;
 	}
 
 	constexpr const void *Read(size_t length) noexcept {

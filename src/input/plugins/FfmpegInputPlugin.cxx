@@ -10,7 +10,13 @@
 #include "../ThreadInputStream.hxx"
 #include "PluginUnavailable.hxx"
 #include "../InputPlugin.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
+
+extern "C" {
+#include <libavutil/dict.h>
+}
 
 using std::string_view_literals::operator""sv;
 
@@ -92,7 +98,17 @@ input_ffmpeg_open(std::string_view uri, Mutex &mutex)
 void
 FfmpegInputStream::Open()
 {
-	io = {GetURI(), AVIO_FLAG_READ};
+	AVDictionary *options = nullptr;
+	AtScopeExit(&options) { av_dict_free(&options); };
+
+	if (StringStartsWith(GetURI(), "hls+"))
+		/* the (remote) HLS playlist may refer to arbitrary
+		   nested protocols such as "file:"; allow only
+		   network protocols */
+		av_dict_set(&options, "protocol_whitelist",
+			    "hls,http,https,tcp,tls,crypto,httpproxy", 0);
+
+	io = {GetURI(), AVIO_FLAG_READ, &options};
 
 	seekable = (io->seekable & AVIO_SEEKABLE_NORMAL) != 0;
 	size = io.GetSize();

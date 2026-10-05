@@ -119,6 +119,7 @@ TagBuilder::Commit(Tag &tag) noexcept
 	   vector::clear() call is important to detach them from this
 	   object */
 	const unsigned n_items = items.size();
+	assert(n_items <= MAX_ITEMS);
 	tag.num_items = n_items;
 	tag.items = new TagItem *[n_items];
 	std::copy_n(items.begin(), n_items, tag.items);
@@ -171,7 +172,7 @@ TagBuilder::Complement(const Tag &other) noexcept
 		items.reserve(items.size() + n);
 
 		const std::lock_guard protect{tag_pool_lock};
-		for (std::size_t i = 0; i != n; ++i) {
+		for (std::size_t i = 0; i != n && items.size() < MAX_ITEMS; ++i) {
 			TagItem *item = other.items[i];
 			if (!present[item->type])
 				items.push_back(tag_pool_dup_item(item));
@@ -182,6 +183,9 @@ TagBuilder::Complement(const Tag &other) noexcept
 void
 TagBuilder::AddItemUnchecked(TagType type, std::string_view value) noexcept
 {
+	if (items.size() >= MAX_ITEMS)
+		return;
+
 	TagItem *i;
 
 	{

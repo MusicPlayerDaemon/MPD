@@ -183,7 +183,11 @@ input_cdio_open(std::string_view uri,
 		throw std::runtime_error("Unable find or access a CD-ROM drive with an audio CD in it.");
 
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
-	const auto cdio = cdio_open(device.c_str(), DRIVER_UNKNOWN);
+	/* DRIVER_DEVICE allows only hardware drives; with
+	   DRIVER_UNKNOWN, libcdio would also open image files
+	   (e.g. ".cue", ".nrg"), and the device path comes from the
+	   (untrusted) client */
+	const auto cdio = cdio_open(device.c_str(), DRIVER_DEVICE);
 	if (cdio == nullptr)
 		throw std::runtime_error("Failed to open CD drive");
 
@@ -245,14 +249,20 @@ input_cdio_open(std::string_view uri,
 	}
 
 	/* LSNs < 0 indicate errors (e.g. -401: Invaid track, -402: no pregap) */
-	if(lsn_from < 0 || lsn_to < 0)
+	if(lsn_from < 0 || lsn_to < 0) {
+		cdio_cddap_close_no_free_cdio(drv);
+		cdio_destroy(cdio);
 		throw FmtRuntimeError("Error {} on track {}",
 				      lsn_from < 0 ? lsn_from : lsn_to, parsed_uri.track);
+	}
 
 	/* Only check for audio track if not pregap or whole CD */
-	if (!cdio_cddap_track_audiop(drv, parsed_uri.track) && parsed_uri.track > 0)
+	if (!cdio_cddap_track_audiop(drv, parsed_uri.track) && parsed_uri.track > 0) {
+		cdio_cddap_close_no_free_cdio(drv);
+		cdio_destroy(cdio);
 		throw FmtRuntimeError("No audio track: {}",
 				      parsed_uri.track);
+	}
 
 	return std::make_unique<CdioParanoiaInputStream>(uri, mutex,
 							 drv, cdio,

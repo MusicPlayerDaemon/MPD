@@ -35,6 +35,14 @@ class TagBuilder {
 
 public:
 	/**
+	 * The maximum number of items; additional items are
+	 * discarded.  This protects against files with an excessive
+	 * number of tags, and it must not exceed the capacity of
+	 * Tag::num_items.
+	 */
+	static constexpr std::size_t MAX_ITEMS = 4096;
+
+	/**
 	 * Create an empty tag.
 	 */
 	TagBuilder() noexcept {

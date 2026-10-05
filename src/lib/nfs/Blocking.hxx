@@ -25,7 +25,13 @@ class BlockingNfsOperation : protected NfsCallback, NfsLease {
 	Mutex mutex;
 	Cond cond;
 
-	bool finished;
+	/**
+	 * Has Start() registered this object as #NfsCallback?  Only
+	 * accessed from the #EventLoop thread.
+	 */
+	bool started = false;
+
+	bool finished = false;
 
 	std::exception_ptr error;
 
@@ -34,7 +40,7 @@ protected:
 
 public:
 	BlockingNfsOperation(NfsConnection &_connection) noexcept
-		:finished(false), connection(_connection) {}
+		:connection(_connection) {}
 
 	/**
 	 * Throws std::runtime_error on error.

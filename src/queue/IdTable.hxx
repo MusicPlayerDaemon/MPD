@@ -45,7 +45,7 @@ public:
 	IdTable &operator=(const IdTable &) = delete;
 
 	constexpr int IdToPosition(unsigned id) const noexcept {
-		return id < initialized
+		return id > 0 && id < initialized
 			? data[id]
 			: -1;
 	}
