@@ -200,10 +200,18 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
 static DecoderCommand
 FfmpegSendFrame(DecoderClient &client, InputStream *is,
 		AVCodecContext &codec_context,
-		const AVFrame &frame,
+		const AVFrame &frame, size_t pcm_frame_size,
 		size_t &skip_bytes,
 		FfmpegBuffer &buffer)
 {
+	if (std::size_t(frame.ch_layout.nb_channels) *
+	    av_get_bytes_per_sample(AVSampleFormat(frame.format)) != pcm_frame_size)
+		/* the decoder has changed the channel layout or
+		   sample format, but we can't change the format
+		   announced to DecoderClient::Ready(); skip this
+		   frame */
+		return DecoderCommand::NONE;
+
 	auto output_buffer = Ffmpeg::InterleaveFrame(frame, buffer);
 
 	if (skip_bytes > 0) {
@@ -223,7 +231,7 @@ FfmpegSendFrame(DecoderClient &client, InputStream *is,
 static DecoderCommand
 FfmpegReceiveFrames(DecoderClient &client, InputStream *is,
 		    AVCodecContext &codec_context,
-		    AVFrame &frame,
+		    AVFrame &frame, size_t pcm_frame_size,
 		    size_t &skip_bytes,
 		    FfmpegBuffer &buffer,
 		    bool &eof)
@@ -235,8 +243,8 @@ FfmpegReceiveFrames(DecoderClient &client, InputStream *is,
 		switch (err) {
 		case 0:
 			cmd = FfmpegSendFrame(client, is, codec_context,
-					      frame, skip_bytes,
-					      buffer);
+					      frame, pcm_frame_size,
+					      skip_bytes, buffer);
 			if (cmd != DecoderCommand::NONE)
 				return cmd;
 
@@ -318,7 +326,7 @@ ffmpeg_send_packet(DecoderClient &client, InputStream *is,
 	}
 
 	auto cmd = FfmpegReceiveFrames(client, is, codec_context,
-				       frame,
+				       frame, pcm_frame_size,
 				       skip_bytes, buffer, eof);
 
 	if (eof)
