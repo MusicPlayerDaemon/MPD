@@ -25,6 +25,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/Domain.hxx"
 #include "util/StringCompare.hxx"
+#include "util/UriUtil.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -363,6 +364,10 @@ CreateUdisksStorageURI(EventLoop &event_loop, const char *base_uri)
 		while (*relative_path == '/')
 			++relative_path;
 	}
+
+	if (*relative_path != 0 && !uri_safe_local(relative_path))
+		/* don't allow escaping the mount point with ".." */
+		throw std::invalid_argument{"Malformed udisks:// URI"};
 
 	auto inside_path = *relative_path != 0
 		? AllocatedPath::FromUTF8Throw(relative_path)

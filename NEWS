@@ -5,6 +5,7 @@ ver 0.24.16 (not yet released)
   - reject song id 0
 * storage
   - nfs: fix use-after-free bug
+  - udisks: reject ".." in the relative volume path
 * input
   - cache: fix use-after-free bug
   - cache: fix deadlock bug
