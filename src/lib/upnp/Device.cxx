@@ -3,6 +3,7 @@
 
 #include "Device.hxx"
 #include "Util.hxx"
+#include "uri/Extract.hxx"
 #include "lib/expat/ExpatParser.hxx"
 
 #include <string.h>
@@ -82,6 +83,11 @@ UPnPDevice::Parse(const std::string_view url, const std::string_view description
 		UPnPDeviceParser mparser(*this);
 		mparser.Parse(description, true);
 	}
+
+	if (!URLBase.empty() && UriGetOrigin(URLBase) != UriGetOrigin(url))
+		/* don't let the device description redirect our
+		   SOAP requests to a different host */
+		URLBase.clear();
 
 	if (URLBase.empty()) {
 		// The standard says that if the URLBase value is empty, we should use

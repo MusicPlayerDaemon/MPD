@@ -65,6 +65,7 @@ ver 0.24.16 (not yet released)
   - upnp: fix crash on discovery error
   - upnp: limit Browse and Search results
   - upnp: accept only HTTP resource URLs
+  - upnp: ignore URLBase pointing to a different host
 * queue
   - fix consuming the wrong song after reshuffle in random+repeat mode
   - don't reshuffle on "next" in single+repeat mode
