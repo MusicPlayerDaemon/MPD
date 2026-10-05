@@ -78,6 +78,20 @@ test(
 )
 
 test(
+  'TestBufferedReader',
+  executable(
+    'TestBufferedReader',
+    'TestBufferedReader.cxx',
+    include_directories: inc,
+    dependencies: [
+      io_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
   'TestIcu',
   executable(
     'TestIcu',
