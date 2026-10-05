@@ -87,6 +87,19 @@ CurlStorage::OpenFile(std::string_view uri_utf8, Mutex &mutex)
 	return input_rewind_open(OpenCurlInputStream(MapUTF8(uri_utf8), {}, mutex));
 }
 
+/**
+ * The maximum duration of a WebDAV request.
+ */
+static constexpr std::chrono::seconds WEBDAV_TIMEOUT = std::chrono::minutes{1};
+
+static CurlEasy
+CreateWebdavCurlEasy(const char *uri)
+{
+	auto easy = CreateConfiguredCurlEasy(uri);
+	easy.SetTimeout(WEBDAV_TIMEOUT);
+	return easy;
+}
+
 class BlockingHttpRequest : protected CurlResponseHandler {
 	InjectEvent defer_start;
 
@@ -104,7 +117,7 @@ public:
 	BlockingHttpRequest(CurlGlobal &curl, const char *uri)
 		:defer_start(curl.GetEventLoop(),
 			     BIND_THIS_METHOD(OnDeferredStart)),
-		 request(curl, CreateConfiguredCurlEasy(uri), *this) {
+		 request(curl, CreateWebdavCurlEasy(uri), *this) {
 	}
 
 	void DeferStart() noexcept {
