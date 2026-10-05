@@ -9,10 +9,13 @@ bool
 OggReadPacket(OggSyncState &sync, OggStreamState &stream, ogg_packet &packet)
 {
 	while (true) {
-		if (stream.PacketOut(packet))
+		const int result = stream.PacketOut(packet);
+		if (result > 0)
 			return true;
 
-		if (!sync.ExpectPageIn(stream))
+		/* a negative value indicates a gap in the stream and
+		   doesn't fill the "packet"; try again */
+		if (result == 0 && !sync.ExpectPageIn(stream))
 			return false;
 	}
 }
