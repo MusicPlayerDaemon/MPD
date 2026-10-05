@@ -7,6 +7,7 @@ ver 0.24.16 (not yet released)
   - reject out-of-range time stamps
   - reject "." and ".." as mount point
   - fix double-free crash bug with "getfingerprint"
+  - sanitize tag values printed by "lsinfo" on stream URIs
 * neighbor
   - udisks: fix crash bug
 * storage
