@@ -10,9 +10,29 @@
  * An #InputStream implementation which reads data from an
  * #InputCacheItem.
  */
-class CacheInputStream final : public InputStream, InputCacheLease {
+class CacheInputStream final : public InputStream {
+	class Lease final : public InputCacheLease {
+		CacheInputStream &stream;
+
+	public:
+		explicit Lease(CacheInputStream &_stream) noexcept
+			:stream(_stream) {}
+
+		void Set(InputCacheLease &&src) noexcept {
+			InputCacheLease::operator=(std::move(src));
+		}
+
+	private:
+		void OnInputCacheAvailable(std::unique_lock<Mutex> &lock) noexcept override {
+			stream.OnInputCacheAvailable(lock);
+		}
+	};
+
+	Lease lease;
+
 public:
 	CacheInputStream(InputCacheLease _lease, Mutex &_mutex) noexcept;
+	~CacheInputStream() noexcept override;
 
 	/* virtual methods from class InputStream */
 	void Check() override;
@@ -28,6 +48,5 @@ public:
 		    std::span<std::byte> dest) override;
 
 private:
-	/* virtual methods from class InputCacheLease */
-	void OnInputCacheAvailable(std::unique_lock<Mutex> &lock) noexcept override;
+	void OnInputCacheAvailable(std::unique_lock<Mutex> &lock) noexcept;
 };
