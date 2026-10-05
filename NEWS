@@ -9,6 +9,7 @@ ver 0.24.16 (not yet released)
   - cache: fix use-after-free bug
   - cache: fix deadlock bug
   - cdio_paranoia: fix memory leak
+  - cdio_paranoia: open only hardware drives
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
 * decoder

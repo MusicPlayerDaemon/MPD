@@ -183,7 +183,11 @@ input_cdio_open(std::string_view uri,
 		throw std::runtime_error("Unable find or access a CD-ROM drive with an audio CD in it.");
 
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
-	const auto cdio = cdio_open(device.c_str(), DRIVER_UNKNOWN);
+	/* DRIVER_DEVICE allows only hardware drives; with
+	   DRIVER_UNKNOWN, libcdio would also open image files
+	   (e.g. ".cue", ".nrg"), and the device path comes from the
+	   (untrusted) client */
+	const auto cdio = cdio_open(device.c_str(), DRIVER_DEVICE);
 	if (cdio == nullptr)
 		throw std::runtime_error("Failed to open CD drive");
 
