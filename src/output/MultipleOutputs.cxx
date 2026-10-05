@@ -83,6 +83,7 @@ MultipleOutputs::ReleaseOwnership(AudioOutputControl &ao) noexcept
 {
 	assert(Owns(ao));
 
+	ao.LockCloseWait();
 	ao.LockDisable();
 
 	const std::lock_guard lock{mutex};
