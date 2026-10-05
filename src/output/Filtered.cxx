@@ -94,7 +94,12 @@ FilteredAudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	} catch (...) {
 		output->Close();
 
-		if (out_audio_format.format == SampleFormat::DSD) {
+		if (out_audio_format.format == SampleFormat::DSD &&
+		    /* retry only once; if the output returns DSD
+		       even though we asked for PCM (e.g. because
+		       of "allowed_formats"), this would recurse
+		       forever */
+		    desired_audio_format.format == SampleFormat::DSD) {
 			/* if the audio output supports DSD, but not
 			   the given sample rate, it asks MPD to
 			   resample; resampling DSD however is not
