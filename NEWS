@@ -16,6 +16,7 @@ ver 0.24.16 (not yet released)
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
 * decoder
+  - audiofile: fix division by zero
   - dsdiff: fix integer overflow
   - flac: fix crash on mid-stream channel change
   - ffmpeg: fix crash on mid-stream audio format change
