@@ -18,6 +18,8 @@
 
 #include <upnptools.h>
 
+#include <stdexcept>
+
 #include <stdlib.h>
 
 class UPnPDeviceDirectory::ContentDirectoryDescriptor {
@@ -79,6 +81,14 @@ private:
 	void OnError(std::exception_ptr e) noexcept override;
 };
 
+/**
+ * Device descriptions are small XML documents; this limit protects
+ * against (malicious) servers sending endless responses.
+ */
+static constexpr std::size_t MAX_DEVICE_DESCRIPTION_SIZE = 256 * 1024;
+
+static constexpr std::chrono::seconds DEVICE_DESCRIPTION_TIMEOUT{30};
+
 UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 					    const UpnpDiscovery &disco)
 	:defer_start_event(_parent.GetEventLoop(),
@@ -89,6 +99,8 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 	 expires(std::chrono::seconds(UpnpDiscovery_get_Expires(&disco))),
 	 request(*parent.curl, url.c_str(), *this)
 {
+	request.GetEasy().SetTimeout(DEVICE_DESCRIPTION_TIMEOUT);
+
 	const std::lock_guard protect{parent.mutex};
 	parent.downloaders.push_back(*this);
 }
@@ -113,6 +125,9 @@ UPnPDeviceDirectory::Downloader::OnHeaders(unsigned status,
 void
 UPnPDeviceDirectory::Downloader::OnData(std::span<const std::byte> src)
 {
+	if (data.size() + src.size() > MAX_DEVICE_DESCRIPTION_SIZE)
+		throw std::runtime_error{"UPnP device description is too large"};
+
 	data.append(ToStringView(src));
 }
 
