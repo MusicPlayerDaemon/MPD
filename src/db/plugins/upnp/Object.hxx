@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tag/Tag.hxx"
+#include "util/StringCompare.hxx"
 
 #include <cstdint>
 #include <string>
@@ -85,6 +86,11 @@ public:
 			(IsRoot() || (!parent_id.empty() &&
 				      !name.empty())) &&
 			(type != UPnPDirObject::Type::ITEM ||
-			 item_class != UPnPDirObject::ItemClass::UNKNOWN);
+			 (item_class != UPnPDirObject::ItemClass::UNKNOWN &&
+			  /* the URL comes from the (untrusted)
+			     server, and it must not refer to a
+			     local file */
+			  (StringStartsWithIgnoreCase(url, "http://") ||
+			   StringStartsWithIgnoreCase(url, "https://"))));
 	}
 };
