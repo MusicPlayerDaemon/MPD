@@ -545,6 +545,7 @@ test(
     'test_pcm_mix.cxx',
     'test_pcm_interleave.cxx',
     'test_pcm_export.cxx',
+    'test_pcm_resampler.cxx',
     include_directories: inc,
     dependencies: [
       pcm_dep,
