@@ -25,6 +25,12 @@ class BlockingNfsOperation : protected NfsCallback, NfsLease {
 	Mutex mutex;
 	Cond cond;
 
+	/**
+	 * Has Start() registered this object as #NfsCallback?  Only
+	 * accessed from the #EventLoop thread.
+	 */
+	bool started = false;
+
 	bool finished = false;
 
 	std::exception_ptr error;

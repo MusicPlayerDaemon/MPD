@@ -16,9 +16,22 @@ BlockingNfsOperation::Run()
 
 	/* wait for completion */
 	if (!LockWaitFinished()) {
-		BlockingCall(connection.GetEventLoop(),
-			     [this](){ connection.RemoveLease(*this); });
-		throw TimeoutError{};
+		BlockingCall(connection.GetEventLoop(), [this](){
+			if (finished)
+				/* completed just after the timeout */
+				return;
+
+			if (started)
+				connection.Cancel(*this, nullptr, {});
+
+			connection.RemoveLease(*this);
+		});
+
+		if (!finished)
+			// still not finished
+			throw TimeoutError{};
+
+		// completed meanwhile: continue below
 	}
 
 	/* check for error */
@@ -31,6 +44,7 @@ BlockingNfsOperation::OnNfsConnectionReady() noexcept
 {
 	try {
 		Start();
+		started = true;
 	} catch (...) {
 		error = std::current_exception();
 		connection.RemoveLease(*this);
@@ -55,6 +69,7 @@ BlockingNfsOperation::OnNfsConnectionDisconnected(std::exception_ptr e) noexcept
 void
 BlockingNfsOperation::OnNfsCallback(unsigned status, void *data) noexcept
 {
+	started = false;
 	connection.RemoveLease(*this);
 
 	HandleResult(status, data);
@@ -64,6 +79,7 @@ BlockingNfsOperation::OnNfsCallback(unsigned status, void *data) noexcept
 void
 BlockingNfsOperation::OnNfsError(std::exception_ptr &&e) noexcept
 {
+	started = false;
 	connection.RemoveLease(*this);
 
 	error = std::move(e);

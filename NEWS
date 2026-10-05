@@ -2,6 +2,8 @@ ver 0.24.16 (not yet released)
 * protocol
   - fix underflow in relative range moves
   - reject empty ranges in "move"
+* storage
+  - nfs: fix use-after-free bug
 * input
   - cache: fix use-after-free bug
   - nfs: fix use-after-free bug
