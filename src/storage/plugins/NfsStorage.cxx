@@ -79,9 +79,13 @@ public:
 		BlockingCall(GetEventLoop(), [this](){
 			connection->AddLease(*this);
 		});
+
+		nfs_add_base(this, _connection.GetServer(),
+			     _connection.GetExportName());
 	}
 
 	~NfsStorage() override {
+		nfs_remove_base(this);
 		BlockingCall(GetEventLoop(), [this](){ Disconnect(); });
 		nfs_finish();
 	}
@@ -430,7 +434,6 @@ CreateNfsStorageURI(EventLoop &event_loop, std::string_view base)
 
 	try {
 		auto &connection = nfs_make_connection(std::string{base}.c_str());
-		nfs_set_base(connection.GetServer(), connection.GetExportName());
 
 		return std::make_unique<NfsStorage>(base, connection);
 	} catch (...) {
