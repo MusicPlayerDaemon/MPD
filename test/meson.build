@@ -62,10 +62,11 @@ test(
 )
 
 test(
-  'test_queue_priority',
+  'TestQueue',
   executable(
-    'test_queue_priority',
+    'TestQueue',
     'test_queue_priority.cxx',
+    'TestIdTable.cxx',
     '../src/queue/Queue.cxx',
     include_directories: inc,
     dependencies: [
