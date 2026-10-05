@@ -136,6 +136,10 @@ NfsFileReader::Open(const char *uri)
 		path = slash;
 	}
 
+	/* the previous connection may have been destroyed after a
+	   disconnect; look it up again in OnDeferredOpen() */
+	connection = nullptr;
+
 	state = State::DEFER;
 	defer_open.Schedule();
 }
