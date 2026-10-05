@@ -83,8 +83,8 @@ gme = CmakeProject(
 )
 
 ffmpeg = FfmpegProject(
-    'https://ffmpeg.org/releases/ffmpeg-9.0.tar.xz',
-    '7f607a00dd0d28a729d5a4811205812eef01cf6ef6155025febb6f36a9062d52',
+    'https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz',
+    '8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -574,8 +574,8 @@ libmpg123 = AutotoolsProject(
 )
 
 libnfs = AutotoolsProject(
-    'https://github.com/sahlberg/libnfs/archive/libnfs-7.0.0.tar.gz',
-    'd25c70537d60f1ab307b9cb5e9fb01acff71065fc9547b54dfaec109ba993003',
+    'https://github.com/sahlberg/libnfs/archive/libnfs-8.0.0.tar.gz',
+    'bc91216e927a85142b5de611c7f711558e02119a7daad67620ea631634038350',
     'lib/libnfs.a',
     [
         '--disable-shared', '--enable-static',
@@ -587,6 +587,6 @@ libnfs = AutotoolsProject(
         '--disable-utils', '--disable-examples',
         '--without-libkrb5',
     ],
-    base='libnfs-libnfs-7.0.0',
+    base='libnfs-libnfs-7.0.1',
     autoreconf=True,
 )

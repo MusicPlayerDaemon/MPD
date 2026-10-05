@@ -36,13 +36,12 @@ public:
 	}
 
 	~InputCacheLease() noexcept {
-		if (item != nullptr)
-			item->RemoveLease(*this);
+		Reset();
 	}
 
 	InputCacheLease &operator=(InputCacheLease &&src) noexcept {
-		using std::swap;
-		swap(item, src.item);
+		Reset();
+		item = std::exchange(src.item, nullptr);
 
 		if (item != nullptr) {
 			item->RemoveLease(src);
@@ -66,6 +65,13 @@ public:
 
 	auto &GetCacheItem() const noexcept {
 		return *item;
+	}
+
+	void Reset() noexcept {
+		if (item != nullptr) {
+			item->RemoveLease(*this);
+			item = nullptr;
+		}
 	}
 
 	/**

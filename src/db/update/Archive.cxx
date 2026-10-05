@@ -10,6 +10,7 @@
 #include "protocol/Verify.hxx"
 #include "lib/fmt/PathFormatter.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/Limits.hxx"
 #include "storage/FileInfo.hxx"
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
@@ -40,6 +41,9 @@ void
 UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 			      std::string_view name) noexcept
 {
+	if (name.size() >= MPD_PATH_MAX)
+		return;
+
 	const auto [child_name, rest] = Split(name, '/');
 	if (rest.data() != nullptr) {
 		if (!VerifyRelativePathUTF8(child_name))

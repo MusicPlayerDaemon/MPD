@@ -33,13 +33,14 @@ InputCacheItem::RemoveLease(InputCacheLease &lease) noexcept
 	if (i == next_lease)
 		++next_lease;
 	leases.erase(i);
-
-	// TODO: ensure that OnBufferAvailable() isn't currently running
 }
 
 void
 InputCacheItem::OnBufferAvailable(std::unique_lock<Mutex> &lock) noexcept
 {
+	/* the mutex is held during all callbacks, so RemoveLease()
+	   blocks until OnBufferAvailable() has returned; #next_lease
+	   only protects against callbacks which unlock the mutex */
 	for (auto i = leases.begin(); i != leases.end(); i = next_lease) {
 		next_lease = std::next(i);
 		i->OnInputCacheAvailable(lock);

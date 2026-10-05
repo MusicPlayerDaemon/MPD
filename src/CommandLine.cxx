@@ -60,6 +60,7 @@
 #include "archive/ArchivePlugin.hxx"
 #endif
 
+#include <cstdlib>
 #include <fmt/core.h>
 
 namespace {
