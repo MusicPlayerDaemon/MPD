@@ -331,7 +331,7 @@ public:
 
 		response.Fmt("size: {}\n", buffer.size());
 
-		if (mime_type != nullptr)
+		if (mime_type != nullptr && VerifyStringUTF8(mime_type))
 			response.Fmt("type: {}\n", mime_type);
 
 		buffer = buffer.subspan(offset);

@@ -8,6 +8,7 @@ ver 0.24.16 (not yet released)
   - reject "." and ".." as mount point
   - fix double-free crash bug with "getfingerprint"
   - sanitize tag values printed by "lsinfo" on stream URIs
+  - validate the picture MIME type for "readpicture"
 * neighbor
   - udisks: fix crash bug
 * storage
