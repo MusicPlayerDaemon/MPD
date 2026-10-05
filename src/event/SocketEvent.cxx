@@ -63,7 +63,12 @@ SocketEvent::Schedule(unsigned flags) noexcept
 	if (success)
 		scheduled_flags = flags;
 #ifdef USE_EPOLL
-	else if (errno == EBADF || errno == ENOENT)
+	else if (errno == EBADF || errno == ENOENT) {
+		if (scheduled_flags != 0 && flags != 0)
+			/* ModifyFD() has failed but has left us
+			   linked in the socket list */
+			unlink();
+
 		/* the socket was probably closed by somebody else
 		   (EBADF) or a new file descriptor with the same
 		   number was created but not registered already
@@ -76,6 +81,7 @@ SocketEvent::Schedule(unsigned flags) noexcept
 		   epoll_ctl() call above would then have succeeded,
 		   but broke the other thread's epoll registration */
 		scheduled_flags = 0;
+	}
 #endif
 
 	return success;
