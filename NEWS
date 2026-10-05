@@ -14,6 +14,8 @@ ver 0.24.16 (not yet released)
   - opus, vorbis: don't return garbage after a gap in the stream
 * encoder
   - flac: skip tag values rejected by libFLAC
+* tags
+  - limit the number of tag items
 * database
   - simple: limit archive entry path length
 * queue
