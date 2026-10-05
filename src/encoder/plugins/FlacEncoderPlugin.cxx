@@ -212,13 +212,14 @@ FlacEncoder::SendTag(const Tag &tag)
 	flac_encoder_setup(fse, compression, oggflac, audio_format);
 
 	FLAC__StreamMetadata *metadata = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
-	FLAC__StreamMetadata_VorbisComment_Entry entry;
 
 	for (const auto &item : tag) {
 		char name[64];
 		ToUpperASCII(name, tag_item_names[item.type], sizeof(name));
-		FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, name, item.value);
-		FLAC__metadata_object_vorbiscomment_append_comment(metadata, entry, false);
+
+		FLAC__StreamMetadata_VorbisComment_Entry entry;
+		if (FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, name, item.value))
+			FLAC__metadata_object_vorbiscomment_append_comment(metadata, entry, false);
 	}
 
 	FLAC__stream_encoder_set_metadata(fse,&metadata,1);
