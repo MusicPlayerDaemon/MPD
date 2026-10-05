@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tag/Tag.hxx"
+#include "protocol/Verify.hxx"
 #include "util/StringCompare.hxx"
 
 #include <cstdint>
@@ -81,6 +82,10 @@ public:
 	[[gnu::pure]]
 	bool Check() const noexcept {
 		return !id.empty() &&
+			/* the id becomes part of song URIs; control
+			   characters (e.g. newlines) would break the
+			   MPD protocol */
+			VerifyStringUTF8(id) &&
 			/* root nodes don't need a parent id and a
 			   name */
 			(IsRoot() || (!parent_id.empty() &&

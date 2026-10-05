@@ -12,6 +12,7 @@ ver 0.24.16 (not yet released)
 * neighbor
   - udisks: fix crash bug
   - upnp: accept only HTTP device description URLs
+  - upnp: sanitize strings for the MPD protocol
 * storage
   - curl: skip invalid file names
   - curl: fix use-after-free crash bug
@@ -66,6 +67,7 @@ ver 0.24.16 (not yet released)
   - upnp: limit Browse and Search results
   - upnp: accept only HTTP resource URLs
   - upnp: ignore URLBase pointing to a different host
+  - upnp: sanitize strings for the MPD protocol
 * queue
   - fix consuming the wrong song after reshuffle in random+repeat mode
   - don't reshuffle on "next" in single+repeat mode

@@ -82,5 +82,6 @@ upnp_dep = declare_dependency(
     curl_dep,
     expat_dep,
     event_dep,
+    protocol_dep,
   ],
 )

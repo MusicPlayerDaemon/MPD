@@ -3,8 +3,10 @@
 
 #include "Device.hxx"
 #include "Util.hxx"
+#include "protocol/FixString.hxx"
 #include "uri/Extract.hxx"
 #include "lib/expat/ExpatParser.hxx"
+#include "util/AllocatedArray.hxx" // for the FixTagString() return value
 
 #include <string.h>
 
@@ -83,6 +85,11 @@ UPnPDevice::Parse(const std::string_view url, const std::string_view description
 		UPnPDeviceParser mparser(*this);
 		mparser.Parse(description, true);
 	}
+
+	/* the friendly name becomes part of song URIs; replace
+	   characters which would break the MPD protocol */
+	if (const auto fixed = FixStringUTF8(friendlyName); fixed != nullptr)
+		friendlyName.assign(fixed.data(), fixed.size());
 
 	if (!URLBase.empty() && UriGetOrigin(URLBase) != UriGetOrigin(url))
 		/* don't let the device description redirect our
