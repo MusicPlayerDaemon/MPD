@@ -54,6 +54,7 @@ ver 0.24.16 (not yet released)
   - proxy: limit the directory nesting depth
   - proxy: validate directories
   - proxy: validate song URIs
+  - proxy: skip sticker cleanup (would crash)
   - simple: limit archive entry path length
   - simple: limit the directory nesting depth
   - simple: don't log credentials in storage URLs

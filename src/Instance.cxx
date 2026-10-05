@@ -18,6 +18,7 @@
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseError.hxx"
 #include "db/Interface.hxx"
+#include "db/DatabasePlugin.hxx"
 #include "db/update/Service.hxx"
 #include "storage/StorageInterface.hxx"
 
@@ -131,7 +132,10 @@ Instance::OnDatabaseModified() noexcept
 		partition.DatabaseModified(*database);
 
 #ifdef ENABLE_SQLITE
-	if (sticker_database)
+	if (sticker_database &&
+	    /* the StickerCleanupService accesses the database
+	       from its own thread */
+	    !database->GetPlugin().IsMainThreadOnly())
 		StartStickerCleanup();
 #endif
 }

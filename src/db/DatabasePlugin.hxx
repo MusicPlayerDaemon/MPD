@@ -23,6 +23,13 @@ struct DatabasePlugin {
 	 */
 	static constexpr unsigned FLAG_REQUIRE_STORAGE = 0x1;
 
+	/**
+	 * The #Database methods of this plugin must only be called
+	 * from the main thread (i.e. the one running the
+	 * "main_event_loop").
+	 */
+	static constexpr unsigned FLAG_MAIN_THREAD_ONLY = 0x2;
+
 	const char *name;
 
 	unsigned flags;
@@ -44,6 +51,10 @@ struct DatabasePlugin {
 
 	constexpr bool RequireStorage() const {
 		return flags & FLAG_REQUIRE_STORAGE;
+	}
+
+	constexpr bool IsMainThreadOnly() const {
+		return flags & FLAG_MAIN_THREAD_ONLY;
 	}
 };
 
