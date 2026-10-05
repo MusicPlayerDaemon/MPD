@@ -9,6 +9,12 @@
 /**
  * An #InputStream implementation which reads data from an
  * #InputCacheItem.
+ *
+ * Notifications lock #InputCacheItem::mutex and then
+ * #InputStream::mutex, therefore this object must be constructed
+ * and destructed without holding #InputStream::mutex, and the
+ * #InputStreamHandler must not call back into this object from
+ * OnInputStreamAvailable().
  */
 class CacheInputStream final : public InputStream {
 	class Lease final : public InputCacheLease {
