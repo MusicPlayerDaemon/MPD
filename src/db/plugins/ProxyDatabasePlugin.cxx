@@ -921,7 +921,8 @@ try {
 			continue;
 
 		size_t i = std::distance(tag_types.begin(), it);
-		if (i > position.size())
+		if (i >= position.size())
+			/* the parent group was not received */
 			continue;
 
 		if (i + 1 < position.size())
