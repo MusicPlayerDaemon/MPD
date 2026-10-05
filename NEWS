@@ -21,6 +21,7 @@ ver 0.24.16 (not yet released)
   - mpg123: fix crash bug
   - opus: fix integer overflow
   - opus, vorbis: don't return garbage after a gap in the stream
+  - pcm: use the packed input frame size for audio/L24
 * encoder
   - flac: skip tag values rejected by libFLAC
   - shine: fix uninitialized memory access

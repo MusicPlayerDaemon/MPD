@@ -149,7 +149,11 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 	}
 
 	const auto out_frame_size = audio_format.GetFrameSize();
-	const auto in_frame_size = out_frame_size;
+
+	/* audio/L24 is packed (3 bytes per sample) */
+	const auto in_frame_size = l24
+		? std::size_t{3} * audio_format.channels
+		: out_frame_size;
 
 	const auto total_time = is.KnownSize()
 		? SignedSongTime::FromScale<uint64_t>(is.GetSize() / in_frame_size,
