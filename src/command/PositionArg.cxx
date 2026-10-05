@@ -65,7 +65,8 @@ ParseMoveDestination(const char *s, const RangeArg range, const playlist &p)
 
 		return current + 1 +
 			ParseCommandArgUnsigned(s + 1,
-						queue_length - current - range.Count());
+						queue_length - range.Count() -
+						current - 1);
 	} else if (*s == '-') {
 		/* before the current song */
 
@@ -78,8 +79,7 @@ ParseMoveDestination(const char *s, const RangeArg range, const playlist &p)
 			current -= range.Count();
 
 		return current -
-			ParseCommandArgUnsigned(s + 1,
-						queue_length - current - range.Count());
+			ParseCommandArgUnsigned(s + 1, current);
 	} else
 		/* absolute position */
 		return ParseCommandArgUnsigned(s,
