@@ -50,6 +50,7 @@ ver 0.24.16 (not yet released)
   - fallback: implement more than two channels
 * output
   - pipewire: limit the ring buffer size
+  - pipewire: validate the DSD interleave
   - snapcast: fix integer overflow
 * avahi: fix use-after-free bug
 * Windows
