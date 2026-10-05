@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "QobuzLoginRequest.hxx"
+#include "QobuzLimits.hxx"
 #include "QobuzErrorParser.hxx"
 #include "QobuzSession.hxx"
 #include "lib/curl/Form.hxx"
@@ -54,7 +55,8 @@ QobuzLoginRequest::QobuzLoginRequest(CurlGlobal &curl,
 				     const char *password,
 				     const char *device_manufacturer_id,
 				     QobuzLoginHandler &_handler)
-	:request(curl, *this),
+	:StringResponseHandler(qobuz_string_options),
+	 request(curl, *this),
 	 handler(_handler)
 {
 	request.GetEasy().SetURL(MakeLoginUrl(request.Get(), base_url, app_id,

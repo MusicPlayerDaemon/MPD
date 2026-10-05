@@ -26,7 +26,7 @@ public:
 	StringResponseHandler() noexcept = default;
 
 	[[nodiscard]]
-	explicit StringResponseHandler(StringOptions &_options) noexcept
+	explicit StringResponseHandler(const StringOptions &_options) noexcept
 		:options(_options) {}
 
 	void CheckRethrowError() const {
