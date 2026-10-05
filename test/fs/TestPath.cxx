@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+using std::string_view_literals::operator""sv;
+
 TEST(Path, Basic)
 {
 	EXPECT_TRUE(Path{nullptr}.IsNull());
@@ -29,6 +31,15 @@ TEST(Path, GetBase)
 		     PATH_LITERAL("bar"));
 	EXPECT_STREQ(Path::FromFS(PATH_LITERAL("/foo/bar")).GetBase().c_str(),
 		     PATH_LITERAL("bar"));
+}
+
+TEST(PathTraits, GetBaseStringView)
+{
+	EXPECT_EQ(PathTraitsUTF8::GetBase(""sv), ""sv);
+	EXPECT_EQ(PathTraitsUTF8::GetBase("foo"sv), "foo"sv);
+	EXPECT_EQ(PathTraitsUTF8::GetBase("foo/bar"sv), "bar"sv);
+	EXPECT_EQ(PathTraitsUTF8::GetBase("/foo/bar"sv), "bar"sv);
+	EXPECT_EQ(PathTraitsUTF8::GetBase("foo/"sv), ""sv);
 }
 
 TEST(Path, GetDirectoryName)
