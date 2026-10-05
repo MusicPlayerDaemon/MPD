@@ -8,6 +8,7 @@ ver 0.24.16 (not yet released)
   - reject "." and ".." as mount point
 * storage
   - curl: skip invalid file names
+  - curl: fix use-after-free crash bug
   - curl: use the CURL input plugin configuration
   - curl: implement a HTTP timeout
   - nfs: fix use-after-free bug
