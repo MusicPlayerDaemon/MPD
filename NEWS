@@ -38,6 +38,8 @@ ver 0.24.16 (not yet released)
   - upnp: fix crash on discovery error
 * queue
   - fix consuming the wrong song after reshuffle in random+repeat mode
+* resampler
+  - fallback: implement more than two channels
 * output
   - snapcast: fix integer overflow
 * avahi: fix use-after-free bug
