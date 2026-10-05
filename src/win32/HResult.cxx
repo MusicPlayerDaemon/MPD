@@ -8,7 +8,7 @@
 
 #include "HResult.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cassert>
 
