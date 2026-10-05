@@ -8,6 +8,7 @@ ver 0.24.16 (not yet released)
 * input
   - cache: fix use-after-free bug
   - cache: fix deadlock bug
+  - cdio_paranoia: fix memory leak
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
 * decoder
