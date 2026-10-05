@@ -104,6 +104,13 @@ daemonize_set_user()
 	}
 #endif
 
+	/* with an explicit "group" setting, discard all
+	   supplementary groups inherited from the parent process
+	   (e.g. root's) */
+	if (had_group && user_uid != getuid() &&
+	    setgroups(1, &user_gid) == -1)
+		throw FmtErrno("Failed to set supplementary groups");
+
 	/* set uid */
 	if (user_uid != (uid_t)-1 && user_uid != getuid() &&
 	    setuid(user_uid) == -1) {

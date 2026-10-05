@@ -34,6 +34,8 @@ ver 0.24.17 (not yet released)
   - fix crash after filter initialization error
 * mixer
   - software: fix race crash bug
+* Linux
+  - discard inherited supplementary groups with "group"
 
 ver 0.24.16 (2026/10/17)
 * protocol
