@@ -58,7 +58,8 @@ ver 0.24.16 (not yet released)
   - simple: limit archive entry path length
   - simple: limit the directory nesting depth
   - simple: don't log credentials in storage URLs
-  - simnple: reject unsafe playlist entries
+  - simple: reject unsafe playlist entries
+  - simple: fix use-after-free crash bug
   - upnp: limit size and duration of device description downloads
   - upnp: fix crash on discovery error
 * queue
