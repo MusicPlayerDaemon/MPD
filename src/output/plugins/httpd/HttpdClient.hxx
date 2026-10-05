@@ -96,12 +96,22 @@ class HttpdClient final
 	static constexpr std::size_t metaint = 8192;
 
 	/**
-	 * The metadata as #Page which is currently being sent to the client.
+	 * The latest metadata as #Page which shall be sent to the
+	 * client.
 	 */
-	PagePtr metadata;
+	PagePtr next_metadata;
 
 	/**
-	 * The amount of bytes which were already sent from the metadata.
+	 * The metadata #Page which is currently being sent to the
+	 * client.  This is a copy of #next_metadata made when the
+	 * transfer begins, because PushMetaData() may replace
+	 * #next_metadata while the transfer is in progress.
+	 */
+	PagePtr sending_metadata;
+
+	/**
+	 * The amount of bytes which were already sent from
+	 * #sending_metadata.
 	 */
 	size_t metadata_current_position = 0;
 
