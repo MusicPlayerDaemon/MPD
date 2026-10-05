@@ -32,12 +32,22 @@ Client::SetBackgroundCommand(std::unique_ptr<BackgroundCommand> _bc) noexcept
 	timeout_event.Cancel();
 }
 
-void
-Client::OnBackgroundCommandFinished() noexcept
+std::unique_ptr<BackgroundCommand>
+Client::TakeFinishedBackgroundCommand() noexcept
 {
 	assert(background_command);
 
-	background_command.reset();
+	return std::move(background_command);
+}
+
+void
+Client::OnBackgroundCommandFinished() noexcept
+{
+	assert(!background_command);
+
+	if (IsExpired())
+		/* sending the response has failed */
+		return;
 
 	/* just in case OnSocketInput() has returned
 	   InputResult::PAUSE meanwhile */

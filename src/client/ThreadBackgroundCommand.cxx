@@ -33,6 +33,10 @@ ThreadBackgroundCommand::DeferredFinish() noexcept
 	/* free the Thread */
 	thread.Join();
 
+	/* take ownership of this object; it will be deleted when this
+	   method returns */
+	const auto self = client.TakeFinishedBackgroundCommand();
+
 	/* send the response */
 	Response response(client, 0);
 
@@ -43,7 +47,6 @@ ThreadBackgroundCommand::DeferredFinish() noexcept
 		client.WriteOK();
 	}
 
-	/* delete this object */
 	client.OnBackgroundCommandFinished();
 }
 

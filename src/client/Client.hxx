@@ -212,8 +212,15 @@ public:
 
 	/**
 	 * Called by the current #BackgroundCommand when it has
-	 * finished, after sending the response.  This method then
-	 * deletes the #BackgroundCommand.
+	 * finished, before sending the response.  This detaches the
+	 * #BackgroundCommand from this object and returns ownership
+	 * to the caller.
+	 */
+	std::unique_ptr<BackgroundCommand> TakeFinishedBackgroundCommand() noexcept;
+
+	/**
+	 * Called by the finished #BackgroundCommand after sending the
+	 * response.
 	 */
 	void OnBackgroundCommandFinished() noexcept;
 
