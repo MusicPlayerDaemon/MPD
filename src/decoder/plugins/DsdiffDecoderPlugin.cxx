@@ -141,9 +141,10 @@ dsdiff_read_prop_snd(DecoderClient *client, InputStream &is,
 		if (header.GetSize() > prop_size)
 			return false;
 
-		offset_type chunk_end_offset = is.GetOffset()
-			+ header.GetPaddedSize();
-		if (chunk_end_offset > end_offset)
+		offset_type chunk_end_offset;
+		if (AddOverflow(is.GetOffset(), header.GetPaddedSize(),
+				chunk_end_offset) ||
+		    chunk_end_offset > end_offset)
 			return false;
 
 		if (header.id.Equals("FS  ")) {
