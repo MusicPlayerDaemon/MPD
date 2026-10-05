@@ -14,3 +14,18 @@ test(
   ),
   protocol: 'gtest',
 )
+
+test(
+  'TestTagBuilder',
+  executable(
+    'TestTagBuilder',
+    'TestTagBuilder.cxx',
+    include_directories: inc,
+    dependencies: [
+      tag_dep,
+      fmt_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
