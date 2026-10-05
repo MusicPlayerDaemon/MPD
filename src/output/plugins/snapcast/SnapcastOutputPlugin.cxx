@@ -341,7 +341,11 @@ void
 SnapcastOutput::Drain()
 {
 	std::unique_lock protect{mutex};
-	drain_cond.wait(protect, [this]{ return IsDrained(); });
+
+	/* don't wait forever for clients which don't read; their
+	   chunks would be discarded after MAX_CHUNK_AGE anyway */
+	drain_cond.wait_for(protect, 2 * SnapcastClient::MAX_CHUNK_AGE,
+			    [this]{ return IsDrained(); });
 }
 
 void
