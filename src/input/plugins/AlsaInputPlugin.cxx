@@ -30,6 +30,7 @@
 #include <fmt/format.h>
 
 #include <cassert>
+#include <stdexcept>
 
 #include <string.h>
 
@@ -200,6 +201,11 @@ AlsaInputStream::Create(EventLoop &event_loop, std::string_view uri,
 	AlsaInputStream::SourceSpec spec(uri);
 	if (!spec.IsValidScheme())
 		return nullptr;
+
+	if (!spec.IsValid())
+		/* the query string is present, but it does not
+		   specify a format */
+		throw std::invalid_argument{"Malformed alsa:// URI"};
 
 	return std::make_unique<AlsaInputStream>(event_loop, mutex, spec);
 }
