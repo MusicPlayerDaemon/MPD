@@ -28,8 +28,10 @@ public:
 	}
 
 	~CancellableOperation() noexcept {
-		if (operation != nullptr)
+		if (operation != nullptr) {
+			operation->cancellable = nullptr;
 			operation->OnUringCompletion(-ECANCELED);
+		}
 	}
 
 	void Cancel(Operation &_operation) noexcept {

@@ -67,6 +67,7 @@ ver 0.24.16 (not yet released)
   - fix consuming the wrong song after reshuffle in random+repeat mode
 * output
   - snapcast: fix integer overflow
+* avahi: fix use-after-free bug
 
 ver 0.24.15 (2026/08/27)
 * protocol

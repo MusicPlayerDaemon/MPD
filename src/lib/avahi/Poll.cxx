@@ -58,7 +58,10 @@ private:
 	void OnSocketReady(unsigned events) noexcept {
 		received = ToAvahiWatchEvent(events);
 		callback(this, event.GetSocket().Get(), received, userdata);
-		received = AvahiWatchEvent(0);
+
+		/* the callback is allowed to free this object,
+		   therefore we must not access this object anymore
+		   from here */
 	}
 };
 
