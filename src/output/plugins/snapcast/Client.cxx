@@ -250,7 +250,7 @@ SnapcastClient::OnSocketInput(std::span<std::byte> src) noexcept
 	auto &base = *(SnapcastBase *)src.data();
 
 	if (src.size() < sizeof(base) ||
-	    src.size() < sizeof(base) + base.size)
+	    src.size() - sizeof(base) < base.size)
 		return InputResult::MORE;
 
 	base.received = ToSnapcastTimestamp(GetEventLoop().SteadyNow());
