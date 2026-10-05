@@ -20,6 +20,7 @@
 #include "input/Error.hxx"
 #include "input/WaitReady.hxx"
 #include "uri/Extract.hxx"
+#include "uri/Util.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 #include "Log.hxx"
@@ -540,8 +541,13 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard) noexcept
 			return false;
 
 		if (!info.IsDirectory()) {
-			FmtError(update_domain, "Not a directory: {}",
-				 storage.MapUTF8(""));
+			/* hide username/password */
+			auto uri = storage.MapUTF8("");
+			if (auto without_auth = uri_remove_auth(uri);
+			    !without_auth.empty())
+				uri = std::move(without_auth);
+
+			FmtError(update_domain, "Not a directory: {:?}", uri);
 			return false;
 		}
 
