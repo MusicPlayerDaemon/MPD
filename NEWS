@@ -74,6 +74,7 @@ ver 0.24.16 (not yet released)
   - don't reshuffle on "next" in single+repeat mode
 * resampler
   - fallback: implement more than two channels
+  - reject extreme resampling ratios
 * output
   - httpd: fix stream corruption with large tags
   - pipewire: limit the ring buffer size
