@@ -22,6 +22,7 @@ ver 0.24.16 (not yet released)
   - opus, vorbis: don't return garbage after a gap in the stream
 * encoder
   - flac: skip tag values rejected by libFLAC
+  - shine: fix uninitialized memory access
 * tags
   - limit the number of tag items
   - id3: fix crash on encrypted ID3 tags

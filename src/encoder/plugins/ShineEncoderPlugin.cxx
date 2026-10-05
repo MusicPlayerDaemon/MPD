@@ -177,6 +177,12 @@ ShineEncoder::Write(std::span<const std::byte> _src)
 void
 ShineEncoder::Flush()
 {
+	if (input_pos > SHINE_MAX_SAMPLES)
+		/* Write() has never been called; reset the
+		   workaround sentinel (like the destructor does), or
+		   WriteChunk() would encode uninitialized buffers */
+		input_pos = 0;
+
 	/* flush buffers and flush shine */
 	WriteChunk(true);
 
