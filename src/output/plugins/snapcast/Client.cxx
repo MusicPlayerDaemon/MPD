@@ -50,6 +50,12 @@ SnapcastClient::Push(SnapcastChunkPtr chunk) noexcept
 	if (!active)
 		return;
 
+	/* discard chunks which are too old to be sent anyway; this
+	   limits the queue size if the client does not read */
+	const auto min_time = chunk->time - MAX_CHUNK_AGE;
+	while (!chunks.empty() && chunks.front()->time < min_time)
+		chunks.pop();
+
 	chunks.emplace(std::move(chunk));
 	event.ScheduleWrite();
 }

@@ -56,6 +56,7 @@ ver 0.24.16 (not yet released)
   - pipewire: validate the DSD interleave
   - snapcast: fix integer overflow
   - snapcast: limit the client wait time
+  - snapcast: limit the chunk queue size
 * avahi: fix use-after-free bug
 * Windows
   - fix crash bug during charset conversion
