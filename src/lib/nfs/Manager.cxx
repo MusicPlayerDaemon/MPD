@@ -119,7 +119,7 @@ NfsManager::CollectGarbage() noexcept
 	garbage.clear_and_dispose(DeleteDisposer());
 }
 
-void
+inline void
 NfsManager::OnIdle() noexcept
 {
 	CollectGarbage();
