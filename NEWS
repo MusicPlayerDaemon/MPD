@@ -88,6 +88,7 @@ ver 0.24.16 (not yet released)
   - don't cross-fade DSD
 * avahi: fix use-after-free bug
 * state file: make the state file readable only by the owner
+* validate the pid in "mpd --kill"
 * Windows
   - fix crash bug during charset conversion
 
