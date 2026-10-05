@@ -40,8 +40,8 @@ public:
 	}
 
 	InputCacheLease &operator=(InputCacheLease &&src) noexcept {
-		using std::swap;
-		swap(item, src.item);
+		Reset();
+		item = std::exchange(src.item, nullptr);
 
 		if (item != nullptr) {
 			item->RemoveLease(src);
