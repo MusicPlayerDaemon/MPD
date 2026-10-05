@@ -587,6 +587,6 @@ libnfs = AutotoolsProject(
         '--disable-utils', '--disable-examples',
         '--without-libkrb5',
     ],
-    base='libnfs-libnfs-7.0.1',
+    base='libnfs-libnfs-8.0.0',
     autoreconf=True,
 )
