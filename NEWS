@@ -24,6 +24,7 @@ ver 0.24.16 (not yet released)
 * database
   - simple: limit archive entry path length
   - upnp: limit size and duration of device description downloads
+  - upnp: fix crash on discovery error
 * queue
   - fix consuming the wrong song after reshuffle in random+repeat mode
 * output

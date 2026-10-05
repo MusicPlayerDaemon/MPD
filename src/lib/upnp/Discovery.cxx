@@ -297,8 +297,13 @@ UPnPDeviceDirectory::ExpireDevices() noexcept
 		return expired;
 	});
 
-	if (didsomething)
-		Search();
+	if (didsomething) {
+		try {
+			Search();
+		} catch (...) {
+			LogError(std::current_exception());
+		}
+	}
 }
 
 UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
