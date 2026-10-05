@@ -16,12 +16,15 @@
 #include "util/DeleteDisposer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/SpanCast.hxx"
+#include "util/StringCompare.hxx"
 
 #include <upnptools.h>
 
 #include <stdexcept>
 
 #include <stdlib.h>
+
+using std::string_view_literals::operator""sv;
 
 class UPnPDeviceDirectory::ContentDirectoryDescriptor {
 public:
@@ -100,6 +103,13 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 	 expires(std::chrono::seconds(UpnpDiscovery_get_Expires(&disco))),
 	 request(*parent.curl, url.c_str(), *this)
 {
+	/* the URL comes from a SSDP packet which can be sent by any
+	   LAN host; don't let it make us use other protocols (e.g.
+	   "file://" or "gopher://") */
+	if (!StringStartsWithIgnoreCase(url, "http://"sv) &&
+	    !StringStartsWithIgnoreCase(url, "https://"sv))
+		throw std::runtime_error{"Unsupported UPnP device description URL"};
+
 	request.GetEasy().SetTimeout(DEVICE_DESCRIPTION_TIMEOUT);
 
 	const std::lock_guard protect{parent.mutex};
