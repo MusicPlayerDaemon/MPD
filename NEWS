@@ -1,6 +1,7 @@
 ver 0.24.16 (not yet released)
 * protocol
   - fix underflow in relative range moves
+  - reject empty ranges in "move"
 * database
   - simple: limit archive entry path length
 

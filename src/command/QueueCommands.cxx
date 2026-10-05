@@ -398,6 +398,11 @@ handle_move(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
+	if (range.IsEmpty()) {
+		r.Error(ACK_ERROR_ARG, "Empty range not supported");
+		return CommandResult::ERROR;
+	}
+
 	return handle_move(client.GetPartition(), range, args[1]);
 }
 
