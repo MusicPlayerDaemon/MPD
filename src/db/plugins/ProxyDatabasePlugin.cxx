@@ -32,6 +32,7 @@
 #include <mpd/client.h>
 #include <mpd/async.h>
 
+#include <algorithm> // for std::ranges::count()
 #include <cassert>
 #include <list>
 #include <string>
@@ -621,6 +622,11 @@ Visit(struct mpd_connection *connection, const char *uri,
       const VisitDirectory& visit_directory, const VisitSong& visit_song,
       const VisitPlaylist& visit_playlist);
 
+/**
+ * The maximum directory nesting depth for recursive visits.
+ */
+static constexpr std::size_t MAX_DIRECTORY_DEPTH = 64;
+
 static void
 Visit(struct mpd_connection *connection,
       bool recursive, const SongFilter *filter,
@@ -639,9 +645,13 @@ Visit(struct mpd_connection *connection,
 	if (visit_directory)
 		visit_directory(LightDirectory(path, mtime));
 
-	if (recursive)
+	if (recursive) {
+		if (std::ranges::count(std::string_view{path}, '/') >= std::ptrdiff_t(MAX_DIRECTORY_DEPTH))
+			throw std::runtime_error{"Directory nesting too deep"};
+
 		Visit(connection, path, recursive, filter,
 		      visit_directory, visit_song, visit_playlist);
+	}
 }
 
 [[gnu::pure]]
