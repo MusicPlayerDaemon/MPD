@@ -16,6 +16,7 @@ ver 0.24.16 (not yet released)
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
   - qobuz: limit the size of API responses
+  - qobuz: accept only HTTP stream URLs
 * decoder
   - audiofile: fix division by zero
   - dsdiff: fix integer overflow
