@@ -69,6 +69,7 @@ ver 0.24.16 (not yet released)
 * player
   - don't cross-fade DSD
 * avahi: fix use-after-free bug
+* state file: make the state file readable only by the owner
 * Windows
   - fix crash bug during charset conversion
 
