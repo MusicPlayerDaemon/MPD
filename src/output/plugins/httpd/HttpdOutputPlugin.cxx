@@ -262,6 +262,8 @@ HttpdOutput::RemoveClient(HttpdClient &client) noexcept
 void
 HttpdOutput::SendHeader(HttpdClient &client) const noexcept
 {
+	const std::lock_guard protect{mutex};
+
 	if (header != nullptr)
 		client.PushPage(header);
 }
@@ -392,7 +394,11 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		auto page = ReadAll();
 		if (page != nullptr) {
-			header = page;
+			{
+				const std::lock_guard protect{mutex};
+				header = page;
+			}
+
 			BroadcastPage(page);
 		}
 	} else {
@@ -403,9 +409,11 @@ HttpdOutput::SendTag(const Tag &tag)
 			TAG_NUM_OF_ITEM_TYPES
 		};
 
-		metadata = icy_server_metadata_page(tag, &types[0]);
+		auto page = icy_server_metadata_page(tag, &types[0]);
+
+		const std::lock_guard protect{mutex};
+		metadata = std::move(page);
 		if (metadata != nullptr) {
-			const std::lock_guard protect{mutex};
 			for (auto &client : clients)
 				client.PushMetaData(metadata);
 		}

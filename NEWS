@@ -79,6 +79,7 @@ ver 0.24.16 (not yet released)
   - reject extreme resampling ratios
 * output
   - httpd: fix stream corruption with large tags
+  - httpd: add missing mutex lock
   - pipewire: limit the ring buffer size
   - pipewire: validate the DSD interleave
   - snapcast: fix integer overflow
