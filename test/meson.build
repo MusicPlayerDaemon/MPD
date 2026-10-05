@@ -33,6 +33,20 @@ test(
 )
 
 test(
+  'TestBufferingInputStream',
+  executable(
+    'TestBufferingInputStream',
+    'TestBufferingInputStream.cxx',
+    include_directories: inc,
+    dependencies: [
+      input_glue_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
   'test_protocol',
   executable(
     'test_protocol',
