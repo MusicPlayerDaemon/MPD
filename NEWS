@@ -9,6 +9,7 @@ ver 0.24.16 (not yet released)
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
 * decoder
+  - flac: fix crash on mid-stream channel change
   - opus, vorbis: don't return garbage after a gap in the stream
 * encoder
   - flac: skip tag values rejected by libFLAC

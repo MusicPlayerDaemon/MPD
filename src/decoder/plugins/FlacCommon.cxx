@@ -128,6 +128,12 @@ FlacDecoder::OnWrite(const FLAC__Frame &frame,
 	if (!initialized && !OnFirstFrame(frame.header))
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 
+	if (frame.header.channels != pcm_import.GetAudioFormat().channels)
+		/* libFLAC allows the number of channels to change,
+		   but we don't; FlacPcmImport::Import() would read
+		   channel buffers which do not exist */
+		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+
 	chunk = pcm_import.Import(buf, frame.header.blocksize);
 
 	kbit_rate = nbytes * 8 * frame.header.sample_rate /
