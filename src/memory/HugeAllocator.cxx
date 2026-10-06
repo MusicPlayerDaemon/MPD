@@ -9,8 +9,6 @@
 #include "system/PageSize.hxx"
 #include "system/VmaName.hxx"
 
-#include <new> // for std::bad_alloc
-
 static std::span<std::byte>
 AlignToPageSize(std::span<std::byte> p) noexcept
 {
@@ -59,6 +57,8 @@ HugeDiscard(std::span<std::byte> p) noexcept
 }
 
 #elif defined(_WIN32)
+
+#include <new> // for std::bad_alloc
 
 std::span<std::byte>
 HugeAllocate(size_t size)
