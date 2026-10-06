@@ -35,6 +35,8 @@ ver 0.24.16 (not yet released)
 * output
   - snapcast: fix integer overflow
 * avahi: fix use-after-free bug
+* Windows
+  - fix crash bug during charset conversion
 
 ver 0.24.15 (2026/08/27)
 * protocol

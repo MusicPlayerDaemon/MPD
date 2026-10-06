@@ -12,14 +12,12 @@ template<typename T> class BasicAllocatedString;
 /**
  * Throws std::system_error on error.
  */
-[[gnu::pure]]
 AllocatedString
 WideCharToMultiByte(unsigned code_page, std::wstring_view src);
 
 /**
  * Throws std::system_error on error.
  */
-[[gnu::pure]]
 BasicAllocatedString<wchar_t>
 MultiByteToWideChar(unsigned code_page, std::string_view src);
 
