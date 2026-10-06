@@ -23,6 +23,7 @@
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "uri/Util.hxx"
 #include "util/Domain.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
@@ -358,6 +359,10 @@ CreateUdisksStorageURI(EventLoop &event_loop, std::string_view base_uri)
 
 	while (relative_path.starts_with('/'))
 		relative_path = relative_path.substr(1);
+
+	if (!relative_path.empty() && !uri_safe_local(relative_path))
+		/* don't allow escaping the mount point with ".." */
+		throw std::invalid_argument{"Malformed udisks:// URI"};
 
 	auto inside_path = !relative_path.empty()
 		? AllocatedPath::FromUTF8Throw(relative_path)

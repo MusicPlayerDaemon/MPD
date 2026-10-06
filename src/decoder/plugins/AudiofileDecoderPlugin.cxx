@@ -193,8 +193,9 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 	const auto audio_format = CheckAudioFormat(fh);
 	const auto total_time = audiofile_get_duration(fh);
 
-	const auto kbit_rate = (uint16_t)
-		(is.GetSize() * uint64_t(8) / total_time.ToMS());
+	const auto kbit_rate = total_time.ToMS() > 0
+		? (uint16_t)(is.GetSize() * uint64_t(8) / total_time.ToMS())
+		: uint16_t{};
 
 	const auto frame_size = (std::size_t)
 		afGetVirtualFrameSize(fh, AF_DEFAULT_TRACK, true);
@@ -238,10 +239,14 @@ audiofile_scan_stream(InputStream &is, TagHandler &handler)
 
 	AtScopeExit(fh) { afCloseFile(fh); };
 
-	handler.OnDuration(audiofile_get_duration(fh));
-
 	try {
-		handler.OnAudioFormat(CheckAudioFormat(fh));
+		const auto audio_format = CheckAudioFormat(fh);
+		handler.OnAudioFormat(audio_format);
+
+		/* invoke audiofile_get_duration() only after the
+		   AudioFormat has been validated, or else
+		   audiofile_get_duration() may divide by zero */
+		handler.OnDuration(audiofile_get_duration(fh));
 	} catch (...) {
 	}
 

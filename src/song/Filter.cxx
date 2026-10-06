@@ -24,6 +24,8 @@
 
 #include <algorithm> // for std::any_of()
 #include <cassert>
+#include <limits>
+#include <stdexcept>
 
 #include <stdlib.h>
 
@@ -109,9 +111,18 @@ ParseTimeStamp(const char *s)
 	} catch (...) {
 		char *endptr;
 		unsigned long long value = strtoull(s, &endptr, 10);
-		if (*endptr == 0 && endptr > s)
-			/* it's an integral UNIX time stamp */
+		if (*endptr == 0 && endptr > s) {
+			/* reject values which cannot be represented
+			   by time_t or by (Windows) gmtime(), which
+			   fails for dates after the year 3000 */
+			constexpr unsigned long long max_value =
+				std::min<unsigned long long>(std::numeric_limits<time_t>::max(),
+							     32503680000ULL);
+			if (value > max_value)
+				throw std::invalid_argument{"Time stamp out of range"};
+
 			return std::chrono::system_clock::from_time_t((time_t)value);
+		}
 
 		/* rethrow the ParseISO8601() error */
 		throw;

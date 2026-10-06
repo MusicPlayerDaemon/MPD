@@ -123,7 +123,11 @@ ParsePath(std::string_view path)
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
 		throw FmtRuntimeError("not an absolute path: {:?}", path);
 	} else {
+#else
+		if (path.empty())
+			throw FmtRuntimeError("Invalid path: {:?}"sv, path);
 #endif
+
 		return AllocatedPath::FromUTF8Throw(path);
 #ifndef _WIN32
 	}

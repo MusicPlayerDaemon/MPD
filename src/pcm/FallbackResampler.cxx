@@ -5,6 +5,7 @@
 #include "util/DivideRoundUp.hxx"
 #include "util/SpanCast.hxx"
 
+#include <algorithm> // for std::copy_n()
 #include <cassert>
 #include <utility> // for std::unreachable()
 
@@ -78,6 +79,14 @@ pcm_resample_fallback(PcmBuffer &buffer,
 
 			dest_buffer[dest_pos++] = src[src_pos];
 			dest_buffer[dest_pos++] = src[src_pos + 1];
+		}
+		break;
+
+	default:
+		for (unsigned dest_frame = 0; dest_frame < dest_frames; ++dest_frame) {
+			const unsigned src_frame = dest_frame * src_rate / dest_rate;
+			std::copy_n(src.data() + src_frame * channels, channels,
+				    dest_buffer + dest_frame * channels);
 		}
 		break;
 	}
