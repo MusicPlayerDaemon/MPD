@@ -19,6 +19,13 @@ public:
 	StorageDirectoryReader(const StorageDirectoryReader &) = delete;
 	virtual ~StorageDirectoryReader() noexcept = default;
 
+	/**
+	 * Returns the name of the next directory entry or nullptr
+	 * at the end of the directory.
+	 *
+	 * Implementations must return only names which pass
+	 * PathTraitsUTF8::IsValidFilename().
+	 */
 	[[nodiscard]]
 	virtual const char *Read() noexcept = 0;
 
