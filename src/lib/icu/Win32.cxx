@@ -12,6 +12,11 @@
 AllocatedString
 WideCharToMultiByte(unsigned code_page, std::wstring_view src)
 {
+	if (src.empty())
+		/* WideCharToMultiByte() fails with
+		   ERROR_INVALID_PARAMETER on empty input */
+		return AllocatedString{std::string_view{}};
+
 	int length = WideCharToMultiByte(code_page, 0, src.data(), src.size(),
 					 nullptr, 0,
 					 nullptr, nullptr);
@@ -32,6 +37,11 @@ WideCharToMultiByte(unsigned code_page, std::wstring_view src)
 BasicAllocatedString<wchar_t>
 MultiByteToWideChar(unsigned code_page, std::string_view src)
 {
+	if (src.empty())
+		/* MultiByteToWideChar() fails with
+		   ERROR_INVALID_PARAMETER on empty input */
+		return BasicAllocatedString<wchar_t>{std::wstring_view{}};
+
 	int length = MultiByteToWideChar(code_page, 0, src.data(), src.size(),
 					 nullptr, 0);
 	if (length <= 0)
