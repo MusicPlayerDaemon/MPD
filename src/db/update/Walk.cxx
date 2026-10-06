@@ -378,6 +378,9 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	const char *name_utf8;
 	while (!cancel && (name_utf8 = reader->Read()) != nullptr) {
+		/* guaranteed by the StorageDirectoryReader API */
+		assert(PathTraitsUTF8::IsValidFilename(name_utf8));
+
 		if (!VerifySeenFilenameUTF8(name_utf8))
 			continue;
 
