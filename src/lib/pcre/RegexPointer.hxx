@@ -21,8 +21,12 @@ public:
 		return re != nullptr;
 	}
 
+	/**
+	 * @param context an optional match context
+	 */
 	[[gnu::pure]]
-	MatchData Match(std::string_view s) const noexcept {
+	MatchData Match(std::string_view s,
+			pcre2_match_context_8 *context=nullptr) const noexcept {
 		MatchData match_data{
 			pcre2_match_data_create_from_pattern_8(re, nullptr),
 			s.data(),
@@ -30,7 +34,7 @@ public:
 
 		int n = pcre2_match_8(re, (PCRE2_SPTR8)s.data(), s.size(),
 				      0, 0,
-				      match_data.match_data, nullptr);
+				      match_data.match_data, context);
 		if (n < 0)
 			/* no match (or error) */
 			return {};
