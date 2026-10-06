@@ -7,6 +7,7 @@
 #include "CriticalSection.hxx"
 #include "WindowsCond.hxx"
 
+#include <exception> // for std::exception_ptr
 #include <memory>
 #include <system_error> // for std::error_category
 #include <variant>
