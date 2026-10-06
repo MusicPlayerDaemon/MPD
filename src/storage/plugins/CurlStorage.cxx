@@ -550,7 +550,7 @@ protected:
 
 		std::string href = CurlUnescape(GetEasy(), r.href.c_str());
 		const auto name = HrefToEscapedName(href.c_str());
-		if (name.data() == nullptr)
+		if (!PathTraitsUTF8::IsValidFilename(name))
 			return;
 
 		if (n_entries >= MAX_DAV_DIRECTORY_ENTRIES)
