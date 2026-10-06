@@ -142,13 +142,6 @@ SmbclientStorage::OpenDirectory(std::string_view uri_utf8)
 							  handle);
 }
 
-[[gnu::pure]]
-static bool
-SkipNameFS(PathTraitsFS::const_pointer name) noexcept
-{
-	return PathTraitsFS::IsSpecialFilename(name);
-}
-
 SmbclientDirectoryReader::~SmbclientDirectoryReader()
 {
 	const std::lock_guard lock{storage.mutex};
@@ -162,7 +155,8 @@ SmbclientDirectoryReader::Read() noexcept
 
 	while (auto e = storage.ctx.ReadDirectory(handle)) {
 		name = e->name;
-		if (!SkipNameFS(name))
+
+		if (PathTraitsUTF8::IsValidFilename(name))
 			return name;
 	}
 

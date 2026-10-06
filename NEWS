@@ -9,6 +9,7 @@ ver 0.24.16 (not yet released)
 * storage
   - nfs: fix use-after-free bug
   - nfs: skip invalid file names
+  - smbclient: skip invalid file names
   - udisks: reject ".." in the relative volume path
 * input
   - alsa: reject URIs whose query string has no format
