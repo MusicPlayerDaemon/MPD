@@ -218,7 +218,7 @@ UpdateWalk::UpdateDirectoryChild(Directory &directory,
 				 const ExcludeList &exclude_list,
 				 const char *name, const StorageFileInfo &info) noexcept
 try {
-	assert(std::strchr(name, '/') == nullptr);
+	assert(PathTraitsUTF8::IsValidFilename(name));
 
 	if (info.IsRegular()) {
 		UpdateRegularFile(directory, name, info);
