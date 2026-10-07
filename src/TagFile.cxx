@@ -29,7 +29,7 @@ public:
 		 handler(_handler),
 		 is(nullptr) {}
 
-	bool ScanFile(const DecoderPlugin &plugin) noexcept {
+	bool ScanFile(const DecoderPlugin &plugin) {
 		return plugin.ScanFile(path_fs, handler);
 	}
 
