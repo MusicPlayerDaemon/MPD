@@ -102,6 +102,10 @@ public:
 	void Cancel() noexcept override;
 	bool Pause() override;
 
+	bool SupportsHardwarePause() const noexcept override {
+		return true;
+	}
+
 private:
 	/**
 	 * Attempt to connect asynchronously to the PulseAudio server.
