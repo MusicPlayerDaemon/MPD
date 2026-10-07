@@ -209,6 +209,18 @@ PathTraitsUTF8::IsAbsoluteOrHasScheme(const_pointer p) noexcept
 	return IsAbsolute(p) || uri_has_scheme(p);
 }
 
+bool
+PathTraitsUTF8::IsValidFilename(const_pointer name) noexcept
+{
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
+	assert(name != nullptr);
+#endif
+
+	return !StringIsEmpty(name) && !IsSpecialFilename(name) &&
+		StringFind(name, '/') == nullptr;
+}
+
 PathTraitsUTF8::const_pointer
 PathTraitsUTF8::GetBase(const_pointer p) noexcept
 {

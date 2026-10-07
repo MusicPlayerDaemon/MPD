@@ -305,6 +305,21 @@ struct PathTraitsUTF8 {
 			(name[0] == '.' && name[1] == '.' && name[2] == 0);
 	}
 
+	/**
+	 * Is this a valid filename?  (Bare filename, not path.)
+	 *
+	 * This excludes empty strings, special file names such as "."
+	 * and "..", strings with forbidden separators such as slash.
+	 *
+	 * A "true" return value does not strictly imply that the
+	 * operating system would allow MPD to create a file with that
+	 * name; only that MPD allows this file name to be used
+	 * internally.  It may refer to remote files, and thus
+	 * reserved names such a "NUL" would be allowed on Windows.
+	 */
+	[[gnu::pure]] [[gnu::nonnull]]
+	static bool IsValidFilename(const_pointer name) noexcept;
+
 	[[gnu::pure]] [[gnu::nonnull]]
 	static size_t GetLength(const_pointer p) noexcept {
 		return StringLength(p);
