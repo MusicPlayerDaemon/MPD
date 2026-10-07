@@ -21,7 +21,7 @@ AddOverflow(T a, T b, T &result) noexcept
 	bool overflow = __builtin_add_overflow(a, b, &result);
 #else
 	result = a + b;
-	return b > std::numeric_limits<T>::max() - a;
+	bool overflow = b > std::numeric_limits<T>::max() - a;
 #endif
 
 	// a portable version of __builtin_expect(overflow, false)
