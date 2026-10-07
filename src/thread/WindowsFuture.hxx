@@ -62,7 +62,7 @@ private:
 };
 
 template <typename T>
-class WinFutureState {
+class WinFutureState final {
 private:
 	mutable CriticalSection mutex;
 	WindowsCond condition;
