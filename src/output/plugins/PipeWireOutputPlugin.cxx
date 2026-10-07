@@ -302,6 +302,10 @@ private:
 	void Cancel() noexcept override;
 	bool Pause() noexcept override;
 
+	bool SupportsHardwarePause() const noexcept override {
+		return true;
+	}
+
 	void SendTag(const Tag &tag) override;
 };
 
