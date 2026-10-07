@@ -3,6 +3,7 @@
 
 #include "Parser.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/IntOverflow.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
 
@@ -63,11 +64,11 @@ template<std::size_t OPERAND>
 static std::size_t
 Multiply(std::size_t value)
 {
-	static constexpr std::size_t MAX_VALUE = SIZE_MAX / OPERAND;
-	if (value > MAX_VALUE)
+	std::size_t result;
+	if (MultiplyOverflow(value, OPERAND, result))
 		throw std::runtime_error("Value too large");
 
-	return value * OPERAND;
+	return result;
 }
 
 std::size_t
