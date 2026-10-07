@@ -392,7 +392,7 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 	while ((ent = connection.ReadDirectory(dir)) != nullptr) {
 #ifdef _WIN32
 		/* assume UTF-8 when accessing NFS from Windows */
-		const auto name_fs = AllocatedPath::FromUTF8Throw(ent->name);
+		const auto name_fs = AllocatedPath::FromUTF8(ent->name);
 		if (name_fs.IsNull())
 			continue;
 #else
