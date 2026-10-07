@@ -9,7 +9,7 @@
 
 using std::string_view_literals::operator""sv;
 
-TEST(IntOverflow, All)
+TEST(IntOverflow, Add)
 {
 	unsigned result;
 
