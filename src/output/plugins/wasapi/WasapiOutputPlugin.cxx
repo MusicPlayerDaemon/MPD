@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <cmath>
+#include <new> // for std::hardware_destructive_interference_size
 #include <optional>
 #include <variant>
 
