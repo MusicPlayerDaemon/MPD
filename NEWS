@@ -57,6 +57,8 @@ ver 0.24.16 (not yet released)
   - snapcast: fix integer overflow
   - snapcast: limit the client wait time
   - snapcast: limit the chunk queue size
+* player
+  - don't cross-fade DSD
 * avahi: fix use-after-free bug
 * Windows
   - fix crash bug during charset conversion

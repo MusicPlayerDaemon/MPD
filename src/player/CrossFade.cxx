@@ -88,7 +88,10 @@ CrossFadeSettings::CanCrossFade(SignedSongTime current_total_time,
 		CanCrossFadeSong(current_total_time) &&
 		CanCrossFadeSong(next_total_time) &&
 		/* we can't crossfade when the audio formats are different */
-		af == old_format;
+		af == old_format &&
+		/* cross-fading requires mixing, which DSD does not
+		   support; DSD tracks are played gaplessly instead */
+		af.format != SampleFormat::DSD;
 }
 
 unsigned
