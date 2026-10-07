@@ -93,6 +93,7 @@ ParseSize(const char *s, std::size_t default_factor)
 
 	switch (*s) {
 	case 'k':
+	case 'K':
 		value = Multiply<KILO>(value);
 		++s;
 		break;
