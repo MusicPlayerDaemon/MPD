@@ -3,6 +3,7 @@
 
 #include "ApeLoader.hxx"
 #include "input/InputStream.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/PackedLittleEndian.hxx"
 #include "util/SpanCast.hxx"
 
@@ -41,7 +42,7 @@ try {
 	size_t remaining = FromLE32(footer.length);
 	if (remaining <= sizeof(footer) + 10 ||
 	    /* refuse to load more than one megabyte of tag data */
-	    remaining > 1024 * 1024)
+	    remaining > 1_MiB)
 		return false;
 
 	is.Seek(lock, is.GetSize() - remaining);

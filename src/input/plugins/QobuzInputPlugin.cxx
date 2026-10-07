@@ -16,6 +16,7 @@
 #include "util/StringCompare.hxx"
 
 #include <memory>
+#include <stdexcept>
 
 using std::string_view_literals::operator""sv;
 
@@ -93,6 +94,13 @@ QobuzInputStream::OnQobuzTrackSuccess(std::string url) noexcept
 	track_request.reset();
 
 	try {
+		/* don't let the Qobuz server make us open local files
+		   or other protocols */
+		// TODO use CURLOPT_PROTOCOLS instead
+		if (!StringStartsWithIgnoreCase(url, "http://"sv) &&
+		    !StringStartsWithIgnoreCase(url, "https://"sv))
+			throw std::runtime_error{"Unsupported URL scheme in Qobuz response"};
+
 		SetInput(OpenCurlInputStream(url.c_str(), {},
 					     mutex));
 	} catch (...) {

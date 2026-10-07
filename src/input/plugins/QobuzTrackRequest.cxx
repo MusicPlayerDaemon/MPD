@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "QobuzTrackRequest.hxx"
+#include "QobuzLimits.hxx"
 #include "QobuzErrorParser.hxx"
 #include "QobuzClient.hxx"
 
@@ -24,7 +25,8 @@ QobuzTrackRequest::QobuzTrackRequest(QobuzClient &client,
 				     const QobuzSession &session,
 				     const char *track_id,
 				     QobuzTrackHandler &_handler)
-	:request(client.GetCurl(),
+	:StringResponseHandler(qobuz_string_options),
+	 request(client.GetCurl(),
 		 MakeTrackUrl(client, track_id).c_str(),
 		 *this),
 	 handler(_handler)

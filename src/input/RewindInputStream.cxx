@@ -3,6 +3,7 @@
 
 #include "RewindInputStream.hxx"
 #include "ProxyInputStream.hxx"
+#include "util/ByteSizes.hxx"
 
 #include <cassert>
 
@@ -28,7 +29,7 @@ class RewindInputStream final : public ProxyInputStream {
 	 * The origin of this buffer is always the beginning of the
 	 * stream (offset 0).
 	 */
-	std::byte buffer[64 * 1024];
+	std::byte buffer[64_KiB];
 
 public:
 	explicit RewindInputStream(InputStreamPtr _input)

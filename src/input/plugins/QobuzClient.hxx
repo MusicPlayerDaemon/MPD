@@ -8,7 +8,7 @@
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Headers.hxx"
 #include "thread/Mutex.hxx"
-#include "event/DeferEvent.hxx"
+#include "event/InjectEvent.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <memory>
@@ -30,7 +30,7 @@ class QobuzClient final : QobuzLoginHandler {
 
 	CurlInit curl;
 
-	DeferEvent defer_invoke_handlers;
+	InjectEvent defer_invoke_handlers;
 
 	/**
 	 * Protects #session, #error, #login_request, #handlers.

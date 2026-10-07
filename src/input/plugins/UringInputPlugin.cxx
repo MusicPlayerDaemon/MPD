@@ -11,25 +11,26 @@
 #include "io/UniqueFileDescriptor.hxx"
 #include "io/uring/ReadOperation.hxx"
 #include "io/uring/Queue.hxx"
+#include "util/ByteSizes.hxx"
 
 #include <sys/stat.h>
 
 /**
  * Read at most this number of bytes in each read request.
  */
-static const size_t URING_MAX_READ = 256 * 1024;
+static const size_t URING_MAX_READ = 256_KiB;
 
 /**
  * Do not buffer more than this number of bytes.  It should be a
  * reasonable limit that doesn't make low-end machines suffer too
  * much, but doesn't cause stuttering on high-latency lines.
  */
-static const size_t URING_MAX_BUFFERED = 512 * 1024;
+static const size_t URING_MAX_BUFFERED = 512_KiB;
 
 /**
  * Resume the stream at this number of bytes after it has been paused.
  */
-static const size_t URING_RESUME_AT = 384 * 1024;
+static const size_t URING_RESUME_AT = 384_KiB;
 
 static EventLoop *uring_input_event_loop;
 static Uring::Queue *uring_input_queue;

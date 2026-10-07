@@ -3,6 +3,8 @@
 
 #include "Parser.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/ByteSizes.hxx"
+#include "util/IntOverflow.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
 
@@ -74,11 +76,11 @@ template<std::size_t OPERAND>
 static std::size_t
 Multiply(std::size_t value)
 {
-	static constexpr std::size_t MAX_VALUE = SIZE_MAX / OPERAND;
-	if (value > MAX_VALUE)
+	std::size_t result;
+	if (MultiplyOverflow(value, OPERAND, result))
 		throw std::runtime_error("Value too large");
 
-	return value * OPERAND;
+	return result;
 }
 
 std::size_t
@@ -93,27 +95,24 @@ ParseSize(const char *s, std::size_t default_factor)
 	if (errno == ERANGE)
 		throw std::runtime_error("Integer out of range");
 
-	static constexpr std::size_t KILO = 1024;
-	static constexpr std::size_t MEGA = 1024 * KILO;
-	static constexpr std::size_t GIGA = 1024 * MEGA;
-
 	s = StripLeft(endptr);
 
 	bool apply_factor = false;
 
 	switch (*s) {
 	case 'k':
-		value = Multiply<KILO>(value);
+	case 'K':
+		value = Multiply<KIBI>(value);
 		++s;
 		break;
 
 	case 'M':
-		value = Multiply<MEGA>(value);
+		value = Multiply<MEBI>(value);
 		++s;
 		break;
 
 	case 'G':
-		value = Multiply<GIGA>(value);
+		value = Multiply<GIBI>(value);
 		++s;
 		break;
 

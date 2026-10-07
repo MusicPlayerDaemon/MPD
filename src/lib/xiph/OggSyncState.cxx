@@ -3,6 +3,7 @@
 
 #include "OggSyncState.hxx"
 #include "io/Reader.hxx"
+#include "util/ByteSizes.hxx"
 
 bool
 OggSyncState::Feed(size_t size)
@@ -51,7 +52,7 @@ OggSyncState::ExpectPageIn(ogg_stream_state &os)
 bool
 OggSyncState::ExpectPageSeek(ogg_page &page)
 {
-	size_t remaining_skipped = 1024 * 1024;
+	std::size_t remaining_skipped = 1_MiB;
 
 	while (true) {
 		int r = ogg_sync_pageseek(&oy, &page);

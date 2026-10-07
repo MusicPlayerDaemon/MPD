@@ -4,6 +4,7 @@
 #include "BufferingInputStream.hxx"
 #include "InputStream.hxx"
 #include "thread/Name.hxx"
+#include "util/ByteSizes.hxx"
 
 #include <stdexcept>
 
@@ -155,7 +156,7 @@ BufferingInputStream::RunThreadLocked(std::unique_lock<Mutex> &lock)
 			   all requested bytes have been read from the
 			   hard disk, instead of returning when "some"
 			   data has been read */
-			constexpr size_t MAX_READ = 64 * 1024;
+			constexpr size_t MAX_READ = 64_KiB;
 
 			if (w.size() > MAX_READ)
 				w = w.first(MAX_READ);

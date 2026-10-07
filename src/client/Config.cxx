@@ -3,10 +3,11 @@
 
 #include "Config.hxx"
 #include "config/Data.hxx"
+#include "util/ByteSizes.hxx"
 
-#define CLIENT_TIMEOUT_DEFAULT			(60)
-#define CLIENT_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
-#define CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
+static constexpr unsigned CLIENT_TIMEOUT_DEFAULT = 60;
+static constexpr std::size_t CLIENT_MAX_COMMAND_LIST_DEFAULT = 2_MiB;
+static constexpr std::size_t CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT = 8_MiB;
 
 Event::Duration client_timeout;
 size_t client_max_command_list_size;
@@ -21,11 +22,11 @@ client_manager_init(const ConfigData &config)
 
 	client_max_command_list_size =
 		config.GetPositive(ConfigOption::MAX_COMMAND_LIST_SIZE,
-				   CLIENT_MAX_COMMAND_LIST_DEFAULT / 1024)
-		* 1024;
+				   CLIENT_MAX_COMMAND_LIST_DEFAULT / KIBI)
+		* KIBI;
 
 	client_max_output_buffer_size =
 		config.GetPositive(ConfigOption::MAX_OUTPUT_BUFFER_SIZE,
-				   CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT / 1024)
-		* 1024;
+				   CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT / KIBI)
+		* KIBI;
 }

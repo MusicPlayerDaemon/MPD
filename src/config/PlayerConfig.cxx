@@ -12,7 +12,7 @@
 
 static constexpr
 size_t MIN_BUFFER_SIZE = std::max(CHUNK_SIZE * 32,
-				  64 * KILOBYTE);
+				  64_KiB);
 
 static unsigned
 GetBufferChunks(const ConfigData &config)
@@ -20,7 +20,7 @@ GetBufferChunks(const ConfigData &config)
 	size_t buffer_size = PlayerConfig::DEFAULT_BUFFER_SIZE;
 	if (auto *param = config.GetParam(ConfigOption::AUDIO_BUFFER_SIZE)) {
 		buffer_size = param->With([](const char *s){
-			size_t result = ParseSize(s, KILOBYTE);
+			size_t result = ParseSize(s, KIBI);
 			if (result <= 0)
 				throw FmtRuntimeError("buffer size {:?} is not a "
 						      "positive integer", s);

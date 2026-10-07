@@ -11,6 +11,7 @@
 #include "tag/Builder.hxx"
 #include "protocol/Verify.hxx"
 #include "util/ASCII.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/NumberParser.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
@@ -21,7 +22,7 @@
 using std::string_view_literals::operator""sv;
 
 /* PLS playlists are materialized before any songs are returned. */
-static constexpr offset_type PLS_PLAYLIST_MAX_SIZE = 16 * 1024 * 1024;
+static constexpr offset_type PLS_PLAYLIST_MAX_SIZE = 16_MiB;
 
 static bool
 FindPlaylistSection(TextInputStream &is)

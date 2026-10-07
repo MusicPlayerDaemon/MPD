@@ -42,12 +42,16 @@ ver 0.24.16 (not yet released)
   - nfs: fix use-after-free bug
   - udisks: reject ".." in the relative volume path
 * input
+  - alsa: reject URIs whose query string has no format
+  - alsa: reject dangerous ALSA device names
   - cache: fix use-after-free bug
   - cache: fix deadlock bug
   - cdio_paranoia: fix memory leak
   - cdio_paranoia: open only hardware drives
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
+  - qobuz: limit the size of API responses
+  - qobuz: accept only HTTP stream URLs
 * decoder
   - audiofile: fix division by zero
   - dsdiff: fix integer overflow

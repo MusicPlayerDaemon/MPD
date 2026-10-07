@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "QobuzTagScanner.hxx"
+#include "QobuzLimits.hxx"
 #include "QobuzErrorParser.hxx"
 #include "QobuzClient.hxx"
 #include "tag/Builder.hxx"
@@ -23,7 +24,8 @@ MakeTrackUrl(QobuzClient &client, std::string_view track_id)
 QobuzTagScanner::QobuzTagScanner(QobuzClient &client,
 				 std::string_view track_id,
 				 RemoteTagHandler &_handler)
-	:request(client.GetCurl(),
+	:StringResponseHandler(qobuz_string_options),
+	 request(client.GetCurl(),
 		 MakeTrackUrl(client, track_id).c_str(),
 		 *this),
 	 handler(_handler)

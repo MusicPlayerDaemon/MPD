@@ -3,9 +3,10 @@
 
 #include "ModCommon.hxx"
 #include "Log.hxx"
+#include "util/ByteSizes.hxx"
 
-static constexpr size_t MOD_PREALLOC_BLOCK = 256 * 1024;
-static constexpr offset_type MOD_FILE_LIMIT = 100 * 1024 * 1024;
+static constexpr size_t MOD_PREALLOC_BLOCK = 256_KiB;
+static constexpr offset_type MOD_FILE_LIMIT = 100_MiB;
 
 AllocatedArray<std::byte>
 mod_loadfile(const Domain *domain, DecoderClient *client, InputStream &is)
