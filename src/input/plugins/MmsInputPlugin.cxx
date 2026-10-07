@@ -6,13 +6,14 @@
 #include "input/InputPlugin.hxx"
 #include "thread/ScopeUnlock.hxx"
 #include "system/Error.hxx"
+#include "util/ByteSizes.hxx"
 
 #include <libmms/mmsx.h>
 
 #include <stdexcept>
 
 class MmsInputStream final : public ThreadInputStream {
-	static constexpr std::size_t BUFFER_SIZE = 256 * 1024;
+	static constexpr std::size_t BUFFER_SIZE = 256_KiB;
 
 	mmsx_t *mms;
 
@@ -46,7 +47,7 @@ MmsInputStream::Open()
 	{
 		const ScopeUnlock unlock(mutex);
 
-		mms = mmsx_connect(nullptr, nullptr, GetURI(), 128 * 1024);
+		mms = mmsx_connect(nullptr, nullptr, GetURI(), 128_KiB);
 		if (mms == nullptr)
 			throw std::runtime_error("mmsx_connect() failed");
 	}

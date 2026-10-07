@@ -3,6 +3,7 @@
 
 #include "Parser.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/IntOverflow.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
@@ -83,10 +84,6 @@ ParseSize(const char *s, std::size_t default_factor)
 	if (errno == ERANGE)
 		throw std::runtime_error("Integer out of range");
 
-	static constexpr std::size_t KILO = 1024;
-	static constexpr std::size_t MEGA = 1024 * KILO;
-	static constexpr std::size_t GIGA = 1024 * MEGA;
-
 	s = StripLeft(endptr);
 
 	bool apply_factor = false;
@@ -94,17 +91,17 @@ ParseSize(const char *s, std::size_t default_factor)
 	switch (*s) {
 	case 'k':
 	case 'K':
-		value = Multiply<KILO>(value);
+		value = Multiply<KIBI>(value);
 		++s;
 		break;
 
 	case 'M':
-		value = Multiply<MEGA>(value);
+		value = Multiply<MEBI>(value);
 		++s;
 		break;
 
 	case 'G':
-		value = Multiply<GIGA>(value);
+		value = Multiply<GIBI>(value);
 		++s;
 		break;
 

@@ -12,6 +12,7 @@
 #include "lib/curl/Request.hxx"
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/SpanCast.hxx"
@@ -85,7 +86,7 @@ private:
  * Device descriptions are small XML documents; this limit protects
  * against (malicious) servers sending endless responses.
  */
-static constexpr std::size_t MAX_DEVICE_DESCRIPTION_SIZE = 256 * 1024;
+static constexpr std::size_t MAX_DEVICE_DESCRIPTION_SIZE = 256_KiB;
 
 static constexpr std::chrono::seconds DEVICE_DESCRIPTION_TIMEOUT{30};
 

@@ -11,6 +11,7 @@
 #include "DsdLib.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/IntOverflow.hxx"
 
 #ifdef ENABLE_ID3TAG
@@ -77,7 +78,7 @@ dsdlib_skip(DecoderClient *client, InputStream &is,
 		}
 	}
 
-	if (delta > 1024 * 1024)
+	if (delta > 1_MiB)
 		/* don't skip more than one megabyte; it would be too
 		   expensive */
 		return false;

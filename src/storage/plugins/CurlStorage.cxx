@@ -24,6 +24,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/NumberParser.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
@@ -37,8 +38,8 @@
 
 using std::string_view_literals::operator""sv;
 
-static constexpr std::size_t MAX_PROPFIND_RESPONSE_SIZE = 8 * 1024 * 1024;
-static constexpr std::size_t MAX_DAV_HREF_SIZE = 16 * 1024;
+static constexpr std::size_t MAX_PROPFIND_RESPONSE_SIZE = 8_MiB;
+static constexpr std::size_t MAX_DAV_HREF_SIZE = 16_KiB;
 static constexpr std::size_t MAX_DAV_DIRECTORY_ENTRIES = 65536;
 
 class CurlStorage final : public Storage {

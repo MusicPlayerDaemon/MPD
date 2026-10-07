@@ -5,6 +5,7 @@
 
 #include "InputStream.hxx"
 #include "BufferingInputStream.hxx"
+#include "util/ByteSizes.hxx"
 
 #include <cassert>
 
@@ -15,7 +16,7 @@
  */
 class BufferedInputStream final : public InputStream, BufferingInputStream {
 	// TODO: make configurable
-	static constexpr offset_type MAX_SIZE = 128 * 1024 * 1024;
+	static constexpr offset_type MAX_SIZE = 128_MiB;
 
 public:
 	BufferedInputStream(InputStreamPtr _input);

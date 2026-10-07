@@ -4,6 +4,7 @@
 #include "Init.hxx"
 #include "Error.hxx"
 #include "thread/Mutex.hxx"
+#include "util/ByteSizes.hxx"
 
 #include <upnp.h>
 #include <upnptools.h>
@@ -22,7 +23,7 @@ DoInit(const char* iface)
 	if (auto code = UpnpInit2(iface, 0); code != UPNP_E_SUCCESS)
 		throw Upnp::MakeError(code, "UpnpInit() failed");
 
-	UpnpSetMaxContentLength(2000*1024);
+	UpnpSetMaxContentLength(2_MiB);
 
 #ifdef USING_PUPNP
 	// Servers sometimes make error (e.g.: minidlna returns bad utf-8)

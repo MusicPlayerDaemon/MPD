@@ -8,6 +8,7 @@
 #include "IcyMetaDataServer.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
@@ -342,7 +343,7 @@ HttpdClient::PushPage(PagePtr page) noexcept
 		/* the client is still writing the HTTP request */
 		return;
 
-	if (queue_size > 256 * 1024) {
+	if (queue_size > 256_KiB) {
 		LogDebug(httpd_output_domain,
 			 "client is too slow, flushing its queue");
 		ClearQueue();

@@ -4,15 +4,13 @@
 #pragma once
 
 #include "pcm/AudioFormat.hxx"
+#include "util/ByteSizes.hxx"
 #include "ReplayGainConfig.hxx"
 
 struct ConfigData;
 
-static constexpr size_t KILOBYTE = 1024;
-static constexpr size_t MEGABYTE = 1024 * KILOBYTE;
-
 struct PlayerConfig {
-	static constexpr size_t DEFAULT_BUFFER_SIZE = 8 * MEGABYTE;
+	static constexpr size_t DEFAULT_BUFFER_SIZE = 8_MiB;
 
 	unsigned buffer_chunks = DEFAULT_BUFFER_SIZE;
 
