@@ -7,6 +7,8 @@
 
 #include <string.h>
 
+using std::string_view_literals::operator""sv;
+
 template<typename Traits>
 typename Traits::string
 BuildPathImpl(typename Traits::string_view a,
@@ -219,6 +221,13 @@ PathTraitsUTF8::IsValidFilename(const_pointer name) noexcept
 
 	return !StringIsEmpty(name) && !IsSpecialFilename(name) &&
 		StringFind(name, '/') == nullptr;
+}
+
+bool
+PathTraitsUTF8::IsValidFilename(string_view name) noexcept
+{
+	return !name.empty() && !IsSpecialFilename(name) &&
+		name.find_first_of("/\0"sv) == name.npos;
 }
 
 PathTraitsUTF8::const_pointer

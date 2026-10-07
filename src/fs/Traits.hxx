@@ -305,6 +305,12 @@ struct PathTraitsUTF8 {
 			(name[0] == '.' && name[1] == '.' && name[2] == 0);
 	}
 
+	[[gnu::pure]]
+	static constexpr bool IsSpecialFilename(string_view name) noexcept {
+		using std::string_view_literals::operator""sv;
+		return name == "."sv || name == ".."sv;
+	}
+
 	/**
 	 * Is this a valid filename?  (Bare filename, not path.)
 	 *
@@ -319,6 +325,9 @@ struct PathTraitsUTF8 {
 	 */
 	[[gnu::pure]] [[gnu::nonnull]]
 	static bool IsValidFilename(const_pointer name) noexcept;
+
+	[[gnu::pure]]
+	static bool IsValidFilename(string_view name) noexcept;
 
 	[[gnu::pure]] [[gnu::nonnull]]
 	static size_t GetLength(const_pointer p) noexcept {
