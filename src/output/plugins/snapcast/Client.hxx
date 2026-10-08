@@ -31,6 +31,12 @@ class SnapcastClient final : BufferedSocket, public IntrusiveListHook<>
 	bool active = false;
 
 public:
+	/**
+	 * Chunks older than this will not be sent to the client.
+	 */
+	static constexpr std::chrono::steady_clock::duration MAX_CHUNK_AGE =
+		std::chrono::milliseconds{500};
+
 	SnapcastClient(SnapcastOutput &output,
 		       UniqueSocketDescriptor _fd) noexcept;
 

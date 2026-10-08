@@ -38,8 +38,12 @@ ver 0.24.16 (not yet released)
   - reject song id 0
   - limit the effort of regular expression matches
   - reject out-of-range time stamps
+  - reject "." and ".." as mount point
 * storage
+  - curl: skip invalid file names
   - nfs: fix use-after-free bug
+  - nfs: skip invalid file names
+  - smbclient: skip invalid file names
   - udisks: reject ".." in the relative volume path
 * input
   - alsa: reject URIs whose query string has no format
@@ -69,6 +73,9 @@ ver 0.24.16 (not yet released)
   - limit the number of tag items
   - id3: fix crash on encrypted ID3 tags
 * database
+  - proxy: limit the directory nesting depth
+  - proxy: validate directories
+  - proxy: validate song URIs
   - simple: limit archive entry path length
   - simple: limit the directory nesting depth
   - upnp: limit size and duration of device description downloads
@@ -78,7 +85,13 @@ ver 0.24.16 (not yet released)
 * resampler
   - fallback: implement more than two channels
 * output
+  - pipewire: limit the ring buffer size
+  - pipewire: validate the DSD interleave
   - snapcast: fix integer overflow
+  - snapcast: limit the client wait time
+  - snapcast: limit the chunk queue size
+* player
+  - don't cross-fade DSD
 * avahi: fix use-after-free bug
 * Windows
   - fix crash bug during charset conversion

@@ -320,13 +320,6 @@ NfsStorage::GetInfo(std::string_view uri_utf8, bool follow)
 	return operation.GetInfo();
 }
 
-[[gnu::pure]]
-static bool
-SkipNameFS(PathTraitsFS::const_pointer name) noexcept
-{
-	return PathTraitsFS::IsSpecialFilename(name);
-}
-
 static void
 Copy(StorageFileInfo &info, const struct nfsdirent &ent)
 {
@@ -389,17 +382,17 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 	std::size_t n = 0;
 	const struct nfsdirent *ent;
 	while ((ent = connection.ReadDirectory(dir)) != nullptr) {
+		if (!PathTraitsUTF8::IsValidFilename(ent->name))
+			continue;
+
 #ifdef _WIN32
 		/* assume UTF-8 when accessing NFS from Windows */
-		const auto name_fs = AllocatedPath::FromUTF8Throw(ent->name);
+		const auto name_fs = AllocatedPath::FromUTF8(ent->name);
 		if (name_fs.IsNull())
 			continue;
 #else
 		const Path name_fs = Path::FromFS(ent->name);
 #endif
-		if (SkipNameFS(name_fs.c_str()))
-			continue;
-
 		try {
 			entries.emplace_front(name_fs.ToUTF8Throw());
 			Copy(entries.front().info, *ent);

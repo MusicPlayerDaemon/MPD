@@ -13,6 +13,7 @@
 #include "system/Error.hxx"
 #include "time/PeriodClock.hxx"
 #include "util/BitReverse.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "util/RingBuffer.hxx"
 #include "util/ScopeExit.hxx"
@@ -31,6 +32,7 @@
 #include <spa/param/audio/format-utils.h>
 #include <spa/param/props.h>
 
+#include <cerrno>
 #include <cmath>
 
 #ifdef __GNUC__
@@ -581,7 +583,10 @@ PipeWireOutput::Open(AudioFormat &audio_format)
 	interrupted = false;
 
 	/* allocate a ring buffer of 0.5 seconds */
-	ring_buffer = RingBuffer{frame_size * (audio_format.sample_rate / 2)};
+	constexpr std::size_t MAX_RING_BUFFER_SIZE = 16_MiB;
+	ring_buffer = RingBuffer{frame_size * std::clamp<std::size_t>(audio_format.sample_rate / 2,
+								      1024,
+								      MAX_RING_BUFFER_SIZE / frame_size)};
 
 	const struct spa_pod *params[1];
 
@@ -663,9 +668,24 @@ PipeWireOutput::StateChanged(enum pw_stream_state state,
 
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
 
+/**
+ * The maximum DSD interleave supported by Interleave().
+ */
+static constexpr std::size_t MAX_DSD_INTERLEAVE = 8;
+
 inline void
 PipeWireOutput::DsdFormatChanged(const struct spa_audio_info_dsd &dsd) noexcept
 {
+	if (dsd.interleave < 0 || dsd.interleave > int(MAX_DSD_INTERLEAVE)) {
+		/* negative values (big-endian) are not supported, and
+		   larger values would overflow the buffer in
+		   Interleave() */
+		dsd_interleave = 0;
+		pw_stream_set_error(stream, -EINVAL,
+				    "Unsupported DSD interleave");
+		return;
+	}
+
 	/* MPD uses MSB internally, which means if PipeWire asks LSB
 	   from us, we need to reverse the bits in each DSD byte */
 	dsd_reverse_bits = dsd.bitorder == SPA_PARAM_BITORDER_lsb;
@@ -721,11 +741,10 @@ Interleave(std::byte *data, std::byte *end,
 	assert(channels > 1);
 	assert(channels <= MAX_CHANNELS);
 
-	constexpr std::size_t MAX_INTERLEAVE = 8;
 	assert(interleave > 1);
-	assert(interleave <= MAX_INTERLEAVE);
+	assert(interleave <= MAX_DSD_INTERLEAVE);
 
-	std::array<std::byte, MAX_CHANNELS * MAX_INTERLEAVE> buffer;
+	std::array<std::byte, MAX_CHANNELS * MAX_DSD_INTERLEAVE> buffer;
 	std::size_t buffer_size = channels * interleave;
 
 	while (data < end) {

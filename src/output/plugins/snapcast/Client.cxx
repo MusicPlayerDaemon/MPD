@@ -50,6 +50,12 @@ SnapcastClient::Push(SnapcastChunkPtr chunk) noexcept
 	if (!active)
 		return;
 
+	/* discard chunks which are too old to be sent anyway; this
+	   limits the queue size if the client does not read */
+	const auto min_time = chunk->time - MAX_CHUNK_AGE;
+	while (!chunks.empty() && chunks.front()->time < min_time)
+		chunks.pop();
+
 	chunks.emplace(std::move(chunk));
 	event.ScheduleWrite();
 }
@@ -74,8 +80,7 @@ void
 SnapcastClient::OnSocketReady(unsigned flags) noexcept
 {
 	if (flags & SocketEvent::WRITE) {
-		constexpr auto max_age = std::chrono::milliseconds(500);
-		const auto min_time = GetEventLoop().SteadyNow() - max_age;
+		const auto min_time = GetEventLoop().SteadyNow() - MAX_CHUNK_AGE;
 
 		while (auto chunk = LockPopQueue()) {
 			if (chunk->time < min_time)

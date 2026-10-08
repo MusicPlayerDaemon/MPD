@@ -147,12 +147,7 @@ handle_mount(Client &client, Request args, Response &r)
 	const char *const local_uri = args[0];
 	const char *const remote_uri = args[1];
 
-	if (*local_uri == 0) {
-		r.Error(ACK_ERROR_ARG, "Bad mount point");
-		return CommandResult::ERROR;
-	}
-
-	if (std::strchr(local_uri, '/') != nullptr) {
+	if (!PathTraitsUTF8::IsValidFilename(local_uri)) {
 		/* allow only top-level mounts for now */
 		/* TODO: eliminate this limitation after ensuring that
 		   UpdateQueue::Erase() really gets called for every

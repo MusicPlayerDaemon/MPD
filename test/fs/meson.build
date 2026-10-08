@@ -5,6 +5,7 @@ test(
     'TestGlob.cxx',
     'TestLookupFile.cxx',
     'TestPath.cxx',
+    'TestTraits.cxx',
     include_directories: inc,
     dependencies: [
       fs_dep,

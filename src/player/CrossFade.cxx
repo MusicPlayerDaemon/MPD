@@ -5,6 +5,7 @@
 #include "Chrono.hxx"
 #include "MusicChunk.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "pcm/Mix.hxx" // for CanMix()
 #include "util/CNumberParser.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -88,7 +89,9 @@ CrossFadeSettings::CanCrossFade(SignedSongTime current_total_time,
 		CanCrossFadeSong(current_total_time) &&
 		CanCrossFadeSong(next_total_time) &&
 		/* we can't crossfade when the audio formats are different */
-		af == old_format;
+		af == old_format &&
+		/* cross-fading requires mixing */
+		CanMix(af.format);
 }
 
 unsigned
