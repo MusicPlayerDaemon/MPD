@@ -10,6 +10,29 @@
 
 class PcmDither;
 
+/**
+ * Is pcm_mix() implemented for this #SampleFormat?
+ */
+constexpr bool
+CanMix(SampleFormat format) noexcept
+{
+	switch (format) {
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
+		/* not implemented */
+		break;
+
+	case SampleFormat::S8:
+	case SampleFormat::S16:
+	case SampleFormat::S24_P32:
+	case SampleFormat::S32:
+	case SampleFormat::FLOAT:
+		return true;
+	}
+
+	return false;
+}
+
 /*
  * Linearly mixes two PCM buffers.  Both must have the same length and
  * the same audio format.  The formula is:

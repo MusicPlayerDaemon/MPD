@@ -5,6 +5,7 @@
 #include "Chrono.hxx"
 #include "MusicChunk.hxx"
 #include "pcm/AudioFormat.hxx"
+#include "pcm/Mix.hxx" // for CanMix()
 #include "util/CNumberParser.hxx"
 #include "util/Domain.hxx"
 #include "util/Math.hxx"
@@ -89,9 +90,8 @@ CrossFadeSettings::CanCrossFade(SignedSongTime current_total_time,
 		CanCrossFadeSong(next_total_time) &&
 		/* we can't crossfade when the audio formats are different */
 		af == old_format &&
-		/* cross-fading requires mixing, which DSD does not
-		   support; DSD tracks are played gaplessly instead */
-		af.format != SampleFormat::DSD;
+		/* cross-fading requires mixing */
+		CanMix(af.format);
 }
 
 unsigned
