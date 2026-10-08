@@ -74,8 +74,7 @@ void
 SnapcastClient::OnSocketReady(unsigned flags) noexcept
 {
 	if (flags & SocketEvent::WRITE) {
-		constexpr auto max_age = std::chrono::milliseconds(500);
-		const auto min_time = GetEventLoop().SteadyNow() - max_age;
+		const auto min_time = GetEventLoop().SteadyNow() - MAX_CHUNK_AGE;
 
 		while (auto chunk = LockPopQueue()) {
 			if (chunk->time < min_time)
