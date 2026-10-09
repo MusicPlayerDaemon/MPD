@@ -329,7 +329,7 @@ public:
 			return;
 		}
 
-		    response.Fmt("size: {}\n", buffer.size());
+		response.Fmt("size: {}\n", buffer.size());
 
 		if (mime_type != nullptr)
 			response.Fmt("type: {}\n", mime_type);
