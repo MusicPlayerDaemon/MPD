@@ -22,6 +22,7 @@
 #include "tag/ParseName.hxx"
 #include "tag/WithTagBuffer.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "fs/Traits.hxx"
 #include "uri/Extract.hxx"
 #include "uri/Util.hxx"
 #include "util/RecursiveMap.hxx"
@@ -674,13 +675,8 @@ static constexpr std::size_t MAX_DIRECTORY_DEPTH = 64;
 static bool
 IsDirectChild(std::string_view parent, std::string_view child) noexcept
 {
-	if (!parent.empty()) {
-		if (!SkipPrefix(child, parent) ||
-		    !SkipPrefix(child, "/"sv))
-			return false;
-	}
-
-	return !child.empty() && child.find('/') == child.npos;
+	const std::string_view relative = PathTraitsUTF8::Relative(parent, child);
+	return PathTraitsUTF8::IsValidFilename(relative);
 }
 
 static void

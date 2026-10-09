@@ -6,8 +6,6 @@ ver 0.25 (not yet released)
   - support filename "cover.jxl" for "albumart" command
   - "albumart" response includes a "file" field with the artwork path
   - song property "RealUri"
-* storage
-  - curl: use the CURL input plugin configuration
 * decoder
   - faad: implement seeking
   - faad: output 32 bit floating point samples instead of 16 bit integer
@@ -41,6 +39,7 @@ ver 0.24.16 (not yet released)
   - reject "." and ".." as mount point
 * storage
   - curl: skip invalid file names
+  - curl: use the CURL input plugin configuration
   - nfs: fix use-after-free bug
   - nfs: skip invalid file names
   - smbclient: skip invalid file names
