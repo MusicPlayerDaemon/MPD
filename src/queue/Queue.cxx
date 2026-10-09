@@ -342,9 +342,21 @@ Queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end) noexcept
 }
 
 void
-Queue::ShuffleOrder() noexcept
+Queue::ShuffleOrder(std::optional<unsigned> avoid_position) noexcept
 {
+	assert(!avoid_position || IsValidPosition(*avoid_position));
+
 	ShuffleOrderRangeWithPriority(0, length);
+	if (!avoid_position || length < 2 || OrderToPosition(0) != *avoid_position)
+		return;
+
+	const unsigned group_end = CountSamePriority(0, GetOrderPriority(0));
+	if (group_end > 1) {
+		/* Choose a different first entry from the same priority group. */
+		rand.AutoCreate();
+		std::uniform_int_distribution<unsigned> distribution(1, group_end - 1);
+		SwapOrders(0, distribution(rand));
+	}
 }
 
 void

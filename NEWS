@@ -22,6 +22,7 @@ ver 0.25 (not yet released)
 * player
   - support replay gain parameter in stream URI
   - preallocate physical RAM for audio buffer when playback starts
+  - avoid back-to-back repeats when reshuffling
 * configuration
   - support $XDG_DATA_HOME, $XDG_STATE_HOME
   - suport netmasks in "host_permissions"

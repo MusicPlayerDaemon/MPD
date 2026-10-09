@@ -168,7 +168,7 @@ playlist::PlayNext(PlayerControl &pc)
 			   songs in a different than before */
 			assert(queue.repeat);
 
-			queue.ShuffleOrder();
+			queue.ShuffleOrder(old_current_position);
 
 			/* note that current and queued are
 			   now invalid, but PlayOrder() will
