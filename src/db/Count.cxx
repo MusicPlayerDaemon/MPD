@@ -44,7 +44,7 @@ Print(Response &r, TagType group, const TagCountMap &m) noexcept
 	assert(unsigned(group) < TAG_NUM_OF_ITEM_TYPES);
 
 	for (const auto &[tag, stats] : m) {
-		tag_print(r, group, tag.c_str());
+		tag_print(r, group, tag);
 		PrintSearchStats(r, stats);
 	}
 }
