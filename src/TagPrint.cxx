@@ -2,12 +2,17 @@
 // Copyright The Music Player Daemon Project
 
 #include "TagPrint.hxx"
+#include "tag/FixString.hxx"
 #include "tag/Names.hxx"
 #include "tag/Tag.hxx"
 #include "tag/Settings.hxx"
 #include "client/Response.hxx"
+#include "protocol/Verify.hxx"
+#include "util/AllocatedArray.hxx"
 
 #include <fmt/format.h>
+
+#include <cassert>
 
 void
 tag_print_types(Response &r) noexcept
@@ -27,16 +32,29 @@ tag_print_types_available(Response &r) noexcept
 }
 
 void
-tag_print(Response &r, TagType type, std::string_view _value) noexcept
+tag_print(Response &r, TagType type, std::string_view value) noexcept
 {
-	const std::string_view value{_value};
+	assert(VerifyStringUTF8(value));
+
 	r.Fmt("{}: {}\n", tag_item_names[type], value);
 }
 
 void
 tag_print(Response &r, TagType type, const char *value) noexcept
 {
+	assert(VerifyStringUTF8(value));
+
 	r.Fmt("{}: {}\n", tag_item_names[type], value);
+}
+
+void
+tag_print_sanitized(Response &r, TagType type, std::string_view value) noexcept
+{
+	const auto sanitized = FixTagString(value);
+	if (sanitized != nullptr)
+		value = {sanitized.data(), sanitized.size()};
+
+	tag_print(r, type, value);
 }
 
 void

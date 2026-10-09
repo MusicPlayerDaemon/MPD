@@ -7,6 +7,7 @@
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
 #include "client/Response.hxx"
+#include "protocol/Verify.hxx"
 #include "fs/Traits.hxx"
 #include "lib/fmt/AudioFormatFormatter.hxx"
 #include "time/ChronoUtil.hxx"
@@ -20,6 +21,8 @@
 static void
 song_print_uri(Response &r, const char *uri, bool base) noexcept
 {
+	assert(VerifyStringUTF8(uri));
+
 	std::string allocated;
 
 	if (base) {
@@ -36,6 +39,9 @@ song_print_uri(Response &r, const char *uri, bool base) noexcept
 void
 song_print_uri(Response &r, const LightSong &song, bool base) noexcept
 {
+	assert(VerifyStringUTF8(song.uri));
+	assert(song.directory == nullptr || VerifyStringUTF8(song.directory));
+
 	if (!base && song.directory != nullptr)
 		r.Fmt(SONG_FILE "{}/{}\n",
 		      song.directory, song.uri);

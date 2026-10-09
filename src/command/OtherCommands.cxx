@@ -135,7 +135,7 @@ public:
 
 	void OnTag(TagType type, std::string_view value) noexcept override {
 		if (response.GetClient().tag_mask.Test(type))
-			tag_print(response, type, value);
+			tag_print_sanitized(response, type, value);
 	}
 };
 

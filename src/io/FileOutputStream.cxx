@@ -17,43 +17,43 @@
 
 #ifdef __linux__
 FileOutputStream::FileOutputStream(FileDescriptor _directory_fd,
-				   Path _path, Mode _mode)
+				   Path _path, Mode _mode, Access access)
 	:path(_path),
 	 directory_fd(_directory_fd),
 	 mode(_mode)
 {
-	Open();
+	Open(access);
 }
 #endif
 
-FileOutputStream::FileOutputStream(Path _path, Mode _mode)
+FileOutputStream::FileOutputStream(Path _path, Mode _mode, Access access)
 	:path(_path),
 #ifdef __linux__
 	 directory_fd(AT_FDCWD),
 #endif
 	 mode(_mode)
 {
-	Open();
+	Open(access);
 }
 
 inline void
-FileOutputStream::Open()
+FileOutputStream::Open(Access access)
 {
 	switch (mode) {
 	case Mode::CREATE:
-		OpenCreate(false);
+		OpenCreate(access, false);
 		break;
 
 	case Mode::CREATE_VISIBLE:
-		OpenCreate(true);
+		OpenCreate(access, true);
 		break;
 
 	case Mode::APPEND_EXISTING:
-		OpenAppend(false);
+		OpenAppend(access, false);
 		break;
 
 	case Mode::APPEND_OR_CREATE:
-		OpenAppend(true);
+		OpenAppend(access, true);
 		break;
 	}
 }
@@ -61,7 +61,7 @@ FileOutputStream::Open()
 #ifdef _WIN32
 
 inline void
-FileOutputStream::OpenCreate(bool visible)
+FileOutputStream::OpenCreate([[maybe_unused]] Access access, bool visible)
 {
 	if (!visible) {
 		/* attempt to create a temporary file */
@@ -86,7 +86,7 @@ FileOutputStream::OpenCreate(bool visible)
 }
 
 inline void
-FileOutputStream::OpenAppend(bool create)
+FileOutputStream::OpenAppend([[maybe_unused]] Access access, bool create)
 {
 	handle = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
 			    create ? OPEN_ALWAYS : OPEN_EXISTING,
@@ -173,26 +173,28 @@ try {
  */
 static bool
 OpenTempFile(FileDescriptor directory_fd,
-	     FileDescriptor &fd, Path path) noexcept
+	     FileDescriptor &fd, Path path,
+	     mode_t mode) noexcept
 {
 	if (directory_fd != FileDescriptor(AT_FDCWD))
-		return fd.Open({directory_fd, "."}, O_TMPFILE|O_WRONLY, 0666);
+		return fd.Open({directory_fd, "."}, O_TMPFILE|O_WRONLY, mode);
 
 	const auto directory = path.GetDirectoryName();
 	if (directory.IsNull())
 		return false;
 
-	return fd.Open(directory.c_str(), O_TMPFILE|O_WRONLY, 0666);
+	return fd.Open(directory.c_str(), O_TMPFILE|O_WRONLY, mode);
 }
 
 #endif /* HAVE_O_TMPFILE */
 
 inline void
-FileOutputStream::OpenCreate(bool visible)
+FileOutputStream::OpenCreate(Access access, bool visible)
 {
 #ifdef HAVE_O_TMPFILE
 	/* try Linux's O_TMPFILE first */
-	if (!visible && OpenTempFile(directory_fd, fd, GetPath())) {
+	if (!visible && OpenTempFile(directory_fd, fd, GetPath(),
+				     static_cast<mode_t>(access))) {
 		is_tmpfile = true;
 		return;
 	}
@@ -213,7 +215,7 @@ FileOutputStream::OpenCreate(bool visible)
 			    },
 #endif
 			    O_WRONLY|O_CREAT|O_EXCL,
-			    0666))
+			    static_cast<mode_t>(access)))
 			return;
 
 	}
@@ -234,7 +236,7 @@ FileOutputStream::OpenCreate(bool visible)
 }
 
 inline void
-FileOutputStream::OpenAppend(bool create)
+FileOutputStream::OpenAppend(Access access, bool create)
 {
 	int flags = O_WRONLY|O_APPEND;
 	if (create)
@@ -249,7 +251,8 @@ FileOutputStream::OpenAppend(bool create)
 #ifdef __linux__
 		     },
 #endif
-		     flags))
+		     flags,
+		     static_cast<mode_t>(access)))
 		throw FmtErrno("Failed to append to {}", path);
 }
 

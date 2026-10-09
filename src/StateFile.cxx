@@ -80,7 +80,11 @@ StateFile::Write()
 		 "Saving state file {}", path_utf8);
 
 	try {
-		FileOutputStream fos(config.path);
+		FileOutputStream fos{
+			config.path,
+			FileOutputStream::Access::PRIVATE,
+		};
+
 		Write(fos);
 		fos.Commit();
 	} catch (...) {

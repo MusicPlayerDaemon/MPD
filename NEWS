@@ -38,13 +38,21 @@ ver 0.24.16 (not yet released)
   - limit the effort of regular expression matches
   - reject out-of-range time stamps
   - reject "." and ".." as mount point
+  - fix double-free crash bug with "getfingerprint"
+  - sanitize tag values printed by "lsinfo" on stream URIs
+  - validate the picture MIME type for "readpicture"
+* neighbor
+  - udisks: fix crash bug
 * storage
   - curl: skip invalid file names
+  - curl: fix use-after-free crash bug
   - curl: use the CURL input plugin configuration
+  - curl: implement a HTTP timeout
   - nfs: fix use-after-free bug
   - nfs: skip invalid file names
   - smbclient: skip invalid file names
   - udisks: reject ".." in the relative volume path
+  - udisks: don't unmount volumes which were already mounted
 * input
   - alsa: reject URIs whose query string has no format
   - alsa: reject dangerous ALSA device names
@@ -82,6 +90,7 @@ ver 0.24.16 (not yet released)
   - upnp: fix crash on discovery error
 * queue
   - fix consuming the wrong song after reshuffle in random+repeat mode
+  - don't reshuffle on "next" in single+repeat mode
 * resampler
   - fallback: implement more than two channels
 * output
@@ -93,6 +102,7 @@ ver 0.24.16 (not yet released)
 * player
   - don't cross-fade DSD
 * avahi: fix use-after-free bug
+* state file: make the state file readable only by the owner
 * Windows
   - fix crash bug during charset conversion
 

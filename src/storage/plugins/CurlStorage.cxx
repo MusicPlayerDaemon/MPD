@@ -47,6 +47,11 @@ class CurlStorage final : public Storage {
 
 	CurlInit curl;
 
+	/**
+	 * For MapToRelativeUTF8().
+	 */
+	mutable std::string relative_buffer;
+
 public:
 	CurlStorage(EventLoop &_loop, std::string_view _base)
 		:base(_base),
@@ -77,14 +82,27 @@ CurlStorage::MapUTF8(std::string_view uri_utf8) const noexcept
 std::string_view
 CurlStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
-	return PathTraitsUTF8::Relative(base,
-					CurlUnescape(uri_utf8));
+	relative_buffer = CurlUnescape(uri_utf8);
+	return PathTraitsUTF8::Relative(base, relative_buffer);
 }
 
 InputStreamPtr
 CurlStorage::OpenFile(std::string_view uri_utf8, Mutex &mutex)
 {
 	return input_rewind_open(OpenCurlInputStream(MapUTF8(uri_utf8), {}, mutex));
+}
+
+/**
+ * The maximum duration of a WebDAV request.
+ */
+static constexpr std::chrono::seconds WEBDAV_TIMEOUT = std::chrono::minutes{1};
+
+static CurlEasy
+CreateWebdavCurlEasy(const char *uri)
+{
+	auto easy = CreateConfiguredCurlEasy(uri);
+	easy.SetTimeout(WEBDAV_TIMEOUT);
+	return easy;
 }
 
 class BlockingHttpRequest : protected CurlResponseHandler {
@@ -104,7 +122,7 @@ public:
 	BlockingHttpRequest(CurlGlobal &curl, const char *uri)
 		:defer_start(curl.GetEventLoop(),
 			     BIND_THIS_METHOD(OnDeferredStart)),
-		 request(curl, CreateConfiguredCurlEasy(uri), *this) {
+		 request(curl, CreateWebdavCurlEasy(uri), *this) {
 	}
 
 	void DeferStart() noexcept {

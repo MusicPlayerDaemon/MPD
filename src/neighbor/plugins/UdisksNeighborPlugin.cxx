@@ -21,6 +21,7 @@
 #include "util/Manual.hxx"
 #include "Log.hxx"
 
+#include <algorithm> // for std::any_of()
 #include <string>
 #include <map>
 
@@ -76,6 +77,17 @@ public:
 private:
 	void DoOpen();
 	void DoClose() noexcept;
+
+	/**
+	 * Does a #by_path entry with the specified #by_uri iterator
+	 * exist?
+	 */
+	[[gnu::pure]]
+	bool UriExists(ByUri::const_iterator uri_it) const noexcept {
+		return std::any_of(by_path.begin(), by_path.end(), [uri_it](const auto &p){
+			return p.second == uri_it;
+		});
+	}
 
 	void Insert(UDisks2::Object &&o) noexcept;
 	void Remove(const std::string &path) noexcept;
@@ -197,10 +209,15 @@ UdisksNeighborExplorer::Remove(const std::string &path) noexcept
 	if (i == by_path.end())
 		return;
 
-	const auto info = std::move(i->second->second);
-
-	by_uri.erase(i->second);
+	const auto uri_i = i->second;
 	by_path.erase(i);
+
+	if (UriExists(uri_i))
+		/* another object with the same URI still exists */
+		return;
+
+	const auto info = std::move(uri_i->second);
+	by_uri.erase(uri_i);
 
 	lock.unlock();
 	listener.LostNeighbor(info);
@@ -208,15 +225,12 @@ UdisksNeighborExplorer::Remove(const std::string &path) noexcept
 
 inline void
 UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
-{
-	try{
-		UDisks2::ParseObjects(reply,
-				      [this](auto p) { return Insert(std::move(p)); });
-	} catch (...) {
-		LogError(std::current_exception(),
-			 "Failed to parse GetManagedObjects reply");
-		return;
-	}
+try {
+	UDisks2::ParseObjects(reply,
+			      [this](auto p) { return Insert(std::move(p)); });
+} catch (...) {
+	LogError(std::current_exception(),
+		 "Failed to parse GetManagedObjects reply");
 }
 
 inline DBusHandlerResult
