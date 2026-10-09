@@ -97,6 +97,14 @@ struct OSXOutput final : AudioOutput {
 	void SetVolume(unsigned new_volume);
 
 private:
+	/**
+	 * Determine the device to operate on.  Only
+	 * kAudioUnitSubType_HALOutput has a fixed device; the other
+	 * subtypes follow the current default device, which can change
+	 * at any time.
+	 */
+	AudioDeviceID GetDeviceID() const;
+
 	void Enable() override;
 	void Disable() noexcept override;
 
@@ -187,6 +195,13 @@ OSXOutput::Create(EventLoop &, const ConfigBlock &block)
 	return oo;
 }
 
+AudioDeviceID
+OSXOutput::GetDeviceID() const
+{
+	return component_subtype == kAudioUnitSubType_HALOutput
+		? dev_id
+		: GetDefaultOutputDevice(component_subtype);
+}
 
 int
 OSXOutput::GetVolume()
@@ -197,7 +212,7 @@ OSXOutput::GetVolume()
 		kAudioObjectPropertyElementMain,
 	};
 
-	const auto vol = AudioObjectGetPropertyDataT<Float32>(dev_id,
+	const auto vol = AudioObjectGetPropertyDataT<Float32>(GetDeviceID(),
 							      aopa);
 
 	return std::lround(vol * 100.0f);
@@ -213,7 +228,7 @@ OSXOutput::SetVolume(unsigned new_volume)
 	};
 
 	const Float32 vol = new_volume / 100.0f;
-	AudioObjectSetPropertyDataT(dev_id, aopa, vol);
+	AudioObjectSetPropertyDataT(GetDeviceID(), aopa, vol);
 }
 
 static void
@@ -701,7 +716,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 	asbd.mChannelsPerFrame = audio_format.channels;
 
 	[[maybe_unused]] const Float64 sample_rate =
-		osx_output_set_device_format(dev_id, asbd);
+		osx_output_set_device_format(GetDeviceID(), asbd);
 
 #ifdef ENABLE_DSD
 	if (audio_format.format == SampleFormat::DSD &&
