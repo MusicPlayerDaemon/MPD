@@ -95,7 +95,7 @@ static Mixer *
 audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 			const ConfigBlock &block,
 			const MixerType mixer_type,
-			const MixerPlugin *plugin,
+			const AudioOutputPlugin &plugin,
 			std::unique_ptr<PreparedFilter> &filter_chain)
 {
 	Mixer *mixer;
@@ -109,13 +109,23 @@ audio_output_load_mixer(EventLoop &event_loop, FilteredAudioOutput &ao,
 				 *ao.output, ao,
 				 block);
 
-	case MixerType::HARDWARE:
-		if (plugin == nullptr)
+	case MixerType::HARDWARE: {
+		/* Not truly 'hardware' in the ALSA context, but
+		   when the pipewire backend is used, this allows 
+		   the user to select the PwSinkMixerPlugin which
+		   drives the pipewire sink volume instead of the
+		   stream volume */
+		const MixerPlugin *hw_plugin = plugin.mixer_plugin;
+		if (plugin.get_hardware_mixer_plugin != nullptr)
+			hw_plugin = plugin.get_hardware_mixer_plugin(block);
+
+		if (hw_plugin == nullptr)
 			return nullptr;
 
-		return mixer_new(event_loop, *plugin,
+		return mixer_new(event_loop, *hw_plugin,
 				 *ao.output, ao,
 				 block);
+	}
 
 	case MixerType::SOFTWARE:
 		mixer = mixer_new(event_loop, software_mixer_plugin,
@@ -180,7 +190,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 inline void
 FilteredAudioOutput::Setup(EventLoop &event_loop,
 			   const ReplayGainConfig &replay_gain_config,
-			   const MixerPlugin *mixer_plugin,
+			   const AudioOutputPlugin &plugin,
 			   const ConfigBlock &block,
 			   const AudioOutputDefaults &defaults)
 {
@@ -216,7 +226,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 	try {
 		mixer = audio_output_load_mixer(event_loop, *this, block,
 						mixer_type,
-						mixer_plugin,
+						plugin,
 						prepared_filter);
 	} catch (...) {
 		FmtError(output_domain,
@@ -293,7 +303,7 @@ audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 						       defaults,
 						       filter_factory);
 	f->Setup(event_loop, replay_gain_config,
-		 plugin->mixer_plugin,
+		 *plugin,
 		 block, defaults);
 	return f;
 }
