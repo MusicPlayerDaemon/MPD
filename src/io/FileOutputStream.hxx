@@ -96,7 +96,7 @@ public:
 	};
 
 private:
-	Mode mode;
+	const Mode mode;
 
 public:
 	explicit FileOutputStream(Path _path, Mode _mode=Mode::CREATE);
