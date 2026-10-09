@@ -77,12 +77,7 @@ public:
 
 	~UdisksStorage() noexcept override {
 		if (list_request || mount_request)
-			BlockingCall(GetEventLoop(), [this](){
-					if (list_request)
-						list_request.Cancel();
-					if (mount_request)
-						mount_request.Cancel();
-				});
+			CancelIndirect();
 
 		try {
 			UnmountWait();
@@ -132,6 +127,17 @@ public:
 	}
 
 private:
+	void Cancel() noexcept {
+		if (list_request)
+			list_request.Cancel();
+		if (mount_request)
+			mount_request.Cancel();
+	}
+
+	void CancelIndirect() noexcept {
+		BlockingCall(GetEventLoop(), [this](){ Cancel(); });
+	}
+
 	void SetMountPoint(Path mount_point);
 	void LockSetMountPoint(Path mount_point);
 
