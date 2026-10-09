@@ -225,15 +225,12 @@ UdisksNeighborExplorer::Remove(const std::string &path) noexcept
 
 inline void
 UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
-{
-	try{
-		UDisks2::ParseObjects(reply,
-				      [this](auto p) { return Insert(std::move(p)); });
-	} catch (...) {
-		LogError(std::current_exception(),
-			 "Failed to parse GetManagedObjects reply");
-		return;
-	}
+try {
+	UDisks2::ParseObjects(reply,
+			      [this](auto p) { return Insert(std::move(p)); });
+} catch (...) {
+	LogError(std::current_exception(),
+		 "Failed to parse GetManagedObjects reply");
 }
 
 inline DBusHandlerResult
