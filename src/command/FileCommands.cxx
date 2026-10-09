@@ -89,13 +89,6 @@ IsValidName(const std::string_view s) noexcept
 	});
 }
 
-[[gnu::pure]]
-static bool
-IsValidValue(const std::string_view s) noexcept
-{
-	return std::none_of(s.begin(), s.end(), [](const auto &ch) { return (unsigned char)ch < 0x20; });
-}
-
 class PrintCommentHandler final : public NullTagHandler {
 	Response &response;
 
@@ -104,7 +97,7 @@ public:
 		:NullTagHandler(WANT_PAIR), response(_response) {}
 
 	void OnPair(std::string_view key, std::string_view value) noexcept override {
-		if (IsValidName(key) && IsValidValue(value))
+		if (IsValidName(key) && VerifyStringUTF8(value))
 			response.Fmt("{}: {}\n", key, value);
 	}
 };
