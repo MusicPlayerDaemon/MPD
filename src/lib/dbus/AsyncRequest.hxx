@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef ODBUS_ASYNC_REQUEST_HXX
-#define ODBUS_ASYNC_REQUEST_HXX
+#pragma once
 
 #include "PendingCall.hxx"
 #include "Message.hxx"
@@ -42,14 +41,14 @@ public:
 	template<typename F>
 	void Send(DBusConnection &connection,
 		  DBusMessage &message,
-		  int timeout_milliseconds,
+		  Timeout timeout,
 		  F &&_callback) {
 		assert(!pending_call);
 
 		callback = std::forward<F>(_callback);
 		pending_call = PendingCall::SendWithReply(&connection,
 							  &message,
-							  timeout_milliseconds);
+							  timeout);
 		pending_call.SetNotify(Notify, this);
 	}
 
@@ -57,7 +56,7 @@ public:
 	void Send(DBusConnection &connection,
 		  DBusMessage &message,
 		  F &&_callback) {
-		Send(connection, message, -1, std::forward<F>(_callback));
+		Send(connection, message, NO_TIMEOUT, std::forward<F>(_callback));
 	}
 
 	void Cancel() {
@@ -79,5 +78,3 @@ private:
 };
 
 } /* namespace ODBus */
-
-#endif
