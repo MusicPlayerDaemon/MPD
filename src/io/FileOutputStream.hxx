@@ -95,15 +95,48 @@ public:
 		APPEND_OR_CREATE,
 	};
 
+	/**
+	 * Who will be granted access to this file?
+	 *
+	 * This is only used when a new file is created; it will be
+	 * ignored when appending to an existing file
+	 * (#APPEND_EXISTING, #APPEND_OR_CREATE) or when rewriting an
+	 * existing file (#CREATE_VISIBLE).
+	 *
+	 * As an animplementation detail, this will be casted to
+	 * #mode_t, i.e. the integer values are POSIX mode bits.
+	 */
+	enum class Access {
+		/**
+		 * Default access, i.e. depends on the process's
+		 * umask.
+		 */
+		DEFAULT = 0666,
+
+		/**
+		 * A private file only accessible by the current user.
+		 */
+		PRIVATE = 0600,
+	};
+
 private:
 	const Mode mode;
 
 public:
-	explicit FileOutputStream(Path _path, Mode _mode=Mode::CREATE);
+	explicit FileOutputStream(Path _path, Mode _mode=Mode::CREATE,
+				  Access access=Access::DEFAULT);
+
+	FileOutputStream(Path _path, Access access)
+		:FileOutputStream(_path, Mode::CREATE, access) {}
 
 #ifdef __linux__
 	FileOutputStream(FileDescriptor _directory_fd, Path _path,
-			 Mode _mode=Mode::CREATE);
+			 Mode _mode=Mode::CREATE,
+			 Access access=Access::DEFAULT);
+
+	FileOutputStream(FileDescriptor _directory_fd, Path _path,
+			 Access access)
+		:FileOutputStream(_directory_fd, _path, Mode::CREATE, access) {}
 #endif
 
 	~FileOutputStream() noexcept {
@@ -155,9 +188,9 @@ public:
 	void Cancel() noexcept;
 
 private:
-	void OpenCreate(bool visible);
-	void OpenAppend(bool create);
-	void Open();
+	void OpenCreate(Access access, bool visible);
+	void OpenAppend(Access access, bool create);
+	void Open(Access access);
 
 	bool Close() noexcept {
 		assert(IsDefined());
