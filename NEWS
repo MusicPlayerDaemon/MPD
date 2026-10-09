@@ -58,6 +58,7 @@ ver 0.24.16 (not yet released)
   - upnp: fix crash on discovery error
 * queue
   - fix consuming the wrong song after reshuffle in random+repeat mode
+  - don't reshuffle on "next" in single+repeat mode
 * resampler
   - fallback: implement more than two channels
 * output

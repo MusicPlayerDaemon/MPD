@@ -146,7 +146,8 @@ playlist::PlayNext(PlayerControl &pc)
 	}
 	else
 	{
-		if (next_order == 0 && queue.random) {
+		if (next_order == 0 && queue.random &&
+		    queue.single == SingleMode::OFF) {
 			/* The queue told us that the next song is the first
 			   song.  This means we are in repeat mode.  Shuffle
 			   the queue order, so this time, the user hears the
