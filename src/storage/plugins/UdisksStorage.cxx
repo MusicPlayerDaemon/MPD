@@ -47,13 +47,13 @@ class UdisksStorage final : public Storage {
 	mutable Mutex mutex;
 	Cond cond;
 
-	bool want_mount = false;
-
 	std::unique_ptr<Storage> mounted_storage;
 
 	std::exception_ptr mount_error;
 
 	InjectEvent defer_mount, defer_unmount;
+
+	bool want_mount = false;
 
 public:
 	template<typename B, typename I, typename IP>
