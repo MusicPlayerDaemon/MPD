@@ -6,8 +6,11 @@
 #include "tag/Tag.hxx"
 #include "tag/Settings.hxx"
 #include "client/Response.hxx"
+#include "protocol/Verify.hxx"
 
 #include <fmt/format.h>
+
+#include <cassert>
 
 void
 tag_print_types(Response &r) noexcept
@@ -29,12 +32,16 @@ tag_print_types_available(Response &r) noexcept
 void
 tag_print(Response &r, TagType type, std::string_view value) noexcept
 {
+	assert(VerifyStringUTF8(value));
+
 	r.Fmt("{}: {}\n", tag_item_names[type], value);
 }
 
 void
 tag_print(Response &r, TagType type, const char *value) noexcept
 {
+	assert(VerifyStringUTF8(value));
+
 	r.Fmt("{}: {}\n", tag_item_names[type], value);
 }
 
