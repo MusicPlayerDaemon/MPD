@@ -33,6 +33,8 @@ dsdlib_valid_freq(uint32_t samplefreq) noexcept
 	case 12288000:
 	case 22579200:/* DSD512 */
 	case 24576000:
+	case 45158400: /* DSD1024 */
+	case 49152000:
 		return true;
 
 	default:

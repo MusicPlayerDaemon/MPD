@@ -7,6 +7,7 @@ ver 0.25 (not yet released)
   - "albumart" response includes a "file" field with the artwork path
   - song property "RealUri"
 * decoder
+  - dsf: support DSD1024
   - faad: implement seeking
   - faad: output 32 bit floating point samples instead of 16 bit integer
   - psgplay: new plugin
