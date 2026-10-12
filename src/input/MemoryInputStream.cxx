@@ -24,5 +24,6 @@ MemoryInputStream::Read(std::unique_lock<Mutex> &, std::span<std::byte> dest)
 
 	const auto s = src.subspan(_offset, nbytes);
 	std::copy(s.begin(), s.end(), dest.begin());
+	offset += nbytes;
 	return nbytes;
 }
