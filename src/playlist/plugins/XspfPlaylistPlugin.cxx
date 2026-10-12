@@ -11,6 +11,7 @@
 #include "tag/Builder.hxx"
 #include "tag/Table.hxx"
 #include "lib/expat/ExpatParser.hxx"
+#include "util/NumberParser.hxx"
 
 #include <string.h>
 
@@ -29,7 +30,7 @@ struct XspfParser {
 	 */
 	enum {
 		ROOT, PLAYLIST, TRACKLIST, TRACK,
-		TAG, LOCATION,
+		TAG, LOCATION, DURATION,
 	} state = ROOT;
 
 	/**
@@ -98,12 +99,15 @@ xspf_start_element(void *user_data, const XML_Char *element_name,
 							    element_name);
 			if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
 				parser->state = XspfParser::TAG;
+			else if (strcmp(element_name, "duration") == 0)
+				parser->state = XspfParser::DURATION;
 		}
 
 		break;
 
 	case XspfParser::TAG:
 	case XspfParser::LOCATION:
+	case XspfParser::DURATION:
 		break;
 	}
 }
@@ -152,6 +156,14 @@ xspf_end_element(void *user_data, const XML_Char *element_name)
 		parser->location = std::move(parser->value);
 		parser->state = XspfParser::TRACK;
 		break;
+
+	case XspfParser::DURATION:
+		/* XSPF specifies the duration in milliseconds */
+		if (SongTime::rep ms; ParseIntegerTo(parser->value, ms))
+			parser->tag_builder.SetDuration(SongTime::FromMS(ms));
+
+		parser->state = XspfParser::TRACK;
+		break;
 	}
 
 	parser->value.clear();
@@ -171,6 +183,7 @@ xspf_char_data(void *user_data, const XML_Char *s, int len)
 
 	case XspfParser::TAG:
 	case XspfParser::LOCATION:
+	case XspfParser::DURATION:
 		parser->value.append(s, len);
 		break;
 	}

@@ -20,6 +20,8 @@ ver 0.25 (not yet released)
   - fix mixer idle events on non-default partitions
 * tags
   - new tag "DiscSubtitle"
+* playlist
+  - xspf: read the track duration
 * player
   - support replay gain parameter in stream URI
   - preallocate physical RAM for audio buffer when playback starts

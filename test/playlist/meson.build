@@ -1,9 +1,17 @@
+test_playlist_plugins_sources = [
+  'PlaylistUtil.cxx',
+  'TestPlsPlaylistPlugin.cxx',
+]
+
+if expat_dep.found()
+  test_playlist_plugins_sources += 'TestXspfPlaylistPlugin.cxx'
+endif
+
 test(
   'TestPlaylistPlugins',
   executable(
     'TestPlaylistPlugins',
-    'PlaylistUtil.cxx',
-    'TestPlsPlaylistPlugin.cxx',
+    test_playlist_plugins_sources,
     '../../src/SongSave.cxx',
     '../../src/TagSave.cxx',
     '../../src/TagFile.cxx',
