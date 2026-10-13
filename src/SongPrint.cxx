@@ -56,7 +56,7 @@ song_print_uri(Response &r, const DetachedSong &song, bool base) noexcept
 }
 
 static void
-song_print_real_uri(Response &r, const char *real_uri, bool base) noexcept
+song_print_real_uri(Response &r, std::string_view real_uri, bool base) noexcept
 {
 	std::string allocated;
 
@@ -65,7 +65,7 @@ song_print_real_uri(Response &r, const char *real_uri, bool base) noexcept
 	} else {
 		allocated = uri_remove_auth(real_uri);
 		if (!allocated.empty())
-			real_uri = allocated.c_str();
+			real_uri = allocated;
 	}
 
 	r.Fmt("RealUri: {}\n", real_uri);

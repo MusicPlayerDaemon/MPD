@@ -11,6 +11,7 @@
 #include <exception>
 #include <memory>
 #include <span>
+#include <string_view>
 
 class PcmConvert;
 struct MusicChunk;
@@ -148,7 +149,7 @@ public:
 	/**
 	 * Open a local file.
 	 */
-	InputStreamPtr OpenLocal(Path path_fs, const char *uri_utf8);
+	InputStreamPtr OpenLocal(Path path_fs, std::string_view uri_utf8);
 
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,

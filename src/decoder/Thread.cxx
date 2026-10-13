@@ -75,12 +75,11 @@ IsFinalDecodeResult(DecodeResult result) noexcept
  */
 static DecodeResult
 DecoderUriDecode(const DecoderPlugin &plugin,
-		 DecoderBridge &bridge, const char *uri)
+		 DecoderBridge &bridge, std::string_view uri)
 {
 	assert(plugin.uri_decode != nullptr);
 	assert(bridge.stream_tag == nullptr);
 	assert(bridge.decoder_tag == nullptr);
-	assert(uri != nullptr);
 	assert(bridge.dc.state == DecoderState::START);
 
 	FmtDebug(decoder_thread_domain, "probing plugin {}", plugin.name);
@@ -93,7 +92,7 @@ DecoderUriDecode(const DecoderPlugin &plugin,
 
 		FmtThreadName("decoder:{}", plugin.name);
 
-		plugin.UriDecode(bridge, uri);
+		plugin.UriDecode(bridge, std::string{uri}.c_str());
 
 		SetThreadName("decoder");
 	}
@@ -322,7 +321,7 @@ MaybeLoadReplayGain(DecoderBridge &bridge, InputStream &is)
  * DecoderControl::mutex is not be locked by caller.
  */
 static DecodeResult
-TryUriDecode(DecoderBridge &bridge, const char *uri)
+TryUriDecode(DecoderBridge &bridge, std::string_view uri)
 {
 	DecodeResult result = DecodeResult::NO_PLUGIN;
 
@@ -350,7 +349,7 @@ TryUriDecode(DecoderBridge &bridge, const char *uri)
  * DecoderControl::mutex is not locked by caller.
  */
 static DecodeResult
-decoder_run_stream(DecoderBridge &bridge, const char *uri)
+decoder_run_stream(DecoderBridge &bridge, std::string_view uri)
 {
 	auto result = TryUriDecode(bridge, uri);
 	if (IsFinalDecodeResult(result))
@@ -464,13 +463,11 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs,
  * DecoderControl::mutex is not locked by caller.
  */
 static DecodeResult
-decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
+decoder_run_file(DecoderBridge &bridge, std::string_view uri_utf8, Path path_fs)
 {
-	const char *_suffix = PathTraitsUTF8::GetFilenameSuffix(uri_utf8);
-	if (_suffix == nullptr)
+	const std::string_view suffix = PathTraitsUTF8::GetFilenameSuffix(uri_utf8);
+	if (suffix.empty())
 		return DecodeResult::NO_PLUGIN;
-
-	const std::string_view suffix{_suffix};
 
 	InputStreamPtr input_stream;
 
@@ -512,7 +509,7 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
  */
 static DecodeResult
 DecoderUnlockedRunUri(DecoderBridge &bridge,
-		      const char *real_uri, Path path_fs)
+		      const std::string_view real_uri, Path path_fs)
 try {
 	return !path_fs.IsNull()
 		? decoder_run_file(bridge, real_uri, path_fs)
@@ -520,10 +517,10 @@ try {
 } catch (StopDecoder) {
 	return DecodeResult::STOP;
 } catch (...) {
-	const char *error_uri = real_uri;
+	std::string_view error_uri = real_uri;
 	const std::string allocated = uri_remove_auth(error_uri);
 	if (!allocated.empty())
-		error_uri = allocated.c_str();
+		error_uri = allocated;
 
 	std::throw_with_nested(FmtRuntimeError("Failed to decode {:?}",
 					       error_uri));
@@ -561,7 +558,7 @@ MakeDecoderError(const DetachedSong &song, const char *msg) noexcept
  */
 static void
 decoder_run_song(DecoderControl &dc,
-		 const DetachedSong &song, const char *uri, Path path_fs)
+		 const DetachedSong &song, std::string_view uri, Path path_fs)
 {
 	if (dc.command == DecoderCommand::SEEK)
 		/* if the SEEK command arrived too late, start the
@@ -625,7 +622,7 @@ try {
 	assert(dc.song != nullptr);
 	const DetachedSong &song = *dc.song;
 
-	const char *const uri_utf8 = song.GetRealURI();
+	const std::string_view uri_utf8 = song.GetRealURI();
 
 	Path path_fs = nullptr;
 	AllocatedPath path_buffer = nullptr;

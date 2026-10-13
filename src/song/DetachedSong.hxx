@@ -140,8 +140,8 @@ public:
 	 * GetURI().
 	 */
 	[[gnu::pure]]
-	const char *GetRealURI() const noexcept {
-		return (HasRealURI() ? real_uri : uri).c_str();
+	std::string_view GetRealURI() const noexcept {
+		return HasRealURI() ? real_uri : uri;
 	}
 
 	template<typename T>

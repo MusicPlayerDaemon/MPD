@@ -45,7 +45,7 @@ SongLoader::LoadFile(const std::string_view path_utf8, Path path_fs) const
 		if (suffix.data() != nullptr)
 			/* this path was relative to the music
 			   directory - obtain it from the database */
-			return LoadFromDatabase(std::string(suffix).c_str());
+			return LoadFromDatabase(suffix);
 	}
 #endif
 
