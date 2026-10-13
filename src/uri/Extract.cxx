@@ -8,6 +8,8 @@
 
 #include <cstring>
 
+using std::string_view_literals::operator""sv;
+
 static constexpr bool
 IsValidSchemeStart(char ch) noexcept
 {
@@ -40,7 +42,7 @@ UriHasScheme(std::string_view uri) noexcept
 std::string_view
 UriGetScheme(std::string_view uri) noexcept
 {
-	auto end = uri.find("://");
+	auto end = uri.find("://"sv);
 	if (end == std::string_view::npos)
 		return {};
 
