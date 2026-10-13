@@ -130,7 +130,7 @@ UpdateWalk::PurgeDanglingFromPlaylists(Directory &directory) noexcept
 	directory.ForEachSongSafe([&](Song &song){
 		if (!song.target.empty() &&
 		    !PathTraitsUTF8::IsAbsoluteOrHasScheme(song.target.c_str())) {
-			Song *target = directory.LookupTargetSong(song.target.c_str());
+			Song *target = directory.LookupTargetSong(song.target);
 			if (target == nullptr) {
 				/* the target does not exist: remove
 				   the virtual song */
