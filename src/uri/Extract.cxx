@@ -64,6 +64,19 @@ UriAfterScheme(std::string_view uri) noexcept
 	return {};
 }
 
+std::string_view
+UriGetOrigin(std::string_view uri) noexcept
+{
+	const auto after_scheme = UriAfterScheme(uri);
+	if (after_scheme.data() == nullptr)
+		return {};
+
+	/* the authority ends at the first slash, question mark or
+	   hash (RFC 3986 3.2) */
+	const auto authority = after_scheme.substr(0, after_scheme.find_first_of("/?#"sv));
+	return {uri.begin(), authority.end()};
+}
+
 bool
 UriIsRelativePath(std::string_view uri) noexcept
 {
