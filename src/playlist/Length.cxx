@@ -28,7 +28,7 @@ static void
 playlist_provider_length(Response &r,
 			 const SongLoader &loader,
 			 const std::string_view uri,
-			 SongEnumerator &e) noexcept
+			 SongEnumerator &e)
 {
 	const auto base_uri = PathTraitsUTF8::GetParent(uri);
 
