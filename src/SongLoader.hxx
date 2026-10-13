@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_SONG_LOADER_HXX
-#define MPD_SONG_LOADER_HXX
+#pragma once
 
 #include "config.h"
 
@@ -56,13 +55,10 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	[[gnu::nonnull]]
-	DetachedSong LoadSong(const char *uri_utf8) const;
+	DetachedSong LoadSong(std::string_view uri_utf8) const;
 
 private:
 	DetachedSong LoadFromDatabase(std::string_view uri) const;
 
 	DetachedSong LoadFile(std::string_view path_utf8, Path path_fs) const;
 };
-
-#endif
