@@ -21,6 +21,7 @@ ver 0.24.16 (not yet released)
   - smbclient: skip invalid file names
   - udisks: reject ".." in the relative volume path
   - udisks: don't unmount volumes which were already mounted
+  - udisks: enable D-Bus timeouts
 * input
   - alsa: reject URIs whose query string has no format
   - alsa: reject dangerous ALSA device names
