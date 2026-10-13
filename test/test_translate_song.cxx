@@ -153,7 +153,7 @@ ToString(const Tag &tag)
 static std::string
 ToString(const DetachedSong &song)
 {
-	std::string result = song.GetURI();
+	std::string result{song.GetURI()};
 	result.push_back('|');
 
 	if (!IsNegative(song.GetLastModified()))

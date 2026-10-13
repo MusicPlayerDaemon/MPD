@@ -36,7 +36,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 		auto db_song = std::make_unique<Song>(std::move(*song),
 						      directory);
 		const bool is_absolute =
-			PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename.c_str());
+			PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename);
 		db_song->target = is_absolute
 			? db_song->filename
 			/* prepend "../" to relative paths to go from
@@ -129,8 +129,8 @@ UpdateWalk::PurgeDanglingFromPlaylists(Directory &directory) noexcept
 
 	directory.ForEachSongSafe([&](Song &song){
 		if (!song.target.empty() &&
-		    !PathTraitsUTF8::IsAbsoluteOrHasScheme(song.target.c_str())) {
-			Song *target = directory.LookupTargetSong(song.target.c_str());
+		    !PathTraitsUTF8::IsAbsoluteOrHasScheme(song.target)) {
+			Song *target = directory.LookupTargetSong(song.target);
 			if (target == nullptr) {
 				/* the target does not exist: remove
 				   the virtual song */

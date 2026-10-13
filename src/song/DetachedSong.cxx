@@ -46,8 +46,7 @@ DetachedSong::IsInDatabase() const noexcept
 	/* here, we use GetURI() and not GetRealURI() because
 	   GetRealURI() is never relative */
 
-	const char *_uri = GetURI();
-	return !PathTraitsUTF8::IsAbsoluteOrHasScheme(_uri);
+	return !PathTraitsUTF8::IsAbsoluteOrHasScheme(GetURI());
 }
 
 SignedSongTime

@@ -74,13 +74,8 @@ SongLoader::LoadSong(const LocatedUri &located_uri) const
 }
 
 DetachedSong
-SongLoader::LoadSong(const char *uri_utf8) const
+SongLoader::LoadSong(std::string_view uri_utf8) const
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(uri_utf8 != nullptr);
-#endif
-
 	const auto located_uri = LocateUri(UriPluginKind::INPUT,
 					   uri_utf8, client
 #ifdef ENABLE_DATABASE

@@ -546,10 +546,10 @@ SongHasVolatileTags(const DetachedSong &song) noexcept
 static std::runtime_error
 MakeDecoderError(const DetachedSong &song, const char *msg) noexcept
 {
-	const char *error_uri = song.GetURI();
+	std::string_view error_uri = song.GetURI();
 	const std::string allocated = uri_remove_auth(error_uri);
 	if (!allocated.empty())
-		error_uri = allocated.c_str();
+		error_uri = allocated;
 
 	return FmtRuntimeError("Failed to decode {:?}: {}", error_uri, msg);
 }

@@ -85,6 +85,65 @@ TEST(PathTraitsUTF8, RelativeStringView)
 	EXPECT_EQ(PathTraitsUTF8::Relative(path.substr(0, 4), "/foo/bar"sv), "bar"sv);
 }
 
+TEST(PathTraitsUTF8, RelativeEmptyBase)
+{
+	/* an empty base matches all relative paths, which are
+	   returned unmodified */
+	EXPECT_STREQ(PathTraitsUTF8::Relative("", "foo"), "foo");
+	EXPECT_STREQ(PathTraitsUTF8::Relative("", "foo/bar"), "foo/bar");
+	EXPECT_STREQ(PathTraitsUTF8::Relative("", "foo/"), "foo/");
+	EXPECT_STREQ(PathTraitsUTF8::Relative("", "./foo"), "./foo");
+	EXPECT_STREQ(PathTraitsUTF8::Relative("", "../foo"), "../foo");
+	EXPECT_STREQ(PathTraitsUTF8::Relative("", ""), "");
+
+	/* the result points into the given string (no copy) */
+	const char *const path = "foo/bar";
+	EXPECT_EQ(PathTraitsUTF8::Relative("", path), path);
+
+	/* absolute paths don't match */
+	EXPECT_EQ(PathTraitsUTF8::Relative("", "/"), nullptr);
+	EXPECT_EQ(PathTraitsUTF8::Relative("", "/foo"), nullptr);
+	EXPECT_EQ(PathTraitsUTF8::Relative("", "//foo"), nullptr);
+
+	/* a null base is treated like an empty one */
+	EXPECT_STREQ(PathTraitsUTF8::Relative(std::string_view{}, "foo"), "foo");
+	EXPECT_EQ(PathTraitsUTF8::Relative(std::string_view{}, "/foo"), nullptr);
+}
+
+TEST(PathTraitsUTF8, RelativeEmptyBaseStringView)
+{
+	using std::string_view_literals::operator""sv;
+
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, "foo"sv), "foo"sv);
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, "foo/bar"sv), "foo/bar"sv);
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, "./foo"sv), "./foo"sv);
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, "../foo"sv), "../foo"sv);
+
+	/* an empty (but not null) path matches, too */
+	auto result = PathTraitsUTF8::Relative(""sv, ""sv);
+	EXPECT_NE(result.data(), nullptr);
+	EXPECT_EQ(result, ""sv);
+
+	/* the result refers to the given string (no copy) */
+	constexpr std::string_view path = "foo/bar/baz"sv;
+	result = PathTraitsUTF8::Relative(""sv, path);
+	EXPECT_EQ(result.data(), path.data());
+	EXPECT_EQ(result.size(), path.size());
+
+	/* views which are not null-terminated */
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, path.substr(0, 3)), "foo"sv);
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, path.substr(4)), "bar/baz"sv);
+
+	/* absolute paths don't match */
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, "/"sv).data(), nullptr);
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, "/foo"sv).data(), nullptr);
+	EXPECT_EQ(PathTraitsUTF8::Relative(""sv, "//foo"sv).data(), nullptr);
+
+	/* a null base is treated like an empty one */
+	EXPECT_EQ(PathTraitsUTF8::Relative(std::string_view{}, "foo"sv), "foo"sv);
+	EXPECT_EQ(PathTraitsUTF8::Relative(std::string_view{}, "/foo"sv).data(), nullptr);
+}
+
 TEST(PathTraitsUTF8, IsValidFilename)
 {
 	EXPECT_TRUE(PathTraitsUTF8::IsValidFilename("foo"));

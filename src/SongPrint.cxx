@@ -19,7 +19,7 @@
 #define SONG_FILE "file: "
 
 static void
-song_print_uri(Response &r, const char *uri, bool base) noexcept
+song_print_uri(Response &r, std::string_view uri, bool base) noexcept
 {
 	assert(VerifyStringUTF8(uri));
 

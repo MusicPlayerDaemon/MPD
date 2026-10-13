@@ -104,6 +104,16 @@ RelativePathImpl(typename Traits::string_view base,
 {
 	assert(other != nullptr);
 
+	if (base.empty()) {
+		/* special case: if the base is empty, only a relative
+		   "other" matches */
+
+		if (Traits::IsAbsolute(other))
+			return nullptr;
+
+		return other;
+	}
+
 	other = StringAfterPrefix(other, base);
 	if (other == nullptr)
 		/* mismatch */
@@ -135,6 +145,16 @@ typename Traits::string_view
 RelativePathImpl(typename Traits::string_view base,
 		 typename Traits::string_view other) noexcept
 {
+	if (base.empty()) {
+		/* special case: if the base is empty, only a relative
+		   "other" matches */
+
+		if (Traits::IsAbsolute(other))
+			return {};
+
+		return other;
+	}
+
 	if (!SkipPrefix(other, base))
 		/* mismatch */
 		return {};
@@ -222,7 +242,7 @@ PathTraitsUTF8::Build(string_view a, string_view b) noexcept
 }
 
 bool
-PathTraitsUTF8::IsAbsoluteOrHasScheme(const_pointer p) noexcept
+PathTraitsUTF8::IsAbsoluteOrHasScheme(string_view p) noexcept
 {
 	return IsAbsolute(p) || UriHasScheme(p);
 }

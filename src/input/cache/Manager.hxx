@@ -44,7 +44,7 @@ public:
 	void Flush() noexcept;
 
 	[[gnu::pure]]
-	bool Contains(const char *uri) noexcept;
+	bool Contains(std::string_view uri) noexcept;
 
 	/**
 	 * Throws if opening the #InputStream fails.
@@ -54,13 +54,13 @@ public:
 	 * @return a lease of the new item or nullptr if the file is
 	 * not eligible for caching
 	 */
-	InputCacheLease Get(const char *uri, bool create);
+	InputCacheLease Get(std::string_view uri, bool create);
 
 	/**
 	 * Shortcut for "Get(uri,true)", discarding the returned
 	 * lease.
 	 */
-	void Prefetch(const char *uri);
+	void Prefetch(std::string_view uri);
 
 private:
 	/**

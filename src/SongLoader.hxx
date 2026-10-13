@@ -55,8 +55,7 @@ public:
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
-	[[gnu::nonnull]]
-	DetachedSong LoadSong(const char *uri_utf8) const;
+	DetachedSong LoadSong(std::string_view uri_utf8) const;
 
 private:
 	DetachedSong LoadFromDatabase(std::string_view uri) const;
