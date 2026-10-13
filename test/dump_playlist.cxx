@@ -18,6 +18,8 @@
 #include "thread/Cond.hxx"
 #include "util/PrintException.hxx"
 
+#include <fmt/format.h>
+
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -77,21 +79,21 @@ try {
 
 	std::unique_ptr<DetachedSong> song;
 	while ((song = playlist->NextSong()) != nullptr) {
-		printf("%s\n", song->GetURI());
+		fmt::print("{}\n", song->GetURI());
 
 		const unsigned start_ms = song->GetStartTime().ToMS();
 		const unsigned end_ms = song->GetEndTime().ToMS();
 
 		if (end_ms > 0)
-			printf("range: %u:%02u..%u:%02u\n",
-			       start_ms / 60000,
-			       (start_ms / 1000) % 60,
-			       end_ms / 60000,
-			       (end_ms / 1000) % 60);
+			fmt::print("range: {}:{:02}..{}:{:02}\n",
+				   start_ms / 60000,
+				   (start_ms / 1000) % 60,
+				   end_ms / 60000,
+				   (end_ms / 1000) % 60);
 		else if (start_ms > 0)
-			printf("range: %u:%02u..\n",
-			       start_ms / 60000,
-			       (start_ms / 1000) % 60);
+			fmt::print("range: {}:{:02}..\n",
+				   start_ms / 60000,
+				   (start_ms / 1000) % 60);
 
 		tag_save(stdout, song->GetTag());
 	}
