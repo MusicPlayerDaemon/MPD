@@ -50,7 +50,7 @@ Partition::BeginShutdown() noexcept
 }
 
 static void
-PrefetchSong(InputCacheManager &cache, const char *uri) noexcept
+PrefetchSong(InputCacheManager &cache, std::string_view uri) noexcept
 {
 	if (cache.Contains(uri))
 		return;

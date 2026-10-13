@@ -54,13 +54,13 @@ InputCacheManager::IsEligible(const InputStream &input) const noexcept
 }
 
 bool
-InputCacheManager::Contains(const char *uri) noexcept
+InputCacheManager::Contains(std::string_view uri) noexcept
 {
 	return Get(uri, false);
 }
 
 InputCacheLease
-InputCacheManager::Get(const char *uri, bool create)
+InputCacheManager::Get(std::string_view uri, bool create)
 {
 	// TODO: allow caching remote files
 	if (!PathTraitsUTF8::IsAbsolute(uri))
@@ -101,7 +101,7 @@ InputCacheManager::Get(const char *uri, bool create)
 }
 
 void
-InputCacheManager::Prefetch(const char *uri)
+InputCacheManager::Prefetch(std::string_view uri)
 {
 	Get(uri, true);
 }
