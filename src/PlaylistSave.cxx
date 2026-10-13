@@ -37,7 +37,7 @@ playlist_print_path(BufferedOutputStream &os, const Path path)
 void
 playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
 {
-	const char *uri_utf8 = playlist_saveAbsolutePaths
+	const std::string_view uri_utf8 = playlist_saveAbsolutePaths
 		? song.GetRealURI()
 		: song.GetURI();
 

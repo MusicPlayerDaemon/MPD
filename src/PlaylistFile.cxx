@@ -280,7 +280,7 @@ PlaylistFileEditor::Insert(std::size_t i, const std::string_view uri)
 void
 PlaylistFileEditor::Insert(std::size_t i, const DetachedSong &song)
 {
-	const char *uri = playlist_saveAbsolutePaths
+	const std::string_view uri = playlist_saveAbsolutePaths
 		? song.GetRealURI()
 		: song.GetURI();
 
