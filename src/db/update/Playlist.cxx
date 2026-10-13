@@ -20,7 +20,9 @@
 #include "fs/Traits.hxx"
 #include "Log.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
+
+using std::string_view_literals::operator""sv;
 
 inline void
 UpdateWalk::UpdatePlaylistFile(Directory &directory,
@@ -42,7 +44,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 			/* prepend "../" to relative paths to go from
 			   the virtual directory (DEVICE_PLAYLIST) to
 			   the containing directory */
-			: "../" + db_song->filename;
+			: fmt::format("../{}"sv, db_song->filename);
 		db_song->filename = fmt::format("track{:04}", ++track);
 
 		{
