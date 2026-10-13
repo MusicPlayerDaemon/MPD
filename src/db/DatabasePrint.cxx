@@ -24,8 +24,8 @@
 using std::string_view_literals::operator""sv;
 
 [[gnu::pure]]
-static const char *
-ApplyBaseFlag(const char *uri, bool base) noexcept
+static std::string_view 
+ApplyBaseFlag(std::string_view uri, bool base) noexcept
 {
 	if (base)
 		uri = PathTraitsUTF8::GetBase(uri);
@@ -63,7 +63,7 @@ PrintDirectoryFull(Response &r, bool base,
 static void
 print_playlist_in_directory(Response &r, bool base,
 			    const char *directory,
-			    const char *name_utf8) noexcept
+			    std::string_view name_utf8) noexcept
 {
 	if (base || directory == nullptr)
 		r.Fmt("playlist: {}\n",
@@ -76,7 +76,7 @@ print_playlist_in_directory(Response &r, bool base,
 static void
 print_playlist_in_directory(Response &r, bool base,
 			    const LightDirectory *directory,
-			    const char *name_utf8) noexcept
+			    std::string_view name_utf8) noexcept
 {
 	if (base || directory == nullptr || directory->IsRoot())
 		r.Fmt("playlist: {}\n", name_utf8);
@@ -113,7 +113,7 @@ PrintPlaylistBrief(Response &r, bool base,
 		   const LightDirectory &directory) noexcept
 {
 	print_playlist_in_directory(r, base,
-				    &directory, playlist.name.c_str());
+				    &directory, playlist.name);
 }
 
 static void
@@ -122,7 +122,7 @@ PrintPlaylistFull(Response &r, bool base,
 		  const LightDirectory &directory) noexcept
 {
 	print_playlist_in_directory(r, base,
-				    &directory, playlist.name.c_str());
+				    &directory, playlist.name);
 
 	if (!IsNegative(playlist.mtime))
 		time_print(r, "Last-Modified", playlist.mtime);
