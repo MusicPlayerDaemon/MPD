@@ -110,7 +110,7 @@ IsSafe(std::string_view s) noexcept
 }
 
 AllocatedArray<char>
-FixTagString(std::string_view p) noexcept
+FixStringUTF8(std::string_view p) noexcept
 {
 	if (IsSafe(p))
 		/* optimistic optimization for the common case */

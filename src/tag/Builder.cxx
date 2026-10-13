@@ -4,8 +4,8 @@
 #include "Builder.hxx"
 #include "Settings.hxx"
 #include "Pool.hxx"
-#include "FixString.hxx"
 #include "Tag.hxx"
+#include "protocol/FixString.hxx"
 #include "util/AllocatedArray.hxx"
 
 #include <algorithm>
@@ -201,7 +201,7 @@ TagBuilder::AddItemInternal(TagType type, std::string_view value) noexcept
 {
 	assert(!value.empty());
 
-	auto f = FixTagString(value);
+	auto f = FixStringUTF8(value);
 	if (f != nullptr)
 		value = { f.data(), f.size() };
 
