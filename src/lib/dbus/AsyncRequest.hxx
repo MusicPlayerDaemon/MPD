@@ -56,7 +56,7 @@ public:
 	void Send(DBusConnection &connection,
 		  DBusMessage &message,
 		  F &&_callback) {
-		Send(connection, message, NO_TIMEOUT, std::forward<F>(_callback));
+		Send(connection, message, DEFAULT_TIMEOUT, std::forward<F>(_callback));
 	}
 
 	void Cancel() {

@@ -45,7 +45,7 @@ public:
 
 	static PendingCall SendWithReply(DBusConnection *connection,
 					 DBusMessage *message,
-					 Timeout timeout=NO_TIMEOUT) {
+					 Timeout timeout=DEFAULT_TIMEOUT) {
 		DBusPendingCall *pending;
 		if (!dbus_connection_send_with_reply(connection,
 						     message,
