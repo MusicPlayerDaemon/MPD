@@ -42,7 +42,7 @@ DecoderBridge::~DecoderBridge() noexcept
 }
 
 InputStreamPtr
-DecoderBridge::OpenLocal(Path path_fs, const char *uri_utf8)
+DecoderBridge::OpenLocal(Path path_fs, std::string_view uri_utf8)
 {
 	if (dc.input_cache != nullptr) {
 		auto lease = dc.input_cache->Get(uri_utf8, true);
