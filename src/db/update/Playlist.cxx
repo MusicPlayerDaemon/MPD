@@ -40,7 +40,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 		const bool is_absolute =
 			PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename);
 		db_song->target = is_absolute
-			? db_song->filename
+			? std::move(db_song->filename)
 			/* prepend "../" to relative paths to go from
 			   the virtual directory (DEVICE_PLAYLIST) to
 			   the containing directory */
