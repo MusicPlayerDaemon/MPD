@@ -14,6 +14,7 @@
 #include "tag/Config.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
+#include "event/Loop.hxx"
 #include "event/Thread.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/PrintException.hxx"
@@ -25,6 +26,13 @@
 #include <stdlib.h>
 
 class GlobalInit {
+	/**
+	 * This #EventLoop is never used, never started; it only
+	 * exists here because CreateConfiguredDatabase() wants to
+	 * have one.
+	 */
+	EventLoop main_event_loop;
+
 	EventThread io_thread;
 
 public:
@@ -34,7 +42,11 @@ public:
 
 	~GlobalInit() = default;
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetMainEventLoop() {
+		return main_event_loop;
+	}
+
+	EventLoop &GetIoEventLoop() {
 		return io_thread.GetEventLoop();
 	}
 };
@@ -105,8 +117,8 @@ try {
 	/* do it */
 
 	auto db = CreateConfiguredDatabase(config,
-					   init.GetEventLoop(),
-					   init.GetEventLoop(),
+					   init.GetMainEventLoop(),
+					   init.GetIoEventLoop(),
 					   database_listener);
 
 	db->Open();
