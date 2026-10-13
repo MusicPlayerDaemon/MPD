@@ -63,9 +63,9 @@ UriAfterScheme(std::string_view uri) noexcept
 }
 
 bool
-UriIsRelativePath(const char *uri) noexcept
+UriIsRelativePath(std::string_view uri) noexcept
 {
-	return !UriHasScheme(uri) && *uri != '/';
+	return !UriHasScheme(uri) && !uri.starts_with('/');
 }
 
 std::string_view

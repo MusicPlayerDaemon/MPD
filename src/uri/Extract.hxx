@@ -30,7 +30,7 @@ UriAfterScheme(std::string_view uri) noexcept;
 
 [[gnu::pure]]
 bool
-UriIsRelativePath(const char *uri) noexcept;
+UriIsRelativePath(std::string_view uri) noexcept;
 
 /**
  * Returns the URI path (including query and fragment) or nullptr if
