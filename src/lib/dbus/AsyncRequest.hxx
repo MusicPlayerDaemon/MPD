@@ -7,6 +7,7 @@
 #include "Message.hxx"
 
 #include <cassert>
+#include <concepts>
 #include <functional>
 
 namespace ODBus {
@@ -38,7 +39,7 @@ public:
 	 * This object must be kept around until the operation
 	 * completes.  It can only be reused after completion.
 	 */
-	template<typename F>
+	template<std::invocable<Message> F>
 	void Send(DBusConnection &connection,
 		  DBusMessage &message,
 		  Timeout timeout,
@@ -52,7 +53,7 @@ public:
 		pending_call.SetNotify(Notify, this);
 	}
 
-	template<typename F>
+	template<std::invocable<Message> F>
 	void Send(DBusConnection &connection,
 		  DBusMessage &message,
 		  F &&_callback) {
