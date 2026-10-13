@@ -22,6 +22,8 @@
 #include <cstring>
 #include <utility>
 
+using std::string_view_literals::operator""sv;
+
 class SmbclientNeighborExplorer final : public NeighborExplorer {
 	SmbclientContext ctx = SmbclientContext::New();
 
@@ -85,7 +87,8 @@ ReadServer(NeighborExplorer::List &list, const smbc_dirent &e) noexcept
 	const std::string name(e.name, e.namelen);
 	const std::string comment(e.comment, e.commentlen);
 
-	list.emplace_front("smb://" + name, name + " (" + comment + ")");
+	list.emplace_front(fmt::format("smb://{}"sv, name),
+			   fmt::format("{} ({})"sv, name, comment));
 }
 
 static void
@@ -96,8 +99,7 @@ static void
 ReadWorkgroup(SmbclientContext &ctx, const std::string &name,
 	      NeighborExplorer::List &list) noexcept
 {
-	std::string uri = "smb://" + name;
-	ReadServers(ctx, uri.c_str(), list);
+	ReadServers(ctx, fmt::format("smb://{}"sv, name).c_str(), list);
 }
 
 static void
