@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Connection.hxx"
-#include "event/SocketEvent.hxx"
 #include "event/DeferEvent.hxx"
 
 #include <cstdint>
@@ -13,6 +12,7 @@
 
 typedef uint32_t dbus_bool_t;
 struct DBusWatch;
+struct DBusTimeout;
 class EventLoop;
 
 namespace ODBus {
@@ -30,32 +30,17 @@ class WatchManager {
 
 	Connection connection;
 
-	class Watch {
-		WatchManager &parent;
-		DBusWatch &watch;
-		SocketEvent event;
-
-	public:
-		Watch(EventLoop &event_loop, WatchManager &_parent,
-		      DBusWatch &_watch) noexcept;
-
-		void Toggled() noexcept;
-
-	private:
-		void OnSocketReady(unsigned events) noexcept;
-	};
-
+	class Watch;
 	std::map<DBusWatch *, Watch> watches;
+
+	class Timeout;
+	std::map<DBusTimeout *, Timeout> timeouts;
 
 	DeferEvent defer_dispatch;
 
 public:
 	WatchManager(EventLoop &event_loop,
-		     WatchManagerObserver &_observer) noexcept
-		:observer(_observer),
-		 defer_dispatch(event_loop, BIND_THIS_METHOD(Dispatch))
-	{
-	}
+		     WatchManagerObserver &_observer) noexcept;
 
 	template<typename C>
 	WatchManager(EventLoop &event_loop, WatchManagerObserver &_observer,
@@ -65,9 +50,7 @@ public:
 		SetConnection(std::forward<C>(_connection));
 	}
 
-	~WatchManager() noexcept {
-		Shutdown();
-	}
+	~WatchManager() noexcept;
 
 	WatchManager(const WatchManager &) = delete;
 	WatchManager &operator=(const WatchManager &) = delete;
@@ -118,6 +101,28 @@ private:
 	static void ToggledFunction(DBusWatch *watch, void *data) noexcept {
 		auto &wm = *(WatchManager *)data;
 		wm.Toggled(watch);
+	}
+
+	bool AddTimeout(DBusTimeout *timeout) noexcept;
+	void RemoveTimeout(DBusTimeout *timeout) noexcept;
+	void ToggledTimeout(DBusTimeout *timeout) noexcept;
+
+	static dbus_bool_t AddTimeoutFunction(DBusTimeout *timeout,
+					      void *data) noexcept {
+		auto &wm = *(WatchManager *)data;
+		return wm.AddTimeout(timeout);
+	}
+
+	static void RemoveTimeoutFunction(DBusTimeout *timeout,
+					  void *data) noexcept {
+		auto &wm = *(WatchManager *)data;
+		wm.RemoveTimeout(timeout);
+	}
+
+	static void TimeoutToggledFunction(DBusTimeout *timeout,
+					   void *data) noexcept {
+		auto &wm = *(WatchManager *)data;
+		wm.ToggledTimeout(timeout);
 	}
 };
 

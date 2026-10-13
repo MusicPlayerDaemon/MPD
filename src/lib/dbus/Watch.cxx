@@ -3,12 +3,29 @@
 // author: Max Kellermann <max.kellermann@ionos.com>
 
 #include "Watch.hxx"
+#include "event/CoarseTimerEvent.hxx"
+#include "event/SocketEvent.hxx"
 
 #include <dbus/dbus.h>
 
 #include <cassert>
 
 namespace ODBus {
+
+class WatchManager::Watch {
+	WatchManager &parent;
+	DBusWatch &watch;
+	SocketEvent event;
+
+public:
+	Watch(EventLoop &event_loop, WatchManager &_parent,
+	      DBusWatch &_watch) noexcept;
+
+	void Toggled() noexcept;
+
+private:
+	void OnSocketReady(unsigned events) noexcept;
+};
 
 WatchManager::Watch::Watch(EventLoop &event_loop,
 			   WatchManager &_parent, DBusWatch &_watch) noexcept
@@ -47,7 +64,7 @@ LibeventToDbus(unsigned flags) noexcept
 		((flags & SocketEvent::HANGUP) != 0) * DBUS_WATCH_HANGUP;
 }
 
-void
+inline void
 WatchManager::Watch::OnSocketReady(unsigned events) noexcept
 {
 	/* copy the "parent" reference to the stack, because the
@@ -58,6 +75,75 @@ WatchManager::Watch::OnSocketReady(unsigned events) noexcept
 	dbus_watch_handle(&watch, LibeventToDbus(events));
 
 	_parent.ScheduleDispatch();
+}
+
+class WatchManager::Timeout {
+	WatchManager &parent;
+	DBusTimeout &timeout;
+	CoarseTimerEvent event;
+
+public:
+	Timeout(EventLoop &event_loop, WatchManager &_parent,
+		DBusTimeout &_timeout) noexcept;
+
+	void Toggled() noexcept;
+
+private:
+	void Schedule() noexcept {
+		event.Schedule(std::chrono::milliseconds(dbus_timeout_get_interval(&timeout)));
+	}
+
+	void OnTimer() noexcept;
+};
+
+WatchManager::Timeout::Timeout(EventLoop &event_loop,
+			       WatchManager &_parent,
+			       DBusTimeout &_timeout) noexcept
+	:parent(_parent), timeout(_timeout),
+	 event(event_loop, BIND_THIS_METHOD(OnTimer))
+{
+	Toggled();
+}
+
+void
+WatchManager::Timeout::Toggled() noexcept
+{
+	event.Cancel();
+
+	/* the interval may have changed while the timeout was
+	   disabled, so read it again */
+	if (dbus_timeout_get_enabled(&timeout))
+		Schedule();
+}
+
+void
+WatchManager::Timeout::OnTimer() noexcept
+{
+	/* libdbus timeouts are periodic: reschedule before calling
+	   dbus_timeout_handle(), because that may invoke
+	   WatchManager::RemoveTimeout() which destroys this object
+	   (and its destructor cancels the timer) */
+	Schedule();
+
+	/* copy the "parent" reference to the stack for the same
+	   reason */
+	auto &_parent = parent;
+
+	dbus_timeout_handle(&timeout);
+
+	_parent.ScheduleDispatch();
+}
+
+WatchManager::WatchManager(EventLoop &event_loop,
+			   WatchManagerObserver &_observer) noexcept
+	:observer(_observer),
+	 defer_dispatch(event_loop, BIND_THIS_METHOD(Dispatch))
+{
+}
+
+WatchManager::~WatchManager() noexcept
+{
+	Shutdown();
 }
 
 void
@@ -71,6 +157,13 @@ WatchManager::Shutdown() noexcept
 					    nullptr, nullptr,
 					    nullptr);
 	watches.clear();
+
+	dbus_connection_set_timeout_functions(connection,
+					      nullptr, nullptr,
+					      nullptr, nullptr,
+					      nullptr);
+	timeouts.clear();
+
 	defer_dispatch.Cancel();
 }
 
@@ -109,6 +202,30 @@ WatchManager::Toggled(DBusWatch *watch) noexcept
 	i->second.Toggled();
 }
 
+bool
+WatchManager::AddTimeout(DBusTimeout *timeout) noexcept
+{
+	timeouts.emplace(std::piecewise_construct,
+			 std::forward_as_tuple(timeout),
+			 std::forward_as_tuple(GetEventLoop(), *this, *timeout));
+	return true;
+}
+
+void
+WatchManager::RemoveTimeout(DBusTimeout *timeout) noexcept
+{
+	timeouts.erase(timeout);
+}
+
+void
+WatchManager::ToggledTimeout(DBusTimeout *timeout) noexcept
+{
+	auto i = timeouts.find(timeout);
+	assert(i != timeouts.end());
+
+	i->second.Toggled();
+}
+
 void
 WatchManager::SetupConnection() noexcept
 {
@@ -120,6 +237,13 @@ WatchManager::SetupConnection() noexcept
 					    ToggledFunction,
 					    (void *)this,
 					    nullptr);
+
+	dbus_connection_set_timeout_functions(connection,
+					      AddTimeoutFunction,
+					      RemoveTimeoutFunction,
+					      TimeoutToggledFunction,
+					      (void *)this,
+					      nullptr);
 }
 
 } /* namespace ODBus */

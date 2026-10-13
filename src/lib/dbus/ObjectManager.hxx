@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef ODBUS_OBJECT_MANAGER_HXX
-#define ODBUS_OBJECT_MANAGER_HXX
+#pragma once
 
 #include "ReadIter.hxx"
 #include "Types.hxx"
 
 #include <dbus/dbus.h>
+
+#include <concepts>
 
 #define DBUS_OM_INTERFACE "org.freedesktop.DBus.ObjectManager"
 
@@ -28,9 +29,9 @@ using InterfacesAddedType =
 using InterfacesRemovedType = ConcatTypeAsString<ObjectPathTypeTraits,
 						 ArrayTypeTraits<StringTypeTraits>>;
 
-template<typename F>
 inline void
-RecurseInterfaceDictEntry(ReadMessageIter &&i, F &&f)
+RecurseInterfaceDictEntry(ReadMessageIter &&i,
+			  std::invocable<const char *, ReadMessageIter> auto &&f)
 {
 	if (i.GetArgType() != DBUS_TYPE_OBJECT_PATH)
 		return;
@@ -43,15 +44,13 @@ RecurseInterfaceDictEntry(ReadMessageIter &&i, F &&f)
 	f(path, i.Recurse());
 }
 
-template<typename F>
 inline void
-ForEachInterface(ReadMessageIter &&i, F &&f)
+ForEachInterface(ReadMessageIter &&i,
+		 std::invocable<const char *, ReadMessageIter> auto &&f)
 {
 	i.ForEachRecurse(DBUS_TYPE_DICT_ENTRY, [&f](auto &&j){
 			RecurseInterfaceDictEntry(std::move(j), f);
 		});
 }
 
-}
-
-#endif
+} // namespace ODBus

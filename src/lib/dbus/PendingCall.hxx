@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Timeout.hxx"
+
 #include <dbus/dbus.h>
 
 #include <stdexcept>
@@ -43,12 +45,12 @@ public:
 
 	static PendingCall SendWithReply(DBusConnection *connection,
 					 DBusMessage *message,
-					 int timeout_milliseconds=-1) {
+					 Timeout timeout=DEFAULT_TIMEOUT) {
 		DBusPendingCall *pending;
 		if (!dbus_connection_send_with_reply(connection,
 						     message,
 						     &pending,
-						     timeout_milliseconds))
+						     timeout.count()))
 			throw std::runtime_error("dbus_connection_send_with_reply() failed");
 
 		if (pending == nullptr)
