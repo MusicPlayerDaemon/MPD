@@ -227,6 +227,30 @@ UdisksStorage::MountWait()
 		std::rethrow_exception(mount_error);
 }
 
+/**
+ * Append the "options" parameter for udisks2's Filesystem.Mount()
+ * and Filesystem.Unmount() methods.
+ */
+static void
+AppendMountOptions(DBusMessage &msg)
+{
+	using namespace ODBus;
+	using Entry = DictEntryTypeTraits<StringTypeTraits, VariantTypeTraits>;
+
+	AppendMessageIter args{msg};
+	AppendMessageIter array{args, DBUS_TYPE_ARRAY, Entry::as_string};
+
+	/* the request may come from a (remote) client; don't let
+	   udisks2 wait for a polkit authentication dialog on the
+	   local desktop */
+	AppendMessageIter{array, DBUS_TYPE_DICT_ENTRY, nullptr}
+		.Append("auth.no_user_interaction")
+		.Append(Variant(Boolean(true)))
+		.CloseContainer(array);
+
+	array.CloseContainer(args);
+}
+
 void
 UdisksStorage::DeferredMount() noexcept
 try {
@@ -248,7 +272,7 @@ try {
 					  dbus_path.c_str(),
 					  UDISKS2_FILESYSTEM_INTERFACE,
 					  "Mount");
-	AppendMessageIter(*msg.Get()).AppendEmptyArray<DictEntryTypeTraits<StringTypeTraits, VariantTypeTraits>>();
+	AppendMountOptions(*msg.Get());
 
 	mount_request.Send(connection, *msg.Get(),
 			   [this](auto o) { return OnMountNotify(std::move(o)); });
@@ -314,7 +338,7 @@ try {
 					  dbus_path.c_str(),
 					  UDISKS2_FILESYSTEM_INTERFACE,
 					  "Unmount");
-	AppendMessageIter(*msg.Get()).AppendEmptyArray<DictEntryTypeTraits<StringTypeTraits, VariantTypeTraits>>();
+	AppendMountOptions(*msg.Get());
 
 	mount_request.Send(connection, *msg.Get(),
 			   [this](auto u) { return OnUnmountNotify(std::move(u)); });
