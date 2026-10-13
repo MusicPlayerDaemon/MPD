@@ -116,7 +116,7 @@ TagScanDatabase(Client &client, std::string_view uri, TagHandler &handler)
 
 	if (const auto absolute_uri = storage->MapUTF8(uri);
 	    UriHasScheme(absolute_uri))
-		return TagScanStream(absolute_uri.c_str(), handler);
+		return TagScanStream(absolute_uri, handler);
 
 	throw ProtocolError(ACK_ERROR_NO_EXIST, "No such file");
 #endif
