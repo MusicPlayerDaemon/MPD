@@ -242,7 +242,7 @@ PathTraitsUTF8::Build(string_view a, string_view b) noexcept
 }
 
 bool
-PathTraitsUTF8::IsAbsoluteOrHasScheme(const_pointer p) noexcept
+PathTraitsUTF8::IsAbsoluteOrHasScheme(string_view p) noexcept
 {
 	return IsAbsolute(p) || uri_has_scheme(p);
 }

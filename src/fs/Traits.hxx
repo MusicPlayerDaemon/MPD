@@ -299,8 +299,8 @@ struct PathTraitsUTF8 {
 	 * Is this any kind of absolute URI? (Unlike IsAbsolute(),
 	 * this includes URIs/URLs with a scheme)
 	 */
-	[[gnu::pure]] [[gnu::nonnull]]
-	static bool IsAbsoluteOrHasScheme(const_pointer p) noexcept;
+	[[gnu::pure]]
+	static bool IsAbsoluteOrHasScheme(string_view p) noexcept;
 
 	[[gnu::pure]] [[gnu::nonnull]]
 	static bool IsSpecialFilename(const_pointer name) noexcept {
