@@ -3,12 +3,28 @@
 // author: Max Kellermann <max.kellermann@ionos.com>
 
 #include "Watch.hxx"
+#include "event/SocketEvent.hxx"
 
 #include <dbus/dbus.h>
 
 #include <cassert>
 
 namespace ODBus {
+
+class WatchManager::Watch {
+	WatchManager &parent;
+	DBusWatch &watch;
+	SocketEvent event;
+
+public:
+	Watch(EventLoop &event_loop, WatchManager &_parent,
+	      DBusWatch &_watch) noexcept;
+
+	void Toggled() noexcept;
+
+private:
+	void OnSocketReady(unsigned events) noexcept;
+};
 
 WatchManager::Watch::Watch(EventLoop &event_loop,
 			   WatchManager &_parent, DBusWatch &_watch) noexcept
@@ -47,7 +63,7 @@ LibeventToDbus(unsigned flags) noexcept
 		((flags & SocketEvent::HANGUP) != 0) * DBUS_WATCH_HANGUP;
 }
 
-void
+inline void
 WatchManager::Watch::OnSocketReady(unsigned events) noexcept
 {
 	/* copy the "parent" reference to the stack, because the
@@ -58,6 +74,18 @@ WatchManager::Watch::OnSocketReady(unsigned events) noexcept
 	dbus_watch_handle(&watch, LibeventToDbus(events));
 
 	_parent.ScheduleDispatch();
+}
+
+WatchManager::WatchManager(EventLoop &event_loop,
+			   WatchManagerObserver &_observer) noexcept
+	:observer(_observer),
+	 defer_dispatch(event_loop, BIND_THIS_METHOD(Dispatch))
+{
+}
+
+WatchManager::~WatchManager() noexcept
+{
+	Shutdown();
 }
 
 void

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Connection.hxx"
-#include "event/SocketEvent.hxx"
 #include "event/DeferEvent.hxx"
 
 #include <cstdint>
@@ -30,32 +29,14 @@ class WatchManager {
 
 	Connection connection;
 
-	class Watch {
-		WatchManager &parent;
-		DBusWatch &watch;
-		SocketEvent event;
-
-	public:
-		Watch(EventLoop &event_loop, WatchManager &_parent,
-		      DBusWatch &_watch) noexcept;
-
-		void Toggled() noexcept;
-
-	private:
-		void OnSocketReady(unsigned events) noexcept;
-	};
-
+	class Watch;
 	std::map<DBusWatch *, Watch> watches;
 
 	DeferEvent defer_dispatch;
 
 public:
 	WatchManager(EventLoop &event_loop,
-		     WatchManagerObserver &_observer) noexcept
-		:observer(_observer),
-		 defer_dispatch(event_loop, BIND_THIS_METHOD(Dispatch))
-	{
-	}
+		     WatchManagerObserver &_observer) noexcept;
 
 	template<typename C>
 	WatchManager(EventLoop &event_loop, WatchManagerObserver &_observer,
@@ -65,9 +46,7 @@ public:
 		SetConnection(std::forward<C>(_connection));
 	}
 
-	~WatchManager() noexcept {
-		Shutdown();
-	}
+	~WatchManager() noexcept;
 
 	WatchManager(const WatchManager &) = delete;
 	WatchManager &operator=(const WatchManager &) = delete;
