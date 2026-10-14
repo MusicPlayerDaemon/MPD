@@ -6,6 +6,7 @@
 
 #include "Type.hxx"
 #include "Chrono.hxx"
+#include "util/ByteSizes.hxx"
 
 #include <memory>
 #include <string_view>
@@ -41,6 +42,13 @@ public:
 	 * Tag::num_items.
 	 */
 	static constexpr std::size_t MAX_ITEMS = 4096;
+
+	/**
+	 * The maximum length of a tag value in bytes; longer values
+	 * are truncated.  This protects against excessively long
+	 * values which would not fit into a database line.
+	 */
+	static constexpr std::size_t MAX_VALUE_LENGTH = 64_KiB;
 
 	/**
 	 * Create an empty tag.

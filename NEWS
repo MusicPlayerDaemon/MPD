@@ -52,6 +52,7 @@ ver 0.24.16 (not yet released)
   - shine: fix uninitialized memory access
 * tags
   - limit the number of tag items
+  - limit the length of tag values
   - id3: fix crash on encrypted ID3 tags
 * database
   - proxy: limit the directory nesting depth
