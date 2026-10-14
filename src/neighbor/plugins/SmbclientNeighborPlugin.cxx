@@ -9,6 +9,7 @@
 #include "neighbor/Explorer.hxx"
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
+#include "protocol/Verify.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/ScopeUnlock.hxx"
@@ -81,11 +82,24 @@ SmbclientNeighborExplorer::GetList() const noexcept
 	return list;
 }
 
+[[gnu::pure]]
+static bool
+IsValidSmbServerName(std::string_view name) noexcept
+{
+	/* this is more relaxed than the names actually allowed in the
+	   protocol, but good enough to protect MPD from crafted
+	   names */
+	return VerifyFilenameUTF8(name);
+}
+
 static void
 ReadServer(NeighborExplorer::List &list, const smbc_dirent &e) noexcept
 {
 	const std::string_view name{e.name, e.namelen};
 	const std::string_view comment{e.comment, e.commentlen};
+
+	if (!IsValidSmbServerName(name))
+		return;
 
 	list.emplace_front(fmt::format("smb://{}"sv, name),
 			   fmt::format("{} ({})"sv, name, comment));
@@ -99,6 +113,9 @@ static void
 ReadWorkgroup(SmbclientContext &ctx, std::string_view name,
 	      NeighborExplorer::List &list) noexcept
 {
+	if (!IsValidSmbServerName(name))
+		return;
+
 	ReadServers(ctx, fmt::format("smb://{}"sv, name).c_str(), list);
 }
 
