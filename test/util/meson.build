@@ -15,6 +15,7 @@ test(
     'TestStringStrip.cxx',
     'TestTemplateString.cxx',
     'TestTerminatedArray.cxx',
+    'TestUTF8.cxx',
     'test_byte_reverse.cxx',
     include_directories: inc,
     dependencies: [

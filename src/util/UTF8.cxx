@@ -83,6 +83,15 @@ MakeLeading5(uint8_t value) noexcept
 	return 0xfc | value;
 }
 
+/**
+ * Is this any leading byte?
+ */
+static constexpr bool
+IsLeading(uint8_t ch) noexcept
+{
+	return (ch & 0xc0) == 0xc0;
+}
+
 static constexpr bool
 IsContinuation(uint8_t ch) noexcept
 {
@@ -268,6 +277,32 @@ SequenceLengthUTF8(const char *p) noexcept
 		/* continuation without a prefix or some other illegal
 		   start byte */
 		return 0;
+}
+
+std::string_view
+StripIncompleteUTF8(std::string_view s) noexcept
+{
+	const std::size_t original_size = s.size();
+
+	while (true) {
+		if (s.empty())
+			return s;
+
+		if (IsContinuation(s.back()))
+			s.remove_suffix(1);
+		else
+			break;
+	}
+
+	if (IsLeading(s.back())) {
+		if (SequenceLengthUTF8(s.back()) == original_size - s.size() + 1)
+			/* the last sequence is complete */
+			return {s.data(), original_size};
+
+		s.remove_suffix(1);
+	}
+
+	return s;
 }
 
 [[gnu::pure]]
