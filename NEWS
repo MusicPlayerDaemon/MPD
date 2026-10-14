@@ -10,7 +10,7 @@ ver 0.24.16 (not yet released)
   - sanitize tag values printed by "lsinfo" on stream URIs
   - validate the picture MIME type for "readpicture"
 * neighbor
-  - smbclient: validate server names
+  - smbclient: validate server names and comments
   - udisks: fix crash bug
   - upnp: accept only HTTP device description URLs
   - upnp: sanitize strings for the MPD protocol

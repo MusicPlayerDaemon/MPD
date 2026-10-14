@@ -9,12 +9,14 @@
 #include "neighbor/Explorer.hxx"
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
+#include "protocol/FixString.hxx"
 #include "protocol/Verify.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/ScopeUnlock.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
+#include "util/AllocatedArray.hxx" // for the FixStringUTF8() return value
 #include "Log.hxx"
 
 #include <libsmbclient.h>
@@ -96,10 +98,14 @@ static void
 ReadServer(NeighborExplorer::List &list, const smbc_dirent &e) noexcept
 {
 	const std::string_view name{e.name, e.namelen};
-	const std::string_view comment{e.comment, e.commentlen};
+	std::string_view comment{e.comment, e.commentlen};
 
 	if (!IsValidSmbServerName(name))
 		return;
+
+	const auto comment_buffer = FixStringUTF8(comment);
+	if (comment_buffer != nullptr)
+		comment = {comment_buffer.data(), comment_buffer.size()};
 
 	list.emplace_front(fmt::format("smb://{}"sv, name),
 			   fmt::format("{} ({})"sv, name, comment));
