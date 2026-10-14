@@ -179,4 +179,8 @@ directory_load(LineReader &file, Directory &directory)
 			throw FmtRuntimeError("Malformed line: {:?}", line);
 		}
 	}
+
+	/* only the root directory has no "end:" line */
+	if (line == nullptr && !directory.IsRoot())
+		throw std::runtime_error("Unexpected end of file");
 }

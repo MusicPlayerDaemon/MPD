@@ -138,6 +138,9 @@ song_load(LineReader &file, const char *uri,
 		}
 	}
 
+	if (line == nullptr)
+		throw std::runtime_error("Unexpected end of file");
+
 	song.SetTag(tag.Commit());
 	return song;
 }

@@ -64,6 +64,7 @@ ver 0.24.16 (not yet released)
   - simple: don't log credentials in storage URLs
   - simple: reject unsafe playlist entries
   - simple: fix use-after-free crash bug
+  - simple: reject truncated database files
   - upnp: limit size and duration of device description downloads
   - upnp: fix crash on discovery error
   - upnp: limit Browse and Search results
