@@ -1049,6 +1049,6 @@ ProxyDatabase::Update(const char *uri_utf8, bool discard)
 
 const DatabasePlugin proxy_db_plugin = {
 	"proxy",
-	DatabasePlugin::FLAG_REQUIRE_STORAGE,
+	DatabasePlugin::FLAG_REQUIRE_STORAGE|DatabasePlugin::FLAG_MAIN_THREAD_ONLY,
 	ProxyDatabase::Create,
 };

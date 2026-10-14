@@ -39,6 +39,7 @@ db_plugins = static_library(
     libmpdclient_dep,
     log_dep,
     zlib_dep,
+    protocol_dep,
   ],
 )
 

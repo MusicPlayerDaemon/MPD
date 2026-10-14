@@ -55,6 +55,15 @@ daemonize_kill()
 		throw FmtErrno("unable to read the pid from file {:?}",
 			       pidfile);
 
+	if (pid <= 1)
+		throw FmtRuntimeError("bogus pid {} in file {:?}",
+				      pid, pidfile);
+
+	/* the pid file is writable by the unprivileged user; switch
+	   to that user, so the kernel refuses to signal processes
+	   owned by other users */
+	daemonize_set_user();
+
 	if (kill(pid, SIGTERM) < 0)
 		throw FmtErrno("unable to kill process {}", pid);
 

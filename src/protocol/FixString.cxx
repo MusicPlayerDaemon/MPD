@@ -4,9 +4,9 @@
 #include "FixString.hxx"
 #include "util/AllocatedArray.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringVerify.hxx"
 #include "util/UTF8.hxx"
 
-#include <algorithm>
 #include <cassert>
 
 #include <stdlib.h>
@@ -103,14 +103,13 @@ clear_non_printable(std::string_view src)
 static bool
 IsSafe(std::string_view s) noexcept
 {
-	return std::all_of(s.begin(), s.end(),
-			   [](char ch){
-				   return IsASCII(ch) && IsPrintableASCII(ch);
-			   });
+	return CheckChars(s, [](char ch){
+		return IsASCII(ch) && IsPrintableASCII(ch);
+	});
 }
 
 AllocatedArray<char>
-FixTagString(std::string_view p) noexcept
+FixStringUTF8(std::string_view p) noexcept
 {
 	if (IsSafe(p))
 		/* optimistic optimization for the common case */

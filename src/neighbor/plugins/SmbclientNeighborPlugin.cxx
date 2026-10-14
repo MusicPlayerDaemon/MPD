@@ -9,11 +9,14 @@
 #include "neighbor/Explorer.hxx"
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
+#include "protocol/FixString.hxx"
+#include "protocol/Verify.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/ScopeUnlock.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
+#include "util/AllocatedArray.hxx" // for the FixStringUTF8() return value
 #include "Log.hxx"
 
 #include <libsmbclient.h>
@@ -22,27 +25,9 @@
 #include <cstring>
 #include <utility>
 
+using std::string_view_literals::operator""sv;
+
 class SmbclientNeighborExplorer final : public NeighborExplorer {
-	struct Server {
-		const std::string name, comment;
-
-		Server(std::string &&_name, std::string &&_comment) noexcept
-			:name(std::move(_name)),
-			 comment(std::move(_comment)) {}
-
-		Server(const Server &) = delete;
-
-		[[gnu::pure]]
-		bool operator==(const Server &other) const noexcept {
-			return name == other.name;
-		}
-
-		[[nodiscard]] [[gnu::pure]]
-		NeighborInfo Export() const noexcept {
-			return { "smb://" + name + "/", comment };
-		}
-	};
-
 	SmbclientContext ctx = SmbclientContext::New();
 
 	Thread thread;
@@ -99,13 +84,31 @@ SmbclientNeighborExplorer::GetList() const noexcept
 	return list;
 }
 
+[[gnu::pure]]
+static bool
+IsValidSmbServerName(std::string_view name) noexcept
+{
+	/* this is more relaxed than the names actually allowed in the
+	   protocol, but good enough to protect MPD from crafted
+	   names */
+	return VerifyFilenameUTF8(name);
+}
+
 static void
 ReadServer(NeighborExplorer::List &list, const smbc_dirent &e) noexcept
 {
-	const std::string name(e.name, e.namelen);
-	const std::string comment(e.comment, e.commentlen);
+	const std::string_view name{e.name, e.namelen};
+	std::string_view comment{e.comment, e.commentlen};
 
-	list.emplace_front("smb://" + name, name + " (" + comment + ")");
+	if (!IsValidSmbServerName(name))
+		return;
+
+	const auto comment_buffer = FixStringUTF8(comment);
+	if (comment_buffer != nullptr)
+		comment = {comment_buffer.data(), comment_buffer.size()};
+
+	list.emplace_front(fmt::format("smb://{}"sv, name),
+			   fmt::format("{} ({})"sv, name, comment));
 }
 
 static void
@@ -113,11 +116,13 @@ ReadServers(SmbclientContext &ctx, const char *uri,
 	    NeighborExplorer::List &list) noexcept;
 
 static void
-ReadWorkgroup(SmbclientContext &ctx, const std::string &name,
+ReadWorkgroup(SmbclientContext &ctx, std::string_view name,
 	      NeighborExplorer::List &list) noexcept
 {
-	std::string uri = "smb://" + name;
-	ReadServers(ctx, uri.c_str(), list);
+	if (!IsValidSmbServerName(name))
+		return;
+
+	ReadServers(ctx, fmt::format("smb://{}"sv, name).c_str(), list);
 }
 
 static void
@@ -126,7 +131,7 @@ ReadEntry(SmbclientContext &ctx, const smbc_dirent &e,
 {
 	switch (e.smbc_type) {
 	case SMBC_WORKGROUP:
-		ReadWorkgroup(ctx, std::string(e.name, e.namelen), list);
+		ReadWorkgroup(ctx, {e.name, e.namelen}, list);
 		break;
 
 	case SMBC_SERVER:

@@ -5,6 +5,7 @@
 #include "ConfiguredResampler.hxx"
 #include "Resampler.hxx"
 #include "AudioFormat.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 
 #include <cassert>
 
@@ -21,6 +22,17 @@ GluePcmResampler::Open(AudioFormat src_format, unsigned new_sample_rate)
 {
 	assert(src_format.IsValid());
 	assert(audio_valid_sample_rate(new_sample_rate));
+
+	/* the source sample rate comes from the (untrusted) song;
+	   an extreme ratio would make the resampler allocate huge
+	   output buffers (and libsamplerate doesn't support ratios
+	   beyond 256 anyway) */
+	constexpr unsigned MAX_RATIO = 256;
+	if (new_sample_rate / MAX_RATIO > src_format.sample_rate ||
+	    src_format.sample_rate / MAX_RATIO > new_sample_rate)
+		throw FmtRuntimeError("Unsupported resampling ratio: {} to {}",
+				      src_format.sample_rate,
+				      new_sample_rate);
 
 	AudioFormat requested_format = src_format;
 	AudioFormat dest_format = resampler->Open(requested_format,

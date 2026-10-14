@@ -34,6 +34,18 @@ std::size_t
 SequenceLengthUTF8(const char *p) noexcept;
 
 /**
+ * Check if the string ends with an incomplete or illegal UTF-8
+ * multi-byte sequence, and if so, strip it (i.e. all trailing
+ * continuation bytes and the non-ASCII leading byte before them).
+ * Illegal sequences before that are left as they are.
+ *
+ * @return the stripped string
+ */
+[[gnu::pure]]
+std::string_view
+StripIncompleteUTF8(std::string_view s) noexcept;
+
+/**
  * Convert the specified string from ISO-8859-1 to UTF-8.
  *
  * @return the UTF-8 version of the source string; may return #src if

@@ -214,6 +214,19 @@ public:
 	}
 
 	/**
+	 * Append the specified span to the buffer, growing its
+	 * allocation.
+	 *
+	 * @param src the source buffer; must not point into this
+	 * buffer
+	 */
+	void Append(std::span<const T> src) noexcept {
+		const size_type old_size = size();
+		GrowPreserve(old_size + src.size(), old_size);
+		std::copy(src.begin(), src.end(), std::next(buffer.begin(), old_size));
+	}
+
+	/**
 	 * Declare that the buffer has the specified size.  Must not be
 	 * larger than the current size.  Excess elements are not used (but
 	 * they are still allocated).

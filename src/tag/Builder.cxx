@@ -4,9 +4,10 @@
 #include "Builder.hxx"
 #include "Settings.hxx"
 #include "Pool.hxx"
-#include "FixString.hxx"
 #include "Tag.hxx"
+#include "protocol/FixString.hxx"
 #include "util/AllocatedArray.hxx"
+#include "util/UTF8.hxx"
 
 #include <algorithm>
 #include <array>
@@ -201,7 +202,14 @@ TagBuilder::AddItemInternal(TagType type, std::string_view value) noexcept
 {
 	assert(!value.empty());
 
-	auto f = FixTagString(value);
+	if (value.size() > MAX_VALUE_LENGTH) {
+		/* don't split a UTF-8 sequence */
+		value = StripIncompleteUTF8(value.substr(0, MAX_VALUE_LENGTH));
+		if (value.empty())
+			return;
+	}
+
+	auto f = FixStringUTF8(value);
 	if (f != nullptr)
 		value = { f.data(), f.size() };
 

@@ -8,6 +8,7 @@
 #include "tag/Names.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "config/Domain.hxx"
+#include "util/Serial.hxx"
 #include "util/StringUtil.hxx"
 #include "util/CNumberParser.hxx"
 

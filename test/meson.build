@@ -297,6 +297,25 @@ if enable_database
   )
 
   test(
+    'TestDatabaseLoad',
+    executable(
+      'TestDatabaseLoad',
+      'TestDatabaseLoad.cxx',
+      '../src/db/PlaylistVector.cxx',
+      '../src/SongSave.cxx',
+      '../src/TagSave.cxx',
+      include_directories: inc,
+      dependencies: [
+        fmt_dep,
+        pcm_basic_dep,
+        song_dep,
+        db_plugins_dep,
+        gtest_dep,
+      ],
+    ),
+  )
+
+  test(
     'test_translate_song',
     executable(
       'test_translate_song',
@@ -642,6 +661,23 @@ if need_encoder
       encoder_glue_dep,
     ],
   )
+
+  if libogg_dep.found()
+    test(
+      'TestOggEncoder',
+      executable(
+        'TestOggEncoder',
+        'TestOggEncoder.cxx',
+        include_directories: inc,
+        dependencies: [
+          encoder_glue_dep,
+          libogg_dep,
+          gtest_dep,
+        ],
+      ),
+      protocol: 'gtest',
+    )
+  endif
 endif
   
 #

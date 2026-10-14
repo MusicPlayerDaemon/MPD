@@ -5,6 +5,7 @@
 #include "db/Features.hxx" // for ENABLE_DATABASE
 #include "db/plugins/simple/Song.hxx"
 #include "db/plugins/simple/Directory.hxx"
+#include "db/DatabaseLock.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "input/InputStream.hxx"
@@ -85,6 +86,9 @@ Song::UpdateFile(Storage &storage, const StorageFileInfo &info)
 		return false;
 	}
 
+	/* this Song may already be linked in the database, and
+	   other threads may be reading it */
+	const ScopeDatabaseLock protect;
 	mtime = info.mtime;
 	audio_format = new_audio_format;
 	tag_builder.Commit(tag);
@@ -126,6 +130,9 @@ Song::UpdateFileInArchive(ArchiveFile &archive) noexcept
 	if (!tag_archive_scan(archive, path_utf8.c_str(), tag_builder))
 		return false;
 
+	/* this Song may already be linked in the database, and
+	   other threads may be reading it */
+	const ScopeDatabaseLock protect;
 	tag_builder.Commit(tag);
 	return true;
 }

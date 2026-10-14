@@ -6,6 +6,8 @@
 #include "Tags.hxx"
 #include "tag/Builder.hxx"
 #include "tag/Table.hxx"
+#include "protocol/FixString.hxx"
+#include "util/AllocatedArray.hxx" // for the FixTagString() return value
 #include "util/CNumberParser.hxx"
 
 #include <algorithm>
@@ -57,12 +59,19 @@ ParseDuration(const char *duration) noexcept
  * Transform titles to turn '/' into '_' to make them acceptable path
  * elements. There is a very slight risk of collision in doing
  * this. Twonky returns directory names (titles) like 'Artist/Album'.
+ *
+ * Control characters (e.g. newlines) are replaced with spaces,
+ * because they would break the MPD protocol.
  */
 [[gnu::pure]]
 static std::string &&
 TitleToPathSegment(std::string &&s) noexcept
 {
 	std::replace(s.begin(), s.end(), '/', '_');
+
+	if (const auto fixed = FixStringUTF8(s); fixed != nullptr)
+		s.assign(fixed.data(), fixed.size());
+
 	return std::move(s);
 }
 

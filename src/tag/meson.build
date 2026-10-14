@@ -24,7 +24,6 @@ tag_sources = [
   'ParseName.cxx',
   parse_name_cxx,
   'Names.cxx',
-  'FixString.cxx',
   'Pool.cxx',
   'Table.cxx',
   'Format.cxx',
@@ -61,6 +60,7 @@ tag = static_library(
   dependencies: [
     fmt_dep,
     libid3tag_dep,
+    protocol_dep,
   ],
 )
 

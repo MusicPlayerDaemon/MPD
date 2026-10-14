@@ -45,7 +45,10 @@ ver 0.24.16 (not yet released)
   - sanitize tag values printed by "lsinfo" on stream URIs
   - validate the picture MIME type for "readpicture"
 * neighbor
+  - smbclient: validate server names and comments
   - udisks: fix crash bug
+  - upnp: accept only HTTP device description URLs
+  - upnp: sanitize strings for the MPD protocol
 * storage
   - curl: skip invalid file names
   - curl: fix use-after-free crash bug
@@ -84,22 +87,34 @@ ver 0.24.16 (not yet released)
   - shine: fix uninitialized memory access
 * tags
   - limit the number of tag items
+  - limit the length of tag values
   - id3: fix crash on encrypted ID3 tags
 * database
   - proxy: limit the directory nesting depth
   - proxy: validate directories
   - proxy: validate song URIs
+  - proxy: skip sticker cleanup (would crash)
   - simple: limit archive entry path length
   - simple: limit the directory nesting depth
   - simple: don't log credentials in storage URLs
+  - simple: reject unsafe playlist entries
+  - simple: fix use-after-free crash bug
+  - simple: reject truncated database files
   - upnp: limit size and duration of device description downloads
   - upnp: fix crash on discovery error
+  - upnp: limit Browse and Search results
+  - upnp: accept only HTTP resource URLs
+  - upnp: ignore URLBase pointing to a different host
+  - upnp: sanitize strings for the MPD protocol
 * queue
   - fix consuming the wrong song after reshuffle in random+repeat mode
   - don't reshuffle on "next" in single+repeat mode
 * resampler
   - fallback: implement more than two channels
+  - reject extreme resampling ratios
 * output
+  - httpd: fix stream corruption with large tags
+  - httpd: add missing mutex lock
   - pipewire: limit the ring buffer size
   - pipewire: validate the DSD interleave
   - snapcast: fix integer overflow
@@ -109,6 +124,7 @@ ver 0.24.16 (not yet released)
   - don't cross-fade DSD
 * avahi: fix use-after-free bug
 * state file: make the state file readable only by the owner
+* validate the pid in "mpd --kill"
 * Windows
   - fix crash bug during charset conversion
 

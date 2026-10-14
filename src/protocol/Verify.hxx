@@ -22,10 +22,19 @@ VerifyStringUTF8(std::string_view s) noexcept;
 /**
  * Is this a valid filename (for transmitting it as a value over the
  * MPD text protocol)?
+ */
+[[gnu::pure]]
+bool
+VerifyFilenameUTF8(std::string_view s) noexcept;
+
+/**
+ * Is this a valid filename (for transmitting it as a value over the
+ * MPD text protocol)?
  *
- * Note: this function is designed to be used to verify actual file
- * names (that were actually seen); for example, it does not check for
- * path separators which would be invalid in a bare file name.
+ * Note: unlike VerifyFilenameUTF8(), this function is designed to be
+ * used to verify actual file names (that were actually seen); for
+ * example, it does not check for path separators which would be
+ * invalid in a bare file name.
  */
 [[gnu::pure]]
 static inline
