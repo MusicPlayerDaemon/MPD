@@ -6,6 +6,7 @@
 #include "tag/Names.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/Serial.hxx"
 #include "util/StringUtil.hxx"
 
 #include <opus.h>

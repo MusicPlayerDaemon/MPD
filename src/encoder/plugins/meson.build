@@ -2,6 +2,10 @@ encoder_plugins_sources = [
   'NullEncoderPlugin.cxx',
 ]
 
+if ogg_dep.found()
+  encoder_plugins_sources += 'OggEncoder.cxx'
+endif
+
 encoder_features.set('ENABLE_FLAC_ENCODER', flac_dep.found())
 if flac_dep.found()
   encoder_plugins_sources += 'FlacEncoderPlugin.cxx'
