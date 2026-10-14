@@ -214,6 +214,12 @@ public:
 	PagePtr ReadPage() noexcept;
 
 	/**
+	 * Reads all data which is currently available from the
+	 * #Encoder and returns it as a single new #Page object.
+	 */
+	PagePtr ReadAll() noexcept;
+
+	/**
 	 * Broadcasts a page struct to all clients.
 	 *
 	 * Mutext must not be locked.
