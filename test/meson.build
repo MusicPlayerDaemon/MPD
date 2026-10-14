@@ -641,6 +641,23 @@ if need_encoder
       encoder_glue_dep,
     ],
   )
+
+  if libogg_dep.found()
+    test(
+      'TestOggEncoder',
+      executable(
+        'TestOggEncoder',
+        'TestOggEncoder.cxx',
+        include_directories: inc,
+        dependencies: [
+          encoder_glue_dep,
+          libogg_dep,
+          gtest_dep,
+        ],
+      ),
+      protocol: 'gtest',
+    )
+  endif
 endif
   
 #
