@@ -85,7 +85,7 @@ public:
 			/* the id becomes part of song URIs; control
 			   characters (e.g. newlines) would break the
 			   MPD protocol */
-			VerifyStringUTF8(id) &&
+			VerifyFilenameUTF8(id) &&
 			/* root nodes don't need a parent id and a
 			   name */
 			(IsRoot() || (!parent_id.empty() &&

@@ -3,6 +3,7 @@
 
 #include "Verify.hxx"
 #include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "util/UTF8.hxx"
 
 #include <cstring> // for std::strchr()
@@ -29,6 +30,13 @@ VerifyStringUTF8(std::string_view s) noexcept
 		s.find('\0') == s.npos &&
 		/* the MPD protocol is UTF-8 only */
 		ValidateUTF8(s);
+}
+
+bool
+VerifyFilenameUTF8(std::string_view s) noexcept
+{
+	return PathTraitsUTF8::IsValidFilename(s) &&
+		VerifyStringUTF8(s);
 }
 
 bool
