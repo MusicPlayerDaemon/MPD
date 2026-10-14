@@ -1,34 +1,26 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_OGG_PAGE_HXX
-#define MPD_OGG_PAGE_HXX
+#pragma once
 
 #include <ogg/ogg.h>
 
-#include <cassert>
-#include <cstdint>
+#include <span>
 
-#include <string.h>
-
-static size_t
-ReadPage(const ogg_page &page, void *_buffer, size_t size) noexcept
+static inline std::span<const std::byte>
+GetPageHeader(const ogg_page &page) noexcept
 {
-	assert(page.header_len > 0 || page.body_len > 0);
-
-	size_t header_len = (size_t)page.header_len;
-	size_t body_len = (size_t)page.body_len;
-	assert(header_len <= size);
-
-	if (header_len + body_len > size)
-		/* TODO: better overflow handling */
-		body_len = size - header_len;
-
-	uint8_t *buffer = (uint8_t *)_buffer;
-	memcpy(buffer, page.header, header_len);
-	memcpy(buffer + header_len, page.body, body_len);
-
-	return header_len + body_len;
+	return {
+		reinterpret_cast<const std::byte *>(page.header),
+		static_cast<std::size_t>(page.header_len),
+	};
 }
 
-#endif
+static inline std::span<const std::byte>
+GetPageBody(const ogg_page &page) noexcept
+{
+	return {
+		reinterpret_cast<const std::byte *>(page.body),
+		static_cast<std::size_t>(page.body_len),
+	};
+}

@@ -18,19 +18,28 @@ OggEncoder::Flush()
 }
 
 std::span<const std::byte>
-OggEncoder::Read(std::span<std::byte> buffer) noexcept
+OggEncoder::Read([[maybe_unused]] std::span<std::byte> buffer) noexcept
 {
-	ogg_page page;
-	bool success = stream.PageOut(page);
-	if (!success) {
-		if (flush) {
-			flush = false;
-			success = stream.Flush(page);
+	if (page_header.empty() && page_body.empty()) {
+		ogg_page page;
+		bool success = stream.PageOut(page);
+		if (!success) {
+			if (flush) {
+				flush = false;
+				success = stream.Flush(page);
+			}
+
+			if (!success)
+				return {};
 		}
 
-		if (!success)
-			return {};
+		page_header = GetPageHeader(page);
+		page_body = GetPageBody(page);
 	}
 
-	return buffer.first(ReadPage(page, buffer.data(), buffer.size()));
+	if (!page_header.empty())
+		return std::exchange(page_header, {});
+
+	assert(!page_body.empty());
+	return std::exchange(page_body, {});
 }
