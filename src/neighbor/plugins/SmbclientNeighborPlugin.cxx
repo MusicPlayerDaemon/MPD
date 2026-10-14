@@ -23,26 +23,6 @@
 #include <utility>
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {
-	struct Server {
-		const std::string name, comment;
-
-		Server(std::string &&_name, std::string &&_comment) noexcept
-			:name(std::move(_name)),
-			 comment(std::move(_comment)) {}
-
-		Server(const Server &) = delete;
-
-		[[gnu::pure]]
-		bool operator==(const Server &other) const noexcept {
-			return name == other.name;
-		}
-
-		[[nodiscard]] [[gnu::pure]]
-		NeighborInfo Export() const noexcept {
-			return { "smb://" + name + "/", comment };
-		}
-	};
-
 	SmbclientContext ctx = SmbclientContext::New();
 
 	Thread thread;
