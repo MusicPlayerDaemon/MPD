@@ -162,6 +162,14 @@ HttpdOutput::ReadPage() noexcept
 				   buffer*/
 				return std::make_shared<Page>(r);
 
+			if (r.size() > b.size()) {
+				/* doesn't fit into the stack buffer:
+				   allocate a page for both */
+				auto page = std::make_shared<Page>(std::span{buffer, size});
+				page->Append(r);
+				return page;
+			}
+
 			/* if the encoder did not write to the given
 			   buffer but instead returned its own buffer,
 			   we need to copy it so we have a contiguous
