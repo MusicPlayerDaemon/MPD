@@ -84,8 +84,8 @@ SmbclientNeighborExplorer::GetList() const noexcept
 static void
 ReadServer(NeighborExplorer::List &list, const smbc_dirent &e) noexcept
 {
-	const std::string name(e.name, e.namelen);
-	const std::string comment(e.comment, e.commentlen);
+	const std::string_view name{e.name, e.namelen};
+	const std::string_view comment{e.comment, e.commentlen};
 
 	list.emplace_front(fmt::format("smb://{}"sv, name),
 			   fmt::format("{} ({})"sv, name, comment));
@@ -96,7 +96,7 @@ ReadServers(SmbclientContext &ctx, const char *uri,
 	    NeighborExplorer::List &list) noexcept;
 
 static void
-ReadWorkgroup(SmbclientContext &ctx, const std::string &name,
+ReadWorkgroup(SmbclientContext &ctx, std::string_view name,
 	      NeighborExplorer::List &list) noexcept
 {
 	ReadServers(ctx, fmt::format("smb://{}"sv, name).c_str(), list);
@@ -108,7 +108,7 @@ ReadEntry(SmbclientContext &ctx, const smbc_dirent &e,
 {
 	switch (e.smbc_type) {
 	case SMBC_WORKGROUP:
-		ReadWorkgroup(ctx, std::string(e.name, e.namelen), list);
+		ReadWorkgroup(ctx, {e.name, e.namelen}, list);
 		break;
 
 	case SMBC_SERVER:
