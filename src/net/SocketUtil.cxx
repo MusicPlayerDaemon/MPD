@@ -34,9 +34,5 @@ socket_bind_listen(int domain, int type, int protocol,
 	if (!fd.Listen(backlog))
 		throw MakeSocketError("Failed to listen on socket");
 
-#if defined(HAVE_STRUCT_UCRED) && defined(SO_PASSCRED)
-	fd.SetBoolOption(SOL_SOCKET, SO_PASSCRED, true);
-#endif
-
 	return fd;
 }
