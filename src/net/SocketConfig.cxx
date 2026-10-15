@@ -13,6 +13,10 @@
 #include "IPv4Address.hxx"
 #endif
 
+#ifdef HAVE_UN
+#include "net/ChmodLocalSocket.hxx"
+#endif
+
 #include <cassert>
 
 #ifdef HAVE_UN
@@ -119,8 +123,8 @@ SocketConfig::Create(int type) const
 		throw FmtSocketError("Failed to bind to {}", bind_address);
 
 #ifdef HAVE_UN
-	if (mode != 0 && local_path != nullptr && chmod(local_path, mode) < 0)
-		throw FmtErrno("Failed to chmod {:?}", local_path);
+	if (mode != 0 && local_path != nullptr)
+		ChmodLocalSocket(local_path, mode);
 #endif
 
 #ifdef HAVE_MULTICAST

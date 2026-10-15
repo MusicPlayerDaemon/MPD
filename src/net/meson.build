@@ -38,6 +38,10 @@ if not have_tcp and not have_local_socket
   error('Must enable either "tcp" or "local_socket"')
 endif
 
+if have_local_socket
+  net_sources += 'ChmodLocalSocket.cxx'
+endif
+
 net = static_library(
   'net',
   net_sources,
