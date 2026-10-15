@@ -49,7 +49,7 @@ net = static_library(
   'StaticSocketAddress.cxx',
   'AllocatedSocketAddress.cxx',
   'SocketAddress.cxx',
-  'SocketUtil.cxx',
+  'SocketConfig.cxx',
   'SocketDescriptor.cxx',
   'SocketError.cxx',
   include_directories: inc,

@@ -14,7 +14,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
-#include "net/SocketUtil.hxx"
+#include "net/SocketConfig.hxx"
 #include "system/Error.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/glue/StandardDirectory.hxx"
@@ -78,11 +78,18 @@ ListenXdgRuntimeDir(ClientListener &listener) noexcept
 	AllocatedSocketAddress address;
 	address.SetLocal(socket_path.c_str());
 
+	SocketConfig socket_config{
+		.bind_address = address,
+		.listen = 5,
+
+#ifdef HAVE_UN
+		.mode = 0600,
+#endif
+	};
+
 	try {
-		auto fd = socket_bind_listen(AF_LOCAL, SOCK_STREAM, 0,
-					     address, 5);
-		chmod(socket_path.c_str(), 0600);
-		listener.AddFD(std::move(fd), std::move(address));
+		listener.AddFD(socket_config.Create(SOCK_STREAM),
+			       std::move(address));
 		return true;
 	} catch (...) {
 		FmtError(listen_domain,
