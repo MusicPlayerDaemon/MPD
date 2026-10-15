@@ -13,6 +13,8 @@
 
 using std::string_view_literals::operator""sv;
 
+#ifdef __linux__
+
 static bool
 IsSocket(FileDescriptor fd, const char *path)
 {
@@ -24,6 +26,8 @@ IsSocket(FileDescriptor fd, const char *path)
 
 	return S_ISSOCK(stx.stx_mode);
 }
+
+#endif
 
 void
 ChmodLocalSocket(const char *path, mode_t mode)
