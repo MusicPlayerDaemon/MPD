@@ -255,7 +255,11 @@ public:
 #ifdef __linux__
 	bool SetReusePort(bool value=true) const noexcept;
 	bool SetFreeBind(bool value=true) const noexcept;
+#endif
+
 	bool SetNoDelay(bool value=true) const noexcept;
+
+#ifdef __linux__
 	bool SetCork(bool value=true) const noexcept;
 
 	bool SetTcpDeferAccept(const int &seconds) const noexcept;
@@ -264,9 +268,11 @@ public:
 	 * Setter for TCP_USER_TIMEOUT.
 	 */
 	bool SetTcpUserTimeout(const unsigned &milliseconds) const noexcept;
+#endif
 
 	bool SetV6Only(bool value) const noexcept;
 
+#ifdef __linux__
 	/**
 	 * Setter for SO_BINDTODEVICE.
 	 */
