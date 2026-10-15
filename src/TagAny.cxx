@@ -50,6 +50,9 @@ TagScanFile(const Path path_fs, TagHandler &handler)
 static std::string
 ResolveUri(std::string_view base, std::string_view relative)
 {
+	if (uri_has_scheme(relative)) {
+		return std::string(relative);
+	}
 	while (true) {
 		if (!SkipPrefix(relative, "../"sv))
 			break;
