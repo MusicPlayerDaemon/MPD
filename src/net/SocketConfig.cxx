@@ -68,9 +68,11 @@ SocketConfig::Create(int type) const
 		unlink(local_path);
 
 	if (family == AF_LOCAL) {
+#ifdef __linux__
 		if (pass_cred)
 			/* we want to receive the client's UID */
 			fd.SetBoolOption(SOL_SOCKET, SO_PASSCRED, true);
+#endif
 	}
 #endif
 

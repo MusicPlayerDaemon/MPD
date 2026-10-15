@@ -70,7 +70,7 @@ struct SocketConfig {
 	bool free_bind = false;
 #endif
 
-#ifdef HAVE_UN
+#if defined(HAVE_UN) && defined(__linux__)
 	bool pass_cred = false;
 #endif
 
