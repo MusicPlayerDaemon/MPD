@@ -13,7 +13,8 @@
 
 using std::string_view_literals::operator""sv;
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__BIONIC__)
+/* Bionic (Android's libc) doesn't have statx() */
 
 static bool
 IsSocket(FileDescriptor fd, const char *path)
@@ -32,7 +33,7 @@ IsSocket(FileDescriptor fd, const char *path)
 void
 ChmodLocalSocket(const char *path, mode_t mode)
 {
-#ifdef __linux__
+#if defined(__linux__) && !defined(__BIONIC__)
 	/* note: this O_NOFOLLOW affects only the last path component;
 	   symlinks in the middle are followed, and that alone can
 	   pose a risk, not mitigated here */
