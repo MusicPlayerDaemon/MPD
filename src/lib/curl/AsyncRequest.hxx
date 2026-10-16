@@ -28,6 +28,10 @@ class AsyncRequest final {
 	bool registered = false;
 
 public:
+	/**
+	 * @param easy a preconfigured #CurlEasy instance;
+	 * Curl::Setup() will not be called on it
+	 */
 	AsyncRequest(CurlGlobal &_global, CurlEasy &&easy,
 		    CurlResponseHandler &_handler);
 

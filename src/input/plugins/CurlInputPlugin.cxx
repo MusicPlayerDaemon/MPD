@@ -7,6 +7,7 @@
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Handler.hxx"
+#include "lib/curl/Setup.hxx"
 #include "lib/curl/Slist.hxx"
 #include "../MaybeBufferedInputStream.hxx"
 #include "../AsyncInputStream.hxx"
@@ -490,6 +491,7 @@ CurlEasy
 CreateConfiguredCurlEasy(const char *url)
 {
 	CurlEasy easy{url};
+	Curl::Setup(easy);
 
 	/* increase CURL's receive buffer size from 16 kB to 512 kB
 	   (the maximum until CURL 7.88.0) to reduce system call

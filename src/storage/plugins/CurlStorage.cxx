@@ -13,6 +13,7 @@
 #include "lib/curl/HttpStatusError.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Global.hxx"
+#include "lib/curl/Setup.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/String.hxx"
 #include "lib/curl/Handler.hxx"
@@ -101,6 +102,7 @@ static CurlEasy
 CreateWebdavCurlEasy(const char *uri)
 {
 	auto easy = CreateConfiguredCurlEasy(uri);
+	Curl::Setup(easy);
 	easy.SetTimeout(WEBDAV_TIMEOUT);
 	return easy;
 }
