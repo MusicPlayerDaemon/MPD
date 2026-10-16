@@ -13,7 +13,7 @@
 #include "storage/FileInfo.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
-#include "input/CondHandler.hxx"
+#include "input/WaitReady.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
 #include "event/Thread.hxx"
@@ -222,20 +222,6 @@ tag_save(FILE *file, const Tag &tag)
 	WithBufferedOutputStream(sos, [&](auto &bos){
 		tag_save(bos, tag);
 	});
-}
-
-static void
-WaitReady(InputStream &is, std::unique_lock<Mutex> &lock)
-{
-	CondInputStreamHandler handler;
-	is.SetHandler(&handler);
-
-	handler.cond.wait(lock, [&is]{
-		is.Update();
-		return is.IsReady();
-	});
-
-	is.Check();
 }
 
 static void
