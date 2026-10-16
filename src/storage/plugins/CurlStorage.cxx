@@ -138,10 +138,6 @@ public:
 			std::rethrow_exception(postponed_error);
 	}
 
-	CURL *GetEasy() noexcept {
-		return request.Get();
-	}
-
 protected:
 	void SetDone() {
 		assert(!done);
@@ -301,7 +297,6 @@ public:
 				    "</a:propfind>"sv);
 	}
 
-	using BlockingHttpRequest::GetEasy;
 	using BlockingHttpRequest::DeferStart;
 	using BlockingHttpRequest::Wait;
 
