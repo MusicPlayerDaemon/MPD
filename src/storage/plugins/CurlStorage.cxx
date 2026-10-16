@@ -517,7 +517,7 @@ class HttpListDirectoryOperation final : public PropfindOperation {
 public:
 	HttpListDirectoryOperation(CurlGlobal &curl, const char *uri)
 		:PropfindOperation(curl, uri, 1),
-		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri))) {}
+		 base_path(CurlUnescape(UriPathOrSlash(uri))) {}
 
 	std::unique_ptr<StorageDirectoryReader> Perform() {
 		DeferStart();
@@ -565,7 +565,7 @@ protected:
 		if (r.status != 200)
 			return;
 
-		std::string href = CurlUnescape(GetEasy(), r.href.c_str());
+		std::string href = CurlUnescape(r.href.c_str());
 		const auto name = HrefToEscapedName(href.c_str());
 		if (!PathTraitsUTF8::IsValidFilename(name))
 			return;

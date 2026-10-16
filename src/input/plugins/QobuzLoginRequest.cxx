@@ -37,15 +37,13 @@ MakeLoginForm(const char *app_id,
 }
 
 static std::string
-MakeLoginUrl(CURL *curl,
-	     const char *base_url, const char *app_id,
+MakeLoginUrl(const char *base_url, const char *app_id,
 	     const char *username, const char *email,
 	     const char *password,
 	     const char *device_manufacturer_id)
 {
 	return fmt::format("{}user/login?{}"sv, base_url,
-			   EncodeForm(curl,
-				      MakeLoginForm(app_id, username, email, password,
+			   EncodeForm(MakeLoginForm(app_id, username, email, password,
 						    device_manufacturer_id)));
 }
 
@@ -59,7 +57,7 @@ QobuzLoginRequest::QobuzLoginRequest(CurlGlobal &curl,
 	 request(curl, *this),
 	 handler(_handler)
 {
-	request.GetEasy().SetURL(MakeLoginUrl(request.Get(), base_url, app_id,
+	request.GetEasy().SetURL(MakeLoginUrl(base_url, app_id,
 					      username, email, password,
 					      device_manufacturer_id).c_str());
 }
