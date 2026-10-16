@@ -10,7 +10,7 @@
 
 #include <cassert>
 
-CurlRequest::CurlRequest(CurlGlobal &_global, CurlEasy _easy,
+CurlRequest::CurlRequest(CurlGlobal &_global, CurlEasy &&_easy,
 			 CurlResponseHandler &_handler)
 	:global(_global), handler(_handler), easy(std::move(_easy))
 {
