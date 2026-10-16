@@ -115,6 +115,56 @@ handle_read_comments(Client &client, Request args, Response &r)
 }
 
 /**
+ * Read from the #InputStream at the specfified offset and send it as
+ * binary response to the #Response.
+ */
+static CommandResult
+SendFromInputStream(Response &r, InputStream &is, std::size_t offset)
+{
+	if (!is.KnownSize()) {
+		r.Error(ACK_ERROR_NO_EXIST, "Cannot get size for stream");
+		return CommandResult::ERROR;
+	}
+
+	const offset_type file_size = is.GetSize();
+
+	if (offset > file_size) {
+		r.Error(ACK_ERROR_ARG, "Offset too large");
+		return CommandResult::ERROR;
+	}
+
+	std::size_t buffer_size =
+		std::min<offset_type>(file_size - offset,
+				      r.GetClient().binary_limit);
+
+	auto buffer = std::make_unique_for_overwrite<std::byte[]>(buffer_size);
+
+	std::size_t read_size = 0;
+	if (buffer_size > 0) {
+		std::unique_lock lock{is.mutex};
+		is.Seek(lock, offset);
+
+		const bool was_ready = is.IsReady();
+
+		read_size = is.Read(lock, {buffer.get(), buffer_size});
+
+		if (was_ready && read_size < buffer_size / 2)
+			/* the InputStream was ready before, but we
+			   got only very little data; probably just
+			   some data left in the buffer without doing
+			   any I/O; let's wait for the next low-level
+			   read to complete to get more data for the
+			   client */
+			read_size += is.Read(lock, {buffer.get() + read_size, buffer_size - read_size});
+	}
+
+	r.Fmt("size: {}\n", file_size);
+	r.WriteBinary({buffer.get(), read_size});
+	return CommandResult::OK;
+}
+
+
+/**
  * Searches for the files listed in #artnames in the UTF8 folder
  * URI #directory. This can be a local path or protocol-based
  * URI that #InputStream supports. Returns the first successfully
@@ -162,48 +212,8 @@ read_stream_art(Response &r, const std::string_view art_directory,
 		r.Error(ACK_ERROR_NO_EXIST, "No file exists");
 		return CommandResult::ERROR;
 	}
-	if (!is->KnownSize()) {
-		r.Error(ACK_ERROR_NO_EXIST, "Cannot get size for stream");
-		return CommandResult::ERROR;
-	}
 
-	const offset_type art_file_size = is->GetSize();
-
-	if (offset > art_file_size) {
-		r.Error(ACK_ERROR_ARG, "Offset too large");
-		return CommandResult::ERROR;
-	}
-
-	std::size_t buffer_size =
-		std::min<offset_type>(art_file_size - offset,
-				      r.GetClient().binary_limit);
-
-	auto buffer = std::make_unique_for_overwrite<std::byte[]>(buffer_size);
-
-	std::size_t read_size = 0;
-	if (buffer_size > 0) {
-		std::unique_lock lock{is->mutex};
-		is->Seek(lock, offset);
-
-		const bool was_ready = is->IsReady();
-
-		read_size = is->Read(lock, {buffer.get(), buffer_size});
-
-		if (was_ready && read_size < buffer_size / 2)
-			/* the InputStream was ready before, but we
-			   got only very little data; probably just
-			   some data left in the buffer without doing
-			   any I/O; let's wait for the next low-level
-			   read to complete to get more data for the
-			   client */
-			read_size += is->Read(lock, {buffer.get() + read_size, buffer_size - read_size});
-	}
-
-	r.Fmt("size: {}\n", art_file_size);
-
-	r.WriteBinary({buffer.get(), read_size});
-
-	return CommandResult::OK;
+	return SendFromInputStream(r, *is, offset);
 }
 
 #ifdef ENABLE_DATABASE
