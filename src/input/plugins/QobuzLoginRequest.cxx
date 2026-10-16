@@ -54,12 +54,13 @@ QobuzLoginRequest::QobuzLoginRequest(CurlGlobal &curl,
 				     const char *device_manufacturer_id,
 				     QobuzLoginHandler &_handler)
 	:StringResponseHandler(qobuz_string_options),
-	 request(curl, *this),
+	 request(curl,
+		 MakeLoginUrl(base_url, app_id,
+			      username, email, password,
+			      device_manufacturer_id).c_str(),
+		 *this),
 	 handler(_handler)
 {
-	request.GetEasy().SetURL(MakeLoginUrl(base_url, app_id,
-					      username, email, password,
-					      device_manufacturer_id).c_str());
 }
 
 QobuzLoginRequest::~QobuzLoginRequest() noexcept
