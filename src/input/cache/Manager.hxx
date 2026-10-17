@@ -26,6 +26,11 @@ class InputCacheManager {
 	 */
 	Mutex stream_mutex;
 
+	/**
+	 * Protects #total_size, #items_by_time, #items_by_uri.
+	 */
+	Mutex mutex;
+
 	size_t total_size = 0;
 
 	struct ItemGetUri {

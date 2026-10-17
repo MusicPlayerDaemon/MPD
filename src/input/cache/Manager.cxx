@@ -30,6 +30,8 @@ InputCacheManager::~InputCacheManager() noexcept
 void
 InputCacheManager::Flush() noexcept
 {
+	const std::lock_guard lock{mutex};
+
 	items_by_time.remove_and_dispose_if([](const InputCacheItem &item){
 		return !item.IsInUse();
 	}, [this](InputCacheItem *item){
@@ -56,12 +58,16 @@ InputCacheManager::IsEligible(const InputStream &input) const noexcept
 bool
 InputCacheManager::Contains(std::string_view uri) noexcept
 {
+	const std::lock_guard lock{mutex};
+
 	return items_by_uri.find(uri) != items_by_uri.end();
 }
 
 inline InputCacheLease
 InputCacheManager::Lookup(std::string_view uri) noexcept
 {
+	const std::lock_guard lock{mutex};
+
 	const auto iter = items_by_uri.find(uri);
 	if (iter == items_by_uri.end())
 		return {};
@@ -81,6 +87,8 @@ InputCacheManager::Lookup(std::string_view uri) noexcept
 inline InputCacheLease
 InputCacheManager::Insert(InputCacheItem &item) noexcept
 {
+	const std::lock_guard lock{mutex};
+
 	total_size += item.size();
 
 	while (total_size > max_total_size && EvictOldestUnused()) {}
