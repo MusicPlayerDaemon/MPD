@@ -82,6 +82,8 @@ NfsManager::~NfsManager() noexcept
 NfsConnection &
 NfsManager::MakeConnection(const char *url)
 {
+	assert(GetEventLoop().IsInside());
+
 	struct nfs_context *const context = nfs_init_context();
 	if (context == nullptr)
 		throw std::runtime_error{"nfs_init_context() failed"};

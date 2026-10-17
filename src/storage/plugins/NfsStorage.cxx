@@ -76,9 +76,9 @@ public:
 		 defer_connect(_connection.GetEventLoop(), BIND_THIS_METHOD(OnDeferredConnect)),
 		 reconnect_timer(_connection.GetEventLoop(), BIND_THIS_METHOD(OnReconnectTimer))
 	{
-		BlockingCall(GetEventLoop(), [this](){
-			connection->AddLease(*this);
-		});
+		assert(GetEventLoop().IsInside());
+
+		connection->AddLease(*this);
 
 		nfs_add_base(this, _connection.GetServer(),
 			     _connection.GetExportName());
@@ -425,10 +425,9 @@ NfsStorage::OpenDirectory(std::string_view uri_utf8)
 }
 
 static std::unique_ptr<Storage>
-CreateNfsStorageURI(EventLoop &event_loop, std::string_view base)
+_CreateNfsStorageURI(EventLoop &event_loop, std::string_view base)
 {
-	if (!StringStartsWithIgnoreCase(base, "nfs://"sv))
-		return nullptr;
+	assert(StringStartsWithIgnoreCase(base, "nfs://"sv));
 
 	nfs_init(event_loop);
 
@@ -440,6 +439,22 @@ CreateNfsStorageURI(EventLoop &event_loop, std::string_view base)
 		nfs_finish();
 		throw;
 	}
+}
+
+static std::unique_ptr<Storage>
+CreateNfsStorageURI(EventLoop &event_loop, std::string_view base)
+{
+	if (!StringStartsWithIgnoreCase(base, "nfs://"sv))
+		return nullptr;
+
+	std::unique_ptr<Storage> result;
+
+	BlockingCall(event_loop, [&result, &event_loop, base]{
+		result = _CreateNfsStorageURI(event_loop, base);
+	});
+
+	assert(result);
+	return result;
 }
 
 static constexpr const char *nfs_prefixes[] = { "nfs://", nullptr };
