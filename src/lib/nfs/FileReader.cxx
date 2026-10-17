@@ -6,7 +6,8 @@
 #include "Base.hxx"
 #include "Connection.hxx"
 #include "event/Call.hxx"
-#include "util/ASCII.hxx"
+#include "util/StringCompare.hxx"
+#include "util/Compiler.h" // for gcc_unreachable()
 
 #include <nfsc/libnfs.h> // for struct nfs_stat_64
 
@@ -108,10 +109,8 @@ NfsFileReader::Open(const char *uri)
 {
 	assert(state == State::INITIAL);
 
-	if (!StringStartsWithCaseASCII(uri, "nfs://"))
+	if (!SkipPrefixIgnoreCase(uri, "nfs://"sv))
 		throw std::runtime_error("Malformed nfs:// URI");
-
-	uri += 6;
 
 	const char *slash = std::strchr(uri, '/');
 	if (slash == nullptr)
