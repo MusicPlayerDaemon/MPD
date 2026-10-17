@@ -21,4 +21,4 @@ nfs_set_base(std::string_view server, std::string_view export_name) noexcept;
  */
 [[gnu::pure]]
 const char *
-nfs_check_base(const char *server, const char *path) noexcept;
+nfs_check_base(std::string_view server, const char *path) noexcept;

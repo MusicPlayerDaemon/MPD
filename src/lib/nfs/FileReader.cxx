@@ -120,7 +120,7 @@ NfsFileReader::Open(const char *uri)
 
 	uri = slash;
 
-	const char *new_path = nfs_check_base(server.c_str(), uri);
+	const char *new_path = nfs_check_base(server, uri);
 	if (new_path != nullptr) {
 		export_name.assign(uri, new_path);
 		if (*new_path == 0)

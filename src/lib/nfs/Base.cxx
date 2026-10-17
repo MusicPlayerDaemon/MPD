@@ -28,12 +28,11 @@ nfs_set_base(std::string_view server, std::string_view export_name) noexcept
 }
 
 const char *
-nfs_check_base(const char *server, const char *path) noexcept
+nfs_check_base(std::string_view server, const char *path) noexcept
 {
-	assert(server != nullptr);
 	assert(path != nullptr);
 
-	return StringIsEqual(nfs_base_server.data(), server) &&
+	return server == nfs_base_server.data() &&
 		StringStartsWith(path, {nfs_base_export_name.data(), nfs_base_export_name_length}) &&
 		(path[nfs_base_export_name_length] == 0 ||
 		 path[nfs_base_export_name_length] == '/')
