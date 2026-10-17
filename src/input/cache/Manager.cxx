@@ -83,7 +83,7 @@ InputCacheManager::Get(std::string_view uri, bool create)
 		return {};
 
 	// TODO: wait for "ready" without blocking here
-	auto is = InputStream::OpenReady(uri, mutex);
+	auto is = InputStream::OpenReady(uri, stream_mutex);
 
 	if (!IsEligible(*is))
 		return {};

@@ -21,7 +21,10 @@ struct InputCacheConfig;
 class InputCacheManager {
 	const size_t max_total_size;
 
-	mutable Mutex mutex;
+	/**
+	 * A #Mutex used by all #InputStream implementations.
+	 */
+	Mutex stream_mutex;
 
 	size_t total_size = 0;
 
