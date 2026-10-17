@@ -72,6 +72,9 @@ private:
 	 */
 	bool IsEligible(const InputStream &input) const noexcept;
 
+	InputCacheLease Lookup(std::string_view uri) noexcept;
+	InputCacheLease Insert(InputCacheItem &item) noexcept;
+
 	void Remove(InputCacheItem &item) noexcept;
 	void Delete(InputCacheItem *item) noexcept;
 
