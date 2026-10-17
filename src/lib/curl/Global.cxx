@@ -2,7 +2,7 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "Global.hxx"
-#include "Request.hxx"
+#include "AsyncRequest.hxx"
 #include "event/Loop.hxx"
 #include "event/SocketEvent.hxx"
 
@@ -123,7 +123,7 @@ CurlSocket::OnSocketReady(unsigned flags) noexcept
 }
 
 void
-CurlGlobal::Add(CurlRequest &r)
+CurlGlobal::Add(Curl::AsyncRequest &r)
 {
 	assert(GetEventLoop().IsInside());
 
@@ -133,7 +133,7 @@ CurlGlobal::Add(CurlRequest &r)
 }
 
 void
-CurlGlobal::Remove(CurlRequest &r) noexcept
+CurlGlobal::Remove(Curl::AsyncRequest &r) noexcept
 {
 	assert(GetEventLoop().IsInside());
 
@@ -144,7 +144,7 @@ CurlGlobal::Remove(CurlRequest &r) noexcept
  * Find a request by its CURL "easy" handle.
  */
 [[gnu::pure]]
-static CurlRequest *
+static Curl::AsyncRequest *
 ToRequest(CURL *easy) noexcept
 {
 	void *p;
@@ -152,7 +152,7 @@ ToRequest(CURL *easy) noexcept
 	if (code != CURLE_OK)
 		return nullptr;
 
-	return (CurlRequest *)p;
+	return (Curl::AsyncRequest *)p;
 }
 
 inline void

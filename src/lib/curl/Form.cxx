@@ -5,7 +5,7 @@
 #include "String.hxx"
 
 std::string
-EncodeForm(CURL *curl, const Curl::Headers &fields) noexcept
+EncodeForm(const Curl::Headers &fields) noexcept
 {
 	std::string result;
 
@@ -18,7 +18,7 @@ EncodeForm(CURL *curl, const Curl::Headers &fields) noexcept
 
 		if (!field.empty()) {
 			CurlString value(
-				curl_easy_escape(curl, field.data(), field.length()));
+				curl_easy_escape(nullptr, field.data(), field.length()));
 			if (value)
 				result.append(value);
 		}

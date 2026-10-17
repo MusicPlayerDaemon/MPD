@@ -10,7 +10,7 @@
 #include <span>
 
 /**
- * Asynchronous response handler for a #CurlRequest.
+ * Asynchronous response handler for a #Curl::AsyncRequest.
  *
  * Its methods must be thread-safe.
  */
@@ -18,8 +18,8 @@ class CurlResponseHandler {
 public:
 	/**
 	 * OnData() shall throw this to pause the stream.  Call
-	 * CurlEasy::Unpause() or CurlRequest::Resume() to resume the
-	 * transfer.
+	 * CurlEasy::Unpause() or Curl::AsyncRequest::Resume() to
+	 * resume the transfer.
 	 */
 	struct Pause {};
 
@@ -43,13 +43,13 @@ public:
 
 	/**
 	 * The response has ended.  The method is allowed to delete the
-	 * #CurlRequest.
+	 * #Curl::AsyncRequest.
 	 */
 	virtual void OnEnd() = 0;
 
 	/**
 	 * An error has occurred.  The method is allowed to delete the
-	 * #CurlRequest.
+	 * #Curl::AsyncRequest.
 	 */
 	virtual void OnError(std::exception_ptr e) noexcept = 0;
 };

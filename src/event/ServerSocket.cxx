@@ -10,7 +10,7 @@
 #include "net/StaticSocketAddress.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/StaticSocketAddress.hxx"
-#include "net/SocketUtil.hxx"
+#include "net/SocketConfig.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/Resolver.hxx"
@@ -22,10 +22,6 @@
 
 #include <string>
 #include <utility>
-
-#ifdef HAVE_UN
-#include <sys/stat.h>
-#endif
 
 class ServerSocket::OneServerSocket final {
 	ServerSocket &parent;
@@ -130,9 +126,17 @@ ServerSocket::OneServerSocket::Open()
 {
 	assert(!IsDefined());
 
-	auto _fd = socket_bind_listen(address.GetFamily(),
-				      SOCK_STREAM, 0,
-				      address, 5);
+	const SocketConfig socket_config{
+		.bind_address = address,
+		.listen = 5,
+
+#ifdef HAVE_UN
+		/* allow everybody to connect */
+		.mode = 0666,
+#endif
+	};
+
+	auto _fd = socket_config.Create(SOCK_STREAM);
 
 #ifdef HAVE_TCP
 	if (parent.dscp_class >= 0) {
@@ -148,13 +152,6 @@ ServerSocket::OneServerSocket::Open()
 				 (const char *)msg);
 		}
 	}
-#endif
-
-#ifdef HAVE_UN
-	/* allow everybody to connect */
-
-	if (const char *path = address.GetLocalPath())
-		chmod(path, 0666);
 #endif
 
 	/* register in the EventLoop */	

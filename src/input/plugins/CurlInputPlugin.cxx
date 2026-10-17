@@ -2,11 +2,12 @@
 // Copyright The Music Player Daemon Project
 
 #include "CurlInputPlugin.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/HttpStatusError.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Init.hxx"
-#include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
+#include "lib/curl/Setup.hxx"
 #include "lib/curl/Slist.hxx"
 #include "../MaybeBufferedInputStream.hxx"
 #include "../AsyncInputStream.hxx"
@@ -63,7 +64,7 @@ class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	   to free */
 	CurlSlist request_headers;
 
-	CurlRequest *request = nullptr;
+	Curl::AsyncRequest *request = nullptr;
 
 	/** parser for icy-metadata */
 	std::shared_ptr<IcyMetaDataParser> icy;
@@ -86,7 +87,7 @@ public:
 
 private:
 	/**
-	 * Create and initialize a new #CurlRequest instance.  After
+	 * Create and initialize a new #Curl::AsyncRequest instance.  After
 	 * this, you may add more request headers and set options.  To
 	 * actually start the request, call StartRequest().
 	 */
@@ -411,11 +412,11 @@ input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 	verify_peer = block.GetBlockValue("verify_peer", default_verify);
 	verify_host = block.GetBlockValue("verify_host", default_verify);
 
-	constexpr std::chrono::seconds default_connection_timeout{10};
+	constexpr std::chrono::seconds default_connect_timeout{10};
 	connect_timeout = std::chrono::duration_cast<std::chrono::duration<long>>(
 		block.GetDuration("connect_timeout",
 				  std::chrono::seconds{1},
-				  default_connection_timeout));
+				  default_connect_timeout));
 
 	verbose = block.GetBlockValue("verbose", verbose);
 
@@ -490,6 +491,7 @@ CurlEasy
 CreateConfiguredCurlEasy(const char *url)
 {
 	CurlEasy easy{url};
+	Curl::Setup(easy);
 
 	/* increase CURL's receive buffer size from 16 kB to 512 kB
 	   (the maximum until CURL 7.88.0) to reduce system call
@@ -556,9 +558,9 @@ CreateEasy(const char *url, struct curl_slist *headers)
 void
 CurlInputStream::InitEasy()
 {
-	request = new CurlRequest(**curl_init,
-				  CreateEasy(GetURI(), request_headers.Get()),
-				  *this);
+	request = new Curl::AsyncRequest(**curl_init,
+					 CreateEasy(GetURI(), request_headers.Get()),
+					 *this);
 }
 
 void

@@ -323,11 +323,15 @@ SocketDescriptor::SetFreeBind(bool value) const noexcept
 	return SetBoolOption(IPPROTO_IP, IP_FREEBIND, value);
 }
 
+#endif
+
 bool
 SocketDescriptor::SetNoDelay(bool value) const noexcept
 {
 	return SetBoolOption(IPPROTO_TCP, TCP_NODELAY, value);
 }
+
+#ifdef __linux__
 
 bool
 SocketDescriptor::SetCork(bool value) const noexcept
@@ -348,11 +352,15 @@ SocketDescriptor::SetTcpUserTimeout(const unsigned &milliseconds) const noexcept
 			 &milliseconds, sizeof(milliseconds));
 }
 
+#endif
+
 bool
 SocketDescriptor::SetV6Only(bool value) const noexcept
 {
 	return SetBoolOption(IPPROTO_IPV6, IPV6_V6ONLY, value);
 }
+
+#ifdef __linux__
 
 bool
 SocketDescriptor::SetBindToDevice(const char *name) const noexcept

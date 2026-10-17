@@ -5,8 +5,6 @@
 
 #include <string>
 
-class CurlRequest;
-
 struct QobuzSession {
 	std::string user_auth_token;
 

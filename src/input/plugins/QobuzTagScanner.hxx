@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "lib/curl/Request.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/StringHandler.hxx"
 #include "input/RemoteTagScanner.hxx"
 
@@ -12,7 +12,7 @@ class QobuzClient;
 class QobuzTagScanner final
 	: public RemoteTagScanner, Curl::StringResponseHandler
 {
-	CurlRequest request;
+	Curl::AsyncRequest request;
 
 	RemoteTagHandler &handler;
 

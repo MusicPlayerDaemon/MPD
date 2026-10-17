@@ -3,8 +3,8 @@
 
 #pragma once
 
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/Slist.hxx"
-#include "lib/curl/Request.hxx"
 #include "lib/curl/StringHandler.hxx"
 
 class QobuzClient;
@@ -19,7 +19,7 @@ public:
 class QobuzTrackRequest final : Curl::StringResponseHandler {
 	CurlSlist request_headers;
 
-	CurlRequest request;
+	Curl::AsyncRequest request;
 
 	QobuzTrackHandler &handler;
 

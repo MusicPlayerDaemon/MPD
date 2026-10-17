@@ -23,17 +23,36 @@ class NfsManager::ManagedConnection final
 {
 	NfsManager &manager;
 
+	/**
+	 * Was this connection created by MakeConnection()?  These are
+	 * deleted as soon as they are unused, because each call to
+	 * MakeConnection() creates a new one.
+	 */
+	const bool transient;
+
 public:
 	ManagedConnection(NfsManager &_manager, EventLoop &_loop,
 			  struct nfs_context *_context,
 			  std::string_view _server,
-			  std::string_view _export_name)
+			  std::string_view _export_name,
+			  bool _transient)
 		:NfsConnection(_loop, _context, _server, _export_name),
-		 manager(_manager) {}
+		 manager(_manager), transient(_transient) {}
+
+	[[gnu::pure]]
+	bool IsObsolete() const noexcept {
+		return transient && IsUnused();
+	}
 
 protected:
 	/* virtual methods from NfsConnection */
 	void OnNfsConnectionError(std::exception_ptr e) noexcept override;
+
+	void OnNfsConnectionUnused() noexcept override {
+		if (transient)
+			/* defer deletion to NfsManager::OnIdle() */
+			manager.idle_event.Schedule();
+	}
 };
 
 void
@@ -77,7 +96,8 @@ NfsManager::MakeConnection(const char *url)
 
 	auto c = new ManagedConnection(*this, GetEventLoop(),
 				       context,
-				       pu->server, pu->path);
+				       pu->server, pu->path,
+				       true);
 	connections.push_front(*c);
 	return *c;
 }
@@ -98,7 +118,8 @@ NfsManager::GetConnection(std::string_view server, std::string_view export_name)
 
 	auto c = new ManagedConnection(*this, GetEventLoop(),
 				       context,
-				       server, export_name);
+				       server, export_name,
+				       false);
 	connections.push_front(*c);
 	return *c;
 }
@@ -123,4 +144,8 @@ inline void
 NfsManager::OnIdle() noexcept
 {
 	CollectGarbage();
+
+	connections.remove_and_dispose_if([](const ManagedConnection &c){
+		return c.IsObsolete();
+	}, DeleteDisposer());
 }

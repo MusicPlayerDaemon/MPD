@@ -38,7 +38,7 @@ static constexpr AudioObjectPropertySelector kAudioHardwareServiceDeviceProperty
 	kAudioHardwareServiceDeviceProperty_VirtualMasterVolume;
 #endif
 
-static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 100;
+static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 500;
 
 static auto
 StreamDescriptionToString(const AudioStreamBasicDescription &desc) noexcept

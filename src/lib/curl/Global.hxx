@@ -8,7 +8,7 @@
 #include "event/DeferEvent.hxx"
 
 class CurlSocket;
-class CurlRequest;
+namespace Curl { class AsyncRequest; }
 
 /**
  * Manager for the global CURLM object.
@@ -26,8 +26,8 @@ public:
 		return timeout_event.GetEventLoop();
 	}
 
-	void Add(CurlRequest &r);
-	void Remove(CurlRequest &r) noexcept;
+	void Add(Curl::AsyncRequest &r);
+	void Remove(Curl::AsyncRequest &r) noexcept;
 
 	void Assign(curl_socket_t fd, CurlSocket &cs) noexcept {
 		curl_multi_assign(multi.Get(), fd, &cs);

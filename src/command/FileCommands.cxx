@@ -117,13 +117,68 @@ handle_read_comments(Client &client, Request args, Response &r)
 }
 
 /**
+ * Read from the #InputStream at the specfified offset and send it as
+ * binary response to the #Response.
+ */
+static CommandResult
+SendFromInputStream(Response &r, InputStream &is, std::size_t offset,
+		    std::string_view file)
+{
+	if (!is.KnownSize()) {
+		r.Error(ACK_ERROR_NO_EXIST, "Cannot get size for stream");
+		return CommandResult::ERROR;
+	}
+
+	const offset_type file_size = is.GetSize();
+
+	if (offset > file_size) {
+		r.Error(ACK_ERROR_ARG, "Offset too large");
+		return CommandResult::ERROR;
+	}
+
+	std::size_t buffer_size =
+		std::min<offset_type>(file_size - offset,
+				      r.GetClient().binary_limit);
+
+	auto buffer = std::make_unique_for_overwrite<std::byte[]>(buffer_size);
+
+	std::size_t read_size = 0;
+	if (buffer_size > 0) {
+		std::unique_lock lock{is.mutex};
+		is.Seek(lock, offset);
+
+		const bool was_ready = is.IsReady();
+
+		read_size = is.Read(lock, {buffer.get(), buffer_size});
+
+		if (was_ready && read_size < buffer_size / 2)
+			/* the InputStream was ready before, but we
+			   got only very little data; probably just
+			   some data left in the buffer without doing
+			   any I/O; let's wait for the next low-level
+			   read to complete to get more data for the
+			   client */
+			read_size += is.Read(lock, {buffer.get() + read_size, buffer_size - read_size});
+	}
+
+	if (!file.empty())
+		r.Fmt("file: {}\n", file);
+
+	r.Fmt("size: {}\n", file_size);
+	r.WriteBinary({buffer.get(), read_size});
+	return CommandResult::OK;
+}
+
+
+/**
  * Searches for the files listed in #artnames in the UTF8 folder
  * URI #directory. This can be a local path or protocol-based
  * URI that #InputStream supports. Returns the first successfully
  * opened file or #nullptr on failure.
  */
 static InputStreamPtr
-find_stream_art(std::string_view directory, Mutex &mutex)
+find_stream_art(std::string_view directory, Mutex &mutex,
+		const Client *check_client)
 {
 	static constexpr auto art_names = std::array {
 		"cover.png",
@@ -136,6 +191,12 @@ find_stream_art(std::string_view directory, Mutex &mutex)
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
 		try {
+			if (check_client != nullptr)
+				/* the client has specified a local
+				   path; check whether it is allowed to
+				   access this file */
+				check_client->AllowFile(AllocatedPath::FromUTF8Throw(art_file));
+
 			return InputStream::OpenReady(art_file, mutex);
 		} catch (...) {
 			auto e = std::current_exception();
@@ -146,10 +207,14 @@ find_stream_art(std::string_view directory, Mutex &mutex)
 	return nullptr;
 }
 
+/**
+ * @param check_access check Client::AllowFile() for each file
+ * (because #art_directory is a local path specified by the client)
+ */
 static CommandResult
 read_stream_art(Response &r, const std::string_view art_directory,
 		const std::string_view display_directory,
-		size_t offset)
+		size_t offset, bool check_access=false)
 {
 	// TODO: eliminate this const_cast
 	auto &client = const_cast<Client &>(r.GetClient());
@@ -157,61 +222,20 @@ read_stream_art(Response &r, const std::string_view art_directory,
 	/* to avoid repeating the search for each chunk request by the
 	   same client, use the #LastInputStream class to cache the
 	   #InputStream instance */
-	auto *is = client.last_album_art.Open(art_directory, [](std::string_view directory,
-								Mutex &mutex){
-		return find_stream_art(directory, mutex);
+	auto *is = client.last_album_art.Open(art_directory, [&client, check_access](std::string_view directory,
+										 Mutex &mutex){
+		return find_stream_art(directory, mutex,
+				       check_access ? &client : nullptr);
 	});
 
 	if (is == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No file exists");
 		return CommandResult::ERROR;
 	}
-	if (!is->KnownSize()) {
-		r.Error(ACK_ERROR_NO_EXIST, "Cannot get size for stream");
-		return CommandResult::ERROR;
-	}
 
-	const offset_type art_file_size = is->GetSize();
-
-	if (offset > art_file_size) {
-		r.Error(ACK_ERROR_ARG, "Offset too large");
-		return CommandResult::ERROR;
-	}
-
-	std::size_t buffer_size =
-		std::min<offset_type>(art_file_size - offset,
-				      r.GetClient().binary_limit);
-
-	auto buffer = std::make_unique_for_overwrite<std::byte[]>(buffer_size);
-
-	std::size_t read_size = 0;
-	if (buffer_size > 0) {
-		std::unique_lock lock{is->mutex};
-		is->Seek(lock, offset);
-
-		const bool was_ready = is->IsReady();
-
-		read_size = is->Read(lock, {buffer.get(), buffer_size});
-
-		if (was_ready && read_size < buffer_size / 2)
-			/* the InputStream was ready before, but we
-			   got only very little data; probably just
-			   some data left in the buffer without doing
-			   any I/O; let's wait for the next low-level
-			   read to complete to get more data for the
-			   client */
-			read_size += is->Read(lock, {buffer.get() + read_size, buffer_size - read_size});
-	}
-
-	r.Fmt("file: {}\n"
-	      "size: {}\n",
-	      PathTraitsUTF8::Build(display_directory,
-				    PathTraitsUTF8::GetBase(is->GetUriView())),
-	      art_file_size);
-
-	r.WriteBinary({buffer.get(), read_size});
-
-	return CommandResult::OK;
+	return SendFromInputStream(r, *is, offset,
+				   PathTraitsUTF8::Build(display_directory,
+							 PathTraitsUTF8::GetBase(is->GetUriView())));
 }
 
 #ifdef ENABLE_DATABASE
@@ -298,7 +322,8 @@ handle_album_art(Client &client, Request args, Response &r)
 	case LocatedUri::Type::PATH: {
 		const auto directory =
 			PathTraitsUTF8::GetParent(located_uri.canonical_uri);
-		return read_stream_art(r, directory, directory, offset);
+		return read_stream_art(r, directory, directory, offset,
+				       located_uri.type == LocatedUri::Type::PATH);
 	}
 
 	case LocatedUri::Type::RELATIVE:

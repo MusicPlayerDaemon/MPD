@@ -9,12 +9,13 @@
 #include "input/InputStream.hxx"
 #include "input/RewindInputStream.hxx"
 #include "input/plugins/CurlInputPlugin.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/HttpStatusError.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Global.hxx"
+#include "lib/curl/Setup.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/String.hxx"
-#include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Escape.hxx"
 #include "lib/expat/ExpatParser.hxx"
@@ -101,6 +102,7 @@ static CurlEasy
 CreateWebdavCurlEasy(const char *uri)
 {
 	auto easy = CreateConfiguredCurlEasy(uri);
+	Curl::Setup(easy);
 	easy.SetTimeout(WEBDAV_TIMEOUT);
 	return easy;
 }
@@ -113,7 +115,7 @@ class BlockingHttpRequest : protected CurlResponseHandler {
 	bool done = false;
 
 protected:
-	CurlRequest request;
+	Curl::AsyncRequest request;
 
 	Mutex mutex;
 	Cond cond;
@@ -136,10 +138,6 @@ public:
 
 		if (postponed_error)
 			std::rethrow_exception(postponed_error);
-	}
-
-	CURL *GetEasy() noexcept {
-		return request.Get();
 	}
 
 protected:
@@ -301,7 +299,6 @@ public:
 				    "</a:propfind>"sv);
 	}
 
-	using BlockingHttpRequest::GetEasy;
 	using BlockingHttpRequest::DeferStart;
 	using BlockingHttpRequest::Wait;
 
@@ -517,7 +514,7 @@ class HttpListDirectoryOperation final : public PropfindOperation {
 public:
 	HttpListDirectoryOperation(CurlGlobal &curl, const char *uri)
 		:PropfindOperation(curl, uri, 1),
-		 base_path(CurlUnescape(GetEasy(), UriPathOrSlash(uri))) {}
+		 base_path(CurlUnescape(UriPathOrSlash(uri))) {}
 
 	std::unique_ptr<StorageDirectoryReader> Perform() {
 		DeferStart();
@@ -565,7 +562,7 @@ protected:
 		if (r.status != 200)
 			return;
 
-		std::string href = CurlUnescape(GetEasy(), r.href.c_str());
+		std::string href = CurlUnescape(r.href.c_str());
 		const auto name = HrefToEscapedName(href.c_str());
 		if (!PathTraitsUTF8::IsValidFilename(name))
 			return;

@@ -52,7 +52,15 @@ open_log_file()
 {
 	assert(!out_path.IsNull());
 
-	return OpenFile(out_path, O_CREAT | O_WRONLY | O_APPEND, 0666).Steal();
+	int flags = O_CREAT | O_WRONLY | O_APPEND;
+#ifdef O_NOFOLLOW
+	/* the log file may be opened before dropping root
+	   privileges (in a directory which is writable by the
+	   unprivileged user), so don't follow symlinks */
+	flags |= O_NOFOLLOW;
+#endif
+
+	return OpenFile(out_path, flags, 0666).Steal();
 }
 
 static void

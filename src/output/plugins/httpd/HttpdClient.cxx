@@ -249,7 +249,10 @@ HttpdClient::TryWrite() noexcept
 	const ssize_t bytes_to_write = GetBytesTillMetaData();
 	if (bytes_to_write == 0) {
 		if (!metadata_sent) {
-			ssize_t nbytes = TryWritePage(*metadata,
+			if (metadata_current_position == 0)
+				sending_metadata = next_metadata;
+
+			ssize_t nbytes = TryWritePage(*sending_metadata,
 						      metadata_current_position);
 			if (nbytes < 0) {
 				auto e = GetSocketError();
@@ -269,10 +272,14 @@ HttpdClient::TryWrite() noexcept
 
 			metadata_current_position += nbytes;
 
-			if (metadata->size() - metadata_current_position == 0) {
+			if (metadata_current_position == sending_metadata->size()) {
 				metadata_fill = 0;
 				metadata_current_position = 0;
-				metadata_sent = true;
+
+				/* if PushMetaData() was called meanwhile,
+				   send the new metadata next time */
+				metadata_sent = sending_metadata == next_metadata;
+				sending_metadata.reset();
 			}
 		} else {
 			static constexpr std::byte empty_data[1]{};
@@ -360,7 +367,7 @@ HttpdClient::PushMetaData(PagePtr page) noexcept
 {
 	assert(page != nullptr);
 
-	metadata = std::move(page);
+	next_metadata = std::move(page);
 	metadata_sent = false;
 }
 

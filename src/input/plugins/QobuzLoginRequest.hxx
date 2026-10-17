@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "lib/curl/Request.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/StringHandler.hxx"
 
 struct QobuzSession;
@@ -15,7 +15,7 @@ public:
 };
 
 class QobuzLoginRequest final : Curl::StringResponseHandler {
-	CurlRequest request;
+	Curl::AsyncRequest request;
 
 	QobuzLoginHandler &handler;
 

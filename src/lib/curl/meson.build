@@ -16,7 +16,7 @@ curl = static_library(
   'Delegate.cxx',
   'Init.cxx',
   'Global.cxx',
-  'Request.cxx',
+  'AsyncRequest.cxx',
   'Setup.cxx',
   'Adapter.cxx',
   'Escape.cxx',
