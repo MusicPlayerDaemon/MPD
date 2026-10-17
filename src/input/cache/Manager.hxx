@@ -32,7 +32,7 @@ class InputCacheManager {
 
 	IntrusiveList<InputCacheItem> items_by_time;
 
-	IntrusiveHashSet<InputCacheItem, 127,
+	IntrusiveHashSet<InputCacheItem, 128,
 			 IntrusiveHashSetOperators<InputCacheItem, ItemGetUri,
 						   std::hash<std::string_view>,
 						   std::equal_to<std::string_view>>> items_by_uri;
