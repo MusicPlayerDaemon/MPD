@@ -33,7 +33,7 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.16 (not yet released)
+ver 0.24.16 (2026/10/17)
 * protocol
   - fix underflow in relative range moves
   - reject empty ranges in "move"
@@ -45,6 +45,7 @@ ver 0.24.16 (not yet released)
   - sanitize tag values printed by "lsinfo" on stream URIs
   - validate the picture MIME type for "readpicture"
   - check local file access for "albumart"
+  - validate URIs in "playlistadd" with position
 * neighbor
   - smbclient: validate server names and comments
   - udisks: fix crash bug
@@ -68,9 +69,11 @@ ver 0.24.16 (not yet released)
   - alsa: reject dangerous ALSA device names
   - cache: fix use-after-free bug
   - cache: fix deadlock bug
+  - cache: fix data race
   - cdio_paranoia: fix memory leak
   - cdio_paranoia: open only hardware drives
   - curl: fix the broken "connect_timeout" setting
+  - curl: enable TLS verification on Android
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
   - qobuz: limit the size of API responses

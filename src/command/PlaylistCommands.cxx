@@ -286,7 +286,8 @@ handle_playlistadd_position(Client &client, const char *playlist_name,
 	}
 
 	if (UriHasScheme(uri)) {
-		editor.Insert(position, uri);
+		const SongLoader loader{client};
+		editor.Insert(position, loader.LoadSong(uri));
 	} else {
 #ifdef ENABLE_DATABASE
 		const DatabaseSelection selection(uri, true, nullptr);

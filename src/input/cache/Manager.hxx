@@ -21,7 +21,15 @@ struct InputCacheConfig;
 class InputCacheManager {
 	const size_t max_total_size;
 
-	mutable Mutex mutex;
+	/**
+	 * A #Mutex used by all #InputStream implementations.
+	 */
+	Mutex stream_mutex;
+
+	/**
+	 * Protects #total_size, #items_by_time, #items_by_uri.
+	 */
+	Mutex mutex;
 
 	size_t total_size = 0;
 
@@ -32,7 +40,7 @@ class InputCacheManager {
 
 	IntrusiveList<InputCacheItem> items_by_time;
 
-	IntrusiveHashSet<InputCacheItem, 127,
+	IntrusiveHashSet<InputCacheItem, 128,
 			 IntrusiveHashSetOperators<InputCacheItem, ItemGetUri,
 						   std::hash<std::string_view>,
 						   std::equal_to<std::string_view>>> items_by_uri;
@@ -68,6 +76,9 @@ private:
 	 * cache.
 	 */
 	bool IsEligible(const InputStream &input) const noexcept;
+
+	InputCacheLease Lookup(std::string_view uri) noexcept;
+	InputCacheLease Insert(InputCacheItem &item) noexcept;
 
 	void Remove(InputCacheItem &item) noexcept;
 	void Delete(InputCacheItem *item) noexcept;

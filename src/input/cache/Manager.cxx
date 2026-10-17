@@ -30,6 +30,8 @@ InputCacheManager::~InputCacheManager() noexcept
 void
 InputCacheManager::Flush() noexcept
 {
+	const std::lock_guard lock{mutex};
+
 	items_by_time.remove_and_dispose_if([](const InputCacheItem &item){
 		return !item.IsInUse();
 	}, [this](InputCacheItem *item){
@@ -56,7 +58,45 @@ InputCacheManager::IsEligible(const InputStream &input) const noexcept
 bool
 InputCacheManager::Contains(std::string_view uri) noexcept
 {
-	return Get(uri, false);
+	const std::lock_guard lock{mutex};
+
+	return items_by_uri.find(uri) != items_by_uri.end();
+}
+
+inline InputCacheLease
+InputCacheManager::Lookup(std::string_view uri) noexcept
+{
+	const std::lock_guard lock{mutex};
+
+	const auto iter = items_by_uri.find(uri);
+	if (iter == items_by_uri.end())
+		return {};
+
+	auto &item = *iter;
+
+	/* refresh */
+	items_by_time.erase(items_by_time.iterator_to(item));
+	items_by_time.push_back(item);
+
+	// TODO revalidate the cache item using the file's mtime?
+	// TODO if cache item contains error, retry now?
+
+	return InputCacheLease{item};
+}
+
+inline InputCacheLease
+InputCacheManager::Insert(InputCacheItem &item) noexcept
+{
+	const std::lock_guard lock{mutex};
+
+	total_size += item.size();
+
+	while (total_size > max_total_size && EvictOldestUnused()) {}
+
+	items_by_uri.insert(item);
+	items_by_time.push_back(item);
+
+	return InputCacheLease{item};
 }
 
 InputCacheLease
@@ -66,38 +106,19 @@ InputCacheManager::Get(std::string_view uri, bool create)
 	if (!PathTraitsUTF8::IsAbsolute(uri))
 		return {};
 
-	if (auto iter = items_by_uri.find(uri); iter != items_by_uri.end()) {
-		auto &item = *iter;
-
-		/* refresh */
-		items_by_time.erase(items_by_time.iterator_to(item));
-		items_by_time.push_back(item);
-
-		// TODO revalidate the cache item using the file's mtime?
-		// TODO if cache item contains error, retry now?
-
-		return InputCacheLease(item);
-	}
+	if (auto lease = Lookup(uri))
+		return lease;
 
 	if (!create)
 		return {};
 
 	// TODO: wait for "ready" without blocking here
-	auto is = InputStream::OpenReady(uri, mutex);
+	auto is = InputStream::OpenReady(uri, stream_mutex);
 
 	if (!IsEligible(*is))
 		return {};
 
-	const size_t size = is->GetSize();
-	total_size += size;
-
-	while (total_size > max_total_size && EvictOldestUnused()) {}
-
-	auto *item = new InputCacheItem(std::move(is));
-	items_by_uri.insert(*item);
-	items_by_time.push_back(*item);
-
-	return InputCacheLease(*item);
+	return Insert(*new InputCacheItem(std::move(is)));
 }
 
 void

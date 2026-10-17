@@ -4,21 +4,29 @@
 #include <string_view>
 
 /**
- * Set the "base" NFS server and export name.  This will be the
- * default export that will be mounted if a file within this export is
- * being opened, instead of guessing the mount point.
+ * Register a "base" NFS server and export name.  This will be the
+ * export that will be mounted if a file within this export is being
+ * opened, instead of guessing the mount point.
  *
- * This is a kludge that is not truly thread-safe.
+ * @param owner an opaque pointer identifying the caller, to be
+ * passed to nfs_remove_base()
  */
 void
-nfs_set_base(std::string_view server, std::string_view export_name) noexcept;
+nfs_add_base(const void *owner,
+	     std::string_view server, std::string_view export_name) noexcept;
 
 /**
- * Check if the given server and path are inside the "base"
- * server/export_name.  If yes, then a pointer to the portion of
+ * Unregister the "base" which was registered by nfs_add_base() with
+ * the given owner.
+ */
+void
+nfs_remove_base(const void *owner) noexcept;
+
+/**
+ * Check if the given server and path are inside one of the "base"
+ * server/export_name pairs.  If yes, then a pointer to the portion of
  * "path" after the export_name is returned; otherwise, nullptr is
  * returned.
  */
-[[gnu::pure]]
 const char *
-nfs_check_base(const char *server, const char *path) noexcept;
+nfs_check_base(std::string_view server, const char *path) noexcept;

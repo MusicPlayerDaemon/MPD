@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // author: Max Kellermann <max.kellermann@gmail.com>
 
-#ifndef ASYNC_WAITER_HXX
-#define ASYNC_WAITER_HXX
+#pragma once
 
 #include "Mutex.hxx"
 #include "Cond.hxx"
@@ -42,12 +41,10 @@ public:
 		cond.notify_one();
 	}
 
-	void SetError(std::exception_ptr e) noexcept {
+	void SetError(std::exception_ptr &&e) noexcept {
 		const std::lock_guard lock{mutex};
 		error = std::move(e);
 		done = true;
 		cond.notify_one();
 	}
 };
-
-#endif

@@ -167,8 +167,8 @@ public:
 	 * Ensure that the connection is established.  The connection
 	 * is kept up while at least one #NfsLease is registered.
 	 *
-	 * This method is thread-safe.  However, #NfsLease's methods
-	 * will be invoked from within the #EventLoop's thread.
+	 * This method is not thread-safe and may only be invoked from
+	 * within the #EventLoop's thread.
 	 */
 	void AddLease(NfsLease &lease) noexcept;
 	void RemoveLease(NfsLease &lease) noexcept;
