@@ -122,7 +122,7 @@ NfsFileReader::Open(const char *uri)
 
 	const char *new_path = nfs_check_base(server.c_str(), uri);
 	if (new_path != nullptr) {
-		export_name = std::string(uri, new_path);
+		export_name.assign(uri, new_path);
 		if (*new_path == 0)
 			new_path = "/";
 		path = new_path;
@@ -131,7 +131,7 @@ NfsFileReader::Open(const char *uri)
 		if (slash == nullptr || slash[1] == 0)
 			throw std::runtime_error("Malformed nfs:// URI");
 
-		export_name = std::string(uri, slash);
+		export_name.assign(uri, slash);
 		path = slash;
 	}
 
