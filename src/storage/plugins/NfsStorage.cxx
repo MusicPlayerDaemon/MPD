@@ -263,9 +263,17 @@ NfsStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 InputStreamPtr
 NfsStorage::OpenFile(std::string_view uri_utf8, Mutex &_mutex)
 {
+        /* make sure our connection (which was created with the
+           options from the URL's query string) exists, so
+           NfsFileReader finds it (or fail early if it is currently
+           unavailable); without it, nfs_get_connection() would
+           create a new connection without those options */
 	WaitConnected();
 
-	return OpenNfsInputStream(*connection, uri_utf8, _mutex);
+	/* open by URI; NfsFileReader looks up the connection in the
+	   I/O thread, because our "connection" pointer may be
+	   invalidated by the I/O thread at any time */
+	return OpenNfsInputStream(MapUTF8(uri_utf8), _mutex);
 }
 
 static void

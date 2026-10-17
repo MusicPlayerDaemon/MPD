@@ -8,10 +8,7 @@
 
 #include <string_view>
 
-class NfsConnection;
-
 extern const struct InputPlugin input_plugin_nfs;
 
 InputStreamPtr
-OpenNfsInputStream(NfsConnection &connection, std::string_view path,
-		   Mutex &mutex);
+OpenNfsInputStream(std::string_view uri, Mutex &mutex);

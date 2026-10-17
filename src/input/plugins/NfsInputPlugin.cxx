@@ -33,15 +33,6 @@ public:
 				  NFS_MAX_BUFFERED,
 				  NFS_RESUME_AT) {}
 
-	NfsInputStream(NfsConnection &_connection, std::string_view _path,
-		       Mutex &_mutex) noexcept
-		:NfsFileReader(_connection, _path),
-		 AsyncInputStream(NfsFileReader::GetEventLoop(),
-				  NfsFileReader::GetAbsoluteUri(),
-				  _mutex,
-				  NFS_MAX_BUFFERED,
-				  NFS_RESUME_AT) {}
-
 	~NfsInputStream() override {
 		DeferClose();
 	}
@@ -223,9 +214,7 @@ static InputStreamPtr
 input_nfs_open(std::string_view uri,
 	       Mutex &mutex)
 {
-	auto is = std::make_unique<NfsInputStream>(uri, mutex);
-	is->Open();
-	return is;
+	return OpenNfsInputStream(uri, mutex);
 }
 
 static constexpr const char *nfs_prefixes[] = {
@@ -243,8 +232,9 @@ const InputPlugin input_plugin_nfs = {
 };
 
 InputStreamPtr
-OpenNfsInputStream(NfsConnection &connection, std::string_view path,
-		   Mutex &mutex)
+OpenNfsInputStream(std::string_view uri, Mutex &mutex)
 {
-	return std::make_unique<NfsInputStream>(connection, path, mutex);
+	auto is = std::make_unique<NfsInputStream>(uri, mutex);
+	is->Open();
+	return is;
 }
