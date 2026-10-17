@@ -9,13 +9,15 @@
 class CurlGlobal;
 class CurlResponseHandler;
 
+namespace Curl {
+
 /**
  * A non-blocking HTTP request integrated via #CurlGlobal into the
  * #EventLoop.
  *
  * To start sending the request, call Start().
  */
-class CurlRequest final {
+class AsyncRequest final {
 	CurlGlobal &global;
 
 	CurlResponseHandlerAdapter handler;
@@ -26,22 +28,22 @@ class CurlRequest final {
 	bool registered = false;
 
 public:
-	CurlRequest(CurlGlobal &_global, CurlEasy &&easy,
+	AsyncRequest(CurlGlobal &_global, CurlEasy &&easy,
 		    CurlResponseHandler &_handler);
 
-	CurlRequest(CurlGlobal &_global,
+	AsyncRequest(CurlGlobal &_global,
 		    CurlResponseHandler &_handler);
 
-	CurlRequest(CurlGlobal &_global, const char *url,
+	AsyncRequest(CurlGlobal &_global, const char *url,
 		    CurlResponseHandler &_handler)
-		:CurlRequest(_global, _handler) {
+		:AsyncRequest(_global, _handler) {
 		easy.SetURL(url);
 	}
 
-	~CurlRequest() noexcept;
+	~AsyncRequest() noexcept;
 
-	CurlRequest(const CurlRequest &) = delete;
-	CurlRequest &operator=(const CurlRequest &) = delete;
+	AsyncRequest(const AsyncRequest &) = delete;
+	AsyncRequest &operator=(const AsyncRequest &) = delete;
 
 	/**
 	 * Register this request via CurlGlobal::Add(), which starts
@@ -97,3 +99,5 @@ private:
 	 */
 	void FreeEasy() noexcept;
 };
+
+} // namespace Curl

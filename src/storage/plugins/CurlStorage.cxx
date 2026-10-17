@@ -9,12 +9,12 @@
 #include "input/InputStream.hxx"
 #include "input/RewindInputStream.hxx"
 #include "input/plugins/CurlInputPlugin.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/HttpStatusError.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Slist.hxx"
 #include "lib/curl/String.hxx"
-#include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Escape.hxx"
 #include "lib/expat/ExpatParser.hxx"
@@ -113,7 +113,7 @@ class BlockingHttpRequest : protected CurlResponseHandler {
 	bool done = false;
 
 protected:
-	CurlRequest request;
+	Curl::AsyncRequest request;
 
 	Mutex mutex;
 	Cond cond;

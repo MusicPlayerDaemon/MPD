@@ -2,8 +2,8 @@
 // Copyright The Music Player Daemon Project
 
 #include "ShutdownHandler.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/Global.hxx"
-#include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
 #include "event/Loop.hxx"
 #include "util/PrintException.hxx"
@@ -66,7 +66,7 @@ try {
 	CurlGlobal curl_global(event_loop);
 
 	MyHandler handler(event_loop);
-	CurlRequest request(curl_global, uri, handler);
+	Curl::AsyncRequest request(curl_global, uri, handler);
 	request.Start();
 
 	event_loop.Run();

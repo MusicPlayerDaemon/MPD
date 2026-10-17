@@ -6,10 +6,10 @@
 #include "Device.hxx"
 #include "Log.hxx"
 #include "Error.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/HttpStatusError.hxx"
-#include "lib/curl/Request.hxx"
 #include "event/Call.hxx"
 #include "event/InjectEvent.hxx"
 #include "util/ByteSizes.hxx"
@@ -55,7 +55,7 @@ class UPnPDeviceDirectory::Downloader final
 	const std::string url;
 	const std::chrono::steady_clock::duration expires;
 
-	CurlRequest request;
+	Curl::AsyncRequest request;
 
 	std::string data;
 

@@ -2,10 +2,10 @@
 // Copyright The Music Player Daemon Project
 
 #include "CurlInputPlugin.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/HttpStatusError.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Init.hxx"
-#include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Slist.hxx"
 #include "../MaybeBufferedInputStream.hxx"
@@ -63,7 +63,7 @@ class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	   to free */
 	CurlSlist request_headers;
 
-	CurlRequest *request = nullptr;
+	Curl::AsyncRequest *request = nullptr;
 
 	/** parser for icy-metadata */
 	std::shared_ptr<IcyMetaDataParser> icy;
@@ -86,7 +86,7 @@ public:
 
 private:
 	/**
-	 * Create and initialize a new #CurlRequest instance.  After
+	 * Create and initialize a new #Curl::AsyncRequest instance.  After
 	 * this, you may add more request headers and set options.  To
 	 * actually start the request, call StartRequest().
 	 */
@@ -556,9 +556,9 @@ CreateEasy(const char *url, struct curl_slist *headers)
 void
 CurlInputStream::InitEasy()
 {
-	request = new CurlRequest(**curl_init,
-				  CreateEasy(GetURI(), request_headers.Get()),
-				  *this);
+	request = new Curl::AsyncRequest(**curl_init,
+					 CreateEasy(GetURI(), request_headers.Get()),
+					 *this);
 }
 
 void
