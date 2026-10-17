@@ -8,6 +8,7 @@
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Headers.hxx"
 #include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "event/InjectEvent.hxx"
 #include "util/IntrusiveList.hxx"
 
@@ -33,9 +34,21 @@ class QobuzClient final : QobuzLoginHandler {
 	InjectEvent defer_invoke_handlers;
 
 	/**
-	 * Protects #session, #error, #login_request, #handlers.
+	 * Protects #session, #error, #login_request, #handlers,
+	 * #invoking_handler.
 	 */
 	mutable Mutex mutex;
+
+	/**
+	 * Signalled when #invoking_handler is cleared.
+	 */
+	Cond invoke_cond;
+
+	/**
+	 * The handler whose OnQobuzSession() method is currently
+	 * being invoked by InvokeHandlers() (with #mutex unlocked).
+	 */
+	QobuzSessionHandler *invoking_handler = nullptr;
 
 	QobuzSession session;
 
@@ -65,10 +78,21 @@ public:
 
 	void AddLoginHandler(QobuzSessionHandler &h) noexcept;
 
+	/**
+	 * Unregister the handler.  If its OnQobuzSession() method is
+	 * currently being invoked in the I/O thread, wait for it to
+	 * return, so the caller may destroy the handler afterwards.
+	 * Therefore, the caller must not hold any mutex which
+	 * OnQobuzSession() locks.
+	 */
 	void RemoveLoginHandler(QobuzSessionHandler &h) noexcept {
-		const std::lock_guard protect{mutex};
+		std::unique_lock lock{mutex};
 		if (h.is_linked())
 			h.unlink();
+		else
+			invoke_cond.wait(lock, [this, &h]{
+				return invoking_handler != &h;
+			});
 	}
 
 	/**

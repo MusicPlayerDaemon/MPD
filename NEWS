@@ -115,6 +115,7 @@ ver 0.24.16 (2026/10/17)
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
   - qobuz: limit the size of API responses
+  - qobuz: fix use-after-free bug
   - qobuz: accept only HTTP stream URLs
 * decoder
   - audiofile: fix division by zero
