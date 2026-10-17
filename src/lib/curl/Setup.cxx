@@ -17,6 +17,10 @@ Setup(CurlEasy &easy)
 	easy.SetNoProgress();
 	easy.SetNoSignal();
 	easy.SetConnectTimeout(std::chrono::seconds{10});
+
+#ifdef ANDROID
+	easy.SetOption(CURLOPT_CAPATH, "/system/etc/security/cacerts");
+#endif
 }
 
 } // namespace Curl
