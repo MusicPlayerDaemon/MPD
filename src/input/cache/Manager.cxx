@@ -56,7 +56,7 @@ InputCacheManager::IsEligible(const InputStream &input) const noexcept
 bool
 InputCacheManager::Contains(std::string_view uri) noexcept
 {
-	return Get(uri, false);
+	return items_by_uri.find(uri) != items_by_uri.end();
 }
 
 InputCacheLease
