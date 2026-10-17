@@ -267,6 +267,9 @@ NfsConnection::RemoveLease(NfsLease &lease) noexcept
 	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 	lease.unlink();
+
+	if (IsUnused())
+		OnNfsConnectionUnused();
 }
 
 void
@@ -523,6 +526,8 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 	assert(mount_state >= MountState::WAITING);
 	assert(!postponed_mount_error);
 
+	const bool was_unused = IsUnused();
+
 	const bool was_mounted = mount_state >= MountState::FINISHED;
 	if (!was_mounted || (flags & SocketEvent::HANGUP) != 0)
 		/* until the mount is finished, the NFS client may use
@@ -574,6 +579,10 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 #endif
 
 	ScheduleSocket();
+
+	if (!was_unused && IsUnused())
+		/* the last (cancelled) operation has finished */
+		OnNfsConnectionUnused();
 }
 
 inline void

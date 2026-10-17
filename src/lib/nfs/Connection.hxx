@@ -248,8 +248,25 @@ public:
 	 */
 	void Close(struct nfsfh *fh) noexcept;
 
+	/**
+	 * Is this connection unused, i.e. does it have no leases and
+	 * no pending operations (not even cancelled ones)?
+	 */
+	[[gnu::pure]]
+	bool IsUnused() const noexcept {
+		return new_leases.empty() && active_leases.empty() &&
+			callbacks.empty() && deferred_close.empty();
+	}
+
 protected:
 	virtual void OnNfsConnectionError(std::exception_ptr e) noexcept = 0;
+
+	/**
+	 * This connection has become unused (see IsUnused()), either
+	 * because the last lease has been removed or because the
+	 * last pending operation has finished.
+	 */
+	virtual void OnNfsConnectionUnused() noexcept {}
 
 private:
 	void PrepareDestroyContext() noexcept;

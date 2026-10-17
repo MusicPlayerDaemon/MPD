@@ -92,6 +92,13 @@ private:
 	}
 
 public:
+	/**
+	 * Is the list empty, i.e. not even cancelled items are left?
+	 */
+	bool empty() const noexcept {
+		return list.empty();
+	}
+
 #ifndef NDEBUG
 	[[gnu::pure]]
 	bool IsEmpty() const noexcept {
