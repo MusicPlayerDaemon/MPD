@@ -16,6 +16,8 @@ ver 0.25 (not yet released)
   - fluidsynth: add option "settings" for arbitrary FluidSynth settings
   - psgplay: new plugin
   - vgmstream: new plugin
+* filter
+  - startdelay: new plugin
 * output
   - alsa: use hardware pause if available
   - pipewire: add option "reconnect_stream"
