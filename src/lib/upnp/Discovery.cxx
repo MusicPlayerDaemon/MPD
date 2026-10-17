@@ -393,6 +393,11 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
 
 UPnPDeviceDirectory::~UPnPDeviceDirectory() noexcept
 {
+	/* libupnp may still have pending callbacks with our cookie
+	   (e.g. search results); this waits for running ones and
+	   ignores later ones */
+	UnregisterUpnpCallback();
+
 	BlockingCall(GetEventLoop(), [this]() {
 		const std::lock_guard protect{mutex};
 		downloaders.clear_and_dispose(DeleteDisposer());

@@ -43,6 +43,7 @@ endif
 upnp = static_library(
   'upnp',
   'Init.cxx',
+  'Callback.cxx',
   'ClientInit.cxx',
   'Device.cxx',
   'ContentDirectoryService.cxx',

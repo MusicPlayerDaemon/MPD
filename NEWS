@@ -147,6 +147,7 @@ ver 0.24.16 (2026/10/17)
   - simple: reject truncated database files
   - upnp: limit size and duration of device description downloads
   - upnp: fix crash on discovery error
+  - upnp: fix use-after-free bug
   - upnp: limit Browse and Search results
   - upnp: accept only HTTP resource URLs
   - upnp: ignore URLBase pointing to a different host
