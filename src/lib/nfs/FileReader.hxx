@@ -60,16 +60,11 @@ class NfsFileReader : NfsLease, NfsCallback {
 
 public:
 	NfsFileReader() noexcept;
-	explicit NfsFileReader(NfsConnection &_connection,
-			       std::string_view _path) noexcept;
 	~NfsFileReader() noexcept;
 
 	auto &GetEventLoop() const noexcept {
 		return defer_open.GetEventLoop();
 	}
-
-	[[nodiscard]] [[gnu::pure]]
-	std::string GetAbsoluteUri() const noexcept;
 
 	void Close() noexcept;
 	void DeferClose() noexcept;

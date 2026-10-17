@@ -11,8 +11,6 @@
 
 #include <nfsc/libnfs.h> // for struct nfs_stat_64
 
-#include <fmt/format.h>
-
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
@@ -28,28 +26,9 @@ NfsFileReader::NfsFileReader() noexcept
 {
 }
 
-NfsFileReader::NfsFileReader(NfsConnection &_connection,
-			     std::string_view _path) noexcept
-	:state(State::DEFER),
-	 path(_path),
-	 connection(&_connection),
-	 defer_open(_connection.GetEventLoop(), BIND_THIS_METHOD(OnDeferredOpen))
-{
-	defer_open.Schedule();
-}
-
 NfsFileReader::~NfsFileReader() noexcept
 {
 	assert(state == State::INITIAL);
-}
-
-std::string
-NfsFileReader::GetAbsoluteUri() const noexcept
-{
-	return fmt::format("nfs://{}{}/{}"sv,
-			   connection != nullptr ? connection->GetServer() : server,
-			   connection != nullptr ? connection->GetExportName() : export_name,
-			   path);
 }
 
 void
@@ -318,14 +297,14 @@ void
 NfsFileReader::OnDeferredOpen() noexcept
 {
 	assert(state == State::DEFER);
+	assert(connection == nullptr);
 
-	if (connection == nullptr)
-		try {
-			connection = &nfs_get_connection(server, export_name);
-		} catch (...) {
-			OnNfsFileError(std::current_exception());
-			return;
-		}
+	try {
+		connection = &nfs_get_connection(server, export_name);
+	} catch (...) {
+		OnNfsFileError(std::current_exception());
+		return;
+	}
 
 	connection->AddLease(*this);
 	state = State::MOUNT;
