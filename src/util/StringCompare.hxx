@@ -153,7 +153,7 @@ RemoveSuffix(std::basic_string_view<T> &haystack,
 
 template<typename T>
 constexpr bool
-SkipPrefixIgnoreCase(const char *&haystack,
+SkipPrefixIgnoreCase(const T *&haystack,
 		     std::basic_string_view<T> needle) noexcept
 {
 	bool match = StringStartsWithIgnoreCase(haystack, needle);
