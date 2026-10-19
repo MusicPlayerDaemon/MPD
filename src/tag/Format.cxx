@@ -8,6 +8,10 @@
 #include "util/format.h"
 #include "util/TruncateString.hxx"
 
+#ifdef _WIN32
+#include "fs/ReservedName.hxx" // for IsWindowsReservedFilename()
+#endif
+
 #include <algorithm>
 
 #include <string.h>
@@ -53,6 +57,18 @@ SanitizeString(const char *s, char *buffer, size_t buffer_size) noexcept
 	/* skip leading dots to avoid generating "../" sequences */
 	while (*s == '.')
 		++s;
+
+#ifdef _WIN32
+	if (IsWindowsReservedFilename(s)) {
+		/* prefix an underscore, because Windows would
+		   interpret this as a DOS device name (e.g. "COM1"),
+		   even with a file name extension */
+		buffer[0] = '_';
+		char *end = CopyTruncateString(buffer + 1, s, buffer_size - 1);
+		std::replace_if(buffer + 1, end, IsUnsafeChar, ' ');
+		return buffer;
+	}
+#endif
 
 	if (!HasUnsafeChar(s))
 		return s;
