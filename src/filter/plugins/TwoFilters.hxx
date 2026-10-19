@@ -15,6 +15,13 @@
 class TwoFilters final : public Filter {
 	std::unique_ptr<Filter> first, second;
 
+	/**
+	 * Has the first filter been flushed completely?  It is not
+	 * destroyed then, because other objects (e.g. the software
+	 * mixer) may still refer to it.
+	 */
+	bool first_flushed = false;
+
 public:
 	template<typename F, typename S>
 	TwoFilters(F &&_first, S &&_second) noexcept

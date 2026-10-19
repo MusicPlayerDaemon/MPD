@@ -65,7 +65,7 @@ TwoFilters::Flush()
 
 	/* now flush the first filter and process it with the second
            filter */
-	if (first) {
+	if (!first_flushed) {
 		if (auto result = first->Flush(); !result.empty())
 			/* output from the first Filter must be
 			   filtered by the second Filter */
@@ -75,7 +75,7 @@ TwoFilters::Flush()
 		   need it anymore; any further method calls that
 		   would use it are illegal according to the Filter
 		   API docs */
-		first.reset();
+		first_flushed = true;
 	}
 
 	/* finally flush the second filter */
