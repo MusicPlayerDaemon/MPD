@@ -4,6 +4,7 @@ ver 0.24.17 (not yet released)
 * output
   - pipewire: fix race crash bug
   - pulse: fix race crash bug
+  - sles: fix hang due to integer underflow
 
 ver 0.24.16 (2026/10/17)
 * protocol
