@@ -2,6 +2,7 @@ ver 0.24.17 (not yet released)
 * protocol
   - fix crash on "getfingerprint" error
   - fix crash on "getfingerprint" + "close"
+  - fix missing "Added" time stamp
 * neighbor
   - smbclient: fix linker failure
   - udisks: accept ObjectManager signals only from udisks2
