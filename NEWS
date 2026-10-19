@@ -7,6 +7,7 @@ ver 0.24.17 (not yet released)
   - smbclient: fix linker failure
   - udisks: accept ObjectManager signals only from udisks2
   - udisks: skip objects with strings unsafe for the MPD protocol
+  - upnp: ignore devices whose description failed to parse
 * input
   - cache: fix data race
   - ffmpeg: faster close
