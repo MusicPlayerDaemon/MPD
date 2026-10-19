@@ -29,6 +29,7 @@ neighbor_plugins = static_library(
     dbus_dep,
     smbclient_dep,
     upnp_dep,
+    fmt_dep,
   ],
 )
 
