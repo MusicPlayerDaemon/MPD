@@ -155,6 +155,7 @@ public:
 	void Ready(AudioFormat audio_format,
 		   bool seekable, SignedSongTime duration) noexcept override;
 	DecoderCommand GetCommand() noexcept override;
+	bool IsStopRequested() const noexcept override;
 	void CommandFinished() noexcept override;
 	SongTime GetSeekTime() noexcept override;
 	uint64_t GetSeekFrame() noexcept override;

@@ -48,6 +48,16 @@ public:
 	virtual DecoderCommand GetCommand() noexcept = 0;
 
 	/**
+	 * Has DecoderCommand::STOP been requested (or has an error
+	 * occurred)?  Unlike GetCommand(), this method has no side
+	 * effects; it may be called any time, even before Ready(),
+	 * e.g. from a library's interrupt callback while it blocks
+	 * on I/O.
+	 */
+	[[gnu::pure]]
+	virtual bool IsStopRequested() const noexcept = 0;
+
+	/**
 	 * Called by the decoder when it has performed the requested command
 	 * (dc->command).  This function resets dc->command and wakes up the
 	 * player thread.

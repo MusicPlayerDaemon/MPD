@@ -34,6 +34,12 @@ DumpDecoderClient::GetCommand() noexcept
 	return DecoderCommand::NONE;
 }
 
+bool
+DumpDecoderClient::IsStopRequested() const noexcept
+{
+	return false;
+}
+
 void
 DumpDecoderClient::CommandFinished() noexcept
 {

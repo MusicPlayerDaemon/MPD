@@ -284,6 +284,13 @@ DecoderBridge::GetCommand() noexcept
 	return LockGetVirtualCommand();
 }
 
+bool
+DecoderBridge::IsStopRequested() const noexcept
+{
+	const std::lock_guard protect{dc.mutex};
+	return error || dc.command == DecoderCommand::STOP;
+}
+
 void
 DecoderBridge::CommandFinished() noexcept
 {
