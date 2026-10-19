@@ -172,6 +172,10 @@ IsQuote(char ch) noexcept
 	return ch == '"' || ch == '\'';
 }
 
+/* preveng inlining, because the 4 kB stack buffer would then multiply
+   the stack usage of each nesting level of the recursive
+   ParseExpression() */
+[[gnu::noinline]]
 static std::string
 ExpectQuoted(const char *&s)
 {
