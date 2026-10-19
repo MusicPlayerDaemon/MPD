@@ -8,6 +8,7 @@
 #include "../OutputAPI.hxx"
 #include "../Error.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
+#include "thread/Mutex.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <pulse/thread-mainloop.h>
@@ -36,6 +37,13 @@ class PulseOutput final : AudioOutput {
 	const char *const media_role;
 
 	PulseMixer *mixer = nullptr;
+
+	/**
+	 * Protects #mainloop from concurrent access by Interrupt()
+	 * (which may be called from any thread at any time) while
+	 * Enable()/Disable() create and destroy it.
+	 */
+	Mutex interrupt_mutex;
 
 	struct pa_threaded_mainloop *mainloop = nullptr;
 	struct pa_context *context;
@@ -427,6 +435,8 @@ PulseOutput::SetupContext()
 void
 PulseOutput::Enable()
 {
+	const std::scoped_lock protect{interrupt_mutex};
+
 	assert(mainloop == nullptr);
 
 	/* create the libpulse mainloop and start the thread */
@@ -463,6 +473,8 @@ PulseOutput::Enable()
 void
 PulseOutput::Disable() noexcept
 {
+	const std::scoped_lock protect{interrupt_mutex};
+
 	assert(mainloop != nullptr);
 
 	pa_threaded_mainloop_stop(mainloop);
@@ -699,6 +711,8 @@ PulseOutput::Close() noexcept
 void
 PulseOutput::Interrupt() noexcept
 {
+	const std::scoped_lock protect{interrupt_mutex};
+
 	if (mainloop == nullptr)
 		return;
 

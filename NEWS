@@ -1,6 +1,8 @@
 ver 0.24.17 (not yet released)
 * neighbor
   - smbclient: fix linker failure
+* output
+  - pulse: fix race crash bug
 
 ver 0.24.16 (2026/10/17)
 * protocol
