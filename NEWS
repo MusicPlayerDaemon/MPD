@@ -15,6 +15,8 @@ ver 0.25 (not yet released)
 * output
   - alsa: use hardware pause if available
   - pipewire: add option "reconnect_stream"
+  - pipewire don't discard buffered audio on pause
+  - pulse: don't discard buffered audio on pause
   - wasapi: detect device changes
 * mixer
   - fix mixer idle events on non-default partitions
