@@ -46,6 +46,8 @@ ver 0.24.17 (not yet released)
   - software: fix race crash bug
 * Linux
   - discard inherited supplementary groups with "group"
+* Windows
+  - playlist: reject Windows reserved device names
 
 ver 0.24.16 (2026/10/17)
 * protocol
