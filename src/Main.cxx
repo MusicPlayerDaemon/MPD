@@ -82,6 +82,7 @@
 #include "android/Environment.hxx"
 #include "android/Context.hxx"
 #include "android/LogListener.hxx"
+#include "android/Bridge.hxx"
 #include "config/File.hxx"
 #include "fs/FileSystem.hxx"
 #endif
@@ -334,6 +335,10 @@ MainConfigured(const CommandLineOptions &options,
 
 	Instance instance;
 	global_instance = &instance;
+
+#ifdef ANDROID
+	AndroidControl android_control{instance};
+#endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance.neighbors = std::make_unique<NeighborGlue>();
