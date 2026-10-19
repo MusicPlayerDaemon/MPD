@@ -83,6 +83,53 @@ TEST(UriUtil, RelativePathWithinDepth)
 	EXPECT_FALSE(UriIsRelativePathWithinDepth("../foo/", 1));
 }
 
+TEST(UriUtil, StaysInsideDepth)
+{
+	// paths without ".." segments always stay inside
+	EXPECT_TRUE(UriStaysInsideDepth("", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("foo", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("foo/bar", 0));
+
+	// "." and empty segments are ignored
+	EXPECT_TRUE(UriStaysInsideDepth("./foo", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("foo/./bar", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("foo//bar", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("foo/", 0));
+	EXPECT_FALSE(UriStaysInsideDepth(".//./..", 0));
+
+	// leading ".." segments are limited by the depth
+	EXPECT_FALSE(UriStaysInsideDepth("..", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("..", 1));
+	EXPECT_FALSE(UriStaysInsideDepth("../foo", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("../foo", 1));
+	EXPECT_FALSE(UriStaysInsideDepth("../../foo", 1));
+	EXPECT_TRUE(UriStaysInsideDepth("../../foo", 2));
+	EXPECT_TRUE(UriStaysInsideDepth(".././../foo", 2));
+
+	// ".." segments after other segments
+	EXPECT_TRUE(UriStaysInsideDepth("foo/..", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("foo/../bar", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("a/b/../..", 0));
+	EXPECT_FALSE(UriStaysInsideDepth("a/b/../../..", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("a/b/../../..", 1));
+	EXPECT_FALSE(UriStaysInsideDepth("sub/../../outside", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("sub/../../outside", 1));
+	EXPECT_FALSE(UriStaysInsideDepth("foo/../../bar", 0));
+	EXPECT_FALSE(UriStaysInsideDepth("a/../b/../..", 0));
+
+	/* the order matters, not just the total count: leaving the
+	   root once is enough, even if the path returns later */
+	EXPECT_FALSE(UriStaysInsideDepth("../foo/bar", 0));
+	EXPECT_FALSE(UriStaysInsideDepth("../x/../..", 1));
+	EXPECT_TRUE(UriStaysInsideDepth("../x/../..", 2));
+
+	// names which only begin with dots are regular segments
+	EXPECT_TRUE(UriStaysInsideDepth(".../foo", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("..foo", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("foo../bar", 0));
+	EXPECT_TRUE(UriStaysInsideDepth("...", 0));
+}
+
 TEST(UriUtil, RemoveAuth)
 {
 	EXPECT_EQ(std::string(),

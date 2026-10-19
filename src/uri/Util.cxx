@@ -42,6 +42,25 @@ UriIsRelativePathWithinDepth(std::string_view uri, unsigned max_up) noexcept
 	return UriIsCanonicalRelativePath(uri);
 }
 
+bool
+UriStaysInsideDepth(std::string_view path, unsigned depth) noexcept
+{
+	for (const std::string_view segment : IterableSplitString(path, '/')) {
+		if (segment.empty() || segment == "."sv)
+			continue;
+
+		if (segment == ".."sv) {
+			if (depth == 0)
+				return false;
+
+			--depth;
+		} else
+			++depth;
+	}
+
+	return true;
+}
+
 [[gnu::pure]]
 static std::string_view
 SkipUriScheme(std::string_view uri) noexcept

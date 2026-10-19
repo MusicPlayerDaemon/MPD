@@ -35,6 +35,19 @@ bool
 UriIsRelativePathWithinDepth(std::string_view uri, unsigned max_up) noexcept;
 
 /**
+ * Does the given relative path (which may contain "." and ".."
+ * segments anywhere) stay inside the storage root?
+ *
+ * Unlike UriIsRelativePathWithinDepth(), this allows ".." segments to
+ * appear anywhere, not just at the beginning.
+ *
+ * @param depth the allowed number of remaining ".." segments
+ */
+[[gnu::pure]]
+bool
+UriStaysInsideDepth(std::string_view path, unsigned depth) noexcept;
+
+/**
  * Removes HTTP username and password from the URI.  This may be
  * useful for displaying an URI without disclosing secrets.  Returns
  * an empty string if nothing needs to be removed, or if the URI is

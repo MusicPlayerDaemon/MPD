@@ -4,6 +4,7 @@ ver 0.24.18 (not yet released)
 * database
   - proxy: fix playback of CUE tracks
   - simple: reject playlist entries which climb above the music directory
+  - simple: improve symlink checks
   - upnp: support libupnp 1.18 (and 1.14.26 to 1.14.29)
 * storage
   - nfs: fix use-after-free crash bug after disconnect
