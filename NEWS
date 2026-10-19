@@ -5,6 +5,7 @@ ver 0.24.17 (not yet released)
   - cache: fix data race
 * decoder
   - ffmpeg: restrict nested protocols
+  - gme: limit the number of subtunes in a container
 * output
   - pipewire: fix race crash bug
   - pulse: fix race crash bug

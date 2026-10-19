@@ -33,6 +33,12 @@ static constexpr Domain gme_domain("gme");
 static constexpr unsigned GME_SAMPLE_RATE = 44100;
 static constexpr unsigned GME_CHANNELS = 2;
 static constexpr unsigned GME_BUFFER_FRAMES = 2048;
+
+/**
+ * The maximum number of subtunes in a container; the number comes
+ * from the (untrusted) file, and some formats allow any number.
+ */
+static constexpr unsigned GME_MAX_TRACKS = 256;
 static constexpr unsigned GME_BUFFER_SAMPLES =
 	GME_BUFFER_FRAMES * GME_CHANNELS;
 
@@ -302,6 +308,12 @@ gme_container_scan(Path path_fs)
 	/* if it only contains a single tune, don't treat as container */
 	if (num_songs < 2)
 		return list;
+
+	if (num_songs > GME_MAX_TRACKS) {
+		FmtWarning(gme_domain, "Too many subtunes in {:?}",
+			   path_fs);
+		return list;
+	}
 
 	const Path subtune_suffix = Path::FromFS(path_fs.GetExtension());
 
