@@ -3,6 +3,7 @@
 
 #include "FileOutputStream.hxx"
 #include "lib/fmt/PathFormatter.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/SystemError.hxx"
 
 #ifdef _WIN32
@@ -221,7 +222,7 @@ FileOutputStream::OpenCreate(Access access, bool visible)
 		    directory_fd,
 #endif
 		    GetPath().c_str(),
-		    O_WRONLY|O_CREAT|O_TRUNC,
+		    O_WRONLY|O_CREAT|O_TRUNC|O_NOFOLLOW,
 		    static_cast<mode_t>(access)))
 		throw FmtErrno("Failed to create {:?}", GetPath());
 }
@@ -229,7 +230,7 @@ FileOutputStream::OpenCreate(Access access, bool visible)
 inline void
 FileOutputStream::OpenAppend(Access access, bool create)
 {
-	int flags = O_WRONLY|O_APPEND;
+	int flags = O_WRONLY|O_APPEND|O_NOFOLLOW;
 	if (create)
 		flags |= O_CREAT;
 
