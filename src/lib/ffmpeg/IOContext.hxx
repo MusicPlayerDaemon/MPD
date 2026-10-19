@@ -21,8 +21,9 @@ class IOContext {
 public:
 	IOContext() = default;
 
-	IOContext(const char *url, int flags, AVDictionary **options) {
-		int err = avio_open2(&io_context, url, flags, nullptr, options);
+	IOContext(const char *url, int flags, AVDictionary **options,
+		  const AVIOInterruptCB *int_cb=nullptr) {
+		int err = avio_open2(&io_context, url, flags, int_cb, options);
 		if (err < 0)
 			throw MakeFfmpegError(err);
 	}
