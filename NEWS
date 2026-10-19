@@ -25,6 +25,8 @@ ver 0.24.17 (not yet released)
   - flac, opus, vorbis: fix Ogg detection if a stream's first bytes arrive in pieces
   - gme: limit the number of subtunes in a container
   - mpg123: fix crash with empty TXXX frame
+* encoder
+  - twolame: fix crash bug
 * database
   - simple: don't delete mount points during update
   - upnp: use only music items
