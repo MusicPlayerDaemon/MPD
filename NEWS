@@ -3,6 +3,7 @@ ver 0.24.17 (not yet released)
   - smbclient: fix linker failure
 * input
   - cache: fix data race
+  - ffmpeg, mms: fix stuck decoder if server stalls
   - nfs: fix use-after-free crash bug
 * decoder
   - ffmpeg: restrict nested protocols

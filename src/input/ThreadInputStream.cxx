@@ -139,7 +139,9 @@ ThreadInputStream::IsAvailable() const noexcept
 {
 	assert(!thread.IsInside());
 
-	return !IsEOF() || postponed_exception;
+	/* true only if Read() would not block */
+	return postponed_exception ||
+		(!IsSeeking() && (eof || !buffer.empty()));
 }
 
 void
