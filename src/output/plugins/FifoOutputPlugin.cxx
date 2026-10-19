@@ -145,7 +145,8 @@ try {
 
 	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0).Steal();
 	if (output < 0)
-		throw FmtErrno("Could not open FIFO {:?} for writing");
+		throw FmtErrno("Could not open FIFO {:?} for writing",
+			       path);
 } catch (...) {
 	CloseFifo();
 	throw;
