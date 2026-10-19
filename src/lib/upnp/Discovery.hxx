@@ -104,7 +104,8 @@ private:
 	 * If the device is already known, refresh its expiry.
 	 *
 	 * @return true if the device is already known or its
-	 * description is being downloaded
+	 * description is being downloaded (or if too many
+	 * descriptions are being downloaded)
 	 */
 	bool LockRefresh(const UpnpDiscovery &disco) noexcept;
 
