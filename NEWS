@@ -6,6 +6,7 @@ ver 0.24.18 (not yet released)
   - wasapi: fix race crash bug
 * mixer
   - sndio: fix data race
+  - software: fix use-after-free crash bug
   - wasapi: fix crash bug
 
 ver 0.24.17 (2026/10/22)

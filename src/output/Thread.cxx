@@ -128,6 +128,15 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 
 	try {
 		try {
+			/* source.Open() may destroy the old filter
+			   chain, including the VolumeFilter used by
+			   the software mixer; detach it first
+			   (InternalOpen2() attaches the new one) */
+			{
+				const ScopeUnlock unlock(mutex);
+				output->CloseSoftwareMixer();
+			}
+
 			f = source.Open(in_audio_format, pipe,
 					output->prepared_replay_gain_filter.get(),
 					output->prepared_other_replay_gain_filter.get(),
