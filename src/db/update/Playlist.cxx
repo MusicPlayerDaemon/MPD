@@ -34,12 +34,24 @@ using std::string_view_literals::operator""sv;
  * segments are resolved within the database
  * (Directory::LookupTargetSong(), uri_apply_relative()); others would
  * be passed to the filesystem, escaping the music directory.
+ *
+ * @param max_up the maximum number of leading ".." segments (i.e.
+ * the depth of the playlist's directory), so the entry cannot refer
+ * to something above the storage root
  */
 [[gnu::pure]]
 static bool
-IsSafeRelativeEntry(std::string_view uri) noexcept
+IsSafeRelativeEntry(std::string_view uri, unsigned max_up) noexcept
 {
-	while (SkipPrefix(uri, "../"sv) || SkipPrefix(uri, "./"sv)) {}
+	unsigned up = 0;
+	while (true) {
+		if (SkipPrefix(uri, "../"sv)) {
+			if (++up > max_up)
+				return false;
+		} else if (!SkipPrefix(uri, "./"sv))
+			break;
+	}
+
 	return uri_safe_local(uri);
 }
 
@@ -58,7 +70,11 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 						      directory);
 		const bool is_absolute =
 			PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename);
-		if (!is_absolute && !IsSafeRelativeEntry(db_song->filename))
+		/* "directory" is the virtual directory, and its
+		   parent is the one containing the playlist */
+		if (!is_absolute &&
+		    !IsSafeRelativeEntry(db_song->filename,
+					 GetDepth(directory) - 1))
 			continue;
 
 		if (PathTraitsUTF8::IsAbsolute(db_song->filename)) {
