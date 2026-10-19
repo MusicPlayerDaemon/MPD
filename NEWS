@@ -13,6 +13,7 @@ ver 0.24.17 (not yet released)
 * decoder
   - ffmpeg: restrict nested protocols
   - gme: limit the number of subtunes in a container
+  - mpg123: fix crash with empty TXXX frame
 * database
   - simple: don't delete mount points during update
 * output
