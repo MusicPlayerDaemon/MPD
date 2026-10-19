@@ -72,6 +72,7 @@ upnp = static_library(
     upnp_dep,
     curl_dep,
     expat_dep,
+    protocol_dep,
   ],
 )
 
@@ -82,6 +83,5 @@ upnp_dep = declare_dependency(
     curl_dep,
     expat_dep,
     event_dep,
-    protocol_dep,
   ],
 )
