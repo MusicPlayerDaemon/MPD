@@ -138,12 +138,12 @@ FifoOutput::OpenFifo()
 try {
 	Check();
 
-	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY, 0).Steal();
+	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0).Steal();
 	if (input < 0)
 		throw FmtErrno("Could not open FIFO {:?} for reading",
 			       path);
 
-	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY, 0).Steal();
+	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0).Steal();
 	if (output < 0)
 		throw FmtErrno("Could not open FIFO {:?} for writing");
 } catch (...) {
