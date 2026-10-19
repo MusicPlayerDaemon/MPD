@@ -76,7 +76,7 @@ if is_darwin
 endif
 output_features.set('HAVE_OSX', is_darwin)
 
-enable_pipe_output = get_option('pipe') and not is_windows
+enable_pipe_output = get_option('pipe') and not is_windows and not is_android
 output_features.set('ENABLE_PIPE_OUTPUT', enable_pipe_output)
 if enable_pipe_output
   output_plugins_sources += 'PipeOutputPlugin.cxx'
