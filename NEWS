@@ -1,6 +1,8 @@
 ver 0.24.17 (not yet released)
 * neighbor
   - smbclient: fix linker failure
+* input
+  - cache: fix data race
 * decoder
   - ffmpeg: restrict nested protocols
 * output

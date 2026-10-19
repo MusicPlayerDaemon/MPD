@@ -50,6 +50,13 @@ public:
 	void AddLease(InputCacheLease &lease) noexcept;
 	void RemoveLease(InputCacheLease &lease) noexcept;
 
+	/**
+	 * Replace a lease with another one atomically, i.e. without
+	 * making this item appear unused in between.
+	 */
+	void ReplaceLease(InputCacheLease &old_lease,
+			  InputCacheLease &new_lease) noexcept;
+
 private:
 	/* virtual methods from class BufferingInputStream */
 	void OnBufferAvailable(std::unique_lock<Mutex> &lock) noexcept override;

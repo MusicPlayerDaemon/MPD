@@ -36,6 +36,18 @@ InputCacheItem::RemoveLease(InputCacheLease &lease) noexcept
 }
 
 void
+InputCacheItem::ReplaceLease(InputCacheLease &old_lease,
+			     InputCacheLease &new_lease) noexcept
+{
+	const std::lock_guard lock{mutex};
+	auto i = leases.iterator_to(old_lease);
+	if (i == next_lease)
+		++next_lease;
+	leases.erase(i);
+	leases.push_back(new_lease);
+}
+
+void
 InputCacheItem::OnBufferAvailable(std::unique_lock<Mutex> &lock) noexcept
 {
 	/* the mutex is held during all callbacks, so RemoveLease()
