@@ -134,6 +134,13 @@ AudioOutputControl::InternalOpen(const AudioFormat in_audio_format,
 
 			source_state = SourceState::OPEN;
 		} catch (...) {
+			if (open)
+				/* the old filter chain has already
+				   been destroyed; close the output,
+				   so the next Open() starts from
+				   scratch */
+				InternalClose(false);
+
 			std::throw_with_nested(FmtRuntimeError("Failed to open filter for {}",
 							       GetLogName()));
 		}
