@@ -94,6 +94,13 @@ ThreadInputStream::ThreadFunc() noexcept
 			offset = seek_offset_copy;
 		}
 
+		if (eof) {
+			/* end of a seekable stream: wait until Seek()
+			   or Stop() is called */
+			wake_cond.wait(lock);
+			continue;
+		}
+
 		auto w = buffer.Write();
 		if (w.empty()) {
 			wake_cond.wait(lock);
@@ -115,7 +122,13 @@ ThreadInputStream::ThreadFunc() noexcept
 
 			if (nbytes == 0) {
 				eof = true;
-				break;
+
+				if (!IsSeekable())
+					break;
+
+				/* keep the thread running, because
+				   the client may still seek */
+				continue;
 			}
 
 			buffer.Append(nbytes);
