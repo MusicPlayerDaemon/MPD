@@ -20,6 +20,7 @@
 
 #include <upnptools.h>
 
+#include <algorithm>
 #include <stdexcept>
 
 #include <stdlib.h>
@@ -38,6 +39,11 @@ public:
 	ContentDirectoryDescriptor(std::chrono::steady_clock::time_point last,
 				   std::chrono::steady_clock::duration exp) noexcept
 		:expires(last + exp + std::chrono::seconds(20)) {}
+
+	void Refresh(std::chrono::steady_clock::time_point last,
+		     std::chrono::steady_clock::duration exp) noexcept {
+		expires = last + exp + std::chrono::seconds(20);
+	}
 
 	void Parse(std::string_view url, std::string_view description) {
 		device.Parse(url, description);
@@ -62,6 +68,10 @@ class UPnPDeviceDirectory::Downloader final
 public:
 	Downloader(UPnPDeviceDirectory &_parent,
 		   const UpnpDiscovery &disco);
+
+	const std::string &GetId() const noexcept {
+		return id;
+	}
 
 	void Start() noexcept {
 		defer_start_event.Schedule();
@@ -237,11 +247,38 @@ UPnPDeviceDirectory::LockRemove(const std::string_view id) noexcept
 	}
 }
 
+inline bool
+UPnPDeviceDirectory::LockRefresh(const UpnpDiscovery &disco) noexcept
+{
+	const std::string_view id = UpnpDiscovery_get_DeviceID_cstr(&disco);
+
+	const std::lock_guard protect{mutex};
+
+	if (auto i = directories.find(id); i != directories.end()) {
+		/* already known: just refresh its expiry */
+		i->second.Refresh(std::chrono::steady_clock::now(),
+				  std::chrono::seconds(UpnpDiscovery_get_Expires(&disco)));
+		return true;
+	}
+
+	/* is it being downloaded already? */
+	return std::any_of(downloaders.begin(), downloaders.end(),
+			   [id](const Downloader &d){
+				   return d.GetId() == id;
+			   });
+}
+
 inline int
 UPnPDeviceDirectory::OnAlive(const UpnpDiscovery *disco) noexcept
 {
 	if (isMSDevice(UpnpDiscovery_get_DeviceType_cstr(disco)) ||
 	    isCDService(UpnpDiscovery_get_ServiceType_cstr(disco))) {
+		if (LockRefresh(*disco))
+			/* don't download the description of a known
+			   device again (which a flood of SSDP packets
+			   could abuse) */
+			return UPNP_E_SUCCESS;
+
 		try {
 			auto *downloader = new Downloader(*this, *disco);
 			downloader->Start();

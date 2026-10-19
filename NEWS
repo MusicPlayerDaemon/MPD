@@ -8,6 +8,7 @@ ver 0.24.17 (not yet released)
   - udisks: accept ObjectManager signals only from udisks2
   - udisks: skip objects with strings unsafe for the MPD protocol
   - upnp: ignore devices whose description failed to parse
+  - upnp: don't download known device descriptions again
 * input
   - cache: fix data race
   - ffmpeg: faster close
