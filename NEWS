@@ -22,6 +22,7 @@ ver 0.24.17 (not yet released)
   - mpg123: fix crash with empty TXXX frame
 * database
   - simple: don't delete mount points during update
+  - upnp: use only music items
 * output
   - pipewire: fix race crash bug
   - pulse: fix race crash bug
