@@ -30,6 +30,8 @@ ver 0.24.17 (not yet released)
   - pulse: fix race crash bug
   - sles: fix hang due to integer underflow
   - fix crash after filter initialization error
+* mixer
+  - software: fix race crash bug
 
 ver 0.24.16 (2026/10/17)
 * protocol

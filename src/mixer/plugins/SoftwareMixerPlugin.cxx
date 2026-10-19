@@ -83,6 +83,11 @@ const MixerPlugin software_mixer_plugin = {
 inline void
 SoftwareMixer::SetFilter(Filter *_filter) noexcept
 {
+	/* lock the mutex held by Mixer::LockSetVolume() while calling
+	   SetVolume(), so after this method returns, nobody uses the
+	   old filter anymore */
+	const std::scoped_lock lock{mutex};
+
 	filter = _filter;
 
 	if (filter != nullptr)
