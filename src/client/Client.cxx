@@ -49,11 +49,13 @@ Client::OnBackgroundCommandFinished() noexcept
 		/* sending the response has failed */
 		return;
 
-	/* just in case OnSocketInput() has returned
-	   InputResult::PAUSE meanwhile */
-	ResumeInput();
-
 	timeout_event.Schedule(client_timeout);
+
+	/* just in case OnSocketInput() has returned
+	   InputResult::PAUSE meanwhile; this must be the last
+	   access to this object, because processing the buffered
+	   input may delete it (e.g. with the "close" command) */
+	ResumeInput();
 }
 
 void
