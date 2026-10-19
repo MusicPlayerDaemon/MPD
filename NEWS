@@ -16,6 +16,8 @@ ver 0.24.17 (not yet released)
   - ffmpeg: faster close
   - ffmpeg, mms: fix stuck decoder if server stalls
   - nfs: fix use-after-free crash bug
+* playlist
+  - cue: limit the number of tracks
 * decoder
   - ffmpeg: restrict nested protocols
   - gme: limit the number of subtunes in a container

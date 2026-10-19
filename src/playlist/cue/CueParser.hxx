@@ -71,6 +71,11 @@ class CueParser {
 	std::unique_ptr<DetachedSong> finished;
 
 	/**
+	 * The number of audio tracks seen so far.
+	 */
+	unsigned n_tracks = 0;
+
+	/**
 	 * Ignore "INDEX" lines?  Only up the first one after "00" is
 	 * used.  If there is a pregap (INDEX 00..01), it is assigned
 	 * to the previous song.
