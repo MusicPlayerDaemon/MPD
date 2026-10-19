@@ -35,6 +35,7 @@ ver 0.24.17 (not yet released)
   - sles: fix hang due to integer underflow
   - fix crash after filter initialization error
 * mixer
+  - fix use-after-free bug
   - alsa: list available controls in the "no such mixer control" error
   - software: fix race crash bug
 * Linux
