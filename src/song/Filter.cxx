@@ -329,15 +329,27 @@ ParseStringFilter(const char *&s, bool fold_case, bool strip_diacritics)
 	};
 }
 
+/**
+ * The maximum nesting depth of filter expressions; this limits the
+ * recursion depth of SongFilter::ParseExpression().
+ */
+static constexpr unsigned MAX_EXPRESSION_DEPTH = 32;
+
 ISongFilterPtr
-SongFilter::ParseExpression(const char *&s, bool fold_case, bool strip_diacritics)
+SongFilter::ParseExpression(const char *&s, bool fold_case, bool strip_diacritics,
+			    unsigned depth)
 {
 	assert(*s == '(');
+
+	if (depth >= MAX_EXPRESSION_DEPTH)
+		throw std::runtime_error("Expression is nested too deeply");
+
+	++depth;
 
 	s = StripLeft(s + 1);
 
 	if (*s == '(') {
-		auto first = ParseExpression(s, fold_case, strip_diacritics);
+		auto first = ParseExpression(s, fold_case, strip_diacritics, depth);
 		if (*s == ')') {
 			s = StripLeft(s + 1);
 			return first;
@@ -350,7 +362,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case, bool strip_diacritic
 		and_filter->AddItem(std::move(first));
 
 		while (true) {
-			and_filter->AddItem(ParseExpression(s, fold_case, strip_diacritics));
+			and_filter->AddItem(ParseExpression(s, fold_case, strip_diacritics, depth));
 
 			if (*s == ')') {
 				s = StripLeft(s + 1);
@@ -368,7 +380,7 @@ SongFilter::ParseExpression(const char *&s, bool fold_case, bool strip_diacritic
 		if (*s != '(')
 			throw std::runtime_error("'(' expected");
 
-		auto inner = ParseExpression(s, fold_case, strip_diacritics);
+		auto inner = ParseExpression(s, fold_case, strip_diacritics, depth);
 		if (*s != ')')
 			throw std::runtime_error("')' expected");
 		s = StripLeft(s + 1);

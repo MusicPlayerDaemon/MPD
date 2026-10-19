@@ -49,7 +49,12 @@ public:
 	std::string ToExpression() const noexcept;
 
 private:
-	static ISongFilterPtr ParseExpression(const char *&s, bool fold_case=false, bool strip_diacritics=false);
+	/**
+	 * @param depth the current nesting depth (for limiting
+	 * recursion)
+	 */
+	static ISongFilterPtr ParseExpression(const char *&s, bool fold_case=false, bool strip_diacritics=false,
+					      unsigned depth=0);
 
 	void Parse(const char *tag, const char *value, bool fold_case=false, bool strip_diacritics=false);
 

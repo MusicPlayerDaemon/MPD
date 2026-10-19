@@ -6,6 +6,7 @@ ver 0.25 (not yet released)
   - support filename "cover.jxl" for "albumart" command
   - "albumart" response includes a "file" field with the artwork path
   - song property "RealUri"
+  - limit the nesting depth of filter expressions
 * decoder
   - dsf: support DSD1024
   - faad: implement seeking
