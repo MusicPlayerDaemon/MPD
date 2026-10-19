@@ -34,6 +34,7 @@ fs_sources = [
 
 if is_windows
   shlwapi_dep = c_compiler.find_library('shlwapi')
+  fs_sources += 'ReservedName.cxx'
 else
   shlwapi_dep = dependency('', required: false)
 endif
