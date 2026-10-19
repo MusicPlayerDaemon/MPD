@@ -9,6 +9,8 @@ ver 0.24.18 (not yet released)
 * storage
   - nfs: fix use-after-free crash bug after disconnect
   - nfs: fix crash after directory listing cancellation
+* archive
+  - iso9660: limit nesting depth and detect directory loops
 * decoder
   - mpg123: fix "cannot seek!" error
 * output
