@@ -30,6 +30,7 @@ ver 0.24.17 (not yet released)
   - upnp: use only music items
   - upnp: allow returned URLs to be absolute
 * output
+  - oss: fix buffer overflow with DoP
   - pipewire: fix race crash bug
   - pulse: fix race crash bug
   - sles: fix hang due to integer underflow
