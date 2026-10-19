@@ -14,6 +14,7 @@ ver 0.24.17 (not yet released)
   - upnp: ignore services with controlURL pointing to a different host
 * storage
   - nfs: disable the libnfs directory cache
+  - udisks: require admin permission for "listfiles udisks://"
 * input
   - cache: fix data race
   - ffmpeg: faster close

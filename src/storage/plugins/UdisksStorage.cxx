@@ -425,4 +425,6 @@ const StoragePlugin udisks_storage_plugin = {
 	"udisks",
 	udisks_prefixes,
 	CreateUdisksStorageURI,
+	/* opening it mounts a filesystem */
+	true,
 };

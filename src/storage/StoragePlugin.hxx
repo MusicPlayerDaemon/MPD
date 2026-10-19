@@ -25,6 +25,13 @@ struct StoragePlugin {
 	std::unique_ptr<Storage> (*create_uri)(EventLoop &event_loop,
 					       std::string_view uri);
 
+	/**
+	 * Does using a storage of this kind have side effects on the
+	 * host (e.g. mounting a filesystem)?  Then only clients with
+	 * #PERMISSION_ADMIN may create one (e.g. with "listfiles").
+	 */
+	bool admin_only = false;
+
 	[[gnu::pure]]
 	bool SupportsUri(std::string_view uri) const noexcept;
 };
