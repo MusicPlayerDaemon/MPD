@@ -39,6 +39,8 @@ ver 0.25 (not yet released)
   - option "inhibit_idle" enables systemd idle inhibitor lock
 * Android
   - don't load mpd.conf from the root of the external storage
+* Windows
+  - don't load mpd.conf from %ProgramData%
 * switch to C++23
 * require Meson 1.2
 

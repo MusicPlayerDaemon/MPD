@@ -417,7 +417,6 @@ ParseCommandLine(int argc, char **argv, CommandLineOptions &options,
 	bool found =
 #ifdef _WIN32
 		loader.TryFile(GetUserConfigDir(), CONFIG_FILE_LOCATION) ||
-		loader.TryFile(GetSystemConfigDir(), CONFIG_FILE_LOCATION) ||
 		loader.TryFile(GetAppBaseDir(), APP_CONFIG_FILE_LOCATION);
 #else
 		loader.TryFile(GetUserConfigDir(),
