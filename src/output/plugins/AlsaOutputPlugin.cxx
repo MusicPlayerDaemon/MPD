@@ -1028,6 +1028,11 @@ AlsaOutput::Cancel() noexcept
 		std::unique_lock lock{mutex};
 		in_stop_dsd_silence = true;
 		drain = true;
+
+		/* make sure the I/O thread runs; it may be idle after
+		   Pause() */
+		Activate();
+
 		cond.wait(lock, [this]{ return !drain || !active; });
 		pcm_export->Reset();
 		return;
