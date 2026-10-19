@@ -187,16 +187,8 @@ FindAncestorLoop(Storage &storage, Directory *parent,
 	return 0;
 }
 
-/**
- * The maximum nesting depth of directories.  This limit protects
- * against stack overflows caused by (malicious) remote #Storage
- * implementations which present a directory tree of unlimited depth.
- */
-static constexpr unsigned MAX_DIRECTORY_DEPTH = 64;
-
-[[gnu::pure]]
-static unsigned
-GetDepth(const Directory &directory) noexcept
+unsigned
+UpdateWalk::GetDepth(const Directory &directory) noexcept
 {
 	unsigned depth = 0;
 	for (const Directory *i = directory.parent; i != nullptr; i = i->parent)
