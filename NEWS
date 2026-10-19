@@ -11,6 +11,7 @@ ver 0.25 (not yet released)
   - dsf: support DSD1024
   - faad: implement seeking
   - faad: output 32 bit floating point samples instead of 16 bit integer
+  - ffmpeg: interrupt blocking libavformat I/O on STOP
   - psgplay: new plugin
   - vgmstream: new plugin
 * output

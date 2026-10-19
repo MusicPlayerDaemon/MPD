@@ -51,12 +51,31 @@ using std::string_view_literals::operator""sv;
  */
 static AVDictionary *avformat_options = nullptr;
 
+/**
+ * libavformat interrupt callback: abort blocking I/O (e.g. a stalled
+ * network connection) when the decoder has been asked to stop.
+ */
+static int
+FfmpegInterruptCallback(void *opaque) noexcept
+{
+	const auto &client = *static_cast<const DecoderClient *>(opaque);
+	return client.IsStopRequested();
+}
+
+/**
+ * @param client if not nullptr, then libavformat's blocking I/O will
+ * be aborted when this #DecoderClient is asked to stop
+ */
 static Ffmpeg::FormatContext
 FfmpegOpenInput(AVIOContext *pb,
 		const char *filename,
-		AVInputFormat *fmt)
+		AVInputFormat *fmt,
+		DecoderClient *client)
 {
 	Ffmpeg::FormatContext context(pb);
+
+	if (client != nullptr)
+		context->interrupt_callback = {FfmpegInterruptCallback, client};
 
 	AVDictionary *options = nullptr;
 	AtScopeExit(&options) { av_dict_free(&options); };
@@ -605,7 +624,7 @@ ffmpeg_decode(DecoderClient &client, InputStream &input)
 	}
 
 	auto format_context =
-		FfmpegOpenInput(stream.io, input.GetURI(), nullptr);
+		FfmpegOpenInput(stream.io, input.GetURI(), nullptr, &client);
 
 	const auto *input_format = format_context->iformat;
 	if (input_format->long_name == nullptr)
@@ -672,7 +691,7 @@ ffmpeg_scan_stream(InputStream &is, TagHandler &handler)
 	if (!stream.Open())
 		return false;
 
-	auto f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr);
+	auto f = FfmpegOpenInput(stream.io, is.GetURI(), nullptr, nullptr);
 	return FfmpegScanStream(*f, handler);
 }
 
@@ -680,7 +699,7 @@ static void
 ffmpeg_uri_decode(DecoderClient &client, const char *uri)
 {
 	auto format_context =
-		FfmpegOpenInput(nullptr, uri, nullptr);
+		FfmpegOpenInput(nullptr, uri, nullptr, &client);
 
 	const auto *input_format = format_context->iformat;
 	if (input_format->long_name == nullptr)
