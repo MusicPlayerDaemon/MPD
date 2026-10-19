@@ -17,7 +17,8 @@ If you run :program:`MPD` as a user daemon (and not as a system
 daemon), the configuration is read from
 :file:`$XDG_CONFIG_HOME/mpd/mpd.conf` (usually
 :file:`~/.config/mpd/mpd.conf`). On Android, :file:`mpd.conf` will be
-loaded from the top-level directory of the data partition.
+loaded from MPD's data directory on the external storage (usually
+:file:`Android/data/org.musicpd/files/mpd.conf`).
 
 Each line in the configuration file contains a setting name and its value, e.g.:
 

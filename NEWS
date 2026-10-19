@@ -37,6 +37,8 @@ ver 0.25 (not yet released)
   - support $XDG_DATA_HOME, $XDG_STATE_HOME
   - suport netmasks in "host_permissions"
   - option "inhibit_idle" enables systemd idle inhibitor lock
+* Android
+  - don't load mpd.conf from the root of the external storage
 * switch to C++23
 * require Meson 1.2
 
