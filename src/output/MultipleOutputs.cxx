@@ -83,10 +83,14 @@ MultipleOutputs::ReleaseOwnership(AudioOutputControl &ao) noexcept
 {
 	assert(Owns(ao));
 
+	/* holding the mutex even during close/disable, so the player
+	   thread can neither reopen the output (e.g. in Update()) nor
+	   send other commands to it meanwhile */
+	const std::lock_guard lock{mutex};
+
 	ao.LockCloseWait();
 	ao.LockDisable();
 
-	const std::lock_guard lock{mutex};
 	outputs.erase(outputs.iterator_to(ao));
 }
 
