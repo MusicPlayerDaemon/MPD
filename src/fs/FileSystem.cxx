@@ -63,7 +63,7 @@ TruncateFile(Path path)
 	CloseHandle(h);
 #else
 	UniqueFileDescriptor fd;
-	if (!fd.Open(path.c_str(), O_WRONLY|O_TRUNC))
+	if (!fd.Open(path.c_str(), O_WRONLY|O_TRUNC|O_NOFOLLOW))
 		throw FmtErrno("Failed to truncate {}", path);
 #endif
 }
