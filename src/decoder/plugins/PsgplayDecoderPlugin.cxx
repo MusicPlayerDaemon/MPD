@@ -17,6 +17,7 @@
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
+#include "Log.hxx"
 
 extern "C" {
 #include <psgplay/psgplay.h>
@@ -33,6 +34,14 @@ extern "C" {
  * so 16 MiB is more than enough for any SNDH file.
  */
 #define MAX_SNDH_FILE_SIZE 0x1000000
+
+/**
+ * The maximum number of subtunes in a SNDH file (the "##" tag has two
+ * digits).
+ */
+static constexpr int MAX_SNDH_TRACKS = 99;
+
+static constexpr Domain psgplay_domain("psgplay");
 
 struct PsgplayGlobal {
 	unsigned default_songlength;
@@ -301,6 +310,11 @@ psgplay_container_scan(Path path_fs)
 	const AllocatedArray<std::byte> tune = psgplay_read_file(path_fs);
 
 	const int n_tracks = psgplay_tracks(tune);
+	if (n_tracks > MAX_SNDH_TRACKS) {
+		FmtWarning(psgplay_domain, "Too many subtunes in {:?}",
+			   path_fs);
+		return list;
+	}
 
 	TagBuilder tag_builder;
 
