@@ -49,6 +49,13 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 		if (!VerifyRelativePathUTF8(child_name))
 			return;
 
+		if (GetDepth(directory) >= MAX_DIRECTORY_DEPTH) {
+			FmtError(update_domain,
+				 "Directory nesting too deep: {:?}/{:?}",
+				 directory.GetPath(), child_name);
+			return;
+		}
+
 		//add dir is not there already
 		Directory *subdir = LockMakeChild(directory, child_name);
 		subdir->device = DEVICE_INARCHIVE;

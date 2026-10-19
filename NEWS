@@ -32,6 +32,7 @@ ver 0.24.17 (not yet released)
   - twolame: fix crash bug
 * database
   - simple: don't delete mount points during update
+  - simple: limit the archive directory nesting depth
   - upnp: use only music items
   - upnp: allow returned URLs to be absolute
 * output
