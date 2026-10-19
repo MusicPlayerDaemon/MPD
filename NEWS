@@ -1,6 +1,8 @@
 ver 0.24.17 (not yet released)
 * neighbor
   - smbclient: fix linker failure
+* decoder
+  - ffmpeg: restrict nested protocols
 * output
   - pipewire: fix race crash bug
   - pulse: fix race crash bug

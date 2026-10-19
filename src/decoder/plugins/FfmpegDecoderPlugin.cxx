@@ -62,6 +62,14 @@ FfmpegOpenInput(AVIOContext *pb,
 	AtScopeExit(&options) { av_dict_free(&options); };
 	av_dict_copy(&options, avformat_options, 0);
 
+	if (pb != nullptr)
+		/* the stream (e.g. a remote HLS playlist) may refer
+		   to nested resources which libavformat opens by
+		   itself; allow only network protocols, never local
+		   files */
+		av_dict_set(&options, "protocol_whitelist",
+			    "http,https,tcp,tls,crypto,httpproxy", 0);
+
 	context.OpenInput(filename, fmt, &options);
 
 	return context;
