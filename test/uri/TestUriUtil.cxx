@@ -38,6 +38,16 @@ TEST(UriUtil, SafeLocal)
 	EXPECT_TRUE(uri_safe_local("..foo"));
 	EXPECT_TRUE(uri_safe_local("...foo"));
 	EXPECT_TRUE(uri_safe_local(".....foo"));
+
+#ifdef _WIN32
+	// the backslash is a path separator on Windows
+	EXPECT_FALSE(uri_safe_local("foo\\bar"));
+	EXPECT_FALSE(uri_safe_local("..\\foo"));
+	EXPECT_FALSE(uri_safe_local("foo\\..\\..\\bar"));
+#else
+	EXPECT_TRUE(uri_safe_local("foo\\bar"));
+	EXPECT_TRUE(uri_safe_local("..\\foo"));
+#endif
 }
 
 TEST(UriUtil, RemoveAuth)

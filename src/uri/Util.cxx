@@ -15,6 +15,13 @@ using std::string_view_literals::operator""sv;
 bool
 uri_safe_local(std::string_view uri) noexcept
 {
+#ifdef _WIN32
+	if (uri.find('\\') != uri.npos)
+		/* backslash is a path separator on Windows, and would
+		   allow sneaking ".." segments past the check below */
+		return false;
+#endif
+
 	return IsNonEmptyListOf(uri, '/', [](std::string_view segment){
 		return !segment.empty() && segment != "."sv && segment != ".."sv;
 	});
