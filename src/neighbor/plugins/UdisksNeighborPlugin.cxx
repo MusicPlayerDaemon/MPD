@@ -16,6 +16,7 @@
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
 #include "event/Call.hxx"
+#include "protocol/Verify.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/SafeSingleton.hxx"
 #include "util/Manual.hxx"
@@ -207,6 +208,11 @@ void
 UdisksNeighborExplorer::Insert(UDisks2::Object &&o) noexcept
 {
 	assert(o.IsValid());
+
+	if (!VerifyUriUTF8(o.GetUri()) || !VerifyStringUTF8(o.path))
+		/* not safe for the MPD protocol (e.g. contains a
+		   newline) */
+		return;
 
 	const NeighborInfo info = ToNeighborInfo(o);
 

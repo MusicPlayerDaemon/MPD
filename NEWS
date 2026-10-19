@@ -2,6 +2,7 @@ ver 0.24.17 (not yet released)
 * neighbor
   - smbclient: fix linker failure
   - udisks: accept ObjectManager signals only from udisks2
+  - udisks: skip objects with strings unsafe for the MPD protocol
 * input
   - cache: fix data race
   - ffmpeg: faster close
