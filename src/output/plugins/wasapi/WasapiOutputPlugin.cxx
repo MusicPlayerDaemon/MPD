@@ -145,6 +145,17 @@ SetDSDFallback(AudioFormat &audio_format) noexcept
 
 } // namespace
 
+/**
+ * Renders audio from a ring buffer into a WASAPI endpoint buffer.
+ * To avoid pops, the client is started only when the endpoint buffer
+ * can be filled completely (see Push()), after flushing whatever is
+ * left over from a previous Stop() (see Work()).
+ *
+ * When the buffered audio is discarded, the client is stopped and
+ * started again by Push().
+ *
+ * https://learn.microsoft.com/en-us/windows/win32/coreaudio/rendering-a-stream
+ */
 class WasapiOutputThread {
 	Thread thread{BIND_THIS_METHOD(Work)};
 	WinEvent event;
@@ -222,7 +233,14 @@ public:
 		std::size_t consumed = ring_buffer.WriteFrom(input);
 
 		if (!playing) {
-			playing = true;
+			/* Don't start playback until the endpoint
+			   buffer can be filled completely, or the
+			   device will play a short burst of audio
+			   followed by silence */
+			if (ring_buffer.ReadAvailable() <
+			    buffer_size_in_frames * frame_size) {
+				return consumed;
+			}
 			Play();
 		}
 
@@ -241,6 +259,13 @@ public:
 			return true;
 
 		CheckException();
+
+		if (!playing) {
+			/* start playback, or the data would never
+			   be consumed */
+			Play();
+		}
+
 		Wait();
 		CheckException();
 
@@ -253,6 +278,13 @@ public:
 	 * because only the consumer thread is allowed to do that.
 	 */
 	void Cancel() noexcept {
+		/* the client is started again by Push() */
+		playing = false;
+
+		/* don't overwrite FINISH */
+		if (status.load() != Status::FINISH)
+			status.store(Status::PAUSE);
+
 		cancel.store(true);
 		event.Set();
 
@@ -284,6 +316,16 @@ public:
 	}
 
 private:
+	/**
+	 * Stop the client; must be called on the worker thread while
+	 * started is true.  Anything left in the endpoint buffer is
+	 * flushed later, just before the client gets started again.
+	 */
+	void HaltClient() {
+		Stop(client);
+		started = false;
+	}
+
 	void SetStatus(Status s) noexcept {
 		status.store(s);
 		event.Set();
@@ -466,10 +508,16 @@ try {
 		}
 
 		if (cancel.load()) {
+			/* stop the client, or it would keep playing
+			   the discarded audio; Push() starts it again */
+			if (started)
+				HaltClient();
+
 			ring_buffer.Discard();
 			cancel.store(false);
 			empty.store(true);
 			InterruptWaiter();
+			continue;
 		}
 
 		Status current_state = status.load();
@@ -480,16 +528,8 @@ try {
 			return;
 
 		case Status::PAUSE:
-			if (!started)
-				/* don't bother starting the
-				   IAudioClient if we're paused */
-				continue;
-
-			/* stop the IAudioClient while paused; it will
-			   be restarted as soon as we're asked to
-			   resume playback */
-			Stop(client);
-			started = false;
+			if (started)
+				HaltClient();
 			continue;
 
 		case Status::PLAY:
@@ -497,15 +537,13 @@ try {
 		}
 
 		UINT32 write_in_frames = buffer_size_in_frames;
-		DWORD mode = 0;
-		AtScopeExit(&) {
-			render_client->ReleaseBuffer(write_in_frames, mode);
 
-			if (!started) {
-				Start(client);
-				started = true;
-			}
-		};
+		/* Flush anything left over from a previous Stop(); the
+		   padding check below needs zero padding, or we would
+		   neither render nor start.  Do not do this directly
+		   after Stop(). */
+		if (!started)
+			Reset(client);
 
 		if (!is_exclusive) {
 			UINT32 data_in_frames =
@@ -523,6 +561,16 @@ try {
 		    FAILED(result)) {
 			throw MakeHResultError(result, "Failed to get buffer");
 		}
+
+		DWORD mode = 0;
+		AtScopeExit(&) {
+			render_client->ReleaseBuffer(write_in_frames, mode);
+
+			if (!started) {
+				Start(client);
+				started = true;
+			}
+		};
 
 		const UINT32 write_size = write_in_frames * frame_size;
 		std::span w{data, write_size};
