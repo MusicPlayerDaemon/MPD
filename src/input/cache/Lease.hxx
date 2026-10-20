@@ -29,10 +29,8 @@ public:
 	InputCacheLease(InputCacheLease &&src) noexcept
 		:item(std::exchange(src.item, nullptr))
 	{
-		if (item != nullptr) {
-			item->RemoveLease(src);
-			item->AddLease(*this);
-		}
+		if (item != nullptr)
+			item->ReplaceLease(src, *this);
 	}
 
 	~InputCacheLease() noexcept {
@@ -43,10 +41,8 @@ public:
 		Reset();
 		item = std::exchange(src.item, nullptr);
 
-		if (item != nullptr) {
-			item->RemoveLease(src);
-			item->AddLease(*this);
-		}
+		if (item != nullptr)
+			item->ReplaceLease(src, *this);
 
 		return *this;
 	}

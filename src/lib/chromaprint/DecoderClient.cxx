@@ -33,15 +33,24 @@ ChromaprintDecoderClient::Ready(AudioFormat audio_format, bool,
 	/* feed the first two minutes into libchromaprint */
 	remaining_bytes = audio_format.TimeToSize(std::chrono::minutes(2));
 
-	if (audio_format.format != SampleFormat::S16) {
-		const AudioFormat src_audio_format = audio_format;
-		audio_format.format = SampleFormat::S16;
+	try {
+		if (audio_format.format != SampleFormat::S16) {
+			const AudioFormat src_audio_format = audio_format;
+			audio_format.format = SampleFormat::S16;
 
-		convert = std::make_unique<PcmConvert>(src_audio_format,
-						       audio_format);
+			convert = std::make_unique<PcmConvert>(src_audio_format,
+							       audio_format);
+		}
+
+		/* this fails if libchromaprint does not support the
+		   audio format (e.g. a very low sample rate) */
+		chromaprint.Start(audio_format.sample_rate, audio_format.channels);
+	} catch (...) {
+		/* GetCommand() returns STOP now, and Finish() will
+		   rethrow this */
+		error = std::current_exception();
+		return;
 	}
-
-	chromaprint.Start(audio_format.sample_rate, audio_format.channels);
 
 	ready = true;
 }
@@ -51,6 +60,10 @@ ChromaprintDecoderClient::SubmitAudio(InputStream *,
 				      std::span<const std::byte> audio,
 				      uint16_t) noexcept
 {
+	if (error)
+		/* Ready() or a previous call has failed */
+		return DecoderCommand::STOP;
+
 	assert(ready);
 
 	if (audio.size() > remaining_bytes)
@@ -58,10 +71,14 @@ ChromaprintDecoderClient::SubmitAudio(InputStream *,
 	else
 		remaining_bytes -= audio.size();
 
-	if (convert)
-		audio = convert->Convert(audio);
+	try {
+		if (convert)
+			audio = convert->Convert(audio);
 
-	chromaprint.Feed(FromBytesStrict<const int16_t>(audio));
+		chromaprint.Feed(FromBytesStrict<const int16_t>(audio));
+	} catch (...) {
+		error = std::current_exception();
+	}
 
 	return GetCommand();
 }

@@ -100,6 +100,15 @@ private:
 	void LockAdd(std::string &&id, ContentDirectoryDescriptor &&d) noexcept;
 	void LockRemove(std::string_view id) noexcept;
 
+	/**
+	 * If the device is already known, refresh its expiry.
+	 *
+	 * @return true if the device is already known or its
+	 * description is being downloaded (or if too many
+	 * descriptions are being downloaded)
+	 */
+	bool LockRefresh(const UpnpDiscovery &disco) noexcept;
+
 	int OnAlive(const UpnpDiscovery *disco) noexcept;
 	int OnByeBye(const UpnpDiscovery *disco) noexcept;
 

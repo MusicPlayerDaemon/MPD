@@ -131,6 +131,11 @@ NfsInputStream::DoSeek(offset_type new_offset)
 	next_offset = offset = new_offset;
 	SeekDone();
 
+	if (reconnecting)
+		/* the file is being reopened; OnNfsFileOpen() will
+		   start reading at the new offset */
+		return;
+
 	if (!IsIdle())
 		CancelRead();
 

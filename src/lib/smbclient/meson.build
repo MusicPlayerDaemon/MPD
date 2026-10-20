@@ -11,6 +11,7 @@ smbclient = static_library(
   'Context.cxx',
   include_directories: inc,
   dependencies: [
+    protocol_dep,
     smbclient_dep,
   ],
 )

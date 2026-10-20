@@ -12,6 +12,7 @@
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "system/Error.hxx"
 #include "time/PeriodClock.hxx"
+#include "thread/Mutex.hxx"
 #include "util/BitReverse.hxx"
 #include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
@@ -53,6 +54,13 @@ class PipeWireOutput final : AudioOutput {
 
 	const char *const remote;
 	const char *const target;
+
+	/**
+	 * Protects #thread_loop from concurrent access by
+	 * Interrupt() (which may be called from any thread at any
+	 * time) while Enable()/Disable() create and destroy it.
+	 */
+	Mutex interrupt_mutex;
 
 	struct pw_thread_loop *thread_loop = nullptr;
 	struct pw_stream *stream;
@@ -289,6 +297,8 @@ private:
 	void Close() noexcept override;
 
 	void Interrupt() noexcept override {
+		const std::scoped_lock protect{interrupt_mutex};
+
 		if (thread_loop == nullptr)
 			return;
 
@@ -374,6 +384,8 @@ PipeWireOutput::SetVolume(float _volume)
 void
 PipeWireOutput::Enable()
 {
+	const std::scoped_lock protect{interrupt_mutex};
+
 	thread_loop = pw_thread_loop_new(name, nullptr);
 	if (thread_loop == nullptr)
 		throw MakeErrno("pw_thread_loop_new() failed");
@@ -391,6 +403,8 @@ PipeWireOutput::Enable()
 void
 PipeWireOutput::Disable() noexcept
 {
+	const std::scoped_lock protect{interrupt_mutex};
+
 	pw_thread_loop_destroy(thread_loop);
 	thread_loop = nullptr;
 }

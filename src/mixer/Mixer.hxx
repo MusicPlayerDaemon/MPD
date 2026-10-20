@@ -18,13 +18,14 @@ public:
 	   ReplayGainFilter::Update() - TODO eliminate this kludge */
 	MixerListener &listener;
 
-private:
+protected:
 	/**
 	 * This mutex protects all of the mixer struct, including its
 	 * implementation, so plugins don't have to deal with that.
 	 */
 	Mutex mutex;
 
+private:
 	/**
 	 * Contains error details if this mixer has failed.  If set,
 	 * it should not be reopened automatically.

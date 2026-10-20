@@ -408,8 +408,14 @@ inline void
 SlesOutput::PlayedCallback()
 {
 	const std::lock_guard protect{mutex};
-	assert(n_queued > 0);
-	--n_queued;
+
+	/* ask OpenSL ES instead of decrementing our counter, because
+	   this callback may be invoked for a buffer that was consumed
+	   right before Cancel() cleared the queue */
+	if (SLAndroidSimpleBufferQueueState state;
+	    queue.GetState(&state) == SL_RESULT_SUCCESS)
+		n_queued = state.count;
+
 	cond.notify_one();
 }
 

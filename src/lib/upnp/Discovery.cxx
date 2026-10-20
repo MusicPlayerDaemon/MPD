@@ -20,6 +20,7 @@
 
 #include <upnptools.h>
 
+#include <algorithm>
 #include <stdexcept>
 
 #include <stdlib.h>
@@ -38,6 +39,11 @@ public:
 	ContentDirectoryDescriptor(std::chrono::steady_clock::time_point last,
 				   std::chrono::steady_clock::duration exp) noexcept
 		:expires(last + exp + std::chrono::seconds(20)) {}
+
+	void Refresh(std::chrono::steady_clock::time_point last,
+		     std::chrono::steady_clock::duration exp) noexcept {
+		expires = last + exp + std::chrono::seconds(20);
+	}
 
 	void Parse(std::string_view url, std::string_view description) {
 		device.Parse(url, description);
@@ -62,6 +68,10 @@ class UPnPDeviceDirectory::Downloader final
 public:
 	Downloader(UPnPDeviceDirectory &_parent,
 		   const UpnpDiscovery &disco);
+
+	const std::string &GetId() const noexcept {
+		return id;
+	}
 
 	void Start() noexcept {
 		defer_start_event.Schedule();
@@ -93,6 +103,25 @@ static constexpr std::size_t MAX_DEVICE_DESCRIPTION_SIZE = 256_KiB;
 
 static constexpr std::chrono::seconds DEVICE_DESCRIPTION_TIMEOUT{30};
 
+/**
+ * Limits which protect against a flood of SSDP packets from a
+ * (malicious) LAN host.
+ */
+static constexpr std::size_t MAX_DOWNLOADS = 16;
+static constexpr std::size_t MAX_DEVICES = 256;
+static constexpr std::chrono::seconds MAX_EXPIRES = std::chrono::hours{24};
+
+/**
+ * Obtain the (clamped) "max-age" from the SSDP packet.
+ */
+[[gnu::pure]]
+static std::chrono::steady_clock::duration
+GetExpires(const UpnpDiscovery &disco) noexcept
+{
+	return std::min<std::chrono::seconds>(std::chrono::seconds(UpnpDiscovery_get_Expires(&disco)),
+					      MAX_EXPIRES);
+}
+
 UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 					    const UpnpDiscovery &disco)
 	:defer_start_event(_parent.GetEventLoop(),
@@ -100,7 +129,7 @@ UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
 	 parent(_parent),
 	 id(UpnpDiscovery_get_DeviceID_cstr(&disco)),
 	 url(UpnpDiscovery_get_Location_cstr(&disco)),
-	 expires(std::chrono::seconds(UpnpDiscovery_get_Expires(&disco))),
+	 expires(GetExpires(disco)),
 	 request(*parent.curl, url.c_str(), *this)
 {
 	/* the URL comes from a SSDP packet which can be sent by any
@@ -154,6 +183,7 @@ UPnPDeviceDirectory::Downloader::OnEnd()
 		d.Parse(url, data);
 	} catch (...) {
 		LogError(std::current_exception());
+		return;
 	}
 
 	parent.LockAdd(std::move(id), std::move(d));
@@ -217,6 +247,10 @@ UPnPDeviceDirectory::LockAdd(std::string &&id, ContentDirectoryDescriptor &&d) n
 {
 	const std::lock_guard protect{mutex};
 
+	if (directories.size() >= MAX_DEVICES && !directories.contains(id))
+		/* too many devices */
+		return;
+
 	const auto i = directories.insert_or_assign(std::move(id), std::move(d)).first;
 
 	if (listener != nullptr)
@@ -236,11 +270,43 @@ UPnPDeviceDirectory::LockRemove(const std::string_view id) noexcept
 	}
 }
 
+inline bool
+UPnPDeviceDirectory::LockRefresh(const UpnpDiscovery &disco) noexcept
+{
+	const std::string_view id = UpnpDiscovery_get_DeviceID_cstr(&disco);
+
+	const std::lock_guard protect{mutex};
+
+	if (auto i = directories.find(id); i != directories.end()) {
+		/* already known: just refresh its expiry */
+		i->second.Refresh(std::chrono::steady_clock::now(),
+				  GetExpires(disco));
+		return true;
+	}
+
+	if (downloaders.size() >= MAX_DOWNLOADS)
+		/* too many downloads already; ignore this one (the
+		   device will announce itself again) */
+		return true;
+
+	/* is it being downloaded already? */
+	return std::any_of(downloaders.begin(), downloaders.end(),
+			   [id](const Downloader &d){
+				   return d.GetId() == id;
+			   });
+}
+
 inline int
 UPnPDeviceDirectory::OnAlive(const UpnpDiscovery *disco) noexcept
 {
 	if (isMSDevice(UpnpDiscovery_get_DeviceType_cstr(disco)) ||
 	    isCDService(UpnpDiscovery_get_ServiceType_cstr(disco))) {
+		if (LockRefresh(*disco))
+			/* don't download the description of a known
+			   device again (which a flood of SSDP packets
+			   could abuse) */
+			return UPNP_E_SUCCESS;
+
 		try {
 			auto *downloader = new Downloader(*this, *disco);
 			downloader->Start();

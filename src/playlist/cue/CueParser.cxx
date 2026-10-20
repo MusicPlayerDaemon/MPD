@@ -156,6 +156,12 @@ CueParser::Commit() noexcept
 	previous = std::move(current);
 }
 
+/**
+ * The maximum number of tracks in a CUE sheet (the track numbers
+ * range from 1 to 99).
+ */
+static constexpr unsigned MAX_CUE_TRACKS = 99;
+
 void
 CueParser::Feed(std::string_view src) noexcept
 {
@@ -223,6 +229,11 @@ CueParser::Feed(std::string_view src) noexcept
 			return;
 
 		if (type != "AUDIO"sv) {
+			state = IGNORE_TRACK;
+			return;
+		}
+
+		if (++n_tracks > MAX_CUE_TRACKS) {
 			state = IGNORE_TRACK;
 			return;
 		}

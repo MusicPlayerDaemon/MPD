@@ -58,6 +58,10 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 	const ScopeDatabaseLock protect;
 
 	directory.ForEachChildSafe([&](Directory &child){
+		if (child.IsMount())
+			/* mount points are always preserved */
+			return;
+
 		const auto name_fs =
 			AllocatedPath::FromUTF8(child.GetName());
 
@@ -239,6 +243,12 @@ try {
 		{
 			const ScopeDatabaseLock protect;
 			subdir = directory.MakeChild(name);
+
+			if (subdir->IsMount())
+				/* mount points are updated with their
+				   own database, and must not be
+				   modified (or deleted) here */
+				return;
 		}
 
 		assert(&directory == subdir->parent);

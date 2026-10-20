@@ -37,6 +37,41 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.17 (not yet released)
+* protocol
+  - fix crash on "getfingerprint" error
+  - fix crash on "getfingerprint" + "close"
+  - fix missing "Added" time stamp
+* neighbor
+  - smbclient: fix linker failure
+  - udisks: accept ObjectManager signals only from udisks2
+  - udisks: skip objects with strings unsafe for the MPD protocol
+  - upnp: ignore devices whose description failed to parse
+  - upnp: don't download known device descriptions again
+  - upnp: limit downloads, devices and expiry
+  - upnp: reject devices with malformed UDN or service type
+* input
+  - cache: fix data race
+  - ffmpeg: faster close
+  - ffmpeg, mms: fix stuck decoder if server stalls
+  - nfs: fix use-after-free crash bug
+* playlist
+  - cue: limit the number of tracks
+* decoder
+  - ffmpeg: restrict nested protocols
+  - gme: limit the number of subtunes in a container
+  - mpg123: fix crash with empty TXXX frame
+* database
+  - simple: don't delete mount points during update
+  - upnp: use only music items
+* output
+  - pipewire: fix race crash bug
+  - pulse: fix race crash bug
+  - sles: fix hang due to integer underflow
+  - fix crash after filter initialization error
+* mixer
+  - software: fix race crash bug
+
 ver 0.24.16 (2026/10/17)
 * protocol
   - fix underflow in relative range moves

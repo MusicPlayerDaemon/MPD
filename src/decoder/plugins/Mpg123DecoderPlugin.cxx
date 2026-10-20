@@ -256,13 +256,19 @@ mpd_mpg123_id3v2_extras(DecoderClient &client, const mpg123_id3v2 &id3v2) noexce
 	bool found_replay_gain = false, found_mixramp = false;
 
 	for (size_t i = 0, n = id3v2.extras; i < n; ++i) {
+		const auto &extra = id3v2.extra[i];
+		if (extra.description.p == nullptr || extra.text.p == nullptr)
+			/* libmpg123 leaves an empty string here if
+			   the description or the value is empty */
+			continue;
+
 		if (ParseReplayGainTag(replay_gain,
-				       id3v2.extra[i].description.p,
-				       id3v2.extra[i].text.p))
+				       extra.description.p,
+				       extra.text.p))
 			found_replay_gain = true;
 		else if (ParseMixRampTag(mix_ramp,
-					 id3v2.extra[i].description.p,
-					 id3v2.extra[i].text.p))
+					 extra.description.p,
+					 extra.text.p))
 			found_mixramp = true;
 	}
 

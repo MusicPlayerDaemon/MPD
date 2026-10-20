@@ -91,9 +91,10 @@ struct LightSong {
 		:directory(src.directory), uri(src.uri),
 		 real_uri(src.real_uri),
 		 tag(_tag),
-		 mtime(src.mtime),
+		 mtime(src.mtime), added(src.added),
 		 start_time(src.start_time), end_time(src.end_time),
-		 audio_format(src.audio_format) {}
+		 audio_format(src.audio_format),
+		 priority(src.priority) {}
 
 	[[gnu::pure]]
 	std::string GetURI() const noexcept;

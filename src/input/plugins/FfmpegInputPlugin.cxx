@@ -18,12 +18,19 @@ extern "C" {
 #include <libavutil/dict.h>
 }
 
+#include <atomic>
+
 using std::string_view_literals::operator""sv;
 
 class FfmpegInputStream final : public ThreadInputStream {
 	static constexpr std::size_t BUFFER_SIZE = 256 * 1024;
 
 	Ffmpeg::IOContext io;
+
+	/**
+	 * Set by Cancel(); makes libavformat abort blocking I/O.
+	 */
+	std::atomic_bool cancelled = false;
 
 public:
 	FfmpegInputStream(std::string_view _uri, Mutex &_mutex)
@@ -43,6 +50,16 @@ public:
 
 	void Close() noexcept override {
 		io = {};
+	}
+
+	void Cancel() noexcept override {
+		cancelled = true;
+	}
+
+private:
+	static int InterruptCallback(void *opaque) noexcept {
+		const auto &is = *static_cast<const FfmpegInputStream *>(opaque);
+		return is.cancelled;
 	}
 };
 
@@ -108,7 +125,8 @@ FfmpegInputStream::Open()
 		av_dict_set(&options, "protocol_whitelist",
 			    "hls,http,https,tcp,tls,crypto,httpproxy", 0);
 
-	io = {GetURI(), AVIO_FLAG_READ, &options};
+	const AVIOInterruptCB interrupt_callback{InterruptCallback, this};
+	io = {GetURI(), AVIO_FLAG_READ, &options, &interrupt_callback};
 
 	seekable = (io->seekable & AVIO_SEEKABLE_NORMAL) != 0;
 	size = io.GetSize();

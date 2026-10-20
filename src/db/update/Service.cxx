@@ -81,6 +81,12 @@ UpdateService::CancelMount(const char *uri) noexcept
 		cancel_current |= next.IsDefined() && next.db == db2;
 	}
 
+	/* a walk of the root directory may be accessing the mount
+	   point Directory (or iterating over its siblings) which is
+	   about to be deleted (mount points are top-level only) */
+	cancel_current |= next.IsDefined() && next.db == &db &&
+		next.path_utf8.empty();
+
 	if (cancel_current && walk != nullptr) {
 		walk->Cancel();
 

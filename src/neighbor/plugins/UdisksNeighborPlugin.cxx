@@ -16,9 +16,11 @@
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
 #include "event/Call.hxx"
+#include "protocol/Verify.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/SafeSingleton.hxx"
 #include "util/Manual.hxx"
+#include "util/StringAPI.hxx"
 #include "Log.hxx"
 
 #include <algorithm> // for std::any_of()
@@ -36,6 +38,12 @@ static constexpr char udisks_neighbor_match[] =
 	"interface='" DBUS_OM_INTERFACE "',"
 	"path='" UDISKS2_PATH "'";
 
+static constexpr char udisks_owner_match[] =
+	"type='signal',sender='" DBUS_SERVICE_DBUS "',"
+	"interface='" DBUS_INTERFACE_DBUS "',"
+	"member='NameOwnerChanged',"
+	"arg0='" UDISKS2_INTERFACE "'";
+
 class UdisksNeighborExplorer final
 	: public NeighborExplorer {
 
@@ -46,6 +54,14 @@ class UdisksNeighborExplorer final
 	ODBus::FilterHelper filter_helper;
 
 	ODBus::AsyncRequest list_request;
+
+	/**
+	 * The unique bus name of the udisks2 daemon.  Signals from
+	 * other senders are ignored, because match rules apply only
+	 * to broadcasts: any peer can send a signal directly to us.
+	 * Only accessed from the #EventLoop thread.
+	 */
+	std::string udisks_name;
 
 	/**
 	 * Protects #by_uri, #by_path.
@@ -94,6 +110,8 @@ private:
 
 	void OnListNotify(ODBus::Message reply) noexcept;
 
+	void OnNameOwnerChanged(DBusMessage *message) noexcept;
+
 	DBusHandlerResult HandleMessage(DBusConnection *dbus_connection,
 					DBusMessage *message) noexcept;
 };
@@ -115,6 +133,9 @@ UdisksNeighborExplorer::DoOpen()
 		error.CheckThrow("DBus AddMatch error");
 
 		try {
+			dbus_bus_add_match(connection, udisks_owner_match, error);
+			error.CheckThrow("DBus AddMatch error");
+
 			filter_helper.Add(connection,
 					  BIND_THIS_METHOD(HandleMessage));
 
@@ -131,6 +152,8 @@ UdisksNeighborExplorer::DoOpen()
 				throw;
 			}
 		} catch (...) {
+			dbus_bus_remove_match(connection,
+					      udisks_owner_match, nullptr);
 			dbus_bus_remove_match(connection,
 					      udisks_neighbor_match, nullptr);
 			throw;
@@ -157,6 +180,7 @@ UdisksNeighborExplorer::DoClose() noexcept
 	auto &connection = GetConnection();
 
 	filter_helper.Remove();
+	dbus_bus_remove_match(connection, udisks_owner_match, nullptr);
 	dbus_bus_remove_match(connection, udisks_neighbor_match, nullptr);
 
 	dbus_glue.Destruct();
@@ -184,6 +208,11 @@ void
 UdisksNeighborExplorer::Insert(UDisks2::Object &&o) noexcept
 {
 	assert(o.IsValid());
+
+	if (!VerifyUriUTF8(o.GetUri()) || !VerifyStringUTF8(o.path))
+		/* not safe for the MPD protocol (e.g. contains a
+		   newline) */
+		return;
 
 	const NeighborInfo info = ToNeighborInfo(o);
 
@@ -226,6 +255,11 @@ UdisksNeighborExplorer::Remove(const std::string &path) noexcept
 inline void
 UdisksNeighborExplorer::OnListNotify(ODBus::Message reply) noexcept
 try {
+	/* the reply comes from the current owner of the well-known
+	   name */
+	if (const char *sender = dbus_message_get_sender(reply.Get()))
+		udisks_name = sender;
+
 	UDisks2::ParseObjects(reply,
 			      [this](auto p) { return Insert(std::move(p)); });
 } catch (...) {
@@ -233,10 +267,42 @@ try {
 		 "Failed to parse GetManagedObjects reply");
 }
 
+inline void
+UdisksNeighborExplorer::OnNameOwnerChanged(DBusMessage *message) noexcept
+{
+	const char *name, *old_owner, *new_owner;
+	if (!dbus_message_get_args(message, nullptr,
+				   DBUS_TYPE_STRING, &name,
+				   DBUS_TYPE_STRING, &old_owner,
+				   DBUS_TYPE_STRING, &new_owner,
+				   DBUS_TYPE_INVALID) ||
+	    !StringIsEqual(name, UDISKS2_INTERFACE))
+		return;
+
+	udisks_name = new_owner;
+}
+
 inline DBusHandlerResult
 UdisksNeighborExplorer::HandleMessage(DBusConnection *, DBusMessage *message) noexcept
 {
 	using namespace ODBus;
+
+	const char *const sender = dbus_message_get_sender(message);
+	if (sender == nullptr)
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+	if (dbus_message_is_signal(message, DBUS_INTERFACE_DBUS,
+				   "NameOwnerChanged")) {
+		/* only the bus daemon may send this */
+		if (StringIsEqual(sender, DBUS_SERVICE_DBUS))
+			OnNameOwnerChanged(message);
+
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	if (udisks_name != sender ||
+	    !dbus_message_has_path(message, UDISKS2_PATH))
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
 	if (dbus_message_is_signal(message, DBUS_OM_INTERFACE,
 				   "InterfacesAdded") &&

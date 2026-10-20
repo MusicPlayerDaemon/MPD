@@ -204,6 +204,14 @@ UpnpDatabase::GetSong(std::string_view uri) const
 		dirent = ReadNode(server, std::string{id}.c_str());
 	}
 
+	/* only music items are songs; especially, the URL of a
+	   container has not been checked by UPnPDirObject::Check()
+	   (it might refer to a local file) */
+	if (dirent.type != UPnPDirObject::Type::ITEM ||
+	    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
+		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+				    "No such song");
+
 	return new UpnpSong(std::move(dirent), uri);
 }
 

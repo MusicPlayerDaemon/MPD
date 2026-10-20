@@ -685,7 +685,7 @@ Player::SeekDecoder(std::unique_lock<Mutex> &lock) noexcept
 
 	CancelPendingSeek();
 
-	{
+	if (output_open) {
 		const ScopeUnlock unlock{lock};
 		pc.outputs.Cancel();
 	}

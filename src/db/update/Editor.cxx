@@ -80,7 +80,8 @@ DatabaseEditor::DeleteNameIn(Directory &parent, std::string_view name)
 
 	Directory *directory = parent.FindChild(name);
 
-	if (directory != nullptr) {
+	/* mount points are always preserved */
+	if (directory != nullptr && !directory->IsMount()) {
 		DeleteDirectory(directory);
 		modified = true;
 	}

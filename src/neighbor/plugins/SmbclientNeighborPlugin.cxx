@@ -19,6 +19,7 @@
 #include "util/AllocatedArray.hxx" // for the FixStringUTF8() return value
 #include "Log.hxx"
 
+#include <fmt/format.h>
 #include <libsmbclient.h>
 
 #include <cerrno>
