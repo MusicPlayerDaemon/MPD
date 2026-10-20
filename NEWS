@@ -20,6 +20,7 @@ ver 0.24.17 (not yet released)
   - cue: limit the number of tracks
 * decoder
   - ffmpeg: restrict nested protocols
+  - flac, opus, vorbis: fix Ogg detection if a stream's first bytes arrive in pieces
   - gme: limit the number of subtunes in a container
   - mpg123: fix crash with empty TXXX frame
 * database
