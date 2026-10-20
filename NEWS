@@ -27,6 +27,7 @@ ver 0.25 (not yet released)
   - alsa: default "mixer_device" to the sound card of "device"
   - alsa, pipewire, pulse, software: fix replay gain attenuation with
     replay_gain_handler "mixer"
+  - add pipewire config sink_volume "yes" 
 * tags
   - new tag "DiscSubtitle"
 * playlist

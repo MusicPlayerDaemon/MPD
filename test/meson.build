@@ -705,9 +705,14 @@ executable(
 if alsa_dep.found()
   # this debug program is still ALSA specific
 
+  read_mixer_sources = ['read_mixer.cxx']
+  if pipewire_dep.found()
+    read_mixer_sources += 'read_mixer_pw_stubs.cxx'
+  endif
+
   executable(
     'read_mixer',
-    'read_mixer.cxx',
+    read_mixer_sources,
     include_directories: inc,
     dependencies: [
       mixer_plugins_dep,

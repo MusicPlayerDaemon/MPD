@@ -6,6 +6,15 @@
 
 class PipeWireOutput;
 class PipeWireMixer;
+class PwSinkMixer;
+
+void
+pipewire_output_set_pw_sink_mixer(PipeWireOutput &output,
+				   PwSinkMixer &mixer) noexcept;
+
+void
+pipewire_output_clear_pw_sink_mixer(PipeWireOutput &output,
+				     PwSinkMixer &mixer) noexcept;
 
 extern const struct AudioOutputPlugin pipewire_output_plugin;
 

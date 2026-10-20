@@ -19,6 +19,7 @@ class EventLoop;
 class Mixer;
 class MixerListener;
 struct MixerPlugin;
+struct AudioOutputPlugin;
 struct ConfigBlock;
 class AudioOutput;
 struct AudioOutputDefaults;
@@ -132,7 +133,7 @@ private:
 public:
 	void Setup(EventLoop &event_loop,
 		   const ReplayGainConfig &replay_gain_config,
-		   const MixerPlugin *mixer_plugin,
+		   const AudioOutputPlugin &plugin,
 		   const ConfigBlock &block,
 		   const AudioOutputDefaults &defaults);
 
