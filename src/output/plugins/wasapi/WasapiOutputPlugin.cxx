@@ -281,9 +281,8 @@ public:
 		/* the client is started again by Push() */
 		playing = false;
 
-		/* don't overwrite FINISH */
-		if (status.load() != Status::FINISH)
-			status.store(Status::PAUSE);
+		assert(status.load() != Status::FINISH);
+		status.store(Status::PAUSE);
 
 		cancel.store(true);
 		event.Set();
