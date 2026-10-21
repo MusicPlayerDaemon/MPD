@@ -165,6 +165,7 @@ protected:
 				if (duration != nullptr)
 					tag.SetDuration(ParseDuration(duration));
 
+				object.url.clear();
 				state = RES;
 			}
 
@@ -214,7 +215,7 @@ protected:
 			break;
 
 		case RES:
-			object.url.assign(s);
+			object.url.append(s);
 			break;
 
 		case CLASS:
