@@ -50,20 +50,24 @@ ver 0.24.17 (not yet released)
   - upnp: don't download known device descriptions again
   - upnp: limit downloads, devices and expiry
   - upnp: reject devices with malformed UDN or service type
+  - upnp: ignore services with controlURL pointing to a different host
 * input
   - cache: fix data race
   - ffmpeg: faster close
   - ffmpeg, mms: fix stuck decoder if server stalls
   - nfs: fix use-after-free crash bug
+  - nfs: fix assertion failure during startup
 * playlist
   - cue: limit the number of tracks
 * decoder
   - ffmpeg: restrict nested protocols
+  - flac, opus, vorbis: fix Ogg detection if a stream's first bytes arrive in pieces
   - gme: limit the number of subtunes in a container
   - mpg123: fix crash with empty TXXX frame
 * database
   - simple: don't delete mount points during update
   - upnp: use only music items
+  - upnp: allow returned URLs to be absolute
 * output
   - pipewire: fix race crash bug
   - pulse: fix race crash bug
@@ -71,6 +75,8 @@ ver 0.24.17 (not yet released)
   - fix crash after filter initialization error
 * mixer
   - software: fix race crash bug
+* Linux
+  - discard inherited supplementary groups with "group"
 
 ver 0.24.16 (2026/10/17)
 * protocol

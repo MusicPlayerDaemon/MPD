@@ -17,8 +17,8 @@ ogg_codec_detect(DecoderClient *client, InputStream &is)
 	 * http://lists.xiph.org/pipermail/flac/2004-December/000393.html
 	 * ogg123 trunk still doesn't have this patch as of June 2005 */
 	std::byte buf[41];
-	size_t r = decoder_read(client, is, buf);
-	if (r < sizeof(buf) || memcmp(buf, "OggS", 4) != 0)
+	if (!decoder_read_full(client, is, buf) ||
+	    memcmp(buf, "OggS", 4) != 0)
 		return OGG_CODEC_UNKNOWN;
 
 	if ((memcmp(buf + 29, "FLAC", 4) == 0 &&

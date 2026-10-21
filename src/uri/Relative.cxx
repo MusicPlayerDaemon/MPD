@@ -39,7 +39,11 @@ uri_is_child_or_same(const char *parent, const char *child) noexcept
 std::string
 uri_apply_base(std::string_view uri, std::string_view base) noexcept
 {
-	if (uri.front() == '/') {
+	if (UriHasScheme(uri))
+		/* absolute URI: ignore base */
+		return std::string{uri};
+
+	if (uri.starts_with('/')) {
 		/* absolute path: replace the whole URI path in base */
 
 		auto i = base.find("://");
@@ -59,7 +63,7 @@ uri_apply_base(std::string_view uri, std::string_view base) noexcept
 	}
 
 	std::string out(base);
-	if (out.back() != '/')
+	if (!out.empty() && out.back() != '/')
 		out.push_back('/');
 
 	out += uri;

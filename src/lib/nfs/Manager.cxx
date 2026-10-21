@@ -82,7 +82,7 @@ NfsManager::~NfsManager() noexcept
 NfsConnection &
 NfsManager::MakeConnection(const char *url)
 {
-	assert(GetEventLoop().IsInside());
+	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 	struct nfs_context *const context = nfs_init_context();
 	if (context == nullptr)

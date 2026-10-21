@@ -165,6 +165,7 @@ protected:
 				if (duration != nullptr)
 					tag.SetDuration(ParseDuration(duration));
 
+				object.url.clear();
 				state = RES;
 			}
 
@@ -191,6 +192,11 @@ protected:
 			return;
 		}
 
+		if (state == CLASS) {
+			object.item_class = ParseItemClass(value);
+			value = {};
+		}
+
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
 		    object.Check()) {
 			tag.Commit(object.tag);
@@ -214,11 +220,11 @@ protected:
 			break;
 
 		case RES:
-			object.url.assign(s);
+			object.url.append(s);
 			break;
 
 		case CLASS:
-			object.item_class = ParseItemClass(s);
+			value.append(s);
 			break;
 		}
 	}

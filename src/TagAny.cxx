@@ -83,6 +83,9 @@ GetRealSongUri(Client &client, std::string_view uri)
 	if (song->real_uri == nullptr)
 		return {};
 
+	if (UriHasScheme(song->real_uri))
+		return song->real_uri;
+
 	return ResolveUri(PathTraitsUTF8::GetParent(uri), song->real_uri);
 }
 

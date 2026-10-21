@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+#include <iomanip>
+
 TEST(UriRelative, IsChild)
 {
 	static constexpr struct {
@@ -44,10 +46,20 @@ TEST(UriRelative, ApplyBase)
 		{ "/foo", "http://localhost/bar", "http://localhost/foo" },
 		{ "/foo", "http://localhost/", "http://localhost/foo" },
 		{ "/foo", "http://localhost", "http://localhost/foo" },
+		{ "", "bar", "bar/" },
+		{ "", "bar/", "bar/" },
+		{ "", "http://localhost/bar/", "http://localhost/bar/" },
+		{ "foo", "", "foo" },
+		{ "/foo", "", "/foo" },
+		{ "", "", "" },
+		{ "http://localhost/foo", "http://localhost/bar/", "http://localhost/foo" },
+		{ "http://localhost/foo", "bar", "http://localhost/foo" },
+		{ "https://example.com/foo", "http://localhost/bar/", "https://example.com/foo" },
 	};
 
 	for (const auto &i : tests) {
-		EXPECT_STREQ(uri_apply_base(i.uri, i.base).c_str(), i.result);
+		EXPECT_STREQ(uri_apply_base(i.uri, i.base).c_str(), i.result)
+			<< "uri_apply_base(" << std::quoted(i.uri) << ", " << std::quoted(i.base) << ")";
 	}
 }
 
@@ -95,6 +107,7 @@ TEST(UriRelative, ApplyRelative)
 
 	for (const auto &i : tests) {
 		EXPECT_STREQ(uri_apply_relative(i.relative, i.base).c_str(),
-			     i.result);
+			     i.result)
+			<< "uri_apply_relative(" << std::quoted(i.relative) << ", " << std::quoted(i.base) << ")";
 	}
 }
