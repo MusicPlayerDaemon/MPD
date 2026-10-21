@@ -108,6 +108,12 @@ UPnPDevice::Parse(const std::string_view url, const std::string_view description
 		   SOAP requests to a different host */
 		URLBase.clear();
 
+	services.remove_if([url](const UPnPService &service){
+		/* same for absolute control URLs */
+		return UriHasScheme(service.controlURL) &&
+			UriGetOrigin(service.controlURL) != UriGetOrigin(url);
+	});
+
 	if (URLBase.empty()) {
 		// The standard says that if the URLBase value is empty, we should use
 		// the url the description was retrieved from. However this is
