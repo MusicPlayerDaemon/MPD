@@ -27,6 +27,7 @@ ver 0.24.17 (not yet released)
 * database
   - simple: don't delete mount points during update
   - upnp: use only music items
+  - upnp: allow returned URLs to be absolute
 * output
   - pipewire: fix race crash bug
   - pulse: fix race crash bug

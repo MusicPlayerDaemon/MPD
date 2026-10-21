@@ -22,6 +22,7 @@ uri_is_child_or_same(const char *parent, const char *child) noexcept;
 /**
  * Translate the given URI in the context of #base.  For example,
  * uri_apply_base("foo", "http://bar/a/")=="http://bar/a/foo".
+ * Absolute URIs (with a scheme) are returned as-is.
  */
 [[gnu::pure]]
 std::string
