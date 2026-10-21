@@ -52,6 +52,9 @@ TEST(UriRelative, ApplyBase)
 		{ "foo", "", "foo" },
 		{ "/foo", "", "/foo" },
 		{ "", "", "" },
+		{ "http://localhost/foo", "http://localhost/bar/", "http://localhost/foo" },
+		{ "http://localhost/foo", "bar", "http://localhost/foo" },
+		{ "https://example.com/foo", "http://localhost/bar/", "https://example.com/foo" },
 	};
 
 	for (const auto &i : tests) {
