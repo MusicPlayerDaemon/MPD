@@ -12,6 +12,9 @@
 #include "client/Response.hxx"
 #include "client/ThreadBackgroundCommand.hxx"
 #include "db/Features.hxx" // for ENABLE_DATABASE
+#include "db/DatabaseError.hxx"
+#include "db/DatabaseSong.hxx"
+#include "song/DetachedSong.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "input/Handler.hxx"
@@ -22,6 +25,8 @@
 #include "util/MimeType.hxx"
 
 #include <fmt/format.h>
+
+#include <optional>
 
 class GetChromaprintCommand final
 	: public ThreadBackgroundCommand, ChromaprintDecoderClient, InputStreamHandler
@@ -36,10 +41,12 @@ class GetChromaprintCommand final
 
 public:
 	GetChromaprintCommand(Client &_client, std::string &&_uri,
-			      AllocatedPath &&_path)  noexcept
+			      AllocatedPath &&_path,
+			      SongTime _start_time, SongTime _end_time) noexcept
 		:ThreadBackgroundCommand(_client),
 		 uri(std::move(_uri)), path(std::move(_path))
 	{
+		SetRange(_start_time, _end_time);
 	}
 
 protected:
@@ -308,6 +315,33 @@ GetChromaprintCommand::Read(InputStream &is,
 	}
 }
 
+#ifdef ENABLE_DATABASE
+
+/**
+ * Look up the song in the database.
+ *
+ * @return the song (with an absolute "real" URI) or std::nullopt if
+ * it is not in the database
+ */
+static std::optional<DetachedSong>
+LookupDatabaseSong(const Client &client, std::string_view uri)
+{
+	const auto *db = client.GetDatabase();
+	if (db == nullptr)
+		return std::nullopt;
+
+	try {
+		return DatabaseDetachSong(*db, client.GetStorage(), uri);
+	} catch (const DatabaseError &e) {
+		if (e.GetCode() == DatabaseErrorCode::NOT_FOUND)
+			return std::nullopt;
+
+		throw;
+	}
+}
+
+#endif
+
 CommandResult
 handle_getfingerprint(Client &client, Request args, Response &)
 {
@@ -320,6 +354,7 @@ handle_getfingerprint(Client &client, Request args, Response &)
 			    );
 
 	std::string uri{lu.canonical_uri};
+	SongTime start_time = SongTime::zero(), end_time = SongTime::zero();
 
 	switch (lu.type) {
 	case LocatedUri::Type::ABSOLUTE:
@@ -334,6 +369,21 @@ handle_getfingerprint(Client &client, Request args, Response &)
 			const auto *storage = client.GetStorage();
 			if (storage == nullptr)
 				throw ProtocolError(ACK_ERROR_NO_EXIST, "No database");
+
+			if (const auto song = LookupDatabaseSong(client, lu.canonical_uri)) {
+				/* this may be a "virtual" song (e.g. a CUE
+				   track) which refers to a range of another
+				   file */
+				uri = song->GetRealURI();
+				start_time = song->GetStartTime();
+				end_time = song->GetEndTime();
+
+				if (PathTraitsUTF8::IsAbsolute(uri.c_str()))
+					lu.path = AllocatedPath::FromUTF8Throw(uri);
+				else if (!UriHasScheme(uri))
+					throw ProtocolError(ACK_ERROR_NO_EXIST, "No such song");
+				break;
+			}
 
 			lu.path = storage->MapFS(lu.canonical_uri);
 			if (lu.path.IsNull()) {
@@ -350,7 +400,8 @@ handle_getfingerprint(Client &client, Request args, Response &)
 
 	auto cmd = std::make_unique<GetChromaprintCommand>(client,
 							   std::move(uri),
-							   std::move(lu.path));
+							   std::move(lu.path),
+							   start_time, end_time);
 	cmd->Start();
 	client.SetBackgroundCommand(std::move(cmd));
 	return CommandResult::BACKGROUND;

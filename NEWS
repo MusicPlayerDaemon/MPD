@@ -4,6 +4,7 @@ ver 0.25 (not yet released)
   - new command "stringnormalization"
   - show detailed seek errors
   - support filename "cover.jxl" for "albumart" command
+  - support "getfingerprint" on CUE tracks
   - "albumart" response includes a "file" field with the artwork path
   - song property "RealUri"
   - limit the nesting depth of filter expressions
