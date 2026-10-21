@@ -27,10 +27,7 @@ IsValidSchemeChar(char ch) noexcept
 static bool
 IsValidScheme(std::string_view p) noexcept
 {
-	if (p.empty() || !IsValidSchemeStart(p.front()))
-		return false;
-
-	return CheckChars(p.substr(1), IsValidSchemeChar);
+	return CheckCharsNonEmpty(p, IsValidSchemeStart, IsValidSchemeChar);
 }
 
 bool
