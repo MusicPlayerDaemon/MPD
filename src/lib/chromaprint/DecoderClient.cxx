@@ -66,9 +66,11 @@ ChromaprintDecoderClient::SubmitAudio(InputStream *,
 
 	assert(ready);
 
-	if (audio.size() > remaining_bytes)
+	if (audio.size() > remaining_bytes) {
+		/* don't feed more than requested */
+		audio = audio.first(remaining_bytes);
 		remaining_bytes = 0;
-	else
+	} else
 		remaining_bytes -= audio.size();
 
 	try {
