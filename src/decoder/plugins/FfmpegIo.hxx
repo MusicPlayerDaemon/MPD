@@ -18,19 +18,22 @@ struct AvioStream {
 	DecoderClient *const client;
 	InputStream &input;
 
-	AVIOContext *io;
+	AVIOContext *io = nullptr;
 
-	AvioStream(DecoderClient *_client, InputStream &_input)
-		:client(_client), input(_input), io(nullptr) {}
+	AvioStream(DecoderClient *_client, InputStream &_input) noexcept
+		:client(_client), input(_input) {}
 
-	~AvioStream();
+	~AvioStream() noexcept;
 
-	bool Open();
+	/**
+	 * @return true on success
+	 */
+	bool Open() noexcept;
 
 private:
-	int Read(std::span<std::byte> dest);
-	int64_t Seek(int64_t pos, int whence);
+	int Read(std::span<std::byte> dest) noexcept;
+	int64_t Seek(int64_t pos, int whence) noexcept;
 
-	static int _Read(void *opaque, uint8_t *buf, int size);
-	static int64_t _Seek(void *opaque, int64_t pos, int whence);
+	static int _Read(void *opaque, uint8_t *buf, int size) noexcept;
+	static int64_t _Seek(void *opaque, int64_t pos, int whence) noexcept;
 };

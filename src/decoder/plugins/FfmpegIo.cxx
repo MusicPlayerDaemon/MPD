@@ -15,7 +15,7 @@ extern "C" {
 #endif
 }
 
-AvioStream::~AvioStream()
+AvioStream::~AvioStream() noexcept
 {
 	if (io != nullptr) {
 		av_free(io->buffer);
@@ -24,7 +24,7 @@ AvioStream::~AvioStream()
 }
 
 inline int
-AvioStream::Read(std::span<std::byte> dest)
+AvioStream::Read(std::span<std::byte> dest) noexcept
 {
 	const auto nbytes = decoder_read(client, input, dest);
 	if (nbytes == 0)
@@ -34,7 +34,7 @@ AvioStream::Read(std::span<std::byte> dest)
 }
 
 inline int64_t
-AvioStream::Seek(int64_t pos, int whence)
+AvioStream::Seek(int64_t pos, int whence) noexcept
 {
 	switch (whence) {
 	case SEEK_SET:
@@ -70,7 +70,7 @@ AvioStream::Seek(int64_t pos, int whence)
 }
 
 int
-AvioStream::_Read(void *opaque, uint8_t *buf, int size)
+AvioStream::_Read(void *opaque, uint8_t *buf, int size) noexcept
 {
 	AvioStream &stream = *(AvioStream *)opaque;
 
@@ -78,7 +78,7 @@ AvioStream::_Read(void *opaque, uint8_t *buf, int size)
 }
 
 int64_t
-AvioStream::_Seek(void *opaque, int64_t pos, int whence)
+AvioStream::_Seek(void *opaque, int64_t pos, int whence) noexcept
 {
 	AvioStream &stream = *(AvioStream *)opaque;
 
@@ -86,7 +86,7 @@ AvioStream::_Seek(void *opaque, int64_t pos, int whence)
 }
 
 bool
-AvioStream::Open()
+AvioStream::Open() noexcept
 {
 	constexpr size_t BUFFER_SIZE = 8192;
 	auto buffer = (unsigned char *)av_malloc(BUFFER_SIZE);
