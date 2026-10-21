@@ -20,6 +20,11 @@
 #include <alsa/asoundlib.h>
 #include <cmath>
 
+#include <fmt/format.h>
+
+#include <iterator> // for std::back_inserter()
+#include <string>
+
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
 static constexpr unsigned VOLUME_MIXER_ALSA_INDEX_DEFAULT = 0;
@@ -242,6 +247,34 @@ alsa_mixer_lookup_elem(snd_mixer_t *handle,
 	return nullptr;
 }
 
+/**
+ * Build a human-readable list of all simple mixer controls (for
+ * error messages).
+ */
+static std::string
+alsa_mixer_list_controls(snd_mixer_t *handle)
+{
+	std::string result;
+
+	for (snd_mixer_elem_t *elem = snd_mixer_first_elem(handle);
+	     elem != nullptr; elem = snd_mixer_elem_next(elem)) {
+		if (snd_mixer_elem_get_type(elem) != SND_MIXER_ELEM_SIMPLE)
+			continue;
+
+		if (!result.empty())
+			result += ", ";
+
+		fmt::format_to(std::back_inserter(result), "{:?},{}",
+			       snd_mixer_selem_get_name(elem),
+			       snd_mixer_selem_get_index(elem));
+	}
+
+	if (result.empty())
+		result = "none";
+
+	return result;
+}
+
 inline void
 AlsaMixer::Setup()
 {
@@ -260,7 +293,9 @@ AlsaMixer::Setup()
 
 	elem = alsa_mixer_lookup_elem(handle, control, index);
 	if (elem == nullptr)
-		throw FmtRuntimeError("no such mixer control: {}", control);
+		throw FmtRuntimeError("no such mixer control {:?},{} on {:?} (available: {})",
+				      control, index, device,
+				      alsa_mixer_list_controls(handle));
 
 	snd_mixer_elem_set_callback_private(elem, this);
 	snd_mixer_elem_set_callback(elem, ElemCallback);

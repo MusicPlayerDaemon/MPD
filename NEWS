@@ -74,6 +74,7 @@ ver 0.24.17 (not yet released)
   - sles: fix hang due to integer underflow
   - fix crash after filter initialization error
 * mixer
+  - alsa: list available controls in the "no such mixer control" error
   - software: fix race crash bug
 * Linux
   - discard inherited supplementary groups with "group"
