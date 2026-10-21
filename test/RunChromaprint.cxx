@@ -32,18 +32,35 @@ struct CommandLine {
 
 	FromNarrowPath config_path = nullptr;
 
+	SongTime start_time = SongTime::zero(), end_time = SongTime::zero();
+
 	bool verbose = false;
 };
 
 enum Option {
 	OPTION_CONFIG,
+	OPTION_START,
+	OPTION_END,
 	OPTION_VERBOSE,
 };
 
 static constexpr OptionDef option_defs[] = {
 	{"config", 0, true, "Load a MPD configuration file"},
+	{"start", 0, true, "Start time in seconds"},
+	{"end", 0, true, "End time in seconds"},
 	{"verbose", 'v', false, "Verbose logging"},
 };
+
+static SongTime
+ParseSeconds(const char *s)
+{
+	char *endptr;
+	const double value = strtod(s, &endptr);
+	if (endptr == s || *endptr != 0 || value < 0)
+		throw std::runtime_error("Failed to parse time");
+
+	return SongTime::FromS(value);
+}
 
 static CommandLine
 ParseCommandLine(int argc, char **argv)
@@ -57,6 +74,14 @@ ParseCommandLine(int argc, char **argv)
 			c.config_path = o.value;
 			break;
 
+		case OPTION_START:
+			c.start_time = ParseSeconds(o.value);
+			break;
+
+		case OPTION_END:
+			c.end_time = ParseSeconds(o.value);
+			break;
+
 		case OPTION_VERBOSE:
 			c.verbose = true;
 			break;
@@ -65,7 +90,7 @@ ParseCommandLine(int argc, char **argv)
 
 	auto args = option_parser.GetRemaining();
 	if (args.size() != 2)
-		throw std::runtime_error("Usage: RunChromaprint [--verbose] [--config=FILE] DECODER URI");
+		throw std::runtime_error("Usage: RunChromaprint [--verbose] [--config=FILE] [--start=S] [--end=S] DECODER URI");
 
 	c.decoder = args[0];
 	c.uri = args[1];
@@ -111,6 +136,7 @@ try {
 	}
 
 	MyChromaprintDecoderClient client;
+	client.SetRange(c.start_time, c.end_time);
 	if (plugin->file_decode != nullptr) {
 		try {
 			plugin->FileDecode(client, FromNarrowPath(c.uri));
