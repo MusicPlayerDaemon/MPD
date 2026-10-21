@@ -967,11 +967,12 @@ The according hardware mixer plugin understands the following settings:
    * - Setting
      - Description
    * - **mixer_device DEVICE**
-     - Sets the ALSA mixer (control) device name, defaulting to
-       "default" which lets ALSA pick a value (usually the first
-       sound card).  This is not derived from the ``device``
-       setting; if ``device`` refers to a different sound card, you
-       must set ``mixer_device`` explicitly.
+     - Sets the ALSA mixer (control) device name.  By default, the
+       sound card of the ``device`` setting is used (e.g.
+       :samp:`hw:Intel` for :samp:`hw:CARD=Intel,DEV=0`); if that
+       cannot be determined (e.g. for PipeWire/PulseAudio devices)
+       or if ``device`` is not set, the default is "default", which
+       lets ALSA pick a value (usually the first sound card).
 
        Unlike ``device``, this is the name of a sound card, not of a
        PCM device: e.g. :samp:`hw:Intel` (or :samp:`hw:CARD=Intel`,
