@@ -19,6 +19,7 @@ alsa = static_library(
   'ChannelMap.cxx',
   'HwSetup.cxx',
   'NonBlock.cxx',
+  'PcmCard.cxx',
   include_directories: inc,
   dependencies: [
     libasound_dep,
