@@ -192,6 +192,11 @@ protected:
 			return;
 		}
 
+		if (state == CLASS) {
+			object.item_class = ParseItemClass(value);
+			value = {};
+		}
+
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
 		    object.Check()) {
 			tag.Commit(object.tag);
@@ -219,7 +224,7 @@ protected:
 			break;
 
 		case CLASS:
-			object.item_class = ParseItemClass(s);
+			value.append(s);
 			break;
 		}
 	}
