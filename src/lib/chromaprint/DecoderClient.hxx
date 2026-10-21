@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef CHROMAPRINT_DECODER_CLIENT_HXX
-#define CHROMAPRINT_DECODER_CLIENT_HXX
+#pragma once
 
 #include "Context.hxx"
+#include "Chrono.hxx"
 #include "decoder/Client.hxx"
 #include "thread/Mutex.hxx"
 
@@ -16,6 +16,26 @@ class PcmConvert;
 
 class ChromaprintDecoderClient : public DecoderClient {
 	bool ready = false;
+
+	/**
+	 * Is the initial seek to #start_time pending?  This is set by
+	 * Ready() and cleared by CommandFinished() or SeekError().
+	 */
+	bool seeking = false;
+
+	/**
+	 * The start of the range to be fingerprinted (e.g. of a CUE
+	 * track); zero means the beginning of the file.
+	 */
+	SongTime start_time = SongTime::zero();
+
+	/**
+	 * The end of the range to be fingerprinted; zero means the end
+	 * of the file.
+	 */
+	SongTime end_time = SongTime::zero();
+
+	unsigned sample_rate;
 
 	std::unique_ptr<PcmConvert> convert;
 
@@ -40,6 +60,15 @@ public:
 		return ready;
 	}
 
+	/**
+	 * Fingerprint only the specified range of the song.  Must be
+	 * called before decoding starts.
+	 */
+	void SetRange(SongTime _start_time, SongTime _end_time) noexcept {
+		start_time = _start_time;
+		end_time = _end_time;
+	}
+
 	void Reset() noexcept {
 	}
 
@@ -57,6 +86,9 @@ public:
 		if (IsStopRequested())
 			return DecoderCommand::STOP;
 
+		if (seeking)
+			return DecoderCommand::SEEK;
+
 		return DecoderCommand::NONE;
 	}
 
@@ -64,17 +96,19 @@ public:
 		return error || (ready && remaining_bytes == 0);
 	}
 
-	void CommandFinished() noexcept override {}
+	void CommandFinished() noexcept override {
+		seeking = false;
+	}
 
 	SongTime GetSeekTime() noexcept override {
-		return SongTime::zero();
+		return start_time;
 	}
 
 	uint64_t GetSeekFrame() noexcept override {
-		return 0;
+		return start_time.ToScale<uint64_t>(sample_rate);
 	}
 
-	void SeekError(std::exception_ptr &&) noexcept override {}
+	void SeekError(std::exception_ptr &&_error) noexcept override;
 
 	//InputStreamPtr OpenUri(std::string_view uri) override;
 
@@ -94,5 +128,3 @@ public:
 	void SubmitReplayGain(const ReplayGainInfo *) noexcept override {}
 	void SubmitMixRamp(MixRampInfo &&) noexcept override {}
 };
-
-#endif
