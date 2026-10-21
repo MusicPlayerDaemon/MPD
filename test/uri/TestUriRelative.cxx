@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+#include <iomanip>
+
 TEST(UriRelative, IsChild)
 {
 	static constexpr struct {
@@ -47,7 +49,8 @@ TEST(UriRelative, ApplyBase)
 	};
 
 	for (const auto &i : tests) {
-		EXPECT_STREQ(uri_apply_base(i.uri, i.base).c_str(), i.result);
+		EXPECT_STREQ(uri_apply_base(i.uri, i.base).c_str(), i.result)
+			<< "uri_apply_base(" << std::quoted(i.uri) << ", " << std::quoted(i.base) << ")";
 	}
 }
 
@@ -95,6 +98,7 @@ TEST(UriRelative, ApplyRelative)
 
 	for (const auto &i : tests) {
 		EXPECT_STREQ(uri_apply_relative(i.relative, i.base).c_str(),
-			     i.result);
+			     i.result)
+			<< "uri_apply_relative(" << std::quoted(i.relative) << ", " << std::quoted(i.base) << ")";
 	}
 }
