@@ -76,7 +76,7 @@ public:
 		 defer_connect(_connection.GetEventLoop(), BIND_THIS_METHOD(OnDeferredConnect)),
 		 reconnect_timer(_connection.GetEventLoop(), BIND_THIS_METHOD(OnReconnectTimer))
 	{
-		assert(GetEventLoop().IsInside());
+		assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 		connection->AddLease(*this);
 
