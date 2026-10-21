@@ -888,6 +888,11 @@ The `Advanced Linux Sound Architecture (ALSA) <http://www.alsa-project.org/>`_ p
      - Description
    * - **device NAME**
      - Sets the device which should be used. This can be any valid ALSA device name. The default value is "default", which makes libasound choose a device. It is recommended to use a "hw" or "plughw" device, because otherwise, libasound automatically enables "dmix", which has major disadvantages (fixed sample rate, poor resampler, ...).
+
+       :command:`aplay -L` lists all PCM device names.  Instead of
+       card numbers (e.g. :samp:`hw:1,0`), which may change
+       across reboots, you can use the card identifier from
+       :file:`/proc/asound/cards` (e.g. :samp:`hw:CARD=Intel,DEV=0`).
    * - **buffer_time US**
      - Sets the device's buffer time in microseconds. Don't change unless you know what you're doing.
    * - **period_time US**
@@ -924,11 +929,39 @@ The according hardware mixer plugin understands the following settings:
    * - Setting
      - Description
    * - **mixer_device DEVICE**
-     - Sets the ALSA mixer device name, defaulting to default which lets ALSA pick a value.
+     - Sets the ALSA mixer (control) device name, defaulting to
+       "default" which lets ALSA pick a value (usually the first
+       sound card).  This is not derived from the ``device``
+       setting; if ``device`` refers to a different sound card, you
+       must set ``mixer_device`` explicitly.
+
+       Unlike ``device``, this is the name of a sound card, not of a
+       PCM device: e.g. :samp:`hw:Intel` (or :samp:`hw:CARD=Intel`,
+       or :samp:`hw:0`), without the ``DEV`` part.
    * - **mixer_control NAME**
-     - Choose a mixer control, defaulting to PCM. Type amixer scontrols to get a list of available mixer controls.
+     - Choose a mixer control, defaulting to PCM.  Type
+       :samp:`amixer -D {DEVICE} scontrols` (with the
+       ``mixer_device`` value) to get a list of available mixer
+       controls; use the name between the single quotes exactly as
+       printed, including trailing spaces, if any.
    * - **mixer_index NUMBER**
      - Choose a mixer control index. This is necessary if there is more than one control with the same name. Defaults to 0 (the first one).
+       This is the number after the comma in the output of
+       :command:`amixer scontrols`.
+
+Example::
+
+  audio_output {
+    type "alsa"
+    name "Intel"
+    device "hw:CARD=Intel,DEV=0"
+    mixer_type "hardware"
+    mixer_device "hw:Intel"
+    mixer_control "Master"
+  }
+
+To verify the mixer settings, check whether :samp:`amixer -D
+{DEVICE} sset '{NAME}',{INDEX} 50%` changes the volume.
 
 The following attributes can be configured at runtime using the outputset command:
 
