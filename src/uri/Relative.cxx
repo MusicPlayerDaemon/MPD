@@ -57,7 +57,7 @@ uri_apply_base(std::string_view uri, std::string_view base) noexcept
 	}
 
 	std::string out(base);
-	if (out.back() != '/')
+	if (!out.empty() && out.back() != '/')
 		out.push_back('/');
 
 	out += uri;
