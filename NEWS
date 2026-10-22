@@ -12,6 +12,8 @@ ver 0.24.17 (not yet released)
   - upnp: limit downloads, devices and expiry
   - upnp: reject devices with malformed UDN or service type
   - upnp: ignore services with controlURL pointing to a different host
+* storage
+  - nfs: disable the libnfs directory cache
 * input
   - cache: fix data race
   - ffmpeg: faster close
