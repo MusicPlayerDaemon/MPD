@@ -46,7 +46,6 @@ public:
 
 private:
 	void Create();
-	void Check();
 	void Delete();
 
 	void OpenFifo();
@@ -109,33 +108,19 @@ FifoOutput::Create()
 }
 
 inline void
-FifoOutput::Check()
-{
-	struct stat st;
-	if (!StatFile(path, st)) {
-		if (errno == ENOENT) {
-			/* Path doesn't exist */
-			Create();
-			return;
-		}
-
-		throw FmtErrno("Failed to stat FIFO {:?}", path);
-	}
-
-	if (!S_ISFIFO(st.st_mode))
-		throw FmtRuntimeError("{:?} already exists, but is not a FIFO",
-				      path);
-}
-
-inline void
 FifoOutput::OpenFifo()
 try {
-	Check();
-
 	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0);
-	if (!input.IsDefined())
-		throw FmtErrno("Could not open FIFO {:?} for reading",
-			       path);
+	if (!input.IsDefined()) {
+		if (errno == ENOENT) {
+			Create();
+			input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0);
+		}
+
+		if (!input.IsDefined())
+			throw FmtErrno("Could not open FIFO {:?} for reading",
+				       path);
+	}
 
 	if (!input.IsPipe())
 		throw FmtRuntimeError("{:?} is not a FIFO", path);
