@@ -224,6 +224,12 @@ NfsConnection::NfsConnection(EventLoop &_loop,
 	 server(_server), export_name(_export_name),
 	 context(_context)
 {
+	/* libnfs validates its directory cache only by the
+	   directory's modification time, so it returns stale
+	   attributes of files which were modified in place; this
+	   breaks the database update, which compares the
+	   modification times of the files */
+	nfs_set_dircache(context, 0);
 }
 
 NfsConnection::~NfsConnection() noexcept

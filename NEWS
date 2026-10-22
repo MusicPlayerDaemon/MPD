@@ -40,7 +40,7 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.17 (not yet released)
+ver 0.24.17 (2026/10/22)
 * protocol
   - fix crash on "getfingerprint" error
   - fix crash on "getfingerprint" + "close"
@@ -54,6 +54,9 @@ ver 0.24.17 (not yet released)
   - upnp: limit downloads, devices and expiry
   - upnp: reject devices with malformed UDN or service type
   - upnp: ignore services with controlURL pointing to a different host
+* storage
+  - nfs: disable the libnfs directory cache
+  - udisks: require admin permission for "listfiles udisks://"
 * input
   - cache: fix data race
   - ffmpeg: faster close
@@ -72,9 +75,11 @@ ver 0.24.17 (not yet released)
   - twolame: fix crash bug
 * database
   - simple: don't delete mount points during update
+  - simple: limit the archive directory nesting depth
   - upnp: use only music items
   - upnp: allow returned URLs to be absolute
 * output
+  - fifo: don't follow symlinks
   - oss: fix buffer overflow with DoP
   - pipewire: fix race crash bug
   - pulse: fix race crash bug
@@ -86,6 +91,10 @@ ver 0.24.17 (not yet released)
   - software: fix race crash bug
 * Linux
   - discard inherited supplementary groups with "group"
+* Windows
+  - playlist: reject Windows reserved device names
+  - protocol: reject backslashes in relative URIs
+  - recorder: sanitize Windows reserved device names
 
 ver 0.24.16 (2026/10/17)
 * protocol

@@ -35,6 +35,34 @@ SocketConfig::Fixup() noexcept
 #endif // HAVE_MULTICAST
 }
 
+#ifdef HAVE_UN
+
+/**
+ * Is there a socket at this path which nobody listens on (i.e. one
+ * left behind by a process which has exited)?  Returns false if the
+ * path is not a socket.
+ */
+[[gnu::pure]]
+static bool
+IsStaleLocalSocket(const char *path, SocketAddress address,
+		   int type) noexcept
+{
+	struct stat st;
+	if (lstat(path, &st) < 0 || !S_ISSOCK(st.st_mode))
+		return false;
+
+	UniqueSocketDescriptor fd;
+	if (!fd.CreateNonBlock(AF_LOCAL, type, 0))
+		return false;
+
+	/* ECONNREFUSED means nobody is bound to it; anything else
+	   (success, a full backlog, ...) means it is still alive */
+	return !fd.Connect(address) &&
+		IsSocketErrorConnectionRefused(GetSocketError());
+}
+
+#endif
+
 UniqueSocketDescriptor
 SocketConfig::Create(int type) const
 {
@@ -67,9 +95,6 @@ SocketConfig::Create(int type) const
 
 #ifdef HAVE_UN
 	const char *local_path = bind_address.GetLocalPath();
-	if (local_path != nullptr)
-		/* delete non-abstract socket files before reusing them */
-		unlink(local_path);
 
 	if (family == AF_LOCAL) {
 #ifdef __linux__
@@ -119,8 +144,25 @@ SocketConfig::Create(int type) const
 		fchmod(fd.Get(), mode);
 #endif
 
-	if (!fd.Bind(bind_address))
-		throw FmtSocketError("Failed to bind to {}", bind_address);
+	if (!fd.Bind(bind_address)) {
+#ifdef HAVE_UN
+		const auto error = GetSocketError();
+		if (local_path == nullptr ||
+		    !IsSocketErrorAddressInUse(error) ||
+		    /* don't delete files which are not sockets, and
+		       don't steal the socket of a running process */
+		    !IsStaleLocalSocket(local_path, bind_address, type))
+			throw FmtSocketError(error, "Failed to bind to {}",
+					     bind_address);
+
+		/* delete the old (non-abstract) socket file and try
+		   again */
+		unlink(local_path);
+
+		if (!fd.Bind(bind_address))
+#endif
+			throw FmtSocketError("Failed to bind to {}", bind_address);
+	}
 
 #ifdef HAVE_UN
 	if (mode != 0 && local_path != nullptr)

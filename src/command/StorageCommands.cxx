@@ -8,7 +8,9 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Instance.hxx"
+#include "Permission.hxx"
 #include "storage/Registry.hxx"
+#include "storage/StoragePlugin.hxx"
 #include "storage/CompositeStorage.hxx"
 #include "storage/FileInfo.hxx"
 #include "db/Features.hxx" // for ENABLE_DATABASE
@@ -73,6 +75,13 @@ handle_listfiles_storage(Response &r, Storage &storage, std::string_view uri)
 CommandResult
 handle_listfiles_storage(Client &client, Response &r, std::string_view uri)
 {
+	if (const auto *plugin = GetStoragePluginByUri(uri);
+	    plugin != nullptr && plugin->admin_only &&
+	    (client.GetPermission() & PERMISSION_ADMIN) == 0) {
+		r.Error(ACK_ERROR_PERMISSION, "you don't have permission for \"listfiles\" on this URI");
+		return CommandResult::ERROR;
+	}
+
 	auto &event_loop = client.GetInstance().io_thread.GetEventLoop();
 	std::unique_ptr<Storage> storage(CreateStorageURI(event_loop, uri));
 	if (storage == nullptr) {

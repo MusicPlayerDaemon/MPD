@@ -29,6 +29,10 @@
 #include "uri/Extract.hxx"
 #include "util/StringCompare.hxx"
 
+#ifdef _WIN32
+#include "fs/ReservedName.hxx" // for IsWindowsReservedFilename()
+#endif
+
 #include <cassert>
 #include <cstring>
 
@@ -57,6 +61,13 @@ spl_valid_name(std::string_view name_utf8) noexcept
 	if (name_utf8.empty())
 		/* empty name not allowed */
 		return false;
+
+#ifdef _WIN32
+	if (IsWindowsReservedFilename(name_utf8))
+		/* this would refer to a DOS device (e.g. "COM1.m3u")
+		   and not to a file in the playlist directory */
+		return false;
+#endif
 
 	/*
 	 * Not supporting '/' was done out of laziness, and we should

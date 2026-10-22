@@ -48,8 +48,10 @@ ChmodLocalSocket(const char *path, mode_t mode)
 	if (fchmodat(fd.Get(), "", mode, AT_EMPTY_PATH) < 0)
 		throw FmtErrno("chmod({:?}) failed"sv, path);
 #else
-	/* portable fallback */
-	if (chmod(path, mode) < 0)
+	/* portable fallback; don't follow a symlink in the last path
+	   component, which would apply the mode to an arbitrary
+	   file */
+	if (fchmodat(AT_FDCWD, path, mode, AT_SYMLINK_NOFOLLOW) < 0)
 		throw FmtErrno("chmod({:?}) failed"sv, path);
 #endif
 }
