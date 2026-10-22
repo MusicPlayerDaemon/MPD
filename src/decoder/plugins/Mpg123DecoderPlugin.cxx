@@ -13,6 +13,7 @@
 #include "fs/Path.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
@@ -381,7 +382,7 @@ Decode(DecoderClient &client, InputStream *is,
 
 		/* decode */
 
-		unsigned char buffer[8192];
+		unsigned char buffer[8_KiB];
 		size_t nbytes;
 		if (int error = mpg123_read(&handle, buffer, sizeof(buffer), &nbytes);
 		    error != MPG123_OK) {

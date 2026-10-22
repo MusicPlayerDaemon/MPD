@@ -12,6 +12,7 @@
 #include "tag/Mask.hxx"
 #include "event/FullyBufferedSocket.hxx"
 #include "event/CoarseTimerEvent.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <cstddef>
@@ -75,7 +76,7 @@ public:
 	 * The maximum number of bytes transmitted in a binary
 	 * response.  Can be changed with the "binarylimit" command.
 	 */
-	size_t binary_limit = 8192;
+	std::size_t binary_limit = 8_KiB;
 
 	/**
 	 * This caches the last "albumart" InputStream instance, to

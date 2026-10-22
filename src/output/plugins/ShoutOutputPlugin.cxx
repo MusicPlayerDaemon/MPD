@@ -6,6 +6,7 @@
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/Configured.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringAPI.hxx"
@@ -309,7 +310,7 @@ static void
 EncoderToShout(shout_t *shout_conn, Encoder &encoder)
 {
 	while (true) {
-		std::byte buffer[32768];
+		std::byte buffer[32_KiB];
 		const auto e = encoder.Read(std::span{buffer});
 		if (e.empty())
 			return;

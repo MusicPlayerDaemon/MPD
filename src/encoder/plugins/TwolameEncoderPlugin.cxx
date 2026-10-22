@@ -5,6 +5,7 @@
 #include "../EncoderAPI.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/CNumberParser.hxx"
 #include "util/SpanCast.hxx"
 #include "util/Domain.hxx"
@@ -18,7 +19,7 @@
 class TwolameEncoder final : public Encoder {
 	twolame_options *options;
 
-	std::byte output_buffer[32768];
+	std::byte output_buffer[32_KiB];
 	std::size_t fill = 0;
 
 	/**

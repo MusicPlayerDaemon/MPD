@@ -5,6 +5,7 @@
 #include "../EncoderAPI.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/CNumberParser.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/SpanCast.hxx"
@@ -17,7 +18,7 @@
 class LameEncoder final : public Encoder {
 	lame_global_flags *const gfp;
 
-	ReusableArray<std::byte, 32768> output_buffer;
+	ReusableArray<std::byte, 32_KiB> output_buffer;
 	std::span<const std::byte> output{};
 
 public:

@@ -5,6 +5,7 @@
 #include "../EncoderAPI.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/SpanCast.hxx"
 
@@ -13,7 +14,7 @@ extern "C"
 #include <shine/layer3.h>
 }
 
-static constexpr size_t BUFFER_INIT_SIZE = 8192;
+static constexpr std::size_t BUFFER_INIT_SIZE = 8_KiB;
 static constexpr unsigned CHANNELS = 2;
 
 class ShineEncoder final : public Encoder {

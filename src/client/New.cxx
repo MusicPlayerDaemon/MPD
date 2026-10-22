@@ -30,7 +30,7 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 	       int _uid, unsigned _permission,
 	       std::string &&_name) noexcept
 	:FullyBufferedSocket(_fd.Release(), _loop,
-			     16384, client_max_output_buffer_size),
+			     16_KiB, client_max_output_buffer_size),
 	 name(std::move(_name)),
 	 timeout_event(_loop, BIND_THIS_METHOD(OnTimeout)),
 	 partition(&_partition),

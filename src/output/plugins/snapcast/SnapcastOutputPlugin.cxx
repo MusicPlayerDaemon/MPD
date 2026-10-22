@@ -13,6 +13,7 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/SocketAddress.hxx"
 #include "event/Call.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/SpanCast.hxx"
@@ -288,7 +289,7 @@ SnapcastOutput::Play(std::span<const std::byte> src)
 	encoder->Write(src);
 	unflushed_input += src.size();
 
-	if (unflushed_input >= 65536) {
+	if (unflushed_input >= 64_KiB) {
 		/* we have fed a lot of input into the encoder, but it
 		   didn't give anything back yet - flush now to avoid
 		   buffer underruns */
@@ -302,7 +303,7 @@ SnapcastOutput::Play(std::span<const std::byte> src)
 	}
 
 	while (true) {
-		std::byte buffer[32768];
+		std::byte buffer[32_KiB];
 
 		const auto payload = encoder->Read(std::span{buffer});
 		if (payload.empty())

@@ -6,6 +6,7 @@
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
@@ -198,7 +199,7 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 
 	client.Ready(audio_format, info.seekable, sndfile_duration(info));
 
-	char buffer[16384];
+	char buffer[16_KiB];
 
 	const size_t frame_size = audio_format.GetFrameSize();
 	const sf_count_t read_frames = sizeof(buffer) / frame_size;

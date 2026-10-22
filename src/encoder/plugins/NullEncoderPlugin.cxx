@@ -3,10 +3,11 @@
 
 #include "NullEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 
 class NullEncoder final : public Encoder {
-	DynamicFifoBuffer<std::byte> buffer{8192};
+	DynamicFifoBuffer<std::byte> buffer{8_KiB};
 
 public:
 	NullEncoder()
