@@ -355,8 +355,6 @@ void
 ServerSocket::AddPath(Path path)
 {
 #ifdef HAVE_UN
-	unlink(path.c_str());
-
 	AllocatedSocketAddress address;
 	address.SetLocal(path.c_str());
 
