@@ -81,7 +81,7 @@ FileOutputStream::OpenCreate([[maybe_unused]] Access access, bool visible)
 			    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			    nullptr);
 	if (!IsDefined())
-		throw FmtLastError("Failed to create {}", path);
+		throw FmtLastError("Failed to create {:?}", path);
 }
 
 inline void
@@ -92,12 +92,12 @@ FileOutputStream::OpenAppend([[maybe_unused]] Access access, bool create)
 			    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			    nullptr);
 	if (!IsDefined())
-		throw FmtLastError("Failed to append to {}", path);
+		throw FmtLastError("Failed to append to {:?}", path);
 
 	if (!SeekEOF()) {
 		auto code = GetLastError();
 		Close();
-		throw FmtLastError(code, "Failed seek end-of-file of {}", path);
+		throw FmtLastError(code, "Failed seek end-of-file of {:?}", path);
 	}
 
 }
@@ -120,11 +120,11 @@ FileOutputStream::Write(std::span<const std::byte> src)
 
 	DWORD nbytes;
 	if (!WriteFile(handle, src.data(), src.size(), &nbytes, nullptr))
-		throw FmtLastError("Failed to write to {}", GetPath());
+		throw FmtLastError("Failed to write to {:?}", GetPath());
 
 	if (size_t(nbytes) != src.size())
 		throw FmtLastError(DWORD{ERROR_DISK_FULL},
-				   "Failed to write to {}",
+				   "Failed to write to {:?}",
 				   GetPath());
 }
 
@@ -134,7 +134,7 @@ FileOutputStream::Sync()
 	assert(IsDefined());
 
 	if (!FlushFileBuffers(handle))
-		throw FmtLastError("Failed to sync {}", GetPath());
+		throw FmtLastError("Failed to sync {:?}", GetPath());
 }
 
 void
@@ -223,7 +223,7 @@ FileOutputStream::OpenCreate(Access access, bool visible)
 		    GetPath().c_str(),
 		    O_WRONLY|O_CREAT|O_TRUNC,
 		    static_cast<mode_t>(access)))
-		throw FmtErrno("Failed to create {}", GetPath());
+		throw FmtErrno("Failed to create {:?}", GetPath());
 }
 
 inline void
@@ -239,7 +239,7 @@ FileOutputStream::OpenAppend(Access access, bool create)
 #endif
 		     path.c_str(), flags,
 		    static_cast<mode_t>(access)))
-		throw FmtErrno("Failed to append to {}", path);
+		throw FmtErrno("Failed to append to {:?}", path);
 }
 
 uint64_t
@@ -255,9 +255,9 @@ FileOutputStream::Write(std::span<const std::byte> src)
 
 	ssize_t nbytes = fd.Write(src);
 	if (nbytes < 0)
-		throw FmtErrno("Failed to write to {}", GetPath());
+		throw FmtErrno("Failed to write to {:?}", GetPath());
 	else if ((size_t)nbytes < src.size())
-		throw FmtErrno(ENOSPC, "Failed to write to {}", GetPath());
+		throw FmtErrno(ENOSPC, "Failed to write to {:?}", GetPath());
 }
 
 void
@@ -271,7 +271,7 @@ FileOutputStream::Sync()
 	const bool success = fsync(fd.Get()) == 0;
 #endif
 	if (!success)
-		throw FmtErrno("Failed to sync {}", GetPath());
+		throw FmtErrno("Failed to sync {:?}", GetPath());
 }
 
 void
@@ -287,12 +287,12 @@ try {
 		if (linkat(-1, ProcFdPath(fd),
 			   directory_fd.Get(), path.c_str(),
 			   AT_SYMLINK_FOLLOW) < 0)
-			throw FmtErrno("Failed to commit {}", path);
+			throw FmtErrno("Failed to commit {:?}", path);
 	}
 #endif
 
 	if (!Close()) {
-		throw FmtErrno("Failed to commit {}", path);
+		throw FmtErrno("Failed to commit {:?}", path);
 	}
 
 	if (tmp_path != nullptr)
