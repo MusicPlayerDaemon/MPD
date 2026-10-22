@@ -6,6 +6,8 @@
 
 #include "../OutputAPI.hxx"
 
+#include <atomic>
+
 class Mixer;
 class MixerListener;
 
@@ -17,7 +19,19 @@ class SndioOutput final : AudioOutput {
 	const char *const device;
 	const unsigned buffer_time; /* in ms */
 	struct sio_hdl *hdl;
-	int raw_volume;
+
+	/**
+	 * Written by VolumeChanged() in the output thread, read by
+	 * GetVolume() in the main thread.
+	 */
+	std::atomic_int raw_volume;
+
+	/**
+	 * A volume set by SetVolume() which has not yet been applied
+	 * by Play(), or -1.  libsndio handles are not thread-safe, so
+	 * only the output thread may call sio_setvol().
+	 */
+	std::atomic_int pending_raw_volume = -1;
 
 public:
 	SndioOutput(const ConfigBlock &block);
