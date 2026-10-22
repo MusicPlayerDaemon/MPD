@@ -67,9 +67,6 @@ SocketConfig::Create(int type) const
 
 #ifdef HAVE_UN
 	const char *local_path = bind_address.GetLocalPath();
-	if (local_path != nullptr)
-		/* delete non-abstract socket files before reusing them */
-		unlink(local_path);
 
 	if (family == AF_LOCAL) {
 #ifdef __linux__
@@ -119,8 +116,20 @@ SocketConfig::Create(int type) const
 		fchmod(fd.Get(), mode);
 #endif
 
-	if (!fd.Bind(bind_address))
-		throw FmtSocketError("Failed to bind to {}", bind_address);
+	if (!fd.Bind(bind_address)) {
+#ifdef HAVE_UN
+		if (local_path == nullptr ||
+		    !IsSocketErrorAddressInUse(GetSocketError()))
+			throw FmtSocketError("Failed to bind to {}", bind_address);
+
+		/* delete the old (non-abstract) socket file and try
+		   again */
+		unlink(local_path);
+
+		if (!fd.Bind(bind_address))
+#endif
+			throw FmtSocketError("Failed to bind to {}", bind_address);
+	}
 
 #ifdef HAVE_UN
 	if (mode != 0 && local_path != nullptr)
