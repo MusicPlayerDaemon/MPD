@@ -3,6 +3,7 @@
 
 #include "GzipOutputStream.hxx"
 #include "Error.hxx"
+#include "util/ByteSizes.hxx"
 
 GzipOutputStream::GzipOutputStream(OutputStream &_next)
 	:next(_next)
@@ -36,7 +37,7 @@ GzipOutputStream::SyncFlush()
 	z.avail_in = 0;
 
 	do {
-		Bytef output[16384];
+		Bytef output[16_KiB];
 		z.next_out = output;
 		z.avail_out = sizeof(output);
 
@@ -59,7 +60,7 @@ GzipOutputStream::Finish()
 	z.avail_in = 0;
 
 	while (true) {
-		Bytef output[16384];
+		Bytef output[16_KiB];
 		z.next_out = output;
 		z.avail_out = sizeof(output);
 
@@ -84,7 +85,7 @@ GzipOutputStream::Write(std::span<const std::byte> src)
 	z.avail_in = src.size();
 
 	while (z.avail_in > 0) {
-		Bytef output[65536];
+		Bytef output[64_KiB];
 		z.next_out = output;
 		z.avail_out = sizeof(output);
 

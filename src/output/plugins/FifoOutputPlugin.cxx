@@ -10,6 +10,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/FileInfo.hxx"
 #include "lib/fmt/SystemError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "open.h"
@@ -169,7 +170,7 @@ FifoOutput::Cancel() noexcept
 
 	ssize_t bytes;
 	do {
-		char buffer[16384];
+		char buffer[16_KiB];
 		bytes = read(input, buffer, sizeof(buffer));
 	} while (bytes > 0 && errno != EINTR);
 

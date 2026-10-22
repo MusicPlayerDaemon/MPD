@@ -16,6 +16,7 @@
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "util/BitReverse.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/IntOverflow.hxx"
 #include "util/PackedBigEndian.hxx"
 #include "util/SpanCast.hxx"
@@ -386,7 +387,7 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 	const unsigned kbit_rate = channels * sample_rate / 1000;
 	const offset_type start_offset = is.GetOffset();
 
-	std::byte buffer[8192];
+	std::byte buffer[8_KiB];
 
 	const size_t sample_size = sizeof(buffer[0]);
 	const size_t frame_size = channels * sample_size;

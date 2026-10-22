@@ -11,6 +11,7 @@
 #include "thread/Cond.hxx"
 #include "util/Domain.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/ByteSizes.hxx"
 #include "mixer/plugins/AndroidMixerPlugin.hxx"
 #include "Log.hxx"
 
@@ -23,7 +24,7 @@
 
 class SlesOutput final : AudioOutput  {
 	static constexpr unsigned N_BUFFERS = 3;
-	static constexpr size_t BUFFER_SIZE = 65536;
+	static constexpr std::size_t BUFFER_SIZE = 64_KiB;
 
 	SLES::Object engine_object, mix_object, play_object;
 	SLES::Play play;

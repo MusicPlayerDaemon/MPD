@@ -13,6 +13,7 @@
 #include "IcyMetaDataServer.hxx"
 #include "event/Call.hxx"
 #include "net/DscpParser.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "config/Net.hxx"
@@ -128,7 +129,7 @@ HttpdOutput::OnAccept(UniqueSocketDescriptor fd,
 PagePtr
 HttpdOutput::ReadPage() noexcept
 {
-	if (unflushed_input >= 65536) {
+	if (unflushed_input >= 64_KiB) {
 		/* we have fed a lot of input into the encoder, but it
 		   didn't give anything back yet - flush now to avoid
 		   buffer underruns */
@@ -141,7 +142,7 @@ HttpdOutput::ReadPage() noexcept
 		unflushed_input = 0;
 	}
 
-	std::byte buffer[32768];
+	std::byte buffer[32_KiB];
 
 	size_t size = 0;
 	do {

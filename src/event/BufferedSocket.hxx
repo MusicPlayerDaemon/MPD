@@ -4,6 +4,7 @@
 #pragma once
 
 #include "SocketEvent.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
 #include <cassert>
@@ -18,7 +19,7 @@ class EventLoop;
  * A #SocketEvent specialization that adds an input buffer.
  */
 class BufferedSocket {
-	StaticFifoBuffer<std::byte, 8192> input;
+	StaticFifoBuffer<std::byte, 8_KiB> input;
 
 protected:
 	SocketEvent event;

@@ -7,6 +7,7 @@
 #include "pcm/AudioFormat.hxx"
 #include "pcm/Buffer.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/Serial.hxx"
 #include "util/SpanCast.hxx"
@@ -31,7 +32,7 @@ class FlacEncoder final : public Encoder {
 	 * This buffer will hold encoded data from libFLAC until it is
 	 * picked up with Read().
 	 */
-	DynamicFifoBuffer<std::byte> output_buffer{8192};
+	DynamicFifoBuffer<std::byte> output_buffer{8_KiB};
 
 public:
 	FlacEncoder(AudioFormat _audio_format, FLAC__StreamEncoder *_fse, unsigned _compression, bool _oggflac, bool _oggchaining);

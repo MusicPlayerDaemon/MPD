@@ -3,6 +3,7 @@
 
 #include "io/FileOutputStream.hxx"
 #include "fs/NarrowPath.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/PrintException.hxx"
 
 #include <cerrno>
@@ -17,7 +18,7 @@ static bool
 Copy(OutputStream &dest, int src)
 {
 	while (true) {
-		std::byte buffer[8192];
+		std::byte buffer[8_KiB];
 		ssize_t nbytes = read(src, buffer, sizeof(buffer));
 		if (nbytes < 0) {
 			fprintf(stderr, "Failed to read from stdin: %s\n",

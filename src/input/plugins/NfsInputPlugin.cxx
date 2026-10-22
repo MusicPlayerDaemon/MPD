@@ -85,7 +85,7 @@ NfsInputStream::DoRead()
 		return;
 	}
 
-	size_t nbytes = std::min<size_t>(std::min<uint64_t>(remaining, 32768),
+	size_t nbytes = std::min<size_t>(std::min<uint64_t>(remaining, 32_KiB),
 					 buffer_space);
 
 	try {

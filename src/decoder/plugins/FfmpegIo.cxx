@@ -7,6 +7,7 @@
 #include "FfmpegIo.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
+#include "util/ByteSizes.hxx"
 
 extern "C" {
 #include <libavutil/mem.h>
@@ -88,7 +89,7 @@ AvioStream::_Seek(void *opaque, int64_t pos, int whence) noexcept
 bool
 AvioStream::Open() noexcept
 {
-	constexpr size_t BUFFER_SIZE = 8192;
+	constexpr size_t BUFFER_SIZE = 8_KiB;
 	auto buffer = (unsigned char *)av_malloc(BUFFER_SIZE);
 	if (buffer == nullptr)
 		return false;

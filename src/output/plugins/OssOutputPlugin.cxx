@@ -704,14 +704,14 @@ OssOutput::Play(std::span<const std::byte> src)
 	if (!fd.IsDefined())
 		Reopen();
 
-	const auto e = pcm_export->Export(src);
-	if (e.empty())
-		return src.size();
+	auto e = pcm_export->Export(src);
 
-	while (true) {
+	while (!e.empty()) {
 		const ssize_t ret = fd.Write(e);
-		if (ret > 0) [[likely]]
-			return pcm_export->CalcInputSize(ret);
+		if (ret > 0) [[likely]] {
+			e = e.subspan(ret);
+			continue;
+		}
 
 		if (ret == 0) [[unlikely]]
 			// can this ever happen?  What now?
@@ -732,6 +732,8 @@ OssOutput::Play(std::span<const std::byte> src)
 
 		throw FmtErrno(err, "Write error on {:?}", device);
 	}
+
+	return src.size();
 }
 
 constexpr struct AudioOutputPlugin oss_output_plugin = {

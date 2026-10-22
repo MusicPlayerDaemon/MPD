@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "util/ByteSizes.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/SpanCast.hxx"
 
@@ -33,7 +34,7 @@ class BufferedOutputStream {
 
 public:
 	explicit BufferedOutputStream(OutputStream &_os,
-				      size_t buffer_size=32768) noexcept
+				      std::size_t buffer_size=32_KiB) noexcept
 		:os(_os), buffer(buffer_size) {}
 
 	/**

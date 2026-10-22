@@ -19,6 +19,7 @@
 #include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
@@ -63,7 +64,7 @@ struct SidplayGlobal {
 
 static SidplayGlobal *sidplay_global;
 
-static constexpr unsigned rom_size = 8192;
+static constexpr unsigned rom_size = 8_KiB;
 
 static void loadRom(const Path rom_path, uint8_t *dump)
 {

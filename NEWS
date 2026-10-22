@@ -66,16 +66,21 @@ ver 0.24.17 (not yet released)
   - flac, opus, vorbis: fix Ogg detection if a stream's first bytes arrive in pieces
   - gme: limit the number of subtunes in a container
   - mpg123: fix crash with empty TXXX frame
+* encoder
+  - lame: flush the encoder at end of song
+  - twolame: fix crash bug
 * database
   - simple: don't delete mount points during update
   - upnp: use only music items
   - upnp: allow returned URLs to be absolute
 * output
+  - oss: fix buffer overflow with DoP
   - pipewire: fix race crash bug
   - pulse: fix race crash bug
   - sles: fix hang due to integer underflow
   - fix crash after filter initialization error
 * mixer
+  - fix use-after-free bug
   - alsa: list available controls in the "no such mixer control" error
   - software: fix race crash bug
 * Linux

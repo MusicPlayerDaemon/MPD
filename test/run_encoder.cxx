@@ -9,6 +9,7 @@
 #include "pcm/AudioParser.hxx"
 #include "config/Block.hxx"
 #include "io/StdioOutputStream.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/PrintException.hxx"
 
 #include <exception>
@@ -62,7 +63,7 @@ try {
 
 	/* do it */
 
-	static std::byte buffer[32768];
+	static std::byte buffer[32_KiB];
 	ssize_t nbytes;
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		encoder->Write(std::span{buffer}.first(nbytes));

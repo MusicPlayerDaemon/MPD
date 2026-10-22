@@ -23,6 +23,7 @@
 #include "io/StdioOutputStream.hxx"
 #include "time/ChronoUtil.hxx"
 #include "time/ISO8601.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/PrintException.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringBuffer.hxx"
@@ -242,7 +243,7 @@ Cat(InputStream &is, std::unique_lock<Mutex> &lock, FileDescriptor out)
 			tag_save(stderr, *tag);
 		}
 
-		std::byte buffer[16384];
+		std::byte buffer[16_KiB];
 		const auto nbytes = is.Read(lock, buffer);
 		if (nbytes == 0)
 			break;

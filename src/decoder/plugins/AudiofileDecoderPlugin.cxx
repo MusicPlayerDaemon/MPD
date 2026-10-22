@@ -6,6 +6,7 @@
 #include "input/InputStream.hxx"
 #include "pcm/CheckAudioFormat.hxx"
 #include "tag/Handler.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -204,7 +205,7 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 
 	DecoderCommand cmd;
 	do {
-		uint8_t chunk[8192];
+		uint8_t chunk[8_KiB];
 		const int nframes =
 			afReadFrames(fh, AF_DEFAULT_TRACK, chunk,
 				     sizeof(chunk) / frame_size);

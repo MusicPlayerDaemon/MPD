@@ -4,6 +4,7 @@
 #pragma once
 
 #include "io/Reader.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
 #include <zlib.h>
@@ -18,7 +19,7 @@ class GunzipReader final : public Reader {
 
 	z_stream z;
 
-	StaticFifoBuffer<std::byte, 65536> buffer;
+	StaticFifoBuffer<std::byte, 64_KiB> buffer;
 
 public:
 	/**

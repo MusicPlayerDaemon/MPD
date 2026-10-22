@@ -4,6 +4,7 @@
 #include "OggFind.hxx"
 #include "lib/xiph/OggSyncState.hxx"
 #include "input/InputStream.hxx"
+#include "util/ByteSizes.hxx"
 
 bool
 OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
@@ -46,13 +47,13 @@ OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
 	if (!is.KnownSize())
 		return false;
 
-	if (is.GetRest() < 65536)
+	if (is.GetRest() < 64_KiB)
 		return (synced || oy.ExpectPageSeekIn(os)) &&
 			OggFindEOS(oy, os, packet);
 
 	if (!is.CheapSeeking())
 		return false;
 
-	return OggSeekPageAtOffset(oy, os, is, is.GetSize() - 65536) &&
+	return OggSeekPageAtOffset(oy, os, is, is.GetSize() - 64_KiB) &&
 		OggFindEOS(oy, os, packet);
 }

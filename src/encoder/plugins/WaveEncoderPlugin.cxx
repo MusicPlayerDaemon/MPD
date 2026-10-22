@@ -5,6 +5,7 @@
 #include "../EncoderAPI.hxx"
 #include "tag/RiffFormat.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <cassert>
@@ -14,7 +15,7 @@
 class WaveEncoder final : public Encoder {
 	unsigned bits;
 
-	DynamicFifoBuffer<std::byte> buffer{8192};
+	DynamicFifoBuffer<std::byte> buffer{8_KiB};
 
 public:
 	explicit WaveEncoder(AudioFormat &audio_format) noexcept;

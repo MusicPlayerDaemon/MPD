@@ -21,6 +21,7 @@
 #include "io/StdioOutputStream.hxx"
 #include "cmdline/OptionDef.hxx"
 #include "cmdline/OptionParser.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/PrintException.hxx"
 
 #include "archive/Features.h" // for ENABLE_ARCHIVE
@@ -33,7 +34,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-static constexpr std::size_t MAX_CHUNK_SIZE = 16384;
+static constexpr std::size_t MAX_CHUNK_SIZE = 16_KiB;
 
 struct CommandLine {
 	const char *uri = nullptr;

@@ -69,7 +69,7 @@ MmsInputStream::ThreadRead(std::span<std::byte> dest)
 	/* unfortunately, mmsx_read() blocks until the whole buffer
 	   has been filled; to avoid big latencies, limit the size of
 	   each chunk we read to a reasonable size */
-	constexpr size_t MAX_CHUNK = 16384;
+	constexpr size_t MAX_CHUNK = 16_KiB;
 	if (dest.size() > MAX_CHUNK)
 		dest = dest.first(MAX_CHUNK);
 

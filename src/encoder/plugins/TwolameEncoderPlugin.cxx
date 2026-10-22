@@ -5,6 +5,8 @@
 #include "../EncoderAPI.hxx"
 #include "pcm/AudioFormat.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/AllocatedArray.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/CNumberParser.hxx"
 #include "util/SpanCast.hxx"
 #include "util/Domain.hxx"
@@ -16,9 +18,21 @@
 #include <stdexcept>
 
 class TwolameEncoder final : public Encoder {
+	/**
+	 * The number of samples (per channel) in one MPEG audio layer
+	 * II frame.
+	 */
+	static constexpr std::size_t FRAME_SAMPLES = 1152;
+
+	/**
+	 * The maximum size of one MPEG audio layer II frame in bytes
+	 * (384 kbit/s at 32 kHz plus a padding byte).
+	 */
+	static constexpr std::size_t MAX_FRAME_SIZE = 1729;
+
 	twolame_options *options;
 
-	std::byte output_buffer[32768];
+	AllocatedArray<std::byte> output_buffer{32_KiB};
 	std::size_t fill = 0;
 
 	/**
@@ -175,10 +189,17 @@ TwolameEncoder::Write(std::span<const std::byte> _src)
 
 	const std::size_t num_frames = src.size() / CHANNELS;
 
+	/* the size of the input is not bounded (e.g. after
+	   upsampling a file with a very low sample rate), so make
+	   sure the output buffer is large enough for all MP2 frames
+	   which may be generated from it (plus libtwolame's
+	   partially buffered frame) */
+	output_buffer.GrowDiscard((num_frames / FRAME_SAMPLES + 2) * MAX_FRAME_SIZE);
+
 	int bytes_out = twolame_encode_buffer_interleaved(options,
 							  src.data(), num_frames,
-							  (unsigned char *)output_buffer,
-							  sizeof(output_buffer));
+							  (unsigned char *)output_buffer.data(),
+							  output_buffer.size());
 	if (bytes_out < 0)
 		throw std::runtime_error("twolame encoder failed");
 
@@ -188,19 +209,19 @@ TwolameEncoder::Write(std::span<const std::byte> _src)
 std::span<const std::byte>
 TwolameEncoder::Read(std::span<std::byte>) noexcept
 {
-	assert(fill <= sizeof(output_buffer));
+	assert(fill <= output_buffer.size());
 
 	if (fill == 0 && flush) {
 		int ret = twolame_encode_flush(options,
-					       (unsigned char *)output_buffer,
-					       sizeof(output_buffer));
+					       (unsigned char *)output_buffer.data(),
+					       output_buffer.size());
 		if (ret > 0)
 			fill = (std::size_t)ret;
 
 		flush = false;
 	}
 
-	return std::span{output_buffer}.first(std::exchange(fill, 0));
+	return std::span{output_buffer.data(), std::exchange(fill, 0)};
 }
 
 const EncoderPlugin twolame_encoder_plugin = {

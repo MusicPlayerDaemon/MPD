@@ -8,6 +8,7 @@
 #include "output/Features.h"
 #include "lib/fmt/RuntimeError.hxx"
 #include "thread/Mutex.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/SpanCast.hxx"
@@ -245,7 +246,7 @@ JackOutput::JackOutput(const ConfigBlock &block)
 			   num_source_ports, num_destination_ports,
 			   block.line);
 
-	ringbuffer_size = block.GetPositiveValue("ringbuffer_size", 32768U);
+	ringbuffer_size = block.GetPositiveValue("ringbuffer_size", 32_KiB);
 }
 
 inline jack_nframes_t
