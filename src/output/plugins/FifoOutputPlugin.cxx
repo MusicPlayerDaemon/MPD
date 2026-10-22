@@ -137,10 +137,16 @@ try {
 		throw FmtErrno("Could not open FIFO {:?} for reading",
 			       path);
 
+	if (!input.IsPipe())
+		throw FmtRuntimeError("{:?} is not a FIFO", path);
+
 	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0);
 	if (!output.IsDefined())
 		throw FmtErrno("Could not open FIFO {:?} for writing",
 			       path);
+
+	if (!output.IsPipe())
+		throw FmtRuntimeError("{:?} is not a FIFO", path);
 } catch (...) {
 	CloseFifo();
 	throw;
