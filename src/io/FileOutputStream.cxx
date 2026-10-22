@@ -222,7 +222,7 @@ FileOutputStream::OpenCreate(Access access, bool visible)
 #endif
 		    GetPath().c_str(),
 		    O_WRONLY|O_CREAT|O_TRUNC,
-		    0666))
+		    static_cast<mode_t>(access)))
 		throw FmtErrno("Failed to create {}", GetPath());
 }
 
