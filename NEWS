@@ -26,6 +26,7 @@ ver 0.24.17 (not yet released)
   - gme: limit the number of subtunes in a container
   - mpg123: fix crash with empty TXXX frame
 * encoder
+  - lame: flush the encoder at end of song
   - twolame: fix crash bug
 * database
   - simple: don't delete mount points during update

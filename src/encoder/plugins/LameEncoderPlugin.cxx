@@ -33,6 +33,7 @@ public:
 	LameEncoder &operator=(const LameEncoder &) = delete;
 
 	/* virtual methods from class Encoder */
+	void End() override;
 	void Write(std::span<const std::byte> src) override;
 	std::span<const std::byte> Read(std::span<std::byte> buffer) noexcept override;
 };
@@ -170,6 +171,25 @@ LameEncoder::Write(std::span<const std::byte> _src)
 						       (unsigned char *)dest,
 						       output_buffer_size);
 
+	if (bytes_out < 0)
+		throw std::runtime_error("lame encoder failed");
+
+	output = {dest, std::size_t(bytes_out)};
+}
+
+void
+LameEncoder::End()
+{
+	assert(output.empty());
+
+	/* minimum size according to LAME documentation */
+	static constexpr std::size_t output_buffer_size = 7200;
+	const auto dest = output_buffer.Get(output_buffer_size);
+
+	/* encode the remaining buffered samples (padded with
+	   silence) and return the remaining MP3 frames */
+	int bytes_out = lame_encode_flush(gfp, (unsigned char *)dest,
+					  output_buffer_size);
 	if (bytes_out < 0)
 		throw std::runtime_error("lame encoder failed");
 
