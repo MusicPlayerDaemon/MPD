@@ -130,6 +130,26 @@ IsSocketErrorTimeout(socket_error_t code) noexcept
 #endif
 }
 
+constexpr bool
+IsSocketErrorAddressInUse(socket_error_t code) noexcept
+{
+#ifdef _WIN32
+	return code == WSAEADDRINUSE;
+#else
+	return code == EADDRINUSE;
+#endif
+}
+
+constexpr bool
+IsSocketErrorConnectionRefused(socket_error_t code) noexcept
+{
+#ifdef _WIN32
+	return code == WSAECONNREFUSED;
+#else
+	return code == ECONNREFUSED;
+#endif
+}
+
 /**
  * Helper class that formats a socket error message into a
  * human-readable string.  On Windows, a buffer is necessary for this,
