@@ -1,4 +1,6 @@
 ver 0.24.18 (not yet released)
+* output
+  - wasapi: fix race crash bug
 * mixer
   - sndio: fix data race
 

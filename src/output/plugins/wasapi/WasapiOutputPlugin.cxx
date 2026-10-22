@@ -303,6 +303,13 @@ class WasapiOutput final : public AudioOutput {
 
 	const std::string device_config;
 
+	/**
+	 * Protects #com_worker, which is modified by Enable() and
+	 * Disable() in the output thread and read by GetComWorker()
+	 * in the mixer.
+	 */
+	Mutex com_worker_mutex;
+
 	std::shared_ptr<COMWorker> com_worker;
 	ComPtr<IMMDevice> device;
 	ComPtr<IAudioClient> client;
@@ -316,22 +323,21 @@ public:
 	WasapiOutput(const ConfigBlock &block);
 
 	auto GetComWorker() noexcept {
-		// TODO: protect access to the shard_ptr
+		const std::lock_guard lock{com_worker_mutex};
 		return com_worker;
 	}
 
 	void Enable() override {
-		com_worker = std::make_shared<COMWorker>();
+		auto new_com_worker = std::make_shared<COMWorker>();
+		new_com_worker->Async([&]() { ChooseDevice(); }).get();
 
-		try {
-			com_worker->Async([&]() { ChooseDevice(); }).get();
-		} catch (...) {
-			com_worker.reset();
-			throw;
-		}
+		const std::lock_guard lock{com_worker_mutex};
+		com_worker = std::move(new_com_worker);
 	}
 	void Disable() noexcept override {
 		com_worker->Async([&]() { DoDisable(); }).get();
+
+		const std::lock_guard lock{com_worker_mutex};
 		com_worker.reset();
 	}
 	void Open(AudioFormat &audio_format) override {
