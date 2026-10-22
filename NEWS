@@ -1,3 +1,5 @@
+ver 0.24.18 (not yet released)
+
 ver 0.24.17 (2026/10/22)
 * protocol
   - fix crash on "getfingerprint" error
