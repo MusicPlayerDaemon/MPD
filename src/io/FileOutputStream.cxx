@@ -225,6 +225,11 @@ FileOutputStream::OpenCreate(Access access, bool visible)
 		    O_WRONLY|O_CREAT|O_TRUNC|O_NOFOLLOW,
 		    static_cast<mode_t>(access)))
 		throw FmtErrno("Failed to create {:?}", GetPath());
+
+	if (!fd.IsRegularFile()) {
+		fd.Close();
+		throw FmtRuntimeError("Not a regular file: {:?}", path);
+	}
 }
 
 inline void
@@ -241,6 +246,11 @@ FileOutputStream::OpenAppend(Access access, bool create)
 		     path.c_str(), flags,
 		    static_cast<mode_t>(access)))
 		throw FmtErrno("Failed to append to {:?}", path);
+
+	if (!fd.IsRegularFile()) {
+		fd.Close();
+		throw FmtRuntimeError("Not a regular file: {:?}", path);
+	}
 }
 
 uint64_t
