@@ -10,6 +10,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/FileInfo.hxx"
 #include "lib/fmt/SystemError.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 #include "util/ByteSizes.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -23,8 +24,8 @@
 class FifoOutput final : AudioOutput {
 	const AllocatedPath path;
 
-	int input = -1;
-	int output = -1;
+	UniqueFileDescriptor input, output;
+
 	bool created = false;
 	Timer *timer;
 
@@ -90,15 +91,8 @@ FifoOutput::Delete()
 void
 FifoOutput::CloseFifo()
 {
-	if (input >= 0) {
-		close(input);
-		input = -1;
-	}
-
-	if (output >= 0) {
-		close(output);
-		output = -1;
-	}
+	input.Close();
+	output.Close();
 
 	FileInfo fi;
 	if (created && GetFileInfo(path, fi))
@@ -138,13 +132,13 @@ FifoOutput::OpenFifo()
 try {
 	Check();
 
-	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0).Steal();
-	if (input < 0)
+	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0);
+	if (!input.IsDefined())
 		throw FmtErrno("Could not open FIFO {:?} for reading",
 			       path);
 
-	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0).Steal();
-	if (output < 0)
+	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY|O_NOFOLLOW, 0);
+	if (!output.IsDefined())
 		throw FmtErrno("Could not open FIFO {:?} for writing",
 			       path);
 } catch (...) {
@@ -171,8 +165,8 @@ FifoOutput::Cancel() noexcept
 
 	ssize_t bytes;
 	do {
-		char buffer[16_KiB];
-		bytes = read(input, buffer, sizeof(buffer));
+		std::byte buffer[16_KiB];
+		bytes = input.Read(buffer);
 	} while (bytes > 0 && errno != EINTR);
 
 	if (bytes < 0 && errno != EAGAIN) {
@@ -198,7 +192,7 @@ FifoOutput::Play(std::span<const std::byte> src)
 	timer->Add(src.size());
 
 	while (true) {
-		ssize_t bytes = write(output, src.data(), src.size());
+		ssize_t bytes = output.Write(src);
 		if (bytes > 0)
 			return (std::size_t)bytes;
 
