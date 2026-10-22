@@ -15,7 +15,14 @@ extern LogListener *logListener;
 
 extern Instance *global_instance;
 
-#ifndef ANDROID
+#ifdef ANDROID
+
+#include <jni.h>
+
+void
+AndroidMain(JNIEnv *env);
+
+#else
 
 /**
  * A entry point for application.

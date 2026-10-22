@@ -460,6 +460,7 @@ if not is_android
   ]
 else
   sources += [
+    'src/android/Bridge.cxx',
     'src/android/Context.cxx',
     'src/android/AudioManager.cxx',
     'src/android/Environment.cxx',
