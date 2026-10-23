@@ -2,6 +2,7 @@ ver 0.24.18 (not yet released)
 * protocol
   - "albumart": don't climb above the music directory for CUE tracks
 * database
+  - proxy: fix playback of CUE tracks
   - simple: reject playlist entries which climb above the music directory
   - upnp: support libupnp 1.18 (and 1.14.26 to 1.14.29)
 * output
