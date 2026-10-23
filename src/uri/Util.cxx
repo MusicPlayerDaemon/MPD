@@ -27,6 +27,21 @@ UriIsCanonicalRelativePath(std::string_view uri) noexcept
 	});
 }
 
+bool
+UriIsRelativePathWithinDepth(std::string_view uri, unsigned max_up) noexcept
+{
+	unsigned up = 0;
+	while (true) {
+		if (SkipPrefix(uri, "../"sv)) {
+			if (++up > max_up)
+				return false;
+		} else if (!SkipPrefix(uri, "./"sv))
+			break;
+	}
+
+	return UriIsCanonicalRelativePath(uri);
+}
+
 [[gnu::pure]]
 static std::string_view
 SkipUriScheme(std::string_view uri) noexcept
