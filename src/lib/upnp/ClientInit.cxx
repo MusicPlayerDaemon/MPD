@@ -15,9 +15,23 @@ static Mutex upnp_client_init_mutex;
 static unsigned upnp_client_ref;
 static UpnpClient_Handle upnp_client_handle;
 
+/**
+ * Determine the type of the "Event" parameter of #Upnp_FunPtr.  It
+ * is "const void *" in most libupnp versions, but "void *" in libupnp
+ * 1.18 (and 1.14.26 to 1.14.29), see
+ * https://github.com/pupnp/pupnp/issues/528
+ */
+template<typename F>
+struct UpnpFunPtrEvent;
+
+template<typename E>
+struct UpnpFunPtrEvent<int(*)(Upnp_EventType, E, void *)> {
+	using type = E;
+};
+
 static int
 UpnpClientCallback(Upnp_EventType et,
-		   const void *evp,
+		   UpnpFunPtrEvent<Upnp_FunPtr>::type evp,
 		   void *cookie) noexcept
 {
 	if (cookie == nullptr)

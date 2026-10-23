@@ -348,6 +348,13 @@ class WasapiOutput final : public AudioOutput {
 
 	const std::string device_config;
 
+	/**
+	 * Protects #com_worker, which is modified by Enable() and
+	 * Disable() in the output thread and read by GetComWorker()
+	 * in the mixer.
+	 */
+	Mutex com_worker_mutex;
+
 	std::shared_ptr<COMWorker> com_worker;
 	ComPtr<IMMDeviceEnumerator> device_enumerator;
 	ComPtr<IMMDevice> device;
@@ -366,38 +373,34 @@ public:
 	WasapiOutput(const ConfigBlock &block);
 
 	auto GetComWorker() noexcept {
-		// TODO: protect access to the shard_ptr
+		const std::lock_guard lock{com_worker_mutex};
 		return com_worker;
 	}
 
 	void Enable() override {
-		com_worker = std::make_shared<COMWorker>();
+		auto new_com_worker = std::make_shared<COMWorker>();
+		new_com_worker->Async([&]() {
+			ChooseDevice();
 
-		try {
-			com_worker->Async([&]() {
-				ChooseDevice();
+			/* Create a device enumerator and register an
+			   IMMNotificationClient.  Default devices
+			   need OnDefaultDeviceChanged to switch to
+			   new devices, and explicit devices need
+			   OnDeviceStateChanged to detect
+			   reconnects. */
+			device_enumerator.CoCreateInstance(
+				__uuidof(MMDeviceEnumerator),
+				nullptr, CLSCTX_INPROC_SERVER);
+			if (device_enumerator) {
+				notification = ComPtr<IMMNotificationClient>(
+					new WasapiDeviceNotification(device_event.handle(),
+								      !device_config.empty()));
+				device_enumerator->RegisterEndpointNotificationCallback(notification.get());
+			}
+		}).get();
 
-				/* Create a device enumerator and
-				   register an IMMNotificationClient.
-				   Default devices need
-				   OnDefaultDeviceChanged to switch
-				   to new devices, and explicit
-				   devices need OnDeviceStateChanged
-				   to detect reconnects. */
-				device_enumerator.CoCreateInstance(
-					__uuidof(MMDeviceEnumerator),
-					nullptr, CLSCTX_INPROC_SERVER);
-				if (device_enumerator) {
-					notification = ComPtr<IMMNotificationClient>(
-						new WasapiDeviceNotification(device_event.handle(),
-									      !device_config.empty()));
-					device_enumerator->RegisterEndpointNotificationCallback(notification.get());
-				}
-			}).get();
-		} catch (...) {
-			com_worker.reset();
-			throw;
-		}
+		const std::lock_guard lock{com_worker_mutex};
+		com_worker = std::move(new_com_worker);
 	}
 	void Disable() noexcept override {
 		com_worker->Async([&]() {
@@ -410,6 +413,8 @@ public:
 			device_enumerator.reset();
 			DoDisable();
 		}).get();
+
+		const std::lock_guard lock{com_worker_mutex};
 		com_worker.reset();
 	}
 	void Open(AudioFormat &audio_format) override {

@@ -25,6 +25,7 @@
 #include <AudioUnit/AudioUnit.h>
 #include <AudioToolbox/AudioToolbox.h>
 
+#include <atomic>
 #include <cmath>
 #include <memory>
 #include <span>
@@ -83,7 +84,11 @@ struct OSXOutput final : AudioOutput {
 	Manual<PcmExport> pcm_export;
 #endif
 
-	AudioDeviceID dev_id;
+	/**
+	 * Modified by the output thread, but read by the (global)
+	 * mixer in the main thread at any time.
+	 */
+	std::atomic<AudioDeviceID> dev_id;
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
 
@@ -97,6 +102,15 @@ struct OSXOutput final : AudioOutput {
 	void SetVolume(unsigned new_volume);
 
 private:
+	/**
+	 * Refresh #dev_id if this output follows the default device.
+	 * The default device can change at any time, e.g. when a
+	 * Bluetooth headset disconnects.
+	 *
+	 * Throws on error.
+	 */
+	void UpdateDefaultDevice();
+
 	void Enable() override;
 	void Disable() noexcept override;
 
@@ -602,6 +616,26 @@ osx_render(void *vdata,
 }
 
 void
+OSXOutput::UpdateDefaultDevice()
+{
+	if (component_subtype == kAudioUnitSubType_HALOutput)
+		/* a fixed device was configured */
+		return;
+
+	const auto new_dev_id = GetDefaultOutputDevice(component_subtype);
+	if (new_dev_id == dev_id)
+		return;
+
+	if (hog_device)
+		osx_output_hog_device(dev_id, false);
+
+	dev_id = new_dev_id;
+
+	if (hog_device)
+		osx_output_hog_device(dev_id, true);
+}
+
+void
 OSXOutput::Enable()
 {
 	AudioComponentDescription desc;
@@ -699,6 +733,8 @@ OSXOutput::Open(AudioFormat &audio_format)
 	asbd.mFramesPerPacket = 1;
 	asbd.mBytesPerFrame = asbd.mBytesPerPacket;
 	asbd.mChannelsPerFrame = audio_format.channels;
+
+	UpdateDefaultDevice();
 
 	[[maybe_unused]] const Float64 sample_rate =
 		osx_output_set_device_format(dev_id, asbd);

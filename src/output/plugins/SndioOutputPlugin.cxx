@@ -130,6 +130,9 @@ SndioOutput::Close()  noexcept
 size_t
 SndioOutput::Play(std::span<const std::byte> src)
 {
+	if (const int volume = pending_raw_volume.exchange(-1); volume >= 0)
+		sio_setvol(hdl, volume);
+
 	const std::size_t n = sio_write(hdl, src.data(), src.size());
 	if (n == 0 && sio_eof(hdl) != 0)
 		throw std::runtime_error("sndio write failed");
@@ -139,7 +142,8 @@ SndioOutput::Play(std::span<const std::byte> src)
 void
 SndioOutput::SetVolume(unsigned int volume)
 {
-	sio_setvol(hdl, (volume * SIO_MAXVOL + 50) / 100);
+	/* the output thread applies this in Play() */
+	pending_raw_volume = (volume * SIO_MAXVOL + 50) / 100;
 }
 
 static inline unsigned int

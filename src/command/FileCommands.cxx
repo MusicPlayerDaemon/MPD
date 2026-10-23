@@ -273,6 +273,10 @@ try {
 	   sheets (but may be incomplete): for each "../", go one
 	   level up */
 	while ((real_uri = StringAfterPrefix(real_uri, "../")) != nullptr) {
+		if (relative_directory == "."sv)
+			/* don't climb above the storage root */
+			break;
+
 		relative_directory = PathTraitsUTF8::GetParent(relative_directory);
 		resolved_directory = PathTraitsUTF8::GetParent(resolved_directory);
 	}

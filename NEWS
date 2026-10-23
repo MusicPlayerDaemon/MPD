@@ -40,6 +40,21 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.18 (not yet released)
+* protocol
+  - "albumart": don't climb above the music directory for CUE tracks
+* database
+  - upnp: support libupnp 1.18 (and 1.14.26 to 1.14.29)
+* output
+  - osx: follow the default device after it has changed
+  - wasapi: fix race crash bug
+* mixer
+  - sndio: fix data race
+  - software: fix use-after-free crash bug
+  - wasapi: fix crash bug
+* Android
+  - fix crash bug
+
 ver 0.24.17 (2026/10/22)
 * protocol
   - fix crash on "getfingerprint" error

@@ -40,8 +40,13 @@ public:
 			float volume_level;
 
 			if (wasapi_is_exclusive(output)) {
+				auto *device = wasapi_output_get_device(output);
+				if (device == nullptr)
+					/* the output has been disabled */
+					return -1;
+
 				auto endpoint_volume =
-					Activate<IAudioEndpointVolume>(*wasapi_output_get_device(output));
+					Activate<IAudioEndpointVolume>(*device);
 
 				result = endpoint_volume->GetMasterVolumeLevelScalar(
 					&volume_level);
@@ -51,8 +56,13 @@ public:
 							       "volume level");
 				}
 			} else {
+				auto *client = wasapi_output_get_client(output);
+				if (client == nullptr)
+					/* the output has been closed */
+					return -1;
+
 				auto session_volume =
-					GetService<ISimpleAudioVolume>(*wasapi_output_get_client(output));
+					GetService<ISimpleAudioVolume>(*client);
 
 				result = session_volume->GetMasterVolume(&volume_level);
 				if (FAILED(result)) {
@@ -76,8 +86,12 @@ public:
 			const float volume_level = volume / 100.0f;
 
 			if (wasapi_is_exclusive(output)) {
+				auto *device = wasapi_output_get_device(output);
+				if (device == nullptr)
+					throw std::runtime_error("Cannot set WASAPI volume");
+
 				auto endpoint_volume =
-					Activate<IAudioEndpointVolume>(*wasapi_output_get_device(output));
+					Activate<IAudioEndpointVolume>(*device);
 
 				result = endpoint_volume->SetMasterVolumeLevelScalar(
 					volume_level, nullptr);
@@ -87,8 +101,12 @@ public:
 						"Unable to set master volume level");
 				}
 			} else {
+				auto *client = wasapi_output_get_client(output);
+				if (client == nullptr)
+					throw std::runtime_error("Cannot set WASAPI volume");
+
 				auto session_volume =
-					GetService<ISimpleAudioVolume>(*wasapi_output_get_client(output));
+					GetService<ISimpleAudioVolume>(*client);
 
 				result = session_volume->SetMasterVolume(volume_level,
 									 nullptr);
