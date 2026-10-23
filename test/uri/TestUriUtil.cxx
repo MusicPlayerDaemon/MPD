@@ -50,6 +50,39 @@ TEST(UriUtil, SafeLocal)
 #endif
 }
 
+TEST(UriUtil, RelativePathWithinDepth)
+{
+	// a safe local URI is a safe relative URI
+	EXPECT_TRUE(UriIsRelativePathWithinDepth("foo", 0));
+	EXPECT_TRUE(UriIsRelativePathWithinDepth("foo/bar", 0));
+
+	// leading "./" segments are skipped
+	EXPECT_TRUE(UriIsRelativePathWithinDepth("./foo", 0));
+	EXPECT_TRUE(UriIsRelativePathWithinDepth("././foo", 0));
+
+	// leading "../" segments are limited by max_up
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("../foo", 0));
+	EXPECT_TRUE(UriIsRelativePathWithinDepth("../foo", 1));
+	EXPECT_TRUE(UriIsRelativePathWithinDepth("../foo/bar", 1));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("../../foo", 1));
+	EXPECT_TRUE(UriIsRelativePathWithinDepth("../../foo", 2));
+	EXPECT_TRUE(UriIsRelativePathWithinDepth(".././../foo", 2));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("../.././../foo", 2));
+
+	// no "." or ".." segments after the leading run
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("foo/../bar", 1));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("../foo/../bar", 2));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("foo/./bar", 0));
+
+	// the rest must be a safe local URI
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("", 0));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("../", 1));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("..", 1));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("/foo", 0));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("..//foo", 1));
+	EXPECT_FALSE(UriIsRelativePathWithinDepth("../foo/", 1));
+}
+
 TEST(UriUtil, RemoveAuth)
 {
 	EXPECT_EQ(std::string(),
