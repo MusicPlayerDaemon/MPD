@@ -258,8 +258,15 @@ try {
 	/* this is a simplification which is just enough for CUE
 	   sheets (but may be incomplete): for each "../", go one
 	   level up */
-	while ((real_uri = StringAfterPrefix(real_uri, "../")) != nullptr)
+	std::string_view relative_directory = PathTraitsUTF8::GetParent(song_uri);
+	while ((real_uri = StringAfterPrefix(real_uri, "../")) != nullptr) {
+		if (relative_directory == ".")
+			/* don't climb above the storage root */
+			break;
+
+		relative_directory = PathTraitsUTF8::GetParent(relative_directory);
 		directory_uri = PathTraitsUTF8::GetParent(directory_uri);
+	}
 
 	return directory_uri;
 } catch (...) {
