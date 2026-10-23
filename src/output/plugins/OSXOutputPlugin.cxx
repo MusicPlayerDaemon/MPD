@@ -25,6 +25,7 @@
 #include <AudioUnit/AudioUnit.h>
 #include <AudioToolbox/AudioToolbox.h>
 
+#include <atomic>
 #include <cmath>
 #include <memory>
 #include <span>
@@ -83,7 +84,11 @@ struct OSXOutput final : AudioOutput {
 	Manual<PcmExport> pcm_export;
 #endif
 
-	AudioDeviceID dev_id;
+	/**
+	 * Modified by the output thread, but read by the (global)
+	 * mixer in the main thread at any time.
+	 */
+	std::atomic<AudioDeviceID> dev_id;
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
 
