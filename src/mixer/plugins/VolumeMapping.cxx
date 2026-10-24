@@ -186,3 +186,39 @@ set_normalized_capture_volume(snd_mixer_elem_t *elem,
 {
 	return set_normalized_volume(elem, volume, dir, CAPTURE);
 }
+
+double
+scale_normalized_volume_dB(double volume, double scale,
+			   long min, long max) noexcept
+{
+	if (use_linear_dB_scale(min, max)) {
+		/* add the gain (in 0.01 dB units) */
+		volume += 2000.0 * log10(scale) / (max - min);
+	} else {
+		/* the volume is the cubic root of the linear
+		   factor (plus the offset of the minimum) */
+		double min_norm = 0;
+		if (min != SND_CTL_TLV_DB_GAIN_MUTE)
+			min_norm = pow(10, (min - max) / 6000.0);
+
+		volume = volume * (1 - min_norm) + min_norm;
+		volume *= cbrt(scale);
+		volume = (volume - min_norm) / (1 - min_norm);
+	}
+
+	return fmin(fmax(volume, 0), 1);
+}
+
+double
+scale_normalized_playback_volume(snd_mixer_elem_t *elem,
+				 double volume, double scale) noexcept
+{
+	long min, max;
+	int err = get_dB_range[PLAYBACK](elem, &min, &max);
+	if (err < 0 || min >= max)
+		/* no dB information: assume that the hardware
+		   volume register is linear */
+		return fmin(volume * scale, 1);
+
+	return scale_normalized_volume_dB(volume, scale, min, max);
+}

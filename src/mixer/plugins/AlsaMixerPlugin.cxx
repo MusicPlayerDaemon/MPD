@@ -127,6 +127,7 @@ public:
 	void Close() noexcept override;
 	int GetVolume() override;
 	void SetVolume(unsigned volume) override;
+	unsigned ScaleVolume(unsigned volume, float scale) noexcept override;
 
 private:
 	[[gnu::const]]
@@ -404,6 +405,16 @@ AlsaMixer::SetVolume(unsigned volume)
 
 	desired_volume = volume;
 	resulting_volume = GetPercentVolume();
+}
+
+unsigned
+AlsaMixer::ScaleVolume(unsigned volume, float scale) noexcept
+{
+	assert(handle != nullptr);
+
+	return NormalizedToPercent(scale_normalized_playback_volume(elem,
+								    0.01 * volume,
+								    (double)scale));
 }
 
 const MixerPlugin alsa_mixer_plugin = {
