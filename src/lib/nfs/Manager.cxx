@@ -58,7 +58,7 @@ protected:
 void
 NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr e) noexcept
 {
-	FmtError(nfs_domain, "NFS error on '{}:{}': {}",
+	FmtError(nfs_domain, "NFS error on {:?}:{:?}: {}",
 		 GetServer(), GetExportName(), e);
 
 	manager.DeleteConnection(*this);
