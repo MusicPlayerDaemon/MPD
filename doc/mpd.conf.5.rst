@@ -278,7 +278,10 @@ Optional Audio Output Settings
 
    Specifies how replay gain is applied. ``software`` uses an internal
    software volume control. ``mixer`` uses the configured (hardware)
-   mixer control. ``none`` disables replay gain on this audio output.
+   mixer control by setting its volume for each song, overwriting the
+   volume chosen by the user; positive gains cannot be applied, and
+   the attenuation is only accurate for mixers with a linear volume
+   scale. ``none`` disables replay gain on this audio output.
 
 .. confval:: mixer_type
    :type:  ``hardware``, ``software`` or ``none``

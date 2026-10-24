@@ -530,8 +530,11 @@ The following table lists the audio_output options valid for all plugins:
    * - **replay_gain_handler software|mixer|none**
      - Specifies how :ref:`replay_gain` is applied.  The default is
        ``software``, which uses an internal software volume control.
-       ``mixer`` uses the configured (hardware) mixer control.
-       ``none`` disables replay gain on this audio output.
+       ``mixer`` uses the configured (hardware) mixer control
+       by setting its volume for each song, overwriting the
+       volume chosen by the user (see :ref:`replay_gain` for the
+       limitations of this method).  ``none`` disables replay gain
+       on this audio output.
    * - **filters "name,...**"
      - The specified configured filters are instantiated in the given
        order.  Each filter name refers to a ``filter`` block, see
@@ -685,6 +688,12 @@ ReplayGain is usually implemented with a software volume filter (which
 prevents `Bit-perfect playback`_).  To use a hardware mixer, set
 ``replay_gain_handler`` to ``mixer`` in the ``audio_output`` section
 (see :ref:`config_audio_output` for details).
+
+With ``replay_gain_handler`` set to ``mixer``, MPD sets the mixer
+volume each time a new song starts playing, overwriting the previous
+volume.  The volume is calculated from 100% (which corresponds to a
+gain of 0 dB); positive gains cannot be applied, because the volume
+cannot exceed 100%.
 
 Simple Volume Normalization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
