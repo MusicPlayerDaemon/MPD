@@ -62,6 +62,14 @@ BlockingNfsOperation::OnNfsConnectionFailed(std::exception_ptr e) noexcept
 void
 BlockingNfsOperation::OnNfsConnectionDisconnected(std::exception_ptr e) noexcept
 {
+	if (started) {
+		/* cancel the pending operation, because this object
+		   will be destroyed as soon as Run() returns, but the
+		   NfsConnection still refers to it */
+		connection.Cancel(*this, nullptr, {});
+		started = false;
+	}
+
 	error = std::move(e);
 	LockSetFinished();
 }
