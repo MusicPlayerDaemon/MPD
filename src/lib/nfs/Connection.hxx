@@ -102,9 +102,9 @@ class NfsConnection {
 					    DisposablePointer &&_dispose_value) noexcept;
 
 		/**
-		 * Called by NfsConnection::DestroyContext() right
-		 * before nfs_destroy_context().  This object is given
-		 * a chance to prepare for the latter.
+		 * Called by the NfsConnection destructor right before
+		 * nfs_destroy_context().  This object is given a
+		 * chance to prepare for the latter.
 		 */
 		void PrepareDestroyContext() noexcept;
 

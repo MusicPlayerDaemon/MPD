@@ -269,6 +269,13 @@ NfsConnection::~NfsConnection() noexcept
 	   checking status==-EINTR would be ambiguous */
 	mount_timeout_event.Cancel();
 
+	/* close the file handles of cancelled operations now,
+	   because nfs_destroy_context() invokes their callbacks
+	   with -EINTR, where DeferClose() cannot be used */
+	callbacks.ForEach([](CancellableCallback &c){
+		c.PrepareDestroyContext();
+	});
+
         /* cancel all pending async calls (e.g. nfs_mount_async();
 	   unfortunately, this is not implied by
 	   nfs_destroy_context(), and omitting the callbacks will leak
@@ -484,10 +491,6 @@ NfsConnection::PrepareDestroyContext() noexcept
 	defer_new_lease.Cancel();
 
 	socket_event.ReleaseSocket();
-
-	callbacks.ForEach([](CancellableCallback &c){
-			c.PrepareDestroyContext();
-		});
 }
 
 inline void
