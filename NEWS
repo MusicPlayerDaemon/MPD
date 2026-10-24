@@ -7,6 +7,7 @@ ver 0.24.18 (not yet released)
   - upnp: support libupnp 1.18 (and 1.14.26 to 1.14.29)
 * storage
   - nfs: fix use-after-free crash bug after disconnect
+  - nfs: fix crash after directory listing cancellation
 * output
   - osx: follow the default device after it has changed
   - wasapi: fix race crash bug

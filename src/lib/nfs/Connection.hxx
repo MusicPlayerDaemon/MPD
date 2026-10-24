@@ -28,13 +28,37 @@ class NfsConnection {
 	class CancellableCallback : public CancellablePointer<NfsCallback> {
 		NfsConnection &connection;
 
+	public:
 		/**
-		 * Is this a nfs_open_async() operation?  If yes, then
-		 * we need to call nfs_close_async() on the new file
-		 * handle as soon as the callback is invoked
-		 * successfully.
+		 * What kind of handle does this operation create?
 		 */
-		const bool open;
+		enum class HandleType : uint_least8_t {
+			/**
+			 * No handle.
+			 */
+			NONE,
+
+			/**
+			 * This is a nfs_open_async() operation; if
+			 * it gets cancelled, then we need to call
+			 * nfs_close_async() on the new file handle
+			 * as soon as the callback is invoked
+			 * successfully.
+			 */
+			REGULAR_FILE,
+
+			/**
+			 * This is a nfs_opendir_async() operation;
+			 * if it gets cancelled, then we need to call
+			 * nfs_closedir() on the new directory handle
+			 * as soon as the callback is invoked
+			 * successfully.
+			 */
+			DIRECTORY,
+		};
+
+	private:
+		const HandleType handle_type;
 
 		/**
 		 * The file handle scheduled to be closed as soon as
@@ -51,10 +75,10 @@ class NfsConnection {
 	public:
 		explicit CancellableCallback(NfsCallback &_callback,
 					     NfsConnection &_connection,
-					     bool _open) noexcept
+					     HandleType _handle_type) noexcept
 			:CancellablePointer<NfsCallback>(_callback),
 			 connection(_connection),
-			 open(_open), close_fh(nullptr) {}
+			 handle_type(_handle_type), close_fh(nullptr) {}
 
 		void Stat(nfs_context *context, const char *path);
 		void Lstat(nfs_context *context, const char *path);

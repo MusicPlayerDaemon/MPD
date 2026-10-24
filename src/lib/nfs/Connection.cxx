@@ -112,7 +112,7 @@ NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh,
 							   DisposablePointer &&_dispose_value) noexcept
 {
 	assert(connection.GetEventLoop().IsInside());
-	assert((fh == nullptr) || !open);
+	assert(fh == nullptr || handle_type == HandleType::NONE);
 	assert(close_fh == nullptr);
 	assert(!dispose_value);
 
@@ -166,7 +166,13 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 		else 
 			cb.OnNfsError(std::make_exception_ptr(NfsClientError(-err, (const char *)data)));
 	} else {
-		if (open) {
+		switch (handle_type) {
+		case HandleType::NONE:
+			if (close_fh != nullptr)
+				connection.DeferClose(close_fh);
+			break;
+
+		case HandleType::REGULAR_FILE:
 			/* a nfs_open_async() call was cancelled - to
 			   avoid a memory leak, close the newly
 			   allocated file handle immediately */
@@ -176,8 +182,23 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 				auto *fh = (struct nfsfh *)data;
 				connection.Close(fh);
 			}
-		} else if (close_fh != nullptr)
-			connection.DeferClose(close_fh);
+
+			break;
+
+		case HandleType::DIRECTORY:
+			/* a nfs_opendir_async() call was cancelled -
+			   free the newly allocated directory handle
+			   (this is not a file handle and must not be
+			   passed to nfs_close_async()) */
+			assert(close_fh == nullptr);
+
+			if (err >= 0) {
+				auto *dir = (struct nfsdir *)data;
+				connection.CloseDirectory(dir);
+			}
+
+			break;
+		}
 
 		connection.callbacks.Remove(*this);
 	}
@@ -284,7 +305,8 @@ NfsConnection::Stat(const char *path, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, false);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::NONE);
 	try {
 		c.Stat(context, path);
 	} catch (...) {
@@ -301,7 +323,8 @@ NfsConnection::Lstat(const char *path, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, false);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::NONE);
 	try {
 		c.Lstat(context, path);
 	} catch (...) {
@@ -318,7 +341,8 @@ NfsConnection::OpenDirectory(const char *path, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, true);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::DIRECTORY);
 	try {
 		c.OpenDirectory(context, path);
 	} catch (...) {
@@ -351,7 +375,8 @@ NfsConnection::Open(const char *path, int flags, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, true);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::REGULAR_FILE);
 	try {
 		c.Open(context, path, flags);
 	} catch (...) {
@@ -368,7 +393,8 @@ NfsConnection::Stat(struct nfsfh *fh, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, false);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::NONE);
 	try {
 		c.Stat(context, fh);
 	} catch (...) {
@@ -391,7 +417,8 @@ NfsConnection::Read(struct nfsfh *fh, uint64_t offset,
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, false);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::NONE);
 	try {
 		c.Read(context, fh, offset,
 #ifdef LIBNFS_API_2
