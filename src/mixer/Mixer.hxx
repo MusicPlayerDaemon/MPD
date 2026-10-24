@@ -84,6 +84,21 @@ private:
 	void _Open();
 	void _Close() noexcept;
 
+	/**
+	 * Try to ensure that the mixer is open.  If it is not, call
+	 * _Open()
+	 *
+	 * Throws on error.
+	 *
+	 * @param rethrow if this #Mixer has failed prevously, rethrow
+	 * that error; if this parameter is false, just return false
+	 * without rethrowing
+	 *
+	 * @return true if the mixer is now open, false if not
+	 * (because the associated output is closed)
+	 */
+	bool EnsureOpen(bool rethrow);
+
 protected:
 	/**
 	 * Open mixer device

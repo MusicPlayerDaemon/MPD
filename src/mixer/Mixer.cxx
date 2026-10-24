@@ -50,17 +50,27 @@ Mixer::_Close() noexcept
 	failure = {};
 }
 
+bool
+Mixer::EnsureOpen(bool rethrow)
+{
+	if (open)
+		return true;
+	else if (rethrow && failure)
+		std::rethrow_exception(failure);
+	else if (IsGlobal()) {
+		_Open();
+		return true;
+	} else
+		return false;
+}
+
 int
 Mixer::LockGetVolume()
 {
 	const std::lock_guard lock{mutex};
 
-	if (!open) {
-		if (IsGlobal() && !failure)
-			_Open();
-		else
-			return -1;
-	}
+	if (!EnsureOpen(false))
+		return -1;
 
 	try {
 		return GetVolume();
@@ -78,14 +88,8 @@ Mixer::LockSetVolume(unsigned volume)
 
 	const std::lock_guard lock{mutex};
 
-	if (!open) {
-		if (failure)
-			std::rethrow_exception(failure);
-		else if (IsGlobal())
-			_Open();
-		else
-			return;
-	}
+	if (!EnsureOpen(true))
+		return;
 
 	SetVolume(volume);
 }
