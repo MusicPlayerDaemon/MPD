@@ -140,15 +140,13 @@ public:
 	void OnNfsConnectionFailed(std::exception_ptr e) noexcept final {
 		assert(state == State::CONNECTING);
 
-		SetState(State::DELAY, std::move(e));
-		reconnect_timer.Schedule(std::chrono::minutes(1));
+		ScheduleReconnectTimer(std::move(e), std::chrono::minutes{1});
 	}
 
 	void OnNfsConnectionDisconnected(std::exception_ptr e) noexcept final {
 		assert(state == State::READY);
 
-		SetState(State::DELAY, std::move(e));
-		reconnect_timer.Schedule(std::chrono::seconds(5));
+		ScheduleReconnectTimer(std::move(e), std::chrono::seconds{5});
 	}
 
 	/* InjectEvent callback */
@@ -193,6 +191,16 @@ private:
 		cond.notify_all();
 	}
 
+	void ScheduleReconnectTimer(std::exception_ptr &&e,
+				    Event::Duration delay) noexcept {
+		assert(GetEventLoop().IsInside());
+		assert(state != State::DELAY);
+		assert(!reconnect_timer.IsPending());
+
+		SetState(State::DELAY, std::move(e));
+		reconnect_timer.Schedule(delay);
+	}
+
 	void Connect() noexcept {
 		assert(state != State::READY);
 		assert(GetEventLoop().IsInside());
@@ -200,8 +208,7 @@ private:
 		try {
 			connection = &nfs_make_connection(url.c_str());
 		} catch (...) {
-			SetState(State::DELAY, std::current_exception());
-			reconnect_timer.Schedule(std::chrono::minutes(10));
+			ScheduleReconnectTimer(std::current_exception(), std::chrono::minutes{10});
 			return;
 		}
 
