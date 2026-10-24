@@ -3,7 +3,6 @@
 
 #include "Manager.hxx"
 #include "Connection.hxx"
-#include "Error.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "event/Loop.hxx"
 #include "event/CoarseTimerEvent.hxx"
