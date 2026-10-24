@@ -234,6 +234,9 @@ private:
 				break;
 
 			case State::CONNECTING:
+				cond.wait(lock);
+				break;
+
 			case State::READY:
 				return;
 
