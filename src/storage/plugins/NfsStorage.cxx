@@ -231,6 +231,10 @@ private:
 	}
 
 	void WaitConnected() {
+		/* can't be inside the #EventLoop thread because we're
+		   waiting for #cond */
+		assert(!GetEventLoop().IsInside());
+
 		std::unique_lock lock{mutex};
 
 		while (true) {
