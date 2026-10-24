@@ -524,7 +524,7 @@ NfsConnection::Service(unsigned flags) noexcept
 	return result;
 }
 
-void
+inline void
 NfsConnection::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
@@ -690,7 +690,7 @@ NfsConnection::BroadcastError(std::exception_ptr e) noexcept
 	BroadcastMountError(std::move(e));
 }
 
-void
+inline void
 NfsConnection::OnMountTimeout() noexcept
 {
 	assert(GetEventLoop().IsInside());
@@ -702,7 +702,7 @@ NfsConnection::OnMountTimeout() noexcept
 	BroadcastMountError(std::make_exception_ptr(std::runtime_error("Mount timeout")));
 }
 
-void
+inline void
 NfsConnection::RunDeferred() noexcept
 {
 	assert(GetEventLoop().IsInside());
