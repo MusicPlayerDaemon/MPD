@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <utility> // for std::exchange()
+
 extern "C" {
 #include <nfsc/libnfs.h>
 }
@@ -11,14 +13,26 @@ extern "C" {
  * OO wrapper for #nfs_url.
  */
 class NfsUrl {
-	struct nfs_url *const value;
+	struct nfs_url *value = nullptr;
 
 public:
+	NfsUrl() noexcept = default;
+
 	explicit NfsUrl(struct nfs_url *_value) noexcept
 		:value(_value) {}
 
+	NfsUrl(NfsUrl &&src) noexcept
+		:value(std::exchange(src.value, nullptr)) {}
+
 	~NfsUrl() noexcept {
-		nfs_destroy_url(value);
+		if (value != nullptr)
+			nfs_destroy_url(value);
+	}
+
+	NfsUrl &operator=(NfsUrl &&src) noexcept {
+		using std::swap;
+		swap(value, src.value);
+		return *this;
 	}
 
 	NfsUrl(const NfsUrl &) = delete;
