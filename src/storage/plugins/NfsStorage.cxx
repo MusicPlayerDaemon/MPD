@@ -10,6 +10,8 @@
 #include "lib/nfs/Base.hxx"
 #include "lib/nfs/Lease.hxx"
 #include "lib/nfs/Connection.hxx"
+#include "lib/nfs/Context.hxx"
+#include "lib/nfs/Url.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "input/InputStream.hxx"
 #include "input/plugins/NfsInputPlugin.hxx"
@@ -215,7 +217,9 @@ private:
 		assert(GetEventLoop().IsInside());
 
 		try {
-			connection = &nfs_make_connection(url.c_str());
+			NfsContext context{NfsContext::Create{}};
+			const auto nfs_url = context.ParseUrlDir(url.c_str());
+			connection = &nfs_get_connection(std::move(context), *nfs_url, false);
 		} catch (...) {
 			ScheduleReconnectTimer(std::current_exception(), std::chrono::minutes{10});
 			return;
@@ -496,7 +500,10 @@ _CreateNfsStorageURI(EventLoop &event_loop, std::string_view base)
 	nfs_init(event_loop);
 
 	try {
-		auto &connection = nfs_make_connection(std::string{base}.c_str());
+		NfsContext context{NfsContext::Create{}};
+		const auto nfs_url = context.ParseUrlDir(std::string{base}.c_str());
+
+		auto &connection = nfs_get_connection(std::move(context), *nfs_url, false);
 
 		return std::make_unique<NfsStorage>(base, connection);
 	} catch (...) {

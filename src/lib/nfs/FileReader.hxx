@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_NFS_FILE_READER_HXX
-#define MPD_NFS_FILE_READER_HXX
+#pragma once
 
 #include "Lease.hxx"
 #include "Callback.hxx"
+#include "Context.hxx"
 #include "Url.hxx"
 #include "event/InjectEvent.hxx"
 
@@ -44,6 +44,7 @@ class NfsFileReader : NfsLease, NfsCallback {
 
 	State state = State::INITIAL;
 
+	NfsContext context{NfsContext::Create{}};
 	NfsUrl nfs_url;
 
 	NfsConnection *connection = nullptr;
@@ -148,5 +149,3 @@ private:
 	/* InjectEvent callback */
 	void OnDeferredOpen() noexcept;
 };
-
-#endif

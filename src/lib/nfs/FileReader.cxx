@@ -87,7 +87,7 @@ NfsFileReader::Open(const char *uri)
 {
 	assert(state == State::INITIAL);
 
-	nfs_url = NfsContext{NfsContext::Create{}}.ParseUrlFull(uri);
+	nfs_url = context.ParseUrlFull(uri);
 
 	/* the previous connection may have been destroyed after a
 	   disconnect; look it up again in OnDeferredOpen() */
@@ -275,7 +275,7 @@ NfsFileReader::OnDeferredOpen() noexcept
 	assert(connection == nullptr);
 
 	try {
-		connection = &nfs_get_connection(nfs_url->server, nfs_url->path);
+		connection = &nfs_get_connection(std::move(context), *nfs_url, true);
 	} catch (...) {
 		OnNfsFileError(std::current_exception());
 		return;

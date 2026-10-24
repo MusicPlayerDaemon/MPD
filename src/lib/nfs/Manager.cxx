@@ -75,36 +75,19 @@ NfsManager::~NfsManager() noexcept
 }
 
 NfsConnection &
-NfsManager::MakeConnection(const char *url)
+NfsManager::GetConnection(NfsContext &&context, const struct nfs_url &url,
+			  bool lookup_existing)
 {
-	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
-
-	NfsContext context{NfsContext::Create{}};
-
-	const auto pu = context.ParseUrlDir(url);
+	if (lookup_existing)
+		for (auto &c : connections)
+			if (c.GetServer() == url.server &&
+			    c.GetExportName() == url.path)
+				return c;
 
 	auto c = new ManagedConnection(*this, GetEventLoop(),
 				       std::move(context),
-				       pu->server, pu->path,
-				       true);
-	connections.push_front(*c);
-	return *c;
-}
-
-NfsConnection &
-NfsManager::GetConnection(std::string_view server, std::string_view export_name)
-{
-	assert(GetEventLoop().IsInside());
-
-	for (auto &c : connections)
-		if (c.GetServer() == server &&
-		    c.GetExportName() == export_name)
-			return c;
-
-	auto c = new ManagedConnection(*this, GetEventLoop(),
-				       NfsContext::Create{},
-				       server, export_name,
-				       false);
+				       url.server, url.path,
+				       !lookup_existing);
 	connections.push_front(*c);
 	return *c;
 }

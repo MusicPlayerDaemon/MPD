@@ -8,6 +8,8 @@
 
 #include <string_view>
 
+struct nfs_url;
+class NfsContext;
 class NfsConnection;
 
 /**
@@ -35,25 +37,14 @@ public:
 	}
 
 	/**
-	 * Create a new #NfsConnection, parsing the specified "nfs://"
-	 * URL.
+	 * Create a new #NfsConnection (or look up an existing one if
+	 * #lookup_existing is true).
 	 *
 	 * Throws on error.
 	 */
 	[[nodiscard]]
-	NfsConnection &MakeConnection(const char *url);
-
-	/**
-	 * Look up an existing #NfsConnection (or create a new one if
-	 * none matching the given parameters exists).  Unlike
-	 * MakeConnection(), this does not support options in a query
-	 * string.
-	 *
-	 * Throws on error.
-	 */
-	[[nodiscard]]
-	NfsConnection &GetConnection(std::string_view server,
-				     std::string_view export_name);
+	NfsConnection &GetConnection(NfsContext &&context, const struct nfs_url &url,
+				     bool lookup_existing);
 
 private:
 	void DeleteConnection(ManagedConnection &c) noexcept;
