@@ -136,36 +136,33 @@ public:
 void
 ReplayGainFilter::Update()
 {
-	unsigned volume = PCM_VOLUME_1;
+	float scale = 1;
 	if (mode != ReplayGainMode::OFF) {
 		const auto &tuple = info.Get(mode);
-		float scale = tuple.CalculateScale(config);
+		scale = tuple.CalculateScale(config);
 		FmtDebug(replay_gain_domain, "scale={}\n", scale);
-
-		volume = pcm_float_to_volume(scale);
 	}
 
 	if (mixer != nullptr) {
 		/* update the hardware mixer volume */
 
-		unsigned _volume = (volume * base) / PCM_VOLUME_1;
-		if (_volume > 100)
-			_volume = 100;
-
 		try {
-			mixer->LockSetVolume(_volume);
+			const int volume =
+				mixer->LockSetScaledVolume(base, scale);
 
 			/* invoke the mixer's listener manually, just
 			   in case the mixer implementation didn't do
 			   that already (this depends on the
 			   implementation) */
-			mixer->listener.OnMixerVolumeChanged(*mixer, _volume);
+			if (volume >= 0)
+				mixer->listener.OnMixerVolumeChanged(*mixer,
+								     volume);
 		} catch (...) {
 			LogError(std::current_exception(),
 				 "Failed to update hardware mixer");
 		}
 	} else
-		pv.SetVolume(volume);
+		pv.SetVolume(pcm_float_to_volume(scale));
 }
 
 std::unique_ptr<PreparedFilter>

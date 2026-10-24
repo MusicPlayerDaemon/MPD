@@ -80,6 +80,21 @@ public:
 	 */
 	void LockSetVolume(unsigned volume);
 
+	/**
+	 * Set the volume to the given base volume multiplied with
+	 * the given (linear) scale factor; see ScaleVolume().  This
+	 * is used by the replay gain filter.
+	 *
+	 * Throws on error.
+	 *
+	 * @param base the volume (0..100 including) which
+	 * corresponds to scale=1
+	 * @param scale the linear scale factor (non-negative)
+	 * @return the new volume (0..100 including) or -1 if the
+	 * mixer is not open
+	 */
+	int LockSetScaledVolume(unsigned base, float scale);
+
 private:
 	void _Open();
 	void _Close() noexcept;
@@ -138,4 +153,23 @@ protected:
 	 * @param volume the new volume (0..100 including)
 	 */
 	virtual void SetVolume(unsigned volume) = 0;
+
+	/**
+	 * Calculate the volume which attenuates (or amplifies) the
+	 * signal by the given linear factor relative to the given
+	 * volume.  The result depends on the volume curve of the
+	 * mixer.
+	 *
+	 * The default implementation assumes that the volume is
+	 * proportional to the linear amplitude.
+	 *
+	 * Caller must lock the mutex.  The mixer is open.
+	 *
+	 * @param volume the volume (0..100 including) which
+	 * corresponds to scale=1
+	 * @param scale the linear scale factor (non-negative)
+	 * @return the new volume (0..100 including)
+	 */
+	[[gnu::pure]]
+	virtual unsigned ScaleVolume(unsigned volume, float scale) noexcept;
 };
