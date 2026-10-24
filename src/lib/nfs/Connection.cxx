@@ -151,8 +151,11 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 {
 	assert(connection.GetEventLoop().IsInside());
 
-	auto &_connection = connection;
-	const bool is_fatal = IsFatalNfsConnectionError(err, (const char *)data);
+	if (IsFatalNfsConnectionError(err, (const char *)data) &&
+	    !connection.postponed_error)
+		/* this was a fatal connection error; we need to tear
+		   down the NFS connection */
+		connection.postponed_error = std::make_exception_ptr(NfsClientError(-err, (const char *)data));
 
 	if (!IsCancelled()) {
 		assert(close_fh == nullptr);
@@ -202,11 +205,6 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 
 		connection.callbacks.Remove(*this);
 	}
-
-	if (is_fatal)
-		/* this was a fatal connection error; we need to teat
-		   down the NFS connection */
-		_connection.BroadcastError(std::make_exception_ptr(NfsClientError(-err, (const char *)data)));
 }
 
 void
