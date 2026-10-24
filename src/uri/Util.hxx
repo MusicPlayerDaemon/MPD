@@ -6,11 +6,16 @@
 #include <string>
 
 /**
- * Returns true if this is a safe "local" URI:
+ * Is this a relative path in canonical form?
  *
  * - non-empty
  * - does not begin or end with a slash
  * - no double slashes
+ * - no "." or ".." segments
+ * - no backslashes (on Windows)
+ *
+ * Such a path cannot refer to anything outside of the directory it is
+ * relative to.
  */
 [[gnu::pure]]
 bool
