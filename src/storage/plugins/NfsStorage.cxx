@@ -161,6 +161,13 @@ public:
 	void OnReconnectTimer() noexcept {
 		assert(state == State::DELAY);
 
+		/* revert #state to INITIAL, but don't notify the
+		   #cond */
+		{
+			const std::lock_guard protect{mutex};
+			state = State::INITIAL;
+		}
+
 		Connect();
 	}
 
