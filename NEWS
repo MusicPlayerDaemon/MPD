@@ -25,7 +25,7 @@ ver 0.25 (not yet released)
 * mixer
   - fix mixer idle events on non-default partitions
   - alsa: default "mixer_device" to the sound card of "device"
-  - alsa, pulse: fix replay gain attenuation with replay_gain_handler "mixer"
+  - alsa, pipewire, pulse: fix replay gain attenuation with replay_gain_handler "mixer"
 * tags
   - new tag "DiscSubtitle"
 * playlist

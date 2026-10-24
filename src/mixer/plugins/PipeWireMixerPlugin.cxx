@@ -6,6 +6,7 @@
 #include "mixer/Listener.hxx"
 #include "output/plugins/PipeWireOutputPlugin.hxx"
 
+#include <algorithm> // for std::min()
 #include <cmath>
 
 class PipeWireMixer final : public Mixer {
@@ -41,6 +42,7 @@ public:
 
 	int GetVolume() override;
 	void SetVolume(unsigned volume) override;
+	unsigned ScaleVolume(unsigned volume, float scale) noexcept override;
 };
 
 void
@@ -60,6 +62,13 @@ PipeWireMixer::SetVolume(unsigned new_volume)
 {
 	pipewire_output_set_volume(output, float(new_volume) * 0.01f);
 	volume = new_volume;
+}
+
+unsigned
+PipeWireMixer::ScaleVolume(unsigned _volume, float scale) noexcept
+{
+	/* the PipeWire output plugin uses a cubic volume curve */
+	return std::min(std::lround(_volume * std::cbrt(scale)), 100L);
 }
 
 static Mixer *
