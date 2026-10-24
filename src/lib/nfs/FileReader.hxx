@@ -6,6 +6,7 @@
 
 #include "Lease.hxx"
 #include "Callback.hxx"
+#include "Url.hxx"
 #include "event/InjectEvent.hxx"
 
 #include <cstddef>
@@ -43,7 +44,7 @@ class NfsFileReader : NfsLease, NfsCallback {
 
 	State state = State::INITIAL;
 
-	std::string server, export_name, path;
+	NfsUrl nfs_url;
 
 	NfsConnection *connection = nullptr;
 

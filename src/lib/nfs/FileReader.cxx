@@ -5,15 +5,14 @@
 #include "Glue.hxx"
 #include "Base.hxx"
 #include "Connection.hxx"
+#include "Context.hxx"
 #include "event/Call.hxx"
-#include "util/StringCompare.hxx"
 #include "util/Compiler.h" // for gcc_unreachable()
 
 #include <nfsc/libnfs.h> // for struct nfs_stat_64
 
 #include <cassert>
 #include <cstring>
-#include <stdexcept>
 #include <utility>
 
 #include <fcntl.h>
@@ -88,31 +87,7 @@ NfsFileReader::Open(const char *uri)
 {
 	assert(state == State::INITIAL);
 
-	if (!SkipPrefixIgnoreCase(uri, "nfs://"sv))
-		throw std::runtime_error("Malformed nfs:// URI");
-
-	const char *slash = std::strchr(uri, '/');
-	if (slash == nullptr)
-		throw std::runtime_error("Malformed nfs:// URI");
-
-	server = std::string(uri, slash);
-
-	uri = slash;
-
-	const char *new_path = nfs_check_base(server, uri);
-	if (new_path != nullptr) {
-		export_name.assign(uri, new_path);
-		if (*new_path == 0)
-			new_path = "/";
-		path = new_path;
-	} else {
-		slash = std::strrchr(uri + 1, '/');
-		if (slash == nullptr || slash[1] == 0)
-			throw std::runtime_error("Malformed nfs:// URI");
-
-		export_name.assign(uri, slash);
-		path = slash;
-	}
+	nfs_url = NfsContext{NfsContext::Create{}}.ParseUrlFull(uri);
 
 	/* the previous connection may have been destroyed after a
 	   disconnect; look it up again in OnDeferredOpen() */
@@ -161,7 +136,7 @@ NfsFileReader::OnNfsConnectionReady() noexcept
 	assert(state == State::MOUNT);
 
 	try {
-		connection->Open(path.c_str(), O_RDONLY, *this);
+		connection->Open(nfs_url->file, O_RDONLY, *this);
 	} catch (...) {
 		OnNfsFileError(std::current_exception());
 		return;
@@ -300,7 +275,7 @@ NfsFileReader::OnDeferredOpen() noexcept
 	assert(connection == nullptr);
 
 	try {
-		connection = &nfs_get_connection(server, export_name);
+		connection = &nfs_get_connection(nfs_url->server, nfs_url->path);
 	} catch (...) {
 		OnNfsFileError(std::current_exception());
 		return;
