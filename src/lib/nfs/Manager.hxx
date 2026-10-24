@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "event/IdleEvent.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <string_view>
 
 struct nfs_url;
+class EventLoop;
 class NfsContext;
 class NfsConnection;
 
@@ -17,12 +17,12 @@ class NfsConnection;
  * multiple NFS servers.
  */
 class NfsManager final {
+	EventLoop &event_loop;
+
 	class ManagedConnection;
 	using List = IntrusiveList<ManagedConnection>;
 
 	List connections;
-
-	IdleEvent idle_event;
 
 public:
 	explicit NfsManager(EventLoop &_loop) noexcept;
@@ -33,7 +33,7 @@ public:
 	~NfsManager() noexcept;
 
 	auto &GetEventLoop() const noexcept {
-		return idle_event.GetEventLoop();
+		return event_loop;
 	}
 
 	/**
@@ -48,7 +48,4 @@ public:
 
 private:
 	void DeleteConnection(ManagedConnection &c) noexcept;
-
-	/* virtual methods from IdleMonitor */
-	void OnIdle() noexcept;
 };
