@@ -40,8 +40,7 @@ UpnpClientCallback(Upnp_EventType et,
 		   the registered callback without that cookie? */
 		return UPNP_E_SUCCESS;
 
-	UpnpCallback &callback = UpnpCallback::FromUpnpCookie(cookie);
-	return callback.Invoke(et, evp);
+	return UpnpCallback::Dispatch(cookie, et, evp);
 }
 
 static void

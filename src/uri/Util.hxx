@@ -6,15 +6,33 @@
 #include <string>
 
 /**
- * Returns true if this is a safe "local" URI:
+ * Is this a relative path in canonical form?
  *
  * - non-empty
  * - does not begin or end with a slash
  * - no double slashes
+ * - no "." or ".." segments
+ * - no backslashes (on Windows)
+ *
+ * Such a path cannot refer to anything outside of the directory it is
+ * relative to.
  */
 [[gnu::pure]]
 bool
-uri_safe_local(std::string_view uri) noexcept;
+UriIsCanonicalRelativePath(std::string_view uri) noexcept;
+
+/**
+ * Is this a relative path which consists of a (possibly empty) run of
+ * leading "../" and "./" segments followed by a canonical relative
+ * path (see UriIsCanonicalRelativePath())?
+ *
+ * @param max_up the maximum number of leading "../" segments (i.e.
+ * the depth of the base directory), so the URI cannot refer to
+ * something above the root
+ */
+[[gnu::pure]]
+bool
+UriIsRelativePathWithinDepth(std::string_view uri, unsigned max_up) noexcept;
 
 /**
  * Removes HTTP username and password from the URI.  This may be
@@ -24,12 +42,12 @@ uri_safe_local(std::string_view uri) noexcept;
  */
 [[gnu::pure]]
 std::string
-uri_remove_auth(std::string_view uri) noexcept;
+UriRemoveAuth(std::string_view uri) noexcept;
 
 /**
- * Remove dot segments in the URI.  For example, uri_squash_dot_segments
+ * Remove dot segments in the URI.  For example, UriSquashDotSegments
  * ("foo/bar/.././")=="foo/".
  */
 [[gnu::pure]]
 std::string
-uri_squash_dot_segments(std::string_view uri) noexcept;
+UriSquashDotSegments(std::string_view uri) noexcept;

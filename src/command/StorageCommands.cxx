@@ -110,7 +110,7 @@ print_storage_uri(Client &client, Response &r, const Storage &storage)
 	} else {
 		/* hide username/passwords from client */
 
-		std::string allocated = uri_remove_auth(uri);
+		std::string allocated = UriRemoveAuth(uri);
 		if (!allocated.empty())
 			uri = std::move(allocated);
 	}

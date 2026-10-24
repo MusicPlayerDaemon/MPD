@@ -518,7 +518,7 @@ try {
 	return DecodeResult::STOP;
 } catch (...) {
 	std::string_view error_uri = real_uri;
-	const std::string allocated = uri_remove_auth(error_uri);
+	const std::string allocated = UriRemoveAuth(error_uri);
 	if (!allocated.empty())
 		error_uri = allocated;
 
@@ -544,7 +544,7 @@ static std::runtime_error
 MakeDecoderError(const DetachedSong &song, const char *msg) noexcept
 {
 	std::string_view error_uri = song.GetURI();
-	const std::string allocated = uri_remove_auth(error_uri);
+	const std::string allocated = UriRemoveAuth(error_uri);
 	if (!allocated.empty())
 		error_uri = allocated;
 

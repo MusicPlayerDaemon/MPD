@@ -147,8 +147,17 @@ QobuzClient::InvokeHandlers() noexcept
 		auto &h = handlers.front();
 		handlers.pop_front();
 
-		const ScopeUnlock unlock{lock};
-		h.OnQobuzSession();
+		/* RemoveLoginHandler() waits until this call returns */
+		assert(invoking_handler = nullptr);
+		invoking_handler = &h;
+
+		{
+			const ScopeUnlock unlock{lock};
+			h.OnQobuzSession();
+		}
+
+		invoking_handler = nullptr;
+		invoke_cond.notify_all();
 	}
 }
 

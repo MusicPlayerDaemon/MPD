@@ -545,7 +545,7 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard) noexcept
 		if (!info.IsDirectory()) {
 			/* hide username/password */
 			auto uri = storage.MapUTF8("");
-			if (auto without_auth = uri_remove_auth(uri);
+			if (auto without_auth = UriRemoveAuth(uri);
 			    !without_auth.empty())
 				uri = std::move(without_auth);
 

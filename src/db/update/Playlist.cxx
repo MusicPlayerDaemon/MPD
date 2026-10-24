@@ -19,7 +19,6 @@
 #include "storage/StorageInterface.hxx"
 #include "fs/Traits.hxx"
 #include "uri/Util.hxx"
-#include "util/StringCompare.hxx"
 #include "Log.hxx"
 
 #include <fmt/format.h>
@@ -27,21 +26,6 @@
 using std::string_view_literals::operator""sv;
 
 using std::string_view_literals::operator""sv;
-
-/**
- * Is this relative playlist entry safe, i.e. does it contain no "."
- * or ".." segments except for a leading run?  Only leading ".."
- * segments are resolved within the database
- * (Directory::LookupTargetSong(), uri_apply_relative()); others would
- * be passed to the filesystem, escaping the music directory.
- */
-[[gnu::pure]]
-static bool
-IsSafeRelativeEntry(std::string_view uri) noexcept
-{
-	while (SkipPrefix(uri, "../"sv) || SkipPrefix(uri, "./"sv)) {}
-	return uri_safe_local(uri);
-}
 
 inline void
 UpdateWalk::UpdatePlaylistFile(Directory &directory,
@@ -58,7 +42,15 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 						      directory);
 		const bool is_absolute =
 			PathTraitsUTF8::IsAbsoluteOrHasScheme(db_song->filename);
-		if (!is_absolute && !IsSafeRelativeEntry(db_song->filename))
+		/* only leading ".." segments are resolved within
+		   the database (Directory::LookupTargetSong(),
+		   uri_apply_relative()); others would be passed to
+		   the filesystem, escaping the music directory;
+		   "directory" is the virtual directory, and its
+		   parent is the one containing the playlist */
+		if (!is_absolute &&
+		    !UriIsRelativePathWithinDepth(db_song->filename,
+						  GetDepth(directory) - 1))
 			continue;
 
 		if (PathTraitsUTF8::IsAbsolute(db_song->filename)) {
@@ -68,7 +60,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 			   files */
 			const auto relative = storage.MapToRelativeUTF8(db_song->filename);
 			if (relative.data() == nullptr ||
-			    !uri_safe_local(relative))
+			    !UriIsCanonicalRelativePath(relative))
 				continue;
 		}
 

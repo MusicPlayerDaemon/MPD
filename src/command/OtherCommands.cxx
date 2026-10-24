@@ -270,7 +270,7 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 		if (*path == 0 || StringIsEqual(path, "/"))
 			/* backwards compatibility with MPD 0.15 */
 			path = "";
-		else if (!uri_safe_local(path)) {
+		else if (!UriIsCanonicalRelativePath(path)) {
 			r.Error(ACK_ERROR_ARG, "Malformed path");
 			return CommandResult::ERROR;
 		}

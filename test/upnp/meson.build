@@ -6,6 +6,7 @@ test(
   'TestUpnp',
   executable(
     'TestUpnp',
+    'TestUpnpCallback.cxx',
     'TestUpnpDevice.cxx',
     'TestUpnpDirectory.cxx',
     '../../src/db/plugins/upnp/Directory.cxx',

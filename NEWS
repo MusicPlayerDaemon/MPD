@@ -48,6 +48,8 @@ ver 0.24.18 (not yet released)
 * protocol
   - "albumart": don't climb above the music directory for CUE tracks
 * database
+  - proxy: fix playback of CUE tracks
+  - simple: reject playlist entries which climb above the music directory
   - upnp: support libupnp 1.18 (and 1.14.26 to 1.14.29)
 * output
   - osx: follow the default device after it has changed
@@ -159,6 +161,7 @@ ver 0.24.16 (2026/10/17)
   - ffmpeg: restrict nested protocols of "hls+" URIs
   - nfs: fix use-after-free bug
   - qobuz: limit the size of API responses
+  - qobuz: fix use-after-free bug
   - qobuz: accept only HTTP stream URLs
 * decoder
   - audiofile: fix division by zero
@@ -190,6 +193,7 @@ ver 0.24.16 (2026/10/17)
   - simple: reject truncated database files
   - upnp: limit size and duration of device description downloads
   - upnp: fix crash on discovery error
+  - upnp: fix use-after-free bug
   - upnp: limit Browse and Search results
   - upnp: accept only HTTP resource URLs
   - upnp: ignore URLBase pointing to a different host

@@ -28,7 +28,7 @@ song_print_uri(Response &r, std::string_view uri, bool base) noexcept
 	if (base) {
 		uri = PathTraitsUTF8::GetBase(uri);
 	} else {
-		allocated = uri_remove_auth(uri);
+		allocated = UriRemoveAuth(uri);
 		if (!allocated.empty())
 			uri = allocated.c_str();
 	}
@@ -63,7 +63,7 @@ song_print_real_uri(Response &r, std::string_view real_uri, bool base) noexcept
 	if (base) {
 		real_uri = PathTraitsUTF8::GetBase(real_uri);
 	} else {
-		allocated = uri_remove_auth(real_uri);
+		allocated = UriRemoveAuth(real_uri);
 		if (!allocated.empty())
 			real_uri = allocated;
 	}

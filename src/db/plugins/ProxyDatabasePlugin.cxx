@@ -219,12 +219,17 @@ Copy(TagBuilder &tag, TagType d_tag,
 /**
  * May this (remote-supplied) "Real-URI" be used?  It must not refer
  * to a local file outside of the music directory.
+ *
+ * @param uri the (already validated) song URI; a relative "Real-URI"
+ * (e.g. "../Album.flac" for a CUE track) is relative to it, and may
+ * climb up one level per directory of the song URI
  */
 [[gnu::pure]]
 static bool
-IsSafeRealUri(const char *real_uri) noexcept
+IsSafeRealUri(std::string_view uri, const char *real_uri) noexcept
 {
-	return uri_safe_local(real_uri) ||
+	return UriIsRelativePathWithinDepth(real_uri,
+					    unsigned(std::ranges::count(uri, '/'))) ||
 		(UriHasScheme(real_uri) &&
 		 !StringStartsWithIgnoreCase(real_uri, "file:"sv));
 	// TODO use protocol_is_whitelisted()
@@ -235,12 +240,12 @@ IsSafeRealUri(const char *real_uri) noexcept
 ProxySong::ProxySong(const mpd_song *song)
 	:LightSong(mpd_song_get_uri(song), tag_buffer)
 {
-	if (!uri_safe_local(uri))
+	if (!UriIsCanonicalRelativePath(uri))
 		throw std::runtime_error{"Malformed song URI from remote MPD"};
 
 #if LIBMPDCLIENT_CHECK_VERSION(2,25,0)
 	const auto _real_uri = mpd_song_get_real_uri(song);
-	if (_real_uri != nullptr && IsSafeRealUri(_real_uri))
+	if (_real_uri != nullptr && IsSafeRealUri(uri, _real_uri))
 		real_uri = _real_uri;
 #endif
 
