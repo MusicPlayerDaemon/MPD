@@ -6,6 +6,8 @@
 
 #include <stdexcept>
 
+struct nfs_context;
+
 class NfsClientError : public std::runtime_error {
 	int code;
 
