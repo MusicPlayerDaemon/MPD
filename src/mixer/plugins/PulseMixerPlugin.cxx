@@ -16,7 +16,9 @@
 #include <pulse/stream.h>
 #include <pulse/subscribe.h>
 
+#include <algorithm> // for std::min()
 #include <cassert>
+#include <cmath> // for std::cbrt(), std::lround()
 #include <stdexcept>
 
 class PulseMixer final : public Mixer {
@@ -56,6 +58,7 @@ public:
 
 	int GetVolume() override;
 	void SetVolume(unsigned volume) override;
+	unsigned ScaleVolume(unsigned volume, float scale) noexcept override;
 };
 
 void
@@ -222,6 +225,14 @@ PulseMixer::SetVolume(unsigned new_volume)
 		       (new_volume * max_pa_volume + 50) / 100);
 	pulse_output_set_volume(output, &cvolume);
 	volume = cvolume;
+}
+
+unsigned
+PulseMixer::ScaleVolume(unsigned _volume, float scale) noexcept
+{
+	/* PulseAudio volumes are the cubic root of the linear
+	   factor */
+	return std::min(std::lround(_volume * std::cbrt(scale)), 100L);
 }
 
 const MixerPlugin pulse_mixer_plugin = {
