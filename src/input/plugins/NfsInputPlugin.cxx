@@ -27,11 +27,16 @@ class NfsInputStream final : NfsFileReader, public AsyncInputStream {
 	bool reconnect_on_resume = false, reconnecting = false;
 
 public:
-	NfsInputStream(std::string_view _uri, Mutex &_mutex) noexcept
+	NfsInputStream(std::string_view _uri, Mutex &_mutex)
 		:AsyncInputStream(NfsFileReader::GetEventLoop(),
 				  _uri, _mutex,
 				  NFS_MAX_BUFFERED,
-				  NFS_RESUME_AT) {}
+				  NFS_RESUME_AT)
+	{
+		assert(!IsReady());
+
+		NfsFileReader::Open(GetURI());
+	}
 
 	~NfsInputStream() override {
 		DeferClose();
@@ -39,12 +44,6 @@ public:
 
 	NfsInputStream(const NfsInputStream &) = delete;
 	NfsInputStream &operator=(const NfsInputStream &) = delete;
-
-	void Open() {
-		assert(!IsReady());
-
-		NfsFileReader::Open(GetURI());
-	}
 
 private:
 	void DoRead();
@@ -234,7 +233,5 @@ const InputPlugin input_plugin_nfs = {
 InputStreamPtr
 OpenNfsInputStream(std::string_view uri, Mutex &mutex)
 {
-	auto is = std::make_unique<NfsInputStream>(uri, mutex);
-	is->Open();
-	return is;
+	return std::make_unique<NfsInputStream>(uri, mutex);
 }
