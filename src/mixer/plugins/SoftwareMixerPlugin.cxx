@@ -6,6 +6,7 @@
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "pcm/Volume.hxx"
 
+#include <algorithm> // for std::min()
 #include <cassert>
 #include <cmath>
 
@@ -37,6 +38,7 @@ public:
 	}
 
 	void SetVolume(unsigned volume) override;
+	unsigned ScaleVolume(unsigned volume, float scale) noexcept override;
 };
 
 static Mixer *
@@ -73,6 +75,14 @@ SoftwareMixer::SetVolume(unsigned new_volume)
 
 	if (filter != nullptr)
 		volume_filter_set(filter, PercentVolumeToSoftwareVolume(new_volume));
+}
+
+unsigned
+SoftwareMixer::ScaleVolume(unsigned _volume, float scale) noexcept
+{
+	/* the inverse of PercentVolumeToSoftwareVolume() */
+	const float factor = std::exp(_volume / 25.0f) - 1;
+	return std::min(std::lround(25 * std::log1p(scale * factor)), 100L);
 }
 
 const MixerPlugin software_mixer_plugin = {
