@@ -89,8 +89,21 @@ class NfsStorage final
 	InjectEvent defer_connect;
 	CoarseTimerEvent reconnect_timer;
 
+	/**
+	 * Protects #state, #last_exception.
+	 *
+	 * These fields are only written in the #EventLoop thread,
+	 * thus this thread may read them without a lock.
+	 */
 	Mutex mutex;
+
+	/**
+	 * Notified when the #state changes (from within the
+	 * #EventLoop thread).  Used to wait for readiness from other
+	 * threads.
+	 */
 	Cond cond;
+
 	State state = State::CONNECTING;
 	std::exception_ptr last_exception;
 
