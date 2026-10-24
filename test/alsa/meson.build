@@ -7,6 +7,8 @@ test(
   executable(
     'TestAlsa',
     'TestPcmCard.cxx',
+    'TestVolumeMapping.cxx',
+    '../../src/mixer/plugins/VolumeMapping.cxx',
     include_directories: inc,
     dependencies: [
       alsa_dep,
