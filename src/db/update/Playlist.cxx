@@ -52,7 +52,7 @@ IsSafeRelativeEntry(std::string_view uri, unsigned max_up) noexcept
 			break;
 	}
 
-	return uri_safe_local(uri);
+	return UriIsCanonicalRelativePath(uri);
 }
 
 inline void
@@ -84,7 +84,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 			   files */
 			const auto relative = storage.MapToRelativeUTF8(db_song->filename);
 			if (relative.data() == nullptr ||
-			    !uri_safe_local(relative))
+			    !UriIsCanonicalRelativePath(relative))
 				continue;
 		}
 

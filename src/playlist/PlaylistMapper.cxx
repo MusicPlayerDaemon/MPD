@@ -39,7 +39,7 @@ playlist_open_in_playlist_dir(std::string_view uri, Mutex &mutex)
 static std::unique_ptr<SongEnumerator>
 playlist_open_in_storage(std::string_view uri, Storage *storage, Mutex &mutex)
 {
-	assert(uri_safe_local(uri));
+	assert(UriIsCanonicalRelativePath(uri));
 
 	if (storage == nullptr)
 		return nullptr;
@@ -76,7 +76,7 @@ playlist_mapper_open(std::string_view uri,
 	}
 
 #ifdef ENABLE_DATABASE
-	if (uri_safe_local(uri)) {
+	if (UriIsCanonicalRelativePath(uri)) {
 		auto playlist = playlist_open_in_storage(uri, storage, mutex);
 		if (playlist != nullptr)
 			return playlist;

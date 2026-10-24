@@ -19,7 +19,7 @@
  */
 [[gnu::pure]]
 bool
-uri_safe_local(std::string_view uri) noexcept;
+UriIsCanonicalRelativePath(std::string_view uri) noexcept;
 
 /**
  * Removes HTTP username and password from the URI.  This may be
@@ -29,12 +29,12 @@ uri_safe_local(std::string_view uri) noexcept;
  */
 [[gnu::pure]]
 std::string
-uri_remove_auth(std::string_view uri) noexcept;
+UriRemoveAuth(std::string_view uri) noexcept;
 
 /**
- * Remove dot segments in the URI.  For example, uri_squash_dot_segments
+ * Remove dot segments in the URI.  For example, UriSquashDotSegments
  * ("foo/bar/.././")=="foo/".
  */
 [[gnu::pure]]
 std::string
-uri_squash_dot_segments(std::string_view uri) noexcept;
+UriSquashDotSegments(std::string_view uri) noexcept;

@@ -221,7 +221,7 @@ Copy(TagBuilder &tag, TagType d_tag,
 static bool
 IsSafeRealUri(const char *real_uri) noexcept
 {
-	return uri_safe_local(real_uri) ||
+	return UriIsCanonicalRelativePath(real_uri) ||
 		(UriHasScheme(real_uri) &&
 		 !StringStartsWithIgnoreCase(real_uri, "file:"sv));
 	// TODO use protocol_is_whitelisted()
@@ -232,7 +232,7 @@ IsSafeRealUri(const char *real_uri) noexcept
 ProxySong::ProxySong(const mpd_song *song)
 	:LightSong(mpd_song_get_uri(song), tag_buffer)
 {
-	if (!uri_safe_local(uri))
+	if (!UriIsCanonicalRelativePath(uri))
 		throw std::runtime_error{"Malformed song URI from remote MPD"};
 
 #if LIBMPDCLIENT_CHECK_VERSION(2,25,0)

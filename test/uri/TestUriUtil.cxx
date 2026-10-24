@@ -10,56 +10,56 @@ using std::string_view_literals::operator""sv;
 
 TEST(UriUtil, SafeLocal)
 {
-	EXPECT_TRUE(uri_safe_local("foo"));
-	EXPECT_TRUE(uri_safe_local("foo/bar"));
-	EXPECT_TRUE(uri_safe_local("a/b/c/d/e"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath("foo"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath("foo/bar"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath("a/b/c/d/e"));
 
 	// must be non-empty
-	EXPECT_FALSE(uri_safe_local(""));
+	EXPECT_FALSE(UriIsCanonicalRelativePath(""));
 
 	// must not begin or end with a slash
-	EXPECT_FALSE(uri_safe_local("/"));
-	EXPECT_FALSE(uri_safe_local("/foo"));
-	EXPECT_FALSE(uri_safe_local("foo/"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("/"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("/foo"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo/"));
 
 	// no double slash
-	EXPECT_FALSE(uri_safe_local("foo//bar"));
-	EXPECT_FALSE(uri_safe_local("foo///bar"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo//bar"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo///bar"));
 
 	// no "." or ".." segments
-	EXPECT_FALSE(uri_safe_local("./foo"));
-	EXPECT_FALSE(uri_safe_local("../foo"));
-	EXPECT_TRUE(uri_safe_local("foo/.bar"));
-	EXPECT_FALSE(uri_safe_local("foo/.."));
-	EXPECT_FALSE(uri_safe_local("foo/."));
-	EXPECT_FALSE(uri_safe_local("foo/../bar"));
-	EXPECT_FALSE(uri_safe_local("foo/./bar"));
-	EXPECT_TRUE(uri_safe_local(".foo"));
-	EXPECT_TRUE(uri_safe_local("..foo"));
-	EXPECT_TRUE(uri_safe_local("...foo"));
-	EXPECT_TRUE(uri_safe_local(".....foo"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("./foo"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("../foo"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath("foo/.bar"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo/.."));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo/."));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo/../bar"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo/./bar"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath(".foo"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath("..foo"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath("...foo"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath(".....foo"));
 
 #ifdef _WIN32
 	// the backslash is a path separator on Windows
-	EXPECT_FALSE(uri_safe_local("foo\\bar"));
-	EXPECT_FALSE(uri_safe_local("..\\foo"));
-	EXPECT_FALSE(uri_safe_local("foo\\..\\..\\bar"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo\\bar"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("..\\foo"));
+	EXPECT_FALSE(UriIsCanonicalRelativePath("foo\\..\\..\\bar"));
 #else
-	EXPECT_TRUE(uri_safe_local("foo\\bar"));
-	EXPECT_TRUE(uri_safe_local("..\\foo"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath("foo\\bar"));
+	EXPECT_TRUE(UriIsCanonicalRelativePath("..\\foo"));
 #endif
 }
 
 TEST(UriUtil, RemoveAuth)
 {
 	EXPECT_EQ(std::string(),
-		  uri_remove_auth("http://www.example.com/"));
+		  UriRemoveAuth("http://www.example.com/"));
 	EXPECT_EQ(std::string("http://www.example.com/"),
-		  uri_remove_auth("http://foo:bar@www.example.com/"));
+		  UriRemoveAuth("http://foo:bar@www.example.com/"));
 	EXPECT_EQ(std::string("http://www.example.com/"),
-		  uri_remove_auth("http://foo@www.example.com/"));
+		  UriRemoveAuth("http://foo@www.example.com/"));
 	EXPECT_EQ(std::string(),
-		  uri_remove_auth("http://www.example.com/f:oo@bar"));
+		  UriRemoveAuth("http://www.example.com/f:oo@bar"));
 	EXPECT_EQ(std::string("ftp://ftp.example.com/"),
-		  uri_remove_auth("ftp://foo:bar@ftp.example.com/"));
+		  UriRemoveAuth("ftp://foo:bar@ftp.example.com/"));
 }

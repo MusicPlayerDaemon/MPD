@@ -13,7 +13,7 @@
 using std::string_view_literals::operator""sv;
 
 bool
-uri_safe_local(std::string_view uri) noexcept
+UriIsCanonicalRelativePath(std::string_view uri) noexcept
 {
 #ifdef _WIN32
 	if (uri.find('\\') != uri.npos)
@@ -46,7 +46,7 @@ SkipUriScheme(std::string_view uri) noexcept
 }
 
 std::string
-uri_remove_auth(const std::string_view uri) noexcept
+UriRemoveAuth(const std::string_view uri) noexcept
 {
 	const std::string_view after_uri_scheme = SkipUriScheme(uri);
 	if (after_uri_scheme.data() == nullptr)
@@ -73,7 +73,7 @@ uri_remove_auth(const std::string_view uri) noexcept
 }
 
 std::string
-uri_squash_dot_segments(std::string_view uri) noexcept
+UriSquashDotSegments(std::string_view uri) noexcept
 {
 	std::forward_list<std::string_view> path = SplitString(std::string_view(uri), '/', false);
 	path.remove_if([](const std::string_view &seg) { return seg == "."; });

@@ -88,7 +88,7 @@ playlist_check_translate_song(DetachedSong &song, std::string_view base_uri,
 	}
 
 	/* Remove dot segments */
-	std::string new_uri = uri_squash_dot_segments(uri);
+	std::string new_uri = UriSquashDotSegments(uri);
 	song.SetURI(std::move(new_uri));
 
 	return playlist_check_load_song(song, loader);

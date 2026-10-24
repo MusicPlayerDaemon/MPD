@@ -28,7 +28,7 @@ song_print_uri(Response &r, std::string_view uri, bool base) noexcept
 	if (base) {
 		uri = PathTraitsUTF8::GetBase(uri);
 	} else {
-		allocated = uri_remove_auth(uri);
+		allocated = UriRemoveAuth(uri);
 		if (!allocated.empty())
 			uri = allocated.c_str();
 	}

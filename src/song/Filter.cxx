@@ -466,7 +466,7 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 		throw std::runtime_error("Unknown filter type");
 
 	case LOCATE_TAG_BASE_TYPE:
-		if (!uri_safe_local(value))
+		if (!UriIsCanonicalRelativePath(value))
 			throw std::runtime_error("Bad URI");
 
 		and_filter.AddItem(std::make_unique<BaseSongFilter>(value));
