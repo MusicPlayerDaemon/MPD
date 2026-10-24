@@ -6,6 +6,7 @@
 #include <utility> // for std::exchange()
 
 struct nfs_context;
+class NfsUrl;
 
 /**
  * OO wrapper for #nfs_context.
@@ -44,4 +45,6 @@ public:
 	}
 
 	void reset() noexcept;
+
+	NfsUrl ParseUrlDir(const char *url) const;
 };

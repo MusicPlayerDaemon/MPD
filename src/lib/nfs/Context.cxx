@@ -3,11 +3,13 @@
 
 #include "Context.hxx"
 #include "Error.hxx"
+#include "Url.hxx"
 
 extern "C" {
 #include <nfsc/libnfs.h>
 }
 
+#include <cassert>
 #include <stdexcept>
 
 struct nfs_context;
@@ -24,4 +26,16 @@ NfsContext::reset() noexcept
 {
 	if (value != nullptr)
 		nfs_destroy_context(value);
+}
+
+NfsUrl
+NfsContext::ParseUrlDir(const char *url) const
+{
+	assert(value != nullptr);
+
+	auto *p = nfs_parse_url_dir(value, url);
+	if (p == nullptr)
+		throw NfsClientError(value, "nfs_parse_url_dir() failed");
+
+	return NfsUrl{p};
 }

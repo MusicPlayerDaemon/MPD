@@ -4,11 +4,11 @@
 #include "Manager.hxx"
 #include "Connection.hxx"
 #include "Error.hxx"
+#include "Url.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "event/Loop.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/Domain.hxx"
-#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 extern "C" {
@@ -81,11 +81,7 @@ NfsManager::MakeConnection(const char *url)
 
 	NfsContext context{NfsContext::Create{}};
 
-	auto *pu = nfs_parse_url_dir(context, url);
-	if (pu == nullptr)
-		throw NfsClientError(context, "nfs_parse_url_dir() failed");
-
-	AtScopeExit(pu) { nfs_destroy_url(pu); };
+	const auto pu = context.ParseUrlDir(url);
 
 	auto c = new ManagedConnection(*this, GetEventLoop(),
 				       std::move(context),
