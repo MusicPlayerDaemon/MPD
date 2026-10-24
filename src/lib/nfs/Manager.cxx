@@ -32,11 +32,11 @@ class NfsManager::ManagedConnection final
 
 public:
 	ManagedConnection(NfsManager &_manager, EventLoop &_loop,
-			  struct nfs_context *_context,
+			  NfsContext &&_context,
 			  std::string_view _server,
 			  std::string_view _export_name,
 			  bool _transient)
-		:NfsConnection(_loop, _context, _server, _export_name),
+		:NfsConnection(_loop, std::move(_context), _server, _export_name),
 		 manager(_manager), transient(_transient) {}
 
 	[[gnu::pure]]
@@ -79,20 +79,16 @@ NfsManager::MakeConnection(const char *url)
 {
 	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
-	struct nfs_context *const context = nfs_init_context();
-	if (context == nullptr)
-		throw std::runtime_error{"nfs_init_context() failed"};
+	NfsContext context{NfsContext::Create{}};
 
 	auto *pu = nfs_parse_url_dir(context, url);
-	if (pu == nullptr) {
-		AtScopeExit(context) { nfs_destroy_context(context); };
+	if (pu == nullptr)
 		throw NfsClientError(context, "nfs_parse_url_dir() failed");
-	}
 
 	AtScopeExit(pu) { nfs_destroy_url(pu); };
 
 	auto c = new ManagedConnection(*this, GetEventLoop(),
-				       context,
+				       std::move(context),
 				       pu->server, pu->path,
 				       true);
 	connections.push_front(*c);
@@ -109,12 +105,8 @@ NfsManager::GetConnection(std::string_view server, std::string_view export_name)
 		    c.GetExportName() == export_name)
 			return c;
 
-	struct nfs_context *const context = nfs_init_context();
-	if (context == nullptr)
-		throw std::runtime_error{"nfs_init_context() failed"};
-
 	auto c = new ManagedConnection(*this, GetEventLoop(),
-				       context,
+				       NfsContext::Create{},
 				       server, export_name,
 				       false);
 	connections.push_front(*c);

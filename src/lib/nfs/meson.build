@@ -14,6 +14,7 @@ endif
 nfs = static_library(
   'nfs',
   'Connection.cxx',
+  'Context.cxx',
   'Error.cxx',
   'Manager.cxx',
   'Glue.cxx',

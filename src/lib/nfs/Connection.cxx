@@ -234,14 +234,14 @@ events_to_libnfs(unsigned i) noexcept
 }
 
 NfsConnection::NfsConnection(EventLoop &_loop,
-			     nfs_context *_context,
+			     NfsContext &&_context,
 			     std::string_view _server,
 			     std::string_view _export_name)
 	:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
 	 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
 	 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
 	 server(_server), export_name(_export_name),
-	 context(_context)
+	 context(std::move(_context))
 {
 	/* libnfs validates its directory cache only by the
 	   directory's modification time, so it returns stale
@@ -279,8 +279,6 @@ NfsConnection::~NfsConnection() noexcept
 	   nfs_destroy_context(), and omitting the callbacks will leak
 	   memory */
         rpc_disconnect(nfs_get_rpc_context(context), "Shutting down");
-
-	nfs_destroy_context(context);
 }
 
 void

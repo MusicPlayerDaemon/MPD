@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Cancellable.hxx"
+#include "Context.hxx"
 #include "event/SocketEvent.hxx"
 #include "event/CoarseTimerEvent.hxx"
 #include "event/DeferEvent.hxx"
@@ -120,7 +121,7 @@ class NfsConnection {
 
 	const std::string server, export_name;
 
-	nfs_context *const context;
+	const NfsContext context;
 
 	using LeaseList = IntrusiveList<NfsLease>;
 	LeaseList new_leases, active_leases;
@@ -167,9 +168,8 @@ public:
 	/**
 	 * Throws on error.
 	 */
-	[[gnu::nonnull]]
 	NfsConnection(EventLoop &_loop,
-		      nfs_context *_context,
+		      NfsContext &&_context,
 		      std::string_view _server,
 		      std::string_view _export_name);
 
