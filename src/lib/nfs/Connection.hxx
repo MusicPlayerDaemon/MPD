@@ -113,7 +113,12 @@ class NfsConnection {
 	 */
 	std::forward_list<struct nfsfh *> deferred_close;
 
-	std::exception_ptr postponed_mount_error;
+	/**
+	 * If set, then a connection-fatal error has occurred from
+	 * inside nfs_service().  It will be handled as soon as
+	 * nfs_service() returns.
+	 */
+	std::exception_ptr postponed_error;
 
 	enum class MountState : uint_least8_t {
 		INITIAL,

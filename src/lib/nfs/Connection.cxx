@@ -530,7 +530,7 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 	assert(GetEventLoop().IsInside());
 	assert(deferred_close.empty());
 	assert(mount_state >= MountState::WAITING);
-	assert(!postponed_mount_error);
+	assert(!postponed_error);
 
 	const bool was_unused = IsUnused();
 
@@ -553,8 +553,8 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 	}
 
 	try {
-		if (postponed_mount_error)
-			std::rethrow_exception(postponed_mount_error);
+		if (postponed_error)
+			std::rethrow_exception(postponed_error);
 
 		if (result < 0)
 			throw NfsClientError(context, "NFS connection has failed");
@@ -615,7 +615,7 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 	if (status < 0) {
 		auto e = NfsClientError(status, context, data,
 					"nfs_mount_async() failed");
-		postponed_mount_error = std::make_exception_ptr(e);
+		postponed_error = std::make_exception_ptr(e);
 		return;
 	}
 }
