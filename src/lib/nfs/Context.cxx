@@ -29,6 +29,18 @@ NfsContext::reset() noexcept
 }
 
 NfsUrl
+NfsContext::ParseUrlFull(const char *url) const
+{
+	assert(value != nullptr);
+
+	auto *p = nfs_parse_url_full(value, url);
+	if (p == nullptr)
+		throw NfsClientError(value, "nfs_parse_url_full() failed");
+
+	return NfsUrl{p};
+}
+
+NfsUrl
 NfsContext::ParseUrlDir(const char *url) const
 {
 	assert(value != nullptr);

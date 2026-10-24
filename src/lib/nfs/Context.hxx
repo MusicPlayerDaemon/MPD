@@ -46,5 +46,6 @@ public:
 
 	void reset() noexcept;
 
+	NfsUrl ParseUrlFull(const char *url) const;
 	NfsUrl ParseUrlDir(const char *url) const;
 };
