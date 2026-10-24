@@ -48,7 +48,7 @@ class NfsStorage final
 		 * There is no #NfsConnection currently (because it
 		 * failed or Disconnect() was called).  Most likely a
 		 * new #NfsConnection will eventually be obtained by
-		 * Connect(), trigegered by #defer_connect.
+		 * Connect(), triggered by #defer_connect.
 		 */
 		INITIAL,
 
