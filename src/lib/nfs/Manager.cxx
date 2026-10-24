@@ -3,12 +3,11 @@
 
 #include "Manager.hxx"
 #include "Connection.hxx"
-#include "Error.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "event/Loop.hxx"
+#include "event/CoarseTimerEvent.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/Domain.hxx"
-#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 extern "C" {
@@ -23,131 +22,82 @@ class NfsManager::ManagedConnection final
 {
 	NfsManager &manager;
 
-	/**
-	 * Was this connection created by MakeConnection()?  These are
-	 * deleted as soon as they are unused, because each call to
-	 * MakeConnection() creates a new one.
-	 */
-	const bool transient;
+	CoarseTimerEvent disconnect_timer;
 
 public:
 	ManagedConnection(NfsManager &_manager, EventLoop &_loop,
-			  struct nfs_context *_context,
+			  NfsContext &&_context,
 			  std::string_view _server,
-			  std::string_view _export_name,
-			  bool _transient)
-		:NfsConnection(_loop, _context, _server, _export_name),
-		 manager(_manager), transient(_transient) {}
+			  std::string_view _export_name)
+		:NfsConnection(_loop, std::move(_context), _server, _export_name),
+		 manager(_manager),
+		 disconnect_timer(_loop, BIND_THIS_METHOD(OnDisconnectTimer))
+	{
+		disconnect_timer.Schedule(std::chrono::minutes{1});
+	}
 
-	[[gnu::pure]]
-	bool IsObsolete() const noexcept {
-		return transient && IsUnused();
+	void Use() noexcept {
+		disconnect_timer.Schedule(std::chrono::minutes{1});
 	}
 
 protected:
+	void OnDisconnectTimer() noexcept {
+		if (IsUnused())
+			manager.DeleteConnection(*this);
+	}
+
 	/* virtual methods from NfsConnection */
 	void OnNfsConnectionError(std::exception_ptr e) noexcept override;
 
 	void OnNfsConnectionUnused() noexcept override {
-		if (transient)
-			/* defer deletion to NfsManager::OnIdle() */
-			manager.idle_event.Schedule();
+		disconnect_timer.Schedule(std::chrono::minutes{1});
 	}
 };
 
 void
 NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr e) noexcept
 {
-	FmtError(nfs_domain, "NFS error on '{}:{}': {}",
+	FmtError(nfs_domain, "NFS error on {:?}:{:?}: {}",
 		 GetServer(), GetExportName(), e);
 
-	/* defer deletion so the caller
-	   (i.e. NfsConnection::OnSocketReady()) can still use this
-	   object */
-	manager.ScheduleDelete(*this);
+	manager.DeleteConnection(*this);
 }
 
 NfsManager::NfsManager(EventLoop &_loop) noexcept
-	:idle_event(_loop, BIND_THIS_METHOD(OnIdle)) {}
+	:event_loop(_loop) {}
 
 NfsManager::~NfsManager() noexcept
 {
 	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
-	CollectGarbage();
-
 	connections.clear_and_dispose(DeleteDisposer());
 }
 
 NfsConnection &
-NfsManager::MakeConnection(const char *url)
+NfsManager::GetConnection(NfsContext &&context, const struct nfs_url &url,
+			  bool lookup_existing)
 {
-	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
-
-	struct nfs_context *const context = nfs_init_context();
-	if (context == nullptr)
-		throw std::runtime_error{"nfs_init_context() failed"};
-
-	auto *pu = nfs_parse_url_dir(context, url);
-	if (pu == nullptr) {
-		AtScopeExit(context) { nfs_destroy_context(context); };
-		throw NfsClientError(context, "nfs_parse_url_dir() failed");
+	if (lookup_existing) {
+		for (auto &c : connections) {
+			if (c.GetServer() == url.server &&
+			    c.GetExportName() == url.path) {
+				c.Use();
+				return c;
+			}
+		}
 	}
 
-	AtScopeExit(pu) { nfs_destroy_url(pu); };
-
 	auto c = new ManagedConnection(*this, GetEventLoop(),
-				       context,
-				       pu->server, pu->path,
-				       true);
-	connections.push_front(*c);
-	return *c;
-}
-
-NfsConnection &
-NfsManager::GetConnection(std::string_view server, std::string_view export_name)
-{
-	assert(GetEventLoop().IsInside());
-
-	for (auto &c : connections)
-		if (c.GetServer() == server &&
-		    c.GetExportName() == export_name)
-			return c;
-
-	struct nfs_context *const context = nfs_init_context();
-	if (context == nullptr)
-		throw std::runtime_error{"nfs_init_context() failed"};
-
-	auto c = new ManagedConnection(*this, GetEventLoop(),
-				       context,
-				       server, export_name,
-				       false);
+				       std::move(context),
+				       url.server, url.path);
 	connections.push_front(*c);
 	return *c;
 }
 
 inline void
-NfsManager::ScheduleDelete(ManagedConnection &c) noexcept
-{
-	connections.erase(connections.iterator_to(c));
-	garbage.push_front(c);
-	idle_event.Schedule();
-}
-
-void
-NfsManager::CollectGarbage() noexcept
+NfsManager::DeleteConnection(ManagedConnection &c) noexcept
 {
 	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
-	garbage.clear_and_dispose(DeleteDisposer());
-}
-
-inline void
-NfsManager::OnIdle() noexcept
-{
-	CollectGarbage();
-
-	connections.remove_and_dispose_if([](const ManagedConnection &c){
-		return c.IsObsolete();
-	}, DeleteDisposer());
+	connections.erase_and_dispose(connections.iterator_to(c), DeleteDisposer{});
 }

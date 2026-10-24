@@ -10,6 +10,8 @@
 #include "lib/nfs/Base.hxx"
 #include "lib/nfs/Lease.hxx"
 #include "lib/nfs/Connection.hxx"
+#include "lib/nfs/Context.hxx"
+#include "lib/nfs/Url.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "input/InputStream.hxx"
 #include "input/plugins/NfsInputPlugin.hxx"
@@ -44,7 +46,30 @@ class NfsStorage final
 	: public Storage, NfsLease {
 
 	enum class State {
-		INITIAL, CONNECTING, READY, DELAY,
+		/**
+		 * There is no #NfsConnection currently (because it
+		 * failed or Disconnect() was called).  Most likely a
+		 * new #NfsConnection will eventually be obtained by
+		 * Connect(), triggered by #defer_connect or
+		 * #reconnect_timer.
+		 *
+		 * In this state, #last_exception may be set while
+		 * #reconnect_timer is pending.
+		 */
+		INITIAL,
+
+		/**
+		 * We have an #NfsConnection, but it is not yet ready.
+		 * Waiting for the OnNfsConnectionReady() callback
+		 * which will set state to #READY.
+		 */
+		CONNECTING,
+
+		/**
+		 * We have an #NfsConnection and it is ready and
+		 * usable.
+		 */
+		READY,
 	};
 
 	/**
@@ -63,8 +88,21 @@ class NfsStorage final
 	InjectEvent defer_connect;
 	CoarseTimerEvent reconnect_timer;
 
+	/**
+	 * Protects #state, #last_exception.
+	 *
+	 * These fields are only written in the #EventLoop thread,
+	 * thus this thread may read them without a lock.
+	 */
 	Mutex mutex;
+
+	/**
+	 * Notified when the #state changes or #last_exception is set
+	 * (from within the #EventLoop thread).  Used to wait for
+	 * readiness from other threads.
+	 */
 	Cond cond;
+
 	State state = State::CONNECTING;
 	std::exception_ptr last_exception;
 
@@ -114,26 +152,30 @@ public:
 	void OnNfsConnectionFailed(std::exception_ptr e) noexcept final {
 		assert(state == State::CONNECTING);
 
-		SetState(State::DELAY, std::move(e));
-		reconnect_timer.Schedule(std::chrono::minutes(1));
+		ScheduleReconnectTimer(std::move(e), std::chrono::minutes{1});
 	}
 
 	void OnNfsConnectionDisconnected(std::exception_ptr e) noexcept final {
 		assert(state == State::READY);
 
-		SetState(State::DELAY, std::move(e));
-		reconnect_timer.Schedule(std::chrono::seconds(5));
+		ScheduleReconnectTimer(std::move(e), std::chrono::seconds{5});
 	}
 
 	/* InjectEvent callback */
 	void OnDeferredConnect() noexcept {
-		if (state == State::INITIAL)
+		if (state == State::INITIAL && !last_exception)
 			Connect();
 	}
 
 	/* callback for #reconnect_timer */
 	void OnReconnectTimer() noexcept {
-		assert(state == State::DELAY);
+		assert(state == State::INITIAL);
+		assert(last_exception);
+
+		{
+			const std::lock_guard protect{mutex};
+			last_exception = {};
+		}
 
 		Connect();
 	}
@@ -160,15 +202,26 @@ private:
 		cond.notify_all();
 	}
 
+	void ScheduleReconnectTimer(std::exception_ptr &&e,
+				    Event::Duration delay) noexcept {
+		assert(GetEventLoop().IsInside());
+		assert(!last_exception);
+		assert(!reconnect_timer.IsPending());
+
+		SetState(State::INITIAL, std::move(e));
+		reconnect_timer.Schedule(delay);
+	}
+
 	void Connect() noexcept {
 		assert(state != State::READY);
 		assert(GetEventLoop().IsInside());
 
 		try {
-			connection = &nfs_make_connection(url.c_str());
+			NfsContext context{NfsContext::Create{}};
+			const auto nfs_url = context.ParseUrlDir(url.c_str());
+			connection = &nfs_get_connection(std::move(context), *nfs_url, false);
 		} catch (...) {
-			SetState(State::DELAY, std::current_exception());
-			reconnect_timer.Schedule(std::chrono::minutes(10));
+			ScheduleReconnectTimer(std::current_exception(), std::chrono::minutes{10});
 			return;
 		}
 
@@ -178,28 +231,34 @@ private:
 	}
 
 	void WaitConnected() {
+		/* can't be inside the #EventLoop thread because we're
+		   waiting for #cond */
+		assert(!GetEventLoop().IsInside());
+
 		std::unique_lock lock{mutex};
 
 		while (true) {
 			switch (state) {
 			case State::INITIAL:
+				if (last_exception) [[unlikely]]
+					std::rethrow_exception(last_exception);
+
 				/* schedule connect */
 				{
 					const ScopeUnlock unlock{lock};
 					defer_connect.Schedule();
 				}
 
-				if (state == State::INITIAL)
+				if (state == State::INITIAL && !last_exception)
 					cond.wait(lock);
 				break;
 
 			case State::CONNECTING:
+				cond.wait(lock);
+				break;
+
 			case State::READY:
 				return;
-
-			case State::DELAY:
-				assert(last_exception);
-				std::rethrow_exception(last_exception);
 			}
 		}
 	}
@@ -210,16 +269,17 @@ private:
 		switch (state) {
 		case State::INITIAL:
 			defer_connect.Cancel();
+			reconnect_timer.Cancel();
+
+			{
+				const std::scoped_lock lock{mutex};
+				last_exception = {};
+			}
 			break;
 
 		case State::CONNECTING:
 		case State::READY:
 			connection->RemoveLease(*this);
-			SetState(State::INITIAL);
-			break;
-
-		case State::DELAY:
-			reconnect_timer.Cancel();
 			SetState(State::INITIAL);
 			break;
 		}
@@ -263,9 +323,17 @@ NfsStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 InputStreamPtr
 NfsStorage::OpenFile(std::string_view uri_utf8, Mutex &_mutex)
 {
+        /* make sure our connection (which was created with the
+           options from the URL's query string) exists, so
+           NfsFileReader finds it (or fail early if it is currently
+           unavailable); without it, nfs_get_connection() would
+           create a new connection without those options */
 	WaitConnected();
 
-	return OpenNfsInputStream(*connection, uri_utf8, _mutex);
+	/* open by URI; NfsFileReader looks up the connection in the
+	   I/O thread, because our "connection" pointer may be
+	   invalidated by the I/O thread at any time */
+	return OpenNfsInputStream(MapUTF8(uri_utf8), _mutex);
 }
 
 static void
@@ -432,7 +500,10 @@ _CreateNfsStorageURI(EventLoop &event_loop, std::string_view base)
 	nfs_init(event_loop);
 
 	try {
-		auto &connection = nfs_make_connection(std::string{base}.c_str());
+		NfsContext context{NfsContext::Create{}};
+		const auto nfs_url = context.ParseUrlDir(std::string{base}.c_str());
+
+		auto &connection = nfs_get_connection(std::move(context), *nfs_url, false);
 
 		return std::make_unique<NfsStorage>(base, connection);
 	} catch (...) {

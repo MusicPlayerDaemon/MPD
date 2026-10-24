@@ -112,7 +112,7 @@ NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh,
 							   DisposablePointer &&_dispose_value) noexcept
 {
 	assert(connection.GetEventLoop().IsInside());
-	assert((fh == nullptr) || !open);
+	assert(fh == nullptr || handle_type == HandleType::NONE);
 	assert(close_fh == nullptr);
 	assert(!dispose_value);
 
@@ -151,8 +151,11 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 {
 	assert(connection.GetEventLoop().IsInside());
 
-	auto &_connection = connection;
-	const bool is_fatal = IsFatalNfsConnectionError(err, (const char *)data);
+	if (IsFatalNfsConnectionError(err, (const char *)data) &&
+	    !connection.postponed_error)
+		/* this was a fatal connection error; we need to tear
+		   down the NFS connection */
+		connection.postponed_error = std::make_exception_ptr(NfsClientError(-err, (const char *)data));
 
 	if (!IsCancelled()) {
 		assert(close_fh == nullptr);
@@ -166,7 +169,13 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 		else 
 			cb.OnNfsError(std::make_exception_ptr(NfsClientError(-err, (const char *)data)));
 	} else {
-		if (open) {
+		switch (handle_type) {
+		case HandleType::NONE:
+			if (close_fh != nullptr)
+				connection.DeferClose(close_fh);
+			break;
+
+		case HandleType::REGULAR_FILE:
 			/* a nfs_open_async() call was cancelled - to
 			   avoid a memory leak, close the newly
 			   allocated file handle immediately */
@@ -176,16 +185,26 @@ NfsConnection::CancellableCallback::Callback(int err, void *data) noexcept
 				auto *fh = (struct nfsfh *)data;
 				connection.Close(fh);
 			}
-		} else if (close_fh != nullptr)
-			connection.DeferClose(close_fh);
+
+			break;
+
+		case HandleType::DIRECTORY:
+			/* a nfs_opendir_async() call was cancelled -
+			   free the newly allocated directory handle
+			   (this is not a file handle and must not be
+			   passed to nfs_close_async()) */
+			assert(close_fh == nullptr);
+
+			if (err >= 0) {
+				auto *dir = (struct nfsdir *)data;
+				connection.CloseDirectory(dir);
+			}
+
+			break;
+		}
 
 		connection.callbacks.Remove(*this);
 	}
-
-	if (is_fatal)
-		/* this was a fatal connection error; we need to teat
-		   down the NFS connection */
-		_connection.BroadcastError(std::make_exception_ptr(NfsClientError(-err, (const char *)data)));
 }
 
 void
@@ -215,14 +234,14 @@ events_to_libnfs(unsigned i) noexcept
 }
 
 NfsConnection::NfsConnection(EventLoop &_loop,
-			     nfs_context *_context,
+			     NfsContext &&_context,
 			     std::string_view _server,
 			     std::string_view _export_name)
 	:socket_event(_loop, BIND_THIS_METHOD(OnSocketReady)),
 	 defer_new_lease(_loop, BIND_THIS_METHOD(RunDeferred)),
 	 mount_timeout_event(_loop, BIND_THIS_METHOD(OnMountTimeout)),
 	 server(_server), export_name(_export_name),
-	 context(_context)
+	 context(std::move(_context))
 {
 	/* libnfs validates its directory cache only by the
 	   directory's modification time, so it returns stale
@@ -248,13 +267,18 @@ NfsConnection::~NfsConnection() noexcept
 	   checking status==-EINTR would be ambiguous */
 	mount_timeout_event.Cancel();
 
+	/* close the file handles of cancelled operations now,
+	   because nfs_destroy_context() invokes their callbacks
+	   with -EINTR, where DeferClose() cannot be used */
+	callbacks.ForEach([](CancellableCallback &c){
+		c.PrepareDestroyContext();
+	});
+
         /* cancel all pending async calls (e.g. nfs_mount_async();
 	   unfortunately, this is not implied by
 	   nfs_destroy_context(), and omitting the callbacks will leak
 	   memory */
         rpc_disconnect(nfs_get_rpc_context(context), "Shutting down");
-
-	nfs_destroy_context(context);
 }
 
 void
@@ -284,7 +308,8 @@ NfsConnection::Stat(const char *path, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, false);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::NONE);
 	try {
 		c.Stat(context, path);
 	} catch (...) {
@@ -301,7 +326,8 @@ NfsConnection::Lstat(const char *path, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, false);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::NONE);
 	try {
 		c.Lstat(context, path);
 	} catch (...) {
@@ -318,7 +344,8 @@ NfsConnection::OpenDirectory(const char *path, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, true);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::DIRECTORY);
 	try {
 		c.OpenDirectory(context, path);
 	} catch (...) {
@@ -351,7 +378,8 @@ NfsConnection::Open(const char *path, int flags, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, true);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::REGULAR_FILE);
 	try {
 		c.Open(context, path, flags);
 	} catch (...) {
@@ -368,7 +396,8 @@ NfsConnection::Stat(struct nfsfh *fh, NfsCallback &callback)
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, false);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::NONE);
 	try {
 		c.Stat(context, fh);
 	} catch (...) {
@@ -391,7 +420,8 @@ NfsConnection::Read(struct nfsfh *fh, uint64_t offset,
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this, false);
+	auto &c = callbacks.Add(callback, *this,
+				 CancellableCallback::HandleType::NONE);
 	try {
 		c.Read(context, fh, offset,
 #ifdef LIBNFS_API_2
@@ -457,10 +487,6 @@ NfsConnection::PrepareDestroyContext() noexcept
 	defer_new_lease.Cancel();
 
 	socket_event.ReleaseSocket();
-
-	callbacks.ForEach([](CancellableCallback &c){
-			c.PrepareDestroyContext();
-		});
 }
 
 inline void
@@ -524,13 +550,13 @@ NfsConnection::Service(unsigned flags) noexcept
 	return result;
 }
 
-void
+inline void
 NfsConnection::OnSocketReady(unsigned flags) noexcept
 {
 	assert(GetEventLoop().IsInside());
 	assert(deferred_close.empty());
 	assert(mount_state >= MountState::WAITING);
-	assert(!postponed_mount_error);
+	assert(!postponed_error);
 
 	const bool was_unused = IsUnused();
 
@@ -553,8 +579,8 @@ NfsConnection::OnSocketReady(unsigned flags) noexcept
 	}
 
 	try {
-		if (postponed_mount_error)
-			std::rethrow_exception(postponed_mount_error);
+		if (postponed_error)
+			std::rethrow_exception(postponed_error);
 
 		if (result < 0)
 			throw NfsClientError(context, "NFS connection has failed");
@@ -615,7 +641,7 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 	if (status < 0) {
 		auto e = NfsClientError(status, context, data,
 					"nfs_mount_async() failed");
-		postponed_mount_error = std::make_exception_ptr(e);
+		postponed_error = std::make_exception_ptr(e);
 		return;
 	}
 }
@@ -690,7 +716,7 @@ NfsConnection::BroadcastError(std::exception_ptr e) noexcept
 	BroadcastMountError(std::move(e));
 }
 
-void
+inline void
 NfsConnection::OnMountTimeout() noexcept
 {
 	assert(GetEventLoop().IsInside());
@@ -702,7 +728,7 @@ NfsConnection::OnMountTimeout() noexcept
 	BroadcastMountError(std::make_exception_ptr(std::runtime_error("Mount timeout")));
 }
 
-void
+inline void
 NfsConnection::RunDeferred() noexcept
 {
 	assert(GetEventLoop().IsInside());

@@ -5,7 +5,9 @@
 
 #include <string_view>
 
+struct nfs_url;
 class EventLoop;
+class NfsContext;
 class NfsConnection;
 
 void
@@ -26,12 +28,5 @@ nfs_get_event_loop() noexcept;
  */
 [[nodiscard]]
 NfsConnection &
-nfs_make_connection(const char *url);
-
-/**
- * Throws on error.
- */
-[[nodiscard]]
-NfsConnection &
-nfs_get_connection(std::string_view server,
-		   std::string_view export_name);
+nfs_get_connection(NfsContext &&context, const struct nfs_url &url,
+		   bool lookup_existing);

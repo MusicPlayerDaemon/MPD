@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_NFS_FILE_READER_HXX
-#define MPD_NFS_FILE_READER_HXX
+#pragma once
 
 #include "Lease.hxx"
 #include "Callback.hxx"
+#include "Context.hxx"
+#include "Url.hxx"
 #include "event/InjectEvent.hxx"
 
 #include <cstddef>
@@ -43,7 +44,8 @@ class NfsFileReader : NfsLease, NfsCallback {
 
 	State state = State::INITIAL;
 
-	std::string server, export_name, path;
+	NfsContext context{NfsContext::Create{}};
+	NfsUrl nfs_url;
 
 	NfsConnection *connection = nullptr;
 
@@ -60,16 +62,11 @@ class NfsFileReader : NfsLease, NfsCallback {
 
 public:
 	NfsFileReader() noexcept;
-	explicit NfsFileReader(NfsConnection &_connection,
-			       std::string_view _path) noexcept;
 	~NfsFileReader() noexcept;
 
 	auto &GetEventLoop() const noexcept {
 		return defer_open.GetEventLoop();
 	}
-
-	[[nodiscard]] [[gnu::pure]]
-	std::string GetAbsoluteUri() const noexcept;
 
 	void Close() noexcept;
 	void DeferClose() noexcept;
@@ -152,5 +149,3 @@ private:
 	/* InjectEvent callback */
 	void OnDeferredOpen() noexcept;
 };
-
-#endif
