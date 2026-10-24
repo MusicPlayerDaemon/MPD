@@ -20,13 +20,6 @@ class NfsManager final {
 
 	List connections;
 
-	/**
-	 * A list of "garbage" connection objects.  Their destruction
-	 * is postponed because they were thrown into the garbage list
-	 * when callers on the stack were still using them.
-	 */
-	List garbage;
-
 	IdleEvent idle_event;
 
 public:
@@ -63,12 +56,7 @@ public:
 				     std::string_view export_name);
 
 private:
-	void ScheduleDelete(ManagedConnection &c) noexcept;
-
-	/**
-	 * Delete all connections on the #garbage list.
-	 */
-	void CollectGarbage() noexcept;
+	void DeleteConnection(ManagedConnection &c) noexcept;
 
 	/* virtual methods from IdleMonitor */
 	void OnIdle() noexcept;

@@ -288,6 +288,10 @@ public:
 	}
 
 protected:
+	/**
+	 * The implementation may delete this object; the caller must
+	 * not use it after this method returns.
+	 */
 	virtual void OnNfsConnectionError(std::exception_ptr e) noexcept = 0;
 
 	/**

@@ -61,10 +61,7 @@ NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr e) noexce
 	FmtError(nfs_domain, "NFS error on '{}:{}': {}",
 		 GetServer(), GetExportName(), e);
 
-	/* defer deletion so the caller
-	   (i.e. NfsConnection::OnSocketReady()) can still use this
-	   object */
-	manager.ScheduleDelete(*this);
+	manager.DeleteConnection(*this);
 }
 
 NfsManager::NfsManager(EventLoop &_loop) noexcept
@@ -73,8 +70,6 @@ NfsManager::NfsManager(EventLoop &_loop) noexcept
 NfsManager::~NfsManager() noexcept
 {
 	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
-
-	CollectGarbage();
 
 	connections.clear_and_dispose(DeleteDisposer());
 }
@@ -127,26 +122,16 @@ NfsManager::GetConnection(std::string_view server, std::string_view export_name)
 }
 
 inline void
-NfsManager::ScheduleDelete(ManagedConnection &c) noexcept
-{
-	connections.erase(connections.iterator_to(c));
-	garbage.push_front(c);
-	idle_event.Schedule();
-}
-
-void
-NfsManager::CollectGarbage() noexcept
+NfsManager::DeleteConnection(ManagedConnection &c) noexcept
 {
 	assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
-	garbage.clear_and_dispose(DeleteDisposer());
+	connections.erase_and_dispose(connections.iterator_to(c), DeleteDisposer{});
 }
 
 inline void
 NfsManager::OnIdle() noexcept
 {
-	CollectGarbage();
-
 	connections.remove_and_dispose_if([](const ManagedConnection &c){
 		return c.IsObsolete();
 	}, DeleteDisposer());
