@@ -44,7 +44,33 @@ class NfsStorage final
 	: public Storage, NfsLease {
 
 	enum class State {
-		INITIAL, CONNECTING, READY, DELAY,
+		/**
+		 * There is no #NfsConnection currently (because it
+		 * failed or Disconnect() was called).  Most likely a
+		 * new #NfsConnection will eventually be obtained by
+		 * Connect(), trigegered by #defer_connect.
+		 */
+		INITIAL,
+
+		/**
+		 * We have an #NfsConnection, but it is not yet ready.
+		 * Waiting for the OnNfsConnectionReady() callback
+		 * which will set state to #READY.
+		 */
+		CONNECTING,
+
+		/**
+		 * We have an #NfsConnection and it is ready and
+		 * usable.
+		 */
+		READY,
+
+		/**
+		 * The #NfsConnection has failed and we're currently
+		 * waiting for #reconnect_timer to fire and invoke
+		 * Connect() eventually.
+		 */
+		DELAY,
 	};
 
 	/**
