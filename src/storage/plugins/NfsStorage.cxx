@@ -48,7 +48,11 @@ class NfsStorage final
 		 * There is no #NfsConnection currently (because it
 		 * failed or Disconnect() was called).  Most likely a
 		 * new #NfsConnection will eventually be obtained by
-		 * Connect(), triggered by #defer_connect.
+		 * Connect(), triggered by #defer_connect or
+		 * #reconnect_timer.
+		 *
+		 * In this state, #last_exception may be set while
+		 * #reconnect_timer is pending.
 		 */
 		INITIAL,
 
@@ -64,13 +68,6 @@ class NfsStorage final
 		 * usable.
 		 */
 		READY,
-
-		/**
-		 * The #NfsConnection has failed and we're currently
-		 * waiting for #reconnect_timer to fire and invoke
-		 * Connect() eventually.
-		 */
-		DELAY,
 	};
 
 	/**
@@ -98,9 +95,9 @@ class NfsStorage final
 	Mutex mutex;
 
 	/**
-	 * Notified when the #state changes (from within the
-	 * #EventLoop thread).  Used to wait for readiness from other
-	 * threads.
+	 * Notified when the #state changes or #last_exception is set
+	 * (from within the #EventLoop thread).  Used to wait for
+	 * readiness from other threads.
 	 */
 	Cond cond;
 
@@ -164,19 +161,18 @@ public:
 
 	/* InjectEvent callback */
 	void OnDeferredConnect() noexcept {
-		if (state == State::INITIAL)
+		if (state == State::INITIAL && !last_exception)
 			Connect();
 	}
 
 	/* callback for #reconnect_timer */
 	void OnReconnectTimer() noexcept {
-		assert(state == State::DELAY);
+		assert(state == State::INITIAL);
+		assert(last_exception);
 
-		/* revert #state to INITIAL, but don't notify the
-		   #cond */
 		{
 			const std::lock_guard protect{mutex};
-			state = State::INITIAL;
+			last_exception = {};
 		}
 
 		Connect();
@@ -207,10 +203,10 @@ private:
 	void ScheduleReconnectTimer(std::exception_ptr &&e,
 				    Event::Duration delay) noexcept {
 		assert(GetEventLoop().IsInside());
-		assert(state != State::DELAY);
+		assert(!last_exception);
 		assert(!reconnect_timer.IsPending());
 
-		SetState(State::DELAY, std::move(e));
+		SetState(State::INITIAL, std::move(e));
 		reconnect_timer.Schedule(delay);
 	}
 
@@ -240,13 +236,16 @@ private:
 		while (true) {
 			switch (state) {
 			case State::INITIAL:
+				if (last_exception) [[unlikely]]
+					std::rethrow_exception(last_exception);
+
 				/* schedule connect */
 				{
 					const ScopeUnlock unlock{lock};
 					defer_connect.Schedule();
 				}
 
-				if (state == State::INITIAL)
+				if (state == State::INITIAL && !last_exception)
 					cond.wait(lock);
 				break;
 
@@ -256,10 +255,6 @@ private:
 
 			case State::READY:
 				return;
-
-			case State::DELAY:
-				assert(last_exception);
-				std::rethrow_exception(last_exception);
 			}
 		}
 	}
@@ -270,16 +265,17 @@ private:
 		switch (state) {
 		case State::INITIAL:
 			defer_connect.Cancel();
+			reconnect_timer.Cancel();
+
+			{
+				const std::scoped_lock lock{mutex};
+				last_exception = {};
+			}
 			break;
 
 		case State::CONNECTING:
 		case State::READY:
 			connection->RemoveLease(*this);
-			SetState(State::INITIAL);
-			break;
-
-		case State::DELAY:
-			reconnect_timer.Cancel();
 			SetState(State::INITIAL);
 			break;
 		}
