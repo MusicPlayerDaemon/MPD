@@ -43,7 +43,7 @@ void
 BlockingNfsOperation::OnNfsConnectionReady() noexcept
 {
 	try {
-		Start();
+		Start(connection);
 		started = true;
 	} catch (...) {
 		error = std::current_exception();
@@ -80,7 +80,7 @@ BlockingNfsOperation::OnNfsCallback(unsigned status, void *data) noexcept
 	started = false;
 	connection.RemoveLease(*this);
 
-	HandleResult(status, data);
+	HandleResult(connection, status, data);
 	LockSetFinished();
 }
 

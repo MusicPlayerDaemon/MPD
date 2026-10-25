@@ -35,7 +35,6 @@ class BlockingNfsOperation : protected NfsCallback, NfsLease {
 
 	std::exception_ptr error;
 
-protected:
 	NfsConnection &connection;
 
 public:
@@ -73,8 +72,8 @@ private:
 	void OnNfsError(std::exception_ptr &&e) noexcept final;
 
 protected:
-	virtual void Start() = 0;
-	virtual void HandleResult(unsigned status, void *data) noexcept = 0;
+	virtual void Start(NfsConnection &c) = 0;
+	virtual void HandleResult(NfsConnection &c, unsigned status, void *data) noexcept = 0;
 };
 
 #endif

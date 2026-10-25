@@ -368,14 +368,15 @@ public:
 	}
 
 protected:
-	void Start() override {
+	void Start(NfsConnection &c) override {
 		if (follow)
-			connection.Stat(path, *this);
+			c.Stat(path, *this);
 		else
-			connection.Lstat(path, *this);
+			c.Lstat(path, *this);
 	}
 
-	void HandleResult([[maybe_unused]] unsigned status, void *data) noexcept override {
+	void HandleResult(NfsConnection &,
+			  [[maybe_unused]] unsigned status, void *data) noexcept override {
 		Copy(info, *(const struct nfs_stat_64 *)data);
 	}
 };
@@ -430,30 +431,31 @@ public:
 	}
 
 protected:
-	void Start() override {
-		connection.OpenDirectory(path, *this);
+	void Start(NfsConnection &c) override {
+		c.OpenDirectory(path, *this);
 	}
 
-	void HandleResult([[maybe_unused]] unsigned status,
+	void HandleResult(NfsConnection &c,
+			  [[maybe_unused]] unsigned status,
 			  void *data) noexcept override {
 		auto *const dir = (struct nfsdir *)data;
 
-		CollectEntries(dir);
-		connection.CloseDirectory(dir);
+		CollectEntries(c, dir);
+		c.CloseDirectory(dir);
 	}
 
 private:
-	void CollectEntries(struct nfsdir *dir);
+	void CollectEntries(NfsConnection &c, struct nfsdir *dir);
 };
 
 inline void
-NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
+NfsListDirectoryOperation::CollectEntries(NfsConnection &c, struct nfsdir *dir)
 {
 	assert(entries.empty());
 
 	std::size_t n = 0;
 	const struct nfsdirent *ent;
-	while ((ent = connection.ReadDirectory(dir)) != nullptr) {
+	while ((ent = c.ReadDirectory(dir)) != nullptr) {
 		if (!PathTraitsUTF8::IsValidFilename(ent->name))
 			continue;
 
