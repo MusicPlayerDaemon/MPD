@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_BLOCKING_NFS_CALLBACK_HXX
-#define MPD_BLOCKING_NFS_CALLBACK_HXX
+#pragma once
 
 #include "Callback.hxx"
 #include "Lease.hxx"
@@ -35,16 +34,15 @@ class BlockingNfsOperation : protected NfsCallback, NfsLease {
 
 	std::exception_ptr error;
 
-	NfsConnection &connection;
+	NfsConnection *connection;
 
 public:
-	BlockingNfsOperation(NfsConnection &_connection) noexcept
-		:connection(_connection) {}
+	void Begin(NfsConnection &_connection) noexcept;
 
 	/**
 	 * Throws std::runtime_error on error.
 	 */
-	void Run();
+	void Wait();
 
 private:
 	bool LockWaitFinished() noexcept {
@@ -75,5 +73,3 @@ protected:
 	virtual void Start(NfsConnection &c) = 0;
 	virtual void HandleResult(NfsConnection &c, unsigned status, void *data) noexcept = 0;
 };
-
-#endif

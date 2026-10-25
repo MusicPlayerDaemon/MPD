@@ -230,6 +230,43 @@ private:
 		SetState(State::CONNECTING);
 	}
 
+	/**
+	 * Ensure that we have a valid #NfsConnection instance (which
+	 * may not yet be ready though).  Throws on error.
+	 */
+	void EnsureConnection() {
+		switch (state) {
+		case State::INITIAL:
+			if (last_exception) [[unlikely]]
+				std::rethrow_exception(last_exception);
+
+			defer_connect.Cancel();
+			Connect();
+			break;
+
+		case State::CONNECTING:
+			/* we have a NfsConnection, but it's not yet
+			   ready - good enough */
+			break;
+
+		case State::READY:
+			break;
+		}
+	}
+
+	void Begin(BlockingNfsOperation &operation) {
+		operation.Begin(*connection);
+	}
+
+	void Run(BlockingNfsOperation &operation) {
+		BlockingCall(GetEventLoop(), [this, &operation](){
+			EnsureConnection();
+			Begin(operation);
+		});
+
+		operation.Wait();
+	}
+
 	void WaitConnected() {
 		/* can't be inside the #EventLoop thread because we're
 		   waiting for #cond */
@@ -358,10 +395,8 @@ class NfsGetInfoOperation final : public BlockingNfsOperation {
 	bool follow;
 
 public:
-	NfsGetInfoOperation(NfsConnection &_connection, const char *_path,
-			    bool _follow)
-		:BlockingNfsOperation(_connection), path(_path),
-		 follow(_follow) {}
+	NfsGetInfoOperation(const char *_path, bool _follow) noexcept
+		:path(_path), follow(_follow) {}
 
 	[[nodiscard]] const StorageFileInfo &GetInfo() const {
 		return info;
@@ -386,10 +421,8 @@ NfsStorage::GetInfo(std::string_view uri_utf8, bool follow)
 {
 	const std::string path = UriToNfsPath(uri_utf8);
 
-	WaitConnected();
-
-	NfsGetInfoOperation operation(*connection, path.c_str(), follow);
-	operation.Run();
+	NfsGetInfoOperation operation{path.c_str(), follow};
+	Run(operation);
 	return operation.GetInfo();
 }
 
@@ -422,9 +455,8 @@ class NfsListDirectoryOperation final : public BlockingNfsOperation {
 	MemoryStorageDirectoryReader::List entries;
 
 public:
-	NfsListDirectoryOperation(NfsConnection &_connection,
-				  const char *_path)
-		:BlockingNfsOperation(_connection), path(_path) {}
+	explicit NfsListDirectoryOperation(const char *_path)
+		:path(_path) {}
 
 	std::unique_ptr<StorageDirectoryReader> ToReader() {
 		return std::make_unique<MemoryStorageDirectoryReader>(std::move(entries));
@@ -486,11 +518,8 @@ NfsStorage::OpenDirectory(std::string_view uri_utf8)
 {
 	const std::string path = UriToNfsPath(uri_utf8);
 
-	WaitConnected();
-
-	NfsListDirectoryOperation operation(*connection, path.c_str());
-	operation.Run();
-
+	NfsListDirectoryOperation operation{path.c_str()};
+	Run(operation);
 	return operation.ToReader();
 }
 

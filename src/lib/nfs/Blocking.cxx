@@ -4,27 +4,37 @@
 #include "Blocking.hxx"
 #include "Connection.hxx"
 #include "event/Call.hxx"
+#include "event/Loop.hxx"
 #include "net/TimeoutError.hxx"
 
+#include <cassert>
+
 void
-BlockingNfsOperation::Run()
+BlockingNfsOperation::Begin(NfsConnection &_connection) noexcept
 {
+	assert(_connection.GetEventLoop().IsInside());
+
+	connection = &_connection;
+
 	/* subscribe to the connection, which will invoke either
 	   OnNfsConnectionReady() or OnNfsConnectionFailed() */
-	BlockingCall(connection.GetEventLoop(),
-		    [this](){ connection.AddLease(*this); });
+	_connection.AddLease(*this);
+}
 
+void
+BlockingNfsOperation::Wait()
+{
 	/* wait for completion */
 	if (!LockWaitFinished()) {
-		BlockingCall(connection.GetEventLoop(), [this](){
+		BlockingCall(connection->GetEventLoop(), [this](){
 			if (finished)
 				/* completed just after the timeout */
 				return;
 
 			if (started)
-				connection.Cancel(*this, nullptr, {});
+				connection->Cancel(*this, nullptr, {});
 
-			connection.RemoveLease(*this);
+			connection->RemoveLease(*this);
 		});
 
 		if (!finished)
@@ -43,11 +53,11 @@ void
 BlockingNfsOperation::OnNfsConnectionReady() noexcept
 {
 	try {
-		Start(connection);
+		Start(*connection);
 		started = true;
 	} catch (...) {
 		error = std::current_exception();
-		connection.RemoveLease(*this);
+		connection->RemoveLease(*this);
 		LockSetFinished();
 	}
 }
@@ -66,7 +76,7 @@ BlockingNfsOperation::OnNfsConnectionDisconnected(std::exception_ptr e) noexcept
 		/* cancel the pending operation, because this object
 		   will be destroyed as soon as Run() returns, but the
 		   NfsConnection still refers to it */
-		connection.Cancel(*this, nullptr, {});
+		connection->Cancel(*this, nullptr, {});
 		started = false;
 	}
 
@@ -78,9 +88,9 @@ void
 BlockingNfsOperation::OnNfsCallback(unsigned status, void *data) noexcept
 {
 	started = false;
-	connection.RemoveLease(*this);
+	connection->RemoveLease(*this);
 
-	HandleResult(connection, status, data);
+	HandleResult(*connection, status, data);
 	LockSetFinished();
 }
 
@@ -88,7 +98,7 @@ void
 BlockingNfsOperation::OnNfsError(std::exception_ptr &&e) noexcept
 {
 	started = false;
-	connection.RemoveLease(*this);
+	connection->RemoveLease(*this);
 
 	error = std::move(e);
 	LockSetFinished();
