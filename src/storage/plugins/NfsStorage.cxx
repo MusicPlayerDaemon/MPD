@@ -200,12 +200,20 @@ private:
 	 * may not yet be ready though).  Throws on error.
 	 */
 	void EnsureConnection() {
+		assert(GetEventLoop().IsInside());
+
 		switch (state) {
 		case State::INITIAL:
 			if (last_exception) [[unlikely]]
 				std::rethrow_exception(last_exception);
 
 			Connect();
+
+			if (last_exception) [[unlikely]]
+				/* Connect() has failed and #connection
+				   is not valid */
+				std::rethrow_exception(last_exception);
+
 			break;
 
 		case State::CONNECTING:
