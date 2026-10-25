@@ -26,7 +26,7 @@ extern "C" {
 static constexpr Event::Duration NFS_MOUNT_TIMEOUT =
 	std::chrono::minutes(1);
 
-class NfsConnection::CancellableCallback : public CancellablePointer<NfsCallback> {
+class NfsConnection::CancellableCallback : public CancellableWrapper<NfsCallback> {
 	NfsConnection &connection;
 
 public:
@@ -77,7 +77,7 @@ public:
 	explicit CancellableCallback(NfsCallback &_callback,
 				     NfsConnection &_connection,
 				     HandleType _handle_type) noexcept
-		:CancellablePointer<NfsCallback>(_callback),
+		:CancellableWrapper<NfsCallback>(_callback),
 		 connection(_connection),
 		 handle_type(_handle_type), close_fh(nullptr) {}
 

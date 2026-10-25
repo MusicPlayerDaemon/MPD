@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_NFS_CANCELLABLE_HXX
-#define MPD_NFS_CANCELLABLE_HXX
+#pragma once
 
 #include "util/IntrusiveList.hxx"
 
@@ -10,7 +9,7 @@
 #include <cassert>
 
 template<typename T>
-class CancellablePointer
+class CancellableWrapper
 	: public IntrusiveListHook<>
 {
 public:
@@ -22,9 +21,9 @@ private:
 	pointer p;
 
 public:
-	explicit CancellablePointer(reference _p):p(&_p) {}
+	explicit CancellableWrapper(reference _p):p(&_p) {}
 
-	CancellablePointer(const CancellablePointer &) = delete;
+	CancellableWrapper(const CancellableWrapper &) = delete;
 
 	constexpr bool IsCancelled() const {
 		return p == nullptr;
@@ -47,7 +46,7 @@ public:
 	}
 };
 
-template<typename T, typename CT=CancellablePointer<T>>
+template<typename T, typename CT=CancellableWrapper<T>>
 class CancellableList {
 public:
 	typedef T &reference;
@@ -148,5 +147,3 @@ public:
 			f(i);
 	}
 };
-
-#endif
