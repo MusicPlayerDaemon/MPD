@@ -714,10 +714,13 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 	assert(context == nfs);
 
 	if (!mount_timeout_event.IsPending()) {
-		/* called by nfs_destroy_context() while destructing
-		   this NfsConnection instance */
-		assert(status == -EINTR);
-		assert(mount_state == MountState::WAITING);
+		/* called by rpc_disconnect() or nfs_destroy_context()
+		   while destructing this NfsConnection instance
+		   (after a mount timeout or while still waiting for
+		   the mount); the status depends on which of these
+		   cancels the call (-EFAULT or -EINTR) */
+		assert(status < 0);
+		assert(mount_state != MountState::INITIAL);
 		return;
 	}
 
