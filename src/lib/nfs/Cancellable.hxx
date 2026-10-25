@@ -50,8 +50,8 @@ public:
 template<typename T, typename CT=CancellablePointer<T>>
 class CancellableList {
 public:
-	typedef typename CT::reference reference;
-	typedef typename CT::const_reference const_reference;
+	typedef T &reference;
+	typedef const T &const_reference;
 
 private:
 	using List = IntrusiveList<CT>;
