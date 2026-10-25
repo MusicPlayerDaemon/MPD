@@ -158,12 +158,12 @@ mpd_mpg123_open_stream(mpg123_handle &handle, mpd_mpg123_iohandle &iohandle)
 	if (int error = mpg123_replace_reader_handle(&handle, mpd_mpg123_read, mpd_mpg123_lseek,
 						     nullptr);
 	    error != MPG123_OK)
-		throw FmtRuntimeError("mpg123_replace_reader() failed: %s",
+		throw FmtRuntimeError("mpg123_replace_reader() failed: {}",
 				      mpg123_plain_strerror(error));
 
 	if (int error = mpg123_open_handle(&handle, &iohandle);
 	    error != MPG123_OK)
-		throw FmtRuntimeError("mpg123_open_handle() failed: %s",
+		throw FmtRuntimeError("mpg123_open_handle() failed: {}",
 				      mpg123_plain_strerror(error));
 }
 
