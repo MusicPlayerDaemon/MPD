@@ -15,7 +15,7 @@ class NfsConnection;
 /**
  * Utility class to implement a blocking NFS call using the libnfs
  * async API.  The actual method call is deferred to the #EventLoop
- * thread, and method Run() waits for completion.
+ * thread by Begin(), and method Wait() waits for completion.
  */
 class BlockingNfsOperation : protected NfsCallback, NfsLease {
 	static constexpr std::chrono::steady_clock::duration timeout =
@@ -37,6 +37,12 @@ class BlockingNfsOperation : protected NfsCallback, NfsLease {
 	NfsConnection *connection;
 
 public:
+	/**
+	 * Start the operation on the given connection.  The
+	 * connection does not need to be ready yet.
+	 *
+	 * Must be called from within the #EventLoop thread.
+	 */
 	void Begin(NfsConnection &_connection) noexcept;
 
 	/**

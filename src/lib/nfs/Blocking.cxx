@@ -74,7 +74,7 @@ BlockingNfsOperation::OnNfsConnectionDisconnected(std::exception_ptr e) noexcept
 {
 	if (started) {
 		/* cancel the pending operation, because this object
-		   will be destroyed as soon as Run() returns, but the
+		   will be destroyed as soon as Wait() returns, but the
 		   NfsConnection still refers to it */
 		connection->Cancel(*this, nullptr, {});
 		started = false;
