@@ -87,6 +87,7 @@ NfsFileReader::Open(const char *uri)
 {
 	assert(state == State::INITIAL);
 
+	context = NfsContext{NfsContext::Create{}};
 	nfs_url = context.ParseUrlFull(uri);
 
 	/* the previous connection may have been destroyed after a

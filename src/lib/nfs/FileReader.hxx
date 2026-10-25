@@ -73,7 +73,11 @@ class NfsFileReader : NfsLease, NfsCallback {
 
 	State state = State::INITIAL;
 
-	NfsContext context{NfsContext::Create{}};
+	/**
+	 * The #NfsContext which was created by Open() and which may
+	 * be moved into a new #NfsConnection by OnDeferredOpen().
+	 */
+	NfsContext context;
 	NfsUrl nfs_url;
 
 	NfsConnection *connection = nullptr;
