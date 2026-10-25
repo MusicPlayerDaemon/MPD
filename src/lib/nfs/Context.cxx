@@ -25,7 +25,7 @@ void
 NfsContext::reset() noexcept
 {
 	if (value != nullptr)
-		nfs_destroy_context(value);
+		nfs_destroy_context(std::exchange(value, nullptr));
 }
 
 NfsUrl
