@@ -365,7 +365,9 @@ NfsStorage::OpenFile(std::string_view uri_utf8, Mutex &_mutex)
            NfsFileReader finds it (or fail early if it is currently
            unavailable); without it, nfs_get_connection() would
            create a new connection without those options */
-	WaitConnected();
+	BlockingCall(GetEventLoop(), [this](){
+		EnsureConnection();
+	});
 
 	/* open by URI; NfsFileReader looks up the connection in the
 	   I/O thread, because our "connection" pointer may be
