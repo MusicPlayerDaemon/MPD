@@ -8,17 +8,45 @@
 #include "Context.hxx"
 #include "event/Call.hxx"
 #include "util/Compiler.h" // for gcc_unreachable()
+#include "util/StringCompare.hxx"
 
 #include <nfsc/libnfs.h> // for struct nfs_stat_64
 
 #include <cassert>
 #include <cstring>
+#include <stdexcept>
 #include <utility>
 
 #include <fcntl.h>
 #include <sys/stat.h> // for S_ISREG()
 
 using std::string_view_literals::operator""sv;
+
+/**
+ * Check if the given "nfs://" URI is inside the export of a NFS
+ * storage (see nfs_add_base()).  Wrapper for nfs_check_base() which
+ * extracts from an absolute NFS file URI.
+ */
+static NfsCheckBaseResult
+CheckBase(const char *uri) noexcept
+{
+	uri = StringAfterPrefixIgnoreCase(uri, "nfs://"sv);
+	if (uri == nullptr)
+		return {};
+
+	const char *slash = std::strchr(uri, '/');
+	if (slash == nullptr)
+		return {};
+
+	const std::string_view server{uri, slash};
+	auto result = nfs_check_base(server, slash);
+	if (result.relative_path == nullptr || *result.relative_path != '/')
+		/* not inside a storage, or this is the export
+		   itself (not a file inside it) */
+		return {};
+
+	return result;
+}
 
 NfsFileReader::NfsFileReader() noexcept
 	:defer_open(nfs_get_event_loop(), BIND_THIS_METHOD(OnDeferredOpen))
@@ -88,7 +116,24 @@ NfsFileReader::Open(const char *uri)
 	assert(state == State::INITIAL);
 
 	context = NfsContext{NfsContext::Create{}};
-	nfs_url = context.ParseUrlFull(uri);
+
+	if (const auto result = CheckBase(uri); result.relative_path != nullptr) {
+		/* this file is inside the export of a NFS storage:
+		   parse the storage's URL (with its arguments), so
+		   OnDeferredOpen() finds the storage's connection
+		   (or creates a new one with the same arguments);
+		   the path relative to the export is taken
+		   verbatim, i.e. it is not parsed as an URL */
+		nfs_url = context.ParseUrlDir(result.base_url.c_str());
+		assert(nfs_url->file == nullptr);
+
+		path = result.relative_path;
+	} else {
+		nfs_url = context.ParseUrlFull(uri);
+		assert(nfs_url->file != nullptr);
+
+		path = nfs_url->file;
+	}
 
 	/* the previous connection may have been destroyed after a
 	   disconnect; look it up again in OnDeferredOpen() */
@@ -143,7 +188,7 @@ NfsFileReader::OnNfsConnectionReady() noexcept
 	assert(state == State::MOUNT);
 
 	try {
-		connection->Open(nfs_url->file, O_RDONLY, *this);
+		connection->Open(path.c_str(), O_RDONLY, *this);
 	} catch (...) {
 		connection->RemoveLease(*this);
 		state = State::INITIAL;

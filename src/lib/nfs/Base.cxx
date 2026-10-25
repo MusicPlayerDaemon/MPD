@@ -13,12 +13,19 @@ namespace {
 
 struct NfsBase {
 	const void *const owner;
+
+	/**
+	 * The full "nfs://" URL of the export (including arguments).
+	 */
+	const std::string url;
+
 	const std::string server, export_name;
 
 	[[nodiscard]]
-	NfsBase(const void *_owner,
+	NfsBase(const void *_owner, std::string_view _url,
 		std::string_view _server, std::string_view _export_name) noexcept
-		:owner(_owner), server(_server), export_name(_export_name) {}
+		:owner(_owner), url(_url),
+		 server(_server), export_name(_export_name) {}
 
 	[[gnu::pure]]
 	const char *CheckPath(const char *path) const noexcept {
@@ -47,11 +54,11 @@ static Mutex nfs_base_mutex;
 static std::forward_list<NfsBase> nfs_bases;
 
 void
-nfs_add_base(const void *owner,
+nfs_add_base(const void *owner, std::string_view url,
 	     std::string_view server, std::string_view export_name) noexcept
 {
 	const std::scoped_lock lock{nfs_base_mutex};
-	nfs_bases.emplace_front(owner, server, export_name);
+	nfs_bases.emplace_front(owner, url, server, export_name);
 }
 
 void
@@ -67,7 +74,7 @@ nfs_remove_base(const void *owner) noexcept
 	assert(n_removed == 1);
 }
 
-const char *
+NfsCheckBaseResult
 nfs_check_base(std::string_view server, const char *path) noexcept
 {
 	assert(path != nullptr);
@@ -76,7 +83,10 @@ nfs_check_base(std::string_view server, const char *path) noexcept
 
 	for (const auto &i : nfs_bases)
 		if (const char *result = i.Check(server, path))
-			return result;
+			return {
+				.base_url = i.url,
+				.relative_path = result,
+			};
 
-	return nullptr;
+	return {};
 }
