@@ -110,12 +110,33 @@ static off_t
 mpd_mpg123_lseek(void *_iohandle, off_t offset, int whence) noexcept
 {
 	auto &iohandle = *reinterpret_cast<mpd_mpg123_iohandle *>(_iohandle);
+	auto &is = iohandle.is;
 
-	if (whence != SEEK_SET)
+	switch (whence) {
+	case SEEK_SET:
+		break;
+
+	case SEEK_CUR:
+		/* libmpg123 uses this for its "readahead" check */
+		offset += is.GetOffset();
+		break;
+
+	case SEEK_END:
+		if (!is.KnownSize())
+			return -1;
+
+		offset += is.GetSize();
+		break;
+
+	default:
+		return -1;
+	}
+
+	if (offset < 0)
 		return -1;
 
 	try {
-		iohandle.is.LockSeek(offset);
+		is.LockSeek(offset);
 		return offset;
 	} catch (...) {
 		LogError(std::current_exception(), "Seek failed");
