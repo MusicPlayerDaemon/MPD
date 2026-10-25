@@ -46,6 +46,16 @@ public:
 	NfsInputStream &operator=(const NfsInputStream &) = delete;
 
 private:
+	/**
+	 * Close and reopen the file after the NFS connection has
+	 * failed.
+	 *
+	 * Caller holds #mutex.
+	 *
+	 * Throws on error.
+	 */
+	void Reconnect();
+
 	void DoRead();
 
 protected:
@@ -87,6 +97,17 @@ NfsInputStream::DoRead()
 	}
 }
 
+inline void
+NfsInputStream::Reconnect()
+{
+	reconnecting = true;
+
+	const ScopeUnlock unlock(mutex);
+
+	NfsFileReader::Close();
+	NfsFileReader::Open(GetURI());
+}
+
 void
 NfsInputStream::DoResume()
 {
@@ -95,13 +116,7 @@ NfsInputStream::DoResume()
 		   "paused" - attempt to reconnect */
 
 		reconnect_on_resume = false;
-		reconnecting = true;
-
-		ScopeUnlock unlock(mutex);
-
-		NfsFileReader::Close();
-		NfsFileReader::Open(GetURI());
-
+		Reconnect();
 		return;
 	}
 
