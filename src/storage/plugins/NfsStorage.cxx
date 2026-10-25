@@ -16,12 +16,8 @@
 #include "input/InputStream.hxx"
 #include "input/plugins/NfsInputPlugin.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-#include "thread/ScopeUnlock.hxx"
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
-#include "event/InjectEvent.hxx"
 #include "event/CoarseTimerEvent.hxx"
 #include "util/StringCompare.hxx"
 
@@ -50,8 +46,7 @@ class NfsStorage final
 		 * There is no #NfsConnection currently (because it
 		 * failed or Disconnect() was called).  Most likely a
 		 * new #NfsConnection will eventually be obtained by
-		 * Connect(), triggered by #defer_connect or
-		 * #reconnect_timer.
+		 * Connect(), triggered by #reconnect_timer.
 		 *
 		 * In this state, #last_exception may be set while
 		 * #reconnect_timer is pending.
@@ -85,23 +80,7 @@ class NfsStorage final
 
 	NfsConnection *connection;
 
-	InjectEvent defer_connect;
 	CoarseTimerEvent reconnect_timer;
-
-	/**
-	 * Protects #state, #last_exception.
-	 *
-	 * These fields are only written in the #EventLoop thread,
-	 * thus this thread may read them without a lock.
-	 */
-	Mutex mutex;
-
-	/**
-	 * Notified when the #state changes or #last_exception is set
-	 * (from within the #EventLoop thread).  Used to wait for
-	 * readiness from other threads.
-	 */
-	Cond cond;
 
 	State state = State::CONNECTING;
 	std::exception_ptr last_exception;
@@ -111,7 +90,6 @@ public:
 		:url(_url),
 		 base(fmt::format("nfs://{}{}"sv, _connection.GetServer(), _connection.GetExportName())),
 		 connection(&_connection),
-		 defer_connect(_connection.GetEventLoop(), BIND_THIS_METHOD(OnDeferredConnect)),
 		 reconnect_timer(_connection.GetEventLoop(), BIND_THIS_METHOD(OnReconnectTimer))
 	{
 		assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
@@ -161,45 +139,32 @@ public:
 		ScheduleReconnectTimer(std::move(e), std::chrono::seconds{5});
 	}
 
-	/* InjectEvent callback */
-	void OnDeferredConnect() noexcept {
-		if (state == State::INITIAL && !last_exception)
-			Connect();
-	}
-
 	/* callback for #reconnect_timer */
 	void OnReconnectTimer() noexcept {
 		assert(state == State::INITIAL);
 		assert(last_exception);
 
-		{
-			const std::lock_guard protect{mutex};
-			last_exception = {};
-		}
+		last_exception = {};
 
 		Connect();
 	}
 
 private:
 	[[nodiscard]] EventLoop &GetEventLoop() const noexcept {
-		return defer_connect.GetEventLoop();
+		return reconnect_timer.GetEventLoop();
 	}
 
 	void SetState(State _state) noexcept {
 		assert(GetEventLoop().IsInside());
 
-		const std::lock_guard protect{mutex};
 		state = _state;
-		cond.notify_all();
 	}
 
 	void SetState(State _state, std::exception_ptr &&e) noexcept {
 		assert(GetEventLoop().IsInside());
 
-		const std::lock_guard protect{mutex};
 		state = _state;
 		last_exception = std::move(e);
-		cond.notify_all();
 	}
 
 	void ScheduleReconnectTimer(std::exception_ptr &&e,
@@ -230,37 +195,48 @@ private:
 		SetState(State::CONNECTING);
 	}
 
-	void WaitConnected() {
-		/* can't be inside the #EventLoop thread because we're
-		   waiting for #cond */
-		assert(!GetEventLoop().IsInside());
+	/**
+	 * Ensure that we have a valid #NfsConnection instance (which
+	 * may not yet be ready though).  Throws on error.
+	 */
+	void EnsureConnection() {
+		assert(GetEventLoop().IsInside());
 
-		std::unique_lock lock{mutex};
+		switch (state) {
+		case State::INITIAL:
+			if (last_exception) [[unlikely]]
+				std::rethrow_exception(last_exception);
 
-		while (true) {
-			switch (state) {
-			case State::INITIAL:
-				if (last_exception) [[unlikely]]
-					std::rethrow_exception(last_exception);
+			Connect();
 
-				/* schedule connect */
-				{
-					const ScopeUnlock unlock{lock};
-					defer_connect.Schedule();
-				}
+			if (last_exception) [[unlikely]]
+				/* Connect() has failed and #connection
+				   is not valid */
+				std::rethrow_exception(last_exception);
 
-				if (state == State::INITIAL && !last_exception)
-					cond.wait(lock);
-				break;
+			break;
 
-			case State::CONNECTING:
-				cond.wait(lock);
-				break;
+		case State::CONNECTING:
+			/* we have a NfsConnection, but it's not yet
+			   ready - good enough */
+			break;
 
-			case State::READY:
-				return;
-			}
+		case State::READY:
+			break;
 		}
+	}
+
+	void Begin(BlockingNfsOperation &operation) {
+		operation.Begin(*connection);
+	}
+
+	void Run(BlockingNfsOperation &operation) {
+		BlockingCall(GetEventLoop(), [this, &operation](){
+			EnsureConnection();
+			Begin(operation);
+		});
+
+		operation.Wait();
 	}
 
 	void Disconnect() noexcept {
@@ -268,13 +244,8 @@ private:
 
 		switch (state) {
 		case State::INITIAL:
-			defer_connect.Cancel();
 			reconnect_timer.Cancel();
-
-			{
-				const std::scoped_lock lock{mutex};
-				last_exception = {};
-			}
+			last_exception = {};
 			break;
 
 		case State::CONNECTING:
@@ -328,7 +299,9 @@ NfsStorage::OpenFile(std::string_view uri_utf8, Mutex &_mutex)
            NfsFileReader finds it (or fail early if it is currently
            unavailable); without it, nfs_get_connection() would
            create a new connection without those options */
-	WaitConnected();
+	BlockingCall(GetEventLoop(), [this](){
+		EnsureConnection();
+	});
 
 	/* open by URI; NfsFileReader looks up the connection in the
 	   I/O thread, because our "connection" pointer may be
@@ -358,24 +331,23 @@ class NfsGetInfoOperation final : public BlockingNfsOperation {
 	bool follow;
 
 public:
-	NfsGetInfoOperation(NfsConnection &_connection, const char *_path,
-			    bool _follow)
-		:BlockingNfsOperation(_connection), path(_path),
-		 follow(_follow) {}
+	NfsGetInfoOperation(const char *_path, bool _follow) noexcept
+		:path(_path), follow(_follow) {}
 
 	[[nodiscard]] const StorageFileInfo &GetInfo() const {
 		return info;
 	}
 
 protected:
-	void Start() override {
+	void Start(NfsConnection &c) override {
 		if (follow)
-			connection.Stat(path, *this);
+			c.Stat(path, *this);
 		else
-			connection.Lstat(path, *this);
+			c.Lstat(path, *this);
 	}
 
-	void HandleResult([[maybe_unused]] unsigned status, void *data) noexcept override {
+	void HandleResult(NfsConnection &,
+			  [[maybe_unused]] unsigned status, void *data) noexcept override {
 		Copy(info, *(const struct nfs_stat_64 *)data);
 	}
 };
@@ -385,10 +357,8 @@ NfsStorage::GetInfo(std::string_view uri_utf8, bool follow)
 {
 	const std::string path = UriToNfsPath(uri_utf8);
 
-	WaitConnected();
-
-	NfsGetInfoOperation operation(*connection, path.c_str(), follow);
-	operation.Run();
+	NfsGetInfoOperation operation{path.c_str(), follow};
+	Run(operation);
 	return operation.GetInfo();
 }
 
@@ -421,39 +391,39 @@ class NfsListDirectoryOperation final : public BlockingNfsOperation {
 	MemoryStorageDirectoryReader::List entries;
 
 public:
-	NfsListDirectoryOperation(NfsConnection &_connection,
-				  const char *_path)
-		:BlockingNfsOperation(_connection), path(_path) {}
+	explicit NfsListDirectoryOperation(const char *_path)
+		:path(_path) {}
 
 	std::unique_ptr<StorageDirectoryReader> ToReader() {
 		return std::make_unique<MemoryStorageDirectoryReader>(std::move(entries));
 	}
 
 protected:
-	void Start() override {
-		connection.OpenDirectory(path, *this);
+	void Start(NfsConnection &c) override {
+		c.OpenDirectory(path, *this);
 	}
 
-	void HandleResult([[maybe_unused]] unsigned status,
+	void HandleResult(NfsConnection &c,
+			  [[maybe_unused]] unsigned status,
 			  void *data) noexcept override {
 		auto *const dir = (struct nfsdir *)data;
 
-		CollectEntries(dir);
-		connection.CloseDirectory(dir);
+		CollectEntries(c, dir);
+		c.CloseDirectory(dir);
 	}
 
 private:
-	void CollectEntries(struct nfsdir *dir);
+	void CollectEntries(NfsConnection &c, struct nfsdir *dir);
 };
 
 inline void
-NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
+NfsListDirectoryOperation::CollectEntries(NfsConnection &c, struct nfsdir *dir)
 {
 	assert(entries.empty());
 
 	std::size_t n = 0;
 	const struct nfsdirent *ent;
-	while ((ent = connection.ReadDirectory(dir)) != nullptr) {
+	while ((ent = c.ReadDirectory(dir)) != nullptr) {
 		if (!PathTraitsUTF8::IsValidFilename(ent->name))
 			continue;
 
@@ -484,11 +454,8 @@ NfsStorage::OpenDirectory(std::string_view uri_utf8)
 {
 	const std::string path = UriToNfsPath(uri_utf8);
 
-	WaitConnected();
-
-	NfsListDirectoryOperation operation(*connection, path.c_str());
-	operation.Run();
-
+	NfsListDirectoryOperation operation{path.c_str()};
+	Run(operation);
 	return operation.ToReader();
 }
 

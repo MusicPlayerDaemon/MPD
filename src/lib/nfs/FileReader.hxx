@@ -33,18 +33,51 @@ class NfsConnection;
  */
 class NfsFileReader : NfsLease, NfsCallback {
 	enum class State {
+		/**
+		 * No NFS connection has (yet) been requested or the
+		 * connection has been released by Close().
+		 */
 		INITIAL,
+
+		/**
+		 * Open() has been called and the #MOUNT will be invoked
+		 * on the #EventLoop thread by #defer_open.
+		 */
 		DEFER,
+
+		/**
+		 * Waiting for the NFS "mount" operation to complete.
+		 */
 		MOUNT,
+
+		/**
+		 * Waiting for the NFS "open" operation to complete.
+		 */
 		OPEN,
+
+		/**
+		 * Waiting for the NFS "stat" operation to complete.
+		 */
 		STAT,
+
+		/**
+		 * Waiting for a NFS "read" operation to complete.
+		 */
 		READ,
+
+		/**
+		 * No NFS operation pending.
+		 */
 		IDLE,
 	};
 
 	State state = State::INITIAL;
 
-	NfsContext context{NfsContext::Create{}};
+	/**
+	 * The #NfsContext which was created by Open() and which may
+	 * be moved into a new #NfsConnection by OnDeferredOpen().
+	 */
+	NfsContext context;
 	NfsUrl nfs_url;
 
 	NfsConnection *connection = nullptr;

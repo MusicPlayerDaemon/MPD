@@ -33,7 +33,6 @@ public:
 		 manager(_manager),
 		 disconnect_timer(_loop, BIND_THIS_METHOD(OnDisconnectTimer))
 	{
-		disconnect_timer.Schedule(std::chrono::minutes{1});
 	}
 
 	void Use() noexcept {

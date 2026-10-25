@@ -86,6 +86,7 @@ NfsFileReader::Open(const char *uri)
 {
 	assert(state == State::INITIAL);
 
+	context = NfsContext{NfsContext::Create{}};
 	nfs_url = context.ParseUrlFull(uri);
 
 	/* the previous connection may have been destroyed after a
@@ -105,7 +106,13 @@ NfsFileReader::Read(uint64_t offset, size_t size)
 	assert(!read_buffer);
 	// TOOD read into caller-provided buffer
 	read_buffer = std::make_unique_for_overwrite<std::byte[]>(size);
-	connection->Read(fh, offset, {read_buffer.get(), size}, *this);
+
+	try {
+		connection->Read(fh, offset, {read_buffer.get(), size}, *this);
+	} catch (...) {
+		read_buffer.reset();
+		throw;
+	}
 #else
 	connection->Read(fh, offset, size, *this);
 #endif
@@ -137,6 +144,8 @@ NfsFileReader::OnNfsConnectionReady() noexcept
 	try {
 		connection->Open(nfs_url->file, O_RDONLY, *this);
 	} catch (...) {
+		connection->RemoveLease(*this);
+		state = State::INITIAL;
 		OnNfsFileError(std::current_exception());
 		return;
 	}
@@ -175,6 +184,9 @@ NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 	try {
 		connection->Stat(fh, *this);
 	} catch (...) {
+		connection->RemoveLease(*this);
+		connection->Close(fh);
+		state = State::INITIAL;
 		OnNfsFileError(std::current_exception());
 		return;
 	}
@@ -258,6 +270,9 @@ NfsFileReader::OnNfsError(std::exception_ptr &&e) noexcept
 		break;
 
 	case State::READ:
+#ifdef LIBNFS_API_2
+		read_buffer.reset();
+#endif
 		state = State::IDLE;
 		break;
 	}
@@ -274,6 +289,7 @@ NfsFileReader::OnDeferredOpen() noexcept
 	try {
 		connection = &nfs_get_connection(std::move(context), *nfs_url, true);
 	} catch (...) {
+		state = State::INITIAL;
 		OnNfsFileError(std::current_exception());
 		return;
 	}

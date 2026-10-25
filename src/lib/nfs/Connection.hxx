@@ -26,95 +26,6 @@ class NfsLease;
  * An asynchronous connection to a NFS server.
  */
 class NfsConnection {
-	class CancellableCallback : public CancellablePointer<NfsCallback> {
-		NfsConnection &connection;
-
-	public:
-		/**
-		 * What kind of handle does this operation create?
-		 */
-		enum class HandleType : uint_least8_t {
-			/**
-			 * No handle.
-			 */
-			NONE,
-
-			/**
-			 * This is a nfs_open_async() operation; if
-			 * it gets cancelled, then we need to call
-			 * nfs_close_async() on the new file handle
-			 * as soon as the callback is invoked
-			 * successfully.
-			 */
-			REGULAR_FILE,
-
-			/**
-			 * This is a nfs_opendir_async() operation;
-			 * if it gets cancelled, then we need to call
-			 * nfs_closedir() on the new directory handle
-			 * as soon as the callback is invoked
-			 * successfully.
-			 */
-			DIRECTORY,
-		};
-
-	private:
-		const HandleType handle_type;
-
-		/**
-		 * The file handle scheduled to be closed as soon as
-		 * the operation finishes.
-		 */
-		struct nfsfh *close_fh;
-
-		/**
-		 * An arbitrary value that will be disposed of after
-		 * cancellation completes.
-		 */
-		DisposablePointer dispose_value;
-
-	public:
-		explicit CancellableCallback(NfsCallback &_callback,
-					     NfsConnection &_connection,
-					     HandleType _handle_type) noexcept
-			:CancellablePointer<NfsCallback>(_callback),
-			 connection(_connection),
-			 handle_type(_handle_type), close_fh(nullptr) {}
-
-		void Stat(nfs_context *context, const char *path);
-		void Lstat(nfs_context *context, const char *path);
-		void OpenDirectory(nfs_context *context, const char *path);
-		void Open(nfs_context *context, const char *path, int flags);
-		void Stat(nfs_context *context, struct nfsfh *fh);
-		void Read(nfs_context *context, struct nfsfh *fh,
-			  uint64_t offset,
-#ifdef LIBNFS_API_2
-			  std::span<std::byte> dest
-#else
-			  std::size_t size
-#endif
-			);
-
-		/**
-		 * Cancel the operation and schedule a call to
-		 * nfs_close_async() with the given file handle.
-		 */
-		void CancelAndScheduleClose(struct nfsfh *fh,
-					    DisposablePointer &&_dispose_value) noexcept;
-
-		/**
-		 * Called by the NfsConnection destructor right before
-		 * nfs_destroy_context().  This object is given a
-		 * chance to prepare for the latter.
-		 */
-		void PrepareDestroyContext() noexcept;
-
-	private:
-		static void Callback(int err, struct nfs_context *nfs,
-				     void *data, void *private_data) noexcept;
-		void Callback(int err, void *data) noexcept;
-	};
-
 	SocketEvent socket_event;
 	DeferEvent defer_new_lease;
 	CoarseTimerEvent mount_timeout_event;
@@ -126,6 +37,7 @@ class NfsConnection {
 	using LeaseList = IntrusiveList<NfsLease>;
 	LeaseList new_leases, active_leases;
 
+	class CancellableCallback;
 	typedef CancellableList<NfsCallback, CancellableCallback> CallbackList;
 	CallbackList callbacks;
 

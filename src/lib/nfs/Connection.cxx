@@ -26,6 +26,95 @@ extern "C" {
 static constexpr Event::Duration NFS_MOUNT_TIMEOUT =
 	std::chrono::minutes(1);
 
+class NfsConnection::CancellableCallback : public CancellableWrapper<NfsCallback> {
+	NfsConnection &connection;
+
+public:
+	/**
+	 * What kind of handle does this operation create?
+	 */
+	enum class HandleType : uint_least8_t {
+		/**
+		 * No handle.
+		 */
+		NONE,
+
+		/**
+		 * This is a nfs_open_async() operation; if
+		 * it gets cancelled, then we need to call
+		 * nfs_close_async() on the new file handle
+		 * as soon as the callback is invoked
+		 * successfully.
+		 */
+		REGULAR_FILE,
+
+		/**
+		 * This is a nfs_opendir_async() operation;
+		 * if it gets cancelled, then we need to call
+		 * nfs_closedir() on the new directory handle
+		 * as soon as the callback is invoked
+		 * successfully.
+		 */
+		DIRECTORY,
+	};
+
+private:
+	const HandleType handle_type;
+
+	/**
+	 * The file handle scheduled to be closed as soon as
+	 * the operation finishes.
+	 */
+	struct nfsfh *close_fh;
+
+	/**
+	 * An arbitrary value that will be disposed of after
+	 * cancellation completes.
+	 */
+	DisposablePointer dispose_value;
+
+public:
+	explicit CancellableCallback(NfsCallback &_callback,
+				     NfsConnection &_connection,
+				     HandleType _handle_type) noexcept
+		:CancellableWrapper<NfsCallback>(_callback),
+		 connection(_connection),
+		 handle_type(_handle_type), close_fh(nullptr) {}
+
+	void Stat(nfs_context *context, const char *path);
+	void Lstat(nfs_context *context, const char *path);
+	void OpenDirectory(nfs_context *context, const char *path);
+	void Open(nfs_context *context, const char *path, int flags);
+	void Stat(nfs_context *context, struct nfsfh *fh);
+	void Read(nfs_context *context, struct nfsfh *fh,
+		  uint64_t offset,
+#ifdef LIBNFS_API_2
+		  std::span<std::byte> dest
+#else
+		  std::size_t size
+#endif
+		);
+
+	/**
+	 * Cancel the operation and schedule a call to
+	 * nfs_close_async() with the given file handle.
+	 */
+	void CancelAndScheduleClose(struct nfsfh *fh,
+				    DisposablePointer &&_dispose_value) noexcept;
+
+	/**
+	 * Called by the NfsConnection destructor right before
+	 * nfs_destroy_context().  This object is given a
+	 * chance to prepare for the latter.
+	 */
+	void PrepareDestroyContext() noexcept;
+
+private:
+	static void Callback(int err, struct nfs_context *nfs,
+			     void *data, void *private_data) noexcept;
+	void Callback(int err, void *data) noexcept;
+};
+
 inline void
 NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 					 const char *path)
@@ -625,10 +714,13 @@ NfsConnection::MountCallback(int status, [[maybe_unused]] nfs_context *nfs,
 	assert(context == nfs);
 
 	if (!mount_timeout_event.IsPending()) {
-		/* called by nfs_destroy_context() while destructing
-		   this NfsConnection instance */
-		assert(status == -EINTR);
-		assert(mount_state == MountState::WAITING);
+		/* called by rpc_disconnect() or nfs_destroy_context()
+		   while destructing this NfsConnection instance
+		   (after a mount timeout or while still waiting for
+		   the mount); the status depends on which of these
+		   cancels the call (-EFAULT or -EINTR) */
+		assert(status < 0);
+		assert(mount_state != MountState::INITIAL);
 		return;
 	}
 

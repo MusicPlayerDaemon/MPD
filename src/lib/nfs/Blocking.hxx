@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_BLOCKING_NFS_CALLBACK_HXX
-#define MPD_BLOCKING_NFS_CALLBACK_HXX
+#pragma once
 
 #include "Callback.hxx"
 #include "Lease.hxx"
@@ -16,7 +15,7 @@ class NfsConnection;
 /**
  * Utility class to implement a blocking NFS call using the libnfs
  * async API.  The actual method call is deferred to the #EventLoop
- * thread, and method Run() waits for completion.
+ * thread by Begin(), and method Wait() waits for completion.
  */
 class BlockingNfsOperation : protected NfsCallback, NfsLease {
 	static constexpr std::chrono::steady_clock::duration timeout =
@@ -35,17 +34,21 @@ class BlockingNfsOperation : protected NfsCallback, NfsLease {
 
 	std::exception_ptr error;
 
-protected:
-	NfsConnection &connection;
+	NfsConnection *connection;
 
 public:
-	BlockingNfsOperation(NfsConnection &_connection) noexcept
-		:connection(_connection) {}
+	/**
+	 * Start the operation on the given connection.  The
+	 * connection does not need to be ready yet.
+	 *
+	 * Must be called from within the #EventLoop thread.
+	 */
+	void Begin(NfsConnection &_connection) noexcept;
 
 	/**
 	 * Throws std::runtime_error on error.
 	 */
-	void Run();
+	void Wait();
 
 private:
 	bool LockWaitFinished() noexcept {
@@ -73,8 +76,6 @@ private:
 	void OnNfsError(std::exception_ptr &&e) noexcept final;
 
 protected:
-	virtual void Start() = 0;
-	virtual void HandleResult(unsigned status, void *data) noexcept = 0;
+	virtual void Start(NfsConnection &c) = 0;
+	virtual void HandleResult(NfsConnection &c, unsigned status, void *data) noexcept = 0;
 };
-
-#endif
