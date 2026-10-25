@@ -16,12 +16,8 @@
 #include "input/InputStream.hxx"
 #include "input/plugins/NfsInputPlugin.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-#include "thread/ScopeUnlock.hxx"
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
-#include "event/InjectEvent.hxx"
 #include "event/CoarseTimerEvent.hxx"
 #include "util/StringCompare.hxx"
 
@@ -50,8 +46,7 @@ class NfsStorage final
 		 * There is no #NfsConnection currently (because it
 		 * failed or Disconnect() was called).  Most likely a
 		 * new #NfsConnection will eventually be obtained by
-		 * Connect(), triggered by #defer_connect or
-		 * #reconnect_timer.
+		 * Connect(), triggered by #reconnect_timer.
 		 *
 		 * In this state, #last_exception may be set while
 		 * #reconnect_timer is pending.
@@ -85,23 +80,7 @@ class NfsStorage final
 
 	NfsConnection *connection;
 
-	InjectEvent defer_connect;
 	CoarseTimerEvent reconnect_timer;
-
-	/**
-	 * Protects #state, #last_exception.
-	 *
-	 * These fields are only written in the #EventLoop thread,
-	 * thus this thread may read them without a lock.
-	 */
-	Mutex mutex;
-
-	/**
-	 * Notified when the #state changes or #last_exception is set
-	 * (from within the #EventLoop thread).  Used to wait for
-	 * readiness from other threads.
-	 */
-	Cond cond;
 
 	State state = State::CONNECTING;
 	std::exception_ptr last_exception;
@@ -111,7 +90,6 @@ public:
 		:url(_url),
 		 base(fmt::format("nfs://{}{}"sv, _connection.GetServer(), _connection.GetExportName())),
 		 connection(&_connection),
-		 defer_connect(_connection.GetEventLoop(), BIND_THIS_METHOD(OnDeferredConnect)),
 		 reconnect_timer(_connection.GetEventLoop(), BIND_THIS_METHOD(OnReconnectTimer))
 	{
 		assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
@@ -161,45 +139,32 @@ public:
 		ScheduleReconnectTimer(std::move(e), std::chrono::seconds{5});
 	}
 
-	/* InjectEvent callback */
-	void OnDeferredConnect() noexcept {
-		if (state == State::INITIAL && !last_exception)
-			Connect();
-	}
-
 	/* callback for #reconnect_timer */
 	void OnReconnectTimer() noexcept {
 		assert(state == State::INITIAL);
 		assert(last_exception);
 
-		{
-			const std::lock_guard protect{mutex};
-			last_exception = {};
-		}
+		last_exception = {};
 
 		Connect();
 	}
 
 private:
 	[[nodiscard]] EventLoop &GetEventLoop() const noexcept {
-		return defer_connect.GetEventLoop();
+		return reconnect_timer.GetEventLoop();
 	}
 
 	void SetState(State _state) noexcept {
 		assert(GetEventLoop().IsInside());
 
-		const std::lock_guard protect{mutex};
 		state = _state;
-		cond.notify_all();
 	}
 
 	void SetState(State _state, std::exception_ptr &&e) noexcept {
 		assert(GetEventLoop().IsInside());
 
-		const std::lock_guard protect{mutex};
 		state = _state;
 		last_exception = std::move(e);
-		cond.notify_all();
 	}
 
 	void ScheduleReconnectTimer(std::exception_ptr &&e,
@@ -240,7 +205,6 @@ private:
 			if (last_exception) [[unlikely]]
 				std::rethrow_exception(last_exception);
 
-			defer_connect.Cancel();
 			Connect();
 			break;
 
@@ -267,51 +231,13 @@ private:
 		operation.Wait();
 	}
 
-	void WaitConnected() {
-		/* can't be inside the #EventLoop thread because we're
-		   waiting for #cond */
-		assert(!GetEventLoop().IsInside());
-
-		std::unique_lock lock{mutex};
-
-		while (true) {
-			switch (state) {
-			case State::INITIAL:
-				if (last_exception) [[unlikely]]
-					std::rethrow_exception(last_exception);
-
-				/* schedule connect */
-				{
-					const ScopeUnlock unlock{lock};
-					defer_connect.Schedule();
-				}
-
-				if (state == State::INITIAL && !last_exception)
-					cond.wait(lock);
-				break;
-
-			case State::CONNECTING:
-				cond.wait(lock);
-				break;
-
-			case State::READY:
-				return;
-			}
-		}
-	}
-
 	void Disconnect() noexcept {
 		assert(!GetEventLoop().IsAlive() || GetEventLoop().IsInside());
 
 		switch (state) {
 		case State::INITIAL:
-			defer_connect.Cancel();
 			reconnect_timer.Cancel();
-
-			{
-				const std::scoped_lock lock{mutex};
-				last_exception = {};
-			}
+			last_exception = {};
 			break;
 
 		case State::CONNECTING:
