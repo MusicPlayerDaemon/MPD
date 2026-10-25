@@ -139,6 +139,8 @@ NfsFileReader::OnNfsConnectionReady() noexcept
 	try {
 		connection->Open(nfs_url->file, O_RDONLY, *this);
 	} catch (...) {
+		connection->RemoveLease(*this);
+		state = State::INITIAL;
 		OnNfsFileError(std::current_exception());
 		return;
 	}
@@ -177,6 +179,9 @@ NfsFileReader::OpenCallback(nfsfh *_fh) noexcept
 	try {
 		connection->Stat(fh, *this);
 	} catch (...) {
+		connection->RemoveLease(*this);
+		connection->Close(fh);
+		state = State::INITIAL;
 		OnNfsFileError(std::current_exception());
 		return;
 	}
@@ -278,6 +283,7 @@ NfsFileReader::OnDeferredOpen() noexcept
 	try {
 		connection = &nfs_get_connection(std::move(context), *nfs_url, true);
 	} catch (...) {
+		state = State::INITIAL;
 		OnNfsFileError(std::current_exception());
 		return;
 	}
