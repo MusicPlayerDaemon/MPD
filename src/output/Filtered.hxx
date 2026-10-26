@@ -124,7 +124,10 @@ private:
 		       FilterFactory *filter_factory);
 
 public:
-	void Setup(EventLoop &event_loop,
+	/**
+	 * @param mixer_event_loop the #EventLoop for the mixer
+	 */
+	void Setup(EventLoop &mixer_event_loop,
 		   const ReplayGainConfig &replay_gain_config,
 		   const MixerPlugin *mixer_plugin,
 		   MixerListener &mixer_listener,
