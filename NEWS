@@ -14,6 +14,7 @@ ver 0.24.18 (not yet released)
   - osx: follow the default device after it has changed
   - wasapi: fix race crash bug
 * mixer
+  - alsa: fix data race which could set the wrong volume
   - sndio: fix data race
   - software: fix use-after-free crash bug
   - wasapi: fix crash bug
