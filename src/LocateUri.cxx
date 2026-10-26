@@ -34,14 +34,22 @@ LocateFileUri(const std::string_view uri, const IClient *client
 		if (suffix.data() != nullptr)
 			/* this path was relative to the music
 			   directory */
-			return {LocatedUri::Type::RELATIVE, suffix};
+			return {
+				.type = LocatedUri::Type::RELATIVE,
+				.canonical_uri = suffix,
+				.path = nullptr,
+			};
 	}
 #endif
 
 	if (client != nullptr)
 		client->AllowFile(path);
 
-	return {LocatedUri::Type::PATH, uri, std::move(path)};
+	return {
+		.type = LocatedUri::Type::PATH,
+		.canonical_uri = uri,
+		.path = std::move(path),
+	};
 }
 
 static LocatedUri
@@ -74,7 +82,11 @@ LocateAbsoluteUri(UriPluginKind kind, const std::string_view uri
 	if (storage != nullptr) {
 		const auto suffix = storage->MapToRelativeUTF8(uri);
 		if (suffix.data() != nullptr)
-			return {LocatedUri::Type::RELATIVE, suffix};
+			return {
+				.type = LocatedUri::Type::RELATIVE,
+				.canonical_uri = suffix,
+				.path = nullptr,
+			};
 	}
 
 	if (kind == UriPluginKind::STORAGE &&
@@ -82,7 +94,11 @@ LocateAbsoluteUri(UriPluginKind kind, const std::string_view uri
 		throw std::invalid_argument("Unsupported URI scheme");
 #endif
 
-	return {LocatedUri::Type::ABSOLUTE, uri};
+	return {
+		.type = LocatedUri::Type::ABSOLUTE,
+		.canonical_uri = uri,
+		.path = nullptr,
+	};
 }
 
 LocatedUri
@@ -117,11 +133,19 @@ LocateUri(UriPluginKind kind,
 #endif
 					 );
 	else if (allow_empty && uri.empty())
-		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
+		return {
+			.type = LocatedUri::Type::RELATIVE,
+			.canonical_uri = uri,
+			.path = nullptr,
+		};
 	else {
 		if (!UriIsCanonicalRelativePath(uri))
 			throw std::invalid_argument{"Bad relative path"};
 
-		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
+		return {
+			.type = LocatedUri::Type::RELATIVE,
+			.canonical_uri = uri,
+			.path = nullptr,
+		};
 	}
 }
