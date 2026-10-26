@@ -27,6 +27,17 @@ DaysInMonth(unsigned month, unsigned year) noexcept
 }
 
 constexpr unsigned
+MaxDaysInMonth(unsigned month) noexcept
+{
+	if (month == 4 || month == 6 || month == 9 || month == 11)
+		return 30;
+	else if (month != 2)
+		return 31;
+	else
+		return 29;
+}
+
+constexpr unsigned
 DaysInYear(unsigned year) noexcept
 {
 	return IsLeapYear(year) ? 366 : 365;
