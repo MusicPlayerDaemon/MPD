@@ -12,12 +12,48 @@
 
 #include <fluidsynth.h>
 
+#include <memory>
+#include <stdexcept>
+
 static constexpr Domain fluidsynth_domain("fluidsynth");
 
 static unsigned sample_rate;
 static double gain = 0.0;
 static bool gain_set = false;
 static const char *soundfont_path;
+
+struct FluidSettingsDeleter {
+	void operator()(fluid_settings_t *settings) const noexcept {
+		delete_fluid_settings(settings);
+	}
+};
+
+using UniqueFluidSettings = std::unique_ptr<fluid_settings_t,
+					    FluidSettingsDeleter>;
+
+/**
+ * Create a new #fluid_settings_t object and apply all configured
+ * settings.
+ *
+ * Throws on error.
+ */
+static UniqueFluidSettings
+CreateFluidSettings()
+{
+	UniqueFluidSettings settings{new_fluid_settings()};
+	if (!settings)
+		throw std::runtime_error{"new_fluid_settings() failed"};
+
+	char setting_sample_rate[] = "synth.sample-rate";
+	char setting_gain[] = "synth.gain";
+
+	fluid_settings_setnum(settings.get(), setting_sample_rate, sample_rate);
+	if (gain_set) {
+		fluid_settings_setnum(settings.get(), setting_gain, gain);
+	}
+
+	return settings;
+}
 
 /**
  * Convert a fluidsynth log level to a MPD log level.
@@ -91,13 +127,6 @@ fluidsynth_init(const ConfigBlock &block)
 static void
 fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 {
-	char setting_sample_rate[] = "synth.sample-rate";
-	char setting_gain[] = "synth.gain";
-	/*
-	char setting_verbose[] = "synth.verbose";
-	char setting_yes[] = "yes";
-	*/
-	fluid_settings_t *settings;
 	fluid_synth_t *synth;
 	fluid_player_t *player;
 	int ret;
@@ -106,32 +135,19 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 
 	/* set up fluid settings */
 
-	settings = new_fluid_settings();
-	if (settings == nullptr)
-		return;
-
-	fluid_settings_setnum(settings, setting_sample_rate, sample_rate);
-	if (gain_set) {
-		fluid_settings_setnum(settings, setting_gain, gain);
-	}
-
-	/*
-	fluid_settings_setstr(settings, setting_verbose, setting_yes);
-	*/
+	const auto settings_ptr = CreateFluidSettings();
+	fluid_settings_t *const settings = settings_ptr.get();
 
 	/* create the fluid synth */
 
 	synth = new_fluid_synth(settings);
-	if (synth == nullptr) {
-		delete_fluid_settings(settings);
+	if (synth == nullptr)
 		return;
-	}
 
 	ret = fluid_synth_sfload(synth, soundfont_path, true);
 	if (ret < 0) {
 		LogWarning(fluidsynth_domain, "fluid_synth_sfload() failed");
 		delete_fluid_synth(synth);
-		delete_fluid_settings(settings);
 		return;
 	}
 
@@ -140,7 +156,6 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 	player = new_fluid_player(synth);
 	if (player == nullptr) {
 		delete_fluid_synth(synth);
-		delete_fluid_settings(settings);
 		return;
 	}
 
@@ -149,7 +164,6 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 		LogWarning(fluidsynth_domain, "fluid_player_add() failed");
 		delete_fluid_player(player);
 		delete_fluid_synth(synth);
-		delete_fluid_settings(settings);
 		return;
 	}
 
@@ -160,7 +174,6 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 		LogWarning(fluidsynth_domain, "fluid_player_play() failed");
 		delete_fluid_player(player);
 		delete_fluid_synth(synth);
-		delete_fluid_settings(settings);
 		return;
 	}
 
@@ -196,7 +209,6 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 
 	delete_fluid_player(player);
 	delete_fluid_synth(synth);
-	delete_fluid_settings(settings);
 }
 
 static bool
