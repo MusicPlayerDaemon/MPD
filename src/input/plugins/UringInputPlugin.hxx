@@ -17,11 +17,18 @@ void
 InitUringInputPlugin(EventLoop &event_loop) noexcept;
 
 /**
+ * Check whether `io_uring` is available.
+ */
+bool
+IsUringInputPluginAvailable() noexcept;
+
+/**
  * Create an #InputStream that reads from a local file using
- * `io_uring`.  Returns nullptr if `io_uring` is not available.
+ * `io_uring`.
  *
  * Requires an InitUringInputPlugin() call during process
- * initialization.
+ * initialization.  May only be called if
+ * IsUringInputPluginAvailable() has returned true.
  */
 InputStreamPtr
 OpenUringInputStream(const char *path, Mutex &mutex);

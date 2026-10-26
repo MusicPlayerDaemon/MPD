@@ -162,8 +162,8 @@ UringInputStream::OnReadError(int error) noexcept
 	InvokeOnAvailable();
 }
 
-InputStreamPtr
-OpenUringInputStream(const char *path, Mutex &mutex)
+bool
+IsUringInputPluginAvailable() noexcept
 {
 	if (!uring_input_initialized) {
 		BlockingCall(*uring_input_event_loop, [](){
@@ -175,8 +175,14 @@ OpenUringInputStream(const char *path, Mutex &mutex)
 		});
 	}
 
-	if (uring_input_queue == nullptr)
-		return nullptr;
+	return uring_input_queue != nullptr;
+}
+
+InputStreamPtr
+OpenUringInputStream(const char *path, Mutex &mutex)
+{
+	assert(uring_input_initialized);
+	assert(uring_input_queue);
 
 	// TODO: use IORING_OP_OPENAT
 	auto fd = OpenReadOnly(path);

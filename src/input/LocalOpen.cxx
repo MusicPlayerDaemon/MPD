@@ -29,12 +29,11 @@ OpenLocalInputStream(Path path, Mutex &mutex)
 	try {
 #endif
 #ifdef HAVE_URING
-		is = OpenUringInputStream(path.c_str(), mutex);
-		if (is)
-			return is;
+		if (IsUringInputPluginAvailable())
+			is = OpenUringInputStream(path.c_str(), mutex);
+		else
 #endif
-
-		is = OpenFileInputStream(path, mutex);
+			is = OpenFileInputStream(path, mutex);
 #ifdef ENABLE_ARCHIVE
 	} catch (const std::system_error &e) {
 		if (IsPathNotFound(e)) {
