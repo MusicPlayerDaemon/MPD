@@ -46,6 +46,16 @@ public:
 	NfsInputStream &operator=(const NfsInputStream &) = delete;
 
 private:
+	/**
+	 * Close and reopen the file after the NFS connection has
+	 * failed.
+	 *
+	 * Caller holds #mutex.
+	 *
+	 * Throws on error.
+	 */
+	void Reconnect();
+
 	void DoRead();
 
 protected:
@@ -87,6 +97,17 @@ NfsInputStream::DoRead()
 	}
 }
 
+inline void
+NfsInputStream::Reconnect()
+{
+	reconnecting = true;
+
+	const ScopeUnlock unlock(mutex);
+
+	NfsFileReader::Close();
+	NfsFileReader::Open(GetURI());
+}
+
 void
 NfsInputStream::DoResume()
 {
@@ -95,13 +116,7 @@ NfsInputStream::DoResume()
 		   "paused" - attempt to reconnect */
 
 		reconnect_on_resume = false;
-		reconnecting = true;
-
-		ScopeUnlock unlock(mutex);
-
-		NfsFileReader::Close();
-		NfsFileReader::Open(GetURI());
-
+		Reconnect();
 		return;
 	}
 
@@ -126,8 +141,14 @@ NfsInputStream::DoSeek(offset_type new_offset)
 		   start reading at the new offset */
 		return;
 
-	if (!IsIdle())
-		CancelRead();
+	if (!IsIdle()) {
+		/* the NFS connection has failed (and the error has
+		   already been reported) - attempt to reconnect;
+		   OnNfsFileOpen() will start reading at the new
+		   offset */
+		Reconnect();
+		return;
+	}
 
 	DoRead();
 }
@@ -181,6 +202,10 @@ NfsInputStream::OnNfsFileError(std::exception_ptr &&e) noexcept
 		reconnect_on_resume = true;
 		return;
 	}
+
+	/* if this was an error while reconnecting, then the reconnect
+	   has failed; the next DoSeek() will try again */
+	reconnecting = false;
 
 	postponed_exception = std::move(e);
 

@@ -178,7 +178,7 @@ FilteredAudioOutput::Configure(const ConfigBlock &block,
 }
 
 inline void
-FilteredAudioOutput::Setup(EventLoop &event_loop,
+FilteredAudioOutput::Setup(EventLoop &mixer_event_loop,
 			   const ReplayGainConfig &replay_gain_config,
 			   const MixerPlugin *mixer_plugin,
 			   const ConfigBlock &block,
@@ -214,7 +214,7 @@ FilteredAudioOutput::Setup(EventLoop &event_loop,
 	/* set up the mixer */
 
 	try {
-		mixer = audio_output_load_mixer(event_loop, *this, block,
+		mixer = audio_output_load_mixer(mixer_event_loop, *this, block,
 						mixer_type,
 						mixer_plugin,
 						prepared_filter);
@@ -292,7 +292,9 @@ audio_output_new(EventLoop &normal_event_loop, EventLoop &rt_event_loop,
 						       std::move(ao), block,
 						       defaults,
 						       filter_factory);
-	f->Setup(event_loop, replay_gain_config,
+	/* the mixer doesn't need real-time, and it shouldn't
+	   disturb the real-time I/O thread with its events */
+	f->Setup(normal_event_loop, replay_gain_config,
 		 plugin->mixer_plugin,
 		 block, defaults);
 	return f;

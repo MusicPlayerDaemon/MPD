@@ -112,12 +112,33 @@ static off_t
 mpd_mpg123_lseek(void *_iohandle, off_t offset, int whence) noexcept
 {
 	auto &iohandle = *reinterpret_cast<mpd_mpg123_iohandle *>(_iohandle);
+	auto &is = iohandle.is;
 
-	if (whence != SEEK_SET)
+	switch (whence) {
+	case SEEK_SET:
+		break;
+
+	case SEEK_CUR:
+		/* libmpg123 uses this for its "readahead" check */
+		offset += is.GetOffset();
+		break;
+
+	case SEEK_END:
+		if (!is.KnownSize())
+			return -1;
+
+		offset += is.GetSize();
+		break;
+
+	default:
+		return -1;
+	}
+
+	if (offset < 0)
 		return -1;
 
 	try {
-		iohandle.is.LockSeek(offset);
+		is.LockSeek(offset);
 		return offset;
 	} catch (...) {
 		LogError(std::current_exception(), "Seek failed");
@@ -139,12 +160,12 @@ mpd_mpg123_open_stream(mpg123_handle &handle, mpd_mpg123_iohandle &iohandle)
 	if (int error = mpg123_replace_reader_handle(&handle, mpd_mpg123_read, mpd_mpg123_lseek,
 						     nullptr);
 	    error != MPG123_OK)
-		throw FmtRuntimeError("mpg123_replace_reader() failed: %s",
+		throw FmtRuntimeError("mpg123_replace_reader() failed: {}",
 				      mpg123_plain_strerror(error));
 
 	if (int error = mpg123_open_handle(&handle, &iohandle);
 	    error != MPG123_OK)
-		throw FmtRuntimeError("mpg123_open_handle() failed: %s",
+		throw FmtRuntimeError("mpg123_open_handle() failed: {}",
 				      mpg123_plain_strerror(error));
 }
 

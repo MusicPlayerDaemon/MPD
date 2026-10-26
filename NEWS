@@ -57,10 +57,13 @@ ver 0.24.18 (not yet released)
 * storage
   - nfs: fix use-after-free crash bug after disconnect
   - nfs: fix crash after directory listing cancellation
+* decoder
+  - mpg123: fix "cannot seek!" error
 * output
   - osx: follow the default device after it has changed
   - wasapi: fix race crash bug
 * mixer
+  - alsa: fix data race which could set the wrong volume
   - sndio: fix data race
   - software: fix use-after-free crash bug
   - wasapi: fix crash bug

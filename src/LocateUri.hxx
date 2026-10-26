@@ -53,10 +53,6 @@ struct LocatedUri {
 	 * Contains the local file path if type==PATH.
 	 */
 	AllocatedPath path;
-
-	LocatedUri(Type _type, std::string_view _uri,
-		   AllocatedPath &&_path=nullptr) noexcept
-		:type(_type), canonical_uri(_uri), path(std::move(_path)) {}
 };
 
 /**
