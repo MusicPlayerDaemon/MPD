@@ -176,16 +176,31 @@ SlesOutput::Open(AudioFormat &audio_format)
 	format_pcm.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
 
 	switch (audio_format.format) {
-		/* note: Android doesn't support
-		   SL_PCMSAMPLEFORMAT_FIXED_24 and
-		   SL_PCMSAMPLEFORMAT_FIXED_32, so let's not bother
-		   implement it here; SL_PCMSAMPLEFORMAT_FIXED_8
-		   appears to be unsigned, so not usable for us (and
-		   converting S8 to U8 is not worth the trouble) */
+		/* note: SL_PCMSAMPLEFORMAT_FIXED_8 is unsigned on
+		   Android, so not usable for us (and converting S8 to
+		   U8 is not worth the trouble) */
 
 	case SampleFormat::S16:
 		/* bitsPerSample and containerSize already set for 16
 		   bit */
+		break;
+
+	case SampleFormat::S24_P32:
+		/* Android requires containerSize==bitsPerSample, so
+		   it doesn't support 24 bit samples in 32 bit
+		   containers; let MPD convert to 32 bit, which is
+		   lossless */
+		audio_format.format = SampleFormat::S32;
+		[[fallthrough]];
+
+	case SampleFormat::S32:
+		/* 32 bit integer samples require Android's OpenSLES
+		   extension (API level 21) */
+		format_pcm.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
+		format_pcm.bitsPerSample = format_pcm.containerSize =
+			SL_PCMSAMPLEFORMAT_FIXED_32;
+		/* representation is already
+		   SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT */
 		break;
 
 	case SampleFormat::FLOAT:
