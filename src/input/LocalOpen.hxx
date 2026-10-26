@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_INPUT_LOCAL_OPEN_HXX
-#define MPD_INPUT_LOCAL_OPEN_HXX
+#pragma once
 
 #include "Ptr.hxx"
 #include "thread/Mutex.hxx"
 
 class Path;
+class UniqueFileHandle;
 
 /**
  * Open a "local" file.  This is a wrapper for the input plugins
@@ -17,5 +17,10 @@ class Path;
  */
 InputStreamPtr
 OpenLocalInputStream(Path path, Mutex &mutex);
+
+#ifndef _WIN32
+
+InputStreamPtr
+OpenLocalInputStream(Path path, UniqueFileHandle &&file, Mutex &mutex);
 
 #endif

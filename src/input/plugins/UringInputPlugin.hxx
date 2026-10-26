@@ -7,6 +7,7 @@
 #include "thread/Mutex.hxx"
 
 class EventLoop;
+class UniqueFileDescriptor;
 
 /**
  * Initialize the plugin.  This needs to be done manually because this
@@ -30,5 +31,8 @@ IsUringInputPluginAvailable() noexcept;
  * initialization.  May only be called if
  * IsUringInputPluginAvailable() has returned true.
  */
+InputStreamPtr
+OpenUringInputStream(const char *path, UniqueFileDescriptor &&fd, Mutex &mutex);
+
 InputStreamPtr
 OpenUringInputStream(const char *path, Mutex &mutex);
