@@ -23,6 +23,7 @@
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "input/Error.hxx"
 #include "LocateUri.hxx"
 #include "TimePrint.hxx"
@@ -177,25 +178,72 @@ static constexpr std::array art_names{
 };
 
 /**
- * Searches for the files listed in #art_names in the UTF8 folder
- * URI #directory. This can be a local path or protocol-based
- * URI that #InputStream supports. Returns the first successfully
- * opened file or #nullptr on failure.
+ * Searches for the files listed in #art_names in the #directory.
+ * Returns the first successfully opened file or #nullptr on failure.
  */
 static InputStreamPtr
-find_stream_art(std::string_view directory, Mutex &mutex,
-		const Client *check_client)
+FindFileArt(Path directory, Mutex &mutex,
+	    const Client &client)
+{
+	for (const auto name : art_names) {
+		const auto name_fs = AllocatedPath::FromUTF8(name);
+		if (name_fs == nullptr)
+			continue;
+
+		const auto art_file = directory / name_fs;
+
+		try {
+			/* the client has specified a local
+			   path; check whether it is allowed to
+			   access this file */
+			client.AllowFile(art_file);
+
+			return OpenLocalInputStream(art_file, mutex);
+		} catch (...) {
+			auto e = std::current_exception();
+			if (!IsFileNotFound(e))
+				LogError(e);
+		}
+	}
+
+	return nullptr;
+}
+
+/**
+ * @param directory absolute path where to look for cover files
+ *
+ * @param display_directory URI (without trailing slash) to be
+ * displayed in the "file" response header
+ */
+static CommandResult
+ReadFileArt(Response &r, const Path directory,
+	    std::string_view display_directory,
+	    size_t offset)
+{
+	Mutex mutex;
+	auto is = FindFileArt(directory, mutex, r.GetClient());
+	if (is == nullptr) {
+		r.Error(ACK_ERROR_NO_EXIST, "No file exists");
+		return CommandResult::ERROR;
+	}
+
+	return SendFromInputStream(r, *is, offset,
+				   PathTraitsUTF8::Build(display_directory,
+							 PathTraitsUTF8::GetBase(is->GetUriView())));
+}
+
+/**
+ * Searches for the files listed in #art_names in the UTF8 folder URI
+ * #directory.  Returns the first successfully opened file or #nullptr
+ * on failure.
+ */
+static InputStreamPtr
+FindStreamArt(std::string_view directory, Mutex &mutex)
 {
 	for(const auto name : art_names) {
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
 		try {
-			if (check_client != nullptr)
-				/* the client has specified a local
-				   path; check whether it is allowed to
-				   access this file */
-				check_client->AllowFile(AllocatedPath::FromUTF8Throw(art_file));
-
 			return InputStream::OpenReady(art_file, mutex);
 		} catch (...) {
 			auto e = std::current_exception();
@@ -212,14 +260,11 @@ find_stream_art(std::string_view directory, Mutex &mutex,
  *
  * @param display_directory URI (without trailing slash) to be
  * displayed in the "file" response header
- *
- * @param check_access check Client::AllowFile() for each file
- * (because #art_directory is a local path specified by the client)
  */
 static CommandResult
 read_stream_art(Response &r, const std::string_view art_directory,
 		const std::string_view display_directory,
-		size_t offset, bool check_access=false)
+		size_t offset)
 {
 	// TODO: eliminate this const_cast
 	auto &client = const_cast<Client &>(r.GetClient());
@@ -227,10 +272,9 @@ read_stream_art(Response &r, const std::string_view art_directory,
 	/* to avoid repeating the search for each chunk request by the
 	   same client, use the #LastInputStream class to cache the
 	   #InputStream instance */
-	auto *is = client.last_album_art.Open(art_directory, [&client, check_access](std::string_view directory,
-										     Mutex &mutex){
-		return find_stream_art(directory, mutex,
-				       check_access ? &client : nullptr);
+	auto *is = client.last_album_art.Open(art_directory, [](std::string_view directory,
+								Mutex &mutex){
+		return FindStreamArt(directory, mutex);
 	});
 
 	if (is == nullptr) {
@@ -327,13 +371,17 @@ handle_album_art(Client &client, Request args, Response &r)
 					   );
 
 	switch (located_uri.type) {
-	case LocatedUri::Type::ABSOLUTE:
-	case LocatedUri::Type::PATH: {
+	case LocatedUri::Type::ABSOLUTE: {
 		const auto directory =
 			PathTraitsUTF8::GetParent(located_uri.canonical_uri);
-		return read_stream_art(r, directory, directory, offset,
-				       located_uri.type == LocatedUri::Type::PATH);
+		return read_stream_art(r, directory, directory, offset);
 	}
+
+	case LocatedUri::Type::PATH:
+		return ReadFileArt(r,
+				   located_uri.path.GetDirectoryName(),
+				   PathTraitsUTF8::GetParent(located_uri.canonical_uri),
+				   offset);
 
 	case LocatedUri::Type::RELATIVE:
 #ifdef ENABLE_DATABASE
