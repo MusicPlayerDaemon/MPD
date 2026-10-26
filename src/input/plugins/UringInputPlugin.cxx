@@ -184,10 +184,10 @@ OpenUringInputStream(const char *path, Mutex &mutex)
 	// TODO: use IORING_OP_STATX
 	struct stat st;
 	if (fstat(fd.Get(), &st) < 0)
-		throw FmtErrno("Failed to access {}", path);
+		throw FmtErrno("Failed to access {:?}", path);
 
 	if (!S_ISREG(st.st_mode))
-		throw FmtRuntimeError("Not a regular file: {}", path);
+		throw FmtRuntimeError("Not a regular file: {:?}", path);
 
 	return std::make_unique<UringInputStream>(*uring_input_event_loop,
 						  *uring_input_queue,

@@ -47,7 +47,7 @@ OpenFileInputStream(Path path, Mutex &mutex)
 	const FileInfo info = reader.GetFileInfo();
 
 	if (!info.IsRegular())
-		throw FmtRuntimeError("Not a regular file: {}", path);
+		throw FmtRuntimeError("Not a regular file: {:?}", path);
 
 #ifdef POSIX_FADV_SEQUENTIAL
 	posix_fadvise(reader.GetFD().Get(), (off_t)0, info.GetSize(),
@@ -86,7 +86,7 @@ FileInputStream::Read(std::unique_lock<Mutex> &lock, std::span<std::byte> dest)
 	}
 
 	if (nbytes == 0 && !IsEOF())
-		throw FmtRuntimeError("Unexpected end of file {}"
+		throw FmtRuntimeError("Unexpected end of file {:?}"
 				      " at {} of {}",
 				      GetURI(), GetOffset(), GetSize());
 
