@@ -2,11 +2,10 @@
 // Copyright The Music Player Daemon Project
 
 #include "Clock.hxx"
-
-#ifdef _WIN32
 #include "time/FileTime.hxx"
 
-#include <windows.h>
+#include <processthreadsapi.h> // for GetProcessTimes()
+#include <sysinfoapi.h> // for GetSystemTimeAsFileTime()
 
 std::chrono::seconds
 GetProcessUptimeS()
@@ -18,5 +17,3 @@ GetProcessUptimeS()
 
 	return DeltaFileTimeS(now, creation_time);
 }
-
-#endif

@@ -21,6 +21,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Name.hxx"
 #include "thread/Thread.hxx"
+#include "system/windows/Event.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
 #include "util/RingBuffer.hxx"
@@ -30,7 +31,6 @@
 #include "win32/ComPtr.hxx"
 #include "win32/ComWorker.hxx"
 #include "win32/HResult.hxx"
-#include "win32/WinEvent.hxx"
 #include "Log.hxx"
 
 #include <algorithm>

@@ -69,19 +69,25 @@ FileOutputStream::OpenCreate([[maybe_unused]] Access access, bool visible)
 		tmp_path = path.WithSuffix(_T(".tmp"));
 		Delete(tmp_path);
 
-		handle = CreateFile(tmp_path.c_str(), GENERIC_WRITE, 0, nullptr,
-				    CREATE_NEW,
-				    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
-				    nullptr);
-		if (handle != INVALID_HANDLE_VALUE)
+		handle = FileHandle{
+			CreateFile(tmp_path.c_str(), GENERIC_WRITE, 0, nullptr,
+				   CREATE_NEW,
+				   FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+				   nullptr)
+		};
+
+		if (IsDefined())
 			return;
 
 	}
 
-	handle = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
-			    CREATE_ALWAYS,
-			    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
-			    nullptr);
+	handle = FileHandle{
+		CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
+			   CREATE_ALWAYS,
+			   FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+			   nullptr)
+	};
+
 	if (!IsDefined())
 		throw FmtLastError("Failed to create {:?}", path);
 }
@@ -89,10 +95,13 @@ FileOutputStream::OpenCreate([[maybe_unused]] Access access, bool visible)
 inline void
 FileOutputStream::OpenAppend([[maybe_unused]] Access access, bool create)
 {
-	handle = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
-			    create ? OPEN_ALWAYS : OPEN_EXISTING,
-			    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
-			    nullptr);
+	handle = FileHandle{
+		CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
+			   create ? OPEN_ALWAYS : OPEN_EXISTING,
+			   FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+			   nullptr)
+	};
+
 	if (!IsDefined())
 		throw FmtLastError("Failed to append to {:?}", path);
 
@@ -108,7 +117,7 @@ uint64_t
 FileOutputStream::Tell() const noexcept
 {
 	LONG high = 0;
-	DWORD low = SetFilePointer(handle, 0, &high, FILE_CURRENT);
+	DWORD low = SetFilePointer(handle.Get(), 0, &high, FILE_CURRENT);
 	if (low == 0xffffffff)
 		return 0;
 
@@ -121,7 +130,7 @@ FileOutputStream::Write(std::span<const std::byte> src)
 	assert(IsDefined());
 
 	DWORD nbytes;
-	if (!WriteFile(handle, src.data(), src.size(), &nbytes, nullptr))
+	if (!WriteFile(handle.Get(), src.data(), src.size(), &nbytes, nullptr))
 		throw FmtLastError("Failed to write to {:?}", GetPath());
 
 	if (size_t(nbytes) != src.size())
@@ -135,7 +144,7 @@ FileOutputStream::Sync()
 {
 	assert(IsDefined());
 
-	if (!FlushFileBuffers(handle))
+	if (!FlushFileBuffers(handle.Get()))
 		throw FmtLastError("Failed to sync {:?}", GetPath());
 }
 

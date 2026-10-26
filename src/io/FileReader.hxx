@@ -6,8 +6,9 @@
 #include "Reader.hxx"
 
 #ifdef _WIN32
+#include "system/windows/FileHandle.hxx"
+
 #include <fileapi.h>
-#include <handleapi.h> // for INVALID_HANDLE_VALUE
 #include <windef.h> // for HWND (needed by winbase.h)
 #include <winbase.h> // for FILE_CURRENT
 #else
@@ -24,7 +25,7 @@ class FileInfo;
 
 class FileReader final : public Reader {
 #ifdef _WIN32
-	HANDLE handle;
+	UniqueFileHandle handle;
 #else
 	UniqueFileDescriptor fd;
 #endif
@@ -34,22 +35,19 @@ public:
 
 #ifdef _WIN32
 	FileReader(FileReader &&other) noexcept
-		:handle(std::exchange(other.handle, INVALID_HANDLE_VALUE)) {}
-
-	~FileReader() noexcept {
-		if (handle != INVALID_HANDLE_VALUE)
-			CloseHandle(handle);
-	}
+		:handle(std::move(other.handle)) {}
 #else
+	explicit FileReader(UniqueFileDescriptor &&_fd) noexcept
+		:fd(std::move(_fd)) {}
+
 	FileReader(FileReader &&other) noexcept
 		:fd(std::move(other.fd)) {}
 #endif
 
-
 protected:
 	bool IsDefined() const noexcept {
 #ifdef _WIN32
-		return handle != INVALID_HANDLE_VALUE;
+		return handle.IsDefined();
 #else
 		return fd.IsDefined();
 #endif
@@ -68,7 +66,7 @@ public:
 	uint_least64_t GetSize() const noexcept {
 #ifdef _WIN32
 		LARGE_INTEGER size;
-		return GetFileSizeEx(handle, &size)
+		return GetFileSizeEx(handle.Get(), &size)
 			? size.QuadPart
 			: 0;
 #else
@@ -82,7 +80,7 @@ public:
 		LARGE_INTEGER zero;
 		zero.QuadPart = 0;
 		LARGE_INTEGER position;
-		return SetFilePointerEx(handle, zero, &position, FILE_CURRENT)
+		return SetFilePointerEx(handle.Get(), zero, &position, FILE_CURRENT)
 			? position.QuadPart
 			: 0;
 #else

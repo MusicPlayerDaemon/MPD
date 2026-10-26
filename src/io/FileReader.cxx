@@ -13,11 +13,12 @@
 #ifdef _WIN32
 
 FileReader::FileReader(Path path)
-	:handle(CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ,
+	:handle(AdoptTag{},
+		CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ,
 			   nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
 			   nullptr))
 {
-	if (handle == INVALID_HANDLE_VALUE)
+	if (!handle.IsDefined())
 		throw FmtLastError("Failed to open {}", path);
 }
 
@@ -26,7 +27,7 @@ FileReader::GetFileInfo() const
 {
 	assert(IsDefined());
 
-	return FileInfo{handle};
+	return FileInfo{handle.Get()};
 }
 
 std::size_t
@@ -35,7 +36,7 @@ FileReader::Read(std::span<std::byte> dest)
 	assert(IsDefined());
 
 	DWORD nbytes;
-	if (!ReadFile(handle, dest.data(), dest.size(), &nbytes, nullptr))
+	if (!ReadFile(handle.Get(), dest.data(), dest.size(), &nbytes, nullptr))
 		throw MakeLastError("Failed to read from file");
 
 	return nbytes;
@@ -46,7 +47,7 @@ FileReader::Seek(off_t offset)
 {
 	assert(IsDefined());
 
-	auto result = SetFilePointer(handle, offset, nullptr, FILE_BEGIN);
+	auto result = SetFilePointer(handle.Get(), offset, nullptr, FILE_BEGIN);
 	if (result == INVALID_SET_FILE_POINTER)
 		throw MakeLastError("Failed to seek");
 }
@@ -56,7 +57,7 @@ FileReader::Skip(off_t offset)
 {
 	assert(IsDefined());
 
-	auto result = SetFilePointer(handle, offset, nullptr, FILE_CURRENT);
+	auto result = SetFilePointer(handle.Get(), offset, nullptr, FILE_CURRENT);
 	if (result == INVALID_SET_FILE_POINTER)
 		throw MakeLastError("Failed to seek");
 }

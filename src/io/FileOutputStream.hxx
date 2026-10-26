@@ -6,7 +6,9 @@
 #include "OutputStream.hxx"
 #include "fs/AllocatedPath.hxx"
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include "system/windows/FileHandle.hxx"
+#else 
 #include "FileDescriptor.hxx"
 #endif
 
@@ -16,7 +18,6 @@
 #ifdef _WIN32
 #include <fileapi.h>
 #include <windef.h> // for HWND (needed by winbase.h)
-#include <handleapi.h> // for INVALID_HANDLE_VALUE
 #include <winbase.h> // for FILE_END
 #endif
 
@@ -53,7 +54,7 @@ class FileOutputStream final : public OutputStream {
 #endif
 
 #ifdef _WIN32
-	HANDLE handle = INVALID_HANDLE_VALUE;
+	FileHandle handle = FileHandle::Undefined();
 #else
 	FileDescriptor fd = FileDescriptor::Undefined();
 #endif
@@ -196,8 +197,7 @@ private:
 		assert(IsDefined());
 
 #ifdef _WIN32
-		CloseHandle(handle);
-		handle = INVALID_HANDLE_VALUE;
+		handle.Close();
 		return true;
 #else
 		return fd.Close();
@@ -206,14 +206,14 @@ private:
 
 #ifdef _WIN32
 	bool SeekEOF() noexcept {
-		return SetFilePointer(handle, 0, nullptr,
+		return SetFilePointer(handle.Get(), 0, nullptr,
 				      FILE_END) != 0xffffffff;
 	}
 #endif
 
 	bool IsDefined() const noexcept {
 #ifdef _WIN32
-		return handle != INVALID_HANDLE_VALUE;
+		return handle.IsDefined();
 #else
 		return fd.IsDefined();
 #endif
