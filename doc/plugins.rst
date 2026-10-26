@@ -468,6 +468,26 @@ MIDI decoder based on `FluidSynth <http://www.fluidsynth.org/>`_.
      - The sample rate that shall be synthesized by the plugin. Defaults to 48000.
    * - **soundfont**
      - The absolute path of the soundfont file. Defaults to :file:`/usr/share/sounds/sf2/FluidR3_GM.sf2`.
+   * - **gain**
+     - The volume gain (FluidSynth setting ``synth.gain``).  FluidSynth's
+       default is 0.2.
+   * - **settings "NAME=VALUE ..."**
+     - A space-separated list of arbitrary `FluidSynth settings
+       <https://www.fluidsynth.org/api/fluidsettings.html>`_, like the
+       FluidSynth command-line option ``-o``.  Boolean settings accept
+       ``yes``/``no`` as well as ``1``/``0``.  Unknown settings and
+       invalid values are errors.
+
+Example which disables the chorus effect and makes the reverb room
+smaller:
+
+.. code-block:: none
+
+    decoder {
+      plugin "fluidsynth"
+      soundfont "/usr/share/sounds/sf2/FluidR3_GM.sf2"
+      settings "synth.chorus.active=no synth.reverb.room-size=0.4"
+    }
 
 gme
 ---
