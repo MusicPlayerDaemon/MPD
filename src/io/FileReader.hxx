@@ -34,6 +34,9 @@ public:
 	explicit FileReader(Path _path);
 
 #ifdef _WIN32
+	explicit FileReader(UniqueFileHandle &&_handle) noexcept
+		:handle(std::move(_handle)) {}
+
 	FileReader(FileReader &&other) noexcept
 		:handle(std::move(other.handle)) {}
 #else
