@@ -18,9 +18,5 @@ class UniqueFileHandle;
 InputStreamPtr
 OpenLocalInputStream(Path path, Mutex &mutex);
 
-#ifndef _WIN32
-
 InputStreamPtr
 OpenLocalInputStream(Path path, UniqueFileHandle &&file, Mutex &mutex);
-
-#endif

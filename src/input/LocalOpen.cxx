@@ -54,8 +54,6 @@ OpenLocalInputStream(Path path, Mutex &mutex)
 	return is;
 }
 
-#ifndef _WIN32
-
 InputStreamPtr
 OpenLocalInputStream(Path path, UniqueFileHandle &&file, Mutex &mutex)
 {
@@ -74,5 +72,3 @@ OpenLocalInputStream(Path path, UniqueFileHandle &&file, Mutex &mutex)
 	return is;
 
 }
-
-#endif
