@@ -15,6 +15,9 @@
 class FileHandle : public FileDescriptor {
 public:
 	using FileDescriptor::FileDescriptor;
+
+	constexpr FileHandle(FileDescriptor src) noexcept
+		:FileDescriptor(src) {}
 };
 
 class UniqueFileHandle : public UniqueFileDescriptor {
