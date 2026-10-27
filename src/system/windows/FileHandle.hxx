@@ -23,11 +23,11 @@ public:
 	explicit constexpr FileHandle(HANDLE _handle) noexcept
 		:handle(_handle) {}
 
-	static constexpr FileHandle Undefined() noexcept {
+	static FileHandle Undefined() noexcept {
 		return FileHandle{INVALID_HANDLE_VALUE};
 	}
 
-	constexpr bool IsDefined() const noexcept {
+	bool IsDefined() const noexcept {
 		return handle != INVALID_HANDLE_VALUE;
 	}
 
