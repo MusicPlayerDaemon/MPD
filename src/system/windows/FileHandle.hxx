@@ -36,7 +36,7 @@ public:
 	}
 
 	[[nodiscard]]
-	HANDLE Steal() noexcept {
+	constexpr HANDLE Steal() noexcept {
 		return std::exchange(handle, INVALID_HANDLE_VALUE);
 	}
 
