@@ -2,25 +2,18 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "FileReader.hxx"
-#include "lib/fmt/PathFormatter.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
-#include "lib/fmt/SystemError.hxx"
-#include "io/Open.hxx"
+#include "fs/Open.hxx"
+#include "fs/Path.hxx"
+#include "system/Error.hxx"
 
 #include <cassert>
 
-#ifdef _WIN32
-
 FileReader::FileReader(Path path)
-	:handle(AdoptTag{},
-		CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ,
-			   nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
-			   nullptr))
-{
-	if (!handle.IsDefined())
-		throw FmtLastError("Failed to open {}", path);
-}
+	:handle(OpenReadOnly(path)) {}
+
+#ifdef _WIN32
 
 FileInfo
 FileReader::GetFileInfo() const
@@ -63,11 +56,6 @@ FileReader::Skip(off_t offset)
 }
 
 #else
-
-FileReader::FileReader(Path path)
-	:handle(OpenReadOnly(path.c_str()))
-{
-}
 
 FileInfo
 FileReader::GetFileInfo() const
