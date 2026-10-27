@@ -20,6 +20,9 @@ public:
 class UniqueFileHandle : public UniqueFileDescriptor {
 public:
 	using UniqueFileDescriptor::UniqueFileDescriptor;
+
+	UniqueFileHandle(UniqueFileDescriptor &&src) noexcept
+		:UniqueFileDescriptor(std::move(src)) {}
 };
 
 #endif
