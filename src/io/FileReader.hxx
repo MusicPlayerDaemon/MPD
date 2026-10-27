@@ -4,15 +4,12 @@
 #pragma once
 
 #include "Reader.hxx"
+#include "io/FileHandle.hxx"
 
 #ifdef _WIN32
-#include "system/windows/FileHandle.hxx"
-
 #include <fileapi.h>
 #include <windef.h> // for HWND (needed by winbase.h)
 #include <winbase.h> // for FILE_CURRENT
-#else
-#include "io/UniqueFileDescriptor.hxx"
 #endif
 
 #include <cstdint>
@@ -24,42 +21,26 @@ class Path;
 class FileInfo;
 
 class FileReader final : public Reader {
-#ifdef _WIN32
 	UniqueFileHandle handle;
-#else
-	UniqueFileDescriptor fd;
-#endif
 
 public:
 	explicit FileReader(Path _path);
 
-#ifdef _WIN32
 	explicit FileReader(UniqueFileHandle &&_handle) noexcept
 		:handle(std::move(_handle)) {}
 
 	FileReader(FileReader &&other) noexcept
 		:handle(std::move(other.handle)) {}
-#else
-	explicit FileReader(UniqueFileDescriptor &&_fd) noexcept
-		:fd(std::move(_fd)) {}
-
-	FileReader(FileReader &&other) noexcept
-		:fd(std::move(other.fd)) {}
-#endif
 
 protected:
 	bool IsDefined() const noexcept {
-#ifdef _WIN32
 		return handle.IsDefined();
-#else
-		return fd.IsDefined();
-#endif
 	}
 
 public:
 #ifndef _WIN32
 	FileDescriptor GetFD() const noexcept {
-		return fd;
+		return handle;
 	}
 #endif
 
@@ -73,7 +54,7 @@ public:
 			? size.QuadPart
 			: 0;
 #else
-		return fd.GetSize();
+		return handle.GetSize();
 #endif
 	}
 
@@ -87,7 +68,7 @@ public:
 			? position.QuadPart
 			: 0;
 #else
-		return fd.Tell();
+		return handle.Tell();
 #endif
 	}
 

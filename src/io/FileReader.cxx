@@ -65,7 +65,7 @@ FileReader::Skip(off_t offset)
 #else
 
 FileReader::FileReader(Path path)
-	:fd(OpenReadOnly(path.c_str()))
+	:handle(OpenReadOnly(path.c_str()))
 {
 }
 
@@ -74,7 +74,7 @@ FileReader::GetFileInfo() const
 {
 	assert(IsDefined());
 
-	return FileInfo{fd};
+	return FileInfo{handle};
 }
 
 std::size_t
@@ -82,7 +82,7 @@ FileReader::Read(std::span<std::byte> dest)
 {
 	assert(IsDefined());
 
-	ssize_t nbytes = fd.Read(dest);
+	ssize_t nbytes = handle.Read(dest);
 	if (nbytes < 0)
 		throw MakeErrno("Failed to read from file");
 
@@ -94,7 +94,7 @@ FileReader::Seek(off_t offset)
 {
 	assert(IsDefined());
 
-	auto result = fd.Seek(offset);
+	auto result = handle.Seek(offset);
 	const bool success = result >= 0;
 	if (!success)
 		throw MakeErrno("Failed to seek");
@@ -105,7 +105,7 @@ FileReader::Skip(off_t offset)
 {
 	assert(IsDefined());
 
-	auto result = fd.Skip(offset);
+	auto result = handle.Skip(offset);
 	const bool success = result >= 0;
 	if (!success)
 		throw MakeErrno("Failed to seek");
