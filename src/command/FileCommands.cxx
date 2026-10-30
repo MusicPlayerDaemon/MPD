@@ -169,6 +169,12 @@ SendFromInputStream(Response &r, InputStream &is, std::size_t offset,
 	return CommandResult::OK;
 }
 
+static constexpr std::array art_names{
+	"cover.png",
+	"cover.jpg",
+	"cover.jxl",
+	"cover.webp",
+};
 
 /**
  * Searches for the files listed in #art_names in the UTF8 folder
@@ -180,13 +186,6 @@ static InputStreamPtr
 find_stream_art(std::string_view directory, Mutex &mutex,
 		const Client *check_client)
 {
-	static constexpr auto art_names = std::array {
-		"cover.png",
-		"cover.jpg",
-		"cover.jxl",
-		"cover.webp",
-	};
-
 	for(const auto name : art_names) {
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
