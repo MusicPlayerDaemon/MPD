@@ -171,7 +171,7 @@ SendFromInputStream(Response &r, InputStream &is, std::size_t offset,
 
 
 /**
- * Searches for the files listed in #artnames in the UTF8 folder
+ * Searches for the files listed in #art_names in the UTF8 folder
  * URI #directory. This can be a local path or protocol-based
  * URI that #InputStream supports. Returns the first successfully
  * opened file or #nullptr on failure.
@@ -208,6 +208,12 @@ find_stream_art(std::string_view directory, Mutex &mutex,
 }
 
 /**
+ * @param art_directory absolute URI (without trailing slash) where to
+ * look for cover files
+ *
+ * @param display_directory URI (without trailing slash) to be
+ * displayed in the "file" response header
+ *
  * @param check_access check Client::AllowFile() for each file
  * (because #art_directory is a local path specified by the client)
  */
@@ -223,7 +229,7 @@ read_stream_art(Response &r, const std::string_view art_directory,
 	   same client, use the #LastInputStream class to cache the
 	   #InputStream instance */
 	auto *is = client.last_album_art.Open(art_directory, [&client, check_access](std::string_view directory,
-										 Mutex &mutex){
+										     Mutex &mutex){
 		return find_stream_art(directory, mutex,
 				       check_access ? &client : nullptr);
 	});
