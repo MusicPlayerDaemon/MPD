@@ -80,6 +80,12 @@ class NfsFileReader : NfsLease, NfsCallback {
 	NfsContext context;
 	NfsUrl nfs_url;
 
+	/**
+	 * The path of the file relative to the export (i.e. relative
+	 * to nfs_url->path).
+	 */
+	std::string path;
+
 	NfsConnection *connection = nullptr;
 
 	nfsfh *fh;

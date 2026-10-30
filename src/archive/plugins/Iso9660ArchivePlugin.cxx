@@ -20,6 +20,7 @@
 #include <cdio/iso9660.h>
 
 #include <array>
+#include <set>
 #include <span>
 #include <utility>
 
@@ -57,8 +58,13 @@ public:
 
 	/**
 	 * @param capacity the path buffer size
+	 * @param depth the nesting depth of #path
+	 * @param visited the start sectors of all directories which
+	 * have been visited already; this protects against directory
+	 * loops in malformed images
 	 */
 	void Visit(char *path, size_t length, size_t capacity,
+		   unsigned depth, std::set<lsn_t> &visited,
 		   ArchiveVisitor &visitor);
 
 	void Visit(ArchiveVisitor &visitor) override;
@@ -69,8 +75,14 @@ public:
 
 /* archive open && listing routine */
 
+/**
+ * The maximum nesting depth of directories in an image.
+ */
+static constexpr unsigned MAX_ISO9660_DEPTH = 64;
+
 inline void
 Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
+			  unsigned depth, std::set<lsn_t> &visited,
 			  ArchiveVisitor &visitor)
 {
 	auto *entlist = iso9660_ifs_readdir(iso->iso, path);
@@ -83,6 +95,14 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 		auto *statbuf = (iso9660_stat_t *)
 			_cdio_list_node_data(entnode);
 		const char *filename = statbuf->filename;
+		if (StringIsEqual(filename, ".")) {
+			/* remember the start sector of this
+			   directory, so other entries pointing to it
+			   are not visited again */
+			visited.emplace(statbuf->lsn);
+			continue;
+		}
+
 		if (PathTraitsUTF8::IsSpecialFilename(filename))
 			/* skip empty names (libcdio bug?) */
 			/* skip special names like "." and ".." */
@@ -100,8 +120,16 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 		size_t new_length = length + filename_length;
 
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
+			if (depth >= MAX_ISO9660_DEPTH ||
+			    !visited.emplace(statbuf->lsn).second)
+				/* too deep, or this directory has been
+				   visited already (directory loop in a
+				   malformed image) */
+				continue;
+
 			memcpy(path + new_length, "/", 2);
-			Visit(path, new_length + 1, capacity, visitor);
+			Visit(path, new_length + 1, capacity,
+			      depth + 1, visited, visitor);
 		} else {
 			//remove leading /
 			visitor.VisitArchiveEntry(path + 1);
@@ -125,7 +153,8 @@ void
 Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 {
 	char path[4096] = "/";
-	Visit(path, 1, sizeof(path), visitor);
+	std::set<lsn_t> visited;
+	Visit(path, 1, sizeof(path), 0, visited, visitor);
 }
 
 /* single archive handling */

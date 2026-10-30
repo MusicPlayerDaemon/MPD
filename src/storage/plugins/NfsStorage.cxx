@@ -96,7 +96,7 @@ public:
 
 		connection->AddLease(*this);
 
-		nfs_add_base(this, _connection.GetServer(),
+		nfs_add_base(this, url, _connection.GetServer(),
 			     _connection.GetExportName());
 	}
 
@@ -294,11 +294,9 @@ NfsStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 InputStreamPtr
 NfsStorage::OpenFile(std::string_view uri_utf8, Mutex &_mutex)
 {
-        /* make sure our connection (which was created with the
-           options from the URL's query string) exists, so
-           NfsFileReader finds it (or fail early if it is currently
-           unavailable); without it, nfs_get_connection() would
-           create a new connection without those options */
+	/* make sure our connection exists, so NfsFileReader finds it
+	   (via nfs_check_base()), or fail early if it is currently
+	   unavailable */
 	BlockingCall(GetEventLoop(), [this](){
 		EnsureConnection();
 	});

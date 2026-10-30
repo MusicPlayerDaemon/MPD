@@ -21,6 +21,7 @@
 #include "input/WaitReady.hxx"
 #include "uri/Extract.hxx"
 #include "uri/Util.hxx"
+#include "util/IterableSplitString.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
 #include "Log.hxx"
@@ -291,29 +292,15 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 
 		auto relative =
 			storage.MapToRelativeUTF8(target_utf8.c_str());
-		return relative.data() != nullptr
+		return relative.data() != nullptr && UriStaysInsideDepth(relative, 0)
 			? !config.follow_inside_symlinks
 			: !config.follow_outside_symlinks;
 	}
 
-	const char *p = target.c_str();
-	while (*p == '.') {
-		if (p[1] == '.' && PathTraitsFS::IsSeparator(p[2])) {
-			/* "../" moves to parent directory */
-			directory = directory->parent;
-			if (directory == nullptr) {
-				/* we have moved outside the music
-				   directory - skip this symlink
-				   if such symlinks are not allowed */
-				return !config.follow_outside_symlinks;
-			}
-			p += 3;
-		} else if (PathTraitsFS::IsSeparator(p[1]))
-			/* eliminate "./" */
-			p += 2;
-		else
-			break;
-	}
+	if (!UriStaysInsideDepth(target.c_str(), GetDepth(*directory)))
+		/* the symlink points outside the music directory -
+		   skip it if such symlinks are not allowed */
+		return !config.follow_outside_symlinks;
 
 	/* we are still in the music directory, so this symlink points
 	   to a song which is already in the database - skip according
