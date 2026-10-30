@@ -179,13 +179,10 @@ IsUringInputPluginAvailable() noexcept
 }
 
 InputStreamPtr
-OpenUringInputStream(const char *path, Mutex &mutex)
+OpenUringInputStream(const char *path, UniqueFileDescriptor &&fd, Mutex &mutex)
 {
 	assert(uring_input_initialized);
 	assert(uring_input_queue);
-
-	// TODO: use IORING_OP_OPENAT
-	auto fd = OpenReadOnly(path);
 
 	// TODO: use IORING_OP_STATX
 	struct stat st;
@@ -199,6 +196,18 @@ OpenUringInputStream(const char *path, Mutex &mutex)
 						  *uring_input_queue,
 						  path, std::move(fd),
 						  st.st_size, mutex);
+}
+
+InputStreamPtr
+OpenUringInputStream(const char *path, Mutex &mutex)
+{
+	assert(uring_input_initialized);
+	assert(uring_input_queue);
+
+	// TODO: use IORING_OP_OPENAT
+	auto fd = OpenReadOnly(path);
+
+	return OpenUringInputStream(path, std::move(fd), mutex);
 }
 
 void

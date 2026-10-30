@@ -25,6 +25,7 @@ fs_sources = [
   'AllocatedPath.cxx',
   'NarrowPath.cxx',
   'FileSystem.cxx',
+  'Open.cxx',
   'List.cxx',
   'LookupFile.cxx',
   'DirectoryReader.cxx',

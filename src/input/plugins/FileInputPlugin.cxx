@@ -8,6 +8,7 @@
 #include "lib/fmt/PathFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "thread/ScopeUnlock.hxx"
+#include "io/FileHandle.hxx"
 #include "io/FileReader.hxx"
 #include "io/FileDescriptor.hxx"
 
@@ -39,11 +40,9 @@ public:
 		  offset_type offset) override;
 };
 
-InputStreamPtr
-OpenFileInputStream(Path path, Mutex &mutex)
+static InputStreamPtr
+OpenFileInputStream(Path path, FileReader &&reader, Mutex &mutex)
 {
-	FileReader reader(path);
-
 	const FileInfo info = reader.GetFileInfo();
 
 	if (!info.IsRegular())
@@ -57,6 +56,18 @@ OpenFileInputStream(Path path, Mutex &mutex)
 	return std::make_unique<FileInputStream>(path.ToUTF8Throw().c_str(),
 						 std::move(reader), info.GetSize(),
 						 mutex);
+}
+
+InputStreamPtr
+OpenFileInputStream(Path path, UniqueFileHandle &&file, Mutex &mutex)
+{
+	return OpenFileInputStream(path, FileReader{std::move(file)}, mutex);
+}
+
+InputStreamPtr
+OpenFileInputStream(Path path, Mutex &mutex)
+{
+	return OpenFileInputStream(path, FileReader{path}, mutex);
 }
 
 void

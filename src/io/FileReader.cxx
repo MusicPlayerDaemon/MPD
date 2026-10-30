@@ -2,25 +2,18 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "FileReader.hxx"
-#include "lib/fmt/PathFormatter.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
-#include "lib/fmt/SystemError.hxx"
-#include "io/Open.hxx"
+#include "fs/Open.hxx"
+#include "fs/Path.hxx"
+#include "system/Error.hxx"
 
 #include <cassert>
 
-#ifdef _WIN32
-
 FileReader::FileReader(Path path)
-	:handle(AdoptTag{},
-		CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ,
-			   nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
-			   nullptr))
-{
-	if (!handle.IsDefined())
-		throw FmtLastError("Failed to open {}", path);
-}
+	:handle(OpenReadOnly(path)) {}
+
+#ifdef _WIN32
 
 FileInfo
 FileReader::GetFileInfo() const
@@ -64,17 +57,12 @@ FileReader::Skip(off_t offset)
 
 #else
 
-FileReader::FileReader(Path path)
-	:fd(OpenReadOnly(path.c_str()))
-{
-}
-
 FileInfo
 FileReader::GetFileInfo() const
 {
 	assert(IsDefined());
 
-	return FileInfo{fd};
+	return FileInfo{handle};
 }
 
 std::size_t
@@ -82,7 +70,7 @@ FileReader::Read(std::span<std::byte> dest)
 {
 	assert(IsDefined());
 
-	ssize_t nbytes = fd.Read(dest);
+	ssize_t nbytes = handle.Read(dest);
 	if (nbytes < 0)
 		throw MakeErrno("Failed to read from file");
 
@@ -94,7 +82,7 @@ FileReader::Seek(off_t offset)
 {
 	assert(IsDefined());
 
-	auto result = fd.Seek(offset);
+	auto result = handle.Seek(offset);
 	const bool success = result >= 0;
 	if (!success)
 		throw MakeErrno("Failed to seek");
@@ -105,7 +93,7 @@ FileReader::Skip(off_t offset)
 {
 	assert(IsDefined());
 
-	auto result = fd.Skip(offset);
+	auto result = handle.Skip(offset);
 	const bool success = result >= 0;
 	if (!success)
 		throw MakeErrno("Failed to seek");
