@@ -13,6 +13,7 @@ class SongLoader;
 class SongEnumerator;
 struct playlist;
 class PlayerControl;
+class PlaylistDirectory;
 
 /**
  * Loads the contents of a playlist and append it to the specified
@@ -39,4 +40,5 @@ void
 playlist_open_into_queue(const LocatedUri &uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
+			 const PlaylistDirectory *stored_playlists,
 			 const SongLoader &loader);

@@ -18,7 +18,6 @@
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/plugins/LocalStorage.hxx"
-#include "Mapper.hxx"
 #include "time/ChronoUtil.hxx"
 
 #include <gtest/gtest.h>

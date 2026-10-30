@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "PlaylistFile.hxx"
+#include "PlaylistDirectory.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistError.hxx"
 #include "db/Features.hxx" // for ENABLE_DATABASE
@@ -91,39 +92,6 @@ spl_valid_name(std::string_view name_utf8) noexcept
 		VerifyStringUTF8(name_utf8);
 }
 
-static const AllocatedPath &
-spl_map()
-{
-	const AllocatedPath &path_fs = map_spl_path();
-	if (path_fs.IsNull())
-		throw PlaylistError(PlaylistResult::DISABLED,
-				    "Stored playlists are disabled");
-
-	return path_fs;
-}
-
-static void
-spl_check_name(std::string_view name_utf8)
-{
-	if (!spl_valid_name(name_utf8))
-		throw PlaylistError(PlaylistResult::BAD_NAME,
-				    "Bad playlist name");
-}
-
-AllocatedPath
-spl_map_to_fs(std::string_view name_utf8)
-{
-	spl_map();
-	spl_check_name(name_utf8);
-
-	auto path_fs = map_spl_utf8_to_fs(name_utf8);
-	if (path_fs.IsNull())
-		throw PlaylistError(PlaylistResult::BAD_NAME,
-				    "Bad playlist name");
-
-	return path_fs;
-}
-
 static bool
 LoadPlaylistFileInfo(PlaylistInfo &info,
 		     const Path parent_path_fs,
@@ -159,11 +127,11 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 }
 
 PlaylistVector
-ListPlaylistFiles()
+ListPlaylistFiles(const PlaylistDirectory &stored_playlists)
 {
 	PlaylistVector list;
 
-	const auto &parent_path_fs = spl_map();
+	const auto &parent_path_fs = stored_playlists.GetPath();
 	assert(!parent_path_fs.IsNull());
 
 	DirectoryReader reader(parent_path_fs);
@@ -268,9 +236,10 @@ try {
 	throw;
  }
 
-PlaylistFileEditor::PlaylistFileEditor(const char *name_utf8,
+PlaylistFileEditor::PlaylistFileEditor(const PlaylistDirectory &stored_playlists,
+				       std::string_view name_utf8,
 				       LoadMode load_mode)
-	:path(spl_map_to_fs(name_utf8)),
+	:path(stored_playlists.MapNameToPathOrThrow(name_utf8)),
 	 contents(MaybeLoadPlaylistFile(path, load_mode))
 {
 }
@@ -362,9 +331,9 @@ PlaylistFileEditor::Save()
 }
 
 void
-spl_clear(std::string_view utf8path)
+spl_clear(const PlaylistDirectory &stored_playlists, std::string_view utf8path)
 {
-	const auto path_fs = spl_map_to_fs(utf8path);
+	const auto path_fs = stored_playlists.MapNameToPathOrThrow(utf8path);
 	assert(!path_fs.IsNull());
 
 	try {
@@ -381,9 +350,9 @@ spl_clear(std::string_view utf8path)
 }
 
 void
-spl_delete(std::string_view name_utf8)
+spl_delete(const PlaylistDirectory &stored_playlists, std::string_view name_utf8)
 {
-	const auto path_fs = spl_map_to_fs(name_utf8);
+	const auto path_fs = stored_playlists.MapNameToPathOrThrow(name_utf8);
 	assert(!path_fs.IsNull());
 
 	try {
@@ -400,9 +369,10 @@ spl_delete(std::string_view name_utf8)
 }
 
 void
-spl_append_song(std::string_view utf8path, const DetachedSong &song)
+spl_append_song(const PlaylistDirectory &stored_playlists,
+		std::string_view utf8path, const DetachedSong &song)
 try {
-	const auto path_fs = spl_map_to_fs(utf8path);
+	const auto path_fs = stored_playlists.MapNameToPathOrThrow(utf8path);
 	assert(!path_fs.IsNull());
 
 	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_OR_CREATE);
@@ -426,10 +396,11 @@ try {
 }
 
 void
-spl_append_uri(std::string_view utf8file,
+spl_append_uri(const PlaylistDirectory &stored_playlists,
+	       std::string_view utf8file,
 	       const SongLoader &loader, const char *url)
 {
-	spl_append_song(utf8file, loader.LoadSong(url));
+	spl_append_song(stored_playlists, utf8file, loader.LoadSong(url));
 }
 
 static void
@@ -453,12 +424,13 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs)
 }
 
 void
-spl_rename(std::string_view utf8from, std::string_view utf8to)
+spl_rename(const PlaylistDirectory &stored_playlists,
+	   std::string_view utf8from, std::string_view utf8to)
 {
-	const auto from_path_fs = spl_map_to_fs(utf8from);
+	const auto from_path_fs = stored_playlists.MapNameToPathOrThrow(utf8from);
 	assert(!from_path_fs.IsNull());
 
-	const auto to_path_fs = spl_map_to_fs(utf8to);
+	const auto to_path_fs = stored_playlists.MapNameToPathOrThrow(utf8to);
 	assert(!to_path_fs.IsNull());
 
 	spl_rename_internal(from_path_fs, to_path_fs);

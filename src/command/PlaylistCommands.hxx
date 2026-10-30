@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PLAYLIST_COMMANDS_HXX
-#define MPD_PLAYLIST_COMMANDS_HXX
+#pragma once
 
 #include "CommandResult.hxx"
 
+struct Instance;
 class Client;
 class Request;
 class Response;
 
 [[gnu::const]]
 bool
-playlist_commands_available() noexcept;
+playlist_commands_available(const Instance &instance) noexcept;
 
 CommandResult
 handle_save(Client &client, Request request, Response &response);
@@ -52,5 +52,3 @@ handle_playlistadd(Client &client, Request request, Response &response);
 
 CommandResult
 handle_listplaylists(Client &client, Request request, Response &response);
-
-#endif

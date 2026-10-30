@@ -11,6 +11,7 @@
 
 class SongEnumerator;
 class Storage;
+class PlaylistDirectory;
 
 /**
  * Opens a playlist from an URI relative to the playlist or music
@@ -25,4 +26,5 @@ playlist_mapper_open(std::string_view uri,
 #ifdef ENABLE_DATABASE
 		     Storage *storage,
 #endif
+		     const PlaylistDirectory *stored_playlists,
 		     Mutex &mutex);

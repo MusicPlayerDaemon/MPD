@@ -11,13 +11,8 @@
 
 #include <string>
 
-#define PLAYLIST_FILE_SUFFIX ".m3u"
-
 class Path;
 class AllocatedPath;
-
-void
-mapper_init(AllocatedPath &&playlist_dir);
 
 #ifdef ENABLE_DATABASE
 
@@ -43,20 +38,3 @@ std::string
 map_fs_to_utf8(Path path_fs) noexcept;
 
 #endif
-
-/**
- * Returns the playlist directory.
- */
-[[gnu::const]]
-const AllocatedPath &
-map_spl_path() noexcept;
-
-/**
- * Maps a playlist name (without the ".m3u" suffix) to a file system
- * path.
- *
- * @return the path in file system encoding, or nullptr if mapping failed
- */
-[[gnu::pure]]
-AllocatedPath
-map_spl_utf8_to_fs(std::string_view name) noexcept;

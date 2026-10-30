@@ -436,6 +436,7 @@ sources = [
   'src/TagAny.cxx',
   'src/TimePrint.cxx',
   'src/mixer/Memento.cxx',
+  'src/PlaylistDirectory.cxx',
   'src/PlaylistFile.cxx',
 ]
 

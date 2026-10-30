@@ -14,6 +14,7 @@ playlist_open_any(const LocatedUri &located_uri,
 #ifdef ENABLE_DATABASE
 		  Storage *storage,
 #endif
+		  const PlaylistDirectory *stored_playlists,
 		  Mutex &mutex)
 {
 	switch (located_uri.type) {
@@ -26,9 +27,10 @@ playlist_open_any(const LocatedUri &located_uri,
 	case LocatedUri::Type::RELATIVE:
 		return playlist_mapper_open(located_uri.canonical_uri,
 #ifdef ENABLE_DATABASE
-				       storage,
+					    storage,
 #endif
-				       mutex);
+					    stored_playlists,
+					    mutex);
 	}
 
 	std::unreachable();

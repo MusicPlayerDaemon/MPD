@@ -60,6 +60,7 @@ void
 playlist_open_into_queue(const LocatedUri &uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
+			 const PlaylistDirectory *stored_playlists,
 			 const SongLoader &loader)
 try {
 	Mutex mutex;
@@ -68,6 +69,7 @@ try {
 #ifdef ENABLE_DATABASE
 					  loader.GetStorage(),
 #endif
+					  stored_playlists,
 					  mutex);
 	if (playlist == nullptr)
 		throw PlaylistError::NoSuchList();

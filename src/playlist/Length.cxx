@@ -61,6 +61,7 @@ try {
 #ifdef ENABLE_DATABASE
 					  partition.instance.storage,
 #endif
+					  partition.instance.GetStoredPlaylists(),
 					  mutex);
 	if (playlist == nullptr)
 		throw PlaylistError::NoSuchList();

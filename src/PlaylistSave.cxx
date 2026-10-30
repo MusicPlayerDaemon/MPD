@@ -3,6 +3,7 @@
 
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
+#include "PlaylistDirectory.hxx"
 #include "PlaylistError.hxx"
 #include "queue/Playlist.hxx"
 #include "song/DetachedSong.hxx"
@@ -68,9 +69,11 @@ playlist_print_uri(BufferedOutputStream &os, const char *uri)
 }
 
 void
-spl_save_queue(const char *name_utf8, PlaylistSaveMode save_mode, const Queue &queue)
+spl_save_queue(const PlaylistDirectory &stored_playlists,
+	       std::string_view name_utf8,
+	       PlaylistSaveMode save_mode, const Queue &queue)
 {
-	const auto path_fs = spl_map_to_fs(name_utf8);
+	const auto path_fs = stored_playlists.MapNameToPathOrThrow(name_utf8);
 	assert(!path_fs.IsNull());
 
 	if (save_mode == PlaylistSaveMode::CREATE) {
@@ -99,7 +102,9 @@ spl_save_queue(const char *name_utf8, PlaylistSaveMode save_mode, const Queue &q
 }
 
 void
-spl_save_playlist(const char *name_utf8, PlaylistSaveMode save_mode, const playlist &playlist)
+spl_save_playlist(const PlaylistDirectory &stored_playlists,
+		  std::string_view name_utf8,
+		  PlaylistSaveMode save_mode, const playlist &playlist)
 {
-	spl_save_queue(name_utf8, save_mode, playlist.queue);
+	spl_save_queue(stored_playlists, name_utf8, save_mode, playlist.queue);
 }

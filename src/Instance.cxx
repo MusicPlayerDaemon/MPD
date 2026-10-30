@@ -4,6 +4,8 @@
 #include "config.h"
 #include "Instance.hxx"
 #include "Partition.hxx"
+#include "PlaylistDirectory.hxx"
+#include "PlaylistError.hxx"
 #include "protocol/IdleFlags.hxx"
 #include "StateFile.hxx"
 #include "Stats.hxx"
@@ -90,6 +92,15 @@ Instance::DeletePartition(Partition &partition) noexcept
 			break;
 		}
 	}
+}
+
+PlaylistDirectory &
+Instance::GetStoredPlaylistsOrThrow() const
+{
+	if (!stored_playlists)
+		throw PlaylistError{PlaylistResult::DISABLED, "Stored playlists are disabled"};
+
+	return *stored_playlists;
 }
 
 #ifdef ENABLE_DATABASE

@@ -5,10 +5,10 @@
 #include "Main.hxx"
 #include "Instance.hxx"
 #include "CommandLine.hxx"
+#include "PlaylistDirectory.hxx"
 #include "PlaylistFile.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
-#include "Mapper.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
 #include "client/Config.hxx"
@@ -27,6 +27,7 @@
 #include "event/Call.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
+#include "fs/glue/CheckFile.hxx" // for CheckDirectoryReadable()
 #include "playlist/PlaylistRegistry.hxx"
 #include "zeroconf/Glue.hxx"
 #include "decoder/DecoderList.hxx"
@@ -141,7 +142,7 @@ glue_daemonize_init(const CommandLineOptions &options,
 #endif
 
 static void
-glue_mapper_init(const ConfigData &config)
+glue_mapper_init(Instance &instance, const ConfigData &config)
 {
 	auto playlist_directory = config.GetPath(ConfigOption::PLAYLIST_DIR);
 
@@ -153,7 +154,10 @@ glue_mapper_init(const ConfigData &config)
 								  "playlists");
 #endif
 
-	mapper_init(std::move(playlist_directory));
+	if (playlist_directory != nullptr) {
+		CheckDirectoryReadable(playlist_directory);
+		instance.stored_playlists = std::make_unique<PlaylistDirectory>(std::move(playlist_directory));
+	}
 }
 
 #ifdef ENABLE_DATABASE
@@ -376,7 +380,7 @@ MainConfigured(const CommandLineOptions &options,
 	ConfigureFS(raw_config);
 	AtScopeExit() { DeinitFS(); };
 
-	glue_mapper_init(raw_config);
+	glue_mapper_init(instance, raw_config);
 
 	initPermissions(raw_config);
 	spl_global_init(raw_config);

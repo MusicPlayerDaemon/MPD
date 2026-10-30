@@ -11,19 +11,25 @@
 #include <functional>
 
 static void
-AddSong(const Storage *storage, const char *playlist_path_utf8,
+AddSong(const Storage *storage,
+	const PlaylistDirectory &stored_playlists,
+	const char *playlist_path_utf8,
 	const LightSong &song)
 {
-	spl_append_song(playlist_path_utf8,
+	spl_append_song(stored_playlists, playlist_path_utf8,
 			DatabaseDetachSong(storage, song));
 }
 
 void
 search_add_to_playlist(const Database &db, const Storage *storage,
+		       const PlaylistDirectory &stored_playlists,
 		       const char *playlist_path_utf8,
 		       const DatabaseSelection &selection)
 {
-	const auto f = [=](auto && arg1) { return AddSong(storage, playlist_path_utf8, arg1); };
+	const auto f = [=, &stored_playlists](auto &&arg1) {
+		return AddSong(storage, stored_playlists, playlist_path_utf8, arg1);
+	};
+
 	db.Visit(selection, f);
 }
 
@@ -49,10 +55,12 @@ SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
 void
 SearchInsertIntoPlaylist(const Database &db, const Storage *storage,
 			 const DatabaseSelection &selection,
-			 const char *playlist_name,
+			 const PlaylistDirectory &stored_playlists,
+			 std::string_view playlist_name,
 			 unsigned position)
 {
 	PlaylistFileEditor editor{
+		stored_playlists,
 		playlist_name,
 		PlaylistFileEditor::LoadMode::TRY,
 	};

@@ -8,45 +8,16 @@
 #include "config.h"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/glue/CheckFile.hxx"
 #include "util/StringCompare.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "storage/StorageInterface.hxx"
 #include "Instance.hxx"
 #include "Main.hxx"
-#endif
-
-#include <fmt/format.h>
 
 #include <cassert>
 
 using std::string_view_literals::operator""sv;
-
-/**
- * The absolute path of the playlist directory encoded in the
- * filesystem character set.
- */
-static AllocatedPath playlist_dir_fs = nullptr;
-
-static void
-mapper_set_playlist_dir(AllocatedPath &&path)
-{
-	assert(!path.IsNull());
-
-	playlist_dir_fs = std::move(path);
-
-	CheckDirectoryReadable(playlist_dir_fs);
-}
-
-void
-mapper_init(AllocatedPath &&_playlist_dir)
-{
-	if (!_playlist_dir.IsNull())
-		mapper_set_playlist_dir(std::move(_playlist_dir));
-}
-
-#ifdef ENABLE_DATABASE
 
 AllocatedPath
 map_uri_fs(const char *uri) noexcept
@@ -90,24 +61,3 @@ map_fs_to_utf8(Path path_fs) noexcept
 }
 
 #endif
-
-const AllocatedPath &
-map_spl_path() noexcept
-{
-	return playlist_dir_fs;
-}
-
-AllocatedPath
-map_spl_utf8_to_fs(std::string_view name) noexcept
-{
-	if (playlist_dir_fs.IsNull())
-		return nullptr;
-
-	const auto filename_utf8 = fmt::format("{}" PLAYLIST_FILE_SUFFIX ""sv, name);
-	const auto filename_fs =
-		AllocatedPath::FromUTF8(filename_utf8);
-	if (filename_fs.IsNull())
-		return nullptr;
-
-	return playlist_dir_fs / filename_fs;
-}

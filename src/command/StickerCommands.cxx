@@ -145,6 +145,11 @@ protected:
 		sticker_database(_sticker_database) {
 	}
 
+	[[gnu::pure]]
+	Instance &GetInstance() const noexcept {
+		return response.GetClient().GetInstance();
+	}
+
 	/**
 	 * Validate the command uri or throw std::runtime_error if not valid.
 	 *
@@ -288,7 +293,7 @@ public:
 
 private:
 	std::string ValidateUri(const char *uri) override {
-		PlaylistVector playlists = ListPlaylistFiles();
+		PlaylistVector playlists = ListPlaylistFiles(GetInstance().GetStoredPlaylistsOrThrow());
 
 		const ScopeDatabaseLock protect;
 		if (!playlists.exists(uri))

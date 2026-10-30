@@ -46,6 +46,7 @@ class RemoteTagCache;
 class StickerDatabase;
 class StickerCleanupService;
 class InputCacheManager;
+class PlaylistDirectory;
 
 /**
  * A utility class which, when used as the first base class, ensures
@@ -97,6 +98,8 @@ struct Instance final
 	 * partitions.
 	 */
 	MaskMonitor idle_monitor{event_loop, BIND_THIS_METHOD(OnIdle)};
+
+	std::unique_ptr<PlaylistDirectory> stored_playlists;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	std::unique_ptr<NeighborGlue> neighbors;
@@ -179,6 +182,17 @@ struct Instance final
 	void DeletePartition(Partition &partition) noexcept;
 
 	void BeginShutdownPartitions() noexcept;
+
+	PlaylistDirectory *GetStoredPlaylists() const noexcept {
+		return stored_playlists.get();
+	}
+
+	/**
+	 * Returns the global #PlaylistDirectory.  Throws
+	 * #PlaylistError if this MPD configuration has no
+	 * `playlist_directory`.
+	 */
+	PlaylistDirectory &GetStoredPlaylistsOrThrow() const;
 
 #ifdef ENABLE_DATABASE
 	/**

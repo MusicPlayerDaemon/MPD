@@ -24,7 +24,6 @@
 #include "TimePrint.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
-#include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "time/ChronoUtil.hxx"
 #include "uri/Extract.hxx"
@@ -34,9 +33,9 @@
 #include <fmt/format.h>
 
 bool
-playlist_commands_available() noexcept
+playlist_commands_available(const Instance &instance) noexcept
 {
-	return !map_spl_path().IsNull();
+	return instance.GetStoredPlaylists() != nullptr;
 }
 
 static void
@@ -67,7 +66,8 @@ handle_save(Client &client, Request args, [[maybe_unused]] Response &r)
 			throw std::invalid_argument("Unrecognized save mode, expected one of 'create', 'append', 'replace'");
 	}
 
-	spl_save_playlist(args.front(), mode, client.GetPlaylist());
+	spl_save_playlist(client.GetInstance().GetStoredPlaylistsOrThrow(),
+			  args.front(), mode, client.GetPlaylist());
 
 	return CommandResult::OK;
 }
@@ -93,14 +93,16 @@ handle_load(Client &client, Request args, [[maybe_unused]] Response &r)
 		? ParseInsertPosition(args[2], partition.playlist)
 		: old_size;
 
+	auto &instance = client.GetInstance();
 	const SongLoader loader(client);
 	playlist_open_into_queue(uri,
 				 range.start, range.end,
 				 playlist,
-				 client.GetPlayerControl(), loader);
+				 client.GetPlayerControl(),
+				 instance.GetStoredPlaylists(),
+				 loader);
 
 	/* invoke the RemoteTagScanner on all newly added songs */
-	auto &instance = client.GetInstance();
 	const unsigned new_size = playlist.GetLength();
 	for (unsigned i = old_size; i < new_size; ++i)
 		instance.LookupRemoteTag(playlist.queue.Get(i).GetRealURI());
@@ -205,9 +207,10 @@ handle_rm([[maybe_unused]] Client &client, Request args, [[maybe_unused]] Respon
 {
 	const char *const name = args.front();
 
-	spl_delete(name);
+	auto &instance = client.GetInstance();
 
-	client.GetInstance().OnPlaylistDeleted(name);
+	spl_delete(instance.GetStoredPlaylistsOrThrow(), name);
+	instance.OnPlaylistDeleted(name);
 
 	return CommandResult::OK;
 }
@@ -218,7 +221,7 @@ handle_rename([[maybe_unused]] Client &client, Request args, [[maybe_unused]] Re
 	const char *const old_name = args[0];
 	const char *const new_name = args[1];
 
-	spl_rename(old_name, new_name);
+	spl_rename(client.GetInstance().GetStoredPlaylistsOrThrow(), old_name, new_name);
 	return CommandResult::OK;
 }
 
@@ -229,7 +232,12 @@ handle_playlistdelete([[maybe_unused]] Client &client,
 	const char *const name = args[0];
 	const auto range = args.ParseRange(1);
 
-	PlaylistFileEditor editor(name, PlaylistFileEditor::LoadMode::YES);
+	PlaylistFileEditor editor{
+		client.GetInstance().GetStoredPlaylistsOrThrow(),
+		name,
+		PlaylistFileEditor::LoadMode::YES,
+	};
+
 	editor.RemoveRange(range);
 	editor.Save();
 	return CommandResult::OK;
@@ -254,7 +262,12 @@ handle_playlistmove([[maybe_unused]] Client &client,
 		   what the hell.. */
 		return CommandResult::OK;
 
-	PlaylistFileEditor editor(name, PlaylistFileEditor::LoadMode::YES);
+	PlaylistFileEditor editor{
+		client.GetInstance().GetStoredPlaylistsOrThrow(),
+		name,
+		PlaylistFileEditor::LoadMode::YES,
+	};
+
 	editor.MoveIndex(from, to);
 	editor.Save();
 	return CommandResult::OK;
@@ -266,7 +279,7 @@ handle_playlistclear([[maybe_unused]] Client &client,
 {
 	const char *const name = args.front();
 
-	spl_clear(name);
+	spl_clear(client.GetInstance().GetStoredPlaylistsOrThrow(), name);
 	return CommandResult::OK;
 }
 
@@ -276,6 +289,7 @@ handle_playlistadd_position(Client &client, const char *playlist_name,
 			    Response &r)
 {
 	PlaylistFileEditor editor{
+		client.GetInstance().GetStoredPlaylistsOrThrow(),
 		playlist_name,
 		PlaylistFileEditor::LoadMode::TRY,
 	};
@@ -322,13 +336,15 @@ handle_playlistadd(Client &client, Request args, [[maybe_unused]] Response &r)
 
 	if (UriHasScheme(uri)) {
 		const SongLoader loader(client);
-		spl_append_uri(playlist, loader, uri);
+		spl_append_uri(client.GetInstance().GetStoredPlaylistsOrThrow(),
+			       playlist, loader, uri);
 	} else {
 #ifdef ENABLE_DATABASE
 		const Database &db = client.GetDatabaseOrThrow();
 		const DatabaseSelection selection(uri, true, nullptr);
 
 		search_add_to_playlist(db, client.GetStorage(),
+				       client.GetInstance().GetStoredPlaylistsOrThrow(),
 				       playlist, selection);
 #else
 		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");
@@ -340,9 +356,9 @@ handle_playlistadd(Client &client, Request args, [[maybe_unused]] Response &r)
 }
 
 CommandResult
-handle_listplaylists([[maybe_unused]] Client &client, [[maybe_unused]] Request args,
+handle_listplaylists(Client &client, [[maybe_unused]] Request args,
 		     Response &r)
 {
-	print_spl_list(r, ListPlaylistFiles());
+	print_spl_list(r, ListPlaylistFiles(client.GetInstance().GetStoredPlaylistsOrThrow()));
 	return CommandResult::OK;
 }

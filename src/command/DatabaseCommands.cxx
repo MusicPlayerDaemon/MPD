@@ -5,6 +5,7 @@
 #include "PositionArg.hxx"
 #include "Request.hxx"
 #include "Partition.hxx"
+#include "Instance.hxx"
 #include "client/StringNormalization.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/DatabasePlaylist.hxx"
@@ -219,9 +220,11 @@ handle_searchaddpl(Client &client, Request args, Response &)
 
 	if (position == UINT_MAX)
 		search_add_to_playlist(db, client.GetStorage(),
+				       client.GetInstance().GetStoredPlaylistsOrThrow(),
 				       playlist, selection);
 	else
 		SearchInsertIntoPlaylist(db, client.GetStorage(), selection,
+					 client.GetInstance().GetStoredPlaylistsOrThrow(),
 					 playlist, position);
 
 	return CommandResult::OK;

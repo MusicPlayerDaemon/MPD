@@ -244,7 +244,7 @@ command_available([[maybe_unused]] const Partition &partition,
 	    StringIsEqual(cmd->cmd, "playlistclear") ||
 	    StringIsEqual(cmd->cmd, "playlistadd") ||
 	    StringIsEqual(cmd->cmd, "listplaylists"))
-		return playlist_commands_available();
+		return playlist_commands_available(partition.instance);
 
 	return true;
 }

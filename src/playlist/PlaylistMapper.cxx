@@ -5,8 +5,9 @@
 #include "PlaylistFile.hxx"
 #include "PlaylistRegistry.hxx"
 #include "PlaylistStream.hxx"
+#include "PlaylistFile.hxx"
+#include "PlaylistDirectory.hxx"
 #include "SongEnumerator.hxx"
-#include "Mapper.hxx"
 #include "input/InputStream.hxx"
 #include "input/WaitReady.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -20,11 +21,12 @@
  * Load a playlist from the configured playlist directory.
  */
 static std::unique_ptr<SongEnumerator>
-playlist_open_in_playlist_dir(std::string_view uri, Mutex &mutex)
+playlist_open_in_playlist_dir(const PlaylistDirectory &stored_playlists,
+			      std::string_view uri, Mutex &mutex)
 {
 	assert(spl_valid_name(uri));
 
-	const auto path_fs = map_spl_utf8_to_fs(uri);
+	const auto path_fs = stored_playlists.MapNameToPath(uri);
 	if (path_fs.IsNull())
 		return nullptr;
 
@@ -59,13 +61,14 @@ playlist_mapper_open(std::string_view uri,
 #ifdef ENABLE_DATABASE
 		     Storage *storage,
 #endif
+		     const PlaylistDirectory *stored_playlists,
 		     Mutex &mutex)
 {
 	std::exception_ptr spl_error;
 
-	if (spl_valid_name(uri)) {
+	if (stored_playlists != nullptr && spl_valid_name(uri)) {
 		try {
-			auto playlist = playlist_open_in_playlist_dir(uri, mutex);
+			auto playlist = playlist_open_in_playlist_dir(*stored_playlists, uri, mutex);
 			if (playlist != nullptr)
 				return playlist;
 		} catch (...) {
