@@ -1,4 +1,4 @@
-ver 0.24.18 (not yet released)
+ver 0.24.18 (2026/10/30)
 * protocol
   - "albumart": don't climb above the music directory for CUE tracks
 * database
