@@ -356,6 +356,7 @@ The following tags are supported by :program:`MPD`:
 * **disc**: the decimal disc number in a multi-disc album.
 * **discsubtitle**: the disc subtitle in a multi-disc album.
 * **label**: the name of the label or publisher.
+* **releasetype**: the release type as defined by the `MusicBrainz <https://musicbrainz.org/doc/MusicBrainz_API#Release_(Group)_Type_and_Status>`_ specification.
 * **musicbrainz_artistid**: the artist id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_albumid**: the album id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.
 * **musicbrainz_albumartistid**: the album artist id in the `MusicBrainz <https://picard.musicbrainz.org/docs/mappings/>`_ database.

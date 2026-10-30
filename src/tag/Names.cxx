@@ -36,6 +36,7 @@ static constexpr struct tag_table tag_item_names_init[] = {
 	{"Disc", TAG_DISC},
 	{"DiscSubtitle", TAG_DISCSUBTITLE},
 	{"Label", TAG_LABEL},
+	{"ReleaseType", TAG_RELEASETYPE},
 
 	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
 	{"MUSICBRAINZ_ARTISTID", TAG_MUSICBRAINZ_ARTISTID},
