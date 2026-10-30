@@ -17,6 +17,8 @@
 
 #include <fcntl.h>
 
+using std::string_view_literals::operator""sv;
+
 void
 RenameFile(Path oldpath, Path newpath)
 {
@@ -58,13 +60,13 @@ TruncateFile(Path path)
 			      TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL,
 			      nullptr);
 	if (h == INVALID_HANDLE_VALUE)
-		throw FmtLastError("Failed to truncate {}", path);
+		throw FmtLastError("Failed to truncate {:?}"sv, path);
 
 	CloseHandle(h);
 #else
 	UniqueFileDescriptor fd;
 	if (!fd.Open(path.c_str(), O_WRONLY|O_TRUNC|O_NOFOLLOW))
-		throw FmtErrno("Failed to truncate {}", path);
+		throw FmtErrno("Failed to truncate {:?}"sv, path);
 #endif
 }
 
@@ -73,9 +75,9 @@ RemoveFile(Path path)
 {
 #ifdef _WIN32
 	if (!DeleteFile(path.c_str()))
-		throw FmtLastError("Failed to delete {}", path);
+		throw FmtLastError("Failed to delete {:?}"sv, path);
 #else
 	if (unlink(path.c_str()) < 0)
-		throw FmtErrno("Failed to delete {}", path);
+		throw FmtErrno("Failed to delete {:?}"sv, path);
 #endif
 }
