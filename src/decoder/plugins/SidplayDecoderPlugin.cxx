@@ -44,6 +44,13 @@
 
 #define SUBTUNE_PREFIX "tune_"
 
+#if LIBSIDPLAYFP_VERSION_MAJ < 3
+/* suppress deprecation warnings in libsidplayfp 2.14; this version
+   added a new play() method and deprecated the old one, however the
+   mix() method was added only in 2.15 */
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 static constexpr Domain sidplay_domain("sidplay");
 
 struct SidplayGlobal {
