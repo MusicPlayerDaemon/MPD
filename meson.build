@@ -1,7 +1,7 @@
 project(
   'mpd',
   ['c', 'cpp'],
-  version: '0.24.18',
+  version: '0.24.19',
   meson_version: '>= 1.0',
   default_options: [
     'c_std=c11',
