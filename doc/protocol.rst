@@ -641,7 +641,7 @@ Playback options
     Sets single state to ``STATE``,
     ``STATE`` should be ``0``, ``1`` or ``oneshot`` [#since_0_21]_.
     When single is activated, playback is stopped after current song, or
-    song is repeated if the 'repeat' mode is enabled.
+    song is repeated if the 'repeat' mode is enabled and single is not oneshot.
 
 .. _command_replay_gain_mode:
 
