@@ -11,6 +11,7 @@ subdir('tag')
 subdir('playlist')
 subdir('upnp')
 subdir('alsa')
+subdir('sqlite')
 
 executable(
   'read_conf',
