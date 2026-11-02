@@ -48,6 +48,10 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
+ver 0.24.19 (not yet released)
+* decoder
+  - sidplay: work around deprecation warning with libsidplayfp 2.14
+
 ver 0.24.18 (2026/10/30)
 * protocol
   - "albumart": don't climb above the music directory for CUE tracks

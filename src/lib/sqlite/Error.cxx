@@ -13,7 +13,7 @@ using std::string_view_literals::operator""sv;
 static std::string
 MakeSqliteErrorMessage(sqlite3 *db, const char *msg) noexcept
 {
-	return fmt::format("{}: {}sv", msg, sqlite3_errmsg(db));
+	return fmt::format("{}: {}"sv, msg, sqlite3_errmsg(db));
 }
 
 SqliteError::SqliteError(sqlite3 *db, int _code, const char *msg) noexcept

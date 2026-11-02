@@ -36,7 +36,7 @@ ThrowOSStatus(OSStatus status, const char *prefix)
 
 	char description[1024];
 	if (cfstr.GetCString(description, sizeof(description)))
-		throw FmtRuntimeError("{}: {}sv", prefix, description);
+		throw FmtRuntimeError("{}: {}"sv, prefix, description);
 
 	throw std::runtime_error(prefix);
 }
