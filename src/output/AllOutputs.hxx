@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 struct ConfigData;
