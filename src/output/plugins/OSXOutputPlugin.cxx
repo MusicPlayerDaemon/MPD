@@ -775,7 +775,14 @@ OSXOutput::Open(AudioFormat &audio_format)
 	if (status != noErr)
 		Apple::ThrowOSStatus(status, "Unable to initialize OS X audio unit");
 
-	UInt32 buffer_frame_size = osx_output_set_buffer_size(au, asbd);
+	UInt32 buffer_frame_size;
+
+	try {
+		buffer_frame_size = osx_output_set_buffer_size(au, asbd);
+	} catch (...) {
+		AudioUnitUninitialize(au);
+		throw;
+	}
 
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
 						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
