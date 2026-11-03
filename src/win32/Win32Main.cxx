@@ -18,6 +18,13 @@ static TCHAR service_name[] = _T("");
 static std::atomic_bool running;
 static SERVICE_STATUS_HANDLE service_handle;
 
+/**
+ * Incremented each time a pending status is reported to the SCM, so
+ * it sees progress.  Atomic because it is used both by the event loop
+ * thread and the service dispatcher thread.
+ */
+static std::atomic<DWORD> service_check_point;
+
 static void WINAPI
 service_main(DWORD argc, LPTSTR argv[]);
 
@@ -38,8 +45,20 @@ service_notify_status(DWORD status_code)
 
 	current_status.dwCurrentState = status_code;
 	current_status.dwWin32ExitCode = NO_ERROR;
-	current_status.dwCheckPoint = 0;
-	current_status.dwWaitHint = 1000;
+
+	if (status_code == SERVICE_START_PENDING ||
+	    status_code == SERVICE_STOP_PENDING) {
+		/* MPD doesn't report progress while starting or
+		   stopping, so the wait hint needs to cover the whole
+		   operation (e.g. loading a large database or closing
+		   audio outputs) */
+		current_status.dwCheckPoint = ++service_check_point;
+		current_status.dwWaitHint = 30000;
+	} else {
+		/* not valid for non-pending states */
+		current_status.dwCheckPoint = 0;
+		current_status.dwWaitHint = 0;
+	}
 
 	SetServiceStatus(service_handle, &current_status);
 }

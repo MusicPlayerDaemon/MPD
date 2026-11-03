@@ -3,6 +3,7 @@ ver 0.24.19 (not yet released)
   - sidplay: work around deprecation warning with libsidplayfp 2.14
 * Windows
   - fix service stop and system shutdown
+  - fix service timeout error if startup or shutdown is slow
 
 ver 0.24.18 (2026/10/30)
 * protocol
