@@ -332,6 +332,19 @@ public:
 		return result;
 	}
 
+	/**
+	 * Like remove_and_dispose_if(), but move all matching items
+	 * to a new linked list and only then disposes of all of them.
+	 * This allows the disposer to manipulate the list.
+	 */
+	std::size_t safe_remove_and_dispose_if(std::predicate<const_reference> auto pred,
+					       Disposer<value_type> auto dispose) noexcept {
+		IntrusiveList tmp;
+		const std::size_t result = tmp.splice_if(*this, std::move(pred));
+		tmp.clear_and_dispose(std::move(dispose));
+		return result;
+	}
+
 	const_reference front() const noexcept {
 		return *Cast(head.next);
 	}

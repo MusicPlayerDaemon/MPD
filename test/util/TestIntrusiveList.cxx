@@ -415,3 +415,48 @@ TEST(IntrusiveList, ClearDisposePush)
 	EXPECT_TRUE(b_disposed);
 	EXPECT_TRUE(list.empty());
 }
+
+/**
+ * safe_remove_and_dispose_if() moves all matching items to a temporary
+ * list before disposing them, so the disposer may manipulate the
+ * original list - something remove_and_dispose_if(), which disposes
+ * while iterating the live list, does not allow.
+ */
+TEST(IntrusiveList, SafeRemoveAndDisposeIf)
+{
+	using Item = CharItem<IntrusiveHookMode::TRACK>;
+
+	Item items[]{'a', 'b', 'c', 'd'};
+
+	IntrusiveList<Item> list;
+	for (auto &i : items)
+		list.push_back(i);
+
+	std::string disposed;
+
+	const std::size_t n = list.safe_remove_and_dispose_if(
+		[](const Item &i){ return i.ch == 'b' || i.ch == 'd'; },
+		[&](Item *item){
+			disposed.push_back(item->ch);
+
+			/* manipulate the original list from the disposer:
+			   while disposing the matching items, unlink the
+			   surviving 'a' - this would corrupt
+			   remove_and_dispose_if()'s iteration */
+			if (items[0].is_linked())
+				items[0].unlink();
+		});
+
+	EXPECT_EQ(n, std::size_t(2));
+
+	/* both matching items were disposed, in list order */
+	EXPECT_EQ(disposed, "bd");
+
+	/* 'a' was unlinked by the disposer and 'b'+'d' were removed, so
+	   only 'c' remains */
+	EXPECT_FALSE(items[0].is_linked());
+	EXPECT_FALSE(items[1].is_linked());
+	EXPECT_TRUE(items[2].is_linked());
+	EXPECT_FALSE(items[3].is_linked());
+	EXPECT_EQ(ToString(list, list.begin(), 2), "c_");
+}
