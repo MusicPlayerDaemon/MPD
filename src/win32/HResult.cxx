@@ -70,5 +70,5 @@ HResultCategory::message(int Errcode) const
 	if (!msg.empty())
 		return std::string(msg);
 
-	return fmt::format("{:#x}", Errcode);
+	return fmt::format("{:#x}", static_cast<unsigned>(Errcode));
 }
