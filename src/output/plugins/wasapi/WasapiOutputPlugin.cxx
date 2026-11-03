@@ -700,7 +700,7 @@ WasapiOutput::Delay() const noexcept
 }
 
 std::size_t
-WasapiOutput::Play(std::span<const std::byte> input)
+WasapiOutput::Play(std::span<const std::byte> src)
 {
 	assert(thread);
 
@@ -708,11 +708,14 @@ WasapiOutput::Play(std::span<const std::byte> input)
 
 	not_interrupted.test_and_set();
 
+	auto input = src;
 	if (pcm_export) {
 		input = pcm_export->Export(input);
 	}
 	if (input.empty())
-		return input.size();
+		/* PcmExport::Export() has buffered all of the
+		   (partial block) input; it was consumed */
+		return src.size();
 
 	do {
 		const size_t consumed_size = thread->Push(input);
