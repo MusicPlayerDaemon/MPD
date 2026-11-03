@@ -838,6 +838,7 @@ WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format)
 		auto old_channels = std::exchange(audio_format.channels, channels);
 #ifdef ENABLE_DSD
 		bool was_dsd = false;
+		const auto dsd_sample_rate = audio_format.sample_rate;
 		if (audio_format.format == SampleFormat::DSD) {
 			if (dop_setting && TryFormatExclusive(audio_format)) {
 				return;
@@ -880,6 +881,7 @@ WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format)
 #ifdef ENABLE_DSD
 		if (was_dsd) {
 			audio_format.format = SampleFormat::DSD;
+			audio_format.sample_rate = dsd_sample_rate;
 		}
 #endif
 		audio_format.channels = old_channels;
