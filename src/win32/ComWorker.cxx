@@ -24,6 +24,8 @@ COMWorker::Work() noexcept
 			lock.lock();
 		}
 
-		cond.wait(lock);
+		cond.wait(lock, [this]{
+			return !running_flag || !queue.empty();
+		});
 	}
 }

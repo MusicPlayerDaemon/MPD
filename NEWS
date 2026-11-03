@@ -1,6 +1,8 @@
 ver 0.24.19 (not yet released)
 * decoder
   - sidplay: work around deprecation warning with libsidplayfp 2.14
+* output
+  - wasapi: fix rare hang while disabling the output
 * Windows
   - fix service stop and system shutdown
   - fix service timeout error if startup or shutdown is slow
