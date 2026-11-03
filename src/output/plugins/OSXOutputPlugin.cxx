@@ -8,6 +8,7 @@
 #include "apple/StringRef.hxx"
 #include "apple/Throw.hxx"
 #include "../OutputAPI.hxx"
+#include "../Error.hxx"
 #include "mixer/plugins/OSXMixerPlugin.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/ToBuffer.hxx"
@@ -30,6 +31,7 @@
 #include <cmath>
 #include <memory>
 #include <span>
+#include <thread>
 
 #if (__MAC_OS_X_VERSION_MAX_ALLOWED < 120000)
 /* the "Main" identifiers were introduced in the macOS 12 SDK,
@@ -73,6 +75,12 @@ struct OSXOutput final : AudioOutput {
 	 * Is the audio unit "started", i.e. was AudioOutputUnitStart() called?
 	 */
 	bool started;
+
+	/**
+	 * Set by Interrupt() to make Play() stop waiting for room in
+	 * the ring buffer.  Cleared by Open(), Cancel() and Pause().
+	 */
+	std::atomic_bool interrupted = false;
 
 #ifdef ENABLE_DSD
 	/**
@@ -124,11 +132,20 @@ private:
 	 */
 	std::size_t GetMaxPlaySize() const noexcept;
 
+	/**
+	 * Start the AudioUnit if it is not already started.
+	 *
+	 * Throws on error.
+	 */
+	void Start();
+
 	void Enable() override;
 	void Disable() noexcept override;
 
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
+
+	void Interrupt() noexcept override;
 
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	std::size_t Play(std::span<const std::byte> src) override;
@@ -814,6 +831,27 @@ OSXOutput::Open(AudioFormat &audio_format)
 
 	pause = false;
 	started = false;
+	interrupted.store(false, std::memory_order_relaxed);
+}
+
+void
+OSXOutput::Interrupt() noexcept
+{
+	interrupted.store(true, std::memory_order_relaxed);
+}
+
+void
+OSXOutput::Start()
+{
+	if (started)
+		return;
+
+	OSStatus status = AudioOutputUnitStart(au);
+	if (status != noErr)
+		Apple::ThrowOSStatus(status,
+				     "Unable to start audio output");
+
+	started = true;
 }
 
 std::size_t
@@ -824,7 +862,22 @@ OSXOutput::Play(std::span<const std::byte> src)
 
 	pause = false;
 
-	const std::size_t max_size = GetMaxPlaySize();
+	std::size_t max_size;
+	while ((max_size = GetMaxPlaySize()) == 0) {
+		/* the ring buffer is full; this usually doesn't
+		   happen because Delay() lets the output thread wait,
+		   but it doesn't call Delay() after resuming from
+		   pause; start the AudioUnit (which was stopped by
+		   Pause()) and wait until the render callback has
+		   consumed some data */
+		Start();
+
+		if (interrupted.load(std::memory_order_relaxed))
+			throw AudioOutputInterrupted{};
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+
 	if (src.size() > max_size)
 		src = src.first(max_size);
 
@@ -844,14 +897,7 @@ OSXOutput::Play(std::span<const std::byte> src)
 		ring_buffer.WriteFrom(input);
 	assert(bytes_written == input.size());
 
-	if (!started) {
-		OSStatus status = AudioOutputUnitStart(au);
-		if (status != noErr)
-			Apple::ThrowOSStatus(status,
-					     "Unable to start audio output");
-
-		started = true;
-	}
+	Start();
 
 	return src.size();
 }
@@ -889,6 +935,7 @@ OSXOutput::Delay() const noexcept
 bool OSXOutput::Pause()
 {
 	pause = true;
+	interrupted.store(false, std::memory_order_relaxed);
 
 	if (started) {
 		AudioOutputUnitStop(au);
@@ -910,6 +957,8 @@ OSXOutput::Cancel() noexcept
 #ifdef ENABLE_DSD
 	pcm_export->Reset();
 #endif
+
+	interrupted.store(false, std::memory_order_relaxed);
 
 	/* the AudioUnit will be restarted by the next Play() call */
 }
