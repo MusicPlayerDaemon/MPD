@@ -755,6 +755,10 @@ OSXOutput::Open(AudioFormat &audio_format)
 		asbd.mBytesPerPacket = audio_format.GetFrameSize();
 		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 		asbd.mBytesPerFrame = asbd.mBytesPerPacket;
+
+		/* the device format was chosen for DoP; choose again
+		   for the new PCM format */
+		osx_output_set_device_format(dev_id, asbd);
 	}
 	dop_enabled = params.dsd_mode == PcmExport::DsdMode::DOP;
 #endif
