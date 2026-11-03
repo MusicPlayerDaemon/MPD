@@ -278,3 +278,51 @@ TEST(IntrusiveHashSet, Tag)
 	EXPECT_FALSE(a.empty());
 	EXPECT_TRUE(b.empty());
 }
+
+/**
+ * safe_remove_and_dispose_key_if() moves all matching items to a
+ * temporary list before disposing them, so the disposer may manipulate
+ * the container - something remove_and_dispose_key_if() (disposing while
+ * iterating the live bucket) does not allow.
+ */
+TEST(IntrusiveHashSet, SafeRemoveAndDisposeKeyIf)
+{
+	IntItem a{1}, b{1}, c{1}, d{2};
+
+	IntrusiveHashSet<IntItem, 3,
+			 IntrusiveHashSetOperators<IntItem, std::identity,
+						   IntItem::Hash,
+						   IntItem::Equal>> set;
+	set.insert(a);
+	set.insert(b);
+	set.insert(c);
+	set.insert(d);
+
+	std::size_t disposed = 0;
+
+	/* remove the value-1 items that match the predicate (a and c,
+	   but not b); the disposer erases the surviving same-bucket
+	   item b, which would corrupt remove_and_dispose_key_if()'s
+	   iteration of the live bucket */
+	const std::size_t n = set.safe_remove_and_dispose_key_if(
+		a,
+		[&b](const IntItem &i){ return &i != &b; },
+		[&](IntItem *){
+			++disposed;
+			if (b.is_linked())
+				set.erase(set.iterator_to(b));
+		});
+
+	EXPECT_EQ(n, std::size_t(2));
+	EXPECT_EQ(disposed, std::size_t(2));
+
+	/* a and c were disposed, b was erased by the disposer */
+	EXPECT_FALSE(a.is_linked());
+	EXPECT_FALSE(b.is_linked());
+	EXPECT_FALSE(c.is_linked());
+	EXPECT_EQ(set.find(a), set.end());
+
+	/* the item in the other bucket is untouched */
+	EXPECT_TRUE(d.is_linked());
+	EXPECT_NE(set.find(d), set.end());
+}

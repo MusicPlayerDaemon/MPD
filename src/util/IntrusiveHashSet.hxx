@@ -275,6 +275,22 @@ public:
 		return n;
 	}
 
+	/**
+	 * Like remove_and_dispose_if(), but move all matching items
+	 * to a new linked list and only then disposes of all of them.
+	 * This allows the disposer to manipulate the container.
+	 */
+	constexpr std::size_t safe_remove_and_dispose_key_if(const auto &key,
+							     std::predicate<const_reference> auto pred,
+							     Disposer<value_type> auto disposer) noexcept {
+		auto &bucket = GetBucket(key);
+		std::size_t n = bucket.safe_remove_and_dispose_if([this, &key, &pred](const auto &item){
+			return ops.equal(key, ops.get_key(item)) && pred(item);
+		}, disposer);
+		counter -= n;
+		return n;
+	}
+
 	[[nodiscard]]
 	static constexpr bucket_iterator iterator_to(reference item) noexcept {
 		return Bucket::iterator_to(item);
