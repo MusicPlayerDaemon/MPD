@@ -28,6 +28,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <memory>
 #include <span>
@@ -78,9 +79,16 @@ struct OSXOutput final : AudioOutput {
 
 	/**
 	 * Set by Interrupt() to make Play() stop waiting for room in
-	 * the ring buffer.  Cleared by Open(), Cancel() and Pause().
+	 * the ring buffer and Drain() stop waiting for the ring buffer
+	 * to become empty.  Cleared by Open(), Cancel() and Pause().
 	 */
 	std::atomic_bool interrupted = false;
+
+	/**
+	 * The duration of the AudioUnit's own buffer.  Drain() waits
+	 * this long after the ring buffer has become empty.
+	 */
+	std::chrono::steady_clock::duration io_buffer_duration;
 
 #ifdef ENABLE_DSD
 	/**
@@ -149,6 +157,7 @@ private:
 
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	std::size_t Play(std::span<const std::byte> src) override;
+	void Drain() override;
 	bool Pause() override;
 	void Cancel() noexcept override;
 };
@@ -483,8 +492,13 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	return output_format.mSampleRate;
 }
 
+/**
+ * Set the AudioUnit's buffer to the maximum size.
+ *
+ * @return the actual buffer size in frames
+ */
 static UInt32
-osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
+osx_output_set_buffer_size(AudioUnit au)
 {
 	const auto value_range = AudioUnitGetPropertyT<AudioValueRange>(au,
 									kAudioDevicePropertyBufferFrameSizeRange,
@@ -498,11 +512,7 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
 			 "Failed to set maximum buffer size");
 	}
 
-	auto buffer_frame_size = AudioUnitGetBufferFrameSize(au);
-	buffer_frame_size *= desc.mBytesPerFrame;
-
-	// the smallest power of two larger than buffer_frame_size
-	return RoundUpToPowerOfTwo(buffer_frame_size + 1);
+	return AudioUnitGetBufferFrameSize(au);
 }
 
 static void
@@ -805,14 +815,22 @@ OSXOutput::Open(AudioFormat &audio_format)
 	if (status != noErr)
 		Apple::ThrowOSStatus(status, "Unable to initialize OS X audio unit");
 
-	UInt32 buffer_frame_size;
+	UInt32 io_buffer_frames;
 
 	try {
-		buffer_frame_size = osx_output_set_buffer_size(au, asbd);
+		io_buffer_frames = osx_output_set_buffer_size(au);
 	} catch (...) {
 		AudioUnitUninitialize(au);
 		throw;
 	}
+
+	io_buffer_duration =
+		std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+			std::chrono::duration<double>(io_buffer_frames / asbd.mSampleRate));
+
+	// the smallest power of two larger than the AudioUnit's buffer
+	const UInt32 buffer_frame_size =
+		RoundUpToPowerOfTwo(io_buffer_frames * asbd.mBytesPerFrame + 1);
 
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
 						   audio_format.TimeToSize(MPD_OSX_BUFFER_TIME));
@@ -900,6 +918,46 @@ OSXOutput::Play(std::span<const std::byte> src)
 	Start();
 
 	return src.size();
+}
+
+void
+OSXOutput::Drain()
+{
+	if (!started)
+		/* nothing is being played */
+		return;
+
+	/* wait until the render callback has consumed the ring
+	   buffer; give up if it doesn't make progress for one
+	   second (e.g. because the device has vanished) */
+
+	std::size_t previous_available = 0;
+	auto stall_deadline = std::chrono::steady_clock::now();
+
+	while (true) {
+		if (interrupted.load(std::memory_order_relaxed))
+			/* a command is pending; don't throw
+			   AudioOutputInterrupted, because the output
+			   thread would consider this an error */
+			return;
+
+		const std::size_t available = ring_buffer.ReadAvailable();
+		if (available == 0)
+			break;
+
+		const auto now = std::chrono::steady_clock::now();
+		if (available != previous_available) {
+			previous_available = available;
+			stall_deadline = now + std::chrono::seconds(1);
+		} else if (now >= stall_deadline)
+			return;
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+
+	/* now wait until the AudioUnit has played its own buffer,
+	   which was filled by the last render callback */
+	std::this_thread::sleep_for(io_buffer_duration);
 }
 
 std::size_t
