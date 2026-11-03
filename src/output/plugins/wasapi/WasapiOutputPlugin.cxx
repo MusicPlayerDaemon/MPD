@@ -359,7 +359,12 @@ class WasapiOutput final : public AudioOutput {
 	 */
 	bool paused;
 
-	std::atomic_flag not_interrupted = true;
+	/**
+	 * Set by Interrupt(); while set, Play() and Drain() do not
+	 * block.  It is cleared by Open(), Cancel() and Pause(), i.e.
+	 * the commands which follow an Interrupt() call.
+	 */
+	std::atomic_bool interrupted = false;
 
 	/**
 	 * Passed to #WasapiOutputThread; see there.
@@ -406,6 +411,7 @@ public:
 		com_worker.reset();
 	}
 	void Open(AudioFormat &audio_format) override {
+		interrupted.store(false);
 		com_worker->Async([&]() { DoOpen(audio_format); }).get();
 		paused = false;
 	}
@@ -779,8 +785,6 @@ WasapiOutput::Play(std::span<const std::byte> src)
 
 	paused = false;
 
-	not_interrupted.test_and_set();
-
 	auto input = src;
 	if (pcm_export) {
 		input = pcm_export->Export(input);
@@ -794,11 +798,12 @@ WasapiOutput::Play(std::span<const std::byte> src)
 		const size_t consumed_size = thread->Push(input);
 
 		if (consumed_size == 0) {
+			/* don't block if a command is pending */
+			if (interrupted.load())
+				throw AudioOutputInterrupted{};
+
 			thread->Wait();
 			thread->CheckException();
-			if (!not_interrupted.test_and_set()) {
-				throw AudioOutputInterrupted{};
-			}
 			continue;
 		}
 
@@ -814,6 +819,8 @@ WasapiOutput::Play(std::span<const std::byte> src)
 bool
 WasapiOutput::Pause()
 {
+	interrupted.store(false);
+
 	paused = true;
 	thread->Pause();
 	thread->CheckException();
@@ -826,7 +833,7 @@ WasapiOutput::Interrupt() noexcept
 	/* this method is called from another thread, without any
 	   synchronization with Open() and Close(), so it must not
 	   access the "thread" field */
-	not_interrupted.clear();
+	interrupted.store(true);
 	data_poped.Set();
 }
 
@@ -835,10 +842,8 @@ WasapiOutput::Drain()
 {
 	assert(thread);
 
-	not_interrupted.test_and_set();
-
 	while (!thread->Drain()) {
-		if (!not_interrupted.test_and_set())
+		if (interrupted.load())
 			throw AudioOutputInterrupted{};
 	}
 
@@ -856,6 +861,8 @@ void
 WasapiOutput::Cancel() noexcept
 {
 	assert(thread);
+
+	interrupted.store(false);
 
 	thread->Cancel();
 
