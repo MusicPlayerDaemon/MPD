@@ -785,17 +785,21 @@ OSXOutput::Open(AudioFormat &audio_format)
 }
 
 std::size_t
-OSXOutput::Play(std::span<const std::byte> input)
+OSXOutput::Play(std::span<const std::byte> src)
 {
-	assert(!input.empty());
+	assert(!src.empty());
 
 	pause = false;
+
+	auto input = src;
 
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
 		input = pcm_export->Export(input);
 		if (input.empty())
-			return input.size();
+			/* PcmExport::Export() has buffered all of the
+			   (partial block) input; it was consumed */
+			return src.size();
 	}
 #endif
 
