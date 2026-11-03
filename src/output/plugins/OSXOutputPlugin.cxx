@@ -566,7 +566,7 @@ FindAudioDeviceByName(const char *name)
 			return id;
 	}
 
-	throw FmtRuntimeError("Found no audio device names {:?}", name);
+	throw FmtRuntimeError("Found no audio device named {:?}", name);
 }
 
 static void
