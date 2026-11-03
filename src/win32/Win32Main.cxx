@@ -51,6 +51,10 @@ service_dispatcher([[maybe_unused]] DWORD control, [[maybe_unused]] DWORD event_
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
 	case SERVICE_CONTROL_STOP:
+		/* let the SCM know right away that we're stopping;
+		   the actual shutdown happens asynchronously in the
+		   event loop thread */
+		service_notify_status(SERVICE_STOP_PENDING);
 		global_instance->event_loop.InjectBreak();
 		return NO_ERROR;
 	default:
