@@ -22,6 +22,7 @@
 #include "system/windows/Event.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
+#include "util/NumberParser.hxx"
 #include "util/RingBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
@@ -70,18 +71,6 @@ GetChannelMask(const uint8_t channels) noexcept
 		return KSAUDIO_SPEAKER_7POINT1_SURROUND;
 	default:
 		gcc_unreachable();
-	}
-}
-
-template <typename Functor>
-inline bool
-SafeSilenceTry(Functor &&functor) noexcept
-{
-	try {
-		functor();
-		return true;
-	} catch (...) {
-		return false;
 	}
 }
 
@@ -797,14 +786,14 @@ WasapiOutput::ChooseDevice()
 	}
 
 	if (!device_config.empty()) {
-		unsigned int id;
-		if (!SafeSilenceTry([this, &id]() { id = std::stoul(device_config); })) {
+		if (const auto id = ParseInteger<unsigned>(device_config)) {
+			device = GetDevice(*enumerator, *id);
+		} else {
 			device = SearchDevice(*enumerator, device_config);
 			if (!device)
 				throw FmtRuntimeError("Device {:?} not found",
 						      device_config);
-		} else
-			device = GetDevice(*enumerator, id);
+		}
 	} else {
 		device = GetDefaultAudioEndpoint(*enumerator);
 	}

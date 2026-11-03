@@ -7,6 +7,7 @@ ver 0.24.19 (not yet released)
   - wasapi: fix rare hang while disabling the output
   - wasapi: fix crash with "enumerate"
   - wasapi: fix crash after the device has been removed
+  - wasapi: fix device names beginning with a digit
 * Windows
   - fix service stop and system shutdown
   - fix service timeout error if startup or shutdown is slow
