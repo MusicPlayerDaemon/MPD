@@ -310,6 +310,19 @@ private:
 		status.store(s);
 		event.Set();
 	}
+
+	/**
+	 * Start the #IAudioClient if it is not already started.
+	 *
+	 * Throws on error.
+	 */
+	void StartClient() {
+		if (!started) {
+			Start(client);
+			started = true;
+		}
+	}
+
 	void Work() noexcept;
 };
 
@@ -485,20 +498,15 @@ try {
 		}
 
 		UINT32 write_in_frames = buffer_size_in_frames;
-		DWORD mode = 0;
-		AtScopeExit(&) {
-			render_client->ReleaseBuffer(write_in_frames, mode);
-
-			if (!started) {
-				Start(client);
-				started = true;
-			}
-		};
 
 		if (!is_exclusive) {
 			UINT32 data_in_frames =
 				GetCurrentPaddingFrames(client);
 			if (data_in_frames >= buffer_size_in_frames) {
+				/* the buffer is still full (e.g. after
+				   resuming from pause); just make
+				   sure the client is started */
+				StartClient();
 				continue;
 			}
 			write_in_frames -= data_in_frames;
@@ -521,7 +529,16 @@ try {
 
 		std::fill_n(data + new_data_size,
 			    write_size - new_data_size, 0);
+
+		if (HRESULT result =
+		    render_client->ReleaseBuffer(write_in_frames, 0);
+		    FAILED(result)) {
+			throw MakeHResultError(result, "Failed to release buffer");
+		}
+
 		InterruptWaiter();
+
+		StartClient();
 	}
 } catch (...) {
 	error.ptr = std::current_exception();

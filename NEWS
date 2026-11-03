@@ -14,6 +14,7 @@ ver 0.24.19 (not yet released)
   - wasapi: fix device names beginning with a digit
   - wasapi: fail if no supported format was found in exclusive mode
   - wasapi: fix format negotiation in shared mode
+  - wasapi: fix crash after device error
 * macOS
   - fix empty pid file in daemon mode
 * Windows
