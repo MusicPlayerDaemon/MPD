@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <cstdlib>
+#include <exception>
 #include <mutex>
 
 #include <windows.h>
@@ -47,8 +48,12 @@ static constexpr SERVICE_TABLE_ENTRY service_registry[] = {
 	{nullptr, nullptr}
 };
 
+/**
+ * @param exit_code the process exit code; anything other than
+ * #EXIT_SUCCESS is reported as a service-specific error
+ */
 static void
-service_notify_status(DWORD status_code)
+service_notify_status(DWORD status_code, int exit_code=EXIT_SUCCESS)
 {
 	SERVICE_STATUS current_status{};
 
@@ -58,7 +63,13 @@ service_notify_status(DWORD status_code)
 		: 0;
 
 	current_status.dwCurrentState = status_code;
-	current_status.dwWin32ExitCode = NO_ERROR;
+
+	if (exit_code == EXIT_SUCCESS) {
+		current_status.dwWin32ExitCode = NO_ERROR;
+	} else {
+		current_status.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR;
+		current_status.dwServiceSpecificExitCode = exit_code;
+	}
 
 	if (status_code == SERVICE_START_PENDING ||
 	    status_code == SERVICE_STOP_PENDING) {
@@ -101,19 +112,30 @@ service_dispatcher([[maybe_unused]] DWORD control, [[maybe_unused]] DWORD event_
 
 static void WINAPI
 service_main([[maybe_unused]] DWORD argc, [[maybe_unused]] LPTSTR argv[])
-try {
+{
 	service_handle =
 		RegisterServiceCtrlHandlerEx(service_name,
 					     service_dispatcher, nullptr);
 
-	if (service_handle == 0)
-		throw MakeLastError("RegisterServiceCtrlHandlerEx() failed");
+	if (service_handle == 0) {
+		LogError(std::make_exception_ptr(MakeLastError("RegisterServiceCtrlHandlerEx() failed")));
+		return;
+	}
 
 	service_notify_status(SERVICE_START_PENDING);
-	mpd_main(service_argc, service_argv);
-	service_notify_status(SERVICE_STOPPED);
-} catch (...) {
-	LogError(std::current_exception());
+
+	int exit_code;
+
+	try {
+		exit_code = mpd_main(service_argc, service_argv);
+	} catch (...) {
+		LogError(std::current_exception());
+		exit_code = EXIT_FAILURE;
+	}
+
+	/* this must be reported even after a failure, or else the
+	   service would be stuck in SERVICE_START_PENDING forever */
+	service_notify_status(SERVICE_STOPPED, exit_code);
 }
 
 static BOOL WINAPI
