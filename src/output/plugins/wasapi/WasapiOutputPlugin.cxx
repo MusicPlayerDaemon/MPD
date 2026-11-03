@@ -629,6 +629,12 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 		audio_format.channels = 8;
 	}
 
+	if (audio_format.format == SampleFormat::S8)
+		/* 8 bit PCM samples are unsigned in WASAPI, but
+		   SampleFormat::S8 is signed; let MPD convert to 16
+		   bit */
+		audio_format.format = SampleFormat::S16;
+
 #ifdef ENABLE_DSD
 	if (!dop_setting && audio_format.format == SampleFormat::DSD) {
 		SetDSDFallback(audio_format);
@@ -969,7 +975,6 @@ WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format)
 				     SampleFormat::S32,
 				     SampleFormat::S24_P32,
 				     SampleFormat::S16,
-				     SampleFormat::S8,
 			     }) {
 				if (audio_format.format == format) {
 					continue;
@@ -1069,9 +1074,6 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 	audio_format.sample_rate = device_format.Format.nSamplesPerSec;
 	if (device_format.SubFormat == KSDATAFORMAT_SUBTYPE_PCM) {
 		switch (device_format.Format.wBitsPerSample) {
-		case 8:
-			audio_format.format = SampleFormat::S8;
-			break;
 		case 16:
 			audio_format.format = SampleFormat::S16;
 			break;
