@@ -16,6 +16,9 @@ ToString(const PROPVARIANT &pv) noexcept
 		return AllocatedString{static_cast<const char *>(pv.pszVal)};
 
 	case VT_LPWSTR:
+		if (pv.pwszVal == nullptr)
+			return nullptr;
+
 		return WideCharToMultiByte(CP_UTF8, pv.pwszVal);
 
 	default:
