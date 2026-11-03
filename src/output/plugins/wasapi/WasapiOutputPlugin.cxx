@@ -124,25 +124,38 @@ GetFormats(const AudioFormat &audio_format) noexcept
 /**
  * Convert a plain #WAVEFORMATEX (#WAVE_FORMAT_PCM or
  * #WAVE_FORMAT_IEEE_FLOAT) to #WAVEFORMATEXTENSIBLE.
+ *
+ * Throws on error.
  */
-void
-ToExtensible(WAVEFORMATEXTENSIBLE &device_format,
-	     const WAVEFORMATEX &src) noexcept
+WAVEFORMATEXTENSIBLE
+ToExtensible(const WAVEFORMATEX &src)
 {
-	device_format.Samples.wValidBitsPerSample =
-		device_format.Format.wBitsPerSample;
-	device_format.Format = src;
-	switch (std::exchange(device_format.Format.wFormatTag,
-			      WAVE_FORMAT_EXTENSIBLE)) {
+	WAVEFORMATEXTENSIBLE dest{};
+
+	switch (src.wFormatTag) {
 	case WAVE_FORMAT_PCM:
-		device_format.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+		dest.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
 		break;
+
 	case WAVE_FORMAT_IEEE_FLOAT:
-		device_format.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+		dest.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
 		break;
+
 	default:
-		gcc_unreachable();
+		throw FmtRuntimeError("Unsupported format tag {:#x}",
+				      src.wFormatTag);
 	}
+
+	if (src.nChannels < 1 || src.nChannels > 8)
+		throw FmtRuntimeError("Unsupported number of channels: {}",
+				      src.nChannels);
+
+	dest.Format = src;
+	dest.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+	dest.Format.cbSize = sizeof(dest) - sizeof(dest.Format);
+	dest.Samples.wValidBitsPerSample = src.wBitsPerSample;
+	dest.dwChannelMask = GetChannelMask(src.nChannels);
+	return dest;
 }
 
 #ifdef ENABLE_DSD
@@ -977,7 +990,7 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		if (closest_format->Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
 			device_format = *closest_format;
 		} else {
-			ToExtensible(device_format, closest_format->Format);
+			device_format = ToExtensible(closest_format->Format);
 		}
 		break;
 	}
