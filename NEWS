@@ -1,6 +1,8 @@
 ver 0.24.19 (not yet released)
 * decoder
   - sidplay: work around deprecation warning with libsidplayfp 2.14
+* Windows
+  - fix service stop and system shutdown
 
 ver 0.24.18 (2026/10/30)
 * protocol

@@ -51,7 +51,7 @@ service_dispatcher([[maybe_unused]] DWORD control, [[maybe_unused]] DWORD event_
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
 	case SERVICE_CONTROL_STOP:
-		global_instance->Break();
+		global_instance->event_loop.InjectBreak();
 		return NO_ERROR;
 	default:
 		return NO_ERROR;
