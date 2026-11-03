@@ -5,9 +5,11 @@
 #include "Instance.hxx"
 #include "system/Error.hxx"
 #include "Log.hxx"
+#include "thread/Mutex.hxx"
 
-#include <cstdlib>
 #include <atomic>
+#include <cstdlib>
+#include <mutex>
 
 #include <windows.h>
 #include <tchar.h>
@@ -15,8 +17,20 @@
 static int service_argc;
 static char **service_argv;
 static TCHAR service_name[] = _T("");
-static std::atomic_bool running;
 static SERVICE_STATUS_HANDLE service_handle;
+
+/**
+ * Protects #running_event_loop.
+ */
+static Mutex running_mutex;
+
+/**
+ * The #EventLoop which is running in the main thread or nullptr if it
+ * is not (yet or anymore) running.  The control handlers run in a
+ * different thread; holding #running_mutex while using this pointer
+ * ensures that the #EventLoop does not get destroyed meanwhile.
+ */
+static EventLoop *running_event_loop;
 
 /**
  * Incremented each time a pending status is reported to the SCM, so
@@ -70,11 +84,15 @@ service_dispatcher([[maybe_unused]] DWORD control, [[maybe_unused]] DWORD event_
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
 	case SERVICE_CONTROL_STOP:
-		/* let the SCM know right away that we're stopping;
-		   the actual shutdown happens asynchronously in the
-		   event loop thread */
-		service_notify_status(SERVICE_STOP_PENDING);
-		global_instance->event_loop.InjectBreak();
+		if (const std::scoped_lock lock{running_mutex};
+		    running_event_loop != nullptr) {
+			/* let the SCM know right away that we're
+			   stopping; the actual shutdown happens
+			   asynchronously in the event loop thread */
+			service_notify_status(SERVICE_STOP_PENDING);
+			running_event_loop->InjectBreak();
+		}
+
 		return NO_ERROR;
 	default:
 		return NO_ERROR;
@@ -103,8 +121,11 @@ console_handler(DWORD event)
 {
 	switch (event) {
 	case CTRL_C_EVENT:
-	case CTRL_CLOSE_EVENT:
-		if (running.load()) {
+	case CTRL_CLOSE_EVENT: {
+		bool break_injected = false;
+
+		if (const std::scoped_lock lock{running_mutex};
+		    running_event_loop != nullptr) {
 			/* Recent msdn docs that process is terminated
 			   if this function returns TRUE.  We initiate
 			   correct shutdown sequence (if possible).
@@ -112,16 +133,22 @@ console_handler(DWORD event)
 			   process regardless our thread is still
 			   active.  If this did not happen within 3
 			   seconds let's shutdown anyway. */
-			global_instance->event_loop.InjectBreak();
+			running_event_loop->InjectBreak();
+			break_injected = true;
+		}
+
+		if (break_injected)
 			/* Under debugger it's better to wait
 			   indefinitely to allow debugging of shutdown
 			   code. */
 			Sleep(IsDebuggerPresent() ? INFINITE : 3000);
-		}
+
 		/* If we're not running main loop there is no chance
 		   for clean shutdown. */
 		std::exit(EXIT_FAILURE);
 		return TRUE;
+	}
+
 	default:
 		return FALSE;
 	}
@@ -138,7 +165,6 @@ int win32_main(int argc, char *argv[])
 	const DWORD error_code = GetLastError();
 	if (error_code == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
 		/* running as console app */
-		running.store(false);
 		SetConsoleTitle(_T("Music Player Daemon"));
 		SetConsoleCtrlHandler(console_handler, TRUE);
 		return mpd_main(argc, argv);
@@ -149,16 +175,18 @@ int win32_main(int argc, char *argv[])
 
 void win32_app_started()
 {
+	const std::scoped_lock lock{running_mutex};
+	running_event_loop = &global_instance->event_loop;
+
 	if (service_handle != 0)
 		service_notify_status(SERVICE_RUNNING);
-	else
-		running.store(true);
 }
 
 void win32_app_stopping()
 {
+	const std::scoped_lock lock{running_mutex};
+	running_event_loop = nullptr;
+
 	if (service_handle != 0)
 		service_notify_status(SERVICE_STOP_PENDING);
-	else
-		running.store(false);
 }

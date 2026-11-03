@@ -4,6 +4,7 @@ ver 0.24.19 (not yet released)
 * Windows
   - fix service stop and system shutdown
   - fix service timeout error if startup or shutdown is slow
+  - fix race crash bug during shutdown
 
 ver 0.24.18 (2026/10/30)
 * protocol
