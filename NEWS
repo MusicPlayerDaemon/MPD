@@ -2,6 +2,7 @@ ver 0.24.19 (not yet released)
 * decoder
   - sidplay: work around deprecation warning with libsidplayfp 2.14
 * output
+  - osx: fix noise when playing DSD with DoP disabled
   - wasapi: fix rare hang while disabling the output
   - wasapi: fix crash with "enumerate"
   - wasapi: fix crash after the device has been removed

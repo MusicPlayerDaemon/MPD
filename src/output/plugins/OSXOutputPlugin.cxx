@@ -700,6 +700,11 @@ OSXOutput::Open(AudioFormat &audio_format)
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 	bool dop = dop_setting;
+
+	if (audio_format.format == SampleFormat::DSD && !dop)
+		/* without DoP, DSD can only be played after
+		   converting it to PCM */
+		audio_format.format = SampleFormat::S32;
 #endif
 
 	memset(&asbd, 0, sizeof(asbd));
