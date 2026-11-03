@@ -654,4 +654,32 @@ public:
 		splice(position, from, from.begin(), from.end(),
 		       constant_time_size ? from.size() : 1);
 	}
+
+	/**
+	 * Move all matching items of the given list to this one
+	 * before the given position.
+	 *
+	 * @return the number of moved items
+	 */
+	std::size_t splice_if(iterator position, IntrusiveList &from,
+			      std::predicate<const_reference> auto pred) noexcept {
+		std::size_t result = 0;
+
+		for (auto i = from.begin(), e = from.end(); i != e;) {
+			if (pred(*i)) {
+				auto &item = *i;
+				i = from.erase(i);
+				insert(position, item);
+				++result;
+			} else
+				++i;
+		}
+
+		return result;
+	}
+
+	std::size_t splice_if(IntrusiveList &from,
+			      std::predicate<const_reference> auto pred) noexcept {
+		return splice_if(end(), from, std::move(pred));
+	}
 };

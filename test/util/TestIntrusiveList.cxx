@@ -280,6 +280,49 @@ TEST(IntrusiveList, Sort)
 	ASSERT_EQ(&*std::next(list.begin(), 2), &items[4]);
 }
 
+TEST(IntrusiveList, SpliceIf)
+{
+	using Item = CharItem<IntrusiveHookMode::NORMAL>;
+
+	IntrusiveList<Item> dst;
+	Item dst_items[]{'1', '2'};
+	for (auto &i : dst_items)
+		dst.push_back(i);
+
+	IntrusiveList<Item> src;
+	Item src_items[]{'a', 'b', 'c', 'd', 'e'};
+	for (auto &i : src_items)
+		src.push_back(i);
+
+	const auto is_bd = [](const Item &i){
+		return i.ch == 'b' || i.ch == 'd';
+	};
+
+	/* move the matching items to the end of dst */
+	const std::size_t n = dst.splice_if(src, is_bd);
+
+	EXPECT_EQ(n, std::size_t(2));
+
+	/* the non-matching items remain in src, in order */
+	EXPECT_EQ(ToString(src, src.begin(), 4), "ace_");
+
+	/* the matching items were appended to dst, keeping their
+	   relative order (b before d) */
+	EXPECT_EQ(ToString(dst, dst.begin(), 5), "12bd_");
+
+	/* a predicate that matches nothing moves nothing */
+	EXPECT_EQ(dst.splice_if(src, [](const Item &){ return false; }),
+		  std::size_t(0));
+	EXPECT_EQ(ToString(src, src.begin(), 4), "ace_");
+
+	/* splice before a given position, not just at the end */
+	EXPECT_EQ(dst.splice_if(std::next(dst.begin()), src,
+				[](const Item &i){ return i.ch == 'a'; }),
+		  std::size_t(1));
+	EXPECT_EQ(ToString(src, src.begin(), 3), "ce_");
+	EXPECT_EQ(ToString(dst, dst.begin(), 6), "1a2bd_");
+}
+
 /**
  * Call clear_and_dispose(), and let the disposer unlink the last
  * item.
