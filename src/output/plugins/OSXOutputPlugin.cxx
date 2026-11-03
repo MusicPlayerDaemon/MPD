@@ -93,6 +93,11 @@ struct OSXOutput final : AudioOutput {
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
 
+	/**
+	 * The size of one frame passed to Play() in bytes.
+	 */
+	std::size_t in_frame_size;
+
 	using RingBuffer = ::RingBuffer<std::byte>;
 	RingBuffer ring_buffer;
 
@@ -111,6 +116,13 @@ private:
 	 * Throws on error.
 	 */
 	void UpdateDefaultDevice();
+
+	/**
+	 * Determine how many bytes may be passed to Play() without
+	 * overflowing the ring buffer.  The return value is a
+	 * multiple of #in_frame_size.
+	 */
+	std::size_t GetMaxPlaySize() const noexcept;
 
 	void Enable() override;
 	void Disable() noexcept override;
@@ -798,6 +810,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 	}
 #endif
 	ring_buffer = RingBuffer{ring_buffer_size};
+	in_frame_size = audio_format.GetFrameSize();
 
 	pause = false;
 	started = false;
@@ -807,8 +820,13 @@ std::size_t
 OSXOutput::Play(std::span<const std::byte> src)
 {
 	assert(!src.empty());
+	assert(src.size() % in_frame_size == 0);
 
 	pause = false;
+
+	const std::size_t max_size = GetMaxPlaySize();
+	if (src.size() > max_size)
+		src = src.first(max_size);
 
 	auto input = src;
 
@@ -822,7 +840,9 @@ OSXOutput::Play(std::span<const std::byte> src)
 	}
 #endif
 
-	size_t bytes_written = ring_buffer.WriteFrom(input);
+	[[maybe_unused]] const std::size_t bytes_written =
+		ring_buffer.WriteFrom(input);
+	assert(bytes_written == input.size());
 
 	if (!started) {
 		OSStatus status = AudioOutputUnitStart(au);
@@ -833,18 +853,35 @@ OSXOutput::Play(std::span<const std::byte> src)
 		started = true;
 	}
 
+	return src.size();
+}
+
+std::size_t
+OSXOutput::GetMaxPlaySize() const noexcept
+{
+	std::size_t size = ring_buffer.WriteAvailable();
+
 #ifdef ENABLE_DSD
-	if (dop_enabled)
-		bytes_written = pcm_export->CalcInputSize(bytes_written);
+	if (dop_enabled) {
+		/* reserve room for one extra block, just in case
+		   PcmExport::Export() has some partial block data in
+		   its internal buffer */
+		const std::size_t out_block_size =
+			pcm_export->GetOutputBlockSize();
+		if (size <= out_block_size)
+			return 0;
+
+		size = pcm_export->CalcInputSize(size - out_block_size);
+	}
 #endif
 
-	return bytes_written;
+	return size - size % in_frame_size;
 }
 
 std::chrono::steady_clock::duration
 OSXOutput::Delay() const noexcept
 {
-	return !ring_buffer.IsFull() && !pause
+	return GetMaxPlaySize() > 0 && !pause
 		? std::chrono::steady_clock::duration::zero()
 		: std::chrono::steady_clock::duration{MPD_OSX_BUFFER_TIME} / 4;
 }
