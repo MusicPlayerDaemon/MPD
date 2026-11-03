@@ -193,6 +193,10 @@ class WasapiOutputThread {
 
 	std::atomic_bool cancel = false;
 
+	/**
+	 * Was the last read from #ring_buffer empty?  Only written by
+	 * the worker thread.
+	 */
 	std::atomic_bool empty = true;
 
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
@@ -239,8 +243,6 @@ public:
 	}
 
 	std::size_t Push(std::span<const std::byte> input) noexcept {
-		empty.store(false);
-
 		std::size_t consumed = ring_buffer.WriteFrom(input);
 
 		if (!playing) {
@@ -259,14 +261,14 @@ public:
 	 * @return true if the buffer is now empty
 	 */
 	bool Drain() {
-		if (empty)
+		if (IsEmpty())
 			return true;
 
 		CheckException();
 		Wait();
 		CheckException();
 
-		return empty;
+		return IsEmpty();
 	}
 
 	/**
@@ -306,6 +308,16 @@ public:
 	}
 
 private:
+	/**
+	 * Has the worker thread consumed all data?  To be called by
+	 * the producer (#OutputThread), which is the only one adding
+	 * data to #ring_buffer, so once it is empty, it stays empty;
+	 * and #empty means the worker thread has seen that.
+	 */
+	bool IsEmpty() const noexcept {
+		return ring_buffer.IsEmptyRelaxed() && empty.load();
+	}
+
 	void SetStatus(Status s) noexcept {
 		status.store(s);
 		event.Set();
@@ -524,8 +536,7 @@ try {
 		std::span w{data, write_size};
 
 		const std::size_t new_data_size = ring_buffer.ReadTo(std::as_writable_bytes(w));
-		if (new_data_size == 0)
-			empty.store(true);
+		empty.store(new_data_size == 0);
 
 		std::fill_n(data + new_data_size,
 			    write_size - new_data_size, 0);
