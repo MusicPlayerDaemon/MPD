@@ -40,7 +40,10 @@ public:
 	 *
 	 * Throws on error.
 	 *
-	 * @param src the input buffer
+	 * @param src the input buffer. The caller must ensure that the
+	 * src data remains valid until either FilterPCM() or ReadMore()
+	 * return an empty span, or until the filter operation is
+	 * terminated by calling Reset() or Flush()
 	 * @return the output buffer (will be invalidated by deleting
 	 * this object or any call to Reset(), FilterPCM(), ReadMore()
 	 * or Flush()); may be empty if no output is currently
