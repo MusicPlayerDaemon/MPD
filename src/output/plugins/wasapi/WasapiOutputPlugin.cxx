@@ -563,6 +563,11 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 {
 	client.reset();
 
+	/* a previous DoOpen() call may have failed after creating
+	   the PcmExport instance (Close() is not called after
+	   that) */
+	pcm_export.reset();
+
 	/* "device" may be nullptr if a previous ChooseDevice() call
 	   has failed */
 	if (!device || GetState(*device) != DEVICE_STATE_ACTIVE) {
