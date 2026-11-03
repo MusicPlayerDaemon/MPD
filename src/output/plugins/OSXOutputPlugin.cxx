@@ -15,6 +15,7 @@
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"
 #include "pcm/Export.hxx"
+#include "pcm/Silence.hxx"
 #include "pcm/Time.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/CharUtil.hxx"
@@ -113,6 +114,12 @@ struct OSXOutput final : AudioOutput {
 	 * The size of one frame passed to Play() in bytes.
 	 */
 	std::size_t in_frame_size;
+
+	/**
+	 * The sample format of the data in #ring_buffer.  With DoP,
+	 * this is SampleFormat::S24_P32 (not SampleFormat::DSD).
+	 */
+	SampleFormat out_sample_format;
 
 	using RingBuffer = ::RingBuffer<std::byte>;
 	RingBuffer ring_buffer;
@@ -650,9 +657,17 @@ osx_render(void *vdata,
 {
 	auto *od = static_cast<OSXOutput *>(vdata);
 
-	std::size_t count = in_number_frames * od->asbd.mBytesPerFrame;
-	buffer_list->mBuffers[0].mDataByteSize =
-		od->ring_buffer.ReadTo({(std::byte *)buffer_list->mBuffers[0].mData, count});
+	auto &buffer = buffer_list->mBuffers[0];
+	const std::size_t count = in_number_frames * od->asbd.mBytesPerFrame;
+	const std::span<std::byte> dest{(std::byte *)buffer.mData, count};
+
+	const std::size_t n = od->ring_buffer.ReadTo(dest);
+
+	/* on buffer underrun, fill the rest with silence; CoreAudio
+	   expects the requested number of frames */
+	PcmSilence(dest.subspan(n), od->out_sample_format);
+	buffer.mDataByteSize = count;
+
 	return noErr;
 }
 
@@ -802,6 +817,19 @@ OSXOutput::Open(AudioFormat &audio_format)
 	}
 	dop_enabled = params.dsd_mode == PcmExport::DsdMode::DOP;
 #endif
+
+	out_sample_format = audio_format.format;
+#ifdef ENABLE_DSD
+	if (dop_enabled)
+		/* the ring buffer contains DoP frames, and DSD
+		   silence bytes without DoP markers would be played
+		   as PCM noise */
+		out_sample_format = SampleFormat::S24_P32;
+#endif
+
+	/* raw DSD is never written to the ring buffer: without DoP,
+	   it is converted to PCM */
+	assert(out_sample_format != SampleFormat::DSD);
 
 	AudioUnitSetInputStreamFormat(au, asbd);
 
