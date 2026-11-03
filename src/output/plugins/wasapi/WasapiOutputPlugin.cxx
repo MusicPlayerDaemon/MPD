@@ -537,7 +537,9 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 {
 	client.reset();
 
-	if (GetState(*device) != DEVICE_STATE_ACTIVE) {
+	/* "device" may be nullptr if a previous ChooseDevice() call
+	   has failed */
+	if (!device || GetState(*device) != DEVICE_STATE_ACTIVE) {
 		device.reset();
 		ChooseDevice();
 	}
