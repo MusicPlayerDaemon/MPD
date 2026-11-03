@@ -105,20 +105,21 @@ console_handler(DWORD event)
 	case CTRL_C_EVENT:
 	case CTRL_CLOSE_EVENT:
 		if (running.load()) {
-			// Recent msdn docs that process is terminated
-			// if this function returns TRUE.
-			// We initiate correct shutdown sequence (if possible).
-			// Once main() returns CRT will terminate our process
-			// regardless our thread is still active.
-			// If this did not happen within 3 seconds
-			// let's shutdown anyway.
+			/* Recent msdn docs that process is terminated
+			   if this function returns TRUE.  We initiate
+			   correct shutdown sequence (if possible).
+			   Once main() returns CRT will terminate our
+			   process regardless our thread is still
+			   active.  If this did not happen within 3
+			   seconds let's shutdown anyway. */
 			global_instance->event_loop.InjectBreak();
-			// Under debugger it's better to wait indefinitely
-			// to allow debugging of shutdown code.
+			/* Under debugger it's better to wait
+			   indefinitely to allow debugging of shutdown
+			   code. */
 			Sleep(IsDebuggerPresent() ? INFINITE : 3000);
 		}
-		// If we're not running main loop there is no chance for
-		// clean shutdown.
+		/* If we're not running main loop there is no chance
+		   for clean shutdown. */
 		std::exit(EXIT_FAILURE);
 		return TRUE;
 	default:
