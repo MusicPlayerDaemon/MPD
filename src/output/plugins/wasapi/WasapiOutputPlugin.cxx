@@ -385,7 +385,6 @@ class WasapiOutput final : public AudioOutput {
 	ComPtr<IAudioClient> client;
 	WAVEFORMATEXTENSIBLE device_format;
 	std::optional<WasapiOutputThread> thread;
-	std::size_t watermark;
 	std::optional<PcmExport> pcm_export;
 
 public:
@@ -748,7 +747,6 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 
 	const UINT32 buffer_size_in_frames = GetBufferSizeInFrames(*client);
 
-	watermark = buffer_size_in_frames * 3 * FrameSize();
 	thread.emplace(data_poped, *client, std::move(render_client), FrameSize(),
 		       buffer_size_in_frames, is_exclusive);
 
