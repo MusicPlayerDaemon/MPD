@@ -1004,15 +1004,25 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		case 16:
 			audio_format.format = SampleFormat::S16;
 			break;
+		case 24:
+			/* packed by PcmExport */
+			audio_format.format = SampleFormat::S24_P32;
+			break;
 		case 32:
 			audio_format.format =
 				device_format.Samples.wValidBitsPerSample == 32
 					? SampleFormat::S32
 					: SampleFormat::S24_P32;
 			break;
+		default:
+			throw FmtRuntimeError("Unsupported sample size: {} bits",
+					      device_format.Format.wBitsPerSample);
 		}
-	} else if (device_format.SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
+	} else if (device_format.SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT &&
+		   device_format.Format.wBitsPerSample == 32) {
 		audio_format.format = SampleFormat::FLOAT;
+	} else {
+		throw std::runtime_error("Unsupported sample format");
 	}
 }
 
