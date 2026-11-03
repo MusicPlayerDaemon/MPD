@@ -737,7 +737,7 @@ WasapiOutput::Close() noexcept
 	try {
 		thread->CheckException();
 	} catch (...) {
-		LogError(wasapi_output_domain, "exception while stopping");
+		LogError(std::current_exception(), "exception while stopping");
 	}
 	thread->Finish();
 	com_worker->Async([&]() {
