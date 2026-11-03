@@ -172,7 +172,15 @@ SetDSDFallback(AudioFormat &audio_format) noexcept
 class WasapiOutputThread {
 	Thread thread{BIND_THIS_METHOD(Work)};
 	WinEvent event;
-	WinEvent data_poped;
+
+	/**
+	 * Signalled by this thread after it has consumed data from
+	 * the #ring_buffer.  This is owned by #WasapiOutput, because
+	 * WasapiOutput::Interrupt() may signal it at any time, even
+	 * while this object is being created or destroyed.
+	 */
+	WinEvent &data_poped;
+
 	IAudioClient &client;
 	ComPtr<IAudioRenderClient> render_client;
 	const UINT32 frame_size;
@@ -211,11 +219,12 @@ class WasapiOutputThread {
 	RingBuffer<std::byte> ring_buffer;
 
 public:
-	WasapiOutputThread(IAudioClient &_client,
+	WasapiOutputThread(WinEvent &_data_poped,
+			   IAudioClient &_client,
 			   ComPtr<IAudioRenderClient> &&_render_client,
 			   const UINT32 _frame_size, const UINT32 _buffer_size_in_frames,
 			   bool _is_exclusive)
-		:client(_client),
+		:data_poped(_data_poped), client(_client),
 		 render_client(std::move(_render_client)), frame_size(_frame_size),
 		 buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
 		 ring_buffer(_buffer_size_in_frames * 4 * _frame_size)
@@ -351,6 +360,11 @@ class WasapiOutput final : public AudioOutput {
 	bool paused;
 
 	std::atomic_flag not_interrupted = true;
+
+	/**
+	 * Passed to #WasapiOutputThread; see there.
+	 */
+	WinEvent data_poped;
 
 	const std::string device_config;
 
@@ -723,7 +737,7 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 	const UINT32 buffer_size_in_frames = GetBufferSizeInFrames(*client);
 
 	watermark = buffer_size_in_frames * 3 * FrameSize();
-	thread.emplace(*client, std::move(render_client), FrameSize(),
+	thread.emplace(data_poped, *client, std::move(render_client), FrameSize(),
 		       buffer_size_in_frames, is_exclusive);
 
 	paused = false;
@@ -809,10 +823,11 @@ WasapiOutput::Pause()
 void
 WasapiOutput::Interrupt() noexcept
 {
-	if (thread) {
-		not_interrupted.clear();
-		thread->InterruptWaiter();
-	}
+	/* this method is called from another thread, without any
+	   synchronization with Open() and Close(), so it must not
+	   access the "thread" field */
+	not_interrupted.clear();
+	data_poped.Set();
 }
 
 void
