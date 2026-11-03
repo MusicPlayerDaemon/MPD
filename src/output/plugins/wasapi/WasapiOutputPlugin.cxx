@@ -958,11 +958,7 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		throw MakeHResultError(result, "IsFormatSupported failed");
 	}
 
-	switch (result) {
-	case S_OK:
-		break;
-	case AUDCLNT_E_UNSUPPORTED_FORMAT:
-	default:
+	if (result == AUDCLNT_E_UNSUPPORTED_FORMAT) {
 		// Trying channels fallback.
 		audio_format.channels = mixer_format->nChannels;
 
@@ -985,14 +981,16 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		if (FAILED(result)) {
 			throw MakeHResultError(result, "Format is not supported");
 		}
-		break;
-	case S_FALSE:
+	}
+
+	if (result == S_FALSE) {
+		/* use the closest match suggested by
+		   IsFormatSupported() */
 		if (closest_format->Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
 			device_format = *closest_format;
 		} else {
 			device_format = ToExtensible(closest_format->Format);
 		}
-		break;
 	}
 
 	// Copy closest match back to audio_format.
