@@ -884,6 +884,9 @@ WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format)
 #endif
 		audio_format.channels = old_channels;
 	}
+
+	throw FmtRuntimeError("No supported format found for {}",
+			      audio_format);
 }
 
 /// run inside COMWorkerThread
