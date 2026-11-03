@@ -69,7 +69,7 @@ public:
 			      DWORD class_context = CLSCTX_ALL) {
 		HRESULT result =
 			::CoCreateInstance(class_id, unknown_outer, class_context,
-					   __uuidof(T), reinterpret_cast<void **>(&ptr));
+					   __uuidof(T), AddressCast());
 		if (FAILED(result)) {
 			throw MakeHResultError(result, "Unable to create instance");
 		}
