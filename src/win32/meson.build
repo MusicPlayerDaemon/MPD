@@ -11,6 +11,7 @@ win32 = static_library(
   include_directories: inc,
   dependencies: [
     fmt_dep,
+    util_dep,
   ],
 )
 
