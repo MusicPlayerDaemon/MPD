@@ -844,7 +844,12 @@ WasapiOutput::Drain()
 
 	while (!thread->Drain()) {
 		if (interrupted.load())
-			throw AudioOutputInterrupted{};
+			/* a command is pending; stop draining (unlike
+			   Play(), this method must not throw
+			   AudioOutputInterrupted, because
+			   AudioOutputControl::InternalDrain() would
+			   treat it as an error) */
+			break;
 	}
 
 	/* the stream is discontinuous now; discard the incomplete

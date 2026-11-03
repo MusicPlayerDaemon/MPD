@@ -15,6 +15,7 @@ ver 0.24.19 (not yet released)
   - wasapi: fail if no supported format was found in exclusive mode
   - wasapi: fix format negotiation in shared mode
   - wasapi: fix crash after device error
+  - wasapi: fix output failure after pausing or stopping while draining
 * macOS
   - fix empty pid file in daemon mode
 * Windows
