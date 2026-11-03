@@ -39,9 +39,9 @@ service_notify_status(DWORD status_code)
 	SERVICE_STATUS current_status;
 
 	current_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-	current_status.dwControlsAccepted = status_code == SERVICE_START_PENDING
-		? 0
-		: SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_STOP;
+	current_status.dwControlsAccepted = status_code == SERVICE_RUNNING
+		? SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_STOP
+		: 0;
 
 	current_status.dwCurrentState = status_code;
 	current_status.dwWin32ExitCode = NO_ERROR;
