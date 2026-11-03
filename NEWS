@@ -1,4 +1,6 @@
 ver 0.24.19 (not yet released)
+* configuration
+  - fix crash if "audio_buffer_size" is too large
 * decoder
   - sidplay: work around deprecation warning with libsidplayfp 2.14
 * output

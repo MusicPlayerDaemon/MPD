@@ -37,7 +37,7 @@ GetBufferChunks(const ConfigData &config)
 
 	unsigned buffer_chunks = buffer_size / CHUNK_SIZE;
 	if (buffer_chunks >= 1 << 15)
-		throw FmtRuntimeError("buffer size {:?} is too big",
+		throw FmtRuntimeError("buffer size {} is too big",
 				      buffer_size);
 
 	return buffer_chunks;
