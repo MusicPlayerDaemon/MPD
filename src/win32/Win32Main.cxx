@@ -36,7 +36,7 @@ static constexpr SERVICE_TABLE_ENTRY service_registry[] = {
 static void
 service_notify_status(DWORD status_code)
 {
-	SERVICE_STATUS current_status;
+	SERVICE_STATUS current_status{};
 
 	current_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
 	current_status.dwControlsAccepted = status_code == SERVICE_RUNNING
