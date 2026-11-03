@@ -794,6 +794,12 @@ WasapiOutput::Drain()
 			throw AudioOutputInterrupted{};
 	}
 
+	/* the stream is discontinuous now; discard the incomplete
+	   block which may still be inside the PcmExport instance,
+	   because it would otherwise be prepended to the next song */
+	if (pcm_export)
+		pcm_export->Reset();
+
 	/* TODO: this needs to wait until the hardware has really
 	   finished playing */
 }
@@ -804,6 +810,11 @@ WasapiOutput::Cancel() noexcept
 	assert(thread);
 
 	thread->Cancel();
+
+	/* discard the incomplete block which may still be inside the
+	   PcmExport instance */
+	if (pcm_export)
+		pcm_export->Reset();
 }
 
 /// run inside COMWorkerThread
