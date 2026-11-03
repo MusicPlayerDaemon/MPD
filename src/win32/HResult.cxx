@@ -7,6 +7,7 @@
 #endif
 
 #include "HResult.hxx"
+#include "system/windows/FormatMessage.hxx" // for FormatMessageUTF8()
 #include "util/StringStrip.hxx"
 
 #include <fmt/format.h>
@@ -60,11 +61,10 @@ HResultCategory::message(int Errcode) const
 
 	/* FormatMessage() supports some HRESULT values (depending on
 	   the Windows version) */
-	if (DWORD length = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
-					  FORMAT_MESSAGE_IGNORE_INSERTS,
-					  nullptr, Errcode, 0,
-					  buffer, sizeof(buffer),
-					  nullptr);
+	if (auto length = FormatMessageUTF8(FORMAT_MESSAGE_FROM_SYSTEM |
+					    FORMAT_MESSAGE_IGNORE_INSERTS,
+					    nullptr, Errcode, 0,
+					    std::span{buffer});
 	    length > 0)
 		/* strip the trailing line break */
 		return std::string{StripRight(std::string_view{buffer, length})};

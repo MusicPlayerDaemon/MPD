@@ -23,6 +23,7 @@ ver 0.24.19 (not yet released)
   - fix service timeout error if startup or shutdown is slow
   - fix race crash bug during shutdown
   - fix service hang after startup failure
+  - fix encoding of WASAPI error messages on non-English systems
 
 ver 0.24.18 (2026/10/30)
 * protocol
