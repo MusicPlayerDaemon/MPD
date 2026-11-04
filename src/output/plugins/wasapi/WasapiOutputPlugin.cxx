@@ -121,6 +121,30 @@ GetFormats(const AudioFormat &audio_format) noexcept
 	return Result;
 }
 
+/**
+ * Convert a plain #WAVEFORMATEX (#WAVE_FORMAT_PCM or
+ * #WAVE_FORMAT_IEEE_FLOAT) to #WAVEFORMATEXTENSIBLE.
+ */
+void
+ToExtensible(WAVEFORMATEXTENSIBLE &device_format,
+	     const WAVEFORMATEX &src) noexcept
+{
+	device_format.Samples.wValidBitsPerSample =
+		device_format.Format.wBitsPerSample;
+	device_format.Format = src;
+	switch (std::exchange(device_format.Format.wFormatTag,
+			      WAVE_FORMAT_EXTENSIBLE)) {
+	case WAVE_FORMAT_PCM:
+		device_format.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+		break;
+	case WAVE_FORMAT_IEEE_FLOAT:
+		device_format.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+		break;
+	default:
+		gcc_unreachable();
+	}
+}
+
 #ifdef ENABLE_DSD
 void
 SetDSDFallback(AudioFormat &audio_format) noexcept
@@ -953,20 +977,7 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		if (closest_format->Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
 			device_format = *closest_format;
 		} else {
-			device_format.Samples.wValidBitsPerSample =
-				device_format.Format.wBitsPerSample;
-			device_format.Format = closest_format->Format;
-			switch (std::exchange(device_format.Format.wFormatTag,
-					      WAVE_FORMAT_EXTENSIBLE)) {
-			case WAVE_FORMAT_PCM:
-				device_format.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
-				break;
-			case WAVE_FORMAT_IEEE_FLOAT:
-				device_format.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
-				break;
-			default:
-				gcc_unreachable();
-			}
+			ToExtensible(device_format, closest_format->Format);
 		}
 		break;
 	}
