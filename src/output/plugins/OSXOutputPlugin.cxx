@@ -14,6 +14,7 @@
 #include "util/Domain.hxx"
 #include "util/Manual.hxx"
 #include "pcm/Export.hxx"
+#include "pcm/Time.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/CharUtil.hxx"
 #include "util/RingBuffer.hxx"
@@ -39,7 +40,7 @@ static constexpr AudioObjectPropertySelector kAudioHardwareServiceDeviceProperty
 	kAudioHardwareServiceDeviceProperty_VirtualMasterVolume;
 #endif
 
-static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 500;
+static constexpr auto MPD_OSX_BUFFER_TIME = std::chrono::milliseconds{500};
 
 static auto
 StreamDescriptionToString(const AudioStreamBasicDescription &desc) noexcept
@@ -785,13 +786,15 @@ OSXOutput::Open(AudioFormat &audio_format)
 	}
 
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
+						   audio_format.TimeToSize(MPD_OSX_BUFFER_TIME));
 
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
 		pcm_export->Open(audio_format.format, audio_format.channels, params);
 		ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetOutputFrameSize() * asbd.mSampleRate / 1000);
+						    PcmTimeToSize(MPD_OSX_BUFFER_TIME,
+								  params.CalcOutputSampleRate(audio_format.sample_rate),
+								  pcm_export->GetOutputFrameSize()));
 	}
 #endif
 	ring_buffer = RingBuffer{ring_buffer_size};
