@@ -195,6 +195,22 @@ public:
 		SetRequestBody(s.data(), s.size());
 	}
 
+	/**
+	 * Like SetRequestBody(), but ask libCURL to copy the buffer.
+	 */
+	void CopyRequestBody(const void *data, std::size_t size) {
+		SetOption(CURLOPT_POSTFIELDSIZE, (long)size);
+		SetOption(CURLOPT_COPYPOSTFIELDS, data);
+	}
+
+	void CopyRequestBody(std::span<const std::byte> s) {
+		CopyRequestBody(s.data(), s.size());
+	}
+
+	void CopyRequestBody(std::string_view s) {
+		CopyRequestBody(s.data(), s.size());
+	}
+
 	void SetMimePost(const curl_mime *mime) {
 		SetOption(CURLOPT_MIMEPOST, mime);
 	}
