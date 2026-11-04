@@ -5,9 +5,12 @@
 #include "Instance.hxx"
 #include "system/Error.hxx"
 #include "Log.hxx"
+#include "thread/Mutex.hxx"
 
-#include <cstdlib>
 #include <atomic>
+#include <cstdlib>
+#include <exception>
+#include <mutex>
 
 #include <windows.h>
 #include <tchar.h>
@@ -15,8 +18,27 @@
 static int service_argc;
 static char **service_argv;
 static TCHAR service_name[] = _T("");
-static std::atomic_bool running;
 static SERVICE_STATUS_HANDLE service_handle;
+
+/**
+ * Protects #running_event_loop.
+ */
+static Mutex running_mutex;
+
+/**
+ * The #EventLoop which is running in the main thread or nullptr if it
+ * is not (yet or anymore) running.  The control handlers run in a
+ * different thread; holding #running_mutex while using this pointer
+ * ensures that the #EventLoop does not get destroyed meanwhile.
+ */
+static EventLoop *running_event_loop;
+
+/**
+ * Incremented each time a pending status is reported to the SCM, so
+ * it sees progress.  Atomic because it is used both by the event loop
+ * thread and the service dispatcher thread.
+ */
+static std::atomic<DWORD> service_check_point;
 
 static void WINAPI
 service_main(DWORD argc, LPTSTR argv[]);
@@ -26,20 +48,42 @@ static constexpr SERVICE_TABLE_ENTRY service_registry[] = {
 	{nullptr, nullptr}
 };
 
+/**
+ * @param exit_code the process exit code; anything other than
+ * #EXIT_SUCCESS is reported as a service-specific error
+ */
 static void
-service_notify_status(DWORD status_code)
+service_notify_status(DWORD status_code, int exit_code=EXIT_SUCCESS)
 {
-	SERVICE_STATUS current_status;
+	SERVICE_STATUS current_status{};
 
 	current_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-	current_status.dwControlsAccepted = status_code == SERVICE_START_PENDING
-		? 0
-		: SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_STOP;
+	current_status.dwControlsAccepted = status_code == SERVICE_RUNNING
+		? SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_STOP
+		: 0;
 
 	current_status.dwCurrentState = status_code;
-	current_status.dwWin32ExitCode = NO_ERROR;
-	current_status.dwCheckPoint = 0;
-	current_status.dwWaitHint = 1000;
+
+	if (exit_code == EXIT_SUCCESS) {
+		current_status.dwWin32ExitCode = NO_ERROR;
+	} else {
+		current_status.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR;
+		current_status.dwServiceSpecificExitCode = exit_code;
+	}
+
+	if (status_code == SERVICE_START_PENDING ||
+	    status_code == SERVICE_STOP_PENDING) {
+		/* MPD doesn't report progress while starting or
+		   stopping, so the wait hint needs to cover the whole
+		   operation (e.g. loading a large database or closing
+		   audio outputs) */
+		current_status.dwCheckPoint = ++service_check_point;
+		current_status.dwWaitHint = 30000;
+	} else {
+		/* not valid for non-pending states */
+		current_status.dwCheckPoint = 0;
+		current_status.dwWaitHint = 0;
+	}
 
 	SetServiceStatus(service_handle, &current_status);
 }
@@ -51,7 +95,15 @@ service_dispatcher([[maybe_unused]] DWORD control, [[maybe_unused]] DWORD event_
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
 	case SERVICE_CONTROL_STOP:
-		global_instance->Break();
+		if (const std::scoped_lock lock{running_mutex};
+		    running_event_loop != nullptr) {
+			/* let the SCM know right away that we're
+			   stopping; the actual shutdown happens
+			   asynchronously in the event loop thread */
+			service_notify_status(SERVICE_STOP_PENDING);
+			running_event_loop->InjectBreak();
+		}
+
 		return NO_ERROR;
 	default:
 		return NO_ERROR;
@@ -60,19 +112,30 @@ service_dispatcher([[maybe_unused]] DWORD control, [[maybe_unused]] DWORD event_
 
 static void WINAPI
 service_main([[maybe_unused]] DWORD argc, [[maybe_unused]] LPTSTR argv[])
-try {
+{
 	service_handle =
 		RegisterServiceCtrlHandlerEx(service_name,
 					     service_dispatcher, nullptr);
 
-	if (service_handle == 0)
-		throw MakeLastError("RegisterServiceCtrlHandlerEx() failed");
+	if (service_handle == 0) {
+		LogError(std::make_exception_ptr(MakeLastError("RegisterServiceCtrlHandlerEx() failed")));
+		return;
+	}
 
 	service_notify_status(SERVICE_START_PENDING);
-	mpd_main(service_argc, service_argv);
-	service_notify_status(SERVICE_STOPPED);
-} catch (...) {
-	LogError(std::current_exception());
+
+	int exit_code;
+
+	try {
+		exit_code = mpd_main(service_argc, service_argv);
+	} catch (...) {
+		LogError(std::current_exception());
+		exit_code = EXIT_FAILURE;
+	}
+
+	/* this must be reported even after a failure, or else the
+	   service would be stuck in SERVICE_START_PENDING forever */
+	service_notify_status(SERVICE_STOPPED, exit_code);
 }
 
 static BOOL WINAPI
@@ -80,24 +143,34 @@ console_handler(DWORD event)
 {
 	switch (event) {
 	case CTRL_C_EVENT:
-	case CTRL_CLOSE_EVENT:
-		if (running.load()) {
-			// Recent msdn docs that process is terminated
-			// if this function returns TRUE.
-			// We initiate correct shutdown sequence (if possible).
-			// Once main() returns CRT will terminate our process
-			// regardless our thread is still active.
-			// If this did not happen within 3 seconds
-			// let's shutdown anyway.
-			global_instance->event_loop.InjectBreak();
-			// Under debugger it's better to wait indefinitely
-			// to allow debugging of shutdown code.
-			Sleep(IsDebuggerPresent() ? INFINITE : 3000);
+	case CTRL_CLOSE_EVENT: {
+		bool break_injected = false;
+
+		if (const std::scoped_lock lock{running_mutex};
+		    running_event_loop != nullptr) {
+			/* Recent msdn docs that process is terminated
+			   if this function returns TRUE.  We initiate
+			   correct shutdown sequence (if possible).
+			   Once main() returns CRT will terminate our
+			   process regardless our thread is still
+			   active.  If this did not happen within 3
+			   seconds let's shutdown anyway. */
+			running_event_loop->InjectBreak();
+			break_injected = true;
 		}
-		// If we're not running main loop there is no chance for
-		// clean shutdown.
+
+		if (break_injected)
+			/* Under debugger it's better to wait
+			   indefinitely to allow debugging of shutdown
+			   code. */
+			Sleep(IsDebuggerPresent() ? INFINITE : 3000);
+
+		/* If we're not running main loop there is no chance
+		   for clean shutdown. */
 		std::exit(EXIT_FAILURE);
 		return TRUE;
+	}
+
 	default:
 		return FALSE;
 	}
@@ -114,7 +187,6 @@ int win32_main(int argc, char *argv[])
 	const DWORD error_code = GetLastError();
 	if (error_code == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
 		/* running as console app */
-		running.store(false);
 		SetConsoleTitle(_T("Music Player Daemon"));
 		SetConsoleCtrlHandler(console_handler, TRUE);
 		return mpd_main(argc, argv);
@@ -125,16 +197,18 @@ int win32_main(int argc, char *argv[])
 
 void win32_app_started()
 {
+	const std::scoped_lock lock{running_mutex};
+	running_event_loop = &global_instance->event_loop;
+
 	if (service_handle != 0)
 		service_notify_status(SERVICE_RUNNING);
-	else
-		running.store(true);
 }
 
 void win32_app_stopping()
 {
+	const std::scoped_lock lock{running_mutex};
+	running_event_loop = nullptr;
+
 	if (service_handle != 0)
 		service_notify_status(SERVICE_STOP_PENDING);
-	else
-		running.store(false);
 }

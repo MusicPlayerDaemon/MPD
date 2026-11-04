@@ -33,11 +33,11 @@ public:
 	constexpr ComPtr(ComPtr &&u) noexcept : ptr(std::exchange(u.ptr, nullptr)) {}
 
 	ComPtr &operator=(const ComPtr &r) noexcept {
-		reset();
-		ptr = r.ptr;
-		if (ptr) {
-			ptr->AddRef();
-		}
+		/* copy first (which calls AddRef()), then release
+		   the old object; this order is necessary for
+		   self-assignment and if the old object owns the
+		   source */
+		ComPtr(r).swap(*this);
 		return *this;
 	}
 	constexpr ComPtr &operator=(ComPtr &&r) noexcept {
@@ -69,7 +69,7 @@ public:
 			      DWORD class_context = CLSCTX_ALL) {
 		HRESULT result =
 			::CoCreateInstance(class_id, unknown_outer, class_context,
-					   __uuidof(T), reinterpret_cast<void **>(&ptr));
+					   __uuidof(T), AddressCast());
 		if (FAILED(result)) {
 			throw MakeHResultError(result, "Unable to create instance");
 		}

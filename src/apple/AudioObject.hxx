@@ -85,5 +85,9 @@ AudioObjectGetPropertyDataArray(AudioObjectID inObjectID,
 	if (status != noErr)
 		Apple::ThrowOSStatus(status);
 
+	/* the property may have shrunk meanwhile (e.g. because a
+	   device was removed) */
+	result.SetSize(size / sizeof(T));
+
 	return result;
 }

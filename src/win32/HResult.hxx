@@ -13,7 +13,7 @@
 std::string_view
 HRESULTToString(HRESULT result) noexcept;
 
-static inline const std::error_category &hresult_category() noexcept;
+inline const std::error_category &hresult_category() noexcept;
 class HResultCategory : public std::error_category {
 public:
 	const char *name() const noexcept override { return "HRESULT"; }
@@ -22,7 +22,7 @@ public:
 		return std::error_condition(code, hresult_category());
 	}
 };
-static inline const std::error_category &hresult_category() noexcept {
+inline const std::error_category &hresult_category() noexcept {
 	static const HResultCategory hresult_category_instance{};
 	return hresult_category_instance;
 }

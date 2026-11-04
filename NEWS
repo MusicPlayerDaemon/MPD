@@ -49,8 +49,24 @@ ver 0.25 (not yet released)
 * require Meson 1.2
 
 ver 0.24.19 (not yet released)
+* configuration
+  - fix crash if "audio_buffer_size" is too large
 * decoder
   - sidplay: work around deprecation warning with libsidplayfp 2.14
+* output
+  - fix data race in the ring buffer on ARM and other architectures
+  - osx: fix noise when playing DSD with DoP disabled
+  - wasapi: fix rare hang while disabling the output
+  - wasapi: fix crash with "enumerate"
+  - wasapi: fix crash after the device has been removed
+  - wasapi: fix device names beginning with a digit
+  - wasapi: fail if no supported format was found in exclusive mode
+  - wasapi: fix format negotiation in shared mode
+* Windows
+  - fix service stop and system shutdown
+  - fix service timeout error if startup or shutdown is slow
+  - fix race crash bug during shutdown
+  - fix service hang after startup failure
 
 ver 0.24.18 (2026/10/30)
 * protocol

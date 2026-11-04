@@ -565,7 +565,7 @@ FindAudioDeviceByName(const char *name)
 			return id;
 	}
 
-	throw FmtRuntimeError("Found no audio device names {:?}", name);
+	throw FmtRuntimeError("Found no audio device named {:?}", name);
 }
 
 static void
@@ -699,6 +699,11 @@ OSXOutput::Open(AudioFormat &audio_format)
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 	bool dop = dop_setting;
+
+	if (audio_format.format == SampleFormat::DSD && !dop)
+		/* without DoP, DSD can only be played after
+		   converting it to PCM */
+		audio_format.format = SampleFormat::S32;
 #endif
 
 	asbd = {};
@@ -749,6 +754,10 @@ OSXOutput::Open(AudioFormat &audio_format)
 		asbd.mBytesPerPacket = audio_format.GetFrameSize();
 		asbd.mSampleRate = params.CalcOutputSampleRate(audio_format.sample_rate);
 		asbd.mBytesPerFrame = asbd.mBytesPerPacket;
+
+		/* the device format was chosen for DoP; choose again
+		   for the new PCM format */
+		osx_output_set_device_format(dev_id, asbd);
 	}
 	dop_enabled = params.dsd_mode == PcmExport::DsdMode::DOP;
 #endif
@@ -765,7 +774,14 @@ OSXOutput::Open(AudioFormat &audio_format)
 	if (status != noErr)
 		Apple::ThrowOSStatus(status, "Unable to initialize OS X audio unit");
 
-	UInt32 buffer_frame_size = osx_output_set_buffer_size(au, asbd);
+	UInt32 buffer_frame_size;
+
+	try {
+		buffer_frame_size = osx_output_set_buffer_size(au, asbd);
+	} catch (...) {
+		AudioUnitUninitialize(au);
+		throw;
+	}
 
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
 						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
@@ -784,17 +800,21 @@ OSXOutput::Open(AudioFormat &audio_format)
 }
 
 std::size_t
-OSXOutput::Play(std::span<const std::byte> input)
+OSXOutput::Play(std::span<const std::byte> src)
 {
-	assert(!input.empty());
+	assert(!src.empty());
 
 	pause = false;
+
+	auto input = src;
 
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
 		input = pcm_export->Export(input);
 		if (input.empty())
-			return input.size();
+			/* PcmExport::Export() has buffered all of the
+			   (partial block) input; it was consumed */
+			return src.size();
 	}
 #endif
 

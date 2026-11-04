@@ -11,8 +11,11 @@ std::chrono::seconds
 GetProcessUptimeS()
 {
 	FILETIME creation_time, exit_time, kernel_time, user_time, now;
-	GetProcessTimes(GetCurrentProcess(), &creation_time,
-			&exit_time, &kernel_time, &user_time);
+	if (!GetProcessTimes(GetCurrentProcess(), &creation_time,
+			     &exit_time, &kernel_time, &user_time))
+		[[unlikely]]
+		return {};
+
 	GetSystemTimeAsFileTime(&now);
 
 	return DeltaFileTimeS(now, creation_time);

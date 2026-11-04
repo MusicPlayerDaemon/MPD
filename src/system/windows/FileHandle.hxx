@@ -51,7 +51,7 @@ public:
  * RAII for a Windows #HANDLE (for those handles that use
  * #INVALID_HANDLE_VALUE).
  *
- * @see https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
  */
 class UniqueFileHandle : public FileHandle {
 public:

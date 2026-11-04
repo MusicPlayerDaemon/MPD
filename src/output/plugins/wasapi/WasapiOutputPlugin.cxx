@@ -24,6 +24,7 @@
 #include "system/windows/Event.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
+#include "util/NumberParser.hxx"
 #include "util/RingBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringBuffer.hxx"
@@ -75,18 +76,6 @@ GetChannelMask(const uint8_t channels) noexcept
 	}
 }
 
-template <typename Functor>
-inline bool
-SafeSilenceTry(Functor &&functor) noexcept
-{
-	try {
-		functor();
-		return true;
-	} catch (...) {
-		return false;
-	}
-}
-
 std::vector<WAVEFORMATEXTENSIBLE>
 GetFormats(const AudioFormat &audio_format) noexcept
 {
@@ -132,6 +121,43 @@ GetFormats(const AudioFormat &audio_format) noexcept
 			audio_format.sample_rate * device_format.Format.nBlockAlign;
 	}
 	return Result;
+}
+
+/**
+ * Convert a plain #WAVEFORMATEX (#WAVE_FORMAT_PCM or
+ * #WAVE_FORMAT_IEEE_FLOAT) to #WAVEFORMATEXTENSIBLE.
+ *
+ * Throws on error.
+ */
+WAVEFORMATEXTENSIBLE
+ToExtensible(const WAVEFORMATEX &src)
+{
+	WAVEFORMATEXTENSIBLE dest{};
+
+	switch (src.wFormatTag) {
+	case WAVE_FORMAT_PCM:
+		dest.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+		break;
+
+	case WAVE_FORMAT_IEEE_FLOAT:
+		dest.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+		break;
+
+	default:
+		throw FmtRuntimeError("Unsupported format tag {:#x}",
+				      src.wFormatTag);
+	}
+
+	if (src.nChannels < 1 || src.nChannels > 8)
+		throw FmtRuntimeError("Unsupported number of channels: {}",
+				      src.nChannels);
+
+	dest.Format = src;
+	dest.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+	dest.Format.cbSize = sizeof(dest) - sizeof(dest.Format);
+	dest.Samples.wValidBitsPerSample = src.wBitsPerSample;
+	dest.dwChannelMask = GetChannelMask(src.nChannels);
+	return dest;
 }
 
 #ifdef ENABLE_DSD
@@ -627,6 +653,11 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 {
 	client.reset();
 
+	/* a previous DoOpen() call may have failed after creating
+	   the PcmExport instance (Close() is not called after
+	   that) */
+	pcm_export.reset();
+
 	/* Always re-enumerate because the auto-reset device_event
 	   is consumed by the worker thread's
 	   WaitForMultipleObjects before DoOpen gets a chance to
@@ -792,7 +823,7 @@ WasapiOutput::Delay() const noexcept
 }
 
 std::size_t
-WasapiOutput::Play(std::span<const std::byte> input)
+WasapiOutput::Play(std::span<const std::byte> src)
 {
 	assert(thread);
 
@@ -800,11 +831,14 @@ WasapiOutput::Play(std::span<const std::byte> input)
 
 	not_interrupted.test_and_set();
 
+	auto input = src;
 	if (pcm_export) {
 		input = pcm_export->Export(input);
 	}
 	if (input.empty())
-		return input.size();
+		/* PcmExport::Export() has buffered all of the
+		   (partial block) input; it was consumed */
+		return src.size();
 
 	do {
 		const size_t consumed_size = thread->Push(input);
@@ -857,6 +891,12 @@ WasapiOutput::Drain()
 			throw AudioOutputInterrupted{};
 	}
 
+	/* the stream is discontinuous now; discard the incomplete
+	   block which may still be inside the PcmExport instance,
+	   because it would otherwise be prepended to the next song */
+	if (pcm_export)
+		pcm_export->Reset();
+
 	/* TODO: this needs to wait until the hardware has really
 	   finished playing */
 }
@@ -867,6 +907,11 @@ WasapiOutput::Cancel() noexcept
 	assert(thread);
 
 	thread->Cancel();
+
+	/* discard the incomplete block which may still be inside the
+	   PcmExport instance */
+	if (pcm_export)
+		pcm_export->Reset();
 }
 
 /// run inside COMWorkerThread
@@ -886,14 +931,14 @@ WasapiOutput::ChooseDevice()
 	}
 
 	if (!device_config.empty()) {
-		unsigned int id;
-		if (!SafeSilenceTry([this, &id]() { id = std::stoul(device_config); })) {
+		if (const auto id = ParseInteger<unsigned>(device_config)) {
+			device = GetDevice(*enumerator, *id);
+		} else {
 			device = SearchDevice(*enumerator, device_config);
 			if (!device)
 				throw FmtRuntimeError("Device {:?} not found",
 						      device_config);
-		} else
-			device = GetDevice(*enumerator, id);
+		}
 	} else {
 		device = GetDefaultAudioEndpoint(*enumerator);
 	}
@@ -938,6 +983,7 @@ WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format)
 		auto old_channels = std::exchange(audio_format.channels, channels);
 #ifdef ENABLE_DSD
 		bool was_dsd = false;
+		const auto dsd_sample_rate = audio_format.sample_rate;
 		if (audio_format.format == SampleFormat::DSD) {
 			if (dop_setting && TryFormatExclusive(audio_format)) {
 				return;
@@ -980,10 +1026,14 @@ WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format)
 #ifdef ENABLE_DSD
 		if (was_dsd) {
 			audio_format.format = SampleFormat::DSD;
+			audio_format.sample_rate = dsd_sample_rate;
 		}
 #endif
 		audio_format.channels = old_channels;
 	}
+
+	throw FmtRuntimeError("No supported format found for {}",
+			      audio_format);
 }
 
 /// run inside COMWorkerThread
@@ -1016,11 +1066,7 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		throw MakeHResultError(result, "IsFormatSupported failed");
 	}
 
-	switch (result) {
-	case S_OK:
-		break;
-	case AUDCLNT_E_UNSUPPORTED_FORMAT:
-	default:
+	if (result == AUDCLNT_E_UNSUPPORTED_FORMAT) {
 		// Trying channels fallback.
 		audio_format.channels = mixer_format->nChannels;
 
@@ -1043,27 +1089,16 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		if (FAILED(result)) {
 			throw MakeHResultError(result, "Format is not supported");
 		}
-		break;
-	case S_FALSE:
+	}
+
+	if (result == S_FALSE) {
+		/* use the closest match suggested by
+		   IsFormatSupported() */
 		if (closest_format->Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
 			device_format = *closest_format;
 		} else {
-			device_format.Samples.wValidBitsPerSample =
-				device_format.Format.wBitsPerSample;
-			device_format.Format = closest_format->Format;
-			switch (std::exchange(device_format.Format.wFormatTag,
-					      WAVE_FORMAT_EXTENSIBLE)) {
-			case WAVE_FORMAT_PCM:
-				device_format.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
-				break;
-			case WAVE_FORMAT_IEEE_FLOAT:
-				device_format.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
-				break;
-			default:
-				std::unreachable();
-			}
+			device_format = ToExtensible(closest_format->Format);
 		}
-		break;
 	}
 
 	// Copy closest match back to audio_format.
@@ -1077,15 +1112,25 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 		case 16:
 			audio_format.format = SampleFormat::S16;
 			break;
+		case 24:
+			/* packed by PcmExport */
+			audio_format.format = SampleFormat::S24_P32;
+			break;
 		case 32:
 			audio_format.format =
 				device_format.Samples.wValidBitsPerSample == 32
 					? SampleFormat::S32
 					: SampleFormat::S24_P32;
 			break;
+		default:
+			throw FmtRuntimeError("Unsupported sample size: {} bits",
+					      device_format.Format.wBitsPerSample);
 		}
-	} else if (device_format.SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
+	} else if (device_format.SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT &&
+		   device_format.Format.wBitsPerSample == 32) {
 		audio_format.format = SampleFormat::FLOAT;
+	} else {
+		throw std::runtime_error("Unsupported sample format");
 	}
 }
 
@@ -1108,7 +1153,7 @@ WasapiOutput::EnumerateDevices(IMMDeviceEnumerator &enumerator)
 			continue;
 
 		FmtNotice(wasapi_output_domain,
-			  "Device {:?} {:?}", i, name.c_str());
+			  "Device {} {:?}", i, name.c_str());
 	}
 }
 
