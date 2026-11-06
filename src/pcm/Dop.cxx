@@ -2,7 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "Dop.hxx"
-#include "ChannelDefs.hxx"
+#include "Validate.hxx"
 
 #include <cassert>
 #include <functional>

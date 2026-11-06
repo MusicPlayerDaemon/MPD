@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_AUDIO_FORMAT_HXX
-#define MPD_AUDIO_FORMAT_HXX
+#pragma once
 
-#include "pcm/SampleFormat.hxx" // IWYU pragma: export
-#include "pcm/ChannelDefs.hxx" // IWYU pragma: export
+#include "SampleFormat.hxx" // IWYU pragma: export
+#include "Time.hxx"
+#include "Validate.hxx" // IWYU pragma: export
 
 #include <cstddef>
 #include <cstdint>
@@ -131,38 +131,24 @@ struct AudioFormat {
 
 	template<typename D>
 	constexpr auto TimeToFrames(D t) const noexcept {
-		using Period = typename D::period;
-		return ((t.count() * sample_rate) / Period::den) * Period::num;
+		return PcmTimeToFrames(t, sample_rate);
 	}
 
 	template<typename D>
 	constexpr std::size_t TimeToSize(D t) const noexcept {
-		return std::size_t(std::size_t(TimeToFrames(t)) * GetFrameSize());
+		return PcmTimeToSize(t, sample_rate, GetFrameSize());
 	}
 
 	template<typename D>
 	constexpr D FramesToTime(std::uintmax_t size) const noexcept {
-		using Rep = typename D::rep;
-		using Period = typename D::period;
-		return D(((Rep(1) * size / Period::num) * Period::den) / sample_rate);
+		return PcmFramesToTime<D>(size, sample_rate);
 	}
 
 	template<typename D>
 	constexpr D SizeToTime(std::uintmax_t size) const noexcept {
-		return FramesToTime<D>(size / GetFrameSize());
+		return PcmSizeToTime<D>(size, sample_rate, GetFrameSize());
 	}
 };
-
-/**
- * Checks whether the sample rate is valid.
- *
- * @param sample_rate the sample rate in Hz
- */
-constexpr bool
-audio_valid_sample_rate(unsigned sample_rate) noexcept
-{
-	return sample_rate > 0 && sample_rate < (1 << 30);
-}
 
 /**
  * Returns false if the format is not valid for playback with MPD.
@@ -212,5 +198,3 @@ AudioFormat::GetFrameSize() const noexcept
 [[gnu::const]]
 StringBuffer<24>
 ToString(AudioFormat af) noexcept;
-
-#endif

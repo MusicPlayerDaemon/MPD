@@ -31,7 +31,7 @@ or implied, of Sebastian Gesemann.
 #ifndef DSD2PCM_H_INCLUDED
 #define DSD2PCM_H_INCLUDED
 
-#include "ChannelDefs.hxx"
+#include "Validate.hxx"
 
 #include <array>
 #include <cstddef>

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_PCM_REST_BUFFER_HXX
-#define MPD_PCM_REST_BUFFER_HXX
+#pragma once
 
-#include "ChannelDefs.hxx"
+#include "Validate.hxx"
 
 #include <algorithm>
 #include <cassert>
@@ -125,5 +124,3 @@ public:
 		return { dest0, dest_samples };
 	}
 };
-
-#endif

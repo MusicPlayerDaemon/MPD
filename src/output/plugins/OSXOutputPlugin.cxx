@@ -7,6 +7,7 @@
 #include "apple/StringRef.hxx"
 #include "apple/Throw.hxx"
 #include "../OutputAPI.hxx"
+#include "../Error.hxx"
 #include "mixer/plugins/OSXMixerPlugin.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/ToBuffer.hxx"
@@ -14,6 +15,8 @@
 #include "util/Manual.hxx"
 #include "pcm/Export.hxx"
 #include "pcm/Features.h" // for ENABLE_DSD
+#include "pcm/Silence.hxx"
+#include "pcm/Time.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/CharUtil.hxx"
 #include "util/RingBuffer.hxx"
@@ -26,9 +29,11 @@
 #include <AudioToolbox/AudioToolbox.h>
 
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <memory>
 #include <span>
+#include <thread>
 
 #if (__MAC_OS_X_VERSION_MAX_ALLOWED < 120000)
 /* the "Main" identifiers were introduced in the macOS 12 SDK,
@@ -39,7 +44,7 @@ static constexpr AudioObjectPropertySelector kAudioHardwareServiceDeviceProperty
 	kAudioHardwareServiceDeviceProperty_VirtualMasterVolume;
 #endif
 
-static constexpr unsigned MPD_OSX_BUFFER_TIME_MS = 500;
+static constexpr auto MPD_OSX_BUFFER_TIME = std::chrono::milliseconds{500};
 
 static auto
 StreamDescriptionToString(const AudioStreamBasicDescription &desc) noexcept
@@ -73,6 +78,19 @@ struct OSXOutput final : AudioOutput {
 	 */
 	bool started;
 
+	/**
+	 * Set by Interrupt() to make Play() stop waiting for room in
+	 * the ring buffer and Drain() stop waiting for the ring buffer
+	 * to become empty.  Cleared by Open(), Cancel() and Pause().
+	 */
+	std::atomic_bool interrupted = false;
+
+	/**
+	 * The duration of the AudioUnit's own buffer.  Drain() waits
+	 * this long after the ring buffer has become empty.
+	 */
+	std::chrono::steady_clock::duration io_buffer_duration;
+
 #ifdef ENABLE_DSD
 	/**
 	 * Enable DSD over PCM according to the DoP standard?
@@ -91,6 +109,17 @@ struct OSXOutput final : AudioOutput {
 	std::atomic<AudioDeviceID> dev_id;
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
+
+	/**
+	 * The size of one frame passed to Play() in bytes.
+	 */
+	std::size_t in_frame_size;
+
+	/**
+	 * The sample format of the data in #ring_buffer.  With DoP,
+	 * this is SampleFormat::S24_P32 (not SampleFormat::DSD).
+	 */
+	SampleFormat out_sample_format;
 
 	using RingBuffer = ::RingBuffer<std::byte>;
 	RingBuffer ring_buffer;
@@ -111,14 +140,31 @@ private:
 	 */
 	void UpdateDefaultDevice();
 
+	/**
+	 * Determine how many bytes may be passed to Play() without
+	 * overflowing the ring buffer.  The return value is a
+	 * multiple of #in_frame_size.
+	 */
+	std::size_t GetMaxPlaySize() const noexcept;
+
+	/**
+	 * Start the AudioUnit if it is not already started.
+	 *
+	 * Throws on error.
+	 */
+	void Start();
+
 	void Enable() override;
 	void Disable() noexcept override;
 
 	void Open(AudioFormat &audio_format) override;
 	void Close() noexcept override;
 
+	void Interrupt() noexcept override;
+
 	std::chrono::steady_clock::duration Delay() const noexcept override;
 	std::size_t Play(std::span<const std::byte> src) override;
+	void Drain() override;
 	bool Pause() override;
 	void Cancel() noexcept override;
 };
@@ -452,8 +498,13 @@ osx_output_set_device_format(AudioDeviceID dev_id,
 	return output_format.mSampleRate;
 }
 
+/**
+ * Set the AudioUnit's buffer to the maximum size.
+ *
+ * @return the actual buffer size in frames
+ */
 static UInt32
-osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
+osx_output_set_buffer_size(AudioUnit au)
 {
 	const auto value_range = AudioUnitGetPropertyT<AudioValueRange>(au,
 									kAudioDevicePropertyBufferFrameSizeRange,
@@ -467,11 +518,7 @@ osx_output_set_buffer_size(AudioUnit au, AudioStreamBasicDescription desc)
 			 "Failed to set maximum buffer size");
 	}
 
-	auto buffer_frame_size = AudioUnitGetBufferFrameSize(au);
-	buffer_frame_size *= desc.mBytesPerFrame;
-
-	// the smallest power of two larger than buffer_frame_size
-	return RoundUpToPowerOfTwo(buffer_frame_size + 1);
+	return AudioUnitGetBufferFrameSize(au);
 }
 
 static void
@@ -609,9 +656,17 @@ osx_render(void *vdata,
 {
 	auto *od = static_cast<OSXOutput *>(vdata);
 
-	std::size_t count = in_number_frames * od->asbd.mBytesPerFrame;
-	buffer_list->mBuffers[0].mDataByteSize =
-		od->ring_buffer.ReadTo({(std::byte *)buffer_list->mBuffers[0].mData, count});
+	auto &buffer = buffer_list->mBuffers[0];
+	const std::size_t count = in_number_frames * od->asbd.mBytesPerFrame;
+	const std::span<std::byte> dest{(std::byte *)buffer.mData, count};
+
+	const std::size_t n = od->ring_buffer.ReadTo(dest);
+
+	/* on buffer underrun, fill the rest with silence; CoreAudio
+	   expects the requested number of frames */
+	PcmSilence(dest.subspan(n), od->out_sample_format);
+	buffer.mDataByteSize = count;
+
 	return noErr;
 }
 
@@ -762,6 +817,19 @@ OSXOutput::Open(AudioFormat &audio_format)
 	dop_enabled = params.dsd_mode == PcmExport::DsdMode::DOP;
 #endif
 
+	out_sample_format = audio_format.format;
+#ifdef ENABLE_DSD
+	if (dop_enabled)
+		/* the ring buffer contains DoP frames, and DSD
+		   silence bytes without DoP markers would be played
+		   as PCM noise */
+		out_sample_format = SampleFormat::S24_P32;
+#endif
+
+	/* raw DSD is never written to the ring buffer: without DoP,
+	   it is converted to PCM */
+	assert(out_sample_format != SampleFormat::DSD);
+
 	AudioUnitSetInputStreamFormat(au, asbd);
 
 	AURenderCallbackStruct callback;
@@ -774,37 +842,89 @@ OSXOutput::Open(AudioFormat &audio_format)
 	if (status != noErr)
 		Apple::ThrowOSStatus(status, "Unable to initialize OS X audio unit");
 
-	UInt32 buffer_frame_size;
+	UInt32 io_buffer_frames;
 
 	try {
-		buffer_frame_size = osx_output_set_buffer_size(au, asbd);
+		io_buffer_frames = osx_output_set_buffer_size(au);
 	} catch (...) {
 		AudioUnitUninitialize(au);
 		throw;
 	}
 
+	io_buffer_duration =
+		std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+			std::chrono::duration<double>(io_buffer_frames / asbd.mSampleRate));
+
+	// the smallest power of two larger than the AudioUnit's buffer
+	const UInt32 buffer_frame_size =
+		RoundUpToPowerOfTwo(io_buffer_frames * asbd.mBytesPerFrame + 1);
+
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * audio_format.GetFrameSize() * audio_format.sample_rate / 1000);
+						   audio_format.TimeToSize(MPD_OSX_BUFFER_TIME));
 
 #ifdef ENABLE_DSD
 	if (dop_enabled) {
 		pcm_export->Open(audio_format.format, audio_format.channels, params);
 		ring_buffer_size = std::max<size_t>(buffer_frame_size,
-						   MPD_OSX_BUFFER_TIME_MS * pcm_export->GetOutputFrameSize() * asbd.mSampleRate / 1000);
+						    PcmTimeToSize(MPD_OSX_BUFFER_TIME,
+								  params.CalcOutputSampleRate(audio_format.sample_rate),
+								  pcm_export->GetOutputFrameSize()));
 	}
 #endif
 	ring_buffer = RingBuffer{ring_buffer_size};
+	in_frame_size = audio_format.GetFrameSize();
 
 	pause = false;
 	started = false;
+	interrupted.store(false, std::memory_order_relaxed);
+}
+
+void
+OSXOutput::Interrupt() noexcept
+{
+	interrupted.store(true, std::memory_order_relaxed);
+}
+
+void
+OSXOutput::Start()
+{
+	if (started)
+		return;
+
+	OSStatus status = AudioOutputUnitStart(au);
+	if (status != noErr)
+		Apple::ThrowOSStatus(status,
+				     "Unable to start audio output");
+
+	started = true;
 }
 
 std::size_t
 OSXOutput::Play(std::span<const std::byte> src)
 {
 	assert(!src.empty());
+	assert(src.size() % in_frame_size == 0);
 
 	pause = false;
+
+	std::size_t max_size;
+	while ((max_size = GetMaxPlaySize()) == 0) {
+		/* the ring buffer is full; this usually doesn't
+		   happen because Delay() lets the output thread wait,
+		   but it doesn't call Delay() after resuming from
+		   pause; start the AudioUnit (which was stopped by
+		   Pause()) and wait until the render callback has
+		   consumed some data */
+		Start();
+
+		if (interrupted.load(std::memory_order_relaxed))
+			throw AudioOutputInterrupted{};
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+
+	if (src.size() > max_size)
+		src = src.first(max_size);
 
 	auto input = src;
 
@@ -818,36 +938,89 @@ OSXOutput::Play(std::span<const std::byte> src)
 	}
 #endif
 
-	size_t bytes_written = ring_buffer.WriteFrom(input);
+	[[maybe_unused]] const std::size_t bytes_written =
+		ring_buffer.WriteFrom(input);
+	assert(bytes_written == input.size());
 
-	if (!started) {
-		OSStatus status = AudioOutputUnitStart(au);
-		if (status != noErr)
-			Apple::ThrowOSStatus(status,
-					     "Unable to start audio output");
+	Start();
 
-		started = true;
+	return src.size();
+}
+
+void
+OSXOutput::Drain()
+{
+	if (!started)
+		/* nothing is being played */
+		return;
+
+	/* wait until the render callback has consumed the ring
+	   buffer; give up if it doesn't make progress for one
+	   second (e.g. because the device has vanished) */
+
+	std::size_t previous_available = 0;
+	auto stall_deadline = std::chrono::steady_clock::now();
+
+	while (true) {
+		if (interrupted.load(std::memory_order_relaxed))
+			/* a command is pending; don't throw
+			   AudioOutputInterrupted, because the output
+			   thread would consider this an error */
+			return;
+
+		const std::size_t available = ring_buffer.ReadAvailable();
+		if (available == 0)
+			break;
+
+		const auto now = std::chrono::steady_clock::now();
+		if (available != previous_available) {
+			previous_available = available;
+			stall_deadline = now + std::chrono::seconds(1);
+		} else if (now >= stall_deadline)
+			return;
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
+	/* now wait until the AudioUnit has played its own buffer,
+	   which was filled by the last render callback */
+	std::this_thread::sleep_for(io_buffer_duration);
+}
+
+std::size_t
+OSXOutput::GetMaxPlaySize() const noexcept
+{
+	std::size_t size = ring_buffer.WriteAvailable();
+
 #ifdef ENABLE_DSD
-	if (dop_enabled)
-		bytes_written = pcm_export->CalcInputSize(bytes_written);
+	if (dop_enabled) {
+		/* reserve room for one extra block, just in case
+		   PcmExport::Export() has some partial block data in
+		   its internal buffer */
+		const std::size_t out_block_size =
+			pcm_export->GetOutputBlockSize();
+		if (size <= out_block_size)
+			return 0;
+
+		size = pcm_export->CalcInputSize(size - out_block_size);
+	}
 #endif
 
-	return bytes_written;
+	return size - size % in_frame_size;
 }
 
 std::chrono::steady_clock::duration
 OSXOutput::Delay() const noexcept
 {
-	return !ring_buffer.IsFull() && !pause
+	return GetMaxPlaySize() > 0 && !pause
 		? std::chrono::steady_clock::duration::zero()
-		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
+		: std::chrono::steady_clock::duration{MPD_OSX_BUFFER_TIME} / 4;
 }
 
 bool OSXOutput::Pause()
 {
 	pause = true;
+	interrupted.store(false, std::memory_order_relaxed);
 
 	if (started) {
 		AudioOutputUnitStop(au);
@@ -869,6 +1042,8 @@ OSXOutput::Cancel() noexcept
 #ifdef ENABLE_DSD
 	pcm_export->Reset();
 #endif
+
+	interrupted.store(false, std::memory_order_relaxed);
 
 	/* the AudioUnit will be restarted by the next Play() call */
 }
