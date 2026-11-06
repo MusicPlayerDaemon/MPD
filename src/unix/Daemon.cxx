@@ -134,6 +134,18 @@ daemonize_begin(bool detach)
 	   can't write to the pid file */
 	PidFile pidfile2(pidfile);
 
+#ifdef __APPLE__
+	/* on macOS, MainOrThrow() has already forked (before any
+	   Objective-C runtime initialization) and the parent process
+	   has exited; there is no parent process waiting for the
+	   pipe, so leave #detach_fd undefined, and
+	   daemonize_commit() will write the pid file */
+
+	pidfile2.Close();
+
+	/* detach from the current session */
+	setsid();
+#else
 	/* flush all file handles before duplicating the buffers */
 
 	fflush(nullptr);
@@ -146,8 +158,6 @@ daemonize_begin(bool detach)
 		throw MakeErrno("pipe() failed");
 
 	/* move to a child process */
-
-#ifndef __APPLE__
 
 	pid_t pid = fork();
 	if (pid < 0)

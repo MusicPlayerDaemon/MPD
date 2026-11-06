@@ -185,7 +185,15 @@ SetDSDFallback(AudioFormat &audio_format) noexcept
 class WasapiOutputThread {
 	Thread thread{BIND_THIS_METHOD(Work)};
 	WinEvent event;
-	WinEvent data_poped;
+
+	/**
+	 * Signalled by this thread after it has consumed data from
+	 * the #ring_buffer.  This is owned by #WasapiOutput, because
+	 * WasapiOutput::Interrupt() may signal it at any time, even
+	 * while this object is being created or destroyed.
+	 */
+	WinEvent &data_poped;
+
 	IAudioClient &client;
 	ComPtr<IAudioRenderClient> render_client;
 	const UINT32 frame_size;
@@ -207,6 +215,10 @@ class WasapiOutputThread {
 
 	std::atomic_bool cancel = false;
 
+	/**
+	 * Was the last read from #ring_buffer empty?  Only written by
+	 * the worker thread.
+	 */
 	std::atomic_bool empty = true;
 
 	enum class Status : uint32_t { FINISH, PLAY, PAUSE };
@@ -221,11 +233,12 @@ class WasapiOutputThread {
 	RingBuffer<std::byte> ring_buffer;
 
 public:
-	WasapiOutputThread(IAudioClient &_client,
+	WasapiOutputThread(WinEvent &_data_poped,
+			   IAudioClient &_client,
 			   ComPtr<IAudioRenderClient> &&_render_client,
 			   const UINT32 _frame_size, const UINT32 _buffer_size_in_frames,
 			   bool _is_exclusive, HANDLE _device_event)
-		:client(_client),
+		:data_poped(_data_poped), client(_client),
 		 render_client(std::move(_render_client)), frame_size(_frame_size),
 		 buffer_size_in_frames(_buffer_size_in_frames), is_exclusive(_is_exclusive),
 		 device_event(_device_event),
@@ -254,8 +267,6 @@ public:
 	}
 
 	std::size_t Push(std::span<const std::byte> input) noexcept {
-		empty.store(false);
-
 		std::size_t consumed = ring_buffer.WriteFrom(input);
 
 		if (!playing) {
@@ -281,7 +292,7 @@ public:
 	 * @return true if the buffer is now empty
 	 */
 	bool Drain() {
-		if (empty)
+		if (IsEmpty())
 			return true;
 
 		CheckException();
@@ -295,7 +306,7 @@ public:
 		Wait();
 		CheckException();
 
-		return empty;
+		return IsEmpty();
 	}
 
 	/**
@@ -351,10 +362,33 @@ private:
 		started = false;
 	}
 
+	/**
+	 * Has the worker thread consumed all data?  To be called by
+	 * the producer (#OutputThread), which is the only one adding
+	 * data to #ring_buffer, so once it is empty, it stays empty;
+	 * and #empty means the worker thread has seen that.
+	 */
+	bool IsEmpty() const noexcept {
+		return ring_buffer.IsEmptyRelaxed() && empty.load();
+	}
+
 	void SetStatus(Status s) noexcept {
 		status.store(s);
 		event.Set();
 	}
+
+	/**
+	 * Start the #IAudioClient if it is not already started.
+	 *
+	 * Throws on error.
+	 */
+	void StartClient() {
+		if (!started) {
+			Start(client);
+			started = true;
+		}
+	}
+
 	void Work() noexcept;
 };
 
@@ -370,7 +404,17 @@ class WasapiOutput final : public AudioOutput {
 	 */
 	bool paused;
 
-	std::atomic_flag not_interrupted = true;
+	/**
+	 * Set by Interrupt(); while set, Play() and Drain() do not
+	 * block.  It is cleared by Open(), Cancel() and Pause(), i.e.
+	 * the commands which follow an Interrupt() call.
+	 */
+	std::atomic_bool interrupted = false;
+
+	/**
+	 * Passed to #WasapiOutputThread; see there.
+	 */
+	WinEvent data_poped;
 
 	const std::string device_config;
 
@@ -387,7 +431,6 @@ class WasapiOutput final : public AudioOutput {
 	ComPtr<IAudioClient> client;
 	WAVEFORMATEXTENSIBLE device_format;
 	std::optional<WasapiOutputThread> thread;
-	std::size_t watermark;
 	std::optional<PcmExport> pcm_export;
 
 	/* Device change notification state */
@@ -444,6 +487,7 @@ public:
 		com_worker.reset();
 	}
 	void Open(AudioFormat &audio_format) override {
+		interrupted.store(false);
 		com_worker->Async([&]() { DoOpen(audio_format); }).get();
 		paused = false;
 	}
@@ -592,26 +636,24 @@ try {
 			throw MakeHResultError(result, "Failed to get buffer");
 		}
 
-		DWORD mode = 0;
-		AtScopeExit(&) {
-			render_client->ReleaseBuffer(write_in_frames, mode);
-
-			if (!started) {
-				Start(client);
-				started = true;
-			}
-		};
-
 		const UINT32 write_size = write_in_frames * frame_size;
 		std::span w{data, write_size};
 
 		const std::size_t new_data_size = ring_buffer.ReadTo(std::as_writable_bytes(w));
-		if (new_data_size == 0)
-			empty.store(true);
+		empty.store(new_data_size == 0);
 
 		std::fill_n(data + new_data_size,
 			    write_size - new_data_size, 0);
+
+		if (HRESULT result =
+		    render_client->ReleaseBuffer(write_in_frames, 0);
+		    FAILED(result)) {
+			throw MakeHResultError(result, "Failed to release buffer");
+		}
+
 		InterruptWaiter();
+
+		StartClient();
 	}
 } catch (...) {
 	error.ptr = std::current_exception();
@@ -671,6 +713,12 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 	if (audio_format.channels > 8) {
 		audio_format.channels = 8;
 	}
+
+	if (audio_format.format == SampleFormat::S8)
+		/* 8 bit PCM samples are unsigned in WASAPI, but
+		   SampleFormat::S8 is signed; let MPD convert to 16
+		   bit */
+		audio_format.format = SampleFormat::S16;
 
 #ifdef ENABLE_DSD
 	if (!dop_setting && audio_format.format == SampleFormat::DSD) {
@@ -785,8 +833,7 @@ WasapiOutput::DoOpen(AudioFormat &audio_format)
 
 	const UINT32 buffer_size_in_frames = GetBufferSizeInFrames(*client);
 
-	watermark = buffer_size_in_frames * 3 * FrameSize();
-	thread.emplace(*client, std::move(render_client), FrameSize(),
+	thread.emplace(data_poped, *client, std::move(render_client), FrameSize(),
 		       buffer_size_in_frames, is_exclusive,
 		       device_event.handle());
 
@@ -801,7 +848,7 @@ WasapiOutput::Close() noexcept
 	try {
 		thread->CheckException();
 	} catch (...) {
-		LogError(wasapi_output_domain, "exception while stopping");
+		LogError(std::current_exception(), "exception while stopping");
 	}
 	thread->Finish();
 	com_worker->Async([&]() {
@@ -829,8 +876,6 @@ WasapiOutput::Play(std::span<const std::byte> src)
 
 	paused = false;
 
-	not_interrupted.test_and_set();
-
 	auto input = src;
 	if (pcm_export) {
 		input = pcm_export->Export(input);
@@ -844,11 +889,12 @@ WasapiOutput::Play(std::span<const std::byte> src)
 		const size_t consumed_size = thread->Push(input);
 
 		if (consumed_size == 0) {
+			/* don't block if a command is pending */
+			if (interrupted.load())
+				throw AudioOutputInterrupted{};
+
 			thread->Wait();
 			thread->CheckException();
-			if (!not_interrupted.test_and_set()) {
-				throw AudioOutputInterrupted{};
-			}
 			continue;
 		}
 
@@ -864,6 +910,8 @@ WasapiOutput::Play(std::span<const std::byte> src)
 bool
 WasapiOutput::Pause()
 {
+	interrupted.store(false);
+
 	paused = true;
 	thread->Pause();
 	thread->CheckException();
@@ -873,10 +921,11 @@ WasapiOutput::Pause()
 void
 WasapiOutput::Interrupt() noexcept
 {
-	if (thread) {
-		not_interrupted.clear();
-		thread->InterruptWaiter();
-	}
+	/* this method is called from another thread, without any
+	   synchronization with Open() and Close(), so it must not
+	   access the "thread" field */
+	interrupted.store(true);
+	data_poped.Set();
 }
 
 void
@@ -884,11 +933,14 @@ WasapiOutput::Drain()
 {
 	assert(thread);
 
-	not_interrupted.test_and_set();
-
 	while (!thread->Drain()) {
-		if (!not_interrupted.test_and_set())
-			throw AudioOutputInterrupted{};
+		if (interrupted.load())
+			/* a command is pending; stop draining (unlike
+			   Play(), this method must not throw
+			   AudioOutputInterrupted, because
+			   AudioOutputControl::InternalDrain() would
+			   treat it as an error) */
+			break;
 	}
 
 	/* the stream is discontinuous now; discard the incomplete
@@ -905,6 +957,8 @@ void
 WasapiOutput::Cancel() noexcept
 {
 	assert(thread);
+
+	interrupted.store(false);
 
 	thread->Cancel();
 
@@ -1006,7 +1060,6 @@ WasapiOutput::FindExclusiveFormatSupported(AudioFormat &audio_format)
 				     SampleFormat::S32,
 				     SampleFormat::S24_P32,
 				     SampleFormat::S16,
-				     SampleFormat::S8,
 			     }) {
 				if (audio_format.format == format) {
 					continue;
@@ -1106,9 +1159,6 @@ WasapiOutput::FindSharedFormatSupported(AudioFormat &audio_format)
 	audio_format.sample_rate = device_format.Format.nSamplesPerSec;
 	if (device_format.SubFormat == KSDATAFORMAT_SUBTYPE_PCM) {
 		switch (device_format.Format.wBitsPerSample) {
-		case 8:
-			audio_format.format = SampleFormat::S8;
-			break;
 		case 16:
 			audio_format.format = SampleFormat::S16;
 			break;

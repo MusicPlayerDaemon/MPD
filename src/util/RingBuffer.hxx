@@ -186,8 +186,12 @@ public:
 	/**
 	 * Check whether the ring buffer is empty.
 	 *
-	 * This method is thread-safe, but it may only be called from
-	 * the consumer thread.
+	 * This method is thread-safe and may be called from both
+	 * threads, but the result is only a snapshot: if called from
+	 * the consumer thread, a "false" result remains valid (only
+	 * the consumer can remove items); if called from the producer
+	 * thread, a "true" result remains valid (only the producer can
+	 * add items).
 	 */
 	[[gnu::pure]]
 	bool IsEmptyRelaxed() const noexcept {
