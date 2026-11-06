@@ -4,6 +4,7 @@
 #pragma once
 
 #include "SampleFormat.hxx" // IWYU pragma: export
+#include "Time.hxx"
 #include "Validate.hxx" // IWYU pragma: export
 
 #include <cstddef>
@@ -130,25 +131,22 @@ struct AudioFormat {
 
 	template<typename D>
 	constexpr auto TimeToFrames(D t) const noexcept {
-		using Period = typename D::period;
-		return ((t.count() * sample_rate) / Period::den) * Period::num;
+		return PcmTimeToFrames(t, sample_rate);
 	}
 
 	template<typename D>
 	constexpr std::size_t TimeToSize(D t) const noexcept {
-		return std::size_t(std::size_t(TimeToFrames(t)) * GetFrameSize());
+		return PcmTimeToSize(t, sample_rate, GetFrameSize());
 	}
 
 	template<typename D>
 	constexpr D FramesToTime(std::uintmax_t size) const noexcept {
-		using Rep = typename D::rep;
-		using Period = typename D::period;
-		return D(((Rep(1) * size / Period::num) * Period::den) / sample_rate);
+		return PcmFramesToTime<D>(size, sample_rate);
 	}
 
 	template<typename D>
 	constexpr D SizeToTime(std::uintmax_t size) const noexcept {
-		return FramesToTime<D>(size / GetFrameSize());
+		return PcmSizeToTime<D>(size, sample_rate, GetFrameSize());
 	}
 };
 
