@@ -153,17 +153,6 @@ struct AudioFormat {
 };
 
 /**
- * Checks whether the sample rate is valid.
- *
- * @param sample_rate the sample rate in Hz
- */
-constexpr bool
-audio_valid_sample_rate(unsigned sample_rate) noexcept
-{
-	return sample_rate > 0 && sample_rate < (1 << 30);
-}
-
-/**
  * Returns false if the format is not valid for playback with MPD.
  * This function performs some basic validity checks.
  */
