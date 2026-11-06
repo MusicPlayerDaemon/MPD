@@ -2,10 +2,10 @@
 // Copyright The Music Player Daemon Project
 
 #include "PcmChannels.hxx"
-#include "ChannelDefs.hxx"
 #include "Buffer.hxx"
 #include "Silence.hxx"
 #include "Traits.hxx"
+#include "Validate.hxx"
 #include "config.h" // for ENABLE_DSD
 
 #include <array>

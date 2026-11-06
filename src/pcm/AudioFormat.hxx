@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ChannelDefs.hxx" // IWYU pragma: export
 #include "SampleFormat.hxx" // IWYU pragma: export
+#include "Validate.hxx" // IWYU pragma: export
 
 #include <cstddef>
 #include <cstdint>
