@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The Music Player Daemon Project
 
-#ifndef MPD_AUDIO_FORMAT_HXX
-#define MPD_AUDIO_FORMAT_HXX
+#pragma once
 
-#include "pcm/SampleFormat.hxx" // IWYU pragma: export
-#include "pcm/ChannelDefs.hxx" // IWYU pragma: export
+#include "ChannelDefs.hxx" // IWYU pragma: export
+#include "SampleFormat.hxx" // IWYU pragma: export
 
 #include <cstddef>
 #include <cstdint>
@@ -212,5 +211,3 @@ AudioFormat::GetFrameSize() const noexcept
 [[gnu::const]]
 StringBuffer<24>
 ToString(AudioFormat af) noexcept;
-
-#endif
