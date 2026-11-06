@@ -846,7 +846,7 @@ OSXOutput::Delay() const noexcept
 {
 	return !ring_buffer.IsFull() && !pause
 		? std::chrono::steady_clock::duration::zero()
-		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
+		: std::chrono::steady_clock::duration{MPD_OSX_BUFFER_TIME} / 4;
 }
 
 bool OSXOutput::Pause()
