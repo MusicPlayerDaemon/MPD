@@ -1485,6 +1485,39 @@ Reroute channels.
      - Specifies the channel mapping.
 
 
+startdelay
+----------
+Insert a duration of silence or low-level noise immediately before
+the stream starts. Some devices drop samples at the start of playback
+as they perform a handshake protocol or power up idle circuits; some
+require some non-zero samples before they begin their handshake. Use
+this filter to ensure the start of the first track is not dropped.
+The delay is inserted whenever the stream starts or re-starts after
+being stopped (for example when the audio format of the input changes,
+or if the output plugin stops when paused). The delay can also
+optionally be inserted when the filter is reset (for example when
+seeking or skipping songs). This plugin is unable to create noise for
+DSD and so the delay is always filled with silence for DSD formatted
+streams.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **delay_ms MS**
+     - The delay time in milliseconds. The default delay is 1000 ms.
+   * - **noise_level LEVEL**
+     - Sets the loudness of the noise inserted during the delay, in
+       the range [0 - 255]. A value of 1 generates noise at -90.3 dBFS,
+       and 255 generates noise at -42.1 dBFS. Use the value 0 for
+       silence. The default value is 0. This option is ignored for DSD
+       streams.
+   * - **on_reset yes|no**
+     - When yes, also delay the restart after seeking or skipping songs.
+       The default value is no.
+
 .. _playlist_plugins:
 
 Playlist plugins
