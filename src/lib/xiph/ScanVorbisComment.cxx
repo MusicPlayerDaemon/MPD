@@ -42,7 +42,8 @@ ScanVorbisComment(std::string_view comment, TagHandler &handler) noexcept
 			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (vorbis_copy_comment(comment,
+		if (i != TAG_LABEL &&
+		    vorbis_copy_comment(comment,
 					tag_item_names[i], TagType(i),
 					handler))
 			return;

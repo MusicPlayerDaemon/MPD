@@ -66,6 +66,10 @@ VorbisCommentScan(const vorbis_comment &vc, TagHandler &handler) noexcept
 	ForEachUserComment(vc, [&](std::string_view s){
 		vorbis_scan_comment(s, handler);
 	});
+
+	ScanVorbisLabels([&](auto func){
+		ForEachUserComment(vc, func);
+	}, handler);
 }
 
 std::unique_ptr<Tag>

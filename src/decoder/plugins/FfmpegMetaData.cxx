@@ -9,6 +9,7 @@
 #include "tag/Table.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Id3MusicBrainz.hxx"
+#include "util/StringCompare.hxx"
 
 extern "C" {
 #include <libavutil/dict.h>
@@ -37,15 +38,22 @@ static constexpr struct tag_table ffmpeg_tags[] = {
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };
 
-static void
+static bool
 FfmpegScanTag(TagType type,
 	      AVDictionary *m, const char *name,
 	      TagHandler &handler) noexcept
 {
 	AVDictionaryEntry *mt = nullptr;
+	bool found = false;
 
-	while ((mt = av_dict_get(m, name, mt, 0)) != nullptr)
-		handler.OnTag(type, mt->value);
+	while ((mt = av_dict_get(m, name, mt, 0)) != nullptr) {
+		if (mt->value != nullptr && !StringIsEmpty(mt->value)) {
+			handler.OnTag(type, mt->value);
+			found = true;
+		}
+	}
+
+	return found;
 }
 
 static void
@@ -62,8 +70,9 @@ FfmpegScanDictionary(AVDictionary *dict, TagHandler &handler) noexcept
 {
 	if (handler.WantTag()) {
 		for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-			FfmpegScanTag(TagType(i), dict, tag_item_names[i],
-				      handler);
+			if (i != TAG_LABEL)
+				FfmpegScanTag(TagType(i), dict,
+					      tag_item_names[i], handler);
 
 		for (const struct tag_table *i = ffmpeg_tags;
 		     i->name != nullptr; ++i)
@@ -74,6 +83,10 @@ FfmpegScanDictionary(AVDictionary *dict, TagHandler &handler) noexcept
 		     i->name != nullptr; ++i)
 			FfmpegScanTag(i->type, dict, i->name,
 				      handler);
+
+		for (const char *name : {"label", "publisher", "organization"})
+			if (FfmpegScanTag(TAG_LABEL, dict, name, handler))
+				break;
 	}
 
 	if (handler.WantPair())

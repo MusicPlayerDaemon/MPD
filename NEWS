@@ -32,6 +32,8 @@ ver 0.25 (not yet released)
 * tags
   - new tag "DiscSubtitle"
   - new tag "ReleaseType"
+  - fill "Label" from the best of "LABEL", "PUBLISHER" (ID3 "TPUB")
+    and "ORGANIZATION" instead of only "LABEL" or "TPUB"
 * playlist
   - xspf: read the track duration
 * player

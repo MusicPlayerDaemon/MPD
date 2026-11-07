@@ -57,6 +57,11 @@ flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
 {
 	for (unsigned i = 0; i < comment->num_comments; ++i)
 		ScanVorbisComment(ToStringView(comment->comments[i]), handler);
+
+	ScanVorbisLabels([&](auto func) {
+		for (unsigned i = 0; i < comment->num_comments; ++i)
+			func(ToStringView(comment->comments[i]));
+	}, handler);
 }
 
 [[gnu::pure]]

@@ -10,6 +10,7 @@
 #include "Tag.hxx"
 #include "Id3MusicBrainz.hxx"
 #include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
 #include "util/StringStrip.hxx"
 
 #include <id3tag.h>
@@ -18,6 +19,8 @@
 
 #include <string.h>
 #include <stdlib.h>
+
+using std::string_view_literals::operator""sv;
 
 #ifndef ID3_FRAME_COMPOSER
 #define ID3_FRAME_COMPOSER "TCOM"
@@ -141,6 +144,32 @@ tag_id3_import_text(const struct id3_tag *tag, const char *id, TagType type,
 	     (frame = id3_tag_findframe(tag, id, i)) != nullptr; ++i)
 		tag_id3_import_text_frame(frame, type,
 					  handler);
+}
+
+static bool
+tag_id3_import_txxx(const struct id3_tag *tag, std::string_view search_name,
+		    TagType type, TagHandler &handler) noexcept
+{
+	bool found = false;
+	const struct id3_frame *frame;
+	for (unsigned i = 0;
+	     (frame = id3_tag_findframe(tag, "TXXX", i)) != nullptr; ++i) {
+		const auto name = tag_id3_getstring(frame, 1);
+		if (!name || !StringIsEqualIgnoreCase(name.c_str(), search_name))
+			continue;
+
+		const auto value = tag_id3_getstring(frame, 2);
+		if (!value)
+			continue;
+
+		const auto s = Strip(std::string_view{value.c_str()});
+		if (!s.empty()) {
+			handler.OnTag(type, s);
+			found = true;
+		}
+	}
+
+	return found;
 }
 
 /**
@@ -343,8 +372,17 @@ scan_id3_tag(const struct id3_tag *tag, TagHandler &handler) noexcept
 			    handler);
 	tag_id3_import_text(tag, ID3_FRAME_DISCSUBTITLE, TAG_DISCSUBTITLE,
 			    handler);
-	tag_id3_import_text(tag, ID3_FRAME_LABEL, TAG_LABEL,
-			    handler);
+
+	/* the record label may be in "TPUB" and in "TXXX" frames;
+	   prioritize TXXX:LABEL > TPUB > TXXX:ORGANIZATION */
+	if (handler.WantTag() &&
+	    !tag_id3_import_txxx(tag, "LABEL"sv, TAG_LABEL, handler)) {
+		if (id3_tag_findframe(tag, ID3_FRAME_LABEL, 0) != nullptr)
+			tag_id3_import_text(tag, ID3_FRAME_LABEL, TAG_LABEL, handler);
+		else
+			tag_id3_import_txxx(tag, "ORGANIZATION"sv, TAG_LABEL, handler);
+	}
+
 	tag_id3_import_text(tag, ID3_FRAME_MOOD, TAG_MOOD, handler);
 	tag_id3_import_text(tag, ID3_FRAME_TITLE_SORT, TAG_TITLE_SORT, handler);
 

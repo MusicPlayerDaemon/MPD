@@ -3,6 +3,7 @@
 
 #include "OpusTags.hxx"
 #include "OpusReader.hxx"
+#include "lib/xiph/ScanVorbisComment.hxx"
 #include "lib/xiph/VorbisPicture.hxx"
 #include "lib/xiph/XiphTags.hxx"
 #include "tag/Handler.hxx"
@@ -72,7 +73,7 @@ ScanOneOpusTag(std::string_view name, std::string_view value,
 
 	if (handler.WantTag()) {
 		TagType t = ParseOpusTagName(name);
-		if (t != TAG_NUM_OF_ITEM_TYPES)
+		if (t != TAG_NUM_OF_ITEM_TYPES && t != TAG_LABEL)
 			handler.OnTag(t, value);
 	}
 }
@@ -108,6 +109,17 @@ ScanOpusTags(const void *data, size_t size,
 
 		ScanOneOpusTag(split.first, split.second, rgi, handler);
 	}
+
+	ScanVorbisLabels([&](auto func) {
+		OpusReader r2(data, size);
+		r2.Skip(8);
+		r2.SkipString();
+		uint32_t count;
+		if (r2.ReadWord(count)) {
+			while (count-- > 0)
+				func(r2.ReadString());
+		}
+	}, handler);
 
 	return true;
 }
