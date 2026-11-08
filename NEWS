@@ -31,6 +31,7 @@ ver 0.25 (not yet released)
     replay_gain_handler "mixer"
 * tags
   - new tag "DiscSubtitle"
+  - new tag "ReleaseType"
 * playlist
   - xspf: read the track duration
 * player
