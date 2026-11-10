@@ -56,6 +56,7 @@ input_glue = static_library(
   'Registry.cxx',
   'WaitReady.cxx',
   'Open.cxx',
+  'BoundedOpen.cxx',
   'LocalOpen.cxx',
   'ScanTags.cxx',
   'Reader.cxx',
@@ -71,6 +72,8 @@ input_glue = static_library(
     input_api_dep,
     input_basic_dep,
     log_dep,
+    fmt_dep,
+    uri_dep,
   ],
 )
 

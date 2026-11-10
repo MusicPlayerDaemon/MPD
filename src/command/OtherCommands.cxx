@@ -13,6 +13,9 @@
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
 #include "TagStream.hxx"
+#include "input/BoundedOpen.hxx"
+#include "input/InputStream.hxx"
+#include "thread/Mutex.hxx"
 #include "tag/Handler.hxx"
 #include "TimePrint.hxx"
 #include "decoder/DecoderPrint.hxx"
@@ -143,7 +146,10 @@ static CommandResult
 handle_lsinfo_absolute(Response &r, const std::string_view uri)
 {
 	PrintTagHandler h(r);
-	if (!tag_stream_scan(uri, h)) {
+
+	Mutex mutex;
+	auto is = OpenReadyBounded(uri, mutex);
+	if (!tag_stream_scan(*is, h)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such file");
 		return CommandResult::ERROR;
 	}

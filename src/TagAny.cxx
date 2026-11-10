@@ -13,6 +13,7 @@
 #include "protocol/Ack.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "input/InputStream.hxx"
+#include "input/BoundedOpen.hxx"
 #include "uri/Extract.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
@@ -27,7 +28,7 @@ TagScanStream(std::string_view uri, TagHandler &handler)
 {
 	Mutex mutex;
 
-	auto is = InputStream::OpenReady(uri, mutex);
+	auto is = OpenReadyBounded(uri, mutex);
 	if (!tag_stream_scan(*is, handler))
 		throw ProtocolError(ACK_ERROR_NO_EXIST, "Failed to load file");
 
