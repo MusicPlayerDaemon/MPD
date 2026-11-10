@@ -37,3 +37,22 @@ IsFileNotFound(std::exception_ptr ep) noexcept
 	return false;
 }
 
+
+bool
+IsUnreachable(std::exception_ptr ep) noexcept
+{
+	if (IsFileNotFound(ep))
+		return false;
+
+#ifdef ENABLE_CURL
+	try {
+		std::rethrow_exception(std::move(ep));
+	} catch (const HttpStatusError &) {
+		/* the server has responded, so it is reachable */
+		return false;
+	} catch (...) {
+	}
+#endif
+
+	return true;
+}

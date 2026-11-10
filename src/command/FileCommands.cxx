@@ -23,6 +23,7 @@
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "input/InputStream.hxx"
+#include "input/BoundedOpen.hxx"
 #include "input/LocalOpen.hxx"
 #include "input/Error.hxx"
 #include "LocateUri.hxx"
@@ -244,11 +245,17 @@ FindStreamArt(std::string_view directory, Mutex &mutex)
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
 		try {
-			return InputStream::OpenReady(art_file, mutex);
+			return OpenReadyBounded(art_file, mutex);
 		} catch (...) {
 			auto e = std::current_exception();
 			if (!IsFileNotFound(e))
 				LogError(e);
+
+			if (IsUnreachable(e))
+				/* the server is unreachable; don't
+				   bother (and block the main thread)
+				   trying the other names */
+				break;
 		}
 	}
 	return nullptr;

@@ -15,4 +15,14 @@
 bool
 IsFileNotFound(std::exception_ptr e) noexcept;
 
+/**
+ * Was this exception caused by a server which could not be reached
+ * at all (e.g. DNS failure, connection refused, timeout)?  This
+ * returns false for errors which prove that the server is alive,
+ * e.g. "file not found" or any HTTP status error.
+ */
+[[gnu::pure]]
+bool
+IsUnreachable(std::exception_ptr e) noexcept;
+
 #endif
