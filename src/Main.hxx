@@ -11,6 +11,7 @@ struct Instance;
 
 extern class Context *context;
 extern LogListener *logListener;
+extern class AudioFocus *audio_focus;
 #endif
 
 extern Instance *global_instance;

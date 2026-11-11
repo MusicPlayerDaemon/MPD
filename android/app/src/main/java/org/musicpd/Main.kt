@@ -73,6 +73,8 @@ class Main : Service(), Runnable {
 
     private var mMediaSession: MediaSession? = null
 
+    private lateinit var mAudioFocus: AudioFocusHelper
+
     @JvmField
     @Inject
     var logging: LoggingRepository? = null
@@ -110,6 +112,7 @@ class Main : Service(), Runnable {
     override fun onCreate() {
         super.onCreate()
         mpdLoader = Loader
+        mAudioFocus = AudioFocusHelper(this)
     }
 
     @Synchronized
@@ -164,7 +167,7 @@ class Main : Service(), Runnable {
             if (mAbort) return
             setStatus(MAIN_STATUS_STARTED, null)
         }
-        Bridge.run(this, mLogListener)
+        Bridge.run(this, mLogListener, mAudioFocus)
         setStatus(MAIN_STATUS_STOPPED, null)
     }
 

@@ -1361,6 +1361,19 @@ audio API.  Its primary use is local playback on Android, where
 bit and floating point samples; 24 bit samples are converted to 32
 bit (losslessly).
 
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **audio_focus yes|no**
+     - Request the Android audio focus while playing (default:
+       ``yes``).  Some audio routes (e.g. Android Auto) only play
+       the sound of the app which holds the audio focus.  When
+       another app takes away the audio focus, MPD pauses playback.
+       Disable this to let MPD play together with other apps.
+
 
 snapcast
 --------

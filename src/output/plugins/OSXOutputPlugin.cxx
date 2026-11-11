@@ -20,7 +20,6 @@
 #include "util/ByteOrder.hxx"
 #include "util/CharUtil.hxx"
 #include "util/RingBuffer.hxx"
-#include "util/RoundPowerOfTwo.hxx"
 #include "util/StringAPI.hxx"
 #include "Log.hxx"
 
@@ -29,6 +28,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 
 #include <atomic>
+#include <bit>
 #include <chrono>
 #include <cmath>
 #include <memory>
@@ -857,7 +857,7 @@ OSXOutput::Open(AudioFormat &audio_format)
 
 	// the smallest power of two larger than the AudioUnit's buffer
 	const UInt32 buffer_frame_size =
-		RoundUpToPowerOfTwo(io_buffer_frames * asbd.mBytesPerFrame + 1);
+		std::bit_ceil(io_buffer_frames * asbd.mBytesPerFrame + 1);
 
 	size_t ring_buffer_size = std::max<size_t>(buffer_frame_size,
 						   audio_format.TimeToSize(MPD_OSX_BUFFER_TIME));

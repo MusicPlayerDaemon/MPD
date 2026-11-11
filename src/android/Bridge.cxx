@@ -4,6 +4,7 @@
 #include "Bridge.hxx"
 #include "org_musicpd_Bridge.h"
 #include "Context.hxx"
+#include "AudioFocus.hxx"
 #include "Environment.hxx"
 #include "java/Global.hxx"
 #include "java/File.hxx"
@@ -70,7 +71,8 @@ AndroidControl::OnInject() noexcept
 
 gcc_visibility_default
 JNIEXPORT void JNICALL
-Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logListener)
+Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logListener,
+			    jobject _audio_focus)
 {
 	Java::Init(env);
 	Java::Object::Initialise(env);
@@ -87,6 +89,13 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logL
 	if (_logListener != nullptr)
 		logListener = new LogListener(env, _logListener);
 	AtScopeExit() { delete logListener; };
+
+	if (_audio_focus != nullptr)
+		audio_focus = new AudioFocus(env, _audio_focus);
+	AtScopeExit() {
+		delete audio_focus;
+		audio_focus = nullptr;
+	};
 
 	try {
 		AndroidMain(env);

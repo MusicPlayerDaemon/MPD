@@ -18,9 +18,9 @@ libsamplerate = CmakeProject(
 )
 
 zlib = CmakeProject(
-    ('http://zlib.net/zlib-1.3.2.tar.xz',
+    ('http://zlib.net/zlib-1.4.tar.xz',
      'https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz'),
-    'd7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3',
+    '4f11c512053d7bab8d9e9b89bde3575add3e4c50a383b42ef6cb837035fc5a7c',
     'lib/libz.a',
     [
         '-DZLIB_BUILD_TESTING=OFF',
@@ -40,8 +40,8 @@ libmodplug = AutotoolsProject(
 )
 
 libopenmpt = AutotoolsProject(
-    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.9+release.autotools.tar.gz',
-    'd7ce84fd05d686c4bcf66af40eae857afa371442db60eeda3f874bd6cf6fc318',
+    'https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.10+release.autotools.tar.gz',
+    '976d259288c40cd285771f77d09eff3d02514511d5677ecfcfb53be5013317e2',
     'lib/libopenmpt.a',
     [
         '--disable-shared', '--enable-static',
@@ -53,7 +53,7 @@ libopenmpt = AutotoolsProject(
         '--without-portaudio', '--without-portaudiocpp', '--without-sndfile',
         '--without-flac',
     ],
-    base='libopenmpt-0.8.9+release.autotools',
+    base='libopenmpt-0.8.10+release.autotools',
 )
 
 wildmidi = CmakeProject(

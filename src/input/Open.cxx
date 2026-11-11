@@ -38,3 +38,12 @@ InputStream::OpenReady(std::string_view uri, Mutex &mutex)
 	LockWaitReady(*is);
 	return is;
 }
+
+InputStreamPtr
+InputStream::OpenReady(std::string_view uri, Mutex &mutex,
+		       std::chrono::steady_clock::duration timeout)
+{
+	auto is = Open(uri, mutex);
+	LockWaitReady(*is, timeout);
+	return is;
+}

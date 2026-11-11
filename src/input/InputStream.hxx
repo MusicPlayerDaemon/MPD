@@ -118,6 +118,13 @@ public:
 	static InputStreamPtr OpenReady(std::string_view uri, Mutex &mutex);
 
 	/**
+	 * Overload that throws #TimeoutError if the #timeout expires.
+	 */
+	[[nodiscard]]
+	static InputStreamPtr OpenReady(std::string_view uri, Mutex &mutex,
+					std::chrono::steady_clock::duration timeout);
+
+	/**
 	 * Install a new handler.
 	 *
 	 * The caller must lock the mutex.

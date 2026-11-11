@@ -50,7 +50,7 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.19 (not yet released)
+ver 0.24.19 (2026/11/11)
 * configuration
   - fix crash if "audio_buffer_size" is too large
 * decoder
@@ -60,6 +60,7 @@ ver 0.24.19 (not yet released)
   - osx: fix noise when playing DSD with DoP disabled
   - osx: fix buffer size overflow with many channels at high sample rates
   - osx: don't cut off the end of the last song
+  - sles: request audio focus, fixes silence with Android Auto
   - wasapi: fix rare hang while disabling the output
   - wasapi: fix crash with "enumerate"
   - wasapi: fix crash after the device has been removed
@@ -75,6 +76,7 @@ ver 0.24.19 (not yet released)
   - fix service timeout error if startup or shutdown is slow
   - fix race crash bug during shutdown
   - fix service hang after startup failure
+  - fix encoding of WASAPI error messages on non-English systems
 
 ver 0.24.18 (2026/10/30)
 * protocol

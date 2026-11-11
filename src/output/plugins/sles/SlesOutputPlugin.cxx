@@ -15,6 +15,12 @@
 #include "mixer/plugins/AndroidMixerPlugin.hxx"
 #include "Log.hxx"
 
+#ifdef ANDROID
+#include "android/AudioFocus.hxx"
+#include "java/Global.hxx"
+#include "Main.hxx"
+#endif
+
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
@@ -42,6 +48,20 @@ class SlesOutput final : AudioOutput  {
 
 	bool pause, cancel;
 
+#ifdef ANDROID
+	/**
+	 * Request the Android audio focus while playing?  (Setting
+	 * "audio_focus")
+	 */
+	const bool audio_focus_enabled;
+
+	/**
+	 * Has the audio focus been requested (and not yet
+	 * abandoned)?
+	 */
+	bool audio_focus_requested = false;
+#endif
+
 	/**
 	 * The number of buffers queued to OpenSLES.
 	 */
@@ -67,11 +87,16 @@ class SlesOutput final : AudioOutput  {
 	 */
 	uint8_t buffers[N_BUFFERS][BUFFER_SIZE];
 
-	SlesOutput():AudioOutput(FLAG_PAUSE) {}
+	explicit SlesOutput([[maybe_unused]] const ConfigBlock &block)
+		:AudioOutput(FLAG_PAUSE)
+#ifdef ANDROID
+		, audio_focus_enabled(block.GetBlockValue("audio_focus", true))
+#endif
+	{}
 
 public:
-	static AudioOutput *Create(EventLoop &, const ConfigBlock &) {
-		return new SlesOutput();
+	static AudioOutput *Create(EventLoop &, const ConfigBlock &block) {
+		return new SlesOutput(block);
 	}
 
 private:
@@ -91,6 +116,30 @@ private:
 	bool Pause() override;
 
 private:
+	void RequestAudioFocus() noexcept {
+#ifdef ANDROID
+		if (!audio_focus_enabled || audio_focus_requested)
+			return;
+
+		audio_focus_requested = true;
+
+		if (audio_focus != nullptr)
+			audio_focus->Request(Java::GetEnv());
+#endif
+	}
+
+	void AbandonAudioFocus() noexcept {
+#ifdef ANDROID
+		if (!audio_focus_requested)
+			return;
+
+		audio_focus_requested = false;
+
+		if (audio_focus != nullptr)
+			audio_focus->Abandon(Java::GetEnv());
+#endif
+	}
+
 	void PlayedCallback();
 
 	/**
@@ -327,6 +376,8 @@ SlesOutput::Open(AudioFormat &audio_format)
 void
 SlesOutput::Close() noexcept
 {
+	AbandonAudioFocus();
+
 	play.SetPlayState(SL_PLAYSTATE_STOPPED);
 	play_object.Destroy();
 	mix_object.Destroy();
@@ -336,6 +387,8 @@ SlesOutput::Close() noexcept
 std::size_t
 SlesOutput::Play(std::span<const std::byte> src)
 {
+	RequestAudioFocus();
+
 	cancel = false;
 
 	if (pause) {
@@ -406,6 +459,8 @@ SlesOutput::Cancel() noexcept
 bool
 SlesOutput::Pause()
 {
+	AbandonAudioFocus();
+
 	cancel = false;
 
 	if (pause)
