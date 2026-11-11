@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "AlsaMixerPlugin.hxx"
+#include "DesiredVolume.hxx"
 #include "VolumeMapping.hxx"
 #include "lib/alsa/NonBlock.hxx"
 #include "lib/alsa/Error.hxx"
@@ -94,11 +95,10 @@ class AlsaMixer final : public Mixer {
 	unsigned int index;
 
 	/**
-	 * Protects #handle, #elem, #desired_volume and
-	 * #resulting_volume while #monitor exists, because libasound
-	 * is not thread-safe, and #monitor uses the #snd_mixer_t in
-	 * the #EventLoop thread while SetVolume() and GetVolume() are
-	 * called from other threads.
+	 * Protects #handle, #elem and #desired_volume while #monitor
+	 * exists, because libasound is not thread-safe, and #monitor
+	 * uses the #snd_mixer_t in the #EventLoop thread while
+	 * SetVolume() and GetVolume() are called from other threads.
 	 */
 	Mutex handle_mutex;
 
@@ -107,23 +107,7 @@ class AlsaMixer final : public Mixer {
 
 	AlsaMixerMonitor *monitor;
 
-	/**
-	 * These fields are our workaround for rounding errors when
-	 * the resolution of a mixer knob isn't fine enough to
-	 * represent all 101 possible values (0..100).
-	 *
-	 * "desired_volume" is the percent value passed to
-	 * SetVolume(), and "resulting_volume" is the volume which was
-	 * actually set, and would be returned by the next
-	 * GetPercentVolume() call.
-	 *
-	 * When GetVolume() is called, we compare the
-	 * "resulting_volume" with the value returned by
-	 * GetPercentVolume(), and if it's the same, we're still on
-	 * the same value that was previously set (but may have been
-	 * rounded down or up).
-	 */
-	int desired_volume, resulting_volume;
+	DesiredVolume desired_volume;
 
 public:
 	AlsaMixer(EventLoop &_event_loop, MixerListener &_listener) noexcept
@@ -223,19 +207,17 @@ AlsaMixer::ElemCallback(snd_mixer_elem_t *elem, unsigned mask) noexcept
 		snd_mixer_elem_get_callback_private(elem);
 
 	if (mask & SND_CTL_EVENT_MASK_VALUE) {
-		int volume = mixer.GetPercentVolume();
+		const int volume = mixer.GetPercentVolume();
 
-		if (mixer.resulting_volume >= 0 &&
-		    volume == mixer.resulting_volume)
-			/* still the same volume (this might be a
-			   callback caused by SetVolume()) - switch to
-			   desired_volume */
-			volume = mixer.desired_volume;
-		else
+		if (!mixer.desired_volume.IsCurrent(volume))
 			/* flush */
-			mixer.desired_volume = mixer.resulting_volume = -1;
+			mixer.desired_volume.Clear();
 
-		mixer.listener.OnMixerVolumeChanged(mixer, volume);
+		/* if it's still the same volume (this might be a
+		   callback caused by SetVolume()), this switches to
+		   the desired volume */
+		mixer.listener.OnMixerVolumeChanged(mixer,
+						    mixer.desired_volume.Translate(volume));
 	}
 
 	return 0;
@@ -370,7 +352,7 @@ AlsaMixer::Setup()
 void
 AlsaMixer::Open()
 {
-	desired_volume = resulting_volume = -1;
+	desired_volume.Clear();
 
 	device = DetermineDevice();
 
@@ -414,12 +396,9 @@ AlsaMixer::GetVolume()
 	if (err < 0)
 		throw Alsa::MakeError(err, "snd_mixer_handle_events() failed");
 
-	int volume = GetPercentVolume();
-	if (resulting_volume >= 0 && volume == resulting_volume)
-		/* we're still on the value passed to SetVolume() */
-		volume = desired_volume;
-
-	return volume;
+	/* if we're still on the value passed to SetVolume(), this
+	   returns the desired volume */
+	return desired_volume.Translate(GetPercentVolume());
 }
 
 void
@@ -433,8 +412,7 @@ AlsaMixer::SetVolume(unsigned volume)
 	if (err < 0)
 		throw Alsa::MakeError(err, "failed to set ALSA volume");
 
-	desired_volume = volume;
-	resulting_volume = GetPercentVolume();
+	desired_volume.Set(volume, GetPercentVolume());
 }
 
 unsigned
