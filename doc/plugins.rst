@@ -302,11 +302,6 @@ file
 
 Opens local files
 
-mms
----
-
-Plays streams with the MMS protocol using `libmms <https://launchpad.net/libmms>`_.
-
 .. _input_nfs:
 
 nfs

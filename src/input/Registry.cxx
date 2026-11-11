@@ -27,10 +27,6 @@
 #include "plugins/NfsInputPlugin.hxx"
 #endif
 
-#ifdef ENABLE_MMS
-#include "plugins/MmsInputPlugin.hxx"
-#endif
-
 #ifdef ENABLE_CDIO_PARANOIA
 #include "plugins/CdioParanoiaInputPlugin.hxx"
 #endif
@@ -53,9 +49,6 @@ constinit const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_NFS
 	&input_plugin_nfs,
-#endif
-#ifdef ENABLE_MMS
-	&input_plugin_mms,
 #endif
 #ifdef ENABLE_CDIO_PARANOIA
 	&input_plugin_cdio_paranoia,

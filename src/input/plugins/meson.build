@@ -28,12 +28,6 @@ if ffmpeg_dep.found()
   input_plugins_sources += 'FfmpegInputPlugin.cxx'
 endif
 
-libmms_dep = dependency('libmms', version: '>= 0.4', required: get_option('mms'))
-input_features.set('ENABLE_MMS', libmms_dep.found())
-if libmms_dep.found()
-  input_plugins_sources += 'MmsInputPlugin.cxx'
-endif
-
 if nfs_dep.found()
   input_plugins_sources += 'NfsInputPlugin.cxx'
 endif
@@ -75,7 +69,6 @@ input_plugins = static_library(
     curl_dep,
     ffmpeg_dep,
     libcdio_paranoia_dep,
-    libmms_dep,
     nfs_dep,
     smbclient_dep,
     nlohmann_json_dep,

@@ -82,7 +82,7 @@ dependencies on Debian Trixie:
       libavcodec-dev libavformat-dev \
       libmp3lame-dev libtwolame-dev libshine-dev \
       libsamplerate0-dev libsoxr-dev \
-      libbz2-dev libcdio-paranoia-dev libiso9660-dev libmms-dev \
+      libbz2-dev libcdio-paranoia-dev libiso9660-dev \
       libzzip-dev \
       libcurl4-gnutls-dev libexpat1-dev \
       nlohmann-json3-dev \

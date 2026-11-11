@@ -95,7 +95,6 @@ option('cue', type: 'boolean', value: true, description: 'CUE sheet support')
 
 option('cdio_paranoia', type: 'feature', description: 'libcdio_paranoia input plugin')
 option('curl', type: 'feature', description: 'HTTP client using CURL')
-option('mms', type: 'feature', description: 'MMS protocol support using libmms')
 option('nfs', type: 'feature', description: 'NFS protocol support using libnfs')
 
 # The "smbclient" plugin is disabled by default because libsmbclient
