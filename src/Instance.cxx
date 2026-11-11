@@ -71,7 +71,7 @@ Instance::OnStateModified() noexcept
 }
 
 Partition *
-Instance::FindPartition(const char *name) noexcept
+Instance::FindPartition(const std::string_view name) noexcept
 {
 	for (auto &partition : partitions)
 		if (partition.name == name)

@@ -177,7 +177,7 @@ struct Instance final
 	 * no such partition was found.
 	 */
 	[[gnu::pure]]
-	Partition *FindPartition(const char *name) noexcept;
+	Partition *FindPartition(std::string_view name) noexcept;
 
 	void DeletePartition(Partition &partition) noexcept;
 
