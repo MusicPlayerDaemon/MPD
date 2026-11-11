@@ -132,12 +132,6 @@ handle_delpartition(Client &client, Request request, Response &response)
 	return CommandResult::OK;
 }
 
-static Partition *
-FindOwningPartition(AudioOutputControl &ao) noexcept
-{
-	return static_cast<Partition *>(ao.GetMixerListener());
-}
-
 CommandResult
 handle_moveoutput(Client &client, Request request, Response &response)
 {
@@ -153,7 +147,7 @@ handle_moveoutput(Client &client, Request request, Response &response)
 	auto &dest_partition = client.GetPartition();
 
 	/* find the partition which owns this output currently */
-	auto *src_partition = FindOwningPartition(*ao);
+	auto *src_partition = instance.FindOwningPartition(*ao);
 	if (src_partition == &dest_partition)
 		/* this output is already in the specified partition,
 		   so nothing needs to be done */

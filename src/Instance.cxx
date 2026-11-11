@@ -94,6 +94,12 @@ Instance::DeletePartition(Partition &partition) noexcept
 	}
 }
 
+Partition *
+Instance::FindOwningPartition(AudioOutputControl &ao) noexcept
+{
+	return static_cast<Partition *>(ao.GetMixerListener());
+}
+
 PlaylistDirectory &
 Instance::GetStoredPlaylistsOrThrow() const
 {

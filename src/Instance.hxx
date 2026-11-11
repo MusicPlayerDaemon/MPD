@@ -183,6 +183,12 @@ struct Instance final
 
 	void BeginShutdownPartitions() noexcept;
 
+	/**
+	 * Which #Partition owns the #AudioOutputControl?
+	 */
+	[[gnu::pure]]
+	static Partition *FindOwningPartition(AudioOutputControl &ao) noexcept;
+
 	PlaylistDirectory *GetStoredPlaylists() const noexcept {
 		return stored_playlists.get();
 	}
