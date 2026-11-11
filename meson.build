@@ -463,6 +463,7 @@ else
     'src/android/Bridge.cxx',
     'src/android/Context.cxx',
     'src/android/AudioManager.cxx',
+    'src/android/AudioFocus.cxx',
     'src/android/Environment.cxx',
     'src/android/LogListener.cxx',
   ]

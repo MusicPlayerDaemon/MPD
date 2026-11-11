@@ -82,6 +82,7 @@
 #include "android/Environment.hxx"
 #include "android/Context.hxx"
 #include "android/LogListener.hxx"
+#include "android/AudioFocus.hxx"
 #include "android/Bridge.hxx"
 #include "config/File.hxx"
 #include "fs/FileSystem.hxx"
@@ -108,6 +109,7 @@
 #ifdef ANDROID
 Context *context;
 LogListener *logListener;
+AudioFocus *audio_focus;
 #endif
 
 Instance *global_instance;
