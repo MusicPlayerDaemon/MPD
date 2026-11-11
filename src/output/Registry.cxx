@@ -23,6 +23,7 @@
 #include "plugins/ShoutOutputPlugin.hxx"
 #include "plugins/sles/SlesOutputPlugin.hxx"
 #include "plugins/SolarisOutputPlugin.hxx"
+#include "plugins/TinyAlsaOutputPlugin.hxx"
 #ifdef ENABLE_WINMM_OUTPUT
 #include "plugins/WinmmOutputPlugin.hxx"
 #endif
@@ -50,6 +51,9 @@ constinit const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_ALSA
 	&alsa_output_plugin,
+#endif
+#ifdef ENABLE_TINYALSA
+	&tinyalsa_output_plugin,
 #endif
 #ifdef ENABLE_AO
 	&ao_output_plugin,

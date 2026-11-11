@@ -22,6 +22,7 @@ ver 0.25 (not yet released)
   - pipewire don't discard buffered audio on pause
   - pulse: don't discard buffered audio on pause
   - sles: support 24 and 32 bit integer samples
+  - tinyalsa: new plugin
   - wasapi: detect device changes
   - wasapi: fix audio pops on startup, resume and seek under
 * mixer

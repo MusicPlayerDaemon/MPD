@@ -30,6 +30,10 @@ if libsndio_dep.found()
   mixer_plugins_sources += 'SndioMixerPlugin.cxx'
 endif
 
+if tinyalsa_dep.found()
+  mixer_plugins_sources += 'TinyAlsaMixerPlugin.cxx'
+endif
+
 if is_windows
   mixer_plugins_sources += [
     'WinmmMixerPlugin.cxx',
@@ -50,6 +54,7 @@ mixer_plugins = static_library(
     alsa_dep,
     pulse_dep,
     libsndio_dep,
+    tinyalsa_dep,
     log_dep,
   ]
 )

@@ -1404,6 +1404,73 @@ The "Solaris" plugin runs only on SUN Solaris, and plays via /dev/audio.
      - Sets the path of the audio device, defaults to /dev/audio.
 
 
+tinyalsa
+--------
+
+The `tinyalsa <https://github.com/tinyalsa/tinyalsa>`_ plugin
+accesses the ALSA kernel interface directly using the tinyalsa
+library (version 2.0 or newer) instead of libasound.  It is a
+lightweight alternative to the :ref:`alsa <alsa_plugin>` plugin for
+embedded systems.  It supports only hardware devices: there is no
+ALSA configuration, and no software plugins such as ``dmix`` or
+``plughw``; MPD converts the audio to a format supported by the
+hardware.  Pausing playback closes the device.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **card NUMBER**
+     - The number of the sound card (see :file:`/proc/asound/cards`).
+       The default is 0.
+   * - **device NUMBER**
+     - The number of the PCM device on that sound card.  The default
+       is 0.
+   * - **buffer_time US**
+     - Sets the device's buffer time in microseconds.  The default is
+       500000 (half a second).
+   * - **period_time US**
+     - Sets the device's period time in microseconds.  The default is
+       a quarter of the buffer time.
+
+The according hardware mixer plugin uses a mixer control of the
+sound card specified by ``card``.  It understands the following
+settings:
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Setting
+     - Description
+   * - **mixer_control NAME**
+     - The name of an integer mixer control, defaulting to "PCM
+       Playback Volume".  Unlike the ``alsa`` plugin, this is the full
+       name of the control as listed by :samp:`tinymix -D {CARD}` or
+       :samp:`amixer -c {CARD} controls`.
+   * - **mixer_index NUMBER**
+     - If there is more than one control with the same name, this
+       chooses one of them.  Defaults to 0 (the first one).
+
+The volume is mapped linearly to the raw value of the mixer control
+(there is no decibel mapping like in the ``alsa`` plugin), and volume
+changes by other programs are not announced to MPD clients
+immediately.
+
+Example::
+
+  audio_output {
+    type "tinyalsa"
+    name "Speaker"
+    card "1"
+    device "0"
+    mixer_type "hardware"
+    mixer_control "Speaker Playback Volume"
+  }
+
+
 wasapi
 ------
 

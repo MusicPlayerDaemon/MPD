@@ -138,6 +138,11 @@ if enable_solaris_output
   output_plugins_sources += 'SolarisOutputPlugin.cxx'
 endif
 
+if tinyalsa_dep.found()
+  output_plugins_sources += 'TinyAlsaOutputPlugin.cxx'
+  output_plugins_deps += system_dep
+endif
+
 output_features.set('ENABLE_WINMM_OUTPUT', is_windows)
 if is_windows
   output_plugins_sources += 'WinmmOutputPlugin.cxx'
@@ -176,6 +181,7 @@ output_plugins = static_library(
     libsndio_dep,
     openal_dep,
     sles_dep,
+    tinyalsa_dep,
     winmm_dep,
     wasapi_dep,
     output_plugins_deps,
