@@ -18,9 +18,9 @@ libsamplerate = CmakeProject(
 )
 
 zlib = CmakeProject(
-    ('http://zlib.net/zlib-1.3.2.tar.xz',
+    ('http://zlib.net/zlib-1.4.tar.xz',
      'https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz'),
-    'd7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3',
+    '4f11c512053d7bab8d9e9b89bde3575add3e4c50a383b42ef6cb837035fc5a7c',
     'lib/libz.a',
     [
         '-DZLIB_BUILD_TESTING=OFF',
