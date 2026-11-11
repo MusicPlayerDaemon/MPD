@@ -8,6 +8,7 @@ ver 0.24.19 (not yet released)
   - osx: fix noise when playing DSD with DoP disabled
   - osx: fix buffer size overflow with many channels at high sample rates
   - osx: don't cut off the end of the last song
+  - sles: request audio focus, fixes silence with Android Auto
   - wasapi: fix rare hang while disabling the output
   - wasapi: fix crash with "enumerate"
   - wasapi: fix crash after the device has been removed
