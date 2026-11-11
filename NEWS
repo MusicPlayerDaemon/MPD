@@ -1,4 +1,4 @@
-ver 0.24.19 (not yet released)
+ver 0.24.19 (2026/11/11)
 * configuration
   - fix crash if "audio_buffer_size" is too large
 * decoder
