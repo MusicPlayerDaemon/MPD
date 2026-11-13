@@ -45,13 +45,20 @@ ChmodLocalSocket(const char *path, mode_t mode)
 
 	/* note: fchmod() doesn't work on O_PATH file descriptors, but
 	   fchmodat() with AT_EMPTY_PATH workw */
-	if (fchmodat(fd.Get(), "", mode, AT_EMPTY_PATH) < 0)
-		throw FmtErrno("chmod({:?}) failed"sv, path);
-#else
+	if (fchmodat(fd.Get(), "", mode, AT_EMPTY_PATH) == 0)
+		[[likely]]
+		return;
+	else if (const int e = errno; e != EINVAL)
+		throw FmtErrno(e, "chmod({:?}) failed"sv, path);
+
+	/* ENOSYS or EINVAL means this kernel or this glibc doesn't
+	   support fchmodat() with AT_EMPTY_PATH - fall through to the
+	   portable version */
+#endif
+
 	/* portable fallback; don't follow a symlink in the last path
 	   component, which would apply the mode to an arbitrary
 	   file */
 	if (fchmodat(AT_FDCWD, path, mode, AT_SYMLINK_NOFOLLOW) < 0)
 		throw FmtErrno("chmod({:?}) failed"sv, path);
-#endif
 }
