@@ -4,6 +4,7 @@ gtest_dep = dependency('gtest', main: true,
 
 subdir('util')
 subdir('uri')
+subdir('io')
 subdir('net')
 subdir('time')
 subdir('tag')
@@ -73,20 +74,6 @@ test(
     include_directories: inc,
     dependencies: [
       util_dep,
-      gtest_dep,
-    ],
-  ),
-  protocol: 'gtest',
-)
-
-test(
-  'TestBufferedReader',
-  executable(
-    'TestBufferedReader',
-    'TestBufferedReader.cxx',
-    include_directories: inc,
-    dependencies: [
-      io_dep,
       gtest_dep,
     ],
   ),
