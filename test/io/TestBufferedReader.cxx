@@ -73,12 +73,21 @@ TEST(BufferedReader, LongLine)
 TEST(BufferedReader, ShortLine)
 {
 	FillReader fill{7, std::byte{'x'}};
-	CopyReader copy{AsBytes("\n"sv)};
+	CopyReader copy{AsBytes("\nyyy\nzz"sv)};
 	ConcatReader reader{fill, copy};
 	BufferedReader buffered{reader};
 
 	const char *line = buffered.ReadLine();
 	ASSERT_NE(line, nullptr);
 	EXPECT_EQ(std::string_view{line}, "xxxxxxx");
+
+	line = buffered.ReadLine();
+	ASSERT_NE(line, nullptr);
+	EXPECT_EQ(std::string_view{line}, "yyy"sv);
+
+	line = buffered.ReadLine();
+	ASSERT_NE(line, nullptr);
+	EXPECT_EQ(std::string_view{line}, "zz"sv);
+
 	EXPECT_EQ(buffered.ReadLine(), nullptr);
 }
