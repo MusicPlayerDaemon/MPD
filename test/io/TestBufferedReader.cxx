@@ -2,7 +2,10 @@
 // author: Max Kellermann <max.kellermann@gmail.com>
 
 #include "io/BufferedReader.hxx"
+#include "io/ConcatReader.hxx"
 #include "io/Reader.hxx"
+#include "util/ByteSizes.hxx"
+#include "util/SpanCast.hxx"
 
 #include <gtest/gtest.h>
 
@@ -10,33 +13,57 @@
 #include <stdexcept>
 #include <string_view>
 
+using std::string_view_literals::operator""sv;
+
 /**
- * A #Reader which produces one very long line, followed by a short
- * one.
+ * A #Reader which produces the specified number of bytes.
  */
-class LongLineReader final : public Reader {
+class FillReader final : public Reader {
 	std::size_t remaining;
 
+	const std::byte value;
+
 public:
-	explicit LongLineReader(std::size_t length) noexcept
-		:remaining(length) {}
+	[[nodiscard]]
+	explicit FillReader(std::size_t count, std::byte _value) noexcept
+		:remaining(count), value(_value) {}
 
 	std::size_t Read(std::span<std::byte> dest) override {
-		if (remaining == 0)
-			return 0;
+		if (dest.size() > remaining) {
+			dest = dest.first(remaining);
+			remaining = 0;
+		} else
+			remaining -= dest.size();
 
-		const std::size_t nbytes = std::min(dest.size(), remaining);
-		std::fill_n(dest.data(), nbytes, std::byte{'x'});
-		remaining -= nbytes;
-		if (remaining == 0)
-			dest[nbytes - 1] = std::byte{'\n'};
-		return nbytes;
+		std::fill(dest.begin(), dest.end(), value);
+		return dest.size();
+	}
+};
+
+/**
+ * A #Reader which copies from the specified buffer.
+ */
+class CopyReader final : public Reader {
+	std::span<const std::byte> src;
+
+public:
+	[[nodiscard]]
+	explicit CopyReader(std::span<const std::byte> _src) noexcept
+		:src(_src) {}
+
+	std::size_t Read(std::span<std::byte> dest) override {
+		std::size_t n = std::min(src.size(), dest.size());
+		std::copy_n(src.begin(), n, dest.begin());
+		src = src.subspan(n);
+		return n;
 	}
 };
 
 TEST(BufferedReader, LongLine)
 {
-	LongLineReader reader{1024 * 1024};
+	FillReader fill{1_MiB, std::byte{'x'}};
+	CopyReader copy{AsBytes("\n"sv)};
+	ConcatReader reader{fill, copy};
 	BufferedReader buffered{reader};
 
 	/* this must not be mistaken for the end of the file */
@@ -45,7 +72,9 @@ TEST(BufferedReader, LongLine)
 
 TEST(BufferedReader, ShortLine)
 {
-	LongLineReader reader{8};
+	FillReader fill{7, std::byte{'x'}};
+	CopyReader copy{AsBytes("\n"sv)};
+	ConcatReader reader{fill, copy};
 	BufferedReader buffered{reader};
 
 	const char *line = buffered.ReadLine();
