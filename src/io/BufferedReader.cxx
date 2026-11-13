@@ -3,7 +3,7 @@
 
 #include "BufferedReader.hxx"
 #include "Reader.hxx"
-#include "util/TextFile.hxx"
+#include "util/ExtractLine.hxx"
 
 #include <algorithm> // for std::copy_n()
 #include <cassert>
@@ -77,10 +77,11 @@ char *
 BufferedReader::ReadLine()
 {
 	do {
-		char *line = ReadBufferedLine(buffer);
-		if (line != nullptr) {
+		const auto line = ExtractLine(buffer, ExtractLineFlush::NEVER);
+		if (line.data() != nullptr) {
 			++line_number;
-			return line;
+			line.data()[line.size()] = '\0';
+			return line.data();
 		}
 	} while (Fill(true));
 
