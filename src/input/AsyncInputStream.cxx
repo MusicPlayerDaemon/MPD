@@ -114,8 +114,11 @@ AsyncInputStream::Seek(std::unique_lock<Mutex> &lock,
 		offset += nbytes;
 	}
 
-	if (new_offset == offset)
+	if (new_offset == offset) {
+		if (paused && buffer.GetSize() < resume_at)
+			deferred_resume.Schedule();
 		return;
+	}
 
 	/* no: ask the implementation to seek */
 
