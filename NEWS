@@ -8,6 +8,7 @@ ver 0.24.20 (not yet released)
   - ffmpeg: fix bogus size of non-seekable streams
 * decoder
   - mikmod: fix crash when scanning a module during playback
+  - opus, vorbis: fix crash when seeking past the end
 * Linux
   - fix "chmod failed: Invalid argument" on kernels older than 6.6
 * Windows
