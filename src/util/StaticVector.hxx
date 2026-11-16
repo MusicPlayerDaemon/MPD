@@ -7,6 +7,8 @@
 #include <array>
 #include <cassert>
 #include <initializer_list>
+#include <iterator>
+#include <memory>
 #include <new>
 #include <span>
 #include <type_traits>
@@ -308,9 +310,13 @@ public:
 	}
 
 	constexpr iterator erase(iterator first, iterator last) noexcept {
-		std::size_t n = std::distance(first, last);
-		std::move(last, end(), first);
-		the_size -= n;
+		/* move the tail down over the erased range ... */
+		iterator new_end = std::move(last, end(), first);
+
+		/* ... and destroy the slots vacated at the end */
+		std::destroy(new_end, end());
+
+		the_size -= std::distance(first, last);
 		return first;
 	}
 

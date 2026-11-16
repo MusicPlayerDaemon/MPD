@@ -5,8 +5,67 @@
 
 #include <gtest/gtest.h>
 
+#include <iterator>
 #include <memory>
 #include <type_traits>
+
+namespace {
+
+/**
+ * A type that counts how many instances are currently alive, to verify
+ * that destructors are invoked the correct number of times.
+ */
+struct Counted {
+	static inline int live = 0;
+
+	int value;
+
+	explicit Counted(int _value) noexcept:value(_value) { ++live; }
+	Counted(const Counted &src) noexcept:value(src.value) { ++live; }
+	Counted(Counted &&src) noexcept:value(src.value) { ++live; }
+	~Counted() noexcept { --live; }
+
+	/* assignment reuses an existing instance, so it does not
+	   change the live count */
+	Counted &operator=(const Counted &) noexcept = default;
+	Counted &operator=(Counted &&) noexcept = default;
+};
+
+} // anonymous namespace
+
+/**
+ * Regression test: erase() must destroy the slots vacated at the end
+ * after moving the tail down.
+ */
+TEST(StaticVector, EraseDestroys)
+{
+	ASSERT_EQ(Counted::live, 0);
+
+	{
+		StaticVector<Counted, 8> v;
+		for (int i = 0; i < 5; ++i)
+			v.emplace_back(i);
+		ASSERT_EQ(v.size(), 5u);
+		ASSERT_EQ(Counted::live, 5);
+
+		/* erase a single element in the middle */
+		v.erase(std::next(v.begin(), 1));
+		EXPECT_EQ(v.size(), 4u);
+		EXPECT_EQ(Counted::live, 4);
+
+		/* erase a range of two elements */
+		v.erase(std::next(v.begin(), 1), std::next(v.begin(), 3));
+		EXPECT_EQ(v.size(), 2u);
+		EXPECT_EQ(Counted::live, 2);
+
+		/* the survivors are the expected ones, in order */
+		EXPECT_EQ(v[0].value, 0);
+		EXPECT_EQ(v[1].value, 4);
+	}
+
+	/* nothing leaked after the vector was destroyed */
+	EXPECT_EQ(Counted::live, 0);
+}
 
 TEST(StaticVector, CopyAndMoveSemanticsTrivial)
 {
