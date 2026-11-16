@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "Rva2.hxx"
+#include "Id3Frames.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/DivideRoundUp.hxx"
 
@@ -125,10 +126,7 @@ tag_rva2_parse(const struct id3_tag *tag,
 
 	/* Loop through all RVA2 frames as some programs (e.g. mp3gain) store
 	   track and album gain in separate tags */
-	const struct id3_frame *frame;
-	for (unsigned i = 0;
-	     (frame = id3_tag_findframe(tag, "RVA2", i)) != nullptr;
-	     ++i)
+	for (const struct id3_frame *frame : Id3FramesById(*tag, "RVA2"))
 		if (rva2_apply_frame(replay_gain_info, frame))
 			found = true;
 

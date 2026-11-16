@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "Id3Scan.hxx"
+#include "Id3Frames.hxx"
 #include "Id3String.hxx"
 #include "Id3Load.hxx"
 #include "Handler.hxx"
@@ -132,9 +133,7 @@ static void
 tag_id3_import_text(const struct id3_tag *tag, const char *id, TagType type,
 		    TagHandler &handler) noexcept
 {
-	const struct id3_frame *frame;
-	for (unsigned i = 0;
-	     (frame = id3_tag_findframe(tag, id, i)) != nullptr; ++i)
+	for (const struct id3_frame *frame : Id3FramesById(*tag, id))
 		tag_id3_import_text_frame(frame, type,
 					  handler);
 }
@@ -175,9 +174,7 @@ static void
 tag_id3_import_comment(const struct id3_tag *tag, const char *id, TagType type,
 		       TagHandler &handler) noexcept
 {
-	const struct id3_frame *frame;
-	for (unsigned i = 0;
-	     (frame = id3_tag_findframe(tag, id, i)) != nullptr; ++i)
+	for (const struct id3_frame *frame : Id3FramesById(*tag, id))
 		tag_id3_import_comment_frame(frame, type,
 					     handler);
 }
@@ -201,11 +198,7 @@ static void
 tag_id3_import_musicbrainz(const struct id3_tag *id3_tag,
 			   TagHandler &handler) noexcept
 {
-	for (unsigned i = 0;; ++i) {
-		const id3_frame *frame = id3_tag_findframe(id3_tag, "TXXX", i);
-		if (frame == nullptr)
-			break;
-
+	for (const struct id3_frame *frame : Id3FramesById(*id3_tag, "TXXX")) {
 		const auto name = tag_id3_getstring(frame, 1);
 		if (!name)
 			continue;
@@ -230,11 +223,7 @@ static void
 tag_id3_import_ufid(const struct id3_tag *id3_tag,
 		    TagHandler &handler) noexcept
 {
-	for (unsigned i = 0;; ++i) {
-		const id3_frame *frame = id3_tag_findframe(id3_tag, "UFID", i);
-		if (frame == nullptr)
-			break;
-
+	for (const struct id3_frame *frame : Id3FramesById(*id3_tag, "UFID")) {
 		id3_field *field = id3_frame_field(frame, 0);
 		if (field == nullptr)
 			continue;
@@ -269,11 +258,7 @@ tag_id3_handle_apic(const struct id3_tag *id3_tag,
 	if (!handler.WantPicture())
 		return;
 
-	for (unsigned i = 0;; ++i) {
-		const id3_frame *frame = id3_tag_findframe(id3_tag, "APIC", i);
-		if (frame == nullptr)
-			break;
-
+	for (const struct id3_frame *frame : Id3FramesById(*id3_tag, "APIC")) {
 		id3_field *mime_type_field = id3_frame_field(frame, 1);
 		if (mime_type_field == nullptr)
 			continue;

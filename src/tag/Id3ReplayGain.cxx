@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "Id3ReplayGain.hxx"
+#include "Id3Frames.hxx"
 #include "Rva2.hxx"
 #include "ReplayGainParser.hxx"
 #include "ReplayGainInfo.hxx"
@@ -17,8 +18,7 @@ Id3ToReplayGainInfo(ReplayGainInfo &rgi, const struct id3_tag *tag) noexcept
 
 	rgi.Clear();
 
-	struct id3_frame *frame;
-	for (unsigned i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
+	for (const struct id3_frame *frame : Id3FramesById(*tag, "TXXX")) {
 		if (frame->nfields < 3)
 			continue;
 
