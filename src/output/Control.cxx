@@ -405,7 +405,7 @@ AudioOutputControl::StopThread() noexcept
 void
 AudioOutputControl::OnMixerVolumeChanged(Mixer &_mixer, int volume) noexcept
 {
-	const std::lock_guard lock{mutex};
+	const std::lock_guard lock{mixer_listener_mutex};
 
 	if (mixer_listener != nullptr)
 		mixer_listener->OnMixerVolumeChanged(_mixer, volume);
@@ -414,7 +414,7 @@ AudioOutputControl::OnMixerVolumeChanged(Mixer &_mixer, int volume) noexcept
 void
 AudioOutputControl::OnMixerChanged() noexcept
 {
-	const std::lock_guard lock{mutex};
+	const std::lock_guard lock{mixer_listener_mutex};
 
 	if (mixer_listener != nullptr)
 		mixer_listener->OnMixerChanged();

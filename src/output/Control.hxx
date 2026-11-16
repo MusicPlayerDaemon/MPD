@@ -33,6 +33,11 @@ class AudioOutputClient;
 class AudioOutputControl final : public IntrusiveListHook<>, MixerListener {
 	const std::unique_ptr<FilteredAudioOutput> output;
 
+	/**
+	 * Protects #mixer_listener.
+	 */
+	Mutex mixer_listener_mutex;
+
 	MixerListener *mixer_listener = nullptr;
 
 	/**
@@ -306,7 +311,7 @@ public:
 	 * May only be called from the main thread.
 	 */
 	void LockSetMixerListener(MixerListener &_mixer_listener) noexcept {
-		const std::lock_guard lock{mutex};
+		const std::lock_guard lock{mixer_listener_mutex};
 		mixer_listener = &_mixer_listener;
 	}
 
