@@ -7,6 +7,7 @@
 #include "Connection.hxx"
 #include "Context.hxx"
 #include "event/Call.hxx"
+#include "net/SocketProtocolError.hxx"
 #include "util/Compiler.h" // for gcc_unreachable()
 #include "util/StringCompare.hxx"
 
@@ -148,6 +149,8 @@ NfsFileReader::Read(uint64_t offset, size_t size)
 {
 	assert(state == State::IDLE);
 
+	read_size = size;
+
 #ifdef LIBNFS_API_2
 	assert(!read_buffer);
 	// TOOD read into caller-provided buffer
@@ -263,7 +266,14 @@ NfsFileReader::ReadCallback(std::size_t nbytes, const void *data) noexcept
 
 	assert(read_buffer);
 	const auto buffer = std::move(read_buffer);
+#endif
 
+	if (nbytes > read_size) [[unlikely]] {
+		OnNfsFileError(std::make_exception_ptr(SocketMessageTooLargeError{"NFS server sent more data than requested"}));
+		return;
+	}
+
+#ifdef LIBNFS_API_2
 	OnNfsFileRead({buffer.get(), nbytes});
 #else
 	OnNfsFileRead({static_cast<const std::byte *>(data), nbytes});
