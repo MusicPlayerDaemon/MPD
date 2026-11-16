@@ -233,6 +233,33 @@ TEST(MaskedInetAddress, CopyFromV6)
 	EXPECT_FALSE(m.CopyFrom(src, 255));
 }
 
+TEST(MaskedInetAddress, CopyFromHost)
+{
+	MaskedInetAddress m;
+
+	ASSERT_TRUE(m.CopyFrom(IPv4Address{192, 168, 1, 2, 42}));
+	EXPECT_EQ(m, MakeMaskedInet4Address(192, 168, 1, 2));
+	EXPECT_TRUE(m.Matches(SocketAddress{"192.168.1.2"_ipv4}));
+	EXPECT_FALSE(m.Matches(SocketAddress{"192.168.1.3"_ipv4}));
+
+	/* the "any" address matches only itself */
+	ASSERT_TRUE(m.CopyFrom(IPv4Address{0, 0, 0, 0, 42}));
+	EXPECT_TRUE(m.Matches(SocketAddress{"0.0.0.0"_ipv4}));
+	EXPECT_FALSE(m.Matches(SocketAddress{"192.168.1.2"_ipv4}));
+
+	ASSERT_TRUE(m.CopyFrom(any_v6));
+	EXPECT_TRUE(m.Matches(SocketAddress{any_v6}));
+	EXPECT_FALSE(m.Matches(SocketAddress{localhost_v6}));
+	EXPECT_FALSE(m.Matches(SocketAddress{"192.168.1.2"_ipv4}));
+
+	ASSERT_TRUE(m.CopyFrom(localhost_v6));
+	EXPECT_TRUE(m.Matches(SocketAddress{localhost_v6}));
+	EXPECT_FALSE(m.Matches(SocketAddress{any_v6}));
+
+	StaticSocketAddress unspec{};
+	EXPECT_FALSE(m.CopyFrom(unspec));
+}
+
 TEST(MaskedInetAddress, ParseV6)
 {
 	const MaskedInetAddress a{IPv6Address{0x1234, 0x5678, 0x90ab, 0, 0, 0, 0, 0xcdef, 0}, 128};

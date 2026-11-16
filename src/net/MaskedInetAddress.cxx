@@ -33,6 +33,13 @@ MaskedInetAddress::CopyFrom(SocketAddress src,
 }
 
 bool
+MaskedInetAddress::CopyFrom(SocketAddress src) noexcept
+{
+	prefix_length = 128;
+	return address.CopyFrom(src);
+}
+
+bool
 MaskedInetAddress::Matches(SocketAddress _other) const noexcept
 {
 	BareInetAddress other;

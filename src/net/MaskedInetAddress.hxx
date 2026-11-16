@@ -32,6 +32,16 @@ public:
 	[[nodiscard]]
 	bool CopyFrom(SocketAddress src, unsigned _prefix_length) noexcept;
 
+	/**
+	 * Copy a single host address (i.e. with the full prefix
+	 * length).
+	 *
+	 * @return true on success, false if the specified
+	 * #SocketAddress is not compatible with this class
+	 */
+	[[nodiscard]]
+	bool CopyFrom(SocketAddress src) noexcept;
+
 	constexpr bool operator==(const MaskedInetAddress &other) const noexcept = default;
 
 	static constexpr bool Matches(const BareInetAddress &address, uint_least8_t prefix_length,
