@@ -1,6 +1,8 @@
 ver 0.24.20 (not yet released)
 * Linux
   - fix "chmod failed: Invalid argument" on kernels older than 6.6
+* Windows
+  - playlist: reject Windows reserved device names followed by a colon
 
 ver 0.24.19 (2026/11/11)
 * configuration
