@@ -19,6 +19,7 @@
  * of the actual length at runtime.
  */
 template<class T, std::size_t max>
+requires std::is_nothrow_destructible_v<T>
 class StaticVector {
 	struct alignas(T) Storage {
 		std::byte data[sizeof(T)];
@@ -309,7 +310,9 @@ public:
 		--the_size;
 	}
 
-	constexpr iterator erase(iterator first, iterator last) noexcept {
+	constexpr iterator erase(iterator first, iterator last) noexcept
+		requires std::is_nothrow_move_assignable_v<T>
+	{
 		/* move the tail down over the erased range ... */
 		iterator new_end = std::move(last, end(), first);
 
