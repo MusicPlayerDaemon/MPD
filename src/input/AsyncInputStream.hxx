@@ -147,14 +147,31 @@ protected:
 
 	/**
 	 * Implement code here that will resume the stream after it
-	 * has been paused due to full input buffer.
+	 * has been paused due to full input buffer.  This will be
+	 * called from within the I/O thread, with #mutex locked.
+	 *
+	 * Throws on error; the stream will be marked as closed.
 	 */
 	virtual void DoResume() = 0;
 
 	/**
 	 * The actual Seek() implementation.  This virtual method will
-	 * be called from within the I/O thread.  When the operation
-	 * is finished, call SeekDone() to notify the caller.
+	 * be called from within the I/O thread, with #mutex locked.
+	 * Before it is called, the buffer has been cleared and the
+	 * stream has been resumed (see DoResume()).  Operations still
+	 * in progress must be canceled, because data from the old
+	 * position must not be added to the buffer.
+	 *
+	 * The implementation must set #offset to #new_offset (it is
+	 * the offset of the next byte to be added to the buffer) and
+	 * call SeekDone() when the operation is finished.  This may
+	 * happen asynchronously, after this method has returned; the
+	 * caller of Seek() is blocked until then.  If the operation
+	 * fails asynchronously, call PostponeError() instead of
+	 * SeekDone().
+	 *
+	 * Throws on error (and then SeekDone() must not be called);
+	 * the stream will be marked as closed.
 	 */
 	virtual void DoSeek(offset_type new_offset) = 0;
 
