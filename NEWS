@@ -8,6 +8,7 @@ ver 0.24.20 (not yet released)
   - ffmpeg: fix bogus size of non-seekable streams
 * input
   - nfs: fix buffer overflow if the server sends more data than requested
+  - nfs: fix hang if the file is shorter than the reported size
 * decoder
   - mikmod: fix crash when scanning a module during playback
   - opus, vorbis: fix crash when seeking past the end
