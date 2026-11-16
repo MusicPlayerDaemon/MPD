@@ -134,7 +134,7 @@ initPermissions(const ConfigData &config)
 			} else {
 				for (const auto &i : Resolve(host_s.c_str(), 0,
 							     AI_PASSIVE, SOCK_STREAM)) {
-					if (masked_address.CopyFrom(i, 0))
+					if (masked_address.CopyFrom(i))
 						host_permissions.emplace_front(masked_address, permissions);
 				}
 			}
