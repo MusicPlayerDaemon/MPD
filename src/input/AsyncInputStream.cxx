@@ -257,6 +257,11 @@ AsyncInputStream::DeferredResume() noexcept
 		Resume();
 	} catch (...) {
 		postponed_exception = std::current_exception();
+
+		/* the implementation's state is unknown; without
+		   this, Read() would wait forever */
+		SetClosed();
+
 		InvokeOnAvailable();
 	}
 }
@@ -287,6 +292,11 @@ AsyncInputStream::DeferredSeek() noexcept
 	} catch (...) {
 		seek_state = SeekState::NONE;
 		postponed_exception = std::current_exception();
+
+		/* the implementation's state is unknown; without
+		   this, Read() would wait forever */
+		SetClosed();
+
 		InvokeOnAvailable();
 	}
 }
