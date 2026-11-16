@@ -36,6 +36,21 @@ test(
 )
 
 test(
+  'TestAsyncInputStream',
+  executable(
+    'TestAsyncInputStream',
+    'TestAsyncInputStream.cxx',
+    include_directories: inc,
+    dependencies: [
+      input_glue_dep,
+      event_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
   'TestBufferingInputStream',
   executable(
     'TestBufferingInputStream',
