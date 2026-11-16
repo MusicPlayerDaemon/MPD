@@ -166,20 +166,14 @@ mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 static bool
 mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
-	auto np = NarrowPath(path_fs);
-
-	MODULE *handle = Player_Load(np.c_str(), 128, 0);
-	if (handle == nullptr)
+	/* not Player_Load(), because that would reconfigure the
+	   global mixer state used by the decoder thread */
+	char *title = Player_LoadTitle(NarrowPath{path_fs}.c_str());
+	if (title == nullptr)
 		return false;
 
-	Player_Free(handle);
-
-	char *title = Player_LoadTitle(np.c_str());
-	if (title != nullptr) {
-		handler.OnTag(TAG_TITLE, title);
-		MikMod_free(title);
-	}
-
+	handler.OnTag(TAG_TITLE, title);
+	MikMod_free(title);
 	return true;
 }
 
