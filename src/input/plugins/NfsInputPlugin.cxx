@@ -75,9 +75,10 @@ NfsInputStream::DoRead()
 {
 	assert(NfsFileReader::IsIdle());
 
-	int64_t remaining = size - next_offset;
-	if (remaining <= 0)
+	if (next_offset >= size)
 		return;
+
+	const uint64_t remaining = size - next_offset;
 
 	const size_t buffer_space = GetBufferSpace();
 	if (buffer_space == 0) {
