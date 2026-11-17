@@ -19,6 +19,8 @@ ver 0.24.20 (not yet released)
   - id3: fix excessive CPU usage with many frames of the same type
 * Linux
   - fix "chmod failed: Invalid argument" on kernels older than 6.6
+* Android
+  - fix crash after setting the volume fails
 * Windows
   - playlist: reject Windows reserved device names followed by a colon
 

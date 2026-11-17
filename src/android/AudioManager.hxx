@@ -15,7 +15,15 @@ public:
 	AudioManager(JNIEnv *env, jobject obj) noexcept;
 
 	int GetMaxVolume() { return maxVolume; }
+
+	/**
+	 * Throws on error.
+	 */
 	int GetVolume(JNIEnv *env);
+
+	/**
+	 * Throws on error.
+	 */
 	void SetVolume(JNIEnv *env, int);
 };
 

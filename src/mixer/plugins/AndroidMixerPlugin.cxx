@@ -83,9 +83,10 @@ AndroidMixer::SetVolume(unsigned newVolume)
 	JNIEnv *env = Java::GetEnv();
 	if (maxAndroidVolume == 0)
 		return;
+	const int androidVolume = newVolume * maxAndroidVolume / 100;
+	audioManager->SetVolume(env, androidVolume);
 	currentVolume = newVolume;
-	lastAndroidVolume = currentVolume * maxAndroidVolume / 100;
-	audioManager->SetVolume(env, lastAndroidVolume);
+	lastAndroidVolume = androidVolume;
 
 }
 
