@@ -19,8 +19,9 @@
  * of the actual length at runtime.
  */
 template<class T, std::size_t max>
-requires std::is_nothrow_destructible_v<T>
 class StaticVector {
+	static_assert(std::is_nothrow_destructible_v<T>);
+
 	struct alignas(T) Storage {
 		std::byte data[sizeof(T)];
 	};
