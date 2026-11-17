@@ -15,6 +15,8 @@ ver 0.24.20 (not yet released)
   - mikmod: fix crash when scanning a module during playback
   - dsdiff: fix uninitialized sample rate and channel count
   - opus, vorbis: fix crash when seeking past the end
+* mixer
+  - alsa: fix crash after the mixer control was removed
 * tags
   - id3: fix excessive CPU usage with many frames of the same type
 * Linux

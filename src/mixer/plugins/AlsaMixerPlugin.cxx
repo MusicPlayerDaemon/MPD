@@ -24,6 +24,7 @@
 #include <fmt/format.h>
 
 #include <iterator> // for std::back_inserter()
+#include <stdexcept>
 #include <string>
 
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
@@ -85,6 +86,10 @@ class AlsaMixer final : public Mixer {
 	Mutex handle_mutex;
 
 	snd_mixer_t *handle;
+
+	/**
+	 * nullptr after the element has been removed
+	 */
 	snd_mixer_elem_t *elem;
 
 	AlsaMixerMonitor *monitor;
@@ -201,6 +206,13 @@ AlsaMixer::ElemCallback(snd_mixer_elem_t *elem, unsigned mask) noexcept
 {
 	AlsaMixer &mixer = *(AlsaMixer *)
 		snd_mixer_elem_get_callback_private(elem);
+
+	if (mask == SND_CTL_EVENT_MASK_REMOVE) {
+		/* libasound is going to free the element */
+		assert(elem == mixer.elem);
+		mixer.elem = nullptr;
+		return 0;
+	}
 
 	if (mask & SND_CTL_EVENT_MASK_VALUE) {
 		int volume = mixer.GetPercentVolume();
@@ -355,7 +367,8 @@ AlsaMixer::Close() noexcept
 	   anymore, therefore we don't need to lock #handle_mutex */
 	delete monitor;
 
-	snd_mixer_elem_set_callback(elem, nullptr);
+	if (elem != nullptr)
+		snd_mixer_elem_set_callback(elem, nullptr);
 	snd_mixer_close(handle);
 }
 
@@ -372,6 +385,9 @@ AlsaMixer::GetVolume()
 	if (err < 0)
 		throw Alsa::MakeError(err, "snd_mixer_handle_events() failed");
 
+	if (elem == nullptr)
+		throw std::runtime_error{"ALSA mixer control was removed"};
+
 	int volume = GetPercentVolume();
 	if (resulting_volume >= 0 && volume == resulting_volume)
 		/* we're still on the value passed to SetVolume() */
@@ -386,6 +402,9 @@ AlsaMixer::SetVolume(unsigned volume)
 	assert(handle != nullptr);
 
 	const std::scoped_lock lock{handle_mutex};
+
+	if (elem == nullptr)
+		throw std::runtime_error{"ALSA mixer control was removed"};
 
 	int err = set_normalized_playback_volume(elem, 0.01*volume, 1);
 	if (err < 0)
