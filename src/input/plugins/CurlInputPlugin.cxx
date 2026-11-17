@@ -263,7 +263,6 @@ CurlInputStream::OnHeaders(unsigned status,
 			   Curl::Headers &&headers)
 {
 	assert(GetEventLoop().IsInside());
-	assert(!postponed_exception);
 	assert(!icy || !icy->IsDefined());
 
 	if (status < 200 || status >= 300)
@@ -364,16 +363,7 @@ void
 CurlInputStream::OnError(std::exception_ptr e) noexcept
 {
 	const std::lock_guard protect{mutex};
-	postponed_exception = std::move(e);
-
-	if (IsSeekPending())
-		SeekDone();
-	else if (!IsReady())
-		SetReady();
-	else
-		InvokeOnAvailable();
-
-	AsyncInputStream::SetClosed();
+	PostponeError(std::move(e));
 }
 
 /*

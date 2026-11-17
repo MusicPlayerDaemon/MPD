@@ -10,6 +10,7 @@
 #include "../ThreadInputStream.hxx"
 #include "PluginUnavailable.hxx"
 #include "../InputPlugin.hxx"
+#include "thread/ScopeUnlock.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
@@ -126,10 +127,17 @@ FfmpegInputStream::Open()
 			    "hls,http,https,tcp,tls,crypto,httpproxy", 0);
 
 	const AVIOInterruptCB interrupt_callback{InterruptCallback, this};
-	io = {GetURI(), AVIO_FLAG_READ, &options, &interrupt_callback};
+
+	{
+		const ScopeUnlock unlock{mutex};
+		io = {GetURI(), AVIO_FLAG_READ, &options, &interrupt_callback};
+	}
 
 	seekable = (io->seekable & AVIO_SEEKABLE_NORMAL) != 0;
-	size = io.GetSize();
+
+	/* negative if unknown */
+	if (const auto _size = io.GetSize(); _size >= 0)
+		size = _size;
 
 	/* hack to make MPD select the "ffmpeg" decoder plugin - since
 	   avio.h doesn't tell us the MIME type of the resource, we

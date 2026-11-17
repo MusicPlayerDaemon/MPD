@@ -12,8 +12,10 @@ libsamplerate = CmakeProject(
     'lib/libsamplerate.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',
-        '-DINSTALL_DOCS=OFF',
-        '-DINSTALL_CMAKE_PACKAGE_MODULE=OFF',
+        '-DBUILD_TESTING=OFF',
+        '-DLIBSAMPLERATE_EXAMPLES=OFF',
+
+        '-DCMAKE_POLICY_VERSION_MINIMUM=3.5',
     ],
 )
 

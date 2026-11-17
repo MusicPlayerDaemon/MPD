@@ -30,3 +30,18 @@ test(
   ),
   protocol: 'gtest',
 )
+
+test(
+  'TestReservedName',
+  executable(
+    'TestReservedName',
+    'TestReservedName.cxx',
+    '../../src/fs/ReservedName.cxx',
+    include_directories: inc,
+    dependencies: [
+      util_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)

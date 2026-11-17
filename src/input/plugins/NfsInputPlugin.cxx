@@ -92,8 +92,7 @@ NfsInputStream::DoRead()
 		const ScopeUnlock unlock(mutex);
 		NfsFileReader::Read(next_offset, nbytes);
 	} catch (...) {
-		postponed_exception = std::current_exception();
-		InvokeOnAvailable();
+		PostponeError(std::current_exception());
 	}
 }
 
@@ -207,14 +206,7 @@ NfsInputStream::OnNfsFileError(std::exception_ptr &&e) noexcept
 	   has failed; the next DoSeek() will try again */
 	reconnecting = false;
 
-	postponed_exception = std::move(e);
-
-	if (IsSeekPending())
-		SeekDone();
-	else if (!IsReady())
-		SetReady();
-	else
-		InvokeOnAvailable();
+	PostponeError(std::move(e));
 }
 
 /*

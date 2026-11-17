@@ -30,8 +30,9 @@ IsWindowsDigit(std::string_view s) noexcept
 bool
 IsWindowsReservedFilename(std::string_view name) noexcept
 {
-	// strip the suffix
-	name = Split(name, '.').first;
+	/* strip the suffix; Windows also cuts the device name at
+	   a colon */
+	name = SplitAny(name, ".:"sv).first;
 
 	// strip trailing spaces
 	name = StripRight(name);

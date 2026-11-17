@@ -130,15 +130,12 @@ static void
 mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 {
 	auto np = NarrowPath(path_fs);
-	/* deconstify the path because libmikmod wants a non-const
-	   string pointer */
-	const auto path2 = const_cast<char *>(np.c_str());
 
 	MODULE *handle;
 	int ret;
 	SBYTE buffer[MIKMOD_FRAME_SIZE];
 
-	handle = Player_Load(path2, 128, 0);
+	handle = Player_Load(np.c_str(), 128, 0);
 
 	if (handle == nullptr) {
 		FmtError(mikmod_domain, "failed to open mod: {}", path_fs);
@@ -169,26 +166,14 @@ mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 static bool
 mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
-	auto np = NarrowPath(path_fs);
-	/* deconstify the path because libmikmod wants a non-const
-	   string pointer */
-	const auto path2 = const_cast<char *>(np.c_str());
-
-	MODULE *handle = Player_Load(path2, 128, 0);
-
-	if (handle == nullptr) {
-		FmtDebug(mikmod_domain, "Failed to open file: {}", path_fs);
+	/* not Player_Load(), because that would reconfigure the
+	   global mixer state used by the decoder thread */
+	char *title = Player_LoadTitle(NarrowPath{path_fs}.c_str());
+	if (title == nullptr)
 		return false;
-	}
 
-	Player_Free(handle);
-
-	char *title = Player_LoadTitle(path2);
-	if (title != nullptr) {
-		handler.OnTag(TAG_TITLE, title);
-		MikMod_free(title);
-	}
-
+	handler.OnTag(TAG_TITLE, title);
+	MikMod_free(title);
 	return true;
 }
 

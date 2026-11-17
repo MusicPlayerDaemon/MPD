@@ -101,7 +101,7 @@ if libmad_dep.found()
   decoder_plugins_dependencies += libid3tag_dep
 endif
 
-libmikmod_dep = dependency('libmikmod', version: '>= 3.2', required: get_option('mikmod'))
+libmikmod_dep = dependency('libmikmod', version: '>= 3.3.2', required: get_option('mikmod'))
 decoder_features.set('ENABLE_LIBMIKMOD', libmikmod_dep.found())
 if libmikmod_dep.found()
   decoder_plugins_sources += 'MikmodDecoderPlugin.cxx'

@@ -30,6 +30,27 @@ AsyncInputStream::~AsyncInputStream() noexcept
 }
 
 void
+AsyncInputStream::PostponeError(std::exception_ptr &&_error) noexcept
+{
+	assert(GetEventLoop().IsInside());
+	assert(_error);
+
+	postponed_exception = std::move(_error);
+
+	/* if this is called while seeking, seeking has failed */
+	seek_state = SeekState::NONE;
+
+	/* the implementation's state is unknown; without this, Read()
+	   would wait forever */
+	SetClosed();
+
+	if (IsReady())
+		InvokeOnAvailable();
+	else
+		SetReady();
+}
+
+void
 AsyncInputStream::SetTag(std::unique_ptr<Tag> _tag) noexcept
 {
 	tag = std::move(_tag);
@@ -114,8 +135,11 @@ AsyncInputStream::Seek(std::unique_lock<Mutex> &lock,
 		offset += nbytes;
 	}
 
-	if (new_offset == offset)
+	if (new_offset == offset) {
+		if (paused && buffer.GetSize() < resume_at)
+			deferred_resume.Schedule();
 		return;
+	}
 
 	/* no: ask the implementation to seek */
 
@@ -256,8 +280,7 @@ AsyncInputStream::DeferredResume() noexcept
 	try {
 		Resume();
 	} catch (...) {
-		postponed_exception = std::current_exception();
-		InvokeOnAvailable();
+		PostponeError(std::current_exception());
 	}
 }
 
@@ -285,8 +308,6 @@ AsyncInputStream::DeferredSeek() noexcept
 
 		DoSeek(seek_offset);
 	} catch (...) {
-		seek_state = SeekState::NONE;
-		postponed_exception = std::current_exception();
-		InvokeOnAvailable();
+		PostponeError(std::current_exception());
 	}
 }

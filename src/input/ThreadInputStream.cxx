@@ -77,7 +77,7 @@ ThreadInputStream::ThreadFunc() noexcept
 		assert(!postponed_exception);
 
 		if (IsSeeking()) {
-			const auto seek_offset_copy = offset = seek_offset;
+			const auto seek_offset_copy = seek_offset;
 			seek_offset = UNKNOWN_SIZE;
 			eof = false;
 			buffer.Clear();
@@ -87,11 +87,10 @@ ThreadInputStream::ThreadFunc() noexcept
 				ThreadSeek(seek_offset_copy);
 			} catch (...) {
 				postponed_exception = std::current_exception();
+				caller_cond.notify_one();
 				InvokeOnAvailable();
 				break;
 			}
-
-			offset = seek_offset_copy;
 		}
 
 		if (eof) {
@@ -100,6 +99,13 @@ ThreadInputStream::ThreadFunc() noexcept
 			wake_cond.wait(lock);
 			continue;
 		}
+
+		if (buffer.empty())
+			/* reset head and tail so the next read can fill
+			   the whole buffer; this must not be done by
+			   Read(), because ThreadRead() writes to the
+			   buffer without holding the lock */
+			buffer.Clear();
 
 		auto w = buffer.Write();
 		if (w.empty()) {
@@ -135,6 +141,7 @@ ThreadInputStream::ThreadFunc() noexcept
 		}
 	}
 
+	lock.unlock();
 	Close();
 }
 
@@ -161,7 +168,13 @@ void
 ThreadInputStream::Seek([[maybe_unused]] std::unique_lock<Mutex> &lock,
 			offset_type new_offset)
 {
-	seek_offset = new_offset;
+	if (new_offset == offset)
+		return;
+
+	if (!IsSeekable())
+		throw std::runtime_error{"Not seekable"};
+
+	offset = seek_offset = new_offset;
 	wake_cond.notify_one();
 }
 
@@ -171,12 +184,6 @@ ThreadInputStream::ReadFromBuffer(std::span<std::byte> dest) noexcept
 	const size_t nbytes = buffer.MoveTo(dest);
 	if (nbytes == 0)
 		return 0;
-
-	if (buffer.empty())
-		/* when the buffer becomes empty, reset its head and
-		   tail so the next write can fill the whole buffer
-		   and not just the part after the tail */
-		buffer.Clear();
 
 	offset += (offset_type)nbytes;
 	return nbytes;

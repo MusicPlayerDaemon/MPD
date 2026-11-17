@@ -91,6 +91,20 @@ Split(const std::basic_string_view<T> haystack, const T ch) noexcept
 }
 
 /**
+ * Like Split(), but match any of the characters.
+ */
+template<typename T>
+constexpr std::pair<std::basic_string_view<T>, std::basic_string_view<T>>
+SplitAny(const std::basic_string_view<T> haystack, const std::basic_string_view<T> chars) noexcept
+{
+	const auto i = haystack.find_first_of(chars);
+	if (i == haystack.npos)
+		return {haystack, {}};
+
+	return PartitionWithout(haystack, i);
+}
+
+/**
  * Split the string at the last occurrence of the given
  * character.  If the character is not found, then the first
  * value is the whole string and the second value is nullptr.

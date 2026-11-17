@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <span>
+#include <string_view>
 
 class Reader;
 
@@ -80,6 +81,12 @@ public:
 	}
 
 	char *ReadLine();
+
+	/**
+	 * Like ReadLine(), but return a std::string_view.  On end of
+	 * file, a zero-initialized std::string_view is returned.
+	 */
+	std::string_view ReadLineView();
 
 	unsigned GetLineNumber() const noexcept {
 		return line_number;

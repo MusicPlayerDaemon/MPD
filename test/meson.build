@@ -5,6 +5,7 @@ gtest_dep = dependency('gtest', main: true,
 subdir('util')
 subdir('uri')
 subdir('co')
+subdir('io')
 subdir('net')
 subdir('time')
 subdir('tag')
@@ -38,10 +39,39 @@ test(
 )
 
 test(
+  'TestAsyncInputStream',
+  executable(
+    'TestAsyncInputStream',
+    'TestAsyncInputStream.cxx',
+    include_directories: inc,
+    dependencies: [
+      input_glue_dep,
+      event_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
   'TestBufferingInputStream',
   executable(
     'TestBufferingInputStream',
     'TestBufferingInputStream.cxx',
+    include_directories: inc,
+    dependencies: [
+      input_glue_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
+  'TestThreadInputStream',
+  executable(
+    'TestThreadInputStream',
+    'TestThreadInputStream.cxx',
     include_directories: inc,
     dependencies: [
       input_glue_dep,
@@ -76,20 +106,6 @@ test(
     include_directories: inc,
     dependencies: [
       util_dep,
-      gtest_dep,
-    ],
-  ),
-  protocol: 'gtest',
-)
-
-test(
-  'TestBufferedReader',
-  executable(
-    'TestBufferedReader',
-    'TestBufferedReader.cxx',
-    include_directories: inc,
-    dependencies: [
-      io_dep,
       gtest_dep,
     ],
   ),

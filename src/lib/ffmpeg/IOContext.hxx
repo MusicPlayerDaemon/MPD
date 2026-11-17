@@ -7,6 +7,7 @@
 
 extern "C" {
 #include <libavformat/avio.h>
+#include <libavutil/error.h>
 }
 
 #include <cstddef>
@@ -60,10 +61,18 @@ public:
 		return avio_feof(io_context) != 0;
 	}
 
+	/**
+	 * Throws on error.
+	 *
+	 * @return the number of bytes read, 0 on end of file
+	 */
 	size_t Read(std::span<std::byte> dest) {
 		int result = avio_read_partial(io_context,
 					       reinterpret_cast<unsigned char *>(dest.data()),
 					       dest.size());
+		if (result == AVERROR_EOF)
+			return 0;
+
 		if (result < 0)
 			throw MakeFfmpegError(result, "avio_read() failed");
 
