@@ -5,6 +5,9 @@
 #include "lib/xiph/OggFind.hxx"
 #include "input/InputStream.hxx"
 
+#include <algorithm> // for std::clamp()
+#include <cassert>
+
 /**
  * Load the end-of-stream packet and restore the previous file
  * position.
@@ -75,6 +78,11 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 	static const ogg_int64_t MARGIN_BEFORE = 44100 / 3;
 	static const ogg_int64_t MARGIN_AFTER = 44100 / 10;
 
+	/* the seek target may be past the end, e.g. the start time of
+	   a CUE track or a queue range */
+	where_granulepos = std::clamp<ogg_int64_t>(where_granulepos,
+						   0, end_granulepos);
+
 	offset_type min_offset = first_offset, max_offset = input_stream.GetSize();
 	ogg_int64_t min_granule = 0, max_granule = end_granulepos;
 
@@ -83,8 +91,14 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 		const ogg_int64_t delta_granule = max_granule - min_granule;
 		const ogg_int64_t relative_granule = where_granulepos - min_granule;
 
-		const offset_type offset = min_offset + relative_granule * delta_offset
-			/ delta_granule;
+		assert(delta_granule > 0);
+		assert(relative_granule >= 0);
+		assert(relative_granule <= delta_granule);
+
+		/* floating point to avoid integer overflow */
+		const double fraction = double(relative_granule) / delta_granule;
+		const offset_type offset = min_offset +
+			offset_type(fraction * delta_offset);
 
 		SeekByte(offset);
 
@@ -94,7 +108,7 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 			   - we can't improve, so stop */
 			return;
 
-		if (new_granule > where_granulepos + MARGIN_AFTER) {
+		if (new_granule - where_granulepos > MARGIN_AFTER) {
 			if (new_granule > max_granule)
 				/* something went wrong */
 				return;
@@ -107,7 +121,7 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 			/* reduce the max bounds and interpolate again */
 			max_granule = new_granule;
 			max_offset = GetStartOffset();
-		} else if (new_granule + MARGIN_BEFORE < where_granulepos) {
+		} else if (where_granulepos - new_granule > MARGIN_BEFORE) {
 			if (new_granule < min_granule)
 				/* something went wrong */
 				return;

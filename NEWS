@@ -60,8 +60,14 @@ ver 0.24.20 (not yet released)
   - ffmpeg: don't block other threads while connecting
   - ffmpeg: fix error and lost data at the end of the stream
   - ffmpeg: fix bogus size of non-seekable streams
+* input
+  - nfs: fix buffer overflow if the server sends more data than requested
+  - nfs: fix hang if the file is shorter than the reported size
 * decoder
   - mikmod: fix crash when scanning a module during playback
+  - opus, vorbis: fix crash when seeking past the end
+* tags
+  - id3: fix excessive CPU usage with many frames of the same type
 * Linux
   - fix "chmod failed: Invalid argument" on kernels older than 6.6
 * Windows

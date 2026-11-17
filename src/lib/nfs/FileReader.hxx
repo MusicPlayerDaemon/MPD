@@ -99,6 +99,11 @@ class NfsFileReader : NfsLease, NfsCallback {
 	std::unique_ptr<std::byte[]> read_buffer;
 #endif
 
+	/**
+	 * The size passed to Read().
+	 */
+	std::size_t read_size;
+
 public:
 	NfsFileReader() noexcept;
 	~NfsFileReader() noexcept;

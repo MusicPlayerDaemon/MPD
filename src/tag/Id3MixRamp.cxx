@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "Id3MixRamp.hxx"
+#include "Id3Frames.hxx"
 #include "MixRampParser.hxx"
 #include "MixRampInfo.hxx"
 
@@ -14,8 +15,7 @@ Id3ToMixRampInfo(const struct id3_tag *tag) noexcept
 {
 	MixRampInfo result;
 
-	struct id3_frame *frame;
-	for (unsigned i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
+	for (const struct id3_frame *frame : Id3FramesById(*tag, "TXXX")) {
 		if (frame->nfields < 3)
 			continue;
 

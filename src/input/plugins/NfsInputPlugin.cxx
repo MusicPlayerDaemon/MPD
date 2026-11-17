@@ -7,6 +7,7 @@
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
 #include "thread/ScopeUnlock.hxx"
+#include "net/SocketProtocolError.hxx"
 #include "util/ByteSizes.hxx"
 
 /**
@@ -75,9 +76,10 @@ NfsInputStream::DoRead()
 {
 	assert(NfsFileReader::IsIdle());
 
-	int64_t remaining = size - next_offset;
-	if (remaining <= 0)
+	if (next_offset >= size)
 		return;
+
+	const uint64_t remaining = size - next_offset;
 
 	const size_t buffer_space = GetBufferSpace();
 	if (buffer_space == 0) {
@@ -178,6 +180,12 @@ NfsInputStream::OnNfsFileRead(std::span<const std::byte> src) noexcept
 	const std::lock_guard protect{mutex};
 	assert(!IsBufferFull());
 	assert(IsBufferFull() == (GetBufferSpace() == 0));
+
+	if (src.empty()) [[unlikely]] {
+		/* DoRead() never reads past the reported size */
+		PostponeError(std::make_exception_ptr(SocketProtocolError{"Unexpected end of file"}));
+		return;
+	}
 
 	AppendToBuffer(src);
 
