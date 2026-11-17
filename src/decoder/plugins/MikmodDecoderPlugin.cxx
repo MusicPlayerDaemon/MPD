@@ -169,11 +169,8 @@ mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 	auto np = NarrowPath(path_fs);
 
 	MODULE *handle = Player_Load(np.c_str(), 128, 0);
-
-	if (handle == nullptr) {
-		FmtDebug(mikmod_domain, "Failed to open file: {}", path_fs);
+	if (handle == nullptr)
 		return false;
-	}
 
 	Player_Free(handle);
 
