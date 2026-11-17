@@ -25,7 +25,7 @@
 #include "tag/Id3Unique.hxx"
 #endif
 
-#include <algorithm> // for std::copy_n()
+#include <algorithm> // for std::copy_n(), std::min()
 #include <cassert>
 
 #include <stdlib.h>
@@ -87,14 +87,25 @@ mad_fixed_to_24_sample(mad_fixed_t sample) noexcept
 		>> (MAD_F_FRACBITS + 1 - bits);
 }
 
+/**
+ * @param num_channels the number of channels to be generated; if
+ * the frame has fewer, the first channel is duplicated; if it has
+ * more, they are dropped
+ */
 static void
 mad_fixed_to_24_buffer(int32_t *dest, const struct mad_pcm &src,
 		       size_t start, size_t end,
 		       unsigned int num_channels)
 {
+	assert(src.channels > 0);
+
+	const unsigned last_channel = src.channels - 1;
+
 	for (size_t i = start; i < end; ++i)
-		for (unsigned c = 0; c < num_channels; ++c)
-			*dest++ = mad_fixed_to_24_sample(src.samples[c][i]);
+		for (unsigned c = 0; c < num_channels; ++c) {
+			const unsigned src_c = std::min(c, last_channel);
+			*dest++ = mad_fixed_to_24_sample(src.samples[src_c][i]);
+		}
 }
 
 class MadDecoder {
@@ -133,6 +144,11 @@ class MadDecoder {
 	DecoderClient *const client;
 	InputStream &input_stream;
 	enum mad_layer layer = mad_layer(0);
+
+	/**
+	 * The number of channels announced to the #DecoderClient.
+	 */
+	unsigned channels;
 
 public:
 	MadDecoder(DecoderClient *client, InputStream &input_stream) noexcept;
@@ -834,8 +850,8 @@ MadDecoder::SubmitPCM(size_t i, size_t pcm_length) noexcept
 
 	mad_fixed_to_24_buffer(output_buffer, synth.pcm,
 			       i, i + num_samples,
-			       MAD_NCHANNELS(&frame.header));
-	num_samples *= MAD_NCHANNELS(&frame.header);
+			       channels);
+	num_samples *= channels;
 
 	return client->SubmitAudio(input_stream,
 				   std::span{output_buffer, num_samples},
@@ -988,9 +1004,11 @@ MadDecoder::RunDecoder()
 
 	AllocateBuffers();
 
+	channels = MAD_NCHANNELS(&frame.header);
+
 	client->Ready(CheckAudioFormat(frame.header.samplerate,
 				       SampleFormat::S24_P32,
-				       MAD_NCHANNELS(&frame.header)),
+				       channels),
 		      input_stream.IsSeekable(),
 		      total_time);
 

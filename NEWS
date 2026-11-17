@@ -13,6 +13,7 @@ ver 0.24.20 (not yet released)
   - nfs: fix hang if the file is shorter than the reported size
 * decoder
   - mikmod: fix crash when scanning a module during playback
+  - mad: fix crash when the channel count changes
   - dsdiff: fix uninitialized sample rate and channel count
   - opus, vorbis: fix crash when seeking past the end
 * mixer
