@@ -167,6 +167,12 @@ void
 ThreadInputStream::Seek([[maybe_unused]] std::unique_lock<Mutex> &lock,
 			offset_type new_offset)
 {
+	if (new_offset == offset)
+		return;
+
+	if (!IsSeekable())
+		throw std::runtime_error{"Not seekable"};
+
 	offset = seek_offset = new_offset;
 	wake_cond.notify_one();
 }

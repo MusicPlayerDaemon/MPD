@@ -2,6 +2,7 @@ ver 0.24.20 (not yet released)
 * input
   - fix hang after a failed seek
   - ffmpeg, mms: fix data corruption
+  - ffmpeg, mms: fix broken stream after seeking a non-seekable stream
 * decoder
   - mikmod: fix crash when scanning a module during playback
 * Linux
