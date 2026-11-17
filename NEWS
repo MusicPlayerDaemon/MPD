@@ -16,6 +16,7 @@ ver 0.24.20 (not yet released)
   - mad: fix crash when the channel count changes
   - dsdiff: fix uninitialized sample rate and channel count
   - opus, vorbis: fix crash when seeking past the end
+  - sidplay: don't block MPD while seeking
 * output
   - wasapi: fix crash with DoP
 * mixer
