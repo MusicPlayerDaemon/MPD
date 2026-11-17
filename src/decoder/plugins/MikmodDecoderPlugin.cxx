@@ -130,15 +130,12 @@ static void
 mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 {
 	auto np = NarrowPath(path_fs);
-	/* deconstify the path because libmikmod wants a non-const
-	   string pointer */
-	const auto path2 = const_cast<char *>(np.c_str());
 
 	MODULE *handle;
 	int ret;
 	SBYTE buffer[MIKMOD_FRAME_SIZE];
 
-	handle = Player_Load(path2, 128, 0);
+	handle = Player_Load(np.c_str(), 128, 0);
 
 	if (handle == nullptr) {
 		FmtError(mikmod_domain, "failed to open mod: {}", path_fs);
@@ -170,11 +167,8 @@ static bool
 mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 {
 	auto np = NarrowPath(path_fs);
-	/* deconstify the path because libmikmod wants a non-const
-	   string pointer */
-	const auto path2 = const_cast<char *>(np.c_str());
 
-	MODULE *handle = Player_Load(path2, 128, 0);
+	MODULE *handle = Player_Load(np.c_str(), 128, 0);
 
 	if (handle == nullptr) {
 		FmtDebug(mikmod_domain, "Failed to open file: {}", path_fs);
@@ -183,7 +177,7 @@ mikmod_decoder_scan_file(Path path_fs, TagHandler &handler) noexcept
 
 	Player_Free(handle);
 
-	char *title = Player_LoadTitle(path2);
+	char *title = Player_LoadTitle(np.c_str());
 	if (title != nullptr) {
 		handler.OnTag(TAG_TITLE, title);
 		MikMod_free(title);
