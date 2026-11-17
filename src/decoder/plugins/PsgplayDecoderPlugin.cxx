@@ -27,6 +27,8 @@ extern "C" {
 
 #include <fmt/format.h>
 
+#include <algorithm> // for std::min()
+
 #define SUBTUNE_PREFIX "tune_"
 
 /*
@@ -166,25 +168,45 @@ psgplay_file_decode(DecoderClient &client, Path path_fs)
 
 	client.Ready(audio_format, true, duration);
 
-	size_t t_frames = 0;
+	uint64_t t_frames = 0;
+
+	/* while t_frames is below this, we're seeking; skip all
+	   frames */
+	uint64_t s_frames = 0;
+
 	DecoderCommand cmd;
 
 	do {
 		enum { N = 4096 };
 		struct psgplay_stereo buffer[N];
 
-		/* psgplay_read_stereo returns the number of (stereo) frames */
-		const ssize_t n_frames = psgplay_read_stereo(pp, buffer, N);
-		if (n_frames <= 0)
-			break;
+		if (t_frames < s_frames) {
+			/* still seeking; skip, but check for new
+			   commands */
+			const std::size_t skip =
+				std::min<uint64_t>(s_frames - t_frames, N);
+			const ssize_t k_frames =
+				psgplay_read_stereo(pp, nullptr, skip);
+			if (k_frames <= 0)
+				break;
 
-		cmd = client.SubmitAudio(nullptr,
-					 std::span{buffer, (size_t)n_frames},
-					 0);
-		t_frames += n_frames;
+			t_frames += k_frames;
+			cmd = client.GetCommand();
+		} else {
+			/* psgplay_read_stereo returns the number
+			   of (stereo) frames */
+			const ssize_t n_frames = psgplay_read_stereo(pp, buffer, N);
+			if (n_frames <= 0)
+				break;
+
+			cmd = client.SubmitAudio(nullptr,
+						 std::span{buffer, (size_t)n_frames},
+						 0);
+			t_frames += n_frames;
+		}
 
 		if (cmd == DecoderCommand::SEEK) {
-			const uint64_t s_frames = client.GetSeekFrame();
+			s_frames = client.GetSeekFrame();
 
 			if (s_frames < t_frames) {
 				psgplay_free(pp);
@@ -200,19 +222,9 @@ psgplay_file_decode(DecoderClient &client, Path path_fs)
 				t_frames = 0;
 			}
 
-			if (s_frames > t_frames) {
-				const ssize_t k_frames =
-					psgplay_read_stereo(pp, nullptr,
-							    s_frames -
-							    t_frames);
-				if (k_frames <= 0)
-					break;
-				t_frames += k_frames;
-			}
-
-			if (t_frames != s_frames)
-				client.SeekError();
-
+			/* don't block the player while the emulator
+			   runs to the seek frame; the following
+			   iterations skip the frames */
 			client.CommandFinished();
 		}
 	} while (cmd != DecoderCommand::STOP);
