@@ -60,7 +60,10 @@ struct dsdiff_native_tag {
 };
 
 struct DsdiffMetaData {
-	unsigned sample_rate, channels;
+	/* zero-initialized to have invalid values if the file does
+	   not specify it */
+	unsigned sample_rate = 0, channels = 0;
+
 	bool bitreverse;
 	offset_type chunk_size;
 

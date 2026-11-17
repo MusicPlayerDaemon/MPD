@@ -13,6 +13,7 @@ ver 0.24.20 (not yet released)
   - nfs: fix hang if the file is shorter than the reported size
 * decoder
   - mikmod: fix crash when scanning a module during playback
+  - dsdiff: fix uninitialized sample rate and channel count
   - opus, vorbis: fix crash when seeking past the end
 * tags
   - id3: fix excessive CPU usage with many frames of the same type
