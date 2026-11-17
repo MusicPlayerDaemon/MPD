@@ -141,6 +141,7 @@ ThreadInputStream::ThreadFunc() noexcept
 		}
 	}
 
+	lock.unlock();
 	Close();
 }
 
