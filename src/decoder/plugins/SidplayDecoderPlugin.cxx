@@ -335,7 +335,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #endif
 	const sidplayfp_time_t end_time = duration.IsNegative()
 		? std::numeric_limits<sidplayfp_time_t>::max()
-		: duration.ToScale<uint64_t>(timebase);
+		: duration.ToScale<uint_least64_t>(timebase);
 
 	/* while the player is before this time stamp, we're
 	   seeking; skip all samples */
@@ -384,7 +384,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		}
 
 		if (cmd == DecoderCommand::SEEK) {
-			min_time = client.GetSeekTime().ToScale(timebase);
+			min_time = client.GetSeekTime().ToScale<uint_least64_t>(timebase);
 
 			/* can't rewind so return to zero and seek forward */
 			if (min_time < time) {
