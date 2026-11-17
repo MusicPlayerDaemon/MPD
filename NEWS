@@ -4,6 +4,7 @@ ver 0.24.20 (not yet released)
   - ffmpeg, mms: fix data corruption
   - ffmpeg, mms: fix broken stream after seeking a non-seekable stream
   - ffmpeg: don't block other threads while connecting
+  - ffmpeg: fix error and lost data at the end of the stream
 * decoder
   - mikmod: fix crash when scanning a module during playback
 * Linux
