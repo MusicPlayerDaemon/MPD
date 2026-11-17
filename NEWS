@@ -28,6 +28,7 @@ ver 0.24.20 (not yet released)
   - fix crash after setting the volume fails
 * Windows
   - playlist: reject Windows reserved device names followed by a colon
+  - archive: reject ".." in archive entry names
 
 ver 0.24.19 (2026/11/11)
 * configuration

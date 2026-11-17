@@ -23,6 +23,23 @@
 
 #include <string.h>
 
+/**
+ * Is this a valid path segment of an archive entry?  Rejects "..",
+ * "." and empty segments, which could escape from the archive.
+ */
+[[gnu::pure]]
+static bool
+VerifyArchiveSegment(std::string_view name) noexcept
+{
+#ifdef _WIN32
+	/* the backslash is a path separator on Windows */
+	if (name.find('\\') != name.npos)
+		return false;
+#endif
+
+	return VerifyFilenameUTF8(name);
+}
+
 static Directory *
 LockMakeChild(Directory &directory, std::string_view name) noexcept
 {
@@ -46,7 +63,7 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 
 	const auto [child_name, rest] = Split(name, '/');
 	if (rest.data() != nullptr) {
-		if (!VerifyRelativePathUTF8(child_name))
+		if (!VerifyArchiveSegment(child_name))
 			return;
 
 		if (GetDepth(directory) >= MAX_DIRECTORY_DEPTH) {
@@ -63,7 +80,7 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 		//create directories first
 		UpdateArchiveTree(archive, *subdir, rest);
 	} else {
-		if (!VerifyRelativePathUTF8(name))
+		if (!VerifyArchiveSegment(name))
 			return;
 
 		//add file
