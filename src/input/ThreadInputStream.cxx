@@ -87,6 +87,7 @@ ThreadInputStream::ThreadFunc() noexcept
 				ThreadSeek(seek_offset_copy);
 			} catch (...) {
 				postponed_exception = std::current_exception();
+				caller_cond.notify_one();
 				InvokeOnAvailable();
 				break;
 			}
