@@ -292,8 +292,7 @@ try {
 }
 catch (...) {
 	const std::lock_guard protect{mutex};
-	postponed_exception = std::current_exception();
-	InvokeOnAvailable();
+	PostponeError(std::current_exception());
 }
 
 inline int

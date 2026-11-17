@@ -138,8 +138,7 @@ UringInputStream::OnRead(std::unique_ptr<std::byte[]> data,
 	const std::lock_guard protect{mutex};
 
 	if (nbytes == 0) {
-		postponed_exception = std::make_exception_ptr(std::runtime_error("Premature end of file"));
-		InvokeOnAvailable();
+		PostponeError(std::make_exception_ptr(std::runtime_error{"Premature end of file"}));
 		return;
 	}
 
@@ -158,8 +157,7 @@ UringInputStream::OnReadError(int error) noexcept
 
 	const std::lock_guard protect{mutex};
 
-	postponed_exception = std::make_exception_ptr(MakeErrno(error, "Read failed"));
-	InvokeOnAvailable();
+	PostponeError(std::make_exception_ptr(MakeErrno(error, "Read failed")));
 }
 
 bool

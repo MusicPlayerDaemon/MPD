@@ -108,6 +108,15 @@ protected:
 		open = false;
 	}
 
+	/**
+	 * Postpone an error to be thrown in the client thread, close
+	 * the stream and fail a pending seek (SeekDone() must not be
+	 * called).
+	 *
+	 * Caller must lock the #mutex.
+	 */
+	void PostponeError(std::exception_ptr &&_error) noexcept;
+
 	bool IsBufferEmpty() const noexcept {
 		return buffer.empty();
 	}
