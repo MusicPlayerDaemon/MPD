@@ -65,6 +65,20 @@ test(
 )
 
 test(
+  'TestThreadInputStream',
+  executable(
+    'TestThreadInputStream',
+    'TestThreadInputStream.cxx',
+    include_directories: inc,
+    dependencies: [
+      input_glue_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
   'test_protocol',
   executable(
     'test_protocol',
