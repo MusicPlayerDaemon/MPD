@@ -95,8 +95,10 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 		assert(relative_granule >= 0);
 		assert(relative_granule <= delta_granule);
 
-		const offset_type offset = min_offset + relative_granule * delta_offset
-			/ delta_granule;
+		/* floating point to avoid integer overflow */
+		const double fraction = double(relative_granule) / delta_granule;
+		const offset_type offset = min_offset +
+			offset_type(fraction * delta_offset);
 
 		SeekByte(offset);
 
