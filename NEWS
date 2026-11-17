@@ -22,6 +22,8 @@ ver 0.24.20 (not yet released)
   - alsa: fix crash after the mixer control was removed
 * tags
   - id3: fix excessive CPU usage with many frames of the same type
+* playlist
+  - ignore the URI fragment when detecting the file type
 * Linux
   - fix "chmod failed: Invalid argument" on kernels older than 6.6
 * Android

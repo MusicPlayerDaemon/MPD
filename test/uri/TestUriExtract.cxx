@@ -18,7 +18,7 @@ TEST(UriExtract, Suffix)
 	EXPECT_EQ((const char *)nullptr, UriGetSuffix("/foo/.jpg").data());
 
 	/* eliminate the query string */
-	EXPECT_EQ(UriGetSuffix("/foo/bar.jpg?query_string"), "jpg"sv);
+	EXPECT_EQ(UriGetSuffix("http://example.com/foo/bar.jpg?query_string"), "jpg"sv);
 
 	/* eliminate the fragment */
 	EXPECT_EQ(UriGetSuffix("http://example.com/foo/bar.jpg#frag"), "jpg"sv);

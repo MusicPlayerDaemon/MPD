@@ -93,13 +93,6 @@ UriPathQueryFragment(std::string_view uri) noexcept
 	return uri;
 }
 
-[[gnu::pure]]
-static std::string_view
-UriWithoutQueryString(std::string_view uri) noexcept
-{
-	return Split(uri, '?').first;
-}
-
 std::string_view
 UriGetPath(std::string_view uri) noexcept
 {
@@ -121,7 +114,7 @@ UriGetPath(std::string_view uri) noexcept
 std::string_view
 UriGetSuffix(std::string_view _uri) noexcept
 {
-	const auto uri = UriWithoutQueryString(_uri);
+	const auto uri = UriGetPath(_uri);
 
 	const auto dot = uri.rfind('.');
 	if (dot == uri.npos || dot == 0 ||
