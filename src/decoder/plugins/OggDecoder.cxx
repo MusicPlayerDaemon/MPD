@@ -106,7 +106,7 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 			   - we can't improve, so stop */
 			return;
 
-		if (new_granule > where_granulepos + MARGIN_AFTER) {
+		if (new_granule - where_granulepos > MARGIN_AFTER) {
 			if (new_granule > max_granule)
 				/* something went wrong */
 				return;
@@ -119,7 +119,7 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 			/* reduce the max bounds and interpolate again */
 			max_granule = new_granule;
 			max_offset = GetStartOffset();
-		} else if (new_granule + MARGIN_BEFORE < where_granulepos) {
+		} else if (where_granulepos - new_granule > MARGIN_BEFORE) {
 			if (new_granule < min_granule)
 				/* something went wrong */
 				return;
