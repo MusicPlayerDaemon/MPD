@@ -101,6 +101,13 @@ ThreadInputStream::ThreadFunc() noexcept
 			continue;
 		}
 
+		if (buffer.empty())
+			/* reset head and tail so the next read can fill
+			   the whole buffer; this must not be done by
+			   Read(), because ThreadRead() writes to the
+			   buffer without holding the lock */
+			buffer.Clear();
+
 		auto w = buffer.Write();
 		if (w.empty()) {
 			wake_cond.wait(lock);
@@ -171,12 +178,6 @@ ThreadInputStream::ReadFromBuffer(std::span<std::byte> dest) noexcept
 	const size_t nbytes = buffer.MoveTo(dest);
 	if (nbytes == 0)
 		return 0;
-
-	if (buffer.empty())
-		/* when the buffer becomes empty, reset its head and
-		   tail so the next write can fill the whole buffer
-		   and not just the part after the tail */
-		buffer.Clear();
 
 	offset += (offset_type)nbytes;
 	return nbytes;
