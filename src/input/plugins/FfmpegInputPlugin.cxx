@@ -134,7 +134,10 @@ FfmpegInputStream::Open()
 	}
 
 	seekable = (io->seekable & AVIO_SEEKABLE_NORMAL) != 0;
-	size = io.GetSize();
+
+	/* negative if unknown */
+	if (const auto _size = io.GetSize(); _size >= 0)
+		size = _size;
 
 	/* hack to make MPD select the "ffmpeg" decoder plugin - since
 	   avio.h doesn't tell us the MIME type of the resource, we
