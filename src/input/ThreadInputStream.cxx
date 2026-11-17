@@ -77,7 +77,7 @@ ThreadInputStream::ThreadFunc() noexcept
 		assert(!postponed_exception);
 
 		if (IsSeeking()) {
-			const auto seek_offset_copy = offset = seek_offset;
+			const auto seek_offset_copy = seek_offset;
 			seek_offset = UNKNOWN_SIZE;
 			eof = false;
 			buffer.Clear();
@@ -91,8 +91,6 @@ ThreadInputStream::ThreadFunc() noexcept
 				InvokeOnAvailable();
 				break;
 			}
-
-			offset = seek_offset_copy;
 		}
 
 		if (eof) {
@@ -169,7 +167,7 @@ void
 ThreadInputStream::Seek([[maybe_unused]] std::unique_lock<Mutex> &lock,
 			offset_type new_offset)
 {
-	seek_offset = new_offset;
+	offset = seek_offset = new_offset;
 	wake_cond.notify_one();
 }
 
