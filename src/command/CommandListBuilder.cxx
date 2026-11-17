@@ -14,9 +14,9 @@ CommandListBuilder::Reset()
 }
 
 bool
-CommandListBuilder::Add(const char *cmd)
+CommandListBuilder::Add(std::string_view cmd) noexcept
 {
-	size_t len = strlen(cmd) + 1;
+	size_t len = cmd.size() + 1;
 	size += len;
 	if (size > client_max_command_list_size)
 		return false;

@@ -75,7 +75,7 @@ public:
 	/**
 	 * @return false if the list is full
 	 */
-	bool Add(const char *cmd);
+	bool Add(std::string_view cmd) noexcept;
 
 	/**
 	 * Finishes the list and returns it.
