@@ -27,6 +27,8 @@ class AsyncInputStream : public InputStream {
 	 */
 	Cond caller_cond;
 
+	std::exception_ptr postponed_exception;
+
 	HugeArray<std::byte> allocation;
 
 	CircularBuffer<std::byte> buffer{allocation};
@@ -54,8 +56,6 @@ class AsyncInputStream : public InputStream {
 	offset_type seek_offset;
 
 protected:
-	std::exception_ptr postponed_exception;
-
 	/**
 	 * Notify both the synchronous caller and the InputStream handler.
 	 */

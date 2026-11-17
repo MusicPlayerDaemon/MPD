@@ -263,7 +263,6 @@ CurlInputStream::OnHeaders(unsigned status,
 			   Curl::Headers &&headers)
 {
 	assert(GetEventLoop().IsInside());
-	assert(!postponed_exception);
 	assert(!icy || !icy->IsDefined());
 
 	if (status < 200 || status >= 300)
