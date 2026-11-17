@@ -99,7 +99,8 @@ class AlsaMixer final : public Mixer {
 	 * Protects #handle, #elem and #desired_volume while #monitor
 	 * exists, because libasound is not thread-safe, and #monitor
 	 * uses the #snd_mixer_t in the #EventLoop thread while
-	 * SetVolume() and GetVolume() are called from other threads.
+	 * SetVolume(), GetVolume() and ScaleVolume() are called from
+	 * other threads.
 	 */
 	Mutex handle_mutex;
 
@@ -438,6 +439,12 @@ unsigned
 AlsaMixer::ScaleVolume(unsigned volume, float scale) noexcept
 {
 	assert(handle != nullptr);
+
+	const std::lock_guard lock{handle_mutex};
+
+	if (elem == nullptr)
+		/* the element was removed */
+		return volume;
 
 	return NormalizedToPercent(scale_normalized_playback_volume(elem,
 								    0.01 * volume,
