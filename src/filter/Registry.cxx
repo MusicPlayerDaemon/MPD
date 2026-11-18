@@ -8,6 +8,7 @@
 #include "plugins/NormalizeFilterPlugin.hxx"
 #include "plugins/FfmpegFilterPlugin.hxx"
 #include "plugins/HdcdFilterPlugin.hxx"
+#include "plugins/StartDelayFilterPlugin.hxx"
 #include "config.h"
 
 #include <string.h>
@@ -16,6 +17,7 @@ static constinit const FilterPlugin *const filter_plugins[] = {
 	&null_filter_plugin,
 	&route_filter_plugin,
 	&normalize_filter_plugin,
+	&startdelay_filter_plugin,
 #ifdef HAVE_LIBAVFILTER
 	&ffmpeg_filter_plugin,
 	&hdcd_filter_plugin,
