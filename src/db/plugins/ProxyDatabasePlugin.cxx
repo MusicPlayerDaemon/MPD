@@ -66,7 +66,11 @@ class AllocatedProxySong : public ProxySong {
 
 public:
 	explicit AllocatedProxySong(mpd_song *_song)
-		:ProxySong(_song), song(_song) {}
+	try :ProxySong(_song), song(_song) {
+	} catch (...) {
+		/* the destructor will not be called */
+		mpd_song_free(_song);
+	}
 
 	~AllocatedProxySong() {
 		mpd_song_free(song);
