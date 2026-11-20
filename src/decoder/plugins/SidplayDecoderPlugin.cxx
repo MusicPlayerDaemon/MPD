@@ -335,11 +335,10 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 #endif
 	const sidplayfp_time_t end_time = duration.IsNegative()
 		? std::numeric_limits<sidplayfp_time_t>::max()
-		: duration.ToScale<uint64_t>(timebase);
+		: duration.ToScale<uint_least64_t>(timebase);
 
-	/* if this is positive, then we're currently seeking; skip all
-	   samples until the player reaches this time stamp and then
-	   call CommandFinished() */
+	/* while the player is before this time stamp, we're
+	   seeking; skip all samples */
 	sidplayfp_time_t min_time = 0;
 
 	sidplayfp_time_t time = 0;
@@ -372,22 +371,20 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		time = player.time();
 #endif
 
-		if (min_time > 0) {
-			if (time < min_time)
-				/* still seeking */
-				continue;
+		if (time < min_time) {
+			/* still seeking; discard the samples, but
+			   check for new commands */
+			cmd = client.GetCommand();
+		} else {
+			client.SubmitTimestamp(FloatDuration{time} / timebase);
 
-			min_time = 0;
-			client.CommandFinished();
+			cmd = client.SubmitAudio(nullptr,
+						 std::span{buffer}.first(n_samples),
+						 0);
 		}
 
-		client.SubmitTimestamp(FloatDuration{time} / timebase);
-
-		cmd = client.SubmitAudio(nullptr, std::span{buffer}.first(n_samples),
-					 0);
-
 		if (cmd == DecoderCommand::SEEK) {
-			min_time = client.GetSeekTime().ToScale(timebase);
+			min_time = client.GetSeekTime().ToScale<uint_least64_t>(timebase);
 
 			/* can't rewind so return to zero and seek forward */
 			if (min_time < time) {
@@ -399,8 +396,11 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 				time = 0;
 			}
 
-			if (min_time == 0)
-				client.CommandFinished();
+			/* don't block the player while the emulator
+			   runs to the seek time (which may take
+			   minutes); the following iterations skip
+			   the samples */
+			client.CommandFinished();
 		}
 	}
 }

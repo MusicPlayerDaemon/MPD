@@ -47,7 +47,18 @@ TEST(UriExtract, Suffix)
 	EXPECT_EQ((const char *)nullptr, UriGetSuffix("/foo/.jpg").data());
 
 	/* eliminate the query string */
-	EXPECT_EQ(UriGetSuffix("/foo/bar.jpg?query_string"), "jpg"sv);
+	EXPECT_EQ(UriGetSuffix("http://example.com/foo/bar.jpg?query_string"), "jpg"sv);
+
+	/* eliminate the fragment */
+	EXPECT_EQ(UriGetSuffix("http://example.com/foo/bar.jpg#frag"), "jpg"sv);
+	EXPECT_EQ((const char *)nullptr,
+		  UriGetSuffix("http://example.com/foo/bar#.jpg").data());
+	EXPECT_EQ((const char *)nullptr,
+		  UriGetSuffix("http://example.com/foo/bar?x#.jpg").data());
+
+	/* local file names may contain '#' */
+	EXPECT_EQ(UriGetSuffix("/foo/bar#1.jpg"), "jpg"sv);
+	EXPECT_EQ(UriGetSuffix("foo/#bar.jpg"), "jpg"sv);
 }
 
 TEST(UriExtract, Origin)

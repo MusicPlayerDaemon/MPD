@@ -67,18 +67,25 @@ ver 0.24.20 (not yet released)
   - nfs: fix hang if the file is shorter than the reported size
 * decoder
   - mikmod: fix crash when scanning a module during playback
+  - mad: fix crash when the channel count changes
   - dsdiff: fix uninitialized sample rate and channel count
   - opus, vorbis: fix crash when seeking past the end
+  - sidplay: don't block MPD while seeking
+* output
+  - wasapi: fix crash with DoP
 * mixer
   - alsa: fix crash after the mixer control was removed
 * tags
   - id3: fix excessive CPU usage with many frames of the same type
+* playlist
+  - ignore the URI fragment when detecting the file type
 * Linux
   - fix "chmod failed: Invalid argument" on kernels older than 6.6
 * Android
   - fix crash after setting the volume fails
 * Windows
   - playlist: reject Windows reserved device names followed by a colon
+  - archive: reject ".." in archive entry names
 
 ver 0.24.19 (2026/11/11)
 * configuration

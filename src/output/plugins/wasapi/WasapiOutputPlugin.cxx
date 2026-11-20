@@ -266,6 +266,10 @@ public:
 		SetStatus(Status::PAUSE);
 	}
 
+	std::size_t WriteAvailable() const noexcept {
+		return ring_buffer.WriteAvailable();
+	}
+
 	std::size_t Push(std::span<const std::byte> input) noexcept {
 		std::size_t consumed = ring_buffer.WriteFrom(input);
 
@@ -506,6 +510,14 @@ public:
 	}
 
 private:
+	/**
+	 * Determine the maximum size of input which can be passed to
+	 * PcmExport::Export() without overflowing the ring buffer.
+	 * The return value is a multiple of the input frame size.
+	 */
+	[[gnu::pure]]
+	std::size_t GetMaxExportSize() const noexcept;
+
 	friend bool wasapi_is_exclusive(WasapiOutput &output) noexcept;
 	friend IMMDevice *wasapi_output_get_device(WasapiOutput &output) noexcept;
 	friend IAudioClient *wasapi_output_get_client(WasapiOutput &output) noexcept;
@@ -869,6 +881,25 @@ WasapiOutput::Delay() const noexcept
 	return std::chrono::steady_clock::duration::zero();
 }
 
+inline std::size_t
+WasapiOutput::GetMaxExportSize() const noexcept
+{
+	assert(thread);
+	assert(pcm_export);
+
+	std::size_t size = thread->WriteAvailable();
+
+	/* reserve room for one extra block, just in case
+	   PcmExport::Export() has some partial block data in its
+	   internal buffer */
+	const std::size_t out_block_size = pcm_export->GetOutputBlockSize();
+	if (size <= out_block_size)
+		return 0;
+
+	size = pcm_export->CalcInputSize(size - out_block_size);
+	return size - size % pcm_export->GetInputFrameSize();
+}
+
 std::size_t
 WasapiOutput::Play(std::span<const std::byte> src)
 {
@@ -876,34 +907,40 @@ WasapiOutput::Play(std::span<const std::byte> src)
 
 	paused = false;
 
-	auto input = src;
-	if (pcm_export) {
-		input = pcm_export->Export(input);
-	}
-	if (input.empty())
-		/* PcmExport::Export() has buffered all of the
-		   (partial block) input; it was consumed */
-		return src.size();
-
 	do {
-		const size_t consumed_size = thread->Push(input);
-
-		if (consumed_size == 0) {
-			/* don't block if a command is pending */
-			if (interrupted.load())
-				throw AudioOutputInterrupted{};
-
-			thread->Wait();
-			thread->CheckException();
-			continue;
-		}
-
-		thread->CheckException();
-
 		if (pcm_export) {
-			return pcm_export->CalcInputSize(consumed_size);
+			const std::size_t max_size = GetMaxExportSize();
+			if (max_size > 0) {
+				if (src.size() > max_size)
+					src = src.first(max_size);
+
+				/* may be empty if PcmExport::Export()
+				   has buffered all of the (partial
+				   block) input */
+				const auto e = pcm_export->Export(src);
+				if (!e.empty()) {
+					[[maybe_unused]] const auto n =
+						thread->Push(e);
+					assert(n == e.size());
+				}
+
+				thread->CheckException();
+				return src.size();
+			}
+		} else {
+			const size_t consumed_size = thread->Push(src);
+			if (consumed_size > 0) {
+				thread->CheckException();
+				return consumed_size;
+			}
 		}
-		return consumed_size;
+
+		/* don't block if a command is pending */
+		if (interrupted.load())
+			throw AudioOutputInterrupted{};
+
+		thread->Wait();
+		thread->CheckException();
 	} while (true);
 }
 
