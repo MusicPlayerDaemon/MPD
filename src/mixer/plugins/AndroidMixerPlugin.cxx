@@ -12,16 +12,15 @@
 
 #include <cassert>
 #include <cmath>
+#include <memory>
 
 class AndroidMixer final : public Mixer {
-	AudioManager *audioManager;
+	std::unique_ptr<AudioManager> audioManager;
 	int currentVolume;
 	int maxAndroidVolume;
 	int lastAndroidVolume;
 public:
 	explicit AndroidMixer(MixerListener &_listener);
-
-	~AndroidMixer() override;
 
 	/* virtual methods from class Mixer */
 	void Open() override {
@@ -48,7 +47,7 @@ AndroidMixer::AndroidMixer(MixerListener &_listener)
 	:Mixer(android_mixer_plugin, _listener)
 {
 	JNIEnv *env = Java::GetEnv();
-	audioManager = context->GetAudioManager(env);
+	audioManager.reset(context->GetAudioManager(env));
 
 	maxAndroidVolume = audioManager->GetMaxVolume();
 	if (maxAndroidVolume != 0)
@@ -56,11 +55,6 @@ AndroidMixer::AndroidMixer(MixerListener &_listener)
 		lastAndroidVolume = audioManager->GetVolume(env);
 		currentVolume = 100 * lastAndroidVolume / maxAndroidVolume;
 	}
-}
-
-AndroidMixer::~AndroidMixer()
-{
-	delete audioManager;
 }
 
 int
@@ -89,9 +83,10 @@ AndroidMixer::SetVolume(unsigned newVolume)
 	JNIEnv *env = Java::GetEnv();
 	if (maxAndroidVolume == 0)
 		return;
+	const int androidVolume = newVolume * maxAndroidVolume / 100;
+	audioManager->SetVolume(env, androidVolume);
 	currentVolume = newVolume;
-	lastAndroidVolume = currentVolume * maxAndroidVolume / 100;
-	audioManager->SetVolume(env, lastAndroidVolume);
+	lastAndroidVolume = androidVolume;
 
 }
 

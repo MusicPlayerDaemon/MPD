@@ -53,6 +53,8 @@ ver 0.25 (not yet released)
 * require Meson 1.2
 
 ver 0.24.20 (not yet released)
+* protocol
+  - "max_command_list_size" limits the real memory usage of command lists
 * input
   - fix hang after a failed seek
   - ffmpeg, mms: fix data corruption
@@ -65,11 +67,16 @@ ver 0.24.20 (not yet released)
   - nfs: fix hang if the file is shorter than the reported size
 * decoder
   - mikmod: fix crash when scanning a module during playback
+  - dsdiff: fix uninitialized sample rate and channel count
   - opus, vorbis: fix crash when seeking past the end
+* mixer
+  - alsa: fix crash after the mixer control was removed
 * tags
   - id3: fix excessive CPU usage with many frames of the same type
 * Linux
   - fix "chmod failed: Invalid argument" on kernels older than 6.6
+* Android
+  - fix crash after setting the volume fails
 * Windows
   - playlist: reject Windows reserved device names followed by a colon
 

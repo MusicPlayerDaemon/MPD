@@ -14,10 +14,11 @@ CommandListBuilder::Reset()
 }
 
 bool
-CommandListBuilder::Add(const char *cmd)
+CommandListBuilder::Add(std::string_view cmd) noexcept
 {
-	size_t len = strlen(cmd) + 1;
-	size += len;
+	/* count the std::list node (two pointers) and the std::string
+	   object, not just the string data */
+	size += 2 * sizeof(void *) + sizeof(std::string) + cmd.size() + 1;
 	if (size > client_max_command_list_size)
 		return false;
 

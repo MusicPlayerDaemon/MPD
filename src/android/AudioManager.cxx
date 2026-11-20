@@ -15,6 +15,8 @@ AudioManager::AudioManager(JNIEnv *env, jobject obj) noexcept
 	jmethodID method = env->GetMethodID(cls, "getStreamMaxVolume", "(I)I");
 	assert(method);
 	maxVolume = env->CallIntMethod(Get(), method, STREAM_MUSIC);
+	if (Java::DiscardException(env))
+		maxVolume = 0;
 
 	getStreamVolumeMethod = env->GetMethodID(cls, "getStreamVolume", "(I)I");
 	assert(getStreamVolumeMethod);
@@ -28,7 +30,10 @@ AudioManager::GetVolume(JNIEnv *env)
 {
 	if (maxVolume == 0)
 		return 0;
-	return env->CallIntMethod(Get(), getStreamVolumeMethod, STREAM_MUSIC);
+	const int volume = env->CallIntMethod(Get(), getStreamVolumeMethod,
+					      STREAM_MUSIC);
+	Java::RethrowException(env);
+	return volume;
 }
 
 void
@@ -37,4 +42,5 @@ AudioManager::SetVolume(JNIEnv *env, int volume)
 	if (maxVolume == 0)
 		return;
 	env->CallVoidMethod(Get(), setStreamVolumeMethod, STREAM_MUSIC, volume, 0);
+	Java::RethrowException(env);
 }
