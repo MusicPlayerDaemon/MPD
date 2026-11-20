@@ -3,6 +3,7 @@ ver 0.24.20 (not yet released)
   - "max_command_list_size" limits the real memory usage of command lists
 * input
   - fix hang after a failed seek
+  - curl, ffmpeg: disable the Gopher protocol
   - ffmpeg, mms: fix data corruption
   - ffmpeg, mms: fix broken stream after seeking a non-seekable stream
   - ffmpeg: don't block other threads while connecting

@@ -294,8 +294,7 @@ ffmpeg
 ------
 
 Access to various network protocols implemented by the FFmpeg library:
-``gopher://``, ``rtp://``, ``rtsp://``, ``rtmp://``, ``rtmpt://``,
-``rtmps://``
+``rtp://``, ``rtsp://``, ``rtmp://``, ``rtmpt://``, ``rtmps://``
 
 file
 ----

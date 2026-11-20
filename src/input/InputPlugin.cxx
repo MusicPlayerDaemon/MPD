@@ -28,7 +28,6 @@ InputPlugin::SupportsUri(std::string_view uri) const noexcept
 constexpr static const char *whitelist[] = {
 	"ftp",
 	"ftps",
-	"gopher",
 	"http",
 	"https",
 	"mmsh",
