@@ -850,15 +850,14 @@ try {
 		while (auto *song = mpd_recv_song(connection)) {
 			++window.start;
 
-			AllocatedProxySong song2(song);
+			try {
+				AllocatedProxySong song2(song);
 
-			if (Match(selection.filter, song2)) {
-				try {
+				if (Match(selection.filter, song2))
 					visit_song(song2);
-				} catch (...) {
-					mpd_response_finish(connection);
-					throw;
-				}
+			} catch (...) {
+				mpd_response_finish(connection);
+				throw;
 			}
 		}
 
