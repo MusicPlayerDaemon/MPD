@@ -1,4 +1,4 @@
-ver 0.24.20 (not yet released)
+ver 0.24.20 (2026/11/20)
 * protocol
   - "max_command_list_size" limits the real memory usage of command lists
 * input
