@@ -130,7 +130,6 @@ ffmpeg = FfmpegProject(
         '--disable-parser=hevc',
         '--disable-parser=jpeg2000',
         '--disable-parser=mjpeg',
-        '--disable-parser=mlp',
         '--disable-parser=mpeg4video',
         '--disable-parser=mpegvideo',
         '--disable-parser=opus',
