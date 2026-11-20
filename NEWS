@@ -52,11 +52,12 @@ ver 0.25 (not yet released)
 * switch to C++23
 * require Meson 1.2
 
-ver 0.24.20 (not yet released)
+ver 0.24.20 (2026/11/20)
 * protocol
   - "max_command_list_size" limits the real memory usage of command lists
 * input
   - fix hang after a failed seek
+  - curl, ffmpeg: disable the Gopher protocol
   - ffmpeg, mms: fix data corruption
   - ffmpeg, mms: fix broken stream after seeking a non-seekable stream
   - ffmpeg: don't block other threads while connecting
@@ -75,6 +76,10 @@ ver 0.24.20 (not yet released)
   - wasapi: fix crash with DoP
 * mixer
   - alsa: fix crash after the mixer control was removed
+* database
+  - proxy: fix memory leak after receiving a malformed song URI
+  - proxy: reject RealUri with Windows drive path
+  - upnp: reject song URLs with newlines and null bytes
 * tags
   - id3: fix excessive CPU usage with many frames of the same type
 * playlist

@@ -92,6 +92,9 @@ public:
 				      !name.empty())) &&
 			(type != UPnPDirObject::Type::ITEM ||
 			 (item_class != UPnPDirObject::ItemClass::UNKNOWN &&
+			  /* the URL must be a string that can be
+			     transferred over the MPD protocol */
+			  VerifyStringUTF8(url) &&
 			  /* the URL comes from the (untrusted)
 			     server, and it must not refer to a
 			     local file */
