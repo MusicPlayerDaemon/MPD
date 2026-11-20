@@ -114,6 +114,12 @@ ffmpeg = FfmpegProject(
         '--disable-vulkan',
         '--disable-videotoolbox',
         '--disable-xlib',
+        '--disable-cuda-llvm',
+        '--disable-d3d11va',
+        '--disable-d3d12va',
+        '--disable-dxva2',
+        '--disable-mediafoundation',
+        '--disable-schannel',
 
         '--disable-parser=apv',
         '--disable-parser=av1',
