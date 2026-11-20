@@ -229,6 +229,10 @@ Copy(TagBuilder &tag, TagType d_tag,
 static bool
 IsSafeRealUri(std::string_view uri, const char *real_uri) noexcept
 {
+	if (PathTraitsUTF8::IsAbsolute(real_uri))
+		/* this rejects Windows drive paths */
+		return false;
+
 	return UriIsRelativePathWithinDepth(real_uri,
 					    unsigned(std::ranges::count(uri, '/'))) ||
 		(UriHasScheme(real_uri) &&

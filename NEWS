@@ -24,6 +24,7 @@ ver 0.24.20 (not yet released)
   - alsa: fix crash after the mixer control was removed
 * database
   - proxy: fix memory leak after receiving a malformed song URI
+  - proxy: reject RealUri with Windows drive path
   - upnp: reject song URLs with newlines and null bytes
 * tags
   - id3: fix excessive CPU usage with many frames of the same type
