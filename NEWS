@@ -14,6 +14,7 @@ ver 0.25 (not yet released)
   - dsf: support DSD1024
   - faad: implement seeking
   - faad: output 32 bit floating point samples instead of 16 bit integer
+  - faad: fix HE-AACv2 streams with libfaad 2.11.4
   - ffmpeg: interrupt blocking libavformat I/O on STOP
   - fluidsynth: add option "settings" for arbitrary FluidSynth settings
   - psgplay: new plugin

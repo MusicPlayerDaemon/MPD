@@ -5,7 +5,9 @@
 #include "../DecoderAPI.hxx"
 #include "../DecoderBuffer.hxx"
 #include "input/InputStream.hxx"
+#include "pcm/Buffer.hxx"
 #include "pcm/CheckAudioFormat.hxx"
+#include "pcm/PcmChannels.hxx"
 #include "tag/Handler.hxx"
 #include "util/Domain.hxx"
 #include "util/SpanCast.hxx"
@@ -299,7 +301,15 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 
 	/* initialize it */
 
-	const auto audio_format = decoder.Init(buffer);
+	auto audio_format = decoder.Init(buffer);
+
+	/* libfaad upmixes mono to stereo if the stream uses
+	   Parametric Stereo (HE-AACv2), but this is only known after
+	   decoding has started; since libfaad 2.11.4,
+	   NeAACDecInit() reports mono for these streams, therefore
+	   we always output stereo and convert mono frames */
+	if (audio_format.channels == 1)
+		audio_format.channels = 2;
 
 	/* initialize the MPD core */
 
@@ -308,6 +318,8 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 		     total_time);
 
 	/* the decoder loop */
+
+	PcmBuffer mono_to_stereo_buffer;
 
 	DecoderCommand cmd =  DecoderCommand::NONE;
 	unsigned kbit_rate = 0;
@@ -376,7 +388,12 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 			break;
 		}
 
-		if (frame_info.channels != audio_format.channels) {
+		/* mono frames are converted to stereo (see above) */
+		const bool mono_to_stereo = frame_info.channels == 1 &&
+			audio_format.channels == 2;
+
+		if (frame_info.channels != audio_format.channels &&
+		    !mono_to_stereo) {
 			FmtNotice(faad_decoder_domain,
 				  "channel count changed from {} to {}",
 				  audio_format.channels, frame_info.channels);
@@ -403,7 +420,9 @@ FaadDecodeStream(DecoderClient &client, InputStream &is)
 
 		/* send PCM samples to MPD */
 
-		const std::span audio{decoded, (size_t)frame_info.samples};
+		std::span audio{decoded, (size_t)frame_info.samples};
+		if (mono_to_stereo)
+			audio = pcm_convert_channels_float(mono_to_stereo_buffer, 2, 1, audio);
 
 		cmd = client.SubmitAudio(is, audio, kbit_rate);
 	} while (cmd != DecoderCommand::STOP);
