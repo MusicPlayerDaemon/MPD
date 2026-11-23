@@ -164,7 +164,7 @@ psgplay_file_decode(DecoderClient &client, Path path_fs)
 	if (!duration.IsNegative())
 		psgplay_stop_at_time(pp, duration.ToDoubleS());
 
-	AtScopeExit(pp) { psgplay_free(pp); };
+	AtScopeExit(&pp) { psgplay_free(pp); };
 
 	client.Ready(audio_format, true, duration);
 
