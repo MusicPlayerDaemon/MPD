@@ -17,6 +17,8 @@ ver 0.25 (not yet released)
   - faad: fix HE-AACv2 streams with libfaad 2.11.4
   - ffmpeg: interrupt blocking libavformat I/O on STOP
   - fluidsynth: add option "settings" for arbitrary FluidSynth settings
+  - opus: apply the header output gain even if ReplayGain is disabled
+  - opus: use "replaygain_missing_preamp" for files without R128 tags
   - psgplay: new plugin
   - vgmstream: new plugin
 * output

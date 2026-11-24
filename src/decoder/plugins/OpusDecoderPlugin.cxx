@@ -60,9 +60,10 @@ class MPDOpusDecoder final : public OggDecoder {
 	opus_int16 *output_buffer = nullptr;
 
 	/**
-	 * The output gain from the Opus header in dB that should be
-	 * applied unconditionally, but is often used specifically for
-	 * ReplayGain.  Initialized by OnOggBeginning().
+	 * The output gain from the Opus header in dB that must be
+	 * applied unconditionally (submitted as
+	 * ReplayGainInfo::fixed_gain).  Initialized by
+	 * OnOggBeginning().
 	 */
 	float output_gain;
 
@@ -270,13 +271,9 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 		return;
 
 	if (rgi.IsDefined()) {
-		/* submit all valid EBU R128 values with output_gain
-		   applied. conversion from EBU R128 -> ReplayGain
-		   happened in ScanOpusTags already. */
-		if (rgi.track.IsDefined())
-			rgi.track.gain += output_gain;
-		if (rgi.album.IsDefined())
-			rgi.album.gain += output_gain;
+		/* conversion from EBU R128 -> ReplayGain happened in
+		   ScanOpusTags() already */
+		rgi.fixed_gain = output_gain;
 		client.SubmitReplayGain(&rgi);
 		submitted_replay_gain = true;
 	}
@@ -298,11 +295,10 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	if (!submitted_replay_gain) {
 		/* if we didn't see an OpusTags packet with EBU R128
 		   values, we still need to apply the output gain
-		   value from the OpusHead packet; submit it as "track
-		   gain" value */
+		   value from the OpusHead packet */
 		ReplayGainInfo rgi;
 		rgi.Clear();
-		rgi.track.gain = output_gain;
+		rgi.fixed_gain = output_gain;
 		client.SubmitReplayGain(&rgi);
 		submitted_replay_gain = true;
 	}
