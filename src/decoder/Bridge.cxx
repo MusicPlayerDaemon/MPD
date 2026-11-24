@@ -620,6 +620,7 @@ DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info) noex
 		if (++serial == 0)
 			serial = 1;
 
+		float db = new_replay_gain_info->fixed_gain;
 		if (ReplayGainMode::OFF != dc.replay_gain_mode) {
 			ReplayGainMode rgm = dc.replay_gain_mode;
 			if (rgm != ReplayGainMode::ALBUM)
@@ -628,8 +629,10 @@ DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info) noex
 			const auto &tuple = new_replay_gain_info->Get(rgm);
 			const auto scale =
 				tuple.CalculateScale(dc.replay_gain_config);
-			dc.replay_gain_db = 20.0f * std::log10(scale);
+			db += 20.0f * std::log10(scale);
 		}
+
+		dc.replay_gain_db = db;
 
 		replay_gain_info = *new_replay_gain_info;
 		replay_gain_serial = serial;

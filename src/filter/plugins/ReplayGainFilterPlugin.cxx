@@ -15,6 +15,7 @@
 #include "Log.hxx"
 
 #include <cassert>
+#include <cmath>
 #include <exception>
 
 static constexpr Domain replay_gain_domain("replay_gain");
@@ -140,8 +141,16 @@ ReplayGainFilter::Update()
 	if (mode != ReplayGainMode::OFF) {
 		const auto &tuple = info.Get(mode);
 		scale = tuple.CalculateScale(config);
-		FmtDebug(replay_gain_domain, "scale={}\n", scale);
 	}
+
+	if (info.fixed_gain != 0) {
+		scale *= std::pow(10.0f, info.fixed_gain / 20.0f);
+		if (scale > 15.0f)
+			scale = 15.0f;
+	}
+
+	if (mode != ReplayGainMode::OFF || info.fixed_gain != 0)
+		FmtDebug(replay_gain_domain, "scale={}\n", scale);
 
 	if (mixer != nullptr) {
 		/* update the hardware mixer volume */

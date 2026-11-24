@@ -32,6 +32,13 @@ struct ReplayGainTuple {
 struct ReplayGainInfo {
 	ReplayGainTuple track, album;
 
+	/**
+	 * A gain [dB] which is always applied, even if ReplayGain is
+	 * disabled or if no ReplayGain values are defined (e.g. the
+	 * Opus header output gain).
+	 */
+	float fixed_gain = 0;
+
 	constexpr bool IsDefined() const noexcept {
 		return track.IsDefined() || album.IsDefined();
 	}
@@ -40,6 +47,7 @@ struct ReplayGainInfo {
 		return {
 			ReplayGainTuple::Undefined(),
 			ReplayGainTuple::Undefined(),
+			0,
 		};
 	}
 
@@ -52,6 +60,7 @@ struct ReplayGainInfo {
 	void Clear() noexcept {
 		track.Clear();
 		album.Clear();
+		fixed_gain = 0;
 	}
 };
 

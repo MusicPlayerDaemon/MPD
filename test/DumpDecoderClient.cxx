@@ -133,6 +133,9 @@ DumpReplayGainInfo(const ReplayGainInfo &info) noexcept
 {
 	DumpReplayGainTuple("album", info.album);
 	DumpReplayGainTuple("track", info.track);
+
+	if (info.fixed_gain != 0)
+		fmt::print(stderr, "fixed_gain={}\n", info.fixed_gain);
 }
 
 void
