@@ -134,6 +134,12 @@ class PipeWireOutput final : AudioOutput {
 	 */
 	const bool reconnect_stream;
 
+	/**
+	 * Configuration setting "close_on_pause": destroy the stream
+	 * while paused, which releases the sink for other clients.
+	 */
+	const bool close_on_pause;
+
 	bool disconnected;
 
 	/**
@@ -315,7 +321,7 @@ private:
 	bool Pause() noexcept override;
 
 	bool SupportsHardwarePause() const noexcept override {
-		return true;
+		return !close_on_pause;
 	}
 
 	void SendTag(const Tag &tag) override;
@@ -330,7 +336,8 @@ PipeWireOutput::PipeWireOutput(const ConfigBlock &block)
 #if defined(ENABLE_DSD) && defined(SPA_AUDIO_DSD_FLAG_NONE)
 	 enable_dsd(block.GetBlockValue("dsd", false)),
 #endif
-	 reconnect_stream(block.GetBlockValue("reconnect_stream", true))
+	 reconnect_stream(block.GetBlockValue("reconnect_stream", true)),
+	 close_on_pause(block.GetBlockValue("close_on_pause", false))
 {
 	if (target != nullptr) {
 		if (StringIsEmpty(target))
@@ -984,6 +991,12 @@ PipeWireOutput::Pause() noexcept
 {
 	const PipeWire::ThreadLoopLock lock(thread_loop);
 	interrupted = false;
+
+	if (close_on_pause)
+		/* returning false makes MPD close this output, which
+		   destroys the stream and releases the sink; it will
+		   be reopened when playback resumes */
+		return false;
 
 	paused = true;
 
