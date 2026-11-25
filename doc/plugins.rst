@@ -1264,6 +1264,11 @@ Connect to a `PipeWire <https://pipewire.org/>`_ server.  Requires
        The default is ``yes``.
    * - **dsd yes|no**
      - Enable DSD playback.  This requires PipeWire 0.38.
+   * - **close_on_pause yes|no**
+     - Close the PipeWire stream while playback is paused?  This
+       allows other applications to use the sink while MPD is
+       paused, e.g. during native DSD playback, where the stream
+       occupies the sink exclusively.  The default is ``no``.
 
 .. _pulse_plugin:
 

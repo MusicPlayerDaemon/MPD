@@ -21,6 +21,7 @@ ver 0.25 (not yet released)
 * output
   - alsa: use hardware pause if available
   - pipewire: add option "reconnect_stream"
+  - pipewire: add option "close_on_pause"
   - pipewire don't discard buffered audio on pause
   - pulse: don't discard buffered audio on pause
   - sles: support 24 and 32 bit integer samples
