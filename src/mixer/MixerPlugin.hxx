@@ -25,7 +25,8 @@ struct MixerPlugin {
 	 *
 	 * @param ao the associated #AudioOutput
 	 * @param param the configuration section
-	 * @return a mixer object
+	 * @return a mixer object or nullptr if this plugin declines
+	 * (e.g. because it is not configured)
 	 */
 	Mixer *(*init)(EventLoop &event_loop, AudioOutput &ao,
 		       MixerListener &listener,
