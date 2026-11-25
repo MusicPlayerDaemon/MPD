@@ -374,7 +374,6 @@ MainConfigured(const CommandLineOptions &options,
 	listen_global_init(raw_config, *instance.partitions.front().listener);
 
 #ifdef ENABLE_DAEMON
-	daemonize_set_user();
 	daemonize_begin(options.daemon);
 	AtScopeExit() { daemonize_finish(); };
 #endif

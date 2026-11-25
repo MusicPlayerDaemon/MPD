@@ -59,20 +59,6 @@ daemonize_close_stdin() noexcept {}
 #endif
 
 /**
- * Change to the configured Unix user.
- *
- * Throws on error.
- */
-#ifndef _WIN32
-void
-daemonize_set_user();
-#else
-static inline void
-daemonize_set_user()
-{ /* nop */ }
-#endif
-
-/**
  * Throws on error.
  */
 #ifndef _WIN32

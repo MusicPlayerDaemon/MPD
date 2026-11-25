@@ -83,20 +83,6 @@ Global Settings
 System Settings
 ^^^^^^^^^^^^^^^
 
-.. confval:: user
-   :type: NAME
-
-   This specifies the user that MPD will run as, if set. MPD should never run
-   as root, and you may use this option to make MPD change its user id after
-   initialization. Do not use this option if you start MPD as an unprivileged
-   user.
-
-.. confval:: group
-   :type: NAME
-
-   Change to this group.  This discards all default groups and uses
-   only this group.  Do not use this setting.
-
 .. confval:: pid_file
    :type: PATH
 

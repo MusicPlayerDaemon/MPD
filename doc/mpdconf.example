@@ -69,13 +69,6 @@
 
 # General music daemon options ################################################
 #
-# This setting specifies the user that MPD will run as. MPD should never run as
-# root and you may use this setting to make MPD change its user ID after
-# initialization. This setting is disabled by default and MPD is run as the
-# current user.
-#
-#user				"nobody"
-#
 # This setting sets the address for the daemon to listen on. Careful attention
 # should be paid if this is assigned to anything other than the default, any.
 # This setting can deny access to control of the daemon. Not effective if

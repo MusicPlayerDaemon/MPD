@@ -13,30 +13,18 @@
 
 #include <csignal>
 #include <cstdlib> // for std::exit()
+#include <stdexcept>
 
 #include <fcntl.h>
 #include <sys/wait.h>
-#include <pwd.h>
-#include <grp.h>
+#include <unistd.h>
 
 #ifndef WCOREDUMP
 #define WCOREDUMP(v) 0
 #endif
 
-/** the Unix user name which MPD runs as */
-static char *user_name;
-
-/** the Unix user id which MPD runs as */
-static uid_t user_uid = (uid_t)-1;
-
-/** the Unix group id which MPD runs as */
-static gid_t user_gid = (gid_t)-1;
-
 /** the absolute path of the pidfile */
 static AllocatedPath pidfile = nullptr;
-
-/* whether "group" conf. option was given */
-static bool had_group = false;
 
 /**
  * The write end of a pipe that is used to notify the parent process
@@ -59,11 +47,6 @@ daemonize_kill()
 		throw FmtRuntimeError("bogus pid {} in file {:?}",
 				      pid, pidfile);
 
-	/* the pid file is writable by the unprivileged user; switch
-	   to that user, so the kernel refuses to signal processes
-	   owned by other users */
-	daemonize_set_user();
-
 	if (kill(pid, SIGTERM) < 0)
 		throw FmtErrno("unable to kill process {}", pid);
 
@@ -75,47 +58,6 @@ daemonize_close_stdin() noexcept
 {
 	close(STDIN_FILENO);
 	open("/dev/null", O_RDONLY);
-}
-
-void
-daemonize_set_user()
-{
-	if (user_name == nullptr)
-		return;
-
-	/* set gid */
-	if (user_gid != (gid_t)-1 && user_gid != getgid() &&
-	    setgid(user_gid) == -1) {
-		throw FmtErrno("Failed to set group {}", user_gid);
-	}
-
-#ifdef HAVE_INITGROUPS
-	/* init supplementary groups
-	 * (must be done before we change our uid)
-	 */
-	if (!had_group &&
-	    /* no need to set the new user's supplementary groups if
-	       we are already this user */
-	    user_uid != getuid() &&
-	    initgroups(user_name, user_gid) == -1) {
-		throw FmtErrno("Failed to set supplementary groups "
-			       "of user {:?}",
-			       user_name);
-	}
-#endif
-
-	/* with an explicit "group" setting, discard all
-	   supplementary groups inherited from the parent process
-	   (e.g. root's) */
-	if (had_group && user_uid != getuid() &&
-	    setgroups(1, &user_gid) == -1)
-		throw FmtErrno("Failed to set supplementary groups");
-
-	/* set uid */
-	if (user_uid != (uid_t)-1 && user_uid != getuid() &&
-	    setuid(user_uid) == -1) {
-		throw FmtErrno("Failed to set user {:?}", user_name);
-	}
 }
 
 void
@@ -224,28 +166,9 @@ daemonize_commit()
 void
 daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 {
-	if (user) {
-		struct passwd *pwd = getpwnam(user);
-		if (pwd == nullptr)
-			throw FmtRuntimeError("no such user {:?}", user);
-
-		user_uid = pwd->pw_uid;
-		user_gid = pwd->pw_gid;
-
-		user_name = strdup(user);
-
-		/* this is needed by libs such as arts */
-		setenv("HOME", pwd->pw_dir, true);
-	}
-
-	if (group) {
-		struct group *grp = getgrnam(group);
-		if (grp == nullptr)
-			throw FmtRuntimeError("no such group {:?}", group);
-		user_gid = grp->gr_gid;
-		had_group = true;
-	}
-
+	if ((user != nullptr || group != nullptr) && geteuid() == 0)
+		throw std::runtime_error{"The settings \"user\" and \"group\" have been removed; "
+					 "please launch MPD as an unprivileged user"};
 
 	pidfile = std::move(_pidfile);
 }
@@ -257,6 +180,4 @@ daemonize_finish() noexcept
 		unlink(pidfile.c_str());
 		pidfile = nullptr;
 	}
-
-	free(user_name);
 }

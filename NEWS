@@ -1,4 +1,6 @@
 ver 0.26 (not yet released)
+* unix
+  - remove the settings "user" and "group"
 * systemd
   - add a sysusers.d file creating user "mpd"
   - add "User=mpd"
