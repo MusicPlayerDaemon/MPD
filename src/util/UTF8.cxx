@@ -10,11 +10,12 @@
 
 /**
  * Is this a leading byte that is followed by 1 continuation byte?
+ * (0xc0 and 0xc1 would be overlong.)
  */
 static constexpr bool
 IsLeading1(uint8_t ch) noexcept
 {
-	return (ch & 0xe0) == 0xc0;
+	return ch >= 0xc2 && ch <= 0xdf;
 }
 
 static constexpr uint8_t
@@ -40,11 +41,12 @@ MakeLeading2(uint8_t value) noexcept
 
 /**
  * Is this a leading byte that is followed by 3 continuation byte?
+ * (0xf5 and above would exceed U+10FFFF.)
  */
 static constexpr bool
 IsLeading3(uint8_t ch) noexcept
 {
-	return (ch & 0xf8) == 0xf0;
+	return ch >= 0xf0 && ch <= 0xf4;
 }
 
 static constexpr uint8_t
@@ -53,28 +55,10 @@ MakeLeading3(uint8_t value) noexcept
 	return 0xf0 | value;
 }
 
-/**
- * Is this a leading byte that is followed by 4 continuation byte?
- */
-static constexpr bool
-IsLeading4(uint8_t ch) noexcept
-{
-	return (ch & 0xfc) == 0xf8;
-}
-
 static constexpr uint8_t
 MakeLeading4(uint8_t value) noexcept
 {
 	return 0xf8 | value;
-}
-
-/**
- * Is this a leading byte that is followed by 5 continuation byte?
- */
-static constexpr bool
-IsLeading5(uint8_t ch) noexcept
-{
-	return (ch & 0xfe) == 0xfc;
 }
 
 static constexpr uint8_t
@@ -96,6 +80,32 @@ static constexpr bool
 IsContinuation(uint8_t ch) noexcept
 {
 	return (ch & 0xc0) == 0x80;
+}
+
+/**
+ * Is this a valid second byte after the given leading byte?  This
+ * rejects overlong sequences, UTF-16 surrogates and code points
+ * above U+10FFFF (RFC 3629, section 4).
+ */
+static constexpr bool
+IsValidSecond(uint8_t leading, uint8_t ch) noexcept
+{
+	switch (leading) {
+	case 0xe0:
+		return ch >= 0xa0 && ch <= 0xbf;
+
+	case 0xed:
+		return ch >= 0x80 && ch <= 0x9f;
+
+	case 0xf0:
+		return ch >= 0x90 && ch <= 0xbf;
+
+	case 0xf4:
+		return ch >= 0x80 && ch <= 0x8f;
+
+	default:
+		return IsContinuation(ch);
+	}
 }
 
 /**
@@ -125,22 +135,11 @@ ValidateUTF8(const char *p) noexcept
 				return false;
 		} else if (IsLeading2(ch)) {
 			/* 2 continuations */
-			if (!IsContinuation(*++p) || !IsContinuation(*++p))
+			if (!IsValidSecond(ch, *++p) || !IsContinuation(*++p))
 				return false;
 		} else if (IsLeading3(ch)) {
 			/* 3 continuations */
-			if (!IsContinuation(*++p) || !IsContinuation(*++p) ||
-			    !IsContinuation(*++p))
-				return false;
-		} else if (IsLeading4(ch)) {
-			/* 4 continuations */
-			if (!IsContinuation(*++p) || !IsContinuation(*++p) ||
-			    !IsContinuation(*++p) || !IsContinuation(*++p))
-				return false;
-		} else if (IsLeading5(ch)) {
-			/* 5 continuations */
-			if (!IsContinuation(*++p) || !IsContinuation(*++p) ||
-			    !IsContinuation(*++p) || !IsContinuation(*++p) ||
+			if (!IsValidSecond(ch, *++p) || !IsContinuation(*++p) ||
 			    !IsContinuation(*++p))
 				return false;
 		} else
@@ -168,27 +167,12 @@ ValidateUTF8(std::string_view s) noexcept
 				return false;
 		} else if (IsLeading2(ch)) {
 			/* 2 continuations */
-			if (++i == end || !IsContinuation(*i) ||
+			if (++i == end || !IsValidSecond(ch, *i) ||
 			    ++i == end || !IsContinuation(*i))
 				return false;
 		} else if (IsLeading3(ch)) {
 			/* 3 continuations */
-			if (++i == end || !IsContinuation(*i) ||
-			    ++i == end || !IsContinuation(*i) ||
-			    ++i == end || !IsContinuation(*i))
-				return false;
-		} else if (IsLeading4(ch)) {
-			/* 4 continuations */
-			if (++i == end || !IsContinuation(*i) ||
-			    ++i == end || !IsContinuation(*i) ||
-			    ++i == end || !IsContinuation(*i) ||
-			    ++i == end || !IsContinuation(*i))
-				return false;
-		} else if (IsLeading5(ch)) {
-			/* 5 continuations */
-			if (++i == end || !IsContinuation(*i) ||
-			    ++i == end || !IsContinuation(*i) ||
-			    ++i == end || !IsContinuation(*i) ||
+			if (++i == end || !IsValidSecond(ch, *i) ||
 			    ++i == end || !IsContinuation(*i) ||
 			    ++i == end || !IsContinuation(*i))
 				return false;
@@ -213,12 +197,6 @@ SequenceLengthUTF8(char ch) noexcept
 	else if (IsLeading3(ch))
 		/* 3 continuations */
 		return 4;
-	else if (IsLeading4(ch))
-		/* 4 continuations */
-		return 5;
-	else if (IsLeading5(ch))
-		/* 5 continuations */
-		return 6;
 	else
 		/* continuation without a prefix or some other illegal
 		   start byte */
@@ -244,9 +222,9 @@ struct CheckSequenceUTF8<0U> {
 template<std::size_t L>
 [[gnu::pure]]
 static std::size_t
-InnerSequenceLengthUTF8(const char *p) noexcept
+InnerSequenceLengthUTF8(uint8_t leading, const char *p) noexcept
 {
-	return CheckSequenceUTF8<L>()(p)
+	return IsValidSecond(leading, *p) && CheckSequenceUTF8<L - 1>()(p + 1)
 		? L + 1
 		: 0U;
 }
@@ -260,19 +238,13 @@ SequenceLengthUTF8(const char *p) noexcept
 		return 1;
 	else if (IsLeading1(ch))
 		/* 1 continuation */
-		return InnerSequenceLengthUTF8<1>(p);
+		return InnerSequenceLengthUTF8<1>(ch, p);
 	else if (IsLeading2(ch))
 		/* 2 continuations */
-		return InnerSequenceLengthUTF8<2>(p);
+		return InnerSequenceLengthUTF8<2>(ch, p);
 	else if (IsLeading3(ch))
 		/* 3 continuations */
-		return InnerSequenceLengthUTF8<3>(p);
-	else if (IsLeading4(ch))
-		/* 4 continuations */
-		return InnerSequenceLengthUTF8<4>(p);
-	else if (IsLeading5(ch))
-		/* 5 continuations */
-		return InnerSequenceLengthUTF8<5>(p);
+		return InnerSequenceLengthUTF8<3>(ch, p);
 	else
 		/* continuation without a prefix or some other illegal
 		   start byte */
