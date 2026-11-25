@@ -18,5 +18,6 @@ if get_option('tcp')
 endif
 systemd_socket_conf.set('listen_streams', '\n'.join(listen_streams))
 
+subdir('sysusers.d')
 subdir('system')
 subdir('user')

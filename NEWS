@@ -1,4 +1,7 @@
 ver 0.26 (not yet released)
+* systemd
+  - add a sysusers.d file creating user "mpd"
+  - add "User=mpd"
 
 ver 0.25.1 (not yet released)
 
