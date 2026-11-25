@@ -93,3 +93,97 @@ TEST(UTF8, StripIncompleteIllegal)
 	EXPECT_EQ(StripIncompleteUTF8("\xff\xe2\x82"sv), "\xff"sv);
 	EXPECT_EQ(StripIncompleteUTF8("\xff\xc3\xa4"sv), "\xff\xc3\xa4"sv);
 }
+
+/* valid sequences, including the boundaries of each length and of
+   the excluded ranges */
+static constexpr std::string_view valid_utf8[] = {
+	"a"sv,
+	"\x7f"sv,
+	"\xc2\x80"sv, // U+0080
+	"\xdf\xbf"sv, // U+07FF
+	"\xe0\xa0\x80"sv, // U+0800
+	"\xed\x9f\xbf"sv, // U+D7FF
+	"\xee\x80\x80"sv, // U+E000
+	"\xef\xbf\xbf"sv, // U+FFFF
+	"\xf0\x90\x80\x80"sv, // U+10000
+	"\xf4\x8f\xbf\xbf"sv, // U+10FFFF
+};
+
+static constexpr std::string_view invalid_utf8[] = {
+	/* continuation without a leading byte */
+	"\x80"sv,
+	"\xbf"sv,
+
+	/* overlong */
+	"\xc0\x80"sv,
+	"\xc0\xaf"sv,
+	"\xc1\xbf"sv,
+	"\xe0\x80\x8a"sv,
+	"\xe0\x9f\xbf"sv,
+	"\xf0\x80\x80\x8a"sv,
+	"\xf0\x8f\xbf\xbf"sv,
+
+	/* UTF-16 surrogates */
+	"\xed\xa0\x80"sv,
+	"\xed\xbf\xbf"sv,
+
+	/* above U+10FFFF */
+	"\xf4\x90\x80\x80"sv,
+	"\xf5\x80\x80\x80"sv,
+	"\xf7\xbf\xbf\xbf"sv,
+
+	/* obsolete 5 and 6 byte forms */
+	"\xf8\x88\x80\x80\x80"sv,
+	"\xfc\x84\x80\x80\x80\x80"sv,
+
+	/* illegal bytes */
+	"\xfe"sv,
+	"\xff"sv,
+
+	/* truncated */
+	"\xc3"sv,
+	"\xe2\x82"sv,
+	"\xf0\x9f\x8e"sv,
+};
+
+TEST(UTF8, ValidateValid)
+{
+	for (const auto s : valid_utf8) {
+		const std::string z{s};
+		EXPECT_TRUE(ValidateUTF8(s)) << z;
+		EXPECT_TRUE(ValidateUTF8(z.c_str())) << z;
+		EXPECT_EQ(SequenceLengthUTF8(s.front()), s.size()) << z;
+		EXPECT_EQ(SequenceLengthUTF8(z.c_str()), s.size()) << z;
+
+		/* embedded in other characters */
+		const std::string e = "a" + z + "b";
+		EXPECT_TRUE(ValidateUTF8(std::string_view{e}));
+		EXPECT_TRUE(ValidateUTF8(e.c_str()));
+	}
+}
+
+TEST(UTF8, ValidateInvalid)
+{
+	for (const auto s : invalid_utf8) {
+		const std::string z{s};
+		EXPECT_FALSE(ValidateUTF8(s)) << z;
+		EXPECT_FALSE(ValidateUTF8(z.c_str())) << z;
+		EXPECT_EQ(SequenceLengthUTF8(z.c_str()), 0U) << z;
+
+		/* embedded in other characters */
+		const std::string e = "a" + z + "b";
+		EXPECT_FALSE(ValidateUTF8(std::string_view{e}));
+		EXPECT_FALSE(ValidateUTF8(e.c_str()));
+	}
+}
+
+TEST(UTF8, SequenceLengthIllegalLeading)
+{
+	EXPECT_EQ(SequenceLengthUTF8('\x80'), 0U);
+	EXPECT_EQ(SequenceLengthUTF8('\xc0'), 0U);
+	EXPECT_EQ(SequenceLengthUTF8('\xc1'), 0U);
+	EXPECT_EQ(SequenceLengthUTF8('\xf5'), 0U);
+	EXPECT_EQ(SequenceLengthUTF8('\xf8'), 0U);
+	EXPECT_EQ(SequenceLengthUTF8('\xfc'), 0U);
+	EXPECT_EQ(SequenceLengthUTF8('\xff'), 0U);
+}
