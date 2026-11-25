@@ -8,6 +8,8 @@
 #include "mixer/MixerPlugin.hxx"
 #include "config/Block.hxx"
 #include "system/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <tinyalsa/mixer.h>
 
@@ -20,7 +22,7 @@
 #include <iterator> // for std::back_inserter()
 #include <string>
 
-static constexpr char DEFAULT_CONTROL[] = "PCM Playback Volume";
+static constexpr Domain tinyalsa_mixer_domain("tinyalsa_mixer");
 
 /**
  * The maximum number of values of an integer mixer control (see
@@ -62,7 +64,7 @@ class TinyAlsaMixer final : public Mixer {
 
 public:
 	TinyAlsaMixer(MixerListener &_listener,
-		      const ConfigBlock &block) noexcept;
+		      const ConfigBlock &block, const char *_control) noexcept;
 
 	/* virtual methods from class Mixer */
 	void Open() override;
@@ -96,10 +98,11 @@ private:
 };
 
 TinyAlsaMixer::TinyAlsaMixer(MixerListener &_listener,
-			     const ConfigBlock &block) noexcept
+			     const ConfigBlock &block,
+			     const char *_control) noexcept
 	:Mixer(tinyalsa_mixer_plugin, _listener),
 	 card(block.GetBlockValue("card", 0U)),
-	 control(block.GetBlockValue("mixer_control", DEFAULT_CONTROL)),
+	 control(_control),
 	 index(block.GetBlockValue("mixer_index", 0U))
 {
 }
@@ -110,7 +113,17 @@ tinyalsa_mixer_init([[maybe_unused]] EventLoop &event_loop,
 		    MixerListener &listener,
 		    const ConfigBlock &block)
 {
-	return new TinyAlsaMixer(listener, block);
+	/* there is no reasonable default (e.g. "PCM Playback
+	   Volume" is often an alsa-lib "softvol" control which has
+	   no effect here) */
+	const char *control = block.GetBlockValue("mixer_control");
+	if (control == nullptr) {
+		LogDebug(tinyalsa_mixer_domain,
+			 "No \"mixer_control\" configured, disabling the hardware mixer");
+		return nullptr;
+	}
+
+	return new TinyAlsaMixer(listener, block, control);
 }
 
 /**

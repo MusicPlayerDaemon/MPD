@@ -1458,10 +1458,11 @@ settings:
    * - Setting
      - Description
    * - **mixer_control NAME**
-     - The name of an integer mixer control, defaulting to "PCM
-       Playback Volume".  Unlike the ``alsa`` plugin, this is the full
-       name of the control as listed by :samp:`tinymix -D {CARD}` or
-       :samp:`amixer -c {CARD} controls`.
+     - The name of an integer mixer control.  Unlike the ``alsa``
+       plugin, this is the full name of the control as listed by
+       :samp:`tinymix -D {CARD}` or :samp:`amixer -c {CARD}
+       controls`.  There is no default; without this setting, there
+       is no hardware mixer.
    * - **mixer_index NUMBER**
      - If there is more than one control with the same name, this
        chooses one of them.  Defaults to 0 (the first one).
@@ -1470,6 +1471,11 @@ The volume is mapped linearly to the raw value of the mixer control
 (there is no decibel mapping like in the ``alsa`` plugin), and volume
 changes by other programs are not announced to MPD clients
 immediately.
+
+Some controls are not implemented by the hardware, but were created
+by alsa-lib's ``softvol`` plugin (often named "PCM Playback Volume").
+These have no effect with tinyalsa.  If the sound card has no
+hardware volume control, use ``mixer_type "software"`` instead.
 
 Example::
 
