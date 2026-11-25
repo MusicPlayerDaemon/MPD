@@ -1,4 +1,4 @@
-ver 0.25 (not yet released)
+ver 0.25 (2026/11/25)
 * protocol
   - implement "window" parameter for command "list"
   - new command "stringnormalization"
