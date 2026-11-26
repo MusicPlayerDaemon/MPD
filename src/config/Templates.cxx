@@ -16,7 +16,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "db_file" },
 	{ "sticker_file" },
 	{ "log_file" },
-	{ "pid_file" },
+	{ "pid_file", false, true },
 	{ "state_file" },
 	{ "state_file_interval" },
 	{ "restore_paused" },

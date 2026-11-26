@@ -26,10 +26,6 @@ OPTIONS
 
   Output a brief help message.
 
-.. option:: --kill
-
-  Kill the currently running mpd session. The pid_file parameter must be specified in the config file for this to work.
-
 .. option:: --no-config
 
   Don't read from the configuration file.
@@ -37,10 +33,6 @@ OPTIONS
 .. option:: --stderr
 
   Print messages to stderr.
-
-.. option:: --systemd
-
-  Used on Linux only so MPD can reliably detect whether it was started as a systemd service. Users shouldn't use this switch on the command line.
 
 .. option:: --verbose
 

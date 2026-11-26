@@ -5,7 +5,7 @@ After=network.target sound.target
 
 [Service]
 Type=notify
-ExecStart=@prefix@/bin/mpd --systemd
+ExecStart=@prefix@/bin/mpd
 
 # Enable this setting to ask systemd to watch over MPD, see
 # systemd.service(5).  This is disabled by default because it causes

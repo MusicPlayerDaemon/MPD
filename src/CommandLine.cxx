@@ -75,7 +75,6 @@ constexpr auto USER_CONFIG_FILE_LOCATION_XDG = Path::FromFS(PATH_LITERAL("mpd/mp
 } // namespace
 
 enum Option {
-	OPTION_KILL,
 	OPTION_NO_CONFIG,
 	OPTION_NO_DAEMON,
 #ifdef __linux__
@@ -90,11 +89,10 @@ enum Option {
 };
 
 static constexpr OptionDef option_defs[] = {
-	{"kill", "kill the currently running mpd session"},
 	{"no-config", "don't read from config"},
 	{"no-daemon", nullptr}, // hidden, compatibility with old versions
 #ifdef __linux__
-	{"systemd", "systemd service mode"},
+	{"systemd", nullptr}, // hidden, compatibility with old versions
 #endif
 	{"stdout", nullptr}, // hidden, compatibility with old versions
 	{"stderr", "print messages to stderr"},
@@ -342,22 +340,15 @@ ParseCommandLine(int argc, char **argv, CommandLineOptions &options,
 	OptionParser parser(option_defs, argc, argv);
 	while (auto o = parser.Next()) {
 		switch (Option(o.index)) {
-		case OPTION_KILL:
-			options.kill = true;
-			break;
-
 		case OPTION_NO_CONFIG:
 			use_config_file = false;
 			break;
 
 		case OPTION_NO_DAEMON:
-			break;
-
 #ifdef __linux__
 		case OPTION_SYSTEMD:
-			options.systemd = true;
-			break;
 #endif
+			break;
 
 		case OPTION_STDOUT:
 		case OPTION_STDERR:

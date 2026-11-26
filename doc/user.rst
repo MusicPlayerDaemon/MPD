@@ -1087,10 +1087,7 @@ simply type::
  mpd
 
 This will start :program:`MPD` in the foreground.  To stop it, press
-:kbd:`Ctrl-C` or send ``SIGTERM`` to the process; if you have
-configured a :confval:`pid_file`, you can use the ``--kill`` option::
-
- mpd --kill
+:kbd:`Ctrl-C` or send ``SIGTERM`` to the process.
 
 The best way to manage :program:`MPD` processes is to use a service
 manager such as :program:`systemd`.

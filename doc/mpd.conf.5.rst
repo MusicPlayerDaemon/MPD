@@ -83,11 +83,6 @@ Global Settings
 System Settings
 ^^^^^^^^^^^^^^^
 
-.. confval:: pid_file
-   :type: PATH
-
-   This specifies the file to save mpd's process ID in.
-
 .. confval:: log_file
    :type: PATH
 

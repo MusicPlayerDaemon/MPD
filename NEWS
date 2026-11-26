@@ -2,6 +2,7 @@ ver 0.26 (not yet released)
 * unix
   - remove the settings "user" and "group"
   - remove the daemonization code
+  - remove the setting "pid_file" and the option "--kill"
 * systemd
   - add a sysusers.d file creating user "mpd"
   - add "User=mpd"

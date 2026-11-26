@@ -50,10 +50,6 @@
 #include "io/linux/ProcStatus.hxx"
 #endif
 
-#ifdef ENABLE_DAEMON
-#include "unix/Daemon.hxx"
-#endif
-
 #include "db/Features.hxx" // for ENABLE_DATABASE
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
@@ -104,6 +100,10 @@
 #include <clocale>
 #endif
 
+#ifndef _WIN32
+#include <unistd.h> // for geteuid()
+#endif
+
 #ifdef ANDROID
 Context *context;
 LogListener *logListener;
@@ -112,28 +112,16 @@ AudioFocus *audio_focus;
 
 Instance *global_instance;
 
-#ifdef ENABLE_DAEMON
+#ifndef _WIN32
 
 static void
-glue_daemonize_init(const CommandLineOptions &options,
-		    const ConfigData &config)
+CheckUserGroup(const ConfigData &config)
 {
-	auto pid_file = config.GetPath(ConfigOption::PID_FILE);
-
-#ifdef __linux__
-	if (options.systemd && pid_file != nullptr) {
-		pid_file = nullptr;
-		fprintf(stderr,
-			"Ignoring the 'pid_file' setting in systemd mode\n");
-	}
-#endif
-
-	daemonize_init(config.GetString(ConfigOption::USER),
-		       config.GetString(ConfigOption::GROUP),
-		       std::move(pid_file));
-
-	if (options.kill)
-		daemonize_kill();
+	if ((config.GetParam(ConfigOption::USER) != nullptr ||
+	     config.GetParam(ConfigOption::GROUP) != nullptr) &&
+	    geteuid() == 0)
+		throw std::runtime_error{"The settings \"user\" and \"group\" have been removed; "
+					 "please launch MPD as an unprivileged user"};
 }
 
 #endif
@@ -323,8 +311,8 @@ MainConfigured(const CommandLineOptions &options,
 
 	const PartitionConfig partition_config{raw_config};
 
-#ifdef ENABLE_DAEMON
-	glue_daemonize_init(options, raw_config);
+#ifndef _WIN32
+	CheckUserGroup(raw_config);
 #endif
 
 	TagLoadConfig(raw_config);
@@ -362,10 +350,6 @@ MainConfigured(const CommandLineOptions &options,
 				      raw_config, partition_config);
 
 	listen_global_init(raw_config, *instance.partitions.front().listener);
-
-#ifdef ENABLE_DAEMON
-	AtScopeExit() { daemonize_finish(); };
-#endif
 
 	ConfigureFS(raw_config);
 	AtScopeExit() { DeinitFS(); };
@@ -416,10 +400,6 @@ MainConfigured(const CommandLineOptions &options,
 						       instance.io_thread.GetEventLoop());
 
 	const ScopePlaylistPluginsInit playlist_plugins_init(raw_config);
-
-#ifdef ENABLE_DAEMON
-	daemonize_commit();
-#endif
 
 #ifdef ENABLE_DBUS
 	instance.inhibit_idle = raw_config.GetBool(ConfigOption::INHIBIT_IDLE, false);

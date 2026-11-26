@@ -7,12 +7,6 @@
 struct ConfigData;
 
 struct CommandLineOptions {
-	bool kill = false;
-
-#ifdef __linux__
-	bool systemd = false;
-#endif
-
 	bool log_stderr = false;
 	bool verbose = false;
 };
