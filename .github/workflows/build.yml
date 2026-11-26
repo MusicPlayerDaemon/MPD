@@ -134,7 +134,6 @@ jobs:
             -Dbuildtype=minsize \
             -Dauto_features=disabled \
             -Dtest=true \
-            -Ddaemon=false \
             -Dinotify=false -Depoll=false -Deventfd=false \
             -Dsignalfd=false \
             -Dtcp=false \
@@ -235,7 +234,6 @@ jobs:
             -Dbuildtype=minsize \
             -Dauto_features=disabled \
             -Dtest=true \
-            -Ddaemon=false \
             -Dinotify=false -Depoll=false -Deventfd=false \
             -Dsignalfd=false \
             -Dtcp=false \
