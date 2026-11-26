@@ -28,14 +28,18 @@ class FfmpegInputStream final : public ThreadInputStream {
 
 	Ffmpeg::IOContext io;
 
+	const bool follow_redirects;
+
 	/**
 	 * Set by Cancel(); makes libavformat abort blocking I/O.
 	 */
 	std::atomic_bool cancelled = false;
 
 public:
-	FfmpegInputStream(std::string_view _uri, Mutex &_mutex)
-		:ThreadInputStream("ffmpeg", _uri, _mutex, BUFFER_SIZE)
+	FfmpegInputStream(std::string_view _uri, Mutex &_mutex,
+			  bool _follow_redirects)
+		:ThreadInputStream("ffmpeg", _uri, _mutex, BUFFER_SIZE),
+		 follow_redirects(_follow_redirects)
 	{
 		Start();
 	}
@@ -110,7 +114,13 @@ input_ffmpeg_protocols() noexcept
 static InputStreamPtr
 input_ffmpeg_open(std::string_view uri, Mutex &mutex)
 {
-	return std::make_unique<FfmpegInputStream>(uri, mutex);
+	return std::make_unique<FfmpegInputStream>(uri, mutex, true);
+}
+
+InputStreamPtr
+OpenFfmpegInputStreamNoRedirects(std::string_view uri, Mutex &mutex)
+{
+	return std::make_unique<FfmpegInputStream>(uri, mutex, false);
 }
 
 void
@@ -118,6 +128,9 @@ FfmpegInputStream::Open()
 {
 	AVDictionary *options = nullptr;
 	AtScopeExit(&options) { av_dict_free(&options); };
+
+	if (!follow_redirects)
+		av_dict_set_int(&options, "max_redirects", 0, 0);
 
 	if (StringStartsWith(GetURI(), "hls+"))
 		/* the (remote) HLS playlist may refer to arbitrary

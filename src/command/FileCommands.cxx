@@ -2,6 +2,7 @@
 // Copyright The Music Player Daemon Project
 
 #include "FileCommands.hxx"
+#include "config.h"
 #include "Request.hxx"
 #include "protocol/Ack.hxx"
 #include "protocol/Verify.hxx"
@@ -11,7 +12,6 @@
 #include "util/OffsetPointer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/StringCompare.hxx"
-#include "uri/Extract.hxx"
 #include "tag/Handler.hxx"
 #include "tag/Generic.hxx"
 #include "TagAny.hxx"
@@ -23,8 +23,18 @@
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "input/InputStream.hxx"
+#include "input/InputPlugin.hxx"
 #include "input/LocalOpen.hxx"
+#include "input/Registry.hxx"
+#include "input/RewindInputStream.hxx"
+#include "input/WaitReady.hxx"
 #include "input/Error.hxx"
+#ifdef ENABLE_CURL
+#include "input/plugins/CurlInputPlugin.hxx"
+#endif
+#ifdef ENABLE_FFMPEG
+#include "input/plugins/FfmpegInputPlugin.hxx"
+#endif
 #include "LocateUri.hxx"
 #include "TimePrint.hxx"
 #include "thread/Mutex.hxx"
@@ -177,6 +187,72 @@ static constexpr std::array art_names{
 	"cover.webp",
 };
 
+static std::string
+GetUriDirectory(std::string_view uri)
+{
+	const auto scheme_end = uri.find("://"sv);
+	if (scheme_end == uri.npos)
+		return {};
+
+	const auto authority_begin = scheme_end + 3;
+	const auto path_begin = uri.find_first_of("/?#"sv, authority_begin);
+	const auto origin_end = path_begin == uri.npos ? uri.size() : path_begin;
+	if (origin_end == authority_begin)
+		return {};
+
+	std::string directory{uri.substr(0, origin_end)};
+	if (path_begin != uri.npos && uri[path_begin] == '/') {
+		const auto path_end = uri.find_first_of("?#"sv, path_begin);
+		const auto path = uri.substr(path_begin, path_end - path_begin);
+		const auto parent = PathTraitsUTF8::GetParent(path);
+		if (parent != "/"sv)
+			directory.append(parent);
+	}
+
+	return directory;
+}
+
+#if defined(ENABLE_CURL) || defined(ENABLE_FFMPEG)
+
+[[gnu::pure]]
+static bool
+IsInputPluginEnabled(const InputPlugin &target) noexcept
+{
+	for (const auto &plugin : GetEnabledInputPlugins())
+		if (&plugin == &target)
+			return true;
+
+	return false;
+}
+
+#endif
+
+static InputStreamPtr
+OpenStreamArt(std::string_view uri, Mutex &mutex)
+{
+#ifdef ENABLE_CURL
+	if (IsInputPluginEnabled(input_plugin_curl) &&
+	    input_plugin_curl.SupportsUri(uri)) {
+		auto is = input_rewind_open(OpenCurlInputStreamNoRedirects(uri, {},
+								    mutex));
+		LockWaitReady(*is);
+		return is;
+	}
+#endif
+
+#ifdef ENABLE_FFMPEG
+	if (IsInputPluginEnabled(input_plugin_ffmpeg) &&
+	    input_plugin_ffmpeg.SupportsUri(uri)) {
+		auto is = input_rewind_open(OpenFfmpegInputStreamNoRedirects(uri,
+								      mutex));
+		LockWaitReady(*is);
+		return is;
+	}
+#endif
+
+	return InputStream::OpenReady(uri, mutex);
+}
+
 /**
  * Searches for the files listed in #art_names in the #directory.
  * Returns the first successfully opened file or #nullptr on failure.
@@ -240,11 +316,16 @@ ReadFileArt(Response &r, const Path directory,
 static InputStreamPtr
 FindStreamArt(std::string_view directory, Mutex &mutex)
 {
+	if (StringStartsWithIgnoreCase(directory, "hls+http://") ||
+	    StringStartsWithIgnoreCase(directory, "hls+https://"))
+		throw ProtocolError(ACK_ERROR_ARG,
+				    "HLS URI is not supported by albumart");
+
 	for(const auto name : art_names) {
 		std::string art_file = PathTraitsUTF8::Build(directory, name);
 
 		try {
-			return InputStream::OpenReady(art_file, mutex);
+			return OpenStreamArt(art_file, mutex);
 		} catch (...) {
 			auto e = std::current_exception();
 			if (!IsFileNotFound(e))
@@ -372,8 +453,10 @@ handle_album_art(Client &client, Request args, Response &r)
 
 	switch (located_uri.type) {
 	case LocatedUri::Type::ABSOLUTE: {
-		const auto directory =
-			PathTraitsUTF8::GetParent(located_uri.canonical_uri);
+		const auto directory = GetUriDirectory(located_uri.canonical_uri);
+		if (directory.empty())
+			throw ProtocolError(ACK_ERROR_ARG, "Malformed URI");
+
 		return read_stream_art(r, directory, directory, offset);
 	}
 

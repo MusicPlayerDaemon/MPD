@@ -69,12 +69,14 @@ class CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/** parser for icy-metadata */
 	std::shared_ptr<IcyMetaDataParser> icy;
 
+	const bool follow_redirects;
+
 public:
 	template<typename I>
 	CurlInputStream(EventLoop &event_loop, std::string_view _url,
 			const Curl::Headers &headers,
 			I &&_icy,
-			Mutex &_mutex);
+			Mutex &_mutex, bool _follow_redirects);
 
 	~CurlInputStream() noexcept override;
 
@@ -82,8 +84,8 @@ public:
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
 
 	static InputStreamPtr Open(std::string_view url,
-				   const Curl::Headers &headers,
-				   Mutex &mutex);
+				   const Curl::Headers &headers, Mutex &mutex,
+				   bool follow_redirects);
 
 private:
 	/**
@@ -455,11 +457,12 @@ inline
 CurlInputStream::CurlInputStream(EventLoop &event_loop, std::string_view _url,
 				 const Curl::Headers &headers,
 				 I &&_icy,
-				 Mutex &_mutex)
+				 Mutex &_mutex, bool _follow_redirects)
 	:AsyncInputStream(event_loop, _url, _mutex,
 			  CURL_MAX_BUFFERED,
 			  CURL_RESUME_AT),
-	 icy(std::forward<I>(_icy))
+	 icy(std::forward<I>(_icy)),
+	 follow_redirects(_follow_redirects)
 {
 	request_headers.Append("Icy-Metadata: 1");
 
@@ -523,12 +526,13 @@ CreateConfiguredCurlEasy(const char *url)
 }
 
 static CurlEasy
-CreateEasy(const char *url, struct curl_slist *headers)
+CreateEasy(const char *url, struct curl_slist *headers,
+	   bool follow_redirects)
 {
 	auto easy = CreateConfiguredCurlEasy(url);
 
 	easy.SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
-	easy.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
+	easy.SetOption(CURLOPT_FOLLOWLOCATION, follow_redirects ? 1L : 0L);
 	easy.SetOption(CURLOPT_MAXREDIRS, 5L);
 
 	/* this option eliminates the probe request when
@@ -544,7 +548,8 @@ void
 CurlInputStream::InitEasy()
 {
 	request = new Curl::AsyncRequest(**curl_init,
-					 CreateEasy(GetURI(), request_headers.Get()),
+					 CreateEasy(GetURI(), request_headers.Get(),
+						    follow_redirects),
 					 *this);
 }
 
@@ -597,14 +602,15 @@ CurlInputStream::DoSeek(offset_type new_offset)
 inline InputStreamPtr
 CurlInputStream::Open(std::string_view url,
 		      const Curl::Headers &headers,
-		      Mutex &mutex)
+		      Mutex &mutex, bool follow_redirects)
 {
 	auto icy = std::make_shared<IcyMetaDataParser>();
 
 	auto c = std::make_unique<CurlInputStream>((*curl_init)->GetEventLoop(),
 						   url, headers,
 						   icy,
-						   mutex);
+						   mutex,
+						   follow_redirects);
 
 	BlockingCall(c->GetEventLoop(), [&c](){
 			c->InitEasy();
@@ -618,13 +624,21 @@ InputStreamPtr
 OpenCurlInputStream(std::string_view uri, const Curl::Headers &headers,
 		    Mutex &mutex)
 {
-	return CurlInputStream::Open(uri, headers, mutex);
+	return CurlInputStream::Open(uri, headers, mutex, true);
+}
+
+InputStreamPtr
+OpenCurlInputStreamNoRedirects(std::string_view uri,
+			       const Curl::Headers &headers,
+			       Mutex &mutex)
+{
+	return CurlInputStream::Open(uri, headers, mutex, false);
 }
 
 static InputStreamPtr
 input_curl_open(std::string_view url, Mutex &mutex)
 {
-	return CurlInputStream::Open(url, {}, mutex);
+	return CurlInputStream::Open(url, {}, mutex, true);
 }
 
 static std::set<std::string, std::less<>>

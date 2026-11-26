@@ -32,3 +32,14 @@ CreateConfiguredCurlEasy(const char *url);
 InputStreamPtr
 OpenCurlInputStream(std::string_view uri, const Curl::Headers &headers,
 		    Mutex &mutex);
+
+/**
+ * Open a #CurlInputStream with redirects disabled.
+ *
+ * Throws on error.
+ */
+[[nodiscard]]
+InputStreamPtr
+OpenCurlInputStreamNoRedirects(std::string_view uri,
+			       const Curl::Headers &headers,
+			       Mutex &mutex);
