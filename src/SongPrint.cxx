@@ -74,12 +74,7 @@ song_print_real_uri(Response &r, std::string_view real_uri, bool base) noexcept
 static void
 song_print_real_uri(Response &r, const LightSong &song, bool base) noexcept
 {
-	if (song.real_uri == nullptr)
-		return;
-
-	if (!base && song.directory != nullptr)
-		r.Fmt("RealUri: {}\n", song.real_uri);
-	else
+	if (song.real_uri != nullptr)
 		song_print_real_uri(r, song.real_uri, base);
 }
 

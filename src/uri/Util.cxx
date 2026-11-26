@@ -7,7 +7,6 @@
 #include "util/StringCompare.hxx"
 #include "util/StringListVerify.hxx"
 
-#include <array>
 #include <string_view>
 
 using std::string_view_literals::operator""sv;
@@ -61,48 +60,25 @@ UriStaysInsideDepth(std::string_view path, unsigned depth) noexcept
 	return true;
 }
 
-[[gnu::pure]]
-static std::string_view
-SkipUriScheme(std::string_view uri) noexcept
-{
-	static constexpr std::array schemes{
-		"http://"sv, "https://"sv,
-		"ftp://"sv,
-		"smb://"sv,
-	};
-
-	for (const std::string_view scheme : schemes) {
-		if (SkipPrefixIgnoreCase(uri, scheme))
-			return uri;
-	}
-
-	return {};
-}
-
 std::string
 UriRemoveAuth(const std::string_view uri) noexcept
 {
-	const std::string_view after_uri_scheme = SkipUriScheme(uri);
-	if (after_uri_scheme.data() == nullptr)
-		/* unrecognized URI */
+	const auto scheme_end = uri.find("://"sv);
+	if (scheme_end == uri.npos)
+		/* not an URI with an authority component */
 		return {};
 
-	std::size_t path_start = after_uri_scheme.find('/');
-	if (path_start == after_uri_scheme.npos)
-		path_start = after_uri_scheme.size();
-
-	const auto [host_and_auth, path] = Partition(after_uri_scheme, path_start);
-
-	auto [_, host] = Split(host_and_auth, '@');
-	if (host.data() == nullptr)
+	const auto authority_begin = scheme_end + 3;
+	const auto authority_end = uri.find_first_of("/?#"sv, authority_begin);
+	const auto auth_end = uri.rfind('@', authority_end);
+	if (auth_end == uri.npos || auth_end < authority_begin)
 		/* no auth info present, do nothing */
 		return {};
 
 	/* duplicate the full URI and then delete the auth
 	   information */
 	std::string result(uri);
-	result.erase(std::distance(uri.begin(), after_uri_scheme.begin()),
-		     std::distance(after_uri_scheme.begin(), host.begin()));
+	result.erase(authority_begin, auth_end + 1 - authority_begin);
 	return result;
 }
 

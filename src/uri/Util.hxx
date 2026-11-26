@@ -48,10 +48,10 @@ bool
 UriStaysInsideDepth(std::string_view path, unsigned depth) noexcept;
 
 /**
- * Removes HTTP username and password from the URI.  This may be
- * useful for displaying an URI without disclosing secrets.  Returns
- * an empty string if nothing needs to be removed, or if the URI is
- * not recognized.
+ * Removes username and password from the authority component of an
+ * URI.  This may be useful for displaying an URI without disclosing
+ * secrets.  Returns an empty string if nothing needs to be removed,
+ * or if the URI has no authority component.
  */
 [[gnu::pure]]
 std::string
