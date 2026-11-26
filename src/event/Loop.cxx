@@ -411,7 +411,7 @@ EventLoop::CountOwnUringOperations() const noexcept
 
 	n += uring_poll && uring_poll->IsUringPending();
 
-#ifdef HAVE_THREADED_EVENT_LOOP
+#if defined(HAVE_THREADED_EVENT_LOOP) && defined(USE_EVENTFD)
 	n += uring_wake && uring_wake->IsUringPending();
 #endif
 
