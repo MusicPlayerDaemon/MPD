@@ -39,7 +39,6 @@
 #include "config/Check.hxx"
 #include "config/Data.hxx"
 #include "config/Param.hxx"
-#include "config/Path.hxx"
 #include "config/Defaults.hxx"
 #include "config/Option.hxx"
 #include "config/Domain.hxx"
@@ -330,7 +329,6 @@ MainConfigured(const CommandLineOptions &options,
 	const ODBus::ScopeInit dbus_init;
 #endif
 
-	InitPathParser(raw_config);
 	const PartitionConfig partition_config{raw_config};
 
 #ifdef ENABLE_DAEMON
