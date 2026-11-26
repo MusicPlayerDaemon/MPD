@@ -34,10 +34,6 @@ OPTIONS
 
   Don't read from the configuration file.
 
-.. option:: --no-daemon
-
-  Don't detach from console.
-
 .. option:: --stderr
 
   Print messages to stderr.

@@ -295,7 +295,7 @@ add_global_arguments(common_global_cppflags, language: 'cpp')
 add_project_arguments(common_cppflags, language: 'c')
 add_project_arguments(common_cppflags, language: 'cpp')
 
-enable_daemon = not is_windows and not is_android and get_option('daemon')
+enable_daemon = not is_windows and not is_android
 conf.set('ENABLE_DAEMON', enable_daemon)
 
 conf.set('HAVE_GETPWNAM_R', compiler.has_function('getpwnam_r'))

@@ -14,10 +14,6 @@
 
 #include <csignal>
 
-#ifdef __linux__
-#include <sys/prctl.h>
-#endif
-
 static constexpr Domain signal_handlers_domain("signal_handlers");
 
 static void
@@ -48,7 +44,7 @@ handle_reload_event(void *ctx) noexcept
 #endif
 
 void
-SignalHandlersInit(Instance &instance, bool daemon)
+SignalHandlersInit(Instance &instance)
 {
 	auto &loop = instance.event_loop;
 
@@ -67,14 +63,6 @@ SignalHandlersInit(Instance &instance, bool daemon)
 
 	SignalMonitorRegister(SIGHUP, {&instance, handle_reload_event});
 #endif
-
-	if (!daemon) {
-#ifdef __linux__
-		/* if MPD was not daemonized, shut it down when the
-		   parent process dies */
-		prctl(PR_SET_PDEATHSIG, SIGTERM);
-#endif
-	}
 }
 
 void

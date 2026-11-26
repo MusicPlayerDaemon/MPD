@@ -7,15 +7,15 @@
 struct Instance;
 
 void
-SignalHandlersInit(Instance &instance, bool daemon);
+SignalHandlersInit(Instance &instance);
 
 void
 SignalHandlersFinish() noexcept;
 
 class ScopeSignalHandlersInit {
 public:
-	ScopeSignalHandlersInit(Instance &instance, bool daemon) {
-		SignalHandlersInit(instance, daemon);
+	explicit ScopeSignalHandlersInit(Instance &instance) {
+		SignalHandlersInit(instance);
 	}
 
 	~ScopeSignalHandlersInit() noexcept {

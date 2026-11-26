@@ -48,29 +48,8 @@ daemonize_kill()
 #endif
 
 /**
- * Close stdin (fd 0) and re-open it as /dev/null.
- */
-#ifndef _WIN32
-void
-daemonize_close_stdin() noexcept;
-#else
-static inline void
-daemonize_close_stdin() noexcept {}
-#endif
-
-/**
- * Throws on error.
- */
-#ifndef _WIN32
-void
-daemonize_begin(bool detach);
-#else
-static inline void
-daemonize_begin(bool detach)
-{ (void)detach; }
-#endif
-
-/**
+ * Write the pid file (if one is configured).
+ *
  * Throws on error.
  */
 #ifndef _WIN32

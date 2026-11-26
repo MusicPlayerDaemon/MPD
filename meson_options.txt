@@ -7,7 +7,6 @@ option('syslog', type: 'feature', description: 'syslog support')
 option('inotify', type: 'boolean', value: true, description: 'inotify support (for automatic database update)')
 option('io_uring', type: 'feature', description: 'Linux io_uring support using liburing')
 
-option('daemon', type: 'boolean', value: true, description: 'enable daemonization')
 option('systemd', type: 'feature', description: 'systemd support')
 
 option('systemd_system_unit_dir', type: 'string', description: 'systemd system service directory')

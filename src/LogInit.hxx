@@ -9,8 +9,8 @@ struct ConfigData;
 /**
  * Configure a logging destination for daemon startup, before the
  * configuration file is read.  This allows the daemon to use the
- * logging library (and the command line verbose level) before it's
- * daemonized.
+ * logging library (and the command line verbose level) before the
+ * configuration has been loaded.
  *
  * @param verbose true when the program is started with --verbose
  */
