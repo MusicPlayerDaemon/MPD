@@ -138,8 +138,8 @@ ParseSize(const char *s, std::size_t default_factor)
 	if (*s != '\0')
 		throw std::runtime_error("Unknown size suffix");
 
-	if (apply_factor)
-		value *= default_factor;
+	if (apply_factor && MultiplyOverflow(value, default_factor, value))
+		throw std::runtime_error("Value too large");
 
 	return value;
 }
