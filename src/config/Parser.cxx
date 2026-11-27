@@ -5,11 +5,13 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/ByteSizes.hxx"
 #include "util/IntOverflow.hxx"
+#include "util/NumberParser.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
 
 #include <cstdlib>
 #include <cerrno>
+#include <system_error>
 
 bool
 ParseBool(const char *value)
@@ -26,39 +28,43 @@ ParseBool(const char *value)
 	throw FmtRuntimeError(R"(Not a valid boolean ("yes" or "no"): {:?})", value);
 }
 
-long
-ParseLong(const char *s)
+template<std::integral T>
+static const char *
+ParseIntegerToOrThrow(std::string_view s, T &value)
 {
-	char *endptr;
-	errno = 0;
-	long value = strtol(s, &endptr, 10);
-	if (endptr == s || *endptr != 0)
-		throw std::runtime_error("Failed to parse number");
+	const auto [ptr, ec] = FromChars(s, value);
+	if (ec != std::errc{})
+		throw std::system_error{std::make_error_code(ec), "Failed to parse number"};
 
-	if (errno == ERANGE)
-		throw std::runtime_error("Number out of range");
+	return ptr;
+}
+
+template<std::integral T>
+static T
+ParseIntegerOrThrow(std::string_view s)
+{
+	T value;
+	const char *end = ParseIntegerToOrThrow(s, value);
+	if (end != s.data() + s.size())
+		throw std::invalid_argument{"Garbage after number"};
 
 	return value;
 }
 
 unsigned
-ParseUnsigned(const char *s)
+ParseUnsigned(std::string_view s)
 {
-	auto value = ParseLong(s);
-	if (value < 0)
-		throw std::runtime_error("Value must not be negative");
-
-	return (unsigned)value;
+	return ParseIntegerOrThrow<unsigned>(s);
 }
 
 unsigned
-ParsePositive(const char *s)
+ParsePositive(std::string_view s)
 {
-	auto value = ParseLong(s);
+	const auto value = ParseUnsigned(s);
 	if (value <= 0)
 		throw std::runtime_error("Value must be positive");
 
-	return (unsigned)value;
+	return value;
 }
 
 double
@@ -91,14 +97,8 @@ Multiply(std::size_t value)
 std::size_t
 ParseSize(const char *s, std::size_t default_factor)
 {
-	char *endptr;
-	errno = 0;
-	std::size_t value = strtoul(s, &endptr, 10);
-	if (endptr == s)
-		throw std::runtime_error("Failed to parse integer");
-
-	if (errno == ERANGE)
-		throw std::runtime_error("Integer out of range");
+	std::size_t value;
+	const char *endptr = ParseIntegerToOrThrow(s, value);
 
 	s = StripLeft(endptr);
 
@@ -148,6 +148,6 @@ std::chrono::steady_clock::duration
 ParseDuration(const char *s)
 {
 	// TODO: allow unit suffixes
-	const std::chrono::seconds seconds(ParseLong(s));
+	const std::chrono::seconds seconds{ParseIntegerOrThrow<std::chrono::seconds::rep>(s)};
 	return std::chrono::duration_cast<std::chrono::steady_clock::duration>(seconds);
 }

@@ -42,8 +42,8 @@ TEST(ConfigParser, Unsigned)
 	EXPECT_THROW(ParseUnsigned(""), std::runtime_error);
 	EXPECT_THROW(ParseUnsigned("-1"), std::runtime_error);
 	EXPECT_THROW(ParseUnsigned("abc"), std::runtime_error);
-	EXPECT_THROW(ParseUnsigned("1x"), std::runtime_error);
-	EXPECT_THROW(ParseUnsigned("1.5"), std::runtime_error);
+	EXPECT_THROW(ParseUnsigned("1x"), std::invalid_argument);
+	EXPECT_THROW(ParseUnsigned("1.5"), std::invalid_argument);
 	EXPECT_THROW(ParseUnsigned("99999999999999999999"), std::runtime_error);
 }
 
@@ -54,11 +54,11 @@ TEST(ConfigParser, Positive)
 	EXPECT_EQ(ParsePositive("4294967295"), 4294967295U);
 
 	EXPECT_THROW(ParsePositive("0"), std::runtime_error);
-	EXPECT_THROW(ParsePositive("-1"), std::runtime_error);
+	EXPECT_THROW(ParsePositive("-1"), std::system_error);
 	EXPECT_THROW(ParsePositive(""), std::runtime_error);
 	EXPECT_THROW(ParsePositive("abc"), std::runtime_error);
-	EXPECT_THROW(ParsePositive("1x"), std::runtime_error);
-	EXPECT_THROW(ParsePositive("99999999999999999999"), std::runtime_error);
+	EXPECT_THROW(ParsePositive("1x"), std::invalid_argument);
+	EXPECT_THROW(ParsePositive("99999999999999999999"), std::system_error);
 }
 
 TEST(ConfigParser, Double)
@@ -135,6 +135,6 @@ TEST(ConfigParser, Duration)
 
 	EXPECT_THROW(ParseDuration(""), std::runtime_error);
 	EXPECT_THROW(ParseDuration("abc"), std::runtime_error);
-	EXPECT_THROW(ParseDuration("1.5"), std::runtime_error);
-	EXPECT_THROW(ParseDuration("1s"), std::runtime_error);
+	EXPECT_THROW(ParseDuration("1.5"), std::invalid_argument);
+	EXPECT_THROW(ParseDuration("1s"), std::invalid_argument);
 }
