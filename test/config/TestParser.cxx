@@ -143,3 +143,21 @@ TEST(ConfigParser, Duration)
 	EXPECT_THROW(ParseDuration("1.5"), std::invalid_argument);
 	EXPECT_THROW(ParseDuration("1s"), std::invalid_argument);
 }
+
+TEST(ConfigParser, DurationOverflow)
+{
+	using std::chrono::duration_cast;
+	using std::chrono::seconds;
+	using Duration = std::chrono::steady_clock::duration;
+
+	const auto max_s = duration_cast<seconds>(Duration::max()).count();
+	EXPECT_EQ(ParseDuration(std::to_string(max_s).c_str()), seconds{max_s});
+
+	const auto min_s = duration_cast<seconds>(Duration::min()).count();
+	EXPECT_EQ(ParseDuration(std::to_string(min_s).c_str()), seconds{min_s});
+
+	EXPECT_THROW(ParseDuration(std::to_string(max_s + 1).c_str()), std::system_error);
+	EXPECT_THROW(ParseDuration(std::to_string(min_s - 1).c_str()), std::system_error);
+	EXPECT_THROW(ParseDuration("9223372036854775807"), std::system_error);
+	EXPECT_THROW(ParseDuration("-9223372036854775808"), std::system_error);
+}
