@@ -161,6 +161,8 @@ TEST(ArgParser, Float)
 	EXPECT_THROW(ParseCommandArgFloat(""), ProtocolError);
 	EXPECT_THROW(ParseCommandArgFloat("abc"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgFloat("1.5x"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("1e39"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("-1e39"), ProtocolError);
 }
 
 TEST(ArgParser, SongTime)
