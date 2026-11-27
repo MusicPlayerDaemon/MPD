@@ -18,6 +18,11 @@ TEST(ArgParser, U32)
 	EXPECT_THROW(ParseCommandArgU32("abc"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgU32("1x"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgU32("1.5"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgU32("-1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgU32("+1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgU32(" 1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgU32("4294967296"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgU32("99999999999999999999"), ProtocolError);
 }
 
 TEST(ArgParser, Int)
@@ -33,6 +38,13 @@ TEST(ArgParser, Int)
 	EXPECT_THROW(ParseCommandArgInt("abc"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgInt("1x"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgInt("1.5"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgInt("+-5"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgInt("++5"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgInt("+"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgInt(" 1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgInt("2147483648"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgInt("-2147483649"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgInt("99999999999999999999"), ProtocolError);
 }
 
 TEST(ArgParser, IntMinMax)
@@ -89,6 +101,12 @@ TEST(ArgParser, RangeEdgeCases)
 	EXPECT_THROW(ParseCommandArgRange("-1:5"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgRange("1:-1"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgRange("1:-5"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgRange("+1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgRange("1:+5"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgRange(" 1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgRange("2147483648"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgRange("0:2147483648"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgRange("99999999999999999999"), ProtocolError);
 }
 
 TEST(ArgParser, Unsigned)
@@ -101,6 +119,11 @@ TEST(ArgParser, Unsigned)
 	EXPECT_THROW(ParseCommandArgUnsigned("abc"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgUnsigned("1x"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgUnsigned("1.5"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgUnsigned("-1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgUnsigned("+1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgUnsigned(" 1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgUnsigned("4294967296"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgUnsigned("99999999999999999999"), ProtocolError);
 }
 
 TEST(ArgParser, UnsignedMax)
@@ -123,6 +146,8 @@ TEST(ArgParser, Bool)
 	EXPECT_THROW(ParseCommandArgBool("1x"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgBool("true"), ProtocolError);
 	EXPECT_THROW(ParseCommandArgBool("yes"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgBool("+1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgBool("99999999999999999999"), ProtocolError);
 }
 
 TEST(ArgParser, Float)
