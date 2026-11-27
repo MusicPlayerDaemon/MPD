@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "config.h"
 #include "event/MaskMonitor.hxx"
 #include "queue/Playlist.hxx"
 #include "queue/Listener.hxx"

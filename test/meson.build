@@ -8,6 +8,8 @@ subdir('co')
 subdir('io')
 subdir('net')
 subdir('time')
+subdir('config')
+subdir('protocol')
 subdir('tag')
 subdir('playlist')
 subdir('upnp')
@@ -76,21 +78,6 @@ test(
     dependencies: [
       input_glue_dep,
       gtest_dep,
-    ],
-  ),
-  protocol: 'gtest',
-)
-
-test(
-  'test_protocol',
-  executable(
-    'test_protocol',
-    'test_protocol.cxx',
-    '../src/protocol/ArgParser.cxx',
-    include_directories: inc,
-    dependencies: [
-      gtest_dep,
-      fmt_dep,
     ],
   ),
   protocol: 'gtest',

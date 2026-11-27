@@ -4,12 +4,15 @@
 #include "Parser.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/ByteSizes.hxx"
+#include "util/CharUtil.hxx"
 #include "util/IntOverflow.hxx"
+#include "util/NumberParser.hxx"
 #include "util/StringStrip.hxx"
 #include "util/StringUtil.hxx"
 
 #include <cstdlib>
 #include <cerrno>
+#include <system_error>
 
 bool
 ParseBool(const char *value)
@@ -26,48 +29,73 @@ ParseBool(const char *value)
 	throw FmtRuntimeError(R"(Not a valid boolean ("yes" or "no"): {:?})", value);
 }
 
-long
-ParseLong(const char *s)
+template<std::integral T>
+static const char *
+ParseIntegerToOrThrow(std::string_view s, T &value)
 {
-	char *endptr;
-	errno = 0;
-	long value = strtol(s, &endptr, 10);
-	if (endptr == s || *endptr != 0)
-		throw std::runtime_error("Failed to parse number");
+	const auto [ptr, ec] = FromChars(s, value);
+	if (ec != std::errc{})
+		throw std::system_error{std::make_error_code(ec), "Failed to parse number"};
 
-	if (errno == ERANGE)
-		throw std::runtime_error("Number out of range");
+	return ptr;
+}
+
+template<std::integral T>
+static T
+ParseIntegerOrThrow(std::string_view s)
+{
+	T value;
+	const char *end = ParseIntegerToOrThrow(s, value);
+	if (end != s.data() + s.size())
+		throw std::invalid_argument{"Garbage after number"};
 
 	return value;
 }
 
 unsigned
-ParseUnsigned(const char *s)
+ParseUnsigned(std::string_view s)
 {
-	auto value = ParseLong(s);
-	if (value < 0)
-		throw std::runtime_error("Value must not be negative");
-
-	return (unsigned)value;
+	return ParseIntegerOrThrow<unsigned>(s);
 }
 
 unsigned
-ParsePositive(const char *s)
+ParsePositive(std::string_view s)
 {
-	auto value = ParseLong(s);
+	const auto value = ParseUnsigned(s);
 	if (value <= 0)
 		throw std::runtime_error("Value must be positive");
 
-	return (unsigned)value;
+	return value;
+}
+
+/**
+ * Does the string start with a number?  This rejects "inf" and "nan"
+ * (which are accepted by strtod()).
+ */
+static constexpr bool
+StartsWithNumber(const char *s) noexcept
+{
+	if (*s == '-' || *s == '+')
+		++s;
+
+	return IsDigitASCII(*s) || *s == '.';
 }
 
 double
 ParseDouble(const char *s)
 {
+	if (!StartsWithNumber(s))
+		throw std::runtime_error("Failed to parse number");
+
 	char *endptr;
+	errno = 0;
 	double value = strtod(s, &endptr);
 	if (endptr == s || *endptr != 0)
 		throw std::runtime_error("Failed to parse number");
+
+	if (errno == ERANGE)
+		throw std::system_error{std::make_error_code(std::errc::result_out_of_range),
+					"Failed to parse number"};
 
 	return value;
 }
@@ -86,14 +114,8 @@ Multiply(std::size_t value)
 std::size_t
 ParseSize(const char *s, std::size_t default_factor)
 {
-	char *endptr;
-	errno = 0;
-	std::size_t value = strtoul(s, &endptr, 10);
-	if (endptr == s)
-		throw std::runtime_error("Failed to parse integer");
-
-	if (errno == ERANGE)
-		throw std::runtime_error("Integer out of range");
+	std::size_t value;
+	const char *endptr = ParseIntegerToOrThrow(s, value);
 
 	s = StripLeft(endptr);
 
@@ -133,8 +155,8 @@ ParseSize(const char *s, std::size_t default_factor)
 	if (*s != '\0')
 		throw std::runtime_error("Unknown size suffix");
 
-	if (apply_factor)
-		value *= default_factor;
+	if (apply_factor && MultiplyOverflow(value, default_factor, value))
+		throw std::runtime_error("Value too large");
 
 	return value;
 }
@@ -143,6 +165,14 @@ std::chrono::steady_clock::duration
 ParseDuration(const char *s)
 {
 	// TODO: allow unit suffixes
-	const std::chrono::seconds seconds(ParseLong(s));
-	return std::chrono::duration_cast<std::chrono::steady_clock::duration>(seconds);
+	using Duration = std::chrono::steady_clock::duration;
+	using std::chrono::duration_cast;
+
+	const std::chrono::seconds seconds{ParseIntegerOrThrow<std::chrono::seconds::rep>(s)};
+	if (seconds > duration_cast<std::chrono::seconds>(Duration::max()) ||
+	    seconds < duration_cast<std::chrono::seconds>(Duration::min()))
+		throw std::system_error{std::make_error_code(std::errc::result_out_of_range),
+					"Failed to parse number"};
+
+	return duration_cast<Duration>(seconds);
 }

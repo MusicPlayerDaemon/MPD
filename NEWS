@@ -8,6 +8,10 @@ ver 0.26 (not yet released)
   - add "User=mpd"
 
 ver 0.25.1 (not yet released)
+* protocol
+  - fix range checks of integer arguments
+  - reject out-of-range floating point arguments
+  - reject "inf" and "nan" in floating point arguments
 
 ver 0.25 (2026/11/25)
 * protocol
