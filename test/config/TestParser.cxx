@@ -125,6 +125,11 @@ TEST(ConfigParser, SizeOverflow)
 
 	const auto too_large_g = std::to_string(SIZE_MAX / GIBI + 1) + "G";
 	EXPECT_THROW(ParseSize(too_large_g.c_str()), std::runtime_error);
+
+	EXPECT_EQ(ParseSize(max_k.c_str(), KIBI), SIZE_MAX / KIBI * KIBI);
+
+	const auto too_large_default = std::to_string(SIZE_MAX / KIBI + 1);
+	EXPECT_THROW(ParseSize(too_large_default.c_str(), KIBI), std::runtime_error);
 }
 
 TEST(ConfigParser, Duration)
