@@ -72,6 +72,8 @@ TEST(ConfigParser, Double)
 	EXPECT_THROW(ParseDouble("abc"), std::runtime_error);
 	EXPECT_THROW(ParseDouble("1.5x"), std::runtime_error);
 	EXPECT_THROW(ParseDouble("1.5 "), std::runtime_error);
+	EXPECT_THROW(ParseDouble("1e999"), std::system_error);
+	EXPECT_THROW(ParseDouble("-1e999"), std::system_error);
 }
 
 TEST(ConfigParser, Size)
