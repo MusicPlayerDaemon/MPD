@@ -148,6 +148,14 @@ std::chrono::steady_clock::duration
 ParseDuration(const char *s)
 {
 	// TODO: allow unit suffixes
+	using Duration = std::chrono::steady_clock::duration;
+	using std::chrono::duration_cast;
+
 	const std::chrono::seconds seconds{ParseIntegerOrThrow<std::chrono::seconds::rep>(s)};
-	return std::chrono::duration_cast<std::chrono::steady_clock::duration>(seconds);
+	if (seconds > duration_cast<std::chrono::seconds>(Duration::max()) ||
+	    seconds < duration_cast<std::chrono::seconds>(Duration::min()))
+		throw std::system_error{std::make_error_code(std::errc::result_out_of_range),
+					"Failed to parse number"};
+
+	return duration_cast<Duration>(seconds);
 }
