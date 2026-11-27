@@ -165,6 +165,27 @@ TEST(ArgParser, Float)
 	EXPECT_THROW(ParseCommandArgFloat("-1e39"), ProtocolError);
 }
 
+TEST(ArgParser, FloatSyntax)
+{
+	EXPECT_FLOAT_EQ(ParseCommandArgFloat(".5"), 0.5f);
+	EXPECT_FLOAT_EQ(ParseCommandArgFloat("-.5"), -0.5f);
+
+	EXPECT_THROW(ParseCommandArgFloat("inf"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("-inf"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("+INF"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("infinity"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("nan"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("-NaN"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("nan(1)"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat(" 1"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("-"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgFloat("."), ProtocolError);
+
+	/* "seekcur" with a relative time */
+	EXPECT_THROW(ParseCommandArgSignedSongTime("+inf"), ProtocolError);
+	EXPECT_THROW(ParseCommandArgSignedSongTime("-nan"), ProtocolError);
+}
+
 TEST(ArgParser, SongTime)
 {
 	EXPECT_EQ(ParseCommandArgSongTime("0").ToMS(), 0U);
