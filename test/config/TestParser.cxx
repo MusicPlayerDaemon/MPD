@@ -76,6 +76,24 @@ TEST(ConfigParser, Double)
 	EXPECT_THROW(ParseDouble("-1e999"), std::system_error);
 }
 
+TEST(ConfigParser, DoubleSyntax)
+{
+	EXPECT_DOUBLE_EQ(ParseDouble("+1.5"), 1.5);
+	EXPECT_DOUBLE_EQ(ParseDouble(".5"), 0.5);
+	EXPECT_DOUBLE_EQ(ParseDouble("-.5"), -0.5);
+
+	EXPECT_THROW(ParseDouble("inf"), std::runtime_error);
+	EXPECT_THROW(ParseDouble("-inf"), std::runtime_error);
+	EXPECT_THROW(ParseDouble("+INF"), std::runtime_error);
+	EXPECT_THROW(ParseDouble("infinity"), std::runtime_error);
+	EXPECT_THROW(ParseDouble("nan"), std::runtime_error);
+	EXPECT_THROW(ParseDouble("-NaN"), std::runtime_error);
+	EXPECT_THROW(ParseDouble("nan(1)"), std::runtime_error);
+	EXPECT_THROW(ParseDouble(" 1"), std::runtime_error);
+	EXPECT_THROW(ParseDouble("-"), std::runtime_error);
+	EXPECT_THROW(ParseDouble("."), std::runtime_error);
+}
+
 TEST(ConfigParser, Size)
 {
 	EXPECT_EQ(ParseSize("0"), 0U);
