@@ -142,9 +142,25 @@ ParseCommandArgBool(const char *s)
 	return value != 0;
 }
 
+/**
+ * Does the string start with a number?  This rejects "inf" and "nan"
+ * (which are accepted by strtof()).
+ */
+static constexpr bool
+StartsWithNumber(const char *s) noexcept
+{
+	if (*s == '-' || *s == '+')
+		++s;
+
+	return IsDigitASCII(*s) || *s == '.';
+}
+
 float
 ParseCommandArgFloat(const char *s)
 {
+	if (!StartsWithNumber(s))
+		throw MakeArgError("Float expected", s);
+
 	char *endptr;
 	errno = 0;
 	auto value = ParseFloat(s, &endptr);
