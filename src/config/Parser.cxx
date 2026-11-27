@@ -65,9 +65,14 @@ double
 ParseDouble(const char *s)
 {
 	char *endptr;
+	errno = 0;
 	double value = strtod(s, &endptr);
 	if (endptr == s || *endptr != 0)
 		throw std::runtime_error("Failed to parse number");
+
+	if (errno == ERANGE)
+		throw std::system_error{std::make_error_code(std::errc::result_out_of_range),
+					"Failed to parse number"};
 
 	return value;
 }
