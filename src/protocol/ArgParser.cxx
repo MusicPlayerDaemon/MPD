@@ -12,6 +12,8 @@
 #include "util/StringAPI.hxx"
 #include "util/StringSplit.hxx"
 
+#include <cerrno>
+
 static inline ProtocolError
 MakeArgError(const char *msg, const char *value) noexcept
 {
@@ -144,9 +146,13 @@ float
 ParseCommandArgFloat(const char *s)
 {
 	char *endptr;
+	errno = 0;
 	auto value = ParseFloat(s, &endptr);
 	if (endptr == s || *endptr != 0)
 		throw MakeArgError("Float expected", s);
+
+	if (errno == ERANGE)
+		throw MakeArgError("Number out of range", s);
 
 	return value;
 }

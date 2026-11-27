@@ -1,6 +1,7 @@
 ver 0.25.1 (not yet released)
 * protocol
   - fix range checks of integer arguments
+  - reject out-of-range floating point arguments
 
 ver 0.25 (2026/11/25)
 * protocol
