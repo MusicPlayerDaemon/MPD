@@ -36,6 +36,8 @@ ver 0.25 (2026/11/25)
   - opus: use "replaygain_missing_preamp" for files without R128 tags
   - psgplay: new plugin
   - vgmstream: new plugin
+* filter
+  - startdelay: new plugin
 * output
   - alsa: use hardware pause if available
   - pipewire: add option "reconnect_stream"
