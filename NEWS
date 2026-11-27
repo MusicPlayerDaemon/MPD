@@ -1,4 +1,6 @@
 ver 0.25.1 (not yet released)
+* protocol
+  - fix range checks of integer arguments
 
 ver 0.25 (2026/11/25)
 * protocol

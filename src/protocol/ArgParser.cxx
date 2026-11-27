@@ -6,9 +6,11 @@
 #include "Ack.hxx"
 #include "Chrono.hxx"
 #include "lib/fmt/ToBuffer.hxx"
+#include "util/CharUtil.hxx"
 #include "util/CNumberParser.hxx"
-
-#include <stdlib.h>
+#include "util/NumberParser.hxx"
+#include "util/StringAPI.hxx"
+#include "util/StringSplit.hxx"
 
 static inline ProtocolError
 MakeArgError(const char *msg, const char *value) noexcept
@@ -16,29 +18,54 @@ MakeArgError(const char *msg, const char *value) noexcept
 	return {ACK_ERROR_ARG, FmtBuffer<256>("{}: {}", msg, value)};
 }
 
+/**
+ * Parse an integer which spans the whole string.
+ *
+ * @param msg the error message for malformed input
+ * @param arg the whole argument (for the error message)
+ */
+template<std::integral T>
+static T
+ParseIntegerArg(std::string_view s, const char *msg, const char *arg)
+{
+	T value;
+	const auto [ptr, ec] = FromChars(s, value);
+	if (ec == std::errc::result_out_of_range)
+		throw MakeArgError("Number too large", arg);
+
+	if (ec != std::errc{} || ptr != s.data() + s.size())
+		throw MakeArgError(msg, arg);
+
+	return value;
+}
+
+template<std::integral T>
+static T
+ParseIntegerArg(const char *s)
+{
+	return ParseIntegerArg<T>(s, "Integer expected", s);
+}
+
 uint32_t
 ParseCommandArgU32(const char *s)
 {
-	char *test;
-	auto value = strtoul(s, &test, 10);
-	if (test == s || *test != '\0')
-		throw MakeArgError("Integer expected", s);
-
-	return value;
+	return ParseIntegerArg<uint32_t>(s);
 }
 
 int
 ParseCommandArgInt(const char *s, int min_value, int max_value)
 {
-	char *test;
-	auto value = strtol(s, &test, 10);
-	if (test == s || *test != '\0')
-		throw MakeArgError("Integer expected", s);
+	/* skip the plus sign (e.g. "volume +5"); strtol() used to
+	   accept it, and std::from_chars() does not */
+	const char *p = s;
+	if (*p == '+' && IsDigitASCII(p[1]))
+		++p;
 
+	const auto value = ParseIntegerArg<int>(p, "Integer expected", s);
 	if (value < min_value || value > max_value)
 		throw MakeArgError("Number too large", s);
 
-	return (int)value;
+	return value;
 }
 
 int
@@ -49,48 +76,37 @@ ParseCommandArgInt(const char *s)
 				  std::numeric_limits<int>::max());
 }
 
+/**
+ * Parse one number of a range.
+ */
+static unsigned
+ParseRangeValue(std::string_view s, const char *arg)
+{
+	const auto value = ParseIntegerArg<int>(s, "Integer or range expected", arg);
+	if (value < 0)
+		throw MakeArgError("Number is negative", arg);
+
+	return value;
+}
+
 RangeArg
 ParseCommandArgRange(const char *s)
 {
-	char *test, *test2;
-	auto value = strtol(s, &test, 10);
-	if (test == s || (*test != '\0' && *test != ':'))
-		throw MakeArgError("Integer or range expected", s);
-
-	if (value == -1 && *test == 0)
+	if (StringIsEqual(s, "-1"))
 		/* compatibility with older MPD versions: specifying
 		   "-1" makes MPD display the whole list */
 		return RangeArg::All();
 
-	if (value < 0)
-		throw MakeArgError("Number is negative", s);
+	const auto [start_s, end_s] = Split(std::string_view{s}, ':');
+	const unsigned start = ParseRangeValue(start_s, s);
 
-	if (value > std::numeric_limits<int>::max())
-		throw MakeArgError("Number too large", s);
+	if (end_s.data() == nullptr)
+		return RangeArg::Single(start);
 
-	RangeArg range;
-	range.start = (unsigned)value;
+	if (end_s.empty())
+		return RangeArg::OpenEnded(start);
 
-	if (*test == ':') {
-		value = strtol(++test, &test2, 10);
-		if (*test2 != '\0')
-			throw MakeArgError("Integer or range expected", s);
-
-		if (test == test2)
-			return RangeArg::OpenEnded(range.start);
-
-		if (value < 0)
-			throw MakeArgError("Number is negative", s);
-
-
-		if (value > std::numeric_limits<int>::max())
-			throw MakeArgError("Number too large", s);
-
-		range.end = (unsigned)value;
-	} else {
-		return RangeArg::Single(range.start);
-	}
-
+	const RangeArg range{start, ParseRangeValue(end_s, s)};
 	if (!range.IsWellFormed())
 		throw MakeArgError("Malformed range", s);
 
@@ -100,15 +116,11 @@ ParseCommandArgRange(const char *s)
 unsigned
 ParseCommandArgUnsigned(const char *s, unsigned max_value)
 {
-	char *endptr;
-	auto value = strtoul(s, &endptr, 10);
-	if (endptr == s || *endptr != 0)
-		throw MakeArgError("Integer expected", s);
-
+	const auto value = ParseIntegerArg<unsigned>(s);
 	if (value > max_value)
 		throw MakeArgError("Number too large", s);
 
-	return (unsigned)value;
+	return value;
 }
 
 unsigned
@@ -121,12 +133,11 @@ ParseCommandArgUnsigned(const char *s)
 bool
 ParseCommandArgBool(const char *s)
 {
-	char *endptr;
-	auto value = strtol(s, &endptr, 10);
-	if (endptr == s || *endptr != 0 || (value != 0 && value != 1))
+	const auto value = ParseIntegerArg<unsigned>(s, "Boolean (0/1) expected", s);
+	if (value > 1)
 		throw MakeArgError("Boolean (0/1) expected", s);
 
-	return !!value;
+	return value != 0;
 }
 
 float
