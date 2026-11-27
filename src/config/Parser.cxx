@@ -4,6 +4,7 @@
 #include "Parser.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/ByteSizes.hxx"
+#include "util/CharUtil.hxx"
 #include "util/IntOverflow.hxx"
 #include "util/NumberParser.hxx"
 #include "util/StringStrip.hxx"
@@ -67,9 +68,25 @@ ParsePositive(std::string_view s)
 	return value;
 }
 
+/**
+ * Does the string start with a number?  This rejects "inf" and "nan"
+ * (which are accepted by strtod()).
+ */
+static constexpr bool
+StartsWithNumber(const char *s) noexcept
+{
+	if (*s == '-' || *s == '+')
+		++s;
+
+	return IsDigitASCII(*s) || *s == '.';
+}
+
 double
 ParseDouble(const char *s)
 {
+	if (!StartsWithNumber(s))
+		throw std::runtime_error("Failed to parse number");
+
 	char *endptr;
 	errno = 0;
 	double value = strtod(s, &endptr);
