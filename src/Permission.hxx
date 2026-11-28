@@ -16,6 +16,7 @@ static constexpr unsigned PERMISSION_ADD = 2;
 static constexpr unsigned PERMISSION_CONTROL = 4;
 static constexpr unsigned PERMISSION_ADMIN = 8;
 static constexpr unsigned PERMISSION_PLAYER = 16;
+static constexpr unsigned PERMISSION_OUTPUT = 32;
 
 /**
  * @return the permissions for the given password or std::nullopt if

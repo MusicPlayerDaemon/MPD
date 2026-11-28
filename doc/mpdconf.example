@@ -156,6 +156,7 @@
 # read    Allows reading of the database, displaying the current playlist, and current status of MPD.
 # add     Allows adding songs and loading playlists.
 # player  Allows any player and queue manipulation (start/pause/stop playback etc.).
+# output  Allows enabling, disabling and toggling outputs.
 # control Allows all other player and playlist manipulations.
 # admin   Allows manipulating outputs, stickers and partitions, mounting/unmounting storage and shutting down MPD.
 #

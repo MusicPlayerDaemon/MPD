@@ -93,8 +93,8 @@ static constexpr struct command commands[] = {
 	{ "delete", PERMISSION_PLAYER, 1, 1, handle_delete },
 	{ "deleteid", PERMISSION_PLAYER, 1, 1, handle_deleteid },
 	{ "delpartition", PERMISSION_ADMIN, 1, 1, handle_delpartition },
-	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },
-	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
+	{ "disableoutput", PERMISSION_OUTPUT, 1, 1, handle_disableoutput },
+	{ "enableoutput", PERMISSION_OUTPUT, 1, 1, handle_enableoutput },
 #ifdef ENABLE_DATABASE
 	{ "find", PERMISSION_READ, 1, -1, handle_find },
 	{ "findadd", PERMISSION_ADD, 1, -1, handle_findadd},
@@ -200,7 +200,7 @@ static constexpr struct command commands[] = {
 	{ "swap", PERMISSION_PLAYER, 2, 2, handle_swap },
 	{ "swapid", PERMISSION_PLAYER, 2, 2, handle_swapid },
 	{ "tagtypes", PERMISSION_NONE, 0, -1, handle_tagtypes },
-	{ "toggleoutput", PERMISSION_ADMIN, 1, 1, handle_toggleoutput },
+	{ "toggleoutput", PERMISSION_OUTPUT, 1, 1, handle_toggleoutput },
 #ifdef ENABLE_DATABASE
 	{ "unmount", PERMISSION_ADMIN, 1, 1, handle_unmount },
 #endif

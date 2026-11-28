@@ -33,6 +33,7 @@ static constexpr struct {
 	{ "read", PERMISSION_READ },
 	{ "add", PERMISSION_ADD },
 	{ "player", PERMISSION_PLAYER },
+	{ "output", PERMISSION_OUTPUT },
 	{ "control", PERMISSION_CONTROL },
 	{ "admin", PERMISSION_ADMIN },
 	{ nullptr, 0 },
@@ -76,9 +77,14 @@ parsePermissions(std::string_view string)
 			permission |= ParsePermission(i);
 
 	/* for backwards compatiblity with MPD 0.22 and older,
-	   "control" implies "play" */
+	   "control" implies "player" */
 	if (permission & PERMISSION_CONTROL)
 		permission |= PERMISSION_PLAYER;
+
+	/* for backwards compatiblity with MPD 0.25 and older,
+	  "admin" implies "output" */
+	if (permission & PERMISSION_ADMIN)
+		permission |= PERMISSION_OUTPUT;
 
 	return permission;
 }
@@ -87,7 +93,7 @@ void
 initPermissions(const ConfigData &config)
 {
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
-		PERMISSION_PLAYER |
+		PERMISSION_PLAYER | PERMISSION_OUTPUT |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
 	for (const auto &param : config.GetParamList(ConfigOption::PASSWORD)) {

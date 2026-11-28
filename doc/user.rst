@@ -835,6 +835,8 @@ By default, all clients are unauthenticated and have a full set of permissions. 
    * - **player**
      - Allows any player and queue manipulation (start/pause/stop
        playback etc.).
+   * - **output**
+     - Allows enabling, disabling and toggling outputs.
    * - **control**
      - Allows all other player and playlist manipulations.
    * - **admin**
